@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
@@ -125,6 +126,58 @@ class PushNotificationService {
       } catch (e) {
         debugPrint('Failed to sync token with Supabase: $e');
       }
+    }
+  }
+
+  /// 🌅 Show instant notification when daily mission unlocks
+  static Future<void> showMissionUnlockedNotification({required int day}) async {
+    if (kIsWeb) return;
+    try {
+      await _localNotificationsPlugin.show(
+        id: 9000 + day,
+        title: '🌅 Day $day Mission Unlocked!',
+        body: "Today's daily English challenge is ready for you. Keep your streak alive!",
+        notificationDetails: const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'high_importance_channel',
+            'High Importance Notifications',
+            channelDescription: 'This channel is used for important notifications.',
+            icon: '@mipmap/ic_launcher',
+            importance: Importance.max,
+            priority: Priority.high,
+          ),
+          iOS: DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error showing mission unlock notification: $e');
+    }
+  }
+
+  /// ⏰ Schedule or set morning reminder (e.g., 8:30 AM) when next mission is ready
+  static void scheduleMorningMissionNotification({
+    required int day,
+    int targetHour = 8,
+    int targetMinute = 30,
+  }) {
+    if (kIsWeb) return;
+    try {
+      final now = DateTime.now();
+      var target = DateTime(now.year, now.month, now.day, targetHour, targetMinute);
+      if (target.isBefore(now)) {
+        target = target.add(const Duration(days: 1));
+      }
+      final delay = target.difference(now);
+      Timer(delay, () {
+        showMissionUnlockedNotification(day: day);
+      });
+      debugPrint('Scheduled morning mission notification for Day $day at $target (in ${delay.inMinutes} mins)');
+    } catch (e) {
+      debugPrint('Error scheduling morning notification: $e');
     }
   }
 }

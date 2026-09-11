@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'pocket_fortress_defense_service.dart';
 import 'learning_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'package:pocket_mates_app/services/push_notification_service.dart';
 
 /// Core Service managing 90-Stage Progression, Pocket Score, Inactivity Decay & Profile UI sync
 class Learning60DayService {
@@ -89,6 +90,7 @@ class Learning60DayService {
             await prefs.setInt('learning_day_$userId', day);
             await prefs.setInt('pocket_learning_user_stage', day);
             await prefs.setBool('pocket_day_${day}_unlocked', true);
+            PushNotificationService.showMissionUnlockedNotification(day: day);
           }
         }
       }
@@ -228,12 +230,41 @@ class Learning60DayService {
     return fetchProgress(userId);
   }
 
-  /// Completes a day's mission, records 200 pts / score, unlocks next day, and syncs
+  /// Returns the remaining Duration until next midnight (12:00 AM / 00:00)
+  static Duration getRemainingTimeUntilMidnight() {
+    final now = DateTime.now();
+    final midnight = DateTime(now.year, now.month, now.day + 1);
+    return midnight.difference(now);
+  }
+
+  /// Formats remaining time as "04h : 22m : 15s"
+  static String formatRemainingCountdown(Duration duration) {
+    if (duration.isNegative) return '00h : 00m : 00s';
+    final hours = duration.inHours.toString().padLeft(2, '0');
+    final minutes = (duration.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
+    return '${hours}h : ${minutes}m : ${seconds}s';
+  }
+
+  /// Checks if day is waiting for midnight unlock (completed previous day today, next day not yet unlocked)
+  static Future<bool> isDayWaitingForMidnightUnlock(int day) async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastCompletedDay = prefs.getInt('learning_last_completed_day') ?? 0;
+    if (day != lastCompletedDay + 1) return false;
+    final completedDateStr = prefs.getString('learning_day_${lastCompletedDay}_completed_date');
+    if (completedDateStr == null) return false;
+    final now = DateTime.now();
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+    return completedDateStr == todayStr;
+  }
+
+  /// Completes a day's mission, records earned points, records completion,
+  /// locks the next day until midnight (12:00 AM), and schedules morning notification.
   Future<UserLearningProgress> completeDailyMission({
     required String userId,
     required int day,
     required int earnedPoints, // Up to 200 points
-    bool advanceToNextDay = true,
+    bool advanceToNextDay = false, // Next day unlocks at midnight per user specification
   }) async {
     final now = DateTime.now();
     final prefs = await SharedPreferences.getInstance();
@@ -245,16 +276,21 @@ class Learning60DayService {
     await prefs.setInt('learning_day_${day}_completed_timestamp', now.millisecondsSinceEpoch);
     await prefs.setInt('learning_last_completed_day', day);
 
-    // 2. Unlock next day
+    // 2. Schedule morning notification for next day (at 8:30 AM)
     final nextDay = (day < 90) ? day + 1 : 90;
-    await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
+    PushNotificationService.scheduleMorningMissionNotification(day: nextDay);
+
+    // If advanceToNextDay is explicitly true (e.g. in developer test / fast forward), unlock nextDay immediately
+    if (advanceToNextDay) {
+      await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
+    }
 
     // 3. Fetch progress & increment points
     await PocketFortressDefenseService.awardPoints(earnedPoints);
     var progress = await fetchProgress(userId);
     final newPoints = progress.totalPoints;
     final newStreak = progress.streakDays + 1;
-    final targetDay = advanceToNextDay ? nextDay : progress.currentDay;
+    final targetDay = advanceToNextDay ? nextDay : day;
     final stage = LearningMilestoneStage.getStageForDay(targetDay);
 
     await prefs.setInt('learning_day_$userId', targetDay);

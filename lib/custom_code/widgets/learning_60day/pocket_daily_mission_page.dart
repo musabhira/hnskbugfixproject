@@ -49,6 +49,16 @@ import 'career_adventure/fast_fix_models.dart';
 import 'career_adventure/fast_fix_game_page.dart';
 import 'career_adventure/market_master_models.dart';
 import 'career_adventure/market_master_game_page.dart';
+import 'career_adventure/word_detective_models.dart';
+import 'career_adventure/word_detective_game_page.dart';
+import 'career_adventure/voice_cafe_models.dart';
+import 'career_adventure/voice_cafe_game_page.dart';
+import 'career_adventure/message_runner_models.dart';
+import 'career_adventure/message_runner_game_page.dart';
+import 'career_adventure/bridge_builder_models.dart';
+import 'career_adventure/bridge_builder_game_page.dart';
+import 'career_adventure/travel_rush_models.dart';
+import 'career_adventure/travel_rush_game_page.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -114,6 +124,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _busyDayCompleted = false;
   bool _fastFixCompleted = false;
   bool _marketMasterCompleted = false;
+  bool _wordDetectiveCompleted = false;
+  bool _voiceCafeCompleted = false;
+  bool _messageRunnerCompleted = false;
+  bool _bridgeBuilderCompleted = false;
+  bool _travelRushCompleted = false;
   bool _isSpeakingChallengeRecording = false;
   int _speakingChallengeSecondsRemaining = 30;
   Timer? _speakingTimer;
@@ -4098,6 +4113,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       _fastFixCompleted = prefs.getBool('${dayKey}_fast_fix') ?? false;
       _marketMasterCompleted =
           prefs.getBool('${dayKey}_market_master') ?? false;
+      _wordDetectiveCompleted =
+          prefs.getBool('${dayKey}_word_detective') ?? false;
+      _voiceCafeCompleted =
+          prefs.getBool('${dayKey}_voice_cafe') ?? false;
+      _messageRunnerCompleted =
+          prefs.getBool('${dayKey}_message_runner') ?? false;
+      _bridgeBuilderCompleted =
+          prefs.getBool('${dayKey}_bridge_builder') ?? false;
+      _travelRushCompleted =
+          prefs.getBool('${dayKey}_travel_rush') ?? false;
       _readingNotesCompleted = prefs.getBool('${dayKey}_reading') ?? false;
       _codeEnglishCompleted = prefs.getBool('${dayKey}_code_english') ?? false;
       _revisionQuizPassed = prefs.getBool('${dayKey}_quiz') ?? false;
@@ -4590,7 +4615,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int get _totalSubtasksCount {
     int count =
         8; // Rule + Hub + Peer Call + Vocab + Reading + Code English + Quiz + Defense Trap
-    if (widget.day >= 1 && widget.day <= 9) count++; // 🕹️ Level 1–9 2D Adventure Game
+    if (widget.day >= 1 && widget.day <= 14) count++; // 🕹️ Level 1–14 2D Adventure Game
     if (_hasAlphabetPhonics) count++;
     if (_hasSentencePatterns) count++;
     if (_hasPronunciationClinic) count++;
@@ -4634,6 +4659,21 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     }
     if (widget.day == 9 && _marketMasterCompleted) {
       count++; // 🛒 Level 9 Market Master Game
+    }
+    if (widget.day == 10 && _wordDetectiveCompleted) {
+      count++; // 🕵️ Level 10 Word Detective Game
+    }
+    if (widget.day == 11 && _voiceCafeCompleted) {
+      count++; // ☕ Level 11 Voice Café Game
+    }
+    if (widget.day == 12 && _messageRunnerCompleted) {
+      count++; // 📨 Level 12 Message Runner Game
+    }
+    if (widget.day == 13 && _bridgeBuilderCompleted) {
+      count++; // 🌉 Level 13 Bridge Builder Game
+    }
+    if (widget.day == 14 && _travelRushCompleted) {
+      count++; // ✈️ Level 14 Travel Rush Game
     }
     if (_hasSentencePatterns && _sentencePatternCompleted) count++;
     if (_readingNotesCompleted) count++;
@@ -4842,6 +4882,36 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       // Subtask 4: 🛒 Mission 09 – Market Master (2D Flame Supermarket Shopping Game)
                       if (widget.day == 9) ...[
                         _buildMarketMasterCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 🔎 Mission 10 – Word Detective (2D Flame Mystery Investigation Game)
+                      if (widget.day == 10) ...[
+                        _buildWordDetectiveCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 🎤 Mission 11 – Voice Café (2D Flame Speaking Adventure)
+                      if (widget.day == 11) ...[
+                        _buildVoiceCafeCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 📨 Mission 12 – Message Runner (2D Flame Communication Adventure)
+                      if (widget.day == 12) ...[
+                        _buildMessageRunnerCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: 🌉 Mission 13 – Bridge Builder (2D Flame Sentence Building Adventure)
+                      if (widget.day == 13) ...[
+                        _buildBridgeBuilderCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 4: ✈️ Mission 14 – Travel Rush (2D Flame Travel Adventure)
+                      if (widget.day == 14) ...[
+                        _buildTravelRushCard(),
                         const SizedBox(height: 14),
                       ],
 
@@ -8942,6 +9012,989 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // 🔎 MISSION 10 – WORD DETECTIVE CARD
+  // ─────────────────────────────────────────────────────────────────────────
+
+  Widget _buildWordDetectiveCard() {
+    final isDone = _wordDetectiveCompleted;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF6366F1).withValues(alpha: 0.7),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF6366F1))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF6366F1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🔎', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 10 – Word Detective',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '2D Flame Mystery Investigation Game',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFA78BFA),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDone)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Text(
+                    'SOLVED ✓',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF10B981),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              _miniTag('Reading'),
+              _miniTag('Inference'),
+              _miniTag('Listening'),
+              _miniTag('Vocabulary'),
+              _miniTag('Timeline'),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'A prototype device is missing from Meeting Room 3. Read clues, analyse messages, connect the timeline, and solve Case #001 before the manager arrives.',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.search_rounded,
+                        color: Color(0xFFA78BFA), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '10 Investigation Challenges · Detective Journal · Clue Map',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFA78BFA),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => WordDetectiveGamePage(
+                      levelData: kMission10WordDetectiveData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _wordDetectiveCompleted = true;
+                  });
+                  _saveSubtask('word_detective', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🔎 Case #001 Solved! Mission 10 Complete! Step 4 Verified ✓ +60 Points!'),
+                      backgroundColor: Color(0xFF6366F1),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF4F46E5),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.search_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 10 🔄' : 'INVESTIGATE MISSION 10 🔎',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // 🎤 MISSION 11 – VOICE CAFÉ CARD
+  // ─────────────────────────────────────────────────────────────────────────
+
+  Widget _buildVoiceCafeCard() {
+    final isDone = _voiceCafeCompleted;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF120A02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFFF59E0B).withValues(alpha: 0.7),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFFF59E0B))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFF59E0B),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Text('🎤', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 11 – Voice Café',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 14,
+                      ),
+                    ),
+                    Text(
+                      '2D Speaking Adventure – Live Microphone',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFDE68A),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (isDone)
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Text(
+                    'SPOKEN ✓',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF10B981),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: [
+              _miniTag('Speaking'),
+              _miniTag('Pronunciation'),
+              _miniTag('Listening'),
+              _miniTag('Grammar'),
+              _miniTag('Conversation'),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Order food and prepare for your meeting at The Brew & Bites. Use the microphone to speak naturally. The café staff will respond based on your English!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    height: 1.35,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    const Icon(Icons.mic_rounded,
+                        color: Color(0xFFF59E0B), size: 14),
+                    const SizedBox(width: 4),
+                    Text(
+                      '10 Speaking Challenges · Live Mic · AI Evaluation · Scoring',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFF59E0B),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: () async {
+                HapticFeedback.lightImpact();
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => VoiceCafeGamePage(
+                      levelData: kMission11VoiceCafeData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _voiceCafeCompleted = true;
+                  });
+                  _saveSubtask('voice_cafe', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🎤 Café Mission Complete! Mission 11 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFFF59E0B),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFFD97706),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.mic_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 11 🔄' : 'SPEAK MISSION 11 🎤',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMessageRunnerCard() {
+    final isDone = _messageRunnerCompleted;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF0D9488).withValues(alpha: 0.7),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF0D9488))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF0D9488),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '2D FLAME COMMUNICATION GAME',
+                style: GoogleFonts.outfit(
+                  color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const Spacer(),
+              if (isDone)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF10B981),
+                  size: 20,
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0D9488).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF0D9488).withValues(alpha: 0.5),
+                  ),
+                ),
+                child: const Center(
+                  child: Text('📨', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 12: Message Runner',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '“Read fast. Type smart. Deliver the right message.”',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _miniTag('🏢 9 Campus Zones'),
+              _miniTag('💬 Type Replies'),
+              _miniTag('🔤 Spell Correction'),
+              _miniTag('⏱ 45s Rush'),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const MessageRunnerGamePage(
+                      levelData: kMission12MessageRunnerData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _messageRunnerCompleted = true;
+                  });
+                  _saveSubtask('message_runner', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '📨 Message Delivery Complete! Mission 12 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFF0D9488),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF0D9488),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.directions_run_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 12 🔄' : 'RUN MISSION 12 📨',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBridgeBuilderCard() {
+    final isDone = _bridgeBuilderCompleted;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0B1020),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF6366F1).withValues(alpha: 0.7),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF6366F1))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF6366F1),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '2D FLAME PUZZLE-ADVENTURE',
+                style: GoogleFonts.outfit(
+                  color: isDone ? const Color(0xFF10B981) : const Color(0xFF818CF8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const Spacer(),
+              if (isDone)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF10B981),
+                  size: 20,
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.5),
+                  ),
+                ),
+                child: const Center(
+                  child: Text('🌉', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 13: Bridge Builder',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '“Build the sentence. Build the path.”',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _miniTag('🧩 Draggable Blocks'),
+              _miniTag('📘 Grammar Rules'),
+              _miniTag('⚡ Platform Repairs'),
+              _miniTag('🌉 Grand Bridge'),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const BridgeBuilderGamePage(
+                      levelData: kMission13BridgeBuilderData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _bridgeBuilderCompleted = true;
+                  });
+                  _saveSubtask('bridge_builder', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '🌉 Transit Bridges Repaired! Mission 13 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFF6366F1),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF6366F1),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.architecture_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 13 🔄' : 'BUILD MISSION 13 🌉',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTravelRushCard() {
+    final isDone = _travelRushCompleted;
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF031525),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDone
+              ? const Color(0xFF10B981)
+              : const Color(0xFF0284C7).withValues(alpha: 0.7),
+          width: isDone ? 1.6 : 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : const Color(0xFF0284C7))
+                .withValues(alpha: 0.15),
+            blurRadius: 16,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: isDone
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF0284C7),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'STEP 4',
+                  style: TextStyle(
+                    color: isDone ? Colors.white : Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '2D FLAME TRAVEL ADVENTURE',
+                style: GoogleFonts.outfit(
+                  color: isDone ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const Spacer(),
+              if (isDone)
+                const Icon(
+                  Icons.check_circle_rounded,
+                  color: Color(0xFF10B981),
+                  size: 20,
+                ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.5),
+                  ),
+                ),
+                child: const Center(
+                  child: Text('✈️', style: TextStyle(fontSize: 22)),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Mission 14: Travel Rush',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      '“Understand the journey. Make the right move. Reach your destination.”',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 11,
+                        height: 1.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children: [
+              _miniTag('🎫 Boarding Pass'),
+              _miniTag('📢 PA Announcements'),
+              _miniTag('🚪 Gate 12 ➔ 18'),
+              _miniTag('⏱ 90s Boarding Rush'),
+            ],
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () async {
+                final completed = await Navigator.push<bool>(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const TravelRushGamePage(
+                      levelData: kMission14TravelRushData,
+                    ),
+                  ),
+                );
+                if (completed == true && mounted) {
+                  setState(() {
+                    _travelRushCompleted = true;
+                  });
+                  _saveSubtask('travel_rush', true);
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          '✈️ Travel Rush Complete! Mission 14 Verified ✓ +50 Points!'),
+                      backgroundColor: Color(0xFF0284C7),
+                    ),
+                  );
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor:
+                    isDone ? const Color(0xFF1E293B) : const Color(0xFF0284C7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color:
+                        isDone ? const Color(0xFF10B981) : Colors.transparent,
+                  ),
+                ),
+                elevation: isDone ? 0 : 4,
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    isDone ? Icons.replay_rounded : Icons.flight_takeoff_rounded,
+                    color: isDone ? const Color(0xFF10B981) : Colors.white,
+                    size: 18,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    isDone ? 'REPLAY MISSION 14 🔄' : 'BOARD MISSION 14 ✈️',
+                    style: GoogleFonts.outfit(
+                      color: isDone ? const Color(0xFF10B981) : Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _miniTag(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -11499,7 +12552,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           userId: uid,
                           day: widget.day,
                           earnedPoints: _currentDayPoints,
-                          advanceToNextDay: true,
+                          advanceToNextDay: false, // Next day unlocks at midnight per user specification
                         );
                         await PocketFortressDefenseService.recordActivityPoints(
                           'daily_mission',
@@ -11518,45 +12571,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             DateTime.now().millisecondsSinceEpoch);
                         await prefs.setInt(
                             'learning_last_completed_day', widget.day);
-                        await prefs.setBool(
-                            'pocket_day_${nextDay}_unlocked', true);
-                        await prefs.setInt(
-                            'pocket_learning_user_stage', nextDay);
                       }
                       // Award 50 bonus coins to vault store
                       await PocketFortressDefenseService.awardRaidLoot(50);
-
-                      final prefs = await SharedPreferences.getInstance();
-                      final todayStr =
-                          '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
-                      await prefs.setString(
-                          'learning_day_${widget.day}_completed_date',
-                          todayStr);
-                      await prefs.setInt(
-                          'learning_last_completed_day', widget.day);
-                      await prefs.setBool(
-                          'pocket_day_${nextDay}_unlocked', true);
-                      await prefs.setInt('pocket_learning_user_stage', nextDay);
-
-                      if (uid != null) {
-                        try {
-                          await SupaFlow.client.from('profile').update({
-                            'learning_day': nextDay,
-                            'learning_stage': nextDay,
-                            'updated_at': DateTime.now().toIso8601String(),
-                          }).eq('user_id', uid);
-
-                          await EnglishHubLevelGroupService
-                              .ensureUserInLevelGroup(
-                            userLevel: nextDay,
-                            userId: uid,
-                            forceLevelMatch: true,
-                          );
-                        } catch (e) {
-                          debugPrint(
-                              'Error auto-migrating English Hub cohort on mission complete: $e');
-                        }
-                      }
 
                       widget.onMissionCompleted?.call();
                       if (mounted) {
@@ -11577,7 +12594,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text(
-                              '🎉 Day ${widget.day} English Mission Complete! Earned $_currentDayPoints/200 Points! Day $nextDay is now UNLOCKED!',
+                              '🎉 Day ${widget.day} English Mission Complete! Earned $_currentDayPoints/200 Points!\n⏳ Day $nextDay unlocks tonight at Midnight (12:00 AM)!',
                               style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.bold),
                             ),

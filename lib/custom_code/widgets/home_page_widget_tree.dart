@@ -35,6 +35,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -100,8 +101,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (uid == null || uid.isEmpty) return;
     if (mounted) setState(() => _isLoadingRequests = true);
     try {
-      await PocketRobotService.ensureIncomingRobotRequests(uid, 1);
       await PocketRobotService.checkAndTriggerOccasionalRobotSnaps(uid);
+      await PocketRobotService.checkAndTriggerProactiveMatesMessages(uid);
       final reqs = await PocketMateService.getPendingRequests(uid);
       if (mounted) {
         setState(() {
@@ -120,6 +121,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _chatTabIndex);
+    ContactsNameService().initialize();
     _loadCachedData();
     _loadAllUserData();
     _loadPendingRequests();
@@ -1026,10 +1028,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     HapticFeedback.lightImpact();
     final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
     final notifId = req['id']?.toString() ?? '';
+    final senderId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
 
     await PocketMateService.declineMateRequest(
       notificationId: notifId,
       myId: uid,
+      senderId: senderId,
     );
 
     setState(() {
@@ -1253,10 +1257,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildChatCategoryFilterChips(List<ChatConversation> conversations) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final unreadCount = conversations.where((c) => c.unreadCount > 0).length;
-    final matesCount = conversations
-        .where((c) => !c.isGroup && !c.isTool && !c.isNotification && !c.isActiveTimer)
+    final robotsCount = conversations.where((c) => PocketRobotService.isRobotId(c.id)).length;
+    final humansCount = conversations
+        .where((c) => !PocketRobotService.isRobotId(c.id) && !c.isGroup && !c.isTool && !c.isNotification && !c.isActiveTimer)
         .length;
+    final unreadCount = conversations.where((c) => c.unreadCount > 0).length;
     final groupsCount = conversations.where((c) => c.isGroup).length;
 
     return Padding(
@@ -1274,16 +1279,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             ),
             const SizedBox(width: 7),
             _buildCategoryChipItem(
-              title: 'Unread',
+              title: 'Robots',
               index: 1,
-              count: unreadCount,
-              icon: Icons.mark_chat_unread_rounded,
+              count: robotsCount,
+              icon: Icons.smart_toy_rounded,
+              isDark: isDark,
+            ),
+            const SizedBox(width: 7),
+            _buildCategoryChipItem(
+              title: 'Humans',
+              index: 2,
+              count: humansCount,
+              icon: Icons.person_rounded,
               isDark: isDark,
             ),
             const SizedBox(width: 7),
             _buildCategoryChipItem(
               title: 'Requests',
-              index: 2,
+              index: 3,
               count: _pendingRequests.length,
               icon: Icons.person_add_alt_1_rounded,
               highlightBadge: _pendingRequests.isNotEmpty,
@@ -1291,16 +1304,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             ),
             const SizedBox(width: 7),
             _buildCategoryChipItem(
-              title: 'Mates',
-              index: 3,
-              count: matesCount,
-              icon: Icons.people_alt_rounded,
+              title: 'Unread',
+              index: 4,
+              count: unreadCount,
+              icon: Icons.mark_chat_unread_rounded,
               isDark: isDark,
             ),
             const SizedBox(width: 7),
             _buildCategoryChipItem(
               title: 'Groups',
-              index: 4,
+              index: 5,
               count: groupsCount,
               icon: Icons.groups_rounded,
               isDark: isDark,
@@ -1733,15 +1746,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         });
 
         final filteredConversations = combined.where((conversation) {
-          if (_searchQuery.isEmpty) return true;
-          return conversation.name
-              .toLowerCase()
-              .contains(_searchQuery.toLowerCase());
+          if (_searchQuery.isNotEmpty &&
+              !conversation.name
+                  .toLowerCase()
+                  .contains(_searchQuery.toLowerCase())) {
+            return false;
+          }
+          return true;
         }).toList();
 
         return SliverMainAxisGroup(
           slivers: [
-            const SliverToBoxAdapter(child: SizedBox(height: 12)),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
             if (_searchQuery.isNotEmpty) ...[
               // Search Tabs (People / Products)
               SliverToBoxAdapter(
@@ -2087,20 +2103,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   child: _buildAnonymousLiveMatchBanner(isDark),
                 ),
 
-              if (_chatCategoryFilterIndex == 2) ...[
+              if (_chatCategoryFilterIndex == 3) ...[
                 // Requests View (Strangers, Marketplace inquiries, Anonymous chat requests)
                 _buildPendingRequestsSliver(),
               ] else ...[
+                if (_pendingRequests.isNotEmpty && _chatCategoryFilterIndex == 0)
+                  _buildPendingRequestsSliver(),
                 // Active Conversations List
                 Builder(
                   builder: (context) {
                     List<ChatConversation> activeFiltered = filteredConversations;
                     if (_chatCategoryFilterIndex == 1) {
-                      activeFiltered = filteredConversations.where((c) => c.unreadCount > 0).toList();
-                    } else if (_chatCategoryFilterIndex == 3) {
+                      activeFiltered = filteredConversations.where((c) => PocketRobotService.isRobotId(c.id)).toList();
+                    } else if (_chatCategoryFilterIndex == 2) {
                       activeFiltered = filteredConversations.where((c) =>
-                          !c.isGroup && !c.isTool && !c.isNotification && !c.isActiveTimer).toList();
+                          !PocketRobotService.isRobotId(c.id) && !c.isGroup && !c.isTool && !c.isNotification && !c.isActiveTimer).toList();
                     } else if (_chatCategoryFilterIndex == 4) {
+                      activeFiltered = filteredConversations.where((c) => c.unreadCount > 0).toList();
+                    } else if (_chatCategoryFilterIndex == 5) {
                       activeFiltered = filteredConversations.where((c) => c.isGroup).toList();
                     }
 
@@ -2239,12 +2259,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             const SizedBox(height: 16),
                             Text(
                               _chatCategoryFilterIndex == 1
-                                  ? 'No unread messages'
-                                  : (_chatCategoryFilterIndex == 3
-                                      ? 'No Mates yet. Connect from Anonymous Chat!'
+                                  ? 'No Pocket Robots yet'
+                                  : (_chatCategoryFilterIndex == 2
+                                      ? 'No human mates yet. Connect from Anonymous Chat!'
                                       : (_chatCategoryFilterIndex == 4
-                                          ? 'No groups joined yet'
-                                          : 'No conversations yet')),
+                                          ? 'No unread messages'
+                                          : (_chatCategoryFilterIndex == 5
+                                              ? 'No groups joined yet'
+                                              : 'No conversations yet'))),
                               style: GoogleFonts.outfit(
                                 fontSize: 16,
                                 color: material.Colors.white.withValues(alpha: 0.3),

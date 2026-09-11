@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -145,11 +146,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   bool _isLoading = true;
   bool _isRefreshing = false;
   int _unifiedPocketScore = 0;
-  Set<int> _unlockedDays = {};
   UserLearningProgress? _progress;
   String? _equippedTalismanId;
   bool _hasAcceptedRules = false;
   final int _totalDays = 90;
+
+  // ⏱️ Midnight Daily Unlock Ticker
+  Timer? _midnightTicker;
+  Duration _timeUntilMidnight = Learning60DayService.getRemainingTimeUntilMidnight();
+  int _lastCompletedDay = 0;
+  String? _lastCompletedDateStr;
+  final Set<int> _completedDays = {};
 
   // Spacing & node dimensions
   static const double _nodeSpacingY = 140.0;
@@ -165,14 +172,60 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       duration: const Duration(milliseconds: 1300),
     )..repeat(reverse: true);
 
+    // Live countdown to Midnight 12:00 AM
+    _midnightTicker = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) return;
+      final remaining = Learning60DayService.getRemainingTimeUntilMidnight();
+      setState(() {
+        _timeUntilMidnight = remaining;
+      });
+      // If midnight just passed, refresh progress to unlock the next level
+      if (remaining.inSeconds <= 0 && _lastCompletedDay > 0) {
+        _loadData();
+      }
+    });
+
     _loadData();
   }
 
   @override
   void dispose() {
+    _midnightTicker?.cancel();
     _bobController.dispose();
     _scrollController.dispose();
     super.dispose();
+  }
+
+  bool _isDayWaitingForMidnight(int day) {
+    if (day != _lastCompletedDay + 1) return false;
+    if (_lastCompletedDateStr == null) return false;
+    final now = DateTime.now();
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+    return _lastCompletedDateStr == todayStr;
+  }
+
+  /// Strictly checks if a day has actually been completed
+  bool _isDayCompleted(int day) {
+    if (day < 1) return true;
+    if (_completedDays.contains(day)) return true;
+    if (_lastCompletedDay > 0 && day <= _lastCompletedDay) {
+      // Day 10 and above must have an explicit completion record
+      if (day >= 10 && !_completedDays.contains(day)) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /// Level N can ONLY be unlocked if Level N-1 has been COMPLETED
+  bool _isDayUnlocked(int day, int currentDay) {
+    if (day == 1) return _hasAcceptedRules;
+    // Sequential prerequisite check
+    if (!_isDayCompleted(day - 1)) return false;
+    // If waiting for midnight countdown
+    if (_isDayWaitingForMidnight(day)) return false;
+    return true;
   }
 
   Future<void> _loadData() async {
@@ -185,21 +238,46 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final progRaw = await Learning60DayService().fetchProgress(uid);
     final score = await PocketFortressDefenseService.getUnifiedScore(uid);
 
-    Map<String, dynamic>? profileData;
-    try {
-      profileData = await _supabase
-          .from('profile')
-          .select('avatar_config, learning_day, learning_stage')
-          .eq('user_id', uid)
-          .maybeSingle();
-    } catch (_) {}
-
     final prefs = await SharedPreferences.getInstance();
-    final localStage = prefs.getInt('pocket_learning_user_stage') ??
-        prefs.getInt('learning_day_$uid') ??
-        1;
-    final profileDay = (profileData?['learning_day'] as num?)?.toInt() ?? 1;
-    final effectiveDay = math.max(progRaw.currentDay, math.max(profileDay, localStage));
+    final lastCompDay = prefs.getInt('learning_last_completed_day') ?? 0;
+    final lastCompDate = prefs.getString('learning_day_${lastCompDay}_completed_date');
+
+    // Collect all actually completed days
+    final Set<int> completed = {};
+    for (int d = 1; d <= _totalDays; d++) {
+      if (prefs.getBool('pocket_day_${d}_completed') == true) {
+        completed.add(d);
+      }
+    }
+    if (lastCompDay > 0) {
+      for (int d = 1; d <= math.min(lastCompDay, 9); d++) {
+        completed.add(d);
+      }
+    }
+
+    // Determine strict active currentDay based on consecutive completions
+    int calculatedCurrentDay = 1;
+    for (int d = 1; d <= _totalDays; d++) {
+      final isComp = completed.contains(d) || (d <= lastCompDay && d < 10);
+      if (isComp) {
+        calculatedCurrentDay = d + 1;
+      } else {
+        break;
+      }
+    }
+    calculatedCurrentDay = calculatedCurrentDay.clamp(1, _totalDays);
+
+    // Prune any stray test flags above calculatedCurrentDay
+    if ((prefs.getInt('pocket_learning_user_stage') ?? 1) > calculatedCurrentDay) {
+      await prefs.setInt('pocket_learning_user_stage', calculatedCurrentDay);
+      await prefs.setInt('learning_day_$uid', calculatedCurrentDay);
+      for (int d = calculatedCurrentDay + 1; d <= _totalDays; d++) {
+        await prefs.remove('pocket_day_${d}_unlocked');
+        await prefs.remove('pocket_day_${d}_completed');
+      }
+    }
+
+    final effectiveDay = calculatedCurrentDay;
     final prog = progRaw.copyWith(currentDay: effectiveDay);
 
     String? talismanId;
@@ -211,20 +289,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final rulesAccepted = (prog.currentDay > 1) ||
         (prefs.getBool('pocket_world_rules_accepted_v1') ?? false);
 
-    final Set<int> unlocked = {};
-    for (int d = 1; d <= _totalDays; d++) {
-      if (d <= prog.currentDay || (prefs.getBool('pocket_day_${d}_unlocked') ?? false)) {
-        unlocked.add(d);
-      }
-    }
-
     if (mounted) {
       setState(() {
         _progress = prog;
         _unifiedPocketScore = score;
-        _unlockedDays = unlocked;
+        _completedDays
+          ..clear()
+          ..addAll(completed);
         _equippedTalismanId = talismanId;
         _hasAcceptedRules = rulesAccepted;
+        _lastCompletedDay = lastCompDay;
+        _lastCompletedDateStr = lastCompDate;
         _isLoading = false;
         _isRefreshing = false;
       });
@@ -372,9 +447,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     HapticFeedback.lightImpact();
     final prog =
         _progress ?? UserLearningProgress(lastActiveDate: DateTime.now());
-    final isCurrent = day == prog.currentDay;
-    final isCompleted = day < prog.currentDay;
-    final isUnlocked = ((day <= prog.currentDay) || _unlockedDays.contains(day));
+    final isCompleted = _isDayCompleted(day);
+    final isUnlocked = _isDayUnlocked(day, prog.currentDay);
+    final isCurrent = (day == prog.currentDay) && isUnlocked && !isCompleted;
     final lesson = EnglishCurriculumLesson.getLessonForDay(day);
     final stage = LearningMilestoneStage.getStageForDay(day);
     final avatarConfig = _getAvatarForDay(day);
@@ -703,6 +778,79 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      if (_isDayWaitingForMidnight(day)) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(14),
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                              width: 1.5,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                                blurRadius: 14,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Text('⏳', style: TextStyle(fontSize: 18)),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'UNLOCKS AT MIDNIGHT (12:00 AM)',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 13,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'You completed Day $_lastCompletedDay today!\nDay $day will automatically unlock tonight at midnight.',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white70,
+                                  fontSize: 11.5,
+                                  height: 1.3,
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                ),
+                                child: Text(
+                                  Learning60DayService.formatRemainingCountdown(_timeUntilMidnight),
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFD700),
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
+                                    letterSpacing: 1.0,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+
                       // 🧪 Interactive Locked Container: Tap directly to test
                       Material(
                         color: Colors.transparent,
@@ -731,7 +879,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 const SizedBox(width: 8),
                                 Flexible(
                                   child: Text(
-                                    'Locked • Tap to Test Level $day 🧪',
+                                    _isDayWaitingForMidnight(day)
+                                        ? 'Testing 🧪: Enter Day $day Now'
+                                        : 'Locked • Tap to Test Level $day 🧪',
                                     style: GoogleFonts.outfit(
                                         color: const Color(0xFF00E5FF),
                                         fontWeight: FontWeight.bold,
@@ -938,118 +1088,56 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
               _buildTopHUD(prog),
 
-                // 3. ⚔️ Pocket Battle Action Button (User audio: "Battle Arena എന്ന് പറയില്ലല്ലോ, 'Pocket Battle' എന്ന് സിംപിൾ ആയി കൊടുത്താൽ മതി. അതൊന്ന് ഡയറക്റ്റ് പോക്കറ്റ് ഹോമിൽ പോകുന്നു.")
+                // 3. ⚔️ & 🌐 Minimal Floating Actions Dock (User audio directive)
                 Positioned(
-                  left: 18,
-                  bottom: 24,
-                  child: InkWell(
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PocketWorldStreetPage(
-                            currentDay: prog.currentDay,
-                            streak: prog.streakDays,
-                          ),
-                        ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B).withValues(alpha: 0.9),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.5), width: 1.2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('⚔️', style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 5),
-                          Text(
-                            'Pocket Battle',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 11.5,
+                  left: 16,
+                  bottom: 18,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildMinimalFloatingPill(
+                        icon: '⚔️',
+                        label: 'Battle',
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PocketWorldStreetPage(
+                                currentDay: prog.currentDay,
+                                streak: prog.streakDays,
+                              ),
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       ),
-                    ),
+                      const SizedBox(width: 6),
+                      _buildMinimalFloatingPill(
+                        icon: '🌐',
+                        label: 'Open World',
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PocketOpenWorldGamePage(
+                                currentDay: prog.currentDay,
+                                streak: prog.streakDays,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
 
-                // 🌟 🌐 Open World Action Button (User audio: "പോക്കറ്റ് ബാറ്റിലിന്റെ മേലെ എവിടെയെങ്കിലും ഒരു ഐക്കൺ കൊടുത്ത് ടെസ്റ്റ് ചെയ്തു നോക്കണം")
+                // Right: 🎯 Minimal Today Mission Button (User audio: "Mission 10ന്റെ mission mission day വന്നിട്ടുണ്ടല്ലോ, അതൊന്നു minimal ആക്കണം")
                 Positioned(
-                  left: 18,
-                  bottom: 64,
+                  right: 16,
+                  bottom: 18,
                   child: InkWell(
                     onTap: () {
-                      HapticFeedback.mediumImpact();
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => PocketOpenWorldGamePage(
-                            currentDay: prog.currentDay,
-                            streak: prog.streakDays,
-                          ),
-                        ),
-                      );
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF0284C7), Color(0xFF0F172A)],
-                        ),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFF00F0FF).withValues(alpha: 0.8), width: 1.2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF00F0FF).withValues(alpha: 0.3),
-                            blurRadius: 6,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('🌐', style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 5),
-                          Text(
-                            'Open World',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFFC00),
-                              fontWeight: FontWeight.w800,
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-
-
-                // Right: 🎯 Jump to Today Button (Direct entry into Mission Page / Rules)
-                Positioned(
-                  right: 18,
-                  bottom: 24,
-                  child: FloatingActionButton.extended(
-                    heroTag: 'target_page_jump_today_button',
-                    onPressed: () {
                       HapticFeedback.mediumImpact();
                       if (!_hasAcceptedRules) {
                         PocketWorldGameRulesModal.show(
@@ -1065,26 +1153,85 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       _scrollToDay(prog.currentDay, animate: true);
                       _navigateToMissionPage(prog.currentDay);
                     },
-                    backgroundColor: const Color(0xFFFFFC00),
-                    elevation: 6,
-                    icon: Icon(
-                      !_hasAcceptedRules ? Icons.menu_book_rounded : Icons.play_circle_fill_rounded,
-                      color: Colors.black,
-                      size: 20,
-                    ),
-                    label: Text(
-                      !_hasAcceptedRules ? 'GET STARTED: RULES 📜' : 'MISSION DAY ${prog.currentDay}',
-                      style: GoogleFonts.outfit(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
-                        letterSpacing: 0.5,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            !_hasAcceptedRules ? Icons.menu_book_rounded : Icons.play_arrow_rounded,
+                            color: Colors.black,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            !_hasAcceptedRules ? 'Rules 📜' : 'Mission ${prog.currentDay}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ),
               ],
             ),
+    );
+  }
+
+  Widget _buildMinimalFloatingPill({
+    required String icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white12, width: 0.8),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.3),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(icon, style: const TextStyle(fontSize: 11)),
+            const SizedBox(width: 4),
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -1696,9 +1843,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final y = _getNodeY(day);
     // User audio requirement: Before Get Started rules are accepted, Day 1 must stay LOCKED!
     final isLockedByRules = (day == 1 && !_hasAcceptedRules);
-    final isCurrent = (day == currentDay) && !isLockedByRules;
-    final isUnlocked = ((day <= currentDay) || _unlockedDays.contains(day)) && !isLockedByRules;
-    final isCompleted = (day < currentDay) && _hasAcceptedRules;
+    final isWaitingForMidnight = _isDayWaitingForMidnight(day);
+    final isCompleted = _isDayCompleted(day) && _hasAcceptedRules && !isWaitingForMidnight;
+    final isUnlocked = _isDayUnlocked(day, currentDay) && !isLockedByRules && !isWaitingForMidnight;
+    final isCurrent = (day == currentDay) && isUnlocked && !isCompleted;
     final isBossMilestone = day == 7 ||
         day == 14 ||
         day == 21 ||
@@ -1762,7 +1910,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         },
         child: SizedBox(
           width: nodeSize,
-          height: nodeSize + (isCompleted ? 18 : 0),
+          height: nodeSize + (isCompleted || isWaitingForMidnight ? 22 : 0),
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,
@@ -1798,103 +1946,160 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: LinearGradient(
-                    colors: isCurrent
-                        ? [const Color(0xFFFFFC00), const Color(0xFFFF8906)]
-                        : (isCompleted
-                            ? [const Color(0xFF10B981), const Color(0xFF047857)]
-                            : (isUnlocked
-                                ? [const Color(0xFF00E5FF), const Color(0xFF0284C7)]
-                                : (isBossMilestone
-                                    ? [const Color(0xFF475569), const Color(0xFF1E293B)]
-                                    : [const Color(0xFF2A314A), const Color(0xFF181C2E)]))),
+                    colors: isWaitingForMidnight
+                        ? [const Color(0xFF312E81), const Color(0xFF1E1B4B)]
+                        : (isCurrent
+                            ? [const Color(0xFFFFFC00), const Color(0xFFFF8906)]
+                            : (isCompleted
+                                ? [const Color(0xFF10B981), const Color(0xFF047857)]
+                                : (isUnlocked
+                                    ? [const Color(0xFF00E5FF), const Color(0xFF0284C7)]
+                                    : (isBossMilestone
+                                        ? [const Color(0xFF475569), const Color(0xFF1E293B)]
+                                        : [const Color(0xFF2A314A), const Color(0xFF181C2E)])))),
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   border: Border.all(
-                    color: isCurrent
-                        ? Colors.white
-                        : (isCompleted
-                            ? const Color(0xFF6EE7B7)
-                            : (isUnlocked
-                                ? const Color(0xFF38BDF8)
-                                : (isBossMilestone
-                                    ? const Color(0xFFFFD700)
-                                    : Colors.white.withValues(alpha: 0.22)))),
-                    width: isCurrent ? 3.2 : 2.2,
+                    color: isWaitingForMidnight
+                        ? const Color(0xFFFFD700)
+                        : (isCurrent
+                            ? Colors.white
+                            : (isCompleted
+                                ? const Color(0xFF6EE7B7)
+                                : (isUnlocked
+                                    ? const Color(0xFF38BDF8)
+                                    : (isBossMilestone
+                                        ? const Color(0xFFFFD700)
+                                        : Colors.white.withValues(alpha: 0.22))))),
+                    width: (isCurrent || isWaitingForMidnight) ? 3.0 : 2.2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: isCurrent
-                          ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
-                          : (isCompleted
-                              ? const Color(0xFF10B981).withValues(alpha: 0.4)
-                              : (isUnlocked
-                                  ? const Color(0xFF00E5FF).withValues(alpha: 0.45)
-                                  : Colors.black.withValues(alpha: 0.5))),
-                      blurRadius: (isCurrent || isUnlocked) ? 16 : 8,
+                      color: isWaitingForMidnight
+                          ? const Color(0xFFFFD700).withValues(alpha: 0.35)
+                          : (isCurrent
+                              ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+                              : (isCompleted
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                                  : (isUnlocked
+                                      ? const Color(0xFF00E5FF).withValues(alpha: 0.45)
+                                      : Colors.black.withValues(alpha: 0.5)))),
+                      blurRadius: (isCurrent || isUnlocked || isWaitingForMidnight) ? 16 : 8,
                       offset: const Offset(0, 4),
                     ),
                   ],
                 ),
                 child: Center(
-                  child: isCompleted
-                      ? const Icon(Icons.check_rounded,
-                          color: Colors.white, size: 28)
-                      : (isCurrent
-                          ? Text(
+                  child: isWaitingForMidnight
+                      ? Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('⏳', style: TextStyle(fontSize: 15)),
+                            Text(
                               '$day',
                               style: GoogleFonts.outfit(
-                                color: Colors.black,
+                                color: const Color(0xFFFFD700),
                                 fontWeight: FontWeight.w900,
-                                fontSize: isBossMilestone ? 24 : 20,
+                                fontSize: isBossMilestone ? 18 : 14,
                               ),
-                            )
-                          : (isUnlocked
+                            ),
+                          ],
+                        )
+                      : (isCompleted
+                          ? const Icon(Icons.check_rounded,
+                              color: Colors.white, size: 28)
+                          : (isCurrent
                               ? Text(
                                   '$day',
                                   style: GoogleFonts.outfit(
-                                    color: Colors.white,
+                                    color: Colors.black,
                                     fontWeight: FontWeight.w900,
                                     fontSize: isBossMilestone ? 24 : 20,
                                   ),
                                 )
-                              : (isBossMilestone
-                                  ? Column(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          stage.emoji,
-                                          style: TextStyle(
-                                              fontSize: isBossMilestone ? 19 : 16),
-                                        ),
-                                        Text(
-                                          '$day',
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 11,
-                                          ),
-                                        ),
-                                      ],
+                              : (isUnlocked
+                                  ? Text(
+                                      '$day',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: isBossMilestone ? 24 : 20,
+                                      ),
                                     )
-                                  : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        const Icon(Icons.lock_rounded,
-                                            color: Colors.white54, size: 12),
-                                        const SizedBox(width: 2),
-                                        Text(
-                                          '$day',
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.white70,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    )))),
+                                  : (isBossMilestone
+                                      ? Column(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              stage.emoji,
+                                              style: TextStyle(
+                                                  fontSize: isBossMilestone ? 19 : 16),
+                                            ),
+                                            Text(
+                                              '$day',
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 11,
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : Row(
+                                          mainAxisAlignment: MainAxisAlignment.center,
+                                          children: [
+                                            const Icon(Icons.lock_rounded,
+                                                color: Colors.white54, size: 12),
+                                            const SizedBox(width: 2),
+                                            Text(
+                                              '$day',
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white70,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ))))),
                 ),
               ),
+
+              // ⏳ Live Midnight Countdown Pill under waiting node
+              if (isWaitingForMidnight)
+                Positioned(
+                  top: nodeSize + 3,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E1B4B),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 0.9),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('⏳', style: TextStyle(fontSize: 8)),
+                        const SizedBox(width: 3),
+                        Text(
+                          Learning60DayService.formatRemainingCountdown(_timeUntilMidnight),
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 8.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
               // 3 Shiny Stars over completed nodes
               if (isCompleted)
@@ -1954,7 +2159,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final nodeX = _getNodeX(day, screenWidth);
     final nodeY = _getNodeY(day);
     final isRightSide = nodeX >= screenWidth / 2;
-    final isUnlocked = ((day <= currentDay) || _unlockedDays.contains(day)) && (day > 1 || _hasAcceptedRules);
+    final isWaitingForMidnight = _isDayWaitingForMidnight(day);
+    final isUnlocked = _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules) && !isWaitingForMidnight;
+    final isCompleted = _isDayCompleted(day);
     final config = _getAvatarForDay(day);
 
     // Position in wide empty space on opposite side of node
@@ -1999,16 +2206,20 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             color: const Color(0xFF111726).withValues(alpha: 0.88),
             borderRadius: BorderRadius.circular(13),
             border: Border.all(
-              color: isUnlocked
-                  ? rarityColor.withValues(alpha: 0.75)
-                  : Colors.white.withValues(alpha: 0.12),
-              width: isUnlocked ? 1.4 : 0.9,
+              color: isWaitingForMidnight
+                  ? const Color(0xFFFFD700).withValues(alpha: 0.75)
+                  : (isUnlocked
+                      ? rarityColor.withValues(alpha: 0.75)
+                      : Colors.white.withValues(alpha: 0.12)),
+              width: (isUnlocked || isWaitingForMidnight) ? 1.4 : 0.9,
             ),
             boxShadow: [
               BoxShadow(
-                color: isUnlocked
-                    ? rarityColor.withValues(alpha: 0.22)
-                    : Colors.black.withValues(alpha: 0.35),
+                color: isWaitingForMidnight
+                    ? const Color(0xFFFFD700).withValues(alpha: 0.22)
+                    : (isUnlocked
+                        ? rarityColor.withValues(alpha: 0.22)
+                        : Colors.black.withValues(alpha: 0.35)),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -2023,7 +2234,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isUnlocked ? rarityColor : Colors.white24,
+                    color: isWaitingForMidnight ? const Color(0xFFFFD700) : (isUnlocked ? rarityColor : Colors.white24),
                     width: 1,
                   ),
                 ),
@@ -2059,18 +2270,28 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         Text(
                           'Day $day',
                           style: GoogleFonts.inter(
-                            color: isUnlocked ? const Color(0xFFFFFC00) : Colors.white38,
+                            color: isWaitingForMidnight
+                                ? const Color(0xFFFFD700)
+                                : (isUnlocked ? const Color(0xFFFFFC00) : Colors.white38),
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          isUnlocked
-                              ? '• 🔓 Claim'
-                              : (day == 1 && !_hasAcceptedRules ? '• 🔒 Rules Req.' : '• 🔒 Target'),
+                          isCompleted
+                              ? '• ⭐ Evolved'
+                              : (isUnlocked
+                                  ? '• 🔓 Active'
+                                  : (isWaitingForMidnight
+                                      ? '• ⏳ Tonight'
+                                      : (day == 1 && !_hasAcceptedRules ? '• 🔒 Rules Req.' : '• 🔒 Locked'))),
                           style: GoogleFonts.inter(
-                            color: isUnlocked ? const Color(0xFF10B981) : Colors.white38,
+                            color: isCompleted
+                                ? const Color(0xFF10B981)
+                                : (isWaitingForMidnight
+                                    ? const Color(0xFFFFD700)
+                                    : (isUnlocked ? const Color(0xFFFFFC00) : Colors.white38)),
                             fontSize: 8.5,
                           ),
                         ),
@@ -2080,8 +2301,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ),
               Icon(
-                isUnlocked ? Icons.chevron_right_rounded : Icons.lock_outline_rounded,
-                color: isUnlocked ? rarityColor : Colors.white30,
+                isUnlocked
+                    ? Icons.chevron_right_rounded
+                    : (isWaitingForMidnight ? Icons.hourglass_top_rounded : Icons.lock_outline_rounded),
+                color: isWaitingForMidnight ? const Color(0xFFFFD700) : (isUnlocked ? rarityColor : Colors.white30),
                 size: 14,
               ),
             ],

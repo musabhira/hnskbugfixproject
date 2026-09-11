@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -443,7 +444,10 @@ class _ConversationTileState extends State<ConversationTile> {
                             children: [
                               Flexible(
                                 child: Text(
-                                  widget.conversation.name,
+                                  ContactsNameService().getDisplayName(
+                                    userId: widget.conversation.id,
+                                    fallbackName: widget.conversation.name,
+                                  ),
                                   style: GoogleFonts.outfit(
                                     color: primaryTextColor,
                                     fontSize: 17,

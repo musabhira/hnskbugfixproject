@@ -347,121 +347,135 @@ class _MessageListPageState extends State<MessageListPage> {
                           color: const Color(0xFF0F0F0F),
                           border: Border(
                             bottom: BorderSide(
-                              color: Colors.white.withValues(alpha: 0.05),
-                              width: 1,
+                              color: Colors.white.withValues(alpha: 0.04),
+                              width: 0.8,
                             ),
                           ),
                         ),
                         child: ListTile(
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                          minVerticalPadding: 0,
                           contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 4),
-                          leading: CircleAvatar(
-                            radius: 28,
-                            backgroundImage: otherUser['avatar'] != null
-                                ? NetworkImage(otherUser['avatar'])
-                                : null,
-                            backgroundColor: Colors.yellow.shade700,
-                            child: otherUser['avatar'] == null
-                                ? Text(
-                                    otherUser['name'][0].toUpperCase(),
-                                    style: const TextStyle(
-                                      color: Colors.black,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  )
-                                : null,
+                              horizontal: 14, vertical: 2),
+                          leading: Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isUnread
+                                    ? const Color(0xFFFFFC00)
+                                    : Colors.white12,
+                                width: isUnread ? 1.5 : 0.8,
+                              ),
+                            ),
+                            child: CircleAvatar(
+                              radius: 20,
+                              backgroundImage: otherUser['avatar'] != null
+                                  ? NetworkImage(otherUser['avatar'])
+                                  : null,
+                              backgroundColor: Colors.yellow.shade700,
+                              child: otherUser['avatar'] == null
+                                  ? Text(
+                                      otherUser['name'][0].toUpperCase(),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : null,
+                            ),
                           ),
                           title: Text(
                             otherUser['name'],
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 16,
+                              fontSize: 14.5,
                               fontWeight:
-                                  isUnread ? FontWeight.bold : FontWeight.w500,
+                                  isUnread ? FontWeight.w700 : FontWeight.w500,
                             ),
                           ),
                           subtitle: Row(
-                          children: [
-                            if (hasMention) ...[
-                              Container(
-                                padding: const EdgeInsets.all(2),
-                                margin: const EdgeInsets.only(right: 4),
-                                decoration: const BoxDecoration(
-                                  color: Colors.green,
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.alternate_email,
-                                  size: 10,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                            Expanded(
-                              child: Text(
-                                subtitle.isEmpty ? 'No messages yet' : subtitle,
-                                style: TextStyle(
-                                  color: isUnread
-                                      ? Colors.white70
-                                      : Colors.grey.shade500,
-                                  fontSize: 14,
-                                  fontWeight: isUnread
-                                      ? FontWeight.w500
-                                      : FontWeight.normal,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            if (conversation['last_message_time'] != null)
-                              Text(
-                                timeago.format(DateTime.parse(
-                                    conversation['last_message_time'])),
-                                style: TextStyle(
-                                  color: isUnread
-                                      ? Colors.yellow
-                                      : Colors.grey.shade600,
-                                  fontSize: 12,
-                                  fontWeight: isUnread
-                                      ? FontWeight.bold
-                                      : FontWeight.normal,
-                                ),
-                              ),
-                            if (isUnread) ...[
-                              const SizedBox(height: 4),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: Colors.yellow,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Text(
-                                  '${conversation['unread_count']}',
-                                  style: const TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
+                            children: [
+                              if (hasMention) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(2),
+                                  margin: const EdgeInsets.only(right: 4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.green,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.alternate_email,
+                                    size: 9,
+                                    color: Colors.white,
                                   ),
                                 ),
+                              ],
+                              Expanded(
+                                child: Text(
+                                  subtitle.isEmpty ? 'No messages yet' : subtitle,
+                                  style: TextStyle(
+                                    color: isUnread
+                                        ? Colors.white70
+                                        : Colors.grey.shade500,
+                                    fontSize: 12.5,
+                                    fontWeight: isUnread
+                                        ? FontWeight.w500
+                                        : FontWeight.normal,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                             ],
-                          ],
+                          ),
+                          trailing: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              if (conversation['last_message_time'] != null)
+                                Text(
+                                  timeago.format(DateTime.parse(
+                                      conversation['last_message_time'])),
+                                  style: TextStyle(
+                                    color: isUnread
+                                        ? Colors.yellow
+                                        : Colors.grey.shade600,
+                                    fontSize: 11,
+                                    fontWeight: isUnread
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              if (isUnread) ...[
+                                const SizedBox(height: 3),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.yellow,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Text(
+                                    '${conversation['unread_count']}',
+                                    style: const TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          onTap: () => _navigateToMessageScreen(otherUser),
                         ),
-                        onTap: () => _navigateToMessageScreen(otherUser),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
     );
   }
 }

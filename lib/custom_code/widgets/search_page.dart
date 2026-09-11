@@ -32,15 +32,27 @@ class SearchPage extends StatefulWidget {
 
 class _SearchPageState extends State<SearchPage> {
   String _currentSearchQuery = '';
+  String _currentFilter = ''; // '', 'human', 'robot'
   int _totalResults = 0;
   String _searchStatus = '';
   bool _hasSearched = false;
   List<String> _searchHistory = [];
   final Map<String, int> _searchAnalytics = {};
 
+  String get _effectiveSearchQuery {
+    if (_currentSearchQuery.isNotEmpty) return _currentSearchQuery;
+    return _currentFilter;
+  }
+
   void _handleSearchChanged(String query) {
     safeSetState(() {
       _currentSearchQuery = query;
+    });
+  }
+
+  void _handleFilterChanged(String filter) {
+    safeSetState(() {
+      _currentFilter = filter;
     });
   }
 
@@ -50,12 +62,13 @@ class _SearchPageState extends State<SearchPage> {
       _hasSearched = true;
 
       // Update search status message
-      if (_currentSearchQuery.isEmpty) {
+      final effectiveQ = _effectiveSearchQuery;
+      if (effectiveQ.isEmpty) {
         _searchStatus = 'Showing latest profiles ($_totalResults found)';
       } else {
         _searchStatus = _totalResults > 0
-            ? 'Found $_totalResults results for "$_currentSearchQuery"'
-            : 'No results found for "$_currentSearchQuery"';
+            ? 'Found $_totalResults results for "$effectiveQ"'
+            : 'No results found for "$effectiveQ"';
       }
 
       // Add to search history (avoid duplicates and empty queries)
@@ -86,38 +99,20 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   void _logSearchAnalytics(String query, int resultCount) {
-    // Example: Send to analytics service like Firebase Analytics, Mixpanel, etc.
     debugPrint(
         'Search Analytics: Query="$query", Results=$resultCount, Timestamp=${DateTime.now()}');
-
-    // You can implement actual analytics here:
-    // FirebaseAnalytics.instance.logEvent(
-    //   name: 'search_performed',
-    //   parameters: {
-    //     'search_query': query,
-    //     'result_count': resultCount,
-    //     'timestamp': DateTime.now().millisecondsSinceEpoch,
-    //   },
-    // );
   }
 
   void _saveSearchHistory() {
-    // Example: Save to SharedPreferences or local database
-    // SharedPreferences.getInstance().then((prefs) {
-    //   prefs.setStringList('search_history', _searchHistory);
-    // });
     debugPrint('Search History Updated: $_searchHistory');
   }
 
   void _updatePopularSearches() {
-    // Sort searches by frequency and get top 5
     var sortedSearches = _searchAnalytics.entries.toList()
       ..sort((a, b) => b.value.compareTo(a.value));
 
     var popularSearches = sortedSearches.take(5).map((e) => e.key).toList();
     debugPrint('Popular Searches: $popularSearches');
-
-    // You can use this data to show suggestions or trending searches
   }
 
   void _clearSearchHistory() {
@@ -128,7 +123,6 @@ class _SearchPageState extends State<SearchPage> {
     _saveSearchHistory();
   }
 
-  // Method to get search suggestions based on history
   List<String> getSearchSuggestions(String query) {
     if (query.isEmpty) return _searchHistory.take(5).toList();
 
@@ -138,6 +132,51 @@ class _SearchPageState extends State<SearchPage> {
         .toList();
   }
 
+  Widget _buildMinimalFilterChips() {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 2, bottom: 6),
+      child: Row(
+        children: [
+          _filterChipItem('All', ''),
+          const SizedBox(width: 6),
+          _filterChipItem('👤 Humans', 'human'),
+          const SizedBox(width: 6),
+          _filterChipItem('🤖 Robots', 'robot'),
+        ],
+      ),
+    );
+  }
+
+  Widget _filterChipItem(String label, String filterKey) {
+    final isSelected = (_currentFilter == filterKey);
+    return InkWell(
+      onTap: () => _handleFilterChanged(filterKey),
+      borderRadius: BorderRadius.circular(8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFFFFFC00).withValues(alpha: 0.15)
+              : Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFFFC00) : Colors.white12,
+            width: 0.8,
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            color: isSelected ? const Color(0xFFFFFC00) : Colors.white60,
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -145,62 +184,83 @@ class _SearchPageState extends State<SearchPage> {
       body: SafeArea(
         child: Column(
           children: [
-            // Modern Header
+            // Minimal Header
             Padding(
-              padding: const EdgeInsets.only(
-                  left: 16, right: 12, top: 16, bottom: 8),
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 16, vertical: 8),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.yellow, size: 26),
-                    onPressed: () => Navigator.of(context).pop(),
+                  InkWell(
+                    onTap: () => Navigator.of(context).pop(),
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white, size: 15),
+                    ),
                   ),
-                  const SizedBox(width: 4),
-                  const Text(
+                  const SizedBox(width: 12),
+                  Text(
                     'Search',
-                    style: TextStyle(
-                      color: Colors.yellow,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -0.3,
                     ),
                   ),
                   const Spacer(),
                   if (_searchHistory.isNotEmpty)
                     IconButton(
-                      icon: Icon(Icons.history_rounded,
-                          color: Colors.grey[400], size: 22),
+                      icon: const Icon(Icons.history_rounded,
+                          color: Colors.white54, size: 20),
                       onPressed: _showSearchHistoryDialog,
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
-                  if (_searchHistory.isNotEmpty)
+                  if (_searchHistory.isNotEmpty) ...[
+                    const SizedBox(width: 12),
                     IconButton(
-                      icon: Icon(Icons.cleaning_services_rounded,
-                          color: Colors.grey[400], size: 22),
+                      icon: const Icon(Icons.cleaning_services_rounded,
+                          color: Colors.white54, size: 18),
                       onPressed: _showClearHistoryDialog,
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
                     ),
+                  ],
                 ],
               ),
             ),
 
-            // Sleek Search Bar
+            // Sleek Minimal Search Bar
             CustomSearchWidget(
               onSearchChanged: _handleSearchChanged,
             ),
+
+            // Quick Minimal Filter Chips (All, Humans, Robots)
+            _buildMinimalFilterChips(),
 
             // Results Counter / Status
             if (_hasSearched)
               Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+                    const EdgeInsets.symmetric(horizontal: 18.0, vertical: 2.0),
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
                     _searchStatus,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.2,
+                    style: GoogleFonts.inter(
+                      color: Colors.white38,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.1,
                     ),
                   ),
                 ),
@@ -209,7 +269,7 @@ class _SearchPageState extends State<SearchPage> {
             // Content
             Expanded(
               child: SearchResultsWidget(
-                searchQuery: _currentSearchQuery,
+                searchQuery: _effectiveSearchQuery,
                 onResultsChanged: _handleResultsChanged,
               ),
             ),
@@ -326,45 +386,41 @@ class _CustomSearchWidgetState extends State<CustomSearchWidget> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
       child: Container(
-        height: 50,
+        height: 40,
         decoration: BoxDecoration(
-          color: FlutterFlowTheme.of(context).secondaryBackground,
-          borderRadius: BorderRadius.circular(15),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
         ),
         child: TextField(
           controller: _searchController,
-          style: const TextStyle(color: Colors.white, fontSize: 16),
-          cursorColor: Colors.yellow,
+          style: GoogleFonts.inter(color: Colors.white, fontSize: 13.5),
+          cursorColor: const Color(0xFFFFFC00),
           decoration: InputDecoration(
             hintText: 'Search people or business...',
-            hintStyle: TextStyle(color: Colors.grey[600], fontSize: 15),
+            hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 13),
             prefixIcon: const Icon(
               Icons.search_rounded,
-              color: Colors.yellow,
-              size: 22,
+              color: Colors.white54,
+              size: 18,
             ),
             suffixIcon: _searchController.text.isNotEmpty
                 ? IconButton(
                     icon: const Icon(Icons.close_rounded,
-                        color: Colors.grey, size: 20),
+                        color: Colors.white54, size: 16),
                     onPressed: () {
                       _searchController.clear();
                       widget.onSearchChanged('');
                     },
+                    padding: EdgeInsets.zero,
+                    visualDensity: VisualDensity.compact,
                   )
                 : null,
             border: InputBorder.none,
-            contentPadding: const EdgeInsets.symmetric(vertical: 14),
+            isDense: true,
+            contentPadding: const EdgeInsets.symmetric(vertical: 10),
           ),
           onChanged: widget.onSearchChanged,
         ),
@@ -648,23 +704,43 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Color(0xFFFFFC00),
+          ),
+        ),
+      );
     }
 
     if (_searchResults.isEmpty) {
-      return const Center(
-        child: Text(
-          'No results found',
-          style: TextStyle(color: Colors.white),
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.search_off_rounded, color: Colors.white24, size: 36),
+            const SizedBox(height: 8),
+            Text(
+              'No results found',
+              style: GoogleFonts.inter(
+                color: Colors.white54,
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
         ),
       );
     }
 
     return ListView.separated(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       itemCount: _searchResults.length + (_hasMoreData ? 1 : 0),
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
+      separatorBuilder: (context, index) => const SizedBox(height: 6),
       itemBuilder: (context, index) {
         if (index == _searchResults.length) {
           if (_currentPlan == 'free') {
@@ -676,26 +752,32 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                 });
               },
               child: Container(
-                margin: const EdgeInsets.only(top: 12),
-                padding: const EdgeInsets.all(16),
+                margin: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)]),
-                  borderRadius: BorderRadius.circular(16),
+                  gradient: const LinearGradient(colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)]),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.workspace_premium, color: Colors.white, size: 28),
-                    const SizedBox(width: 12),
+                    const Icon(Icons.workspace_premium_rounded, color: Colors.white, size: 22),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text('Unlock Unlimited Discover', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                          Text('Upgrade to Premium to view more entrepreneurs.', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                        children: [
+                          Text('Unlock Unlimited Discover',
+                              style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13)),
+                          Text('Upgrade to Premium to view more entrepreneurs.',
+                              style: GoogleFonts.inter(
+                                  color: Colors.white70, fontSize: 11)),
                         ],
                       ),
                     ),
-                    const Icon(Icons.arrow_forward_ios, color: Colors.white54, size: 16),
+                    const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 14),
                   ],
                 ),
               ),
@@ -704,9 +786,13 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           return _isLoadingMore
               ? const Center(
                   child: Padding(
-                    padding: EdgeInsets.all(20),
-                    child: CircularProgressIndicator(
-                        color: Colors.yellow, strokeWidth: 2),
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          color: Color(0xFFFFFC00), strokeWidth: 2),
+                    ),
                   ),
                 )
               : const SizedBox.shrink();
@@ -734,21 +820,22 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             );
           },
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondaryBackground,
-              borderRadius: BorderRadius.circular(20),
+              color: FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isRobot
-                    ? const Color(0xFF06B6D4).withValues(alpha: 0.3)
-                    : Colors.white.withValues(alpha: 0.04),
+                    ? const Color(0xFF06B6D4).withValues(alpha: 0.25)
+                    : Colors.white.withValues(alpha: 0.05),
+                width: 0.8,
               ),
             ),
             child: Row(
               children: [
-                // Avatar with premium border
+                // Compact Avatar
                 Container(
-                  padding: const EdgeInsets.all(2),
+                  padding: const EdgeInsets.all(1.5),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     gradient: isRobot
@@ -756,132 +843,117 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                             colors: [Color(0xFF06B6D4), Color(0xFF3B82F6)])
                         : (isVerified
                             ? const LinearGradient(
-                                colors: [Colors.yellow, Colors.orange])
+                                colors: [Color(0xFFFFFC00), Colors.orangeAccent])
                             : null),
                     border: (!isVerified && !isRobot)
-                        ? Border.all(color: Colors.grey[800]!)
+                        ? Border.all(color: Colors.white12, width: 0.8)
                         : null,
                   ),
                   child: CircleAvatar(
-                    radius: 30,
+                    radius: 19,
                     backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
                     backgroundImage: profile['profile_image_url'] != null
                         ? CachedNetworkImageProvider(
                             profile['profile_image_url'])
                         : null,
                     child: profile['profile_image_url'] == null
-                        ? const Icon(Icons.person_outline_rounded,
-                            color: Colors.grey, size: 30)
+                        ? Icon(
+                            isRobot ? Icons.smart_toy_rounded : Icons.person_outline_rounded,
+                            color: Colors.white54,
+                            size: 19,
+                          )
                         : null,
                   ),
                 ),
-                const SizedBox(width: 16),
-                // Info Section
+                const SizedBox(width: 11),
+                // Compact Info Section
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Row(
                         children: [
                           Flexible(
                             child: Text(
                               name,
-                              style: TextStyle(
+                              style: GoogleFonts.outfit(
                                 color: FlutterFlowTheme.of(context).primaryText,
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           if (isRobot) ...[
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 5),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 4.5, vertical: 1),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(4),
-                                border: Border.all(color: const Color(0xFF06B6D4)),
+                                border: Border.all(
+                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.6),
+                                  width: 0.6,
+                                ),
                               ),
                               child: Text(
                                 '🤖 ROBOT',
                                 style: GoogleFonts.outfit(
                                   color: const Color(0xFF06B6D4),
                                   fontWeight: FontWeight.w900,
-                                  fontSize: 8.5,
+                                  fontSize: 8,
                                 ),
                               ),
                             ),
                           ] else if (isVerified) ...[
-                            const SizedBox(width: 6),
+                            const SizedBox(width: 4),
                             const Icon(Icons.verified_rounded,
-                                color: Colors.blueAccent, size: 16),
+                                color: Color(0xFF38BDF8), size: 14),
                           ],
                         ],
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 2),
                       Row(
                         children: [
                           if (isRobot) ...[
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
+                                color: const Color(0xFF06B6D4).withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
-                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.4),
-                                  width: 0.8,
+                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.35),
+                                  width: 0.6,
                                 ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Text('🤖 ', style: TextStyle(fontSize: 10)),
-                                  Text(
-                                    'Robot',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFF06B6D4),
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                  if (profile['robot_level'] != null) ...[
-                                    Text(
-                                      ' • Lvl ${profile['robot_level']}',
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFFFFFC00),
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 10.5,
-                                      ),
-                                    ),
-                                  ],
-                                ],
+                              child: Text(
+                                'Robot${profile['robot_level'] != null ? ' • Lvl ${profile['robot_level']}' : ''}',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF06B6D4),
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10,
+                                ),
                               ),
                             ),
                           ] else ...[
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.08),
+                                color: Colors.white.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.15),
-                                  width: 0.8,
+                                  color: Colors.white10,
+                                  width: 0.6,
                                 ),
                               ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Text('👤 ', style: TextStyle(fontSize: 10)),
-                                  Text(
-                                    'Human',
-                                    style: GoogleFonts.outfit(
-                                      color: Colors.grey[300],
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 11,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                '👤 Human',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 10,
+                                ),
                               ),
                             ),
                           ],
@@ -890,10 +962,12 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                             Expanded(
                               child: Text(
                                 shopName.toString(),
-                                style: TextStyle(
-                                  color: isRobot ? const Color(0xFFFFFC00).withValues(alpha: 0.85) : Colors.grey[500],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                                style: GoogleFonts.inter(
+                                  color: isRobot
+                                      ? const Color(0xFFFFFC00).withValues(alpha: 0.85)
+                                      : Colors.white54,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w400,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -906,7 +980,11 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                   ),
                 ),
                 // Action Arrow
-                Icon(Icons.chevron_right_rounded, color: isRobot ? const Color(0xFF06B6D4) : Colors.grey[700]),
+                Icon(
+                  Icons.chevron_right_rounded,
+                  color: isRobot ? const Color(0xFF06B6D4).withValues(alpha: 0.6) : Colors.white24,
+                  size: 17,
+                ),
               ],
             ),
           ),

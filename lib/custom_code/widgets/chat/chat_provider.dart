@@ -531,12 +531,33 @@ class ChatMessages extends _$ChatMessages {
       });
 
       // Asynchronously generate authentic AI response from robot
-      _triggerRobotAiReply(
-        robot: robot,
-        userText: text,
-        uid: uid,
-        robotId: actualId,
-      );
+      if (messageType == 'voice' && fileUrl != null && fileUrl.isNotEmpty) {
+        PocketRobotService.transcribeAudio(audioUrl: fileUrl).then((transcript) {
+          final effectiveText = (transcript != null && transcript.trim().isNotEmpty)
+              ? transcript.trim()
+              : (text.isNotEmpty ? text : 'I sent a voice note to you!');
+          _triggerRobotAiReply(
+            robot: robot,
+            userText: effectiveText,
+            uid: uid,
+            robotId: actualId,
+          );
+        }).catchError((_) {
+          _triggerRobotAiReply(
+            robot: robot,
+            userText: text.isNotEmpty ? text : 'I sent a voice note to you!',
+            uid: uid,
+            robotId: actualId,
+          );
+        });
+      } else {
+        _triggerRobotAiReply(
+          robot: robot,
+          userText: text,
+          uid: uid,
+          robotId: actualId,
+        );
+      }
 
       return userMessage;
     }

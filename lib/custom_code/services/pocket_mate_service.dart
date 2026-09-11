@@ -105,6 +105,14 @@ class PocketMateService {
     try {
       if (PocketRobotService.isRobotId(senderId)) {
         await PocketRobotService.acceptRobotRequest(myId: myId, robotId: senderId);
+        if (notificationId.isNotEmpty && !notificationId.startsWith('local_') && !notificationId.startsWith('robot_')) {
+          try {
+            await _supabase
+                .from('notifications')
+                .update({'status': 'accepted', 'is_read': true})
+                .eq('id', notificationId);
+          } catch (_) {}
+        }
         return true;
       }
 
@@ -197,16 +205,14 @@ class PocketMateService {
     String? senderId,
   }) async {
     try {
-      if (senderId != null && senderId.startsWith('pocket_robot_')) {
-        final prefs = await SharedPreferences.getInstance();
-        final key = 'pending_pocket_requests_$myId';
-        final existingStr = prefs.getString(key);
-        if (existingStr != null) {
+      if (senderId != null && PocketRobotService.isRobotId(senderId)) {
+        await PocketRobotService.declineRobotRequest(myId: myId, robotId: senderId);
+        if (notificationId.isNotEmpty && !notificationId.startsWith('local_') && !notificationId.startsWith('robot_')) {
           try {
-            List<Map<String, dynamic>> reqs =
-                List<Map<String, dynamic>>.from(json.decode(existingStr));
-            reqs.removeWhere((r) => r['senderId'] == senderId || r['id'] == notificationId);
-            await prefs.setString(key, json.encode(reqs));
+            await _supabase
+                .from('notifications')
+                .update({'status': 'declined', 'is_read': true})
+                .eq('id', notificationId);
           } catch (_) {}
         }
         return true;
