@@ -1823,19 +1823,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-        backgroundColor: isDark ? const Color(0xFF0B1015) : const Color(0xFFF8FAFC),
+        backgroundColor: Colors.transparent,
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
-            // Subtle Doodle Sketch Canvas Background
-            Positioned.fill(
-              child: CustomPaint(
-                painter: DoodleBackgroundPainter(
-                  color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-                  isDark: isDark,
-                ),
-              ),
-            ),
             SafeArea(
               bottom: false,
               child: RefreshIndicator(
@@ -1870,29 +1861,36 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           ),
                         ),
                       Padding(
-                        padding: const EdgeInsets.only(bottom: 24.0),
-                        child: ListView.builder(
+                        padding: const EdgeInsets.only(bottom: 32.0),
+                        child: GridView.builder(
                           shrinkWrap: true,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 24, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                           physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 14,
+                            childAspectRatio: 0.76,
+                          ),
                           itemCount: filteredTools.length,
                           itemBuilder: (context, index) {
                             final tool = filteredTools[index];
                             final isFav = _favoritedTools.contains(tool['title']);
                             final category = tool['category'] as String? ?? 'Tool';
-
                             final isDark = Theme.of(context).brightness == Brightness.dark;
                             final toolColor = tool['color'] as Color? ?? const Color(0xFFFFFC00);
+                            final title = tool['title'] as String;
+                            final subtitle = tool['subtitle'] as String? ?? category;
 
                             return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
                               decoration: BoxDecoration(
-                                color: FlutterFlowTheme.of(context).secondaryBackground,
-                                borderRadius: BorderRadius.circular(18),
+                                color: isDark
+                                    ? const Color(0xFF131B26).withValues(alpha: 0.9)
+                                    : Colors.white,
+                                borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
                                   color: isFav
-                                      ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
+                                      ? const Color(0xFFFFFC00).withValues(alpha: 0.8)
                                       : (isDark
                                           ? Colors.white.withValues(alpha: 0.08)
                                           : Colors.black.withValues(alpha: 0.06)),
@@ -1900,7 +1898,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
                                     blurRadius: 10,
                                     offset: const Offset(0, 3),
                                   ),
@@ -1910,134 +1908,165 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 color: Colors.transparent,
                                 child: InkWell(
                                   onTap: tool['onTap'] as VoidCallback,
-                                  borderRadius: BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(20),
                                   child: Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-                                    child: Row(
+                                    padding: const EdgeInsets.all(10),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.stretch,
                                       children: [
-                                        // Clean Minimalist Icon Container
+                                        // Top Frame / Icon Preview Area
                                         Container(
-                                          width: 46,
-                                          height: 46,
+                                          height: 84,
                                           decoration: BoxDecoration(
                                             color: isDark
                                                 ? toolColor.withValues(alpha: 0.12)
-                                                : toolColor.withValues(alpha: 0.1),
-                                            borderRadius: BorderRadius.circular(14),
+                                                : toolColor.withValues(alpha: 0.08),
+                                            borderRadius: BorderRadius.circular(16),
                                             border: Border.all(
                                               color: toolColor.withValues(alpha: 0.25),
                                               width: 1,
                                             ),
                                           ),
-                                          child: Center(
-                                            child: Icon(
-                                              tool['icon'] as IconData,
-                                              color: toolColor,
-                                              size: 22,
-                                            ),
-                                          ),
-                                        ),
-                                        const SizedBox(width: 14),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
-                                            mainAxisAlignment: MainAxisAlignment.center,
+                                          child: Stack(
                                             children: [
-                                              Row(
-                                                children: [
-                                                  Flexible(
-                                                    child: Text(
-                                                      tool['title'] as String,
-                                                      style: GoogleFonts.outfit(
-                                                        color: FlutterFlowTheme.of(context).primaryText,
-                                                        fontSize: 16,
-                                                        fontWeight: FontWeight.w600,
-                                                      ),
-                                                      maxLines: 1,
-                                                      overflow: TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 8),
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                                    decoration: BoxDecoration(
-                                                      color: isDark
-                                                          ? Colors.white.withValues(alpha: 0.06)
-                                                          : Colors.black.withValues(alpha: 0.05),
-                                                      borderRadius: BorderRadius.circular(6),
-                                                      border: Border.all(
-                                                        color: isDark
-                                                            ? Colors.white.withValues(alpha: 0.08)
-                                                            : Colors.black.withValues(alpha: 0.06),
-                                                        width: 0.8,
-                                                      ),
-                                                    ),
-                                                    child: Text(
-                                                      category.toUpperCase(),
-                                                      style: GoogleFonts.outfit(
-                                                        color: FlutterFlowTheme.of(context).secondaryText,
-                                                        fontSize: 9,
-                                                        fontWeight: FontWeight.w700,
-                                                        letterSpacing: 0.5,
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
+                                              Center(
+                                                child: Icon(
+                                                  tool['icon'] as IconData,
+                                                  color: toolColor,
+                                                  size: 34,
+                                                ),
                                               ),
-                                              if (tool.containsKey('subtitle'))
-                                                Padding(
-                                                  padding: const EdgeInsets.only(top: 3),
-                                                  child: Text(
-                                                    tool['subtitle'] as String,
-                                                    style: GoogleFonts.inter(
-                                                      color: FlutterFlowTheme.of(context).secondaryText,
-                                                      fontSize: 12,
-                                                      height: 1.2,
+                                              // Top-right Favorite Button
+                                              Positioned(
+                                                top: 4,
+                                                right: 4,
+                                                child: GestureDetector(
+                                                  onTap: () => _toggleFavoriteTool(title),
+                                                  behavior: HitTestBehavior.opaque,
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(5),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.black.withValues(alpha: 0.35),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: Icon(
+                                                      isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                                      size: 14,
+                                                      color: isFav ? Colors.redAccent : Colors.white70,
                                                     ),
                                                   ),
                                                 ),
+                                              ),
+                                              // Top-left Share Button
+                                              Positioned(
+                                                top: 4,
+                                                left: 4,
+                                                child: GestureDetector(
+                                                  onTap: () {
+                                                    final userId = SupaFlow.client.auth.currentUser?.id;
+                                                    if (userId != null) {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) => ShareContentScreen(
+                                                            contentToShare: "Check out this $title tool on Pocket Mates!",
+                                                            currentUserId: userId,
+                                                            contentType: 'tool',
+                                                            metadata: {
+                                                              'title': title,
+                                                              'description': subtitle,
+                                                              'category': 'Tools',
+                                                            },
+                                                          ),
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
+                                                  behavior: HitTestBehavior.opaque,
+                                                  child: Container(
+                                                    padding: const EdgeInsets.all(5),
+                                                    decoration: BoxDecoration(
+                                                      color: Colors.black.withValues(alpha: 0.35),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: const Icon(
+                                                      Icons.share_outlined,
+                                                      size: 13,
+                                                      color: Colors.white70,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
                                             ],
                                           ),
                                         ),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            IconButton(
-                                              icon: Icon(
-                                                Icons.share_outlined,
-                                                color: isDark ? Colors.white38 : Colors.black38,
-                                                size: 18,
+
+                                        const SizedBox(height: 8),
+
+                                        // Title
+                                        Text(
+                                          title,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.outfit(
+                                            color: FlutterFlowTheme.of(context).primaryText,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                        ),
+
+                                        const SizedBox(height: 2),
+
+                                        // Subtitle
+                                        Text(
+                                          subtitle,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: GoogleFonts.inter(
+                                            color: FlutterFlowTheme.of(context).secondaryText,
+                                            fontSize: 10.5,
+                                          ),
+                                        ),
+
+                                        const Spacer(),
+
+                                        // Pill Action Button ("OPEN", matching reference image "WATCH" pill)
+                                        Container(
+                                          height: 28,
+                                          decoration: BoxDecoration(
+                                            color: isDark
+                                                ? const Color(0xFF1E2638)
+                                                : const Color(0xFF2B1B4D),
+                                            borderRadius: BorderRadius.circular(14),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.2),
+                                                blurRadius: 4,
+                                                offset: const Offset(0, 1),
                                               ),
-                                              onPressed: () {
-                                                final userId = SupaFlow.client.auth.currentUser?.id;
-                                                if (userId != null) {
-                                                  Navigator.push(
-                                                    context,
-                                                    MaterialPageRoute(
-                                                      builder: (context) => ShareContentScreen(
-                                                        contentToShare: "Check out this ${tool['title']} tool on Pocket Mates!",
-                                                        currentUserId: userId,
-                                                        contentType: 'tool',
-                                                        metadata: {
-                                                          'title': tool['title'],
-                                                          'description': tool.containsKey('subtitle') ? tool['subtitle'] : '',
-                                                          'category': 'Tools',
-                                                        },
-                                                      ),
-                                                    ),
-                                                  );
-                                                }
-                                              },
-                                            ),
-                                            IconButton(
-                                              icon: Icon(
-                                                isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                                color: isFav ? Colors.redAccent : (isDark ? Colors.white24 : Colors.black26),
-                                                size: 20,
+                                            ],
+                                          ),
+                                          alignment: Alignment.center,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Text(
+                                                'OPEN',
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w800,
+                                                  letterSpacing: 0.8,
+                                                  color: Colors.white,
+                                                ),
                                               ),
-                                              onPressed: () => _toggleFavoriteTool(tool['title'] as String),
-                                            ),
-                                          ],
+                                              const SizedBox(width: 4),
+                                              const Icon(
+                                                Icons.arrow_forward_rounded,
+                                                size: 12,
+                                                color: Colors.white,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ],
                                     ),
@@ -2045,18 +2074,18 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 ),
                               ),
                             );
-                      },
-                    ),
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
-          ),
+          ],
         ),
-      ],
-    ),
-  );
-}
+      );
+    }
 
   @override
   Widget build(BuildContext context) {

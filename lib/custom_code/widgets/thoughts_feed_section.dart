@@ -277,37 +277,46 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      color: FlutterFlowTheme.of(context).primaryBackground,
+      color: Colors.transparent,
       child: Column(
         children: [
-        // Tab Switcher
+        // Minimal Sleek Tab Switcher
         Container(
-          height: 44,
-          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          height: 34,
+          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
           decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).primaryBackground,
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: FlutterFlowTheme.of(context).alternate),
+            color: isDark
+                ? const Color(0xFF1E293B).withValues(alpha: 0.5)
+                : Colors.black.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(17),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.06),
+            ),
           ),
           child: TabBar(
             controller: _tabController,
             indicator: BoxDecoration(
-              color: Colors.yellow,
-              borderRadius: BorderRadius.circular(22),
+              color: const Color(0xFFFFFC00),
+              borderRadius: BorderRadius.circular(17),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.yellow.withValues(alpha: 0.2),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
                 ),
               ],
             ),
             indicatorSize: TabBarIndicatorSize.tab,
             labelColor: Colors.black,
-            unselectedLabelColor: FlutterFlowTheme.of(context).secondaryText,
+            unselectedLabelColor: isDark ? Colors.white60 : Colors.black54,
             labelStyle:
-                GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 12),
+            unselectedLabelStyle:
+                GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 12),
             dividerColor: Colors.transparent,
             tabs: const [
               Tab(text: 'Public'),
@@ -323,13 +332,13 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
                       ? _publicThreads.isEmpty
                       : _followingThreads.isEmpty)
               ? const Center(
-                  child: CircularProgressIndicator(color: Colors.yellow))
+                  child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
               : NotificationListener<ScrollNotification>(
                   onNotification: _onScrollNotification,
                   child: RefreshIndicator(
                     onRefresh: () => _fetchThreads(refresh: true),
-                    color: Colors.yellow,
-                    backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+                    color: const Color(0xFFFFFC00),
+                    backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
                     child: _buildFeedList(),
                   ),
                 ),
@@ -448,16 +457,31 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
     final String displayedContent = (_isExpanded || !isLongContent)
         ? content
         : '${content.substring(0, 180)}...';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: FlutterFlowTheme.of(context).alternate),
+        color: isDark
+            ? const Color(0xFF131B26).withValues(alpha: 0.85)
+            : Colors.white.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.06),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -476,28 +500,32 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(2),
+                    padding: const EdgeInsets.all(1.5),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Colors.yellow.withValues(alpha: 0.3),
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
                         width: 1,
                       ),
                     ),
                     child: CircleAvatar(
-                      radius: 20,
-                      backgroundColor: FlutterFlowTheme.of(context).alternate,
+                      radius: 16,
+                      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                       backgroundImage: avatar != null
                           ? CachedNetworkImageProvider(avatar)
                           : null,
                       child: avatar == null
-                          ? Text(name[0].toUpperCase(),
-                              style: const TextStyle(color: Colors.yellow))
+                          ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
+                              style: const TextStyle(
+                                color: Color(0xFFFFFC00),
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ))
                           : null,
                     ),
                   ),
                 ),
-                const SizedBox(width: 12),
+                const SizedBox(width: 10),
                 // Header: Name & Time
                 Expanded(
                   child: Column(
@@ -506,8 +534,8 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                       Text(
                         name,
                         style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13.5,
                           color: FlutterFlowTheme.of(context).primaryText,
                         ),
                       ),
@@ -515,7 +543,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                         timeago.format(createdAt, locale: 'en_short'),
                         style: GoogleFonts.inter(
                           color: FlutterFlowTheme.of(context).secondaryText,
-                          fontSize: 12,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -530,7 +558,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
               ],
             ),
 
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
 
             // Content
             GestureDetector(
@@ -544,19 +572,19 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                     displayedContent,
                     style: GoogleFonts.inter(
                       color: FlutterFlowTheme.of(context).primaryText,
-                      fontSize: 14,
-                      height: 1.5,
+                      fontSize: 13,
+                      height: 1.4,
                     ),
                   ),
                   if (isLongContent)
                     Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
+                      padding: const EdgeInsets.only(top: 3.0),
                       child: Text(
                         _isExpanded ? 'Show less' : 'Read more',
                         style: GoogleFonts.outfit(
-                          color: Colors.yellow,
+                          color: const Color(0xFFFFFC00),
                           fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          fontSize: 12,
                         ),
                       ),
                     ),
@@ -564,7 +592,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
               ),
             ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
 
             // Actions
             Row(
@@ -576,17 +604,17 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                   isActive: widget.isLiked,
                   onTap: widget.onLike,
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 16),
                 _buildAction(
                   icon: Icons.chat_bubble_outline_rounded,
                   label: comments.toString(),
-                  activeColor: Colors.yellow,
+                  activeColor: const Color(0xFFFFFC00),
                   isActive: false,
                   onTap: widget.onComment,
                 ),
-                const SizedBox(width: 24),
+                const SizedBox(width: 16),
                 _buildAction(
-                  icon: Icons.send_rounded, // Instagram-style share
+                  icon: Icons.send_rounded,
                   label: '',
                   activeColor: FlutterFlowTheme.of(context).secondaryText,
                   isActive: false,
@@ -781,16 +809,17 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 20, color: color),
+            Icon(icon, size: 16, color: color),
             if (label.isNotEmpty) ...[
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               Text(
                 label,
                 style: GoogleFonts.inter(
-                  fontSize: 13,
+                  fontSize: 11.5,
                   color: color,
                   fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                 ),
