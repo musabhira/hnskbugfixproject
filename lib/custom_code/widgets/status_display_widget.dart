@@ -464,13 +464,13 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 125,
+        height: 102,
         alignment: Alignment.center,
         child: _isLoading
             ? _buildShimmerLoading()
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                 itemCount: combined.length + 1, // Add 1 for "Add"
                 itemBuilder: (context, index) {
                   if (index == 0) return _buildAddStatusButton();
@@ -917,13 +917,13 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       onTap: _openStatusUpload,
       onLongPress: _openStatusUpload,
       child: Container(
-        width: 80,
-        margin: const EdgeInsets.only(right: 12),
+        width: 66,
+        margin: const EdgeInsets.only(right: 10),
         child: Column(
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -932,19 +932,19 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 boxShadow: [
                   BoxShadow(
                     color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                    blurRadius: 8,
+                    blurRadius: 6,
                   )
                 ],
               ),
               child:
-                  const Icon(Icons.add_rounded, size: 28, color: Color(0xFFFFFC00)),
+                  const Icon(Icons.add_rounded, size: 24, color: Color(0xFFFFFC00)),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 5),
             Text(
               'Add Vibe',
               style: GoogleFonts.outfit(
                 color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 12.5,
+                fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1047,24 +1047,24 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return GestureDetector(
       onTap: () => _openStatusViewer(index, activeList),
       child: Container(
-        width: 80,
-        margin: const EdgeInsets.only(right: 12),
+        width: 66,
+        margin: const EdgeInsets.only(right: 10),
         child: Column(
           children: [
             _buildAvatarWithRing(
               profileImageUrl,
               name,
-              72,
+              54,
               isGroup: isGroup,
               isWatched: isFullyWatched,
               vibePreviewUrl: vibePreviewUrl,
               avatarConfigMap: avatarConfigMap,
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(isOwn ? 'My Vibes' : name,
                 style: GoogleFonts.outfit(
                   color: Colors.white,
-                  fontSize: 12,
+                  fontSize: 11,
                   fontWeight: FontWeight.w500,
                 ),
                 overflow: TextOverflow.ellipsis,

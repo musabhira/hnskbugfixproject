@@ -793,38 +793,47 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               backgroundColor: material.Colors.transparent,
               bottomNavigationBar: _buildBottomNavigationBar(context),
               floatingActionButton: _currentIndex == 1
-                  ? material.FloatingActionButton.extended(
-                      onPressed: () {
-                        material.Navigator.push(
-                          context,
-                          material.MaterialPageRoute(
-                            builder: (context) => const AnonymousEnglishChatPage(),
-                          ),
-                        );
-                      },
-                      backgroundColor: const Color(0xFFFFFC00),
-                      foregroundColor: material.Colors.black,
-                      elevation: 6,
-                      icon: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('🎭', style: TextStyle(fontSize: 18)),
-                          const SizedBox(width: 4),
-                          Container(
-                            width: 7,
-                            height: 7,
-                            decoration: const BoxDecoration(
-                              color: Color(0xFF10B981),
-                              shape: BoxShape.circle,
+                  ? Container(
+                      height: 36,
+                      margin: const EdgeInsets.only(bottom: 6),
+                      child: material.FloatingActionButton.extended(
+                        onPressed: () {
+                          material.Navigator.push(
+                            context,
+                            material.MaterialPageRoute(
+                              builder: (context) => const AnonymousEnglishChatPage(),
                             ),
+                          );
+                        },
+                        backgroundColor: const Color(0xFFFFFC00),
+                        foregroundColor: material.Colors.black,
+                        elevation: 4,
+                        highlightElevation: 2,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        icon: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🎭', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 4),
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFF10B981),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ],
+                        ),
+                        label: Text(
+                          'Random',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                            color: material.Colors.black,
                           ),
-                        ],
-                      ),
-                      label: Text(
-                        'Random Match (Live)',
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
                         ),
                       ),
                     )
@@ -859,8 +868,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 return [
                                   // Unified Coordinated Header
                                   SliverPersistentHeader(
-                                    pinned: false,
+                                    pinned: true,
                                     delegate: _HomeMainHeaderDelegate(
+                                      topPadding: MediaQuery.of(context).padding.top,
                                       currentUserId:
                                           supabase.auth.currentUser?.id ?? '',
                                       currentProfileId: profileId ?? '',
@@ -1265,7 +1275,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final groupsCount = conversations.where((c) => c.isGroup).length;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 10),
+      padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -1277,7 +1287,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               icon: Icons.all_inbox_rounded,
               isDark: isDark,
             ),
-            const SizedBox(width: 7),
+            const SizedBox(width: 6),
             _buildCategoryChipItem(
               title: 'Robots',
               index: 1,
@@ -1285,7 +1295,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               icon: Icons.smart_toy_rounded,
               isDark: isDark,
             ),
-            const SizedBox(width: 7),
+            const SizedBox(width: 6),
             _buildCategoryChipItem(
               title: 'Humans',
               index: 2,
@@ -1293,7 +1303,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               icon: Icons.person_rounded,
               isDark: isDark,
             ),
-            const SizedBox(width: 7),
+            const SizedBox(width: 6),
             _buildCategoryChipItem(
               title: 'Requests',
               index: 3,
@@ -1302,7 +1312,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               highlightBadge: _pendingRequests.isNotEmpty,
               isDark: isDark,
             ),
-            const SizedBox(width: 7),
+            const SizedBox(width: 6),
             _buildCategoryChipItem(
               title: 'Unread',
               index: 4,
@@ -1310,7 +1320,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               icon: Icons.mark_chat_unread_rounded,
               isDark: isDark,
             ),
-            const SizedBox(width: 7),
+            const SizedBox(width: 6),
             _buildCategoryChipItem(
               title: 'Groups',
               index: 5,
@@ -1342,12 +1352,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected
               ? const Color(0xFFFFFC00)
               : (isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9)),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected
                 ? const Color(0xFFFFFC00)
@@ -1357,9 +1367,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                    blurRadius: 6,
+                    offset: const Offset(0, 1.5),
                   )
                 ]
               : null,
@@ -1369,33 +1379,33 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           children: [
             Icon(
               icon,
-              size: 14,
+              size: 13,
               color: isSelected
                   ? Colors.black
                   : (isDark ? Colors.white70 : Colors.black87),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 5),
             Text(
               title,
               style: GoogleFonts.outfit(
                 color: isSelected
                     ? Colors.black
                     : (isDark ? Colors.white : Colors.black87),
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               ),
             ),
             if (count != null && count > 0) ...[
-              const SizedBox(width: 6),
+              const SizedBox(width: 5),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
                 decoration: BoxDecoration(
                   color: isSelected
                       ? Colors.black
                       : (highlightBadge
                           ? const Color(0xFFEF4444)
                           : const Color(0xFFFFFC00)),
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   '$count',
@@ -1403,7 +1413,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     color: isSelected
                         ? const Color(0xFFFFFC00)
                         : (highlightBadge ? Colors.white : Colors.black),
-                    fontSize: 10,
+                    fontSize: 9.5,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -1417,7 +1427,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildAnonymousLiveMatchBanner(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 6),
       child: GestureDetector(
         onTap: () {
           HapticFeedback.selectionClick();
@@ -1429,109 +1439,83 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           );
         },
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: isDark
                   ? [const Color(0xFF1E2235), const Color(0xFF141724)]
                   : [const Color(0xFFF8FAFC), const Color(0xFFE2E8F0)],
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
-              width: 1.2,
+              color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+              width: 1.0,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
           ),
           child: Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 32,
+                height: 32,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                  border: Border.all(color: const Color(0xFFFFFC00)),
+                  border: Border.all(color: const Color(0xFFFFFC00), width: 1),
                 ),
                 child: const Center(
-                  child: Text('🎭', style: TextStyle(fontSize: 20)),
+                  child: Text('🎭', style: TextStyle(fontSize: 16)),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Text(
-                          'Random Match',
-                          style: GoogleFonts.outfit(
-                            color: isDark ? Colors.white : Colors.black87,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF10B981),
-                            shape: BoxShape.circle,
-                          ),
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'LIVE',
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF10B981),
-                            fontSize: 9,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
                     Text(
-                      '1-on-1 anonymous text chat with strangers',
+                      'Random Match',
+                      style: GoogleFonts.outfit(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      'LIVE',
                       style: GoogleFonts.inter(
-                        color: isDark ? Colors.white60 : Colors.black54,
-                        fontSize: 11,
+                        color: const Color(0xFF10B981),
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFC00),
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
-                      blurRadius: 6,
-                    ),
-                  ],
+                  borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.flash_on_rounded, size: 14, color: Colors.black),
-                    const SizedBox(width: 3),
+                    const Icon(Icons.flash_on_rounded, size: 12, color: Colors.black),
+                    const SizedBox(width: 2),
                     Text(
                       'Connect',
                       style: GoogleFonts.outfit(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
-                        fontSize: 11.5,
+                        fontSize: 11,
                       ),
                     ),
                   ],
@@ -3419,6 +3403,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 }
 
 class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double topPadding;
   final String currentUserId;
   final String currentProfileId;
   final AsyncValue<ActiveUsersData> activeUsersRef;
@@ -3443,6 +3428,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   final int pendingRequestsCount;
 
   _HomeMainHeaderDelegate({
+    required this.topPadding,
     required this.currentUserId,
     required this.currentProfileId,
     required this.activeUsersRef,
@@ -3463,24 +3449,25 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.pendingRequestsCount,
   });
 
-  @override
-  double get maxExtent => 372.0;
+  static const double topBarHeight = 42.0;
+  static const double vibesHeaderHeight = 28.0;
+  static const double statusWidgetHeight = 104.0;
+  static const double tabBarHeight = 36.0;
+  static const double searchBarHeight = 46.0;
+
+  double get scrollableHeight => topBarHeight + vibesHeaderHeight + statusWidgetHeight;
+  double get stickyHeight => tabBarHeight + searchBarHeight;
 
   @override
-  double get minExtent => 282.0;
+  double get maxExtent => topPadding + scrollableHeight + stickyHeight;
 
-
+  @override
+  double get minExtent => topPadding + stickyHeight;
 
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    const double strangerMatchHeight = 90.0;
-    const double statusSectionHeight = 180.0;
-
-    final double progress =
-        (shrinkOffset / strangerMatchHeight).clamp(0.0, 1.0);
-    final double topPadding = MediaQuery.of(context).padding.top;
-
+    final double scrollProgress = (shrinkOffset / scrollableHeight).clamp(0.0, 1.0);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final headerColor =
         isDark ? const Color(0xFF111B21) : const Color(0xFFF4F4F9);
@@ -3490,335 +3477,167 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // 1. Sliding Stranger Match Cards
+          // 1. Scrollable Section (Top App Bar + Minimal Vibes Row + Status Circles)
           Positioned(
-            top: -shrinkOffset * 0.8,
+            top: topPadding - shrinkOffset,
             left: 0,
             right: 0,
-            height: strangerMatchHeight,
-            child: Opacity(
-              opacity: (1 - progress * 1.2).clamp(0.0, 1.0),
-              child: Stack(
-                children: [
-                  // Gradient Background
-                  Positioned.fill(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: headerColor,
+            height: scrollableHeight,
+            child: IgnorePointer(
+              ignoring: scrollProgress >= 0.85,
+              child: Opacity(
+                opacity: (1.0 - scrollProgress * 1.3).clamp(0.0, 1.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Top App Bar (Pocket Mates title + Action Icons)
+                    Container(
+                      height: topBarHeight,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        children: [
+                          Text(
+                            'Pocket Mates',
+                            style: GoogleFonts.outfit(
+                              color: isDark
+                                  ? material.Colors.white
+                                  : material.Colors.black87,
+                              fontSize: 18.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const Spacer(),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Search
+                              _buildHeaderIconButton(
+                                context,
+                                icon: material.Icons.search_rounded,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    material.MaterialPageRoute(
+                                      builder: (context) => const SearchPage(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 6),
+                              // Notifications (Consolidated, single bell icon with badge)
+                              _buildHeaderIconButton(
+                                context,
+                                icon: material.Icons.notifications_outlined,
+                                badgeCount: pendingRequestsCount,
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    material.MaterialPageRoute(
+                                      builder: (context) => const NotificationsPage(),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 6),
+                              // Create Group
+                              _buildHeaderIconButton(
+                                context,
+                                icon: material.Icons.person_add_rounded,
+                                onTap: () async {
+                                  final auth =
+                                      await AuthAlertBox.checkAuthAndShowAlert(
+                                          context: context);
+                                  if (auth && context.mounted) {
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => CreateGroupDialog(
+                                            onGroupCreated: onRefresh));
+                                  }
+                                },
+                              ),
+                              const SizedBox(width: 6),
+                              // Settings
+                              _buildHeaderIconButton(
+                                context,
+                                icon: material.Icons.settings_rounded,
+                                onTap: onTapSettings,
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  // Match Cards
-                  Positioned(
-                    top: topPadding + 10,
-                    left: 20,
-                    right: 20,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Pocketmates',
-                          style: GoogleFonts.outfit(
-                            color: isDark
-                                ? material.Colors.white
-                                : material.Colors.black87,
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
+                    // Minimal Vibes Header: ONLY the 'Add Vibe' button!
+                    Container(
+                      height: vibesHeaderHeight,
+                      padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
+                      alignment: Alignment.centerLeft,
+                      child: material.InkWell(
+                        onTap: onTapAdd,
+                        borderRadius: BorderRadius.circular(14),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 3.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(material.Icons.add_rounded,
+                                  size: 13, color: material.Colors.black),
+                              const SizedBox(width: 3),
+                              Text(
+                                'Add Vibe',
+                                style: GoogleFonts.outfit(
+                                  color: material.Colors.black,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        // const SizedBox(height: 12),
-                        // Row(
-                        //   children: [
-                        //     _buildMatchCard(
-                        //       context,
-                        //       label: 'Network',
-                        //       icon: material.Icons.videocam_rounded,
-                        //       color: material.Colors.blue,
-                        //       onTap: onTapVideo,
-                        //     ),
-                        //     const SizedBox(width: 8),
-                        //     _buildMatchCard(
-                        //       context,
-                        //       label: 'Voice',
-                        //       icon: material.Icons.phone_rounded,
-                        //       color: material.Colors.green,
-                        //       onTap: onTapCall,
-                        //     ),
-                        //     const SizedBox(width: 8),
-                        //     _buildMatchCard(
-                        //       context,
-                        //       label: 'Chat',
-                        //       icon: material.Icons.chat_bubble_rounded,
-                        //       color: isDark
-                        //           ? const Color(0xFFFFFC00)
-                        //           : const Color(0xFFFFFC00),
-                        //       onTap: onTapText,
-                        //     ),
-                        //   ],
-                        // ),
-                      ],
-                    ),
-                  ),
-                  // Top Header with Search, Settings
-                  Positioned(
-                    top: topPadding + 10,
-                    right: 16,
-                    child: Row(
-                      children: [
-                        _buildHeaderIconButton(
-                          context,
-                          icon: material.Icons.notifications_outlined,
-                          badgeCount: pendingRequestsCount,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              material.MaterialPageRoute(
-                                builder: (context) => const NotificationsPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 10),
-                        _buildHeaderIconButton(
-                          context,
-                          icon: material.Icons.search_rounded,
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              material.MaterialPageRoute(
-                                builder: (context) => const SearchPage(),
-                              ),
-                            );
-                          },
-                        ),
-                        const SizedBox(width: 10),
-                        _buildHeaderIconButton(
-                          context,
-                          icon: material.Icons.settings_rounded,
-                          onTap: onTapSettings,
-                        ),
-                        const SizedBox(width: 10),
-                        _buildHeaderIconButton(
-                          context,
-                          icon: material.Icons.refresh_rounded,
-                          onTap: onRefresh,
-                        ),
-                        const SizedBox(width: 10),
-                        _buildHeaderIconButton(
-                          context,
-                          icon: material.Icons.person_add_rounded,
-                          onTap: () async {
-                            final auth =
-                                await AuthAlertBox.checkAuthAndShowAlert(
-                                    context: context);
-                            if (auth && context.mounted) {
-                              showDialog(
-                                  context: context,
-                                  builder: (context) => CreateGroupDialog(
-                                      onGroupCreated: onRefresh));
-                            }
-                          },
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 2. Sticky Section (Status + Tabs + Search)
-          Positioned(
-            top: (strangerMatchHeight - shrinkOffset).clamp(0.0, 400.0),
-            left: 0,
-            right: 0,
-            child: Column(
-              children: [
-                // Horizontal Status Row (Always Sticky)
-                Container(
-                  height: statusSectionHeight,
-                  decoration: BoxDecoration(
-                    color: headerColor,
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(32),
-                      topRight: Radius.circular(32),
-                    ),
-                    border: Border(
-                      top: BorderSide(
-                          color: isDark
-                              ? material.Colors.white.withValues(alpha: 0.12)
-                              : material.Colors.black.withValues(alpha: 0.08),
-                          width: 1),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-                        child: Row(
-                          children: [
-                            material.InkWell(
-                              onTap: onTapAdd,
-                              borderRadius: BorderRadius.circular(12),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      isDark
-                                          ? const Color(0xFFFFFC00)
-                                          : const Color(0xFFFFFC00),
-                                      (isDark
-                                              ? const Color(0xFFFFFC00)
-                                              : const Color(0xFFFFFC00))
-                                          .withValues(alpha: 0.8),
-                                    ],
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: (isDark
-                                              ? const Color(0xFFFFFC00)
-                                              : const Color(0xFFFFFC00))
-                                          .withValues(alpha: 0.2),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(material.Icons.add_rounded,
-                                        size: 14, color: material.Colors.black),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Add',
-                                      style: GoogleFonts.outfit(
-                                        color: material.Colors.black,
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                material.InkWell(
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      material.MaterialPageRoute(
-                                        builder: (context) =>
-                                            const NotificationsPage(),
-                                      ),
-                                    );
-                                  },
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(7),
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? const Color(0xFF1E293B)
-                                          : const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: isDark
-                                            ? const Color(0xFF334155)
-                                            : const Color(0xFFE2E8F0),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Stack(
-                                       clipBehavior: Clip.none,
-                                       children: [
-                                         Icon(
-                                           material.Icons.notifications_outlined,
-                                           size: 17,
-                                           color: isDark
-                                               ? material.Colors.white
-                                               : material.Colors.black87,
-                                         ),
-                                         if (pendingRequestsCount > 0)
-                                           Positioned(
-                                             top: -5,
-                                             right: -5,
-                                             child: Container(
-                                               padding: const EdgeInsets.all(2),
-                                               decoration: const BoxDecoration(
-                                                 color: Color(0xFFFF2A55),
-                                                 shape: BoxShape.circle,
-                                               ),
-                                               constraints: const BoxConstraints(
-                                                 minWidth: 14,
-                                                 minHeight: 14,
-                                               ),
-                                               child: Center(
-                                                 child: Text(
-                                                   pendingRequestsCount > 99 ? '99+' : '$pendingRequestsCount',
-                                                   style: GoogleFonts.outfit(
-                                                     color: Colors.white,
-                                                     fontSize: 8,
-                                                     fontWeight: FontWeight.w900,
-                                                   ),
-                                                 ),
-                                               ),
-                                             ),
-                                           ),
-                                       ],
-                                     ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                material.InkWell(
-                                  onTap: onRefresh,
-                                  borderRadius: BorderRadius.circular(10),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(7),
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? const Color(0xFF1E293B)
-                                          : const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(10),
-                                      border: Border.all(
-                                        color: isDark
-                                            ? const Color(0xFF334155)
-                                            : const Color(0xFFE2E8F0),
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Icon(
-                                      material.Icons.refresh_rounded,
-                                      size: 17,
-                                      color: isDark
-                                          ? material.Colors.white
-                                          : material.Colors.black87,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
                       ),
-                      StatusDisplayWidget(
+                    ),
+                    // Status Story Row (Compact)
+                    SizedBox(
+                      height: statusWidgetHeight,
+                      child: StatusDisplayWidget(
                         key: ValueKey('status_display_$statusRefreshKey'),
                         currentUserId: currentUserId,
                         currentProfileId: currentProfileId,
                         onStatusUploaded: onRefresh,
                         filterNotifier: vibesFilterNotifier,
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
+              ),
+            ),
+          ),
+
+          // 2. Sticky Section (Tabs + Search Bar)
+          Positioned(
+            top: topPadding + math.max(0.0, scrollableHeight - shrinkOffset),
+            left: 0,
+            right: 0,
+            height: stickyHeight,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
                 // Tab Bar (Chats, Vibes, Thoughts, Tools)
                 Container(
-                  height: 50,
+                  height: tabBarHeight,
                   color: headerColor,
                   child: Row(
                     children: [
@@ -3829,17 +3648,17 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                     ],
                   ),
                 ),
-                // Search Bar
+                // Search Bar (Compact & Sleek)
                 Container(
-                  height: 72,
+                  height: searchBarHeight,
                   color: headerColor,
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
                   child: Container(
                     decoration: BoxDecoration(
                       color: isDark
                           ? const Color(0xFF202C33)
                           : const Color(0xFFF0F2F5),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(
                         color: isDark
                             ? material.Colors.white.withValues(alpha: 0.08)
@@ -3853,12 +3672,11 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         color: isDark
                             ? material.Colors.white
                             : material.Colors.black87,
-                        fontSize: 14,
+                        fontSize: 13,
                       ),
-                      cursorColor: isDark
-                          ? const Color(0xFFFFFC00)
-                          : const Color(0xFFFFFC00),
+                      cursorColor: const Color(0xFFFFFC00),
                       decoration: material.InputDecoration(
+                        isDense: true,
                         hintText: selectedIndex == 3
                             ? 'Search tools, games, or features...'
                             : selectedIndex == 2
@@ -3870,23 +3688,19 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           color: isDark
                               ? material.Colors.white.withValues(alpha: 0.35)
                               : material.Colors.black.withValues(alpha: 0.35),
-                          fontSize: 14,
+                          fontSize: 13,
                         ),
                         prefixIcon: Padding(
-                          padding:
-                              const EdgeInsets.only(left: 14.0, right: 10.0),
+                          padding: const EdgeInsets.only(left: 10.0, right: 8.0),
                           child: Icon(
                             material.Icons.search_rounded,
-                            color: isDark
-                                ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
-                                : const Color(0xFFFFFC00)
-                                    .withValues(alpha: 0.7),
-                            size: 20,
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.7),
+                            size: 17,
                           ),
                         ),
                         prefixIconConstraints: const BoxConstraints(
-                          minWidth: 40,
-                          minHeight: 40,
+                          minWidth: 32,
+                          minHeight: 32,
                         ),
                         suffixIcon: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -3894,16 +3708,13 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           children: [
                             if (isSearching)
                               Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12.0),
+                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: SizedBox(
-                                  width: 16,
-                                  height: 16,
+                                  width: 14,
+                                  height: 14,
                                   child: material.CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: isDark
-                                        ? const Color(0xFFFFFC00)
-                                        : const Color(0xFFFFFC00),
+                                    color: const Color(0xFFFFFC00),
                                   ),
                                 ),
                               ),
@@ -3911,12 +3722,12 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                               material.Material(
                                 color: material.Colors.transparent,
                                 child: material.IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                                   icon: Icon(
                                     material.Icons.clear_rounded,
-                                    color: isDark
-                                        ? material.Colors.white30
-                                        : material.Colors.black38,
-                                    size: 18,
+                                    color: isDark ? material.Colors.white30 : material.Colors.black38,
+                                    size: 16,
                                   ),
                                   onPressed: () => searchController.clear(),
                                 ),
@@ -3924,8 +3735,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           ],
                         ),
                         border: material.InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(vertical: 14),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 8),
                       ),
                     ),
                   ),
@@ -3941,8 +3751,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget _buildTabItem(BuildContext context, String label, int index) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedIndex == index;
-    final themeYellow =
-        isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
+    final themeYellow = const Color(0xFFFFFC00);
     final textUnselected = isDark
         ? material.Colors.white.withValues(alpha: 0.5)
         : material.Colors.black.withValues(alpha: 0.5);
@@ -3959,7 +3768,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                   ? Border(
                       bottom: BorderSide(
                         color: themeYellow,
-                        width: 2.5,
+                        width: 2.0,
                       ),
                     )
                   : null,
@@ -3970,8 +3779,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
               style: GoogleFonts.outfit(
                 color: isSelected ? themeYellow : textUnselected,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 14.5,
-                letterSpacing: 0.2,
+                fontSize: 13.5,
+                letterSpacing: 0.1,
               ),
             ),
           ),
@@ -3979,7 +3788,6 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
       ),
     );
   }
-
 
   Widget _buildHeaderIconButton(BuildContext context,
       {required IconData icon, required VoidCallback onTap, int badgeCount = 0}) {
@@ -3998,7 +3806,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
         onTap: onTap,
         customBorder: const CircleBorder(),
         child: Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(6.5),
           decoration: BoxDecoration(
             color: bgColor,
             shape: BoxShape.circle,
@@ -4010,34 +3818,34 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Icon(icon, color: iconColor, size: 20),
+              Icon(icon, color: iconColor, size: 17),
               if (badgeCount > 0)
                 Positioned(
-                  top: -5,
-                  right: -5,
+                  top: -4,
+                  right: -4,
                   child: Container(
-                    padding: const EdgeInsets.all(3),
+                    padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       color: const Color(0xFFFF2A55),
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
                           color: const Color(0xFFFF2A55).withValues(alpha: 0.6),
-                          blurRadius: 6,
+                          blurRadius: 4,
                           spreadRadius: 1,
                         ),
                       ],
                     ),
                     constraints: const BoxConstraints(
-                      minWidth: 16,
-                      minHeight: 16,
+                      minWidth: 14,
+                      minHeight: 14,
                     ),
                     child: Center(
                       child: Text(
                         badgeCount > 99 ? '99+' : '$badgeCount',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 9,
+                          fontSize: 8.5,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -4053,7 +3861,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant _HomeMainHeaderDelegate oldDelegate) {
-    return oldDelegate.selectedIndex != selectedIndex ||
+    return oldDelegate.topPadding != topPadding ||
+        oldDelegate.selectedIndex != selectedIndex ||
         oldDelegate.searchQuery != searchQuery ||
         oldDelegate.isSearching != isSearching ||
         oldDelegate.statusRefreshKey != statusRefreshKey ||
