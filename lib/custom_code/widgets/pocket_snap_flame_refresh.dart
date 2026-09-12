@@ -4,13 +4,16 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 /// 📸 Premium Photo-Booth Polaroid Doodle Pull-To-Refresh Widget
-/// Inspired by the candid photobooth memory strip on a warm doodle desk:
-/// - Chic tilted photo-strip with authentic white polaroid card border & soft shadow
-/// - Hand-drawn illustrated friends taking fun selfies together
-/// - Blue ink doodle annotations: 👑 crown, 😈 devil horns, ⭐ cheek star, ♡ heart, and "Pocket Mates" handwriting
-/// - Organic micro-interactions on pull (doodle inking, winking avatar)
-/// - Elegant camera shutter flash effect on release
-/// - 100% reliable refresh triggering without tacky badges or cheap borders
+/// Combines the beloved warm golden tabletop background, artist pencil, coffee mug,
+/// and white polaroid filmstrip with the swagger friends squad from the user's sketch:
+/// - Top Frame: Two swagger friends pointing dual finger-guns (👉👉) with cool sunglasses,
+///   blue ink crown 👑, and blue handwritten "Pocket Mates" signature.
+/// - Bottom Frame: The Swagger Squad: Center mate in low crouch dabbing, Right mate with dual
+///   peace signs (✌️✌️) and blue devil horns 😈, Left mate chilling on elbow with blue star ⭐,
+///   and blue ink heart ♡ & smiley :)
+/// - Clean status text: "Pull to connect Pocket Mates" / "Release to connect Pocket Mates"
+/// - Camera shutter flash effect (📸) on release
+/// - 100% reliable backend refresh of all chats and user data.
 class PocketSnapFlameRefresh extends StatefulWidget {
   final Future<void> Function() onRefresh;
   final Widget child;
@@ -33,10 +36,10 @@ class PocketSnapFlameRefresh extends StatefulWidget {
     this.restingHeight = 150.0,
     this.primaryFlameColor = const Color(0xFFF59E0B),
     this.accentFlameColor = const Color(0xFFFFC107),
-    this.pullText = 'Pull for memories...',
-    this.readyText = 'Release to snap!',
-    this.refreshingText = 'Syncing mates...',
-    this.successText = 'All caught up!',
+    this.pullText = 'Pull to connect Pocket Mates',
+    this.readyText = 'Release to connect Pocket Mates',
+    this.refreshingText = 'Connecting Pocket Mates...',
+    this.successText = 'Pocket Mates Connected! ✨',
   });
 
   @override
@@ -413,12 +416,12 @@ class _PhotoboothStripHeader extends StatelessWidget {
               ),
             ),
 
-            // Minimal, clean status indicator (discreet, no tacky yellow pills)
+            // Minimal, clean status indicator
             Positioned(
               bottom: 4,
               child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 160),
-                opacity: (pullRatio > 0.35 || isRefreshing) ? 1.0 : 0.0,
+                opacity: (pullRatio > 0.30 || isRefreshing) ? 1.0 : 0.0,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -433,9 +436,11 @@ class _PhotoboothStripHeader extends StatelessWidget {
                       )
                     else
                       Text(
-                        isReady ? '📸 Release to snap' : '⬇️ Pull to snap',
+                        isReady
+                            ? '⚡ Release to connect Pocket Mates'
+                            : '⬇️ Pull to connect Pocket Mates',
                         style: GoogleFonts.caveat(
-                          fontSize: 14,
+                          fontSize: 14.5,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                           letterSpacing: 0.3,
@@ -444,9 +449,11 @@ class _PhotoboothStripHeader extends StatelessWidget {
                     if (isRefreshing) const SizedBox(width: 6),
                     if (isRefreshing)
                       Text(
-                        isSuccess ? 'Caught up! ✨' : 'Snapping memories...',
+                        isSuccess
+                            ? 'Pocket Mates Connected! ✨'
+                            : 'Connecting Pocket Mates...',
                         style: GoogleFonts.caveat(
-                          fontSize: 14,
+                          fontSize: 14.5,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
@@ -524,7 +531,7 @@ class _TabletopDoodleBackgroundPainter extends CustomPainter {
     // Pencil tip
     final tip = Path()
       ..moveTo(w * 0.18, h * 0.35)
-      ..lineTo(w * 0.22, h * 0.28) // sharp lead tip
+      ..lineTo(w * 0.22, h * 0.28)
       ..lineTo(w * 0.22, h * 0.37)
       ..close();
     canvas.drawPath(tip, penPaint..strokeWidth = 1.4);
@@ -536,13 +543,12 @@ class _TabletopDoodleBackgroundPainter extends CustomPainter {
 }
 
 /// 🎨 Precision Painter for the Photobooth Polaroid Filmstrip
-/// Recreates the user's reference image:
-/// - Top Frame: Smiling girl with dark wavy hair, friend peeking from top with beanie, blue ink crown 👑, blue "Pocket Mates" handwriting
-/// - Bottom Frame: 3 close mates selfie:
-///   - Left friend: Beanie, circular blue doodle glasses, peace sign ✌️
-///   - Center friend: Winking pouty selfie ( > ‿ 0 ), blue doodle star ⭐ on cheek
-///   - Right friend: Spiky hair, open laugh, blue doodle devil horns 😈, shaka sign 🤙
-///   - Handwritten blue ink doodle heart ♡ and smiley :)
+/// Recreates the user's reference sketches inside the 2 photo frames:
+/// - Frame 1 (Top): Two swagger buddies pointing dual finger-guns (👉👉) with cool sunglasses,
+///   blue ink crown 👑, and handwritten "Pocket Mates" signature.
+/// - Frame 2 (Bottom): The Swagger Squad: Center mate dabbing, Right mate with dual peace
+///   signs (✌️✌️) and blue devil horns 😈, Left mate chilling on elbow with blue star ⭐,
+///   and blue ink heart ♡ & smiley :)
 class _PhotoboothStripPainter extends CustomPainter {
   final double pullRatio;
   final bool isReady;
@@ -565,23 +571,15 @@ class _PhotoboothStripPainter extends CustomPainter {
     final blackInk = Paint()
       ..color = const Color(0xFF1E293B)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.8
+      ..strokeWidth = 1.9
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final fillHair = Paint()
-      ..color = const Color(0xFF0F172A)
+    final whiteBodyPaint = Paint()
+      ..color = const Color(0xFFFFFDF8)
       ..style = PaintingStyle.fill;
 
-    final fillSkin = Paint()
-      ..color = const Color(0xFFFFFBEB)
-      ..style = PaintingStyle.fill;
-
-    final fillYellow = Paint()
-      ..color = const Color(0xFFFBBF24)
-      ..style = PaintingStyle.fill;
-
-    // Signature Blue Ballpoint Pen Doodle Ink (from reference photo)
+    // Signature Blue Ballpoint Pen Doodle Ink
     final doodleBlue = Paint()
       ..color = const Color(0xFF2563EB).withValues(
         alpha: (pullRatio * 1.1).clamp(0.3, 1.0),
@@ -594,12 +592,12 @@ class _PhotoboothStripPainter extends CustomPainter {
     final frameHeight = (h - 22) / 2;
 
     // =========================================================================
-    // PHOTO FRAME 1 (TOP)
+    // PHOTO FRAME 1 (TOP) - The Dual Finger-Gun Swagger Duo (from sketch)
     // =========================================================================
     final topFrameRect = Rect.fromLTWH(0, 0, w, frameHeight);
     canvas.drawRRect(
       RRect.fromRectAndRadius(topFrameRect, const Radius.circular(4)),
-      Paint()..color = const Color(0xFFF1F5F9)..style = PaintingStyle.fill,
+      Paint()..color = const Color(0xFFF8FAFC)..style = PaintingStyle.fill,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(topFrameRect, const Radius.circular(4)),
@@ -609,101 +607,112 @@ class _PhotoboothStripPainter extends CustomPainter {
         ..strokeWidth = 1.0,
     );
 
-    // Draw Top Photo Content inside clip
     canvas.save();
     canvas.clipRRect(RRect.fromRectAndRadius(topFrameRect, const Radius.circular(4)));
 
-    // Yellow shirt
-    canvas.drawCircle(
-      Offset(w * 0.50, frameHeight + 16),
-      34,
-      fillYellow,
-    );
-    canvas.drawCircle(
-      Offset(w * 0.50, frameHeight + 16),
-      34,
-      blackInk..strokeWidth = 1.6,
-    );
+    // Mate A (Left Buddy with Finger Guns 👉👉)
+    final mateAHead = Offset(w * 0.35, frameHeight * 0.44);
+    const mateARadius = 14.5;
 
-    // Girl Head & Neck
-    final girlCenter = Offset(w * 0.48, frameHeight * 0.54);
-    canvas.drawCircle(girlCenter, 18, fillSkin);
-
-    // Dark wavy hair framing face
-    final hairPath = Path()
-      // Left wave
-      ..moveTo(girlCenter.dx - 18, girlCenter.dy + 8)
-      ..quadraticBezierTo(girlCenter.dx - 26, girlCenter.dy - 2, girlCenter.dx - 16, girlCenter.dy - 16)
-      // Top curve
-      ..quadraticBezierTo(girlCenter.dx, girlCenter.dy - 24, girlCenter.dx + 16, girlCenter.dy - 16)
-      // Right wave
-      ..quadraticBezierTo(girlCenter.dx + 26, girlCenter.dy - 2, girlCenter.dx + 18, girlCenter.dy + 8)
-      ..quadraticBezierTo(girlCenter.dx + 12, girlCenter.dy + 12, girlCenter.dx + 14, girlCenter.dy - 6)
-      ..quadraticBezierTo(girlCenter.dx, girlCenter.dy - 12, girlCenter.dx - 14, girlCenter.dy - 6)
+    // Torso A
+    final torsoAPath = Path()
+      ..moveTo(mateAHead.dx - 10, mateAHead.dy + mateARadius * 0.8)
+      ..lineTo(w * 0.22, frameHeight)
+      ..lineTo(w * 0.46, frameHeight)
+      ..lineTo(mateAHead.dx + 10, mateAHead.dy + mateARadius * 0.8)
       ..close();
-    canvas.drawPath(hairPath, fillHair);
+    canvas.drawPath(torsoAPath, whiteBodyPaint);
+    canvas.drawPath(torsoAPath, blackInk..strokeWidth = 1.8);
 
-    // Happy open smiling eyes & lips
-    canvas.drawArc(
-      Rect.fromCenter(center: Offset(girlCenter.dx - 6, girlCenter.dy - 1), width: 7, height: 5),
-      0.2,
-      math.pi - 0.4,
-      false,
-      blackInk..strokeWidth = 1.7,
-    );
-    canvas.drawArc(
-      Rect.fromCenter(center: Offset(girlCenter.dx + 6, girlCenter.dy - 1), width: 7, height: 5),
-      0.2,
-      math.pi - 0.4,
-      false,
-      blackInk..strokeWidth = 1.7,
-    );
+    // Mate A Finger-Guns Arms pointing right 👉👉
+    final armA1 = Path()
+      ..moveTo(mateAHead.dx - 6, mateAHead.dy + 8)
+      ..lineTo(w * 0.48, mateAHead.dy + 4)
+      ..lineTo(w * 0.54, mateAHead.dy + 4); // pointing finger
+    canvas.drawPath(armA1, blackInk..strokeWidth = 2.4);
 
-    // Cute pouty/smiling black lips
-    final lips = Path()
-      ..moveTo(girlCenter.dx - 5, girlCenter.dy + 7)
-      ..quadraticBezierTo(girlCenter.dx, girlCenter.dy + 11, girlCenter.dx + 5, girlCenter.dy + 7)
-      ..quadraticBezierTo(girlCenter.dx, girlCenter.dy + 5, girlCenter.dx - 5, girlCenter.dy + 7);
-    canvas.drawPath(lips, fillHair);
+    final armA2 = Path()
+      ..moveTo(mateAHead.dx + 4, mateAHead.dy + 10)
+      ..lineTo(w * 0.50, mateAHead.dy + 14)
+      ..lineTo(w * 0.56, mateAHead.dy + 14); // lower pointing finger
+    canvas.drawPath(armA2, blackInk..strokeWidth = 2.4);
 
-    // Friend peeking from upper right corner
-    final peekCenter = Offset(w * 0.88, frameHeight * 0.20);
-    canvas.drawCircle(peekCenter, 16, fillYellow); // Beanie
-    canvas.drawCircle(peekCenter, 13, fillSkin); // Face peeking
-    canvas.drawCircle(peekCenter, 13, blackInk..strokeWidth = 1.4);
-    // Beanie stripes
-    canvas.drawLine(Offset(w * 0.76, frameHeight * 0.12), Offset(w * 0.86, frameHeight * 0.04), blackInk..strokeWidth = 1.2);
+    // Mate A Head & Shades
+    canvas.drawCircle(mateAHead, mateARadius, whiteBodyPaint);
+    canvas.drawCircle(mateAHead, mateARadius, blackInk..strokeWidth = 2.0);
+    _drawMiniShades(canvas, Offset(mateAHead.dx + 1, mateAHead.dy), 17.5, 7.5);
 
-    // Peeking friend eye
-    canvas.drawCircle(Offset(peekCenter.dx - 4, peekCenter.dy + 2), 2.2, fillHair);
+    // Mate A Smirk
+    final smirkA = Path()
+      ..moveTo(mateAHead.dx - 2, mateAHead.dy + 7)
+      ..quadraticBezierTo(mateAHead.dx + 3, mateAHead.dy + 9, mateAHead.dx + 5, mateAHead.dy + 6.5);
+    canvas.drawPath(smirkA, blackInk..strokeWidth = 1.5);
 
-    // --- BLUE INK DOODLES OVER TOP PHOTO (from reference image) ---
-    // 1. "Pocket Mates" handwriting on top left
-    _drawHandwrittenText(canvas, Offset(w * 0.08, frameHeight * 0.22), "Pocket Mates", doodleBlue);
+    // Mate B (Right Buddy with Finger Guns 👉👉)
+    final mateBHead = Offset(w * 0.70, frameHeight * 0.42);
+    const mateBRadius = 14.5;
+
+    // Torso B
+    final torsoBPath = Path()
+      ..moveTo(mateBHead.dx - 10, mateBHead.dy + mateBRadius * 0.8)
+      ..lineTo(w * 0.58, frameHeight)
+      ..lineTo(w * 0.86, frameHeight)
+      ..lineTo(mateBHead.dx + 10, mateBHead.dy + mateBRadius * 0.8)
+      ..close();
+    canvas.drawPath(torsoBPath, whiteBodyPaint);
+    canvas.drawPath(torsoBPath, blackInk..strokeWidth = 1.8);
+
+    // Mate B Finger Guns Arms pointing right 👉👉
+    final armB1 = Path()
+      ..moveTo(mateBHead.dx - 6, mateBHead.dy + 8)
+      ..lineTo(w * 0.84, mateBHead.dy + 4)
+      ..lineTo(w * 0.92, mateBHead.dy + 4);
+    canvas.drawPath(armB1, blackInk..strokeWidth = 2.4);
+
+    final armB2 = Path()
+      ..moveTo(mateBHead.dx + 4, mateBHead.dy + 10)
+      ..lineTo(w * 0.86, mateBHead.dy + 14)
+      ..lineTo(w * 0.94, mateBHead.dy + 14);
+    canvas.drawPath(armB2, blackInk..strokeWidth = 2.4);
+
+    // Mate B Head & Shades
+    canvas.drawCircle(mateBHead, mateBRadius, whiteBodyPaint);
+    canvas.drawCircle(mateBHead, mateBRadius, blackInk..strokeWidth = 2.0);
+    _drawMiniShades(canvas, Offset(mateBHead.dx + 1, mateBHead.dy), 17.5, 7.5, angle: 0.08);
+
+    // Mate B Grin
+    final grinB = Path()
+      ..moveTo(mateBHead.dx - 3, mateBHead.dy + 7)
+      ..quadraticBezierTo(mateBHead.dx + 2, mateBHead.dy + 9.5, mateBHead.dx + 5, mateBHead.dy + 7);
+    canvas.drawPath(grinB, blackInk..strokeWidth = 1.5);
+
+    // --- BLUE INK DOODLES OVER TOP PHOTO ---
+    // 1. Royal Crown 👑 over Mate A's head
+    _drawDoodleCrown(canvas, Offset(mateAHead.dx, mateAHead.dy - 23), doodleBlue);
+
+    // 2. Handwritten "Pocket Mates" in blue pen with underline
+    _drawHandwrittenText(canvas, Offset(w * 0.06, frameHeight * 0.20), "Pocket Mates", doodleBlue);
     canvas.drawLine(
-      Offset(w * 0.08, frameHeight * 0.28),
-      Offset(w * 0.46, frameHeight * 0.24),
+      Offset(w * 0.06, frameHeight * 0.26),
+      Offset(w * 0.44, frameHeight * 0.22),
       doodleBlue..strokeWidth = 1.2,
     );
 
-    // 2. Royal Doodle Crown 👑 perched over girl's head
-    _drawDoodleCrown(canvas, Offset(girlCenter.dx + 4, girlCenter.dy - 25), doodleBlue);
-
-    // 3. Cute squiggle notes 〰️
-    canvas.drawLine(Offset(w * 0.74, frameHeight * 0.74), Offset(w * 0.84, frameHeight * 0.68), doodleBlue);
-    canvas.drawLine(Offset(w * 0.76, frameHeight * 0.82), Offset(w * 0.86, frameHeight * 0.76), doodleBlue);
+    // 3. Arrow / Sparkle doodle
+    canvas.drawLine(Offset(w * 0.86, frameHeight * 0.12), Offset(w * 0.94, frameHeight * 0.12), doodleBlue..strokeWidth = 1.3);
+    canvas.drawLine(Offset(w * 0.90, frameHeight * 0.08), Offset(w * 0.94, frameHeight * 0.12), doodleBlue..strokeWidth = 1.3);
 
     canvas.restore();
 
     // =========================================================================
-    // PHOTO FRAME 2 (BOTTOM - 3 FRIENDS SQUAD)
+    // PHOTO FRAME 2 (BOTTOM) - The Swagger Squad (Dab + Peace ✌️ + Reclined)
     // =========================================================================
     final bottomFrameTop = frameHeight + 8;
     final bottomFrameRect = Rect.fromLTWH(0, bottomFrameTop, w, frameHeight);
 
     canvas.drawRRect(
       RRect.fromRectAndRadius(bottomFrameRect, const Radius.circular(4)),
-      Paint()..color = const Color(0xFFF1F5F9)..style = PaintingStyle.fill,
+      Paint()..color = const Color(0xFFF8FAFC)..style = PaintingStyle.fill,
     );
     canvas.drawRRect(
       RRect.fromRectAndRadius(bottomFrameRect, const Radius.circular(4)),
@@ -716,114 +725,202 @@ class _PhotoboothStripPainter extends CustomPainter {
     canvas.save();
     canvas.clipRRect(RRect.fromRectAndRadius(bottomFrameRect, const Radius.circular(4)));
 
-    // Center Friend (Girl with winking eye & pout)
-    final midX = w * 0.50;
-    final midY = bottomFrameTop + frameHeight * 0.54;
-    canvas.drawCircle(Offset(midX, midY), 16, fillSkin);
+    // 1. Reclined Mate on Left Floor (Chiller lying on elbow)
+    final chillHead = Offset(w * 0.16, bottomFrameTop + frameHeight * 0.70);
+    const chillRadius = 13.0;
 
-    // Center Friend Hair
-    final midHair = Path()
-      ..moveTo(midX - 16, midY + 8)
-      ..quadraticBezierTo(midX - 22, midY - 6, midX - 14, midY - 14)
-      ..quadraticBezierTo(midX, midY - 20, midX + 14, midY - 14)
-      ..quadraticBezierTo(midX + 22, midY - 6, midX + 16, midY + 8)
+    // Body lying horizontally along floor
+    final chillBody = Path()
+      ..moveTo(chillHead.dx + chillRadius * 0.6, chillHead.dy)
+      ..lineTo(w * 0.42, bottomFrameTop + frameHeight * 0.84)
+      ..lineTo(w * 0.42, bottomFrameTop + frameHeight)
+      ..lineTo(w * 0.06, bottomFrameTop + frameHeight)
+      ..lineTo(w * 0.06, bottomFrameTop + frameHeight * 0.84)
       ..close();
-    canvas.drawPath(midHair, fillHair);
+    canvas.drawPath(chillBody, whiteBodyPaint);
+    canvas.drawPath(chillBody, blackInk..strokeWidth = 1.8);
 
-    // Left Friend (Beanie + Glasses + Peace Sign ✌️)
-    final leftX = w * 0.20;
-    final leftY = bottomFrameTop + frameHeight * 0.50;
-    canvas.drawCircle(Offset(leftX, leftY - 6), 14, fillYellow); // Beanie
-    canvas.drawCircle(Offset(leftX, leftY + 2), 13, fillSkin); // Face
-    canvas.drawCircle(Offset(leftX, leftY + 2), 13, blackInk..strokeWidth = 1.3);
+    // Elbow on floor supporting chin
+    final chillArm = Path()
+      ..moveTo(w * 0.06, bottomFrameTop + frameHeight * 0.90)
+      ..lineTo(chillHead.dx - 2, chillHead.dy + chillRadius * 0.8);
+    canvas.drawPath(chillArm, blackInk..strokeWidth = 2.4);
 
-    // Right Friend (Spiky hair + Open laugh + Shaka 🤙)
-    final rightX = w * 0.80;
-    final rightY = bottomFrameTop + frameHeight * 0.48;
-    canvas.drawCircle(Offset(rightX, rightY), 15, fillSkin);
+    // Chill Head & Shades
+    canvas.drawCircle(chillHead, chillRadius, whiteBodyPaint);
+    canvas.drawCircle(chillHead, chillRadius, blackInk..strokeWidth = 2.0);
+    _drawMiniShades(canvas, Offset(chillHead.dx + 1, chillHead.dy), 15.5, 6.5, angle: -0.15);
 
-    // Spiky black hair
-    final spikyHair = Path()
-      ..moveTo(rightX - 14, rightY - 4)
-      ..lineTo(rightX - 10, rightY - 18)
-      ..lineTo(rightX - 2, rightY - 12)
-      ..lineTo(rightX + 6, rightY - 20)
-      ..lineTo(rightX + 12, rightY - 12)
-      ..lineTo(rightX + 16, rightY - 2)
+    // 2. Center Mate (Low Squat Crouch & Dab Pose)
+    final dabHead = Offset(w * 0.50, bottomFrameTop + frameHeight * 0.38);
+    const dabRadius = 15.0;
+
+    // Wide Squat Legs
+    final dabLegs = Path()
+      ..moveTo(dabHead.dx - 10, dabHead.dy + dabRadius * 0.8)
+      ..lineTo(w * 0.34, bottomFrameTop + frameHeight * 0.72)
+      ..lineTo(w * 0.30, bottomFrameTop + frameHeight)
+      ..lineTo(w * 0.42, bottomFrameTop + frameHeight)
+      ..lineTo(dabHead.dx, bottomFrameTop + frameHeight * 0.80)
+      ..lineTo(w * 0.58, bottomFrameTop + frameHeight)
+      ..lineTo(w * 0.70, bottomFrameTop + frameHeight)
+      ..lineTo(w * 0.64, bottomFrameTop + frameHeight * 0.72)
+      ..lineTo(dabHead.dx + 10, dabHead.dy + dabRadius * 0.8)
       ..close();
-    canvas.drawPath(spikyHair, fillHair);
+    canvas.drawPath(dabLegs, whiteBodyPaint);
+    canvas.drawPath(dabLegs, blackInk..strokeWidth = 2.0);
 
-    // Right friend big laughing mouth
-    final laughMouth = Path()
-      ..moveTo(rightX - 7, rightY + 3)
-      ..lineTo(rightX + 7, rightY + 3)
-      ..quadraticBezierTo(rightX, rightY + 13, rightX - 7, rightY + 3);
-    canvas.drawPath(laughMouth, fillHair);
+    // Dab Arm 1: Tucked across face / chin
+    final dabArm1 = Path()
+      ..moveTo(dabHead.dx - 12, dabHead.dy + 8)
+      ..lineTo(dabHead.dx + 10, dabHead.dy + 4);
+    canvas.drawPath(dabArm1, blackInk..strokeWidth = 2.8);
 
-    // Center friend winking eye & kiss pout
-    // Left eye closed winking ( > )
-    final wink = Path()
-      ..moveTo(midX - 8, midY - 2)
-      ..lineTo(midX - 3, midY)
-      ..lineTo(midX - 8, midY + 2);
-    canvas.drawPath(wink, blackInk..strokeWidth = 1.6);
-    // Right eye happy arc
-    canvas.drawArc(
-      Rect.fromCenter(center: Offset(midX + 5, midY - 1), width: 6, height: 4),
-      0.2,
-      math.pi - 0.4,
-      false,
-      blackInk..strokeWidth = 1.6,
-    );
-    // Kiss/pout lips ( 3 )
-    final kissLips = Path()
-      ..moveTo(midX - 3, midY + 5)
-      ..quadraticBezierTo(midX + 1, midY + 4, midX + 3, midY + 6)
-      ..quadraticBezierTo(midX + 1, midY + 8, midX - 3, midY + 7);
-    canvas.drawPath(kissLips, fillHair);
+    // Dab Arm 2: Pointing up-right into the air
+    final dabArm2 = Path()
+      ..moveTo(dabHead.dx + 8, dabHead.dy + 10)
+      ..lineTo(w * 0.74, bottomFrameTop + frameHeight * 0.18);
+    canvas.drawPath(dabArm2, blackInk..strokeWidth = 2.8);
 
-    // --- BLUE INK DOODLES OVER BOTTOM PHOTO (from reference image) ---
-    // 1. Blue Ink Glasses drawn over Left Friend's eyes
-    canvas.drawCircle(Offset(leftX - 4, leftY), 5.5, doodleBlue..strokeWidth = 1.4);
-    canvas.drawCircle(Offset(leftX + 6, leftY), 5.5, doodleBlue..strokeWidth = 1.4);
-    canvas.drawLine(Offset(leftX + 1.5, leftY), Offset(leftX + 0.5, leftY), doodleBlue);
+    // Dab Head & Shades
+    canvas.drawCircle(dabHead, dabRadius, whiteBodyPaint);
+    canvas.drawCircle(dabHead, dabRadius, blackInk..strokeWidth = 2.0);
+    _drawMiniShades(canvas, Offset(dabHead.dx - 1, dabHead.dy - 1), 18.0, 7.5, angle: 0.12);
 
-    // 2. Blue Star ⭐ on Center Friend's cheek
-    _drawDoodleStar(canvas, Offset(midX - 8, midY + 6), 4.2, doodleBlue);
+    // 3. Right Mate (Wide Stance with Dual Peace Signs ✌️ ✌️)
+    final peaceHead = Offset(w * 0.82, bottomFrameTop + frameHeight * 0.44);
+    const peaceRadius = 14.0;
 
-    // 3. Blue Devil Horns 😈 over Right Friend's head
+    // Torso & Wide Stance
+    final peaceBody = Path()
+      ..moveTo(peaceHead.dx - 10, peaceHead.dy + peaceRadius * 0.8)
+      ..lineTo(w * 0.70, bottomFrameTop + frameHeight * 0.90)
+      ..lineTo(w * 0.65, bottomFrameTop + frameHeight)
+      ..lineTo(w * 0.96, bottomFrameTop + frameHeight)
+      ..lineTo(w * 0.92, bottomFrameTop + frameHeight * 0.90)
+      ..lineTo(peaceHead.dx + 10, peaceHead.dy + peaceRadius * 0.8)
+      ..close();
+    canvas.drawPath(peaceBody, whiteBodyPaint);
+    canvas.drawPath(peaceBody, blackInk..strokeWidth = 2.0);
+
+    // Left Arm with Peace Sign ✌️
+    final peaceArm1 = Path()
+      ..moveTo(peaceHead.dx - 8, peaceHead.dy + 8)
+      ..lineTo(w * 0.68, peaceHead.dy - 4);
+    canvas.drawPath(peaceArm1, blackInk..strokeWidth = 2.2);
+    _drawPeaceFingers(canvas, Offset(w * 0.67, peaceHead.dy - 8), blackInk);
+
+    // Right Arm with Peace Sign ✌️
+    final peaceArm2 = Path()
+      ..moveTo(peaceHead.dx + 8, peaceHead.dy + 8)
+      ..lineTo(w * 0.94, peaceHead.dy - 4);
+    canvas.drawPath(peaceArm2, blackInk..strokeWidth = 2.2);
+    _drawPeaceFingers(canvas, Offset(w * 0.95, peaceHead.dy - 8), blackInk);
+
+    // Peace Head & Shades
+    canvas.drawCircle(peaceHead, peaceRadius, whiteBodyPaint);
+    canvas.drawCircle(peaceHead, peaceRadius, blackInk..strokeWidth = 2.0);
+    _drawMiniShades(canvas, Offset(peaceHead.dx, peaceHead.dy), 17.0, 7.0);
+
+    // Confident grin
+    final peaceGrin = Path()
+      ..moveTo(peaceHead.dx - 3, peaceHead.dy + 7)
+      ..lineTo(peaceHead.dx + 3, peaceHead.dy + 7);
+    canvas.drawPath(peaceGrin, blackInk..strokeWidth = 1.5);
+
+    // --- BLUE INK DOODLES OVER BOTTOM PHOTO (from sketch) ---
+    // 1. Blue Devil Horns 😈 over Peace Friend's head
     final leftHorn = Path()
-      ..moveTo(rightX - 10, rightY - 16)
-      ..quadraticBezierTo(rightX - 14, rightY - 23, rightX - 8, rightY - 25)
-      ..quadraticBezierTo(rightX - 7, rightY - 20, rightX - 5, rightY - 16);
+      ..moveTo(peaceHead.dx - 9, peaceHead.dy - 15)
+      ..quadraticBezierTo(peaceHead.dx - 13, peaceHead.dy - 22, peaceHead.dx - 7, peaceHead.dy - 24)
+      ..quadraticBezierTo(peaceHead.dx - 6, peaceHead.dy - 19, peaceHead.dx - 4, peaceHead.dy - 15);
     canvas.drawPath(leftHorn, doodleBlue..strokeWidth = 1.4);
 
     final rightHorn = Path()
-      ..moveTo(rightX + 6, rightY - 17)
-      ..quadraticBezierTo(rightX + 10, rightY - 24, rightX + 14, rightY - 21)
-      ..quadraticBezierTo(rightX + 11, rightY - 18, rightX + 9, rightY - 16);
+      ..moveTo(peaceHead.dx + 4, peaceHead.dy - 15)
+      ..quadraticBezierTo(peaceHead.dx + 8, peaceHead.dy - 22, peaceHead.dx + 13, peaceHead.dy - 20)
+      ..quadraticBezierTo(peaceHead.dx + 9, peaceHead.dy - 17, peaceHead.dx + 7, peaceHead.dy - 15);
     canvas.drawPath(rightHorn, doodleBlue..strokeWidth = 1.4);
 
-    // 4. Blue Ink Heart ♡ in upper right
-    _drawDoodleHeart(canvas, Offset(w * 0.70, bottomFrameTop + 14), doodleBlue);
+    // 2. Blue Star ⭐ on Chill Friend's cheek
+    _drawDoodleStar(canvas, Offset(chillHead.dx + 8, chillHead.dy + 3), 3.8, doodleBlue);
 
-    // 5. Smiley :) on bottom right border
+    // 3. Blue Heart ♡ in top center
+    _drawDoodleHeart(canvas, Offset(w * 0.65, bottomFrameTop + 14), doodleBlue);
+
+    // 4. Smiley :) on bottom right border
     final eyePaint = Paint()
       ..color = const Color(0xFF2563EB).withValues(alpha: (pullRatio * 1.1).clamp(0.3, 1.0))
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(w * 0.92, bottomFrameTop + frameHeight - 12), 1.2, eyePaint);
-    canvas.drawCircle(Offset(w * 0.95, bottomFrameTop + frameHeight - 10), 1.2, eyePaint);
+    canvas.drawCircle(Offset(w * 0.90, bottomFrameTop + frameHeight - 12), 1.2, eyePaint);
+    canvas.drawCircle(Offset(w * 0.93, bottomFrameTop + frameHeight - 10), 1.2, eyePaint);
     final smileArc = Path()
-      ..moveTo(w * 0.91, bottomFrameTop + frameHeight - 6)
+      ..moveTo(w * 0.89, bottomFrameTop + frameHeight - 6)
       ..quadraticBezierTo(
-        w * 0.94,
+        w * 0.92,
         bottomFrameTop + frameHeight - 3,
-        w * 0.97,
+        w * 0.95,
         bottomFrameTop + frameHeight - 5,
       );
     canvas.drawPath(smileArc, doodleBlue..strokeWidth = 1.3);
 
     canvas.restore();
+  }
+
+  /// 🕶️ Helper to draw glossy sunglasses with diagonal reflective gleam lines
+  void _drawMiniShades(
+    Canvas canvas,
+    Offset center,
+    double width,
+    double height, {
+    double angle = 0.0,
+  }) {
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    if (angle != 0.0) canvas.rotate(angle);
+
+    final shadesPaint = Paint()..color = const Color(0xFF0A0F1D)..style = PaintingStyle.fill;
+    final glarePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.95)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2
+      ..strokeCap = StrokeCap.round;
+
+    final halfW = width / 2;
+    final halfH = height / 2;
+    final lensW = halfW * 0.88;
+
+    // Left lens
+    final leftRect = Rect.fromCenter(center: Offset(-halfW * 0.52, 0), width: lensW, height: height);
+    canvas.drawRRect(RRect.fromRectAndRadius(leftRect, Radius.circular(height * 0.35)), shadesPaint);
+
+    // Right lens
+    final rightRect = Rect.fromCenter(center: Offset(halfW * 0.52, 0), width: lensW, height: height);
+    canvas.drawRRect(RRect.fromRectAndRadius(rightRect, Radius.circular(height * 0.35)), shadesPaint);
+
+    // Bridge
+    canvas.drawLine(
+      Offset(-halfW * 0.12, -halfH * 0.2),
+      Offset(halfW * 0.12, -halfH * 0.2),
+      shadesPaint..strokeWidth = 1.8..style = PaintingStyle.stroke,
+    );
+    shadesPaint.style = PaintingStyle.fill;
+
+    // Glare white lines (//)
+    canvas.drawLine(Offset(-halfW * 0.70, halfH * 0.35), Offset(-halfW * 0.45, -halfH * 0.35), glarePaint);
+    canvas.drawLine(Offset(halfW * 0.35, halfH * 0.35), Offset(halfW * 0.60, -halfH * 0.35), glarePaint);
+
+    canvas.restore();
+  }
+
+  /// ✌️ Helper to draw Peace sign fingers (index and middle fingers in 'V')
+  void _drawPeaceFingers(Canvas canvas, Offset pos, Paint paint) {
+    // Index finger
+    canvas.drawLine(pos, Offset(pos.dx - 2, pos.dy - 6), paint..strokeWidth = 2.0);
+    // Middle finger
+    canvas.drawLine(pos, Offset(pos.dx + 3, pos.dy - 6), paint..strokeWidth = 2.0);
+    // Hand fist
+    canvas.drawCircle(pos, 2.2, paint..strokeWidth = 1.6..style = PaintingStyle.stroke);
   }
 
   /// 👑 Helper to draw doodle crown in blue ink
