@@ -858,8 +858,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             ? EnglishTasksMasterHubPage(userId: _currentUserId)
                             : PocketSnapFlameRefresh(
                                 onRefresh: _handleRefresh,
+                                triggerDistance: 85.0,
+                                maxPullDistance: 200.0,
+                                restingHeight: 140.0,
                                 primaryFlameColor: const Color(0xFFFFFC00),
-                                accentFlameColor: const Color(0xFFFF5722),
+                                accentFlameColor: const Color(0xFFFF8A00),
+                                pullText: 'Pull down the squad... 🕶️',
+                                readyText: 'Squad Ready! Release! 🔥',
+                                refreshingText: 'Pocket Mates Syncing... ⚡',
+                                successText: 'Squad Synced! Let\'s Go! 🚀',
                                 child: material.NestedScrollView(
                                   physics: const BouncingScrollPhysics(
                                       parent: AlwaysScrollableScrollPhysics()),
@@ -977,6 +984,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         ref.refresh(conversationsProvider.future),
         ref.refresh(activeUsersProvider(profileId.toString()).future),
         _loadPendingRequests(),
+        _loadAllUserData(),
       ]);
     } catch (e) {
       debugPrint('Refresh error: $e');

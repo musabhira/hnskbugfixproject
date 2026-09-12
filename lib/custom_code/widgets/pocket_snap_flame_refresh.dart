@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// ✨ Playful Floating Doodle Sparkle Particle
-class _DoodleParticle {
+/// ✨ Floating Street Sparkle Particle
+class _SwaggerParticle {
   double xRatio;
   double yRatio;
   double size;
@@ -14,7 +14,7 @@ class _DoodleParticle {
   String glyph;
   Color color;
 
-  _DoodleParticle({
+  _SwaggerParticle({
     required this.xRatio,
     required this.yRatio,
     required this.size,
@@ -25,20 +25,21 @@ class _DoodleParticle {
     required this.color,
   });
 
-  static _DoodleParticle random(math.Random rand) {
-    const glyphs = ['⭐', '✨', '🐾', '✦', '💖', '⚡'];
+  static _SwaggerParticle random(math.Random rand) {
+    const glyphs = ['✦', '⭐', '✨', '⚡', '🔥'];
     const colors = [
-      Color(0xFFFFFC00), // Snapchat yellow
-      Color(0xFF38BDF8), // Cyan sparkle
-      Color(0xFFF472B6), // Pink heart
-      Color(0xFFA78BFA), // Violet star
-      Color(0xFFFFFFFF), // Pure sparkle
+      Color(0xFFFFFC00), // Snapchat Yellow
+      Color(0xFF38BDF8), // Cyan Neon
+      Color(0xFFF472B6), // Pink Sparkle
+      Color(0xFFA78BFA), // Violet Glow
+      Color(0xFF34D399), // Emerald
+      Color(0xFFFFFFFF), // Pure Light
     ];
-    return _DoodleParticle(
-      xRatio: 0.15 + rand.nextDouble() * 0.7,
-      yRatio: 0.1 + rand.nextDouble() * 0.8,
-      size: 11.0 + rand.nextDouble() * 7.0,
-      speed: 0.6 + rand.nextDouble() * 1.2,
+    return _SwaggerParticle(
+      xRatio: 0.10 + rand.nextDouble() * 0.80,
+      yRatio: 0.05 + rand.nextDouble() * 0.85,
+      size: 10.0 + rand.nextDouble() * 8.0,
+      speed: 0.5 + rand.nextDouble() * 1.1,
       opacity: 0.4 + rand.nextDouble() * 0.6,
       wobblePhase: rand.nextDouble() * math.pi * 2,
       glyph: glyphs[rand.nextInt(glyphs.length)],
@@ -51,15 +52,15 @@ class _DoodleParticle {
     wobblePhase += dt * 3.0;
     if (yRatio < -0.1) {
       yRatio = 1.05;
-      xRatio = 0.15 + (math.sin(wobblePhase) * 0.5 + 0.5) * 0.7;
+      xRatio = 0.10 + (math.sin(wobblePhase) * 0.5 + 0.5) * 0.80;
     }
   }
 }
 
-/// 🐾 Snapchat-Style Peek-a-boo Doodle Cat Pull-To-Refresh Widget
-/// Features a playful hand-drawn doodle cat mascot peeking over the top bar,
-/// with animated blinking eyes, cute paws gripping the ledge, winking expressions,
-/// floating doodle stars/sparkles, and a snappy haptic pop on release!
+/// 🕶️ Swagger Squad Pull-To-Refresh Widget
+/// Features a colorful crew of 6 swagger mascot characters posing in a hip-hop stance
+/// with glossy sunglasses, vibrant streetwear hues, floating golden stars,
+/// "POCKET MATES" graffiti logo in the background, and 100% reliable refresh triggering.
 class PocketSnapFlameRefresh extends StatefulWidget {
   final Future<void> Function() onRefresh;
   final Widget child;
@@ -77,15 +78,15 @@ class PocketSnapFlameRefresh extends StatefulWidget {
     super.key,
     required this.onRefresh,
     required this.child,
-    this.triggerDistance = 80.0,
-    this.maxPullDistance = 140.0,
-    this.restingHeight = 75.0,
+    this.triggerDistance = 85.0,
+    this.maxPullDistance = 200.0,
+    this.restingHeight = 140.0,
     this.primaryFlameColor = const Color(0xFFFFFC00),
     this.accentFlameColor = const Color(0xFFFF8906),
-    this.pullText = 'Pull to meet your mates... 🐾',
-    this.readyText = 'Ready to pounce! Release! 😻',
-    this.refreshingText = 'Syncing Pocket Mates... ✨',
-    this.successText = 'Purrfect! All caught up! 🎉',
+    this.pullText = 'Pull down the squad... 🕶️',
+    this.readyText = 'Squad Ready! Release! 🔥',
+    this.refreshingText = 'Pocket Mates Syncing... ⚡',
+    this.successText = 'Squad Synced! Let\'s Go! 🚀',
   });
 
   @override
@@ -95,7 +96,6 @@ class PocketSnapFlameRefresh extends StatefulWidget {
 class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
     with TickerProviderStateMixin {
   double _pullDistance = 0.0;
-  double _rawDrag = 0.0;
   double _startY = 0.0;
   bool _isDragging = false;
   bool _isRefreshing = false;
@@ -106,10 +106,10 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
   late AnimationController _springController;
   late Animation<double> _springAnimation;
 
-  late AnimationController _doodleSpinController;
+  late AnimationController _grooveController;
   late AnimationController _particleTicker;
 
-  final List<_DoodleParticle> _particles = [];
+  final List<_SwaggerParticle> _particles = [];
   final math.Random _random = math.Random();
 
   @override
@@ -117,12 +117,12 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
     super.initState();
     _springController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 320),
+      duration: const Duration(milliseconds: 340),
     );
 
-    _doodleSpinController = AnimationController(
+    _grooveController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 950),
     );
 
     _particleTicker = AnimationController(
@@ -130,8 +130,8 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
       duration: const Duration(seconds: 1),
     )..addListener(_tickParticles);
 
-    for (int i = 0; i < 14; i++) {
-      _particles.add(_DoodleParticle.random(_random));
+    for (int i = 0; i < 16; i++) {
+      _particles.add(_SwaggerParticle.random(_random));
     }
   }
 
@@ -147,7 +147,7 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
   @override
   void dispose() {
     _springController.dispose();
-    _doodleSpinController.dispose();
+    _grooveController.dispose();
     _particleTicker.dispose();
     super.dispose();
   }
@@ -171,14 +171,51 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
   bool _handleScrollNotification(ScrollNotification notification) {
     if (notification.metrics.axis == Axis.vertical) {
       _currentScrollOffset = notification.metrics.pixels;
+
+      // Handle overscroll dragging from native scroll physics
+      if (!_isRefreshing) {
+        if (notification is OverscrollNotification && notification.overscroll < 0) {
+          _handleOverscrollDelta(-notification.overscroll);
+        } else if (notification is ScrollUpdateNotification) {
+          if (notification.metrics.pixels <= 0 && (notification.scrollDelta ?? 0) < 0) {
+            _handleOverscrollDelta(-(notification.scrollDelta ?? 0));
+          }
+        } else if (notification is ScrollEndNotification) {
+          if (_isDragging) {
+            _finishPull();
+          }
+        }
+      }
     }
     return false;
+  }
+
+  void _handleOverscrollDelta(double delta) {
+    _isDragging = true;
+    final newDistance = (_pullDistance + delta * 0.7).clamp(0.0, widget.maxPullDistance);
+    setState(() {
+      _pullDistance = newDistance;
+    });
+
+    if (!_particleTicker.isAnimating) {
+      _particleTicker.repeat();
+    }
+
+    _checkHaptic();
+  }
+
+  void _checkHaptic() {
+    if (_pullDistance >= widget.triggerDistance && !_hasFiredHaptic) {
+      HapticFeedback.mediumImpact();
+      _hasFiredHaptic = true;
+    } else if (_pullDistance < widget.triggerDistance) {
+      _hasFiredHaptic = false;
+    }
   }
 
   void _onPointerDown(PointerDownEvent event) {
     if (_isRefreshing) return;
     _startY = event.position.dy;
-    _rawDrag = 0.0;
     _isDragging = false;
     _hasFiredHaptic = false;
   }
@@ -186,14 +223,13 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
   void _onPointerMove(PointerMoveEvent event) {
     if (_isRefreshing) return;
 
-    if (_currentScrollOffset <= 1.0) {
+    // Allow pulling if close to the top of the scroll view
+    if (_currentScrollOffset <= 5.0) {
       final dy = event.position.dy - _startY;
       if (dy > 0) {
         _isDragging = true;
-        _rawDrag = dy;
-
         final progress = math.min(1.0, dy / (widget.maxPullDistance * 1.8));
-        final damped = math.pow(progress, 0.75) * widget.maxPullDistance;
+        final damped = math.pow(progress, 0.78) * widget.maxPullDistance;
 
         setState(() {
           _pullDistance = damped.clamp(0.0, widget.maxPullDistance);
@@ -203,12 +239,7 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
           _particleTicker.repeat();
         }
 
-        if (_pullDistance >= widget.triggerDistance && !_hasFiredHaptic) {
-          HapticFeedback.mediumImpact();
-          _hasFiredHaptic = true;
-        } else if (_pullDistance < widget.triggerDistance) {
-          _hasFiredHaptic = false;
-        }
+        _checkHaptic();
       }
     }
   }
@@ -235,16 +266,19 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
   }
 
   void _startRefresh() async {
+    if (_isRefreshing) return;
+
     setState(() {
       _isRefreshing = true;
       _isSuccess = false;
     });
 
     _animateTo(widget.restingHeight);
-    _doodleSpinController.repeat();
+    _grooveController.repeat(reverse: true);
     HapticFeedback.mediumImpact();
 
     try {
+      // Execute the actual backend data refresh
       await widget.onRefresh();
       if (!mounted) return;
 
@@ -253,16 +287,16 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
       });
       HapticFeedback.lightImpact();
 
-      await Future.delayed(const Duration(milliseconds: 650));
+      await Future.delayed(const Duration(milliseconds: 700));
       if (!mounted) return;
     } catch (e) {
-      debugPrint('PocketSnapFlameRefresh error: $e');
+      debugPrint('PocketSnapFlameRefresh onRefresh error: $e');
     } finally {
       if (mounted) {
-        _doodleSpinController.stop();
+        _grooveController.stop();
         _particleTicker.stop();
         _animateTo(0.0);
-        await Future.delayed(const Duration(milliseconds: 300));
+        await Future.delayed(const Duration(milliseconds: 320));
         if (mounted) {
           setState(() {
             _isRefreshing = false;
@@ -275,19 +309,9 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
     }
   }
 
-  void _cancelRefresh() {
-    _particleTicker.stop();
-    _animateTo(0.0);
-    setState(() {
-      _hasFiredHaptic = false;
-      _isRefreshing = false;
-      _isSuccess = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final pullRatio = (_pullDistance / widget.triggerDistance).clamp(0.0, 1.5);
+    final pullRatio = (_pullDistance / widget.triggerDistance).clamp(0.0, 1.6);
     final isReady = _pullDistance >= widget.triggerDistance && !_isRefreshing;
 
     return NotificationListener<ScrollNotification>(
@@ -300,20 +324,20 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
         onPointerCancel: _onPointerCancel,
         child: Stack(
           children: [
-            // 🐾 Peek-a-boo Doodle Cat Header
+            // 🕶️ Swagger Squad Header with "POCKET MATES" Logo
             if (_pullDistance > 0 || _isRefreshing)
               Positioned(
                 top: 0,
                 left: 0,
                 right: 0,
                 height: _pullDistance,
-                child: _DoodleMascotHeader(
+                child: _SwaggerSquadHeader(
                   pullRatio: pullRatio,
                   pullDistance: _pullDistance,
                   isRefreshing: _isRefreshing,
                   isReady: isReady,
                   isSuccess: _isSuccess,
-                  spinAnimation: _doodleSpinController,
+                  grooveAnimation: _grooveController,
                   particles: _particles,
                   primaryColor: widget.primaryFlameColor,
                   accentColor: widget.accentFlameColor,
@@ -324,7 +348,7 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
                 ),
               ),
 
-            // Scrollable Child translated downwards on pull
+            // Translated Scrollable Child
             Transform.translate(
               offset: Offset(0, _pullDistance),
               child: widget.child,
@@ -336,15 +360,15 @@ class _PocketSnapFlameRefreshState extends State<PocketSnapFlameRefresh>
   }
 }
 
-/// 🐾 Header Container rendering the Peek-a-boo Doodle Mascot & Particles
-class _DoodleMascotHeader extends StatelessWidget {
+/// 🕶️ Header displaying the Swagger Squad & "POCKET MATES" Logo
+class _SwaggerSquadHeader extends StatelessWidget {
   final double pullRatio;
   final double pullDistance;
   final bool isRefreshing;
   final bool isReady;
   final bool isSuccess;
-  final Animation<double> spinAnimation;
-  final List<_DoodleParticle> particles;
+  final Animation<double> grooveAnimation;
+  final List<_SwaggerParticle> particles;
   final Color primaryColor;
   final Color accentColor;
   final String pullText;
@@ -352,13 +376,13 @@ class _DoodleMascotHeader extends StatelessWidget {
   final String refreshingText;
   final String successText;
 
-  const _DoodleMascotHeader({
+  const _SwaggerSquadHeader({
     required this.pullRatio,
     required this.pullDistance,
     required this.isRefreshing,
     required this.isReady,
     required this.isSuccess,
-    required this.spinAnimation,
+    required this.grooveAnimation,
     required this.particles,
     required this.primaryColor,
     required this.accentColor,
@@ -381,21 +405,17 @@ class _DoodleMascotHeader extends StatelessWidget {
       statusText = pullText;
     }
 
-    // Cat moves upwards/downwards to peek over the bottom edge
-    final peekProgress = isRefreshing ? 1.0 : (pullRatio * 1.1).clamp(0.2, 1.0);
-
     return ClipRect(
       child: Container(
         alignment: Alignment.bottomCenter,
-        padding: const EdgeInsets.only(bottom: 6),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Color(0xFF090D16), // Dark midnight
-              Color(0xFF131B2E), // Rich navy
-              Color(0xFF1E293B), // Soft slate
+              Color(0xFF07090E), // Ultra deep midnight
+              Color(0xFF0F172A), // Slate black
+              Color(0xFF161F33), // Rich navy-slate
             ],
           ),
           borderRadius: const BorderRadius.only(
@@ -405,9 +425,9 @@ class _DoodleMascotHeader extends StatelessWidget {
           border: Border(
             bottom: BorderSide(
               color: isReady || isRefreshing
-                  ? const Color(0xFFFFFC00).withValues(alpha: 0.75)
-                  : const Color(0xFF38BDF8).withValues(alpha: 0.35),
-              width: 1.5,
+                  ? const Color(0xFFFFFC00).withValues(alpha: 0.85)
+                  : const Color(0xFF38BDF8).withValues(alpha: 0.4),
+              width: 1.8,
             ),
           ),
           boxShadow: [
@@ -415,8 +435,8 @@ class _DoodleMascotHeader extends StatelessWidget {
               color: (isReady || isRefreshing
                       ? const Color(0xFFFFFC00)
                       : const Color(0xFF38BDF8))
-                  .withValues(alpha: 0.22),
-              blurRadius: 16,
+                  .withValues(alpha: 0.25),
+              blurRadius: 20,
               offset: const Offset(0, 4),
             ),
           ],
@@ -424,78 +444,85 @@ class _DoodleMascotHeader extends StatelessWidget {
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
-            // Floating Doodle Particles (Stars, Sparkles, Paws)
+            // Floating Sparkle Particles
             Positioned.fill(
               child: CustomPaint(
-                painter: _DoodleParticleCanvasPainter(
+                painter: _SwaggerParticleCanvasPainter(
                   particles: particles,
                   intensity: pullRatio.clamp(0.2, 1.0),
                 ),
               ),
             ),
 
-            // Subtle Ambient Glow
+            // Ambient Glow Sphere Behind Squad
             Positioned(
-              bottom: 8,
+              bottom: 12,
               child: Container(
-                width: 120 * peekProgress,
-                height: 50 * peekProgress,
+                width: 220,
+                height: 70,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: isReady || isRefreshing
-                          ? const Color(0xFFFFFC00).withValues(alpha: 0.35)
-                          : const Color(0xFF38BDF8).withValues(alpha: 0.2),
-                      blurRadius: 28,
-                      spreadRadius: 10,
+                          ? const Color(0xFFFFFC00).withValues(alpha: 0.28)
+                          : const Color(0xFF06B6D4).withValues(alpha: 0.22),
+                      blurRadius: 36,
+                      spreadRadius: 14,
                     ),
                   ],
                 ),
               ),
             ),
 
-            // Content Stack: Doodle Peek Cat + Status Badge
+            // Content: POCKET MATES Logo + Swagger Squad Characters + Status Pill
             OverflowBox(
               alignment: Alignment.bottomCenter,
-              maxHeight: 160,
+              maxHeight: 220,
               minHeight: 0,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 14),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // 🐱 Peek-a-boo Doodle Mascot Character
-                    _DoodlePeekCatGraphic(
+                    // 🔥 "POCKET MATES" Streetwear Graffiti Logo in Background
+                    _buildPocketMatesLogo(),
+
+                    const SizedBox(height: 2),
+
+                    // 🕶️ The Swagger Squad Mascot Vector Illustration
+                    _SwaggerSquadGraphic(
                       pullRatio: pullRatio,
                       isReady: isReady,
                       isRefreshing: isRefreshing,
                       isSuccess: isSuccess,
-                      spinAnimation: spinAnimation,
+                      grooveAnimation: grooveAnimation,
                     ),
+
                     const SizedBox(height: 5),
 
                     // Interactive Status Badge Pill
                     AnimatedOpacity(
-                      duration: const Duration(milliseconds: 150),
-                      opacity: (pullRatio > 0.35 || isRefreshing) ? 1.0 : 0.0,
+                      duration: const Duration(milliseconds: 140),
+                      opacity: (pullRatio > 0.30 || isRefreshing) ? 1.0 : 0.0,
                       child: Container(
                         padding:
-                            const EdgeInsets.symmetric(horizontal: 12, vertical: 3.5),
+                            const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A).withValues(alpha: 0.95),
-                          borderRadius: BorderRadius.circular(16),
+                          color: const Color(0xFF090D16).withValues(alpha: 0.95),
+                          borderRadius: BorderRadius.circular(18),
                           border: Border.all(
                             color: isReady || isRefreshing
-                                ? const Color(0xFFFFFC00).withValues(alpha: 0.8)
+                                ? const Color(0xFFFFFC00).withValues(alpha: 0.9)
                                 : Colors.white24,
-                            width: 1,
+                            width: 1.2,
                           ),
                           boxShadow: const [
                             BoxShadow(
-                              color: Colors.black38,
-                              blurRadius: 6,
+                              color: Colors.black45,
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
                             ),
                           ],
                         ),
@@ -505,13 +532,14 @@ class _DoodleMascotHeader extends StatelessWidget {
                             color: isReady || isRefreshing
                                 ? const Color(0xFFFFFC00)
                                 : Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.3,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
                           ),
                         ),
                       ),
                     ),
+                    const SizedBox(height: 4),
                   ],
                 ),
               ),
@@ -521,45 +549,83 @@ class _DoodleMascotHeader extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildPocketMatesLogo() {
+    final scale = (pullRatio * 0.9 + 0.1).clamp(0.4, 1.0);
+
+    return Transform.scale(
+      scale: scale,
+      child: ShaderMask(
+        shaderCallback: (bounds) => const LinearGradient(
+          colors: [
+            Color(0xFFFFFC00), // Snapchat gold
+            Color(0xFFFF8A00), // Electric orange
+            Color(0xFFFF007A), // Hot magenta
+          ],
+        ).createShader(bounds),
+        child: Text(
+          'POCKET MATES',
+          textAlign: TextAlign.center,
+          style: GoogleFonts.bungee(
+            fontSize: 16.5,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2.5,
+            color: Colors.white,
+            shadows: const [
+              Shadow(
+                color: Color(0xFFFFFC00),
+                blurRadius: 16,
+              ),
+              Shadow(
+                color: Colors.black,
+                offset: Offset(0, 2),
+                blurRadius: 6,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-/// 🐱 Vector-Drawn Peek-a-boo Doodle Cat Mascot
-class _DoodlePeekCatGraphic extends StatelessWidget {
+/// 🕶️ Dynamic Animated Swagger Squad Graphic
+class _SwaggerSquadGraphic extends StatelessWidget {
   final double pullRatio;
   final bool isReady;
   final bool isRefreshing;
   final bool isSuccess;
-  final Animation<double> spinAnimation;
+  final Animation<double> grooveAnimation;
 
-  const _DoodlePeekCatGraphic({
+  const _SwaggerSquadGraphic({
     required this.pullRatio,
     required this.isReady,
     required this.isRefreshing,
     required this.isSuccess,
-    required this.spinAnimation,
+    required this.grooveAnimation,
   });
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: spinAnimation,
+      animation: grooveAnimation,
       builder: (context, child) {
         final bounce = isRefreshing
-            ? math.sin(spinAnimation.value * math.pi * 4) * 3.5
-            : (pullRatio * 4.0).clamp(0.0, 6.0);
+            ? math.sin(grooveAnimation.value * math.pi * 2) * 3.2
+            : (pullRatio * 4.0).clamp(0.0, 5.0);
 
         return Transform.translate(
           offset: Offset(0, -bounce),
           child: SizedBox(
-            width: 72,
-            height: 48,
+            width: 270,
+            height: 82,
             child: CustomPaint(
-              painter: _DoodleCatCustomPainter(
+              painter: _SwaggerSquadCustomPainter(
                 pullRatio: pullRatio,
                 isReady: isReady,
                 isRefreshing: isRefreshing,
                 isSuccess: isSuccess,
-                spinPhase: spinAnimation.value,
+                groovePhase: grooveAnimation.value,
               ),
             ),
           ),
@@ -569,20 +635,28 @@ class _DoodlePeekCatGraphic extends StatelessWidget {
   }
 }
 
-/// 🎨 Custom Painter drawing the cute Doodle Cat peeking over the ledge
-class _DoodleCatCustomPainter extends CustomPainter {
+/// 🎨 Vector Canvas Painter rendering the exact Swagger Crew from the user's reference image
+/// Includes:
+/// 1. Top Center Boss: Arms crossed in 'X', tilted shades
+/// 2. Center Front Boss: Crouched low in swagger squat, arms outstretched
+/// 3. Bottom Left Chiller: Lying on elbow looking up with shades
+/// 4. Left Middle: Pointing/dabbing to the left with shades
+/// 5. Right Front Rocker: Hands doing rock horns 🤘, open hyped mouth & goatee
+/// 6. Top Right Swagger: Leaning right in swagger pose
+/// Plus signature 4-pointed golden sparkle stars (✦)
+class _SwaggerSquadCustomPainter extends CustomPainter {
   final double pullRatio;
   final bool isReady;
   final bool isRefreshing;
   final bool isSuccess;
-  final double spinPhase;
+  final double groovePhase;
 
-  _DoodleCatCustomPainter({
+  _SwaggerSquadCustomPainter({
     required this.pullRatio,
     required this.isReady,
     required this.isRefreshing,
     required this.isSuccess,
-    required this.spinPhase,
+    required this.groovePhase,
   });
 
   @override
@@ -590,198 +664,492 @@ class _DoodleCatCustomPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
 
+    // Line stroke paint
     final strokePaint = Paint()
-      ..color = const Color(0xFF1E293B)
+      ..color = const Color(0xFF0F172A)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.4
+      ..strokeWidth = 2.2
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final bodyFillPaint = Paint()
-      ..color = const Color(0xFFFFFBEB) // Creamy soft white doodle cat
+    // Sunglasses dark paint
+    final shadesPaint = Paint()
+      ..color = const Color(0xFF080C14)
       ..style = PaintingStyle.fill;
 
-    final pinkPaint = Paint()
-      ..color = const Color(0xFFF472B6) // Soft pastel pink
-      ..style = PaintingStyle.fill;
-
-    final darkEyePaint = Paint()
-      ..color = const Color(0xFF0F172A)
-      ..style = PaintingStyle.fill;
-
-    // 1. Cat Head Arc & Ears
-    final headPath = Path();
-    // Left Ear tip
-    headPath.moveTo(w * 0.16, h * 0.10);
-    // Outer left ear down to cheek
-    headPath.quadraticBezierTo(w * 0.10, h * 0.35, w * 0.12, h * 0.85);
-    // Bottom neck across
-    headPath.lineTo(w * 0.88, h * 0.85);
-    // Outer right ear up to right tip
-    headPath.quadraticBezierTo(w * 0.90, h * 0.35, w * 0.84, h * 0.10);
-    // Inner right ear down
-    headPath.lineTo(w * 0.68, h * 0.38);
-    // Top of head curve between ears
-    headPath.quadraticBezierTo(w * 0.50, h * 0.32, w * 0.32, h * 0.38);
-    // Inner left ear up to left tip
-    headPath.close();
-
-    // Fill Head
-    canvas.drawPath(headPath, bodyFillPaint);
-    // Stroke Head
-    canvas.drawPath(headPath, strokePaint);
-
-    // 2. Pink Inner Ears
-    final leftInnerEar = Path()
-      ..moveTo(w * 0.19, h * 0.18)
-      ..lineTo(w * 0.16, h * 0.42)
-      ..lineTo(w * 0.30, h * 0.39)
-      ..close();
-    canvas.drawPath(leftInnerEar, pinkPaint);
-
-    final rightInnerEar = Path()
-      ..moveTo(w * 0.81, h * 0.18)
-      ..lineTo(w * 0.70, h * 0.39)
-      ..lineTo(w * 0.84, h * 0.42)
-      ..close();
-    canvas.drawPath(rightInnerEar, pinkPaint);
-
-    // 3. Cheeks Blush Circles
-    canvas.drawCircle(Offset(w * 0.22, h * 0.66), 4.2, pinkPaint..color = const Color(0xFFFFB5D5).withValues(alpha: 0.8));
-    canvas.drawCircle(Offset(w * 0.78, h * 0.66), 4.2, pinkPaint..color = const Color(0xFFFFB5D5).withValues(alpha: 0.8));
-
-    // 4. Eyes based on state
-    if (isSuccess) {
-      // Happy Closed Crescent Smiling Eyes: ( ^ ‿ ^ )
-      final leftSmileEye = Path()
-        ..moveTo(w * 0.28, h * 0.55)
-        ..quadraticBezierTo(w * 0.35, h * 0.46, w * 0.42, h * 0.55);
-      canvas.drawPath(leftSmileEye, strokePaint..strokeWidth = 2.2);
-
-      final rightSmileEye = Path()
-        ..moveTo(w * 0.58, h * 0.55)
-        ..quadraticBezierTo(w * 0.65, h * 0.46, w * 0.72, h * 0.55);
-      canvas.drawPath(rightSmileEye, strokePaint..strokeWidth = 2.2);
-    } else if (isRefreshing) {
-      // Starry Spinning Eyes: ★ ★
-      _drawDoodleStar(canvas, Offset(w * 0.35, h * 0.53), 5.5, const Color(0xFFFFFC00), strokePaint);
-      _drawDoodleStar(canvas, Offset(w * 0.65, h * 0.53), 5.5, const Color(0xFFFFFC00), strokePaint);
-    } else if (isReady) {
-      // Winking Eye: Left winks (>), Right open wide with heart!
-      // Left Wink ( > )
-      final winkPath = Path()
-        ..moveTo(w * 0.30, h * 0.49)
-        ..lineTo(w * 0.39, h * 0.54)
-        ..lineTo(w * 0.30, h * 0.59);
-      canvas.drawPath(winkPath, strokePaint..strokeWidth = 2.2);
-
-      // Right Big Open Eye with sparkle pupil
-      canvas.drawCircle(Offset(w * 0.65, h * 0.53), 5.5, darkEyePaint);
-      canvas.drawCircle(Offset(w * 0.63, h * 0.51), 1.8, Paint()..color = Colors.white);
-      canvas.drawCircle(Offset(w * 0.67, h * 0.55), 0.9, Paint()..color = Colors.white);
-    } else {
-      // Regular Big Curious Anime/Doodle Eyes
-      canvas.drawCircle(Offset(w * 0.35, h * 0.53), 5.2, darkEyePaint);
-      canvas.drawCircle(Offset(w * 0.33, h * 0.51), 1.8, Paint()..color = Colors.white);
-      canvas.drawCircle(Offset(w * 0.37, h * 0.55), 0.9, Paint()..color = Colors.white);
-
-      canvas.drawCircle(Offset(w * 0.65, h * 0.53), 5.2, darkEyePaint);
-      canvas.drawCircle(Offset(w * 0.63, h * 0.51), 1.8, Paint()..color = Colors.white);
-      canvas.drawCircle(Offset(w * 0.67, h * 0.55), 0.9, Paint()..color = Colors.white);
-    }
-
-    // 5. Button Pink Nose & Cute 'w' Mouth
-    final nosePath = Path()
-      ..moveTo(w * 0.48, h * 0.60)
-      ..lineTo(w * 0.52, h * 0.60)
-      ..lineTo(w * 0.50, h * 0.63)
-      ..close();
-    canvas.drawPath(nosePath, Paint()..color = const Color(0xFFF472B6)..style = PaintingStyle.fill);
-
-    // Mouth: =^･ω･^=
-    final mouthPaint = Paint()
-      ..color = const Color(0xFF1E293B)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
-      ..strokeCap = StrokeCap.round;
-
-    final mouthPath = Path()
-      ..moveTo(w * 0.43, h * 0.66)
-      ..quadraticBezierTo(w * 0.46, h * 0.70, w * 0.50, h * 0.66)
-      ..quadraticBezierTo(w * 0.54, h * 0.70, w * 0.57, h * 0.66);
-    canvas.drawPath(mouthPath, mouthPaint);
-
-    // 6. Whiskers (2 on each cheek)
-    final whiskerPaint = Paint()
-      ..color = const Color(0xFF64748B)
+    // Sunglasses glare paint
+    final glarePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.92)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.3
       ..strokeCap = StrokeCap.round;
 
-    // Left whiskers
-    canvas.drawLine(Offset(w * 0.14, h * 0.58), Offset(w * 0.24, h * 0.62), whiskerPaint);
-    canvas.drawLine(Offset(w * 0.12, h * 0.68), Offset(w * 0.23, h * 0.67), whiskerPaint);
-
-    // Right whiskers
-    canvas.drawLine(Offset(w * 0.86, h * 0.58), Offset(w * 0.76, h * 0.62), whiskerPaint);
-    canvas.drawLine(Offset(w * 0.88, h * 0.68), Offset(w * 0.77, h * 0.67), whiskerPaint);
-
-    // 7. Cute Paws resting on the bottom edge! 🐾
-    _drawCutePaw(canvas, Offset(w * 0.26, h * 0.90), bodyFillPaint, strokePaint);
-    _drawCutePaw(canvas, Offset(w * 0.74, h * 0.90), bodyFillPaint, strokePaint);
-  }
-
-  void _drawCutePaw(Canvas canvas, Offset center, Paint fillPaint, Paint strokePaint) {
-    final pawRect = Rect.fromCenter(center: center, width: 14, height: 11);
-    final pawRRect = RRect.fromRectAndRadius(pawRect, const Radius.circular(6));
-    canvas.drawRRect(pawRRect, fillPaint);
-    canvas.drawRRect(pawRRect, strokePaint..strokeWidth = 1.8);
-
-    // Toe bean indentation
-    final beanPaint = Paint()
-      ..color = const Color(0xFFF472B6)
+    // Character body base paint with soft marshmallow shading
+    final whiteBodyPaint = Paint()
+      ..color = const Color(0xFFF8FAFC)
       ..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(center.dx, center.dy - 1), 2.0, beanPaint);
+
+    // Gold sparkle paint for 4-point stars
+    final goldStarPaint = Paint()
+      ..color = const Color(0xFFFFFC00)
+      ..style = PaintingStyle.fill;
+
+    // --- DRAW 4-POINTED SIGNATURE STARS (✦) FROM USER'S SKETCH ---
+    _drawFourPointStar(canvas, Offset(w * 0.08, h * 0.40), 5.5, goldStarPaint);
+    _drawFourPointStar(canvas, Offset(w * 0.36, h * 0.16), 5.0, goldStarPaint);
+    _drawFourPointStar(canvas, Offset(w * 0.94, h * 0.72), 6.0, goldStarPaint);
+
+    // =========================================================================
+    // CHARACTER 1: TOP-LEFT / LEFT-MIDDLE (Pointing / Dabbing Mate)
+    // Head at (w * 0.20, h * 0.32), leaning left, arms pointing left
+    // =========================================================================
+    {
+      final headCenter = Offset(w * 0.20, h * 0.32);
+      final headRadius = 14.0;
+
+      // Body leaning left
+      final bodyPath = Path()
+        ..moveTo(headCenter.dx, headCenter.dy + headRadius * 0.85)
+        ..lineTo(w * 0.12, h * 0.58)
+        ..lineTo(w * 0.25, h * 0.58)
+        ..close();
+      canvas.drawPath(
+        bodyPath,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFFF472B6), Color(0xFFF8FAFC)],
+          ).createShader(Rect.fromLTWH(w * 0.10, h * 0.30, 40, 30)),
+      );
+      canvas.drawPath(bodyPath, strokePaint);
+
+      // Outstretched pointing arms to the left
+      final leftArm = Path()
+        ..moveTo(headCenter.dx - 6, headCenter.dy + headRadius * 0.8)
+        ..lineTo(w * 0.04, h * 0.32) // pointing hand
+        ..lineTo(w * 0.02, h * 0.30);
+      canvas.drawPath(leftArm, strokePaint..strokeWidth = 2.4);
+
+      final rightArm = Path()
+        ..moveTo(headCenter.dx + 4, headCenter.dy + headRadius * 0.9)
+        ..lineTo(w * 0.08, h * 0.42);
+      canvas.drawPath(rightArm, strokePaint..strokeWidth = 2.4);
+
+      // Head
+      canvas.drawCircle(headCenter, headRadius, whiteBodyPaint);
+      canvas.drawCircle(headCenter, headRadius, strokePaint..strokeWidth = 2.0);
+
+      // Sunglasses
+      _drawSwaggerShades(
+        canvas: canvas,
+        center: Offset(headCenter.dx - 2, headCenter.dy + 1),
+        width: 17,
+        height: 7.5,
+        shadesPaint: shadesPaint,
+        glarePaint: glarePaint,
+      );
+    }
+
+    // =========================================================================
+    // CHARACTER 2: TOP-RIGHT (Fly Swagger Mate)
+    // Head at (w * 0.78, h * 0.25), arms bent in swagger dab pose
+    // =========================================================================
+    {
+      final headCenter = Offset(w * 0.78, h * 0.25);
+      final headRadius = 14.0;
+
+      // Torso
+      final bodyPath = Path()
+        ..moveTo(headCenter.dx - 8, headCenter.dy + headRadius * 0.8)
+        ..lineTo(w * 0.68, h * 0.48)
+        ..lineTo(w * 0.84, h * 0.48)
+        ..lineTo(headCenter.dx + 8, headCenter.dy + headRadius * 0.8)
+        ..close();
+      canvas.drawPath(
+        bodyPath,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topRight,
+            end: Alignment.bottomLeft,
+            colors: [Color(0xFF38BDF8), Color(0xFFF8FAFC)],
+          ).createShader(Rect.fromLTWH(w * 0.65, h * 0.22, 45, 30)),
+      );
+      canvas.drawPath(bodyPath, strokePaint);
+
+      // Bent arm dabbing behind head
+      final armPath = Path()
+        ..moveTo(headCenter.dx + 8, headCenter.dy + headRadius * 0.8)
+        ..lineTo(w * 0.88, h * 0.22)
+        ..lineTo(w * 0.76, h * 0.34);
+      canvas.drawPath(armPath, strokePaint..strokeWidth = 2.4);
+
+      // Head
+      canvas.drawCircle(headCenter, headRadius, whiteBodyPaint);
+      canvas.drawCircle(headCenter, headRadius, strokePaint..strokeWidth = 2.0);
+
+      // Sunglasses angled
+      _drawSwaggerShades(
+        canvas: canvas,
+        center: Offset(headCenter.dx, headCenter.dy + 1),
+        width: 17,
+        height: 7.5,
+        shadesPaint: shadesPaint,
+        glarePaint: glarePaint,
+        angle: 0.12,
+      );
+    }
+
+    // =========================================================================
+    // CHARACTER 3: TOP CENTER (Boss Mate with Crossed Arms)
+    // Head at (w * 0.50, h * 0.18), arms crossed 'X' over chest, tilted head
+    // =========================================================================
+    {
+      final headCenter = Offset(w * 0.50, h * 0.18);
+      final headRadius = 15.0;
+
+      // Upper torso
+      final torsoPath = Path()
+        ..moveTo(headCenter.dx - 12, headCenter.dy + headRadius * 0.8)
+        ..lineTo(w * 0.42, h * 0.50)
+        ..lineTo(w * 0.58, h * 0.50)
+        ..lineTo(headCenter.dx + 12, headCenter.dy + headRadius * 0.8)
+        ..close();
+      canvas.drawPath(
+        torsoPath,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF38BDF8), Color(0xFFF8FAFC)],
+          ).createShader(Rect.fromLTWH(w * 0.40, h * 0.15, 30, 35)),
+      );
+      canvas.drawPath(torsoPath, strokePaint);
+
+      // Folded Crossed Arms 'X'
+      final arm1 = Path()
+        ..moveTo(w * 0.40, h * 0.36)
+        ..lineTo(w * 0.58, h * 0.44);
+      final arm2 = Path()
+        ..moveTo(w * 0.60, h * 0.36)
+        ..lineTo(w * 0.42, h * 0.44);
+      canvas.drawPath(arm1, strokePaint..strokeWidth = 3.0);
+      canvas.drawPath(arm2, strokePaint..strokeWidth = 3.0);
+
+      // Head
+      canvas.drawCircle(headCenter, headRadius, whiteBodyPaint);
+      canvas.drawCircle(headCenter, headRadius, strokePaint..strokeWidth = 2.0);
+
+      // Boss Sunglasses with sharp gleam
+      _drawSwaggerShades(
+        canvas: canvas,
+        center: Offset(headCenter.dx, headCenter.dy + 1),
+        width: 19,
+        height: 8.0,
+        shadesPaint: shadesPaint,
+        glarePaint: glarePaint,
+      );
+
+      // Smirk line under sunglasses
+      final smirk = Path()
+        ..moveTo(headCenter.dx - 3, headCenter.dy + 8)
+        ..quadraticBezierTo(headCenter.dx + 1, headCenter.dy + 9.5, headCenter.dx + 4, headCenter.dy + 7.5);
+      canvas.drawPath(smirk, strokePaint..strokeWidth = 1.6);
+    }
+
+    // =========================================================================
+    // CHARACTER 4: BOTTOM-LEFT (The Chiller Reclining on Elbow)
+    // Head at (w * 0.16, h * 0.74), body stretched horizontally across bottom
+    // =========================================================================
+    {
+      final headCenter = Offset(w * 0.16, h * 0.74);
+      final headRadius = 13.5;
+
+      // Reclined body along ground
+      final bodyPath = Path()
+        ..moveTo(headCenter.dx + headRadius * 0.7, headCenter.dy + 2)
+        ..lineTo(w * 0.38, h * 0.88)
+        ..lineTo(w * 0.38, h * 0.98)
+        ..lineTo(w * 0.08, h * 0.98)
+        ..lineTo(w * 0.08, h * 0.88)
+        ..close();
+      canvas.drawPath(
+        bodyPath,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [Color(0xFFA78BFA), Color(0xFFF8FAFC)],
+          ).createShader(Rect.fromLTWH(w * 0.06, h * 0.70, 70, 25)),
+      );
+      canvas.drawPath(bodyPath, strokePaint);
+
+      // Propping arm: elbow on ground supporting chin
+      final armPath = Path()
+        ..moveTo(w * 0.08, h * 0.94) // elbow
+        ..lineTo(headCenter.dx - 2, headCenter.dy + headRadius * 0.85); // hand to chin
+      canvas.drawPath(armPath, strokePaint..strokeWidth = 2.8);
+
+      // Head
+      canvas.drawCircle(headCenter, headRadius, whiteBodyPaint);
+      canvas.drawCircle(headCenter, headRadius, strokePaint..strokeWidth = 2.0);
+
+      // Reclined Sunglasses looking up
+      _drawSwaggerShades(
+        canvas: canvas,
+        center: Offset(headCenter.dx + 1, headCenter.dy),
+        width: 16,
+        height: 7.0,
+        shadesPaint: shadesPaint,
+        glarePaint: glarePaint,
+        angle: -0.15,
+      );
+    }
+
+    // =========================================================================
+    // CHARACTER 5: RIGHT FRONT (Rocker Mate with Horns 🤘 and Open Mouth)
+    // Head at (w * 0.82, h * 0.60), hands raising rock horns
+    // =========================================================================
+    {
+      final headCenter = Offset(w * 0.82, h * 0.60);
+      final headRadius = 14.5;
+
+      // Torso
+      final bodyPath = Path()
+        ..moveTo(headCenter.dx - 10, headCenter.dy + headRadius * 0.8)
+        ..lineTo(w * 0.72, h * 0.92)
+        ..lineTo(w * 0.90, h * 0.92)
+        ..lineTo(headCenter.dx + 10, headCenter.dy + headRadius * 0.8)
+        ..close();
+      canvas.drawPath(
+        bodyPath,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.bottomLeft,
+            end: Alignment.topRight,
+            colors: [Color(0xFF34D399), Color(0xFFF8FAFC)],
+          ).createShader(Rect.fromLTWH(w * 0.70, h * 0.55, 40, 35)),
+      );
+      canvas.drawPath(bodyPath, strokePaint);
+
+      // Left arm with Rock Horns 🤘
+      final leftRockArm = Path()
+        ..moveTo(headCenter.dx - 10, headCenter.dy + headRadius * 0.7)
+        ..lineTo(w * 0.68, h * 0.44);
+      canvas.drawPath(leftRockArm, strokePaint..strokeWidth = 2.6);
+      _drawRockHornsHand(canvas, Offset(w * 0.67, h * 0.40), strokePaint);
+
+      // Right arm with Rock Horns 🤘
+      final rightRockArm = Path()
+        ..moveTo(headCenter.dx + 10, headCenter.dy + headRadius * 0.7)
+        ..lineTo(w * 0.93, h * 0.45);
+      canvas.drawPath(rightRockArm, strokePaint..strokeWidth = 2.6);
+      _drawRockHornsHand(canvas, Offset(w * 0.94, h * 0.41), strokePaint);
+
+      // Head
+      canvas.drawCircle(headCenter, headRadius, whiteBodyPaint);
+      canvas.drawCircle(headCenter, headRadius, strokePaint..strokeWidth = 2.0);
+
+      // Rocker Sunglasses
+      _drawSwaggerShades(
+        canvas: canvas,
+        center: Offset(headCenter.dx, headCenter.dy - 1),
+        width: 17,
+        height: 7.5,
+        shadesPaint: shadesPaint,
+        glarePaint: glarePaint,
+      );
+
+      // Open hyping mouth (😮) with goatee
+      canvas.drawCircle(
+        Offset(headCenter.dx, headCenter.dy + 7),
+        3.2,
+        Paint()..color = const Color(0xFF0F172A),
+      );
+      // Small soul patch goatee
+      canvas.drawCircle(
+        Offset(headCenter.dx, headCenter.dy + 12),
+        1.6,
+        Paint()..color = const Color(0xFF0F172A),
+      );
+    }
+
+    // =========================================================================
+    // CHARACTER 6: CENTER FRONT (The Swagger Leader in Low Sumo Crouch)
+    // Head at (w * 0.48, h * 0.58), arms outstretched, wide squat legs
+    // =========================================================================
+    {
+      final headCenter = Offset(w * 0.48, h * 0.58);
+      final headRadius = 17.5;
+
+      // Wide Squat Legs & Outstretched Arms
+      final legsPath = Path()
+        // Left squat leg
+        ..moveTo(headCenter.dx - 12, headCenter.dy + headRadius * 0.8)
+        ..lineTo(w * 0.33, h * 0.75)
+        ..lineTo(w * 0.28, h * 0.98)
+        ..lineTo(w * 0.38, h * 0.98)
+        ..lineTo(w * 0.44, h * 0.82)
+        // Center crotch
+        ..lineTo(headCenter.dx, h * 0.84)
+        // Right squat leg
+        ..lineTo(w * 0.52, h * 0.82)
+        ..lineTo(w * 0.58, h * 0.98)
+        ..lineTo(w * 0.68, h * 0.98)
+        ..lineTo(w * 0.63, h * 0.75)
+        ..lineTo(headCenter.dx + 12, headCenter.dy + headRadius * 0.8)
+        ..close();
+
+      canvas.drawPath(
+        legsPath,
+        Paint()
+          ..shader = const LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFFFFC00), Color(0xFFF8FAFC)],
+          ).createShader(Rect.fromLTWH(w * 0.26, h * 0.55, 90, 40)),
+      );
+      canvas.drawPath(legsPath, strokePaint..strokeWidth = 2.4);
+
+      // Outstretched Left Arm (pointing to left mate)
+      final leftArm = Path()
+        ..moveTo(headCenter.dx - 14, headCenter.dy + headRadius * 0.6)
+        ..lineTo(w * 0.25, h * 0.52);
+      canvas.drawPath(leftArm, strokePaint..strokeWidth = 3.2);
+
+      // Outstretched Right Arm (pointing right)
+      final rightArm = Path()
+        ..moveTo(headCenter.dx + 14, headCenter.dy + headRadius * 0.6)
+        ..lineTo(w * 0.68, h * 0.56);
+      canvas.drawPath(rightArm, strokePaint..strokeWidth = 3.2);
+
+      // Head
+      canvas.drawCircle(headCenter, headRadius, whiteBodyPaint);
+      canvas.drawCircle(headCenter, headRadius, strokePaint..strokeWidth = 2.2);
+
+      // Center Leader Big Glossy Sunglasses
+      _drawSwaggerShades(
+        canvas: canvas,
+        center: Offset(headCenter.dx, headCenter.dy + 1),
+        width: 23,
+        height: 9.5,
+        shadesPaint: shadesPaint,
+        glarePaint: glarePaint,
+      );
+
+      // Confident mouth line
+      final mouth = Path()
+        ..moveTo(headCenter.dx - 4, headCenter.dy + 10)
+        ..lineTo(headCenter.dx + 4, headCenter.dy + 10);
+      canvas.drawPath(mouth, strokePaint..strokeWidth = 1.8);
+    }
   }
 
-  void _drawDoodleStar(Canvas canvas, Offset center, double radius, Color color, Paint borderPaint) {
-    final path = Path();
-    for (int i = 0; i < 5; i++) {
-      final angle = -math.pi / 2 + i * (math.pi * 2 / 5);
-      final innerAngle = angle + math.pi / 5;
-      final x = center.dx + math.cos(angle) * radius;
-      final y = center.dy + math.sin(angle) * radius;
-      final inX = center.dx + math.cos(innerAngle) * (radius * 0.45);
-      final inY = center.dy + math.sin(innerAngle) * (radius * 0.45);
-      if (i == 0) {
-        path.moveTo(x, y);
-      } else {
-        path.lineTo(x, y);
-      }
-      path.lineTo(inX, inY);
+  /// 🕶️ Helper to draw glossy sunglasses with diagonal reflective gleam lines
+  void _drawSwaggerShades({
+    required Canvas canvas,
+    required Offset center,
+    required double width,
+    required double height,
+    required Paint shadesPaint,
+    required Paint glarePaint,
+    double angle = 0.0,
+  }) {
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    if (angle != 0.0) {
+      canvas.rotate(angle);
     }
+
+    final halfW = width / 2;
+    final halfH = height / 2;
+    final lensW = halfW * 0.90;
+
+    // Left Lens
+    final leftRect = Rect.fromCenter(
+      center: Offset(-halfW * 0.55, 0),
+      width: lensW,
+      height: height,
+    );
+    final leftRRect = RRect.fromRectAndRadius(leftRect, Radius.circular(height * 0.35));
+    canvas.drawRRect(leftRRect, shadesPaint);
+
+    // Right Lens
+    final rightRect = Rect.fromCenter(
+      center: Offset(halfW * 0.55, 0),
+      width: lensW,
+      height: height,
+    );
+    final rightRRect = RRect.fromRectAndRadius(rightRect, Radius.circular(height * 0.35));
+    canvas.drawRRect(rightRRect, shadesPaint);
+
+    // Bridge
+    canvas.drawLine(
+      Offset(-halfW * 0.15, -halfH * 0.3),
+      Offset(halfW * 0.15, -halfH * 0.3),
+      shadesPaint..strokeWidth = 2.0..style = PaintingStyle.stroke,
+    );
+    shadesPaint.style = PaintingStyle.fill;
+
+    // White diagonal gleam streaks on lenses (//)
+    canvas.drawLine(
+      Offset(-halfW * 0.75, halfH * 0.4),
+      Offset(-halfW * 0.45, -halfH * 0.4),
+      glarePaint,
+    );
+    canvas.drawLine(
+      Offset(halfW * 0.35, halfH * 0.4),
+      Offset(halfW * 0.65, -halfH * 0.4),
+      glarePaint,
+    );
+
+    canvas.restore();
+  }
+
+  /// 🤘 Helper to draw Rock Horns hand gesture
+  void _drawRockHornsHand(Canvas canvas, Offset pos, Paint stroke) {
+    // Index finger up
+    canvas.drawLine(pos, Offset(pos.dx - 2, pos.dy - 6), stroke..strokeWidth = 2.0);
+    // Pinky finger up
+    canvas.drawLine(Offset(pos.dx + 4, pos.dy), Offset(pos.dx + 6, pos.dy - 6), stroke..strokeWidth = 2.0);
+    // Closed middle fingers
+    canvas.drawCircle(Offset(pos.dx + 1, pos.dy), 2.2, stroke..strokeWidth = 1.8..style = PaintingStyle.stroke);
+  }
+
+  /// ✦ Helper to draw 4-pointed golden sparkle star
+  void _drawFourPointStar(Canvas canvas, Offset center, double radius, Paint paint) {
+    final path = Path();
+    final inner = radius * 0.28;
+
+    path.moveTo(center.dx, center.dy - radius);
+    path.quadraticBezierTo(center.dx, center.dy - inner, center.dx + inner, center.dy);
+    path.quadraticBezierTo(center.dx + inner, center.dy, center.dx + radius, center.dy);
+    path.quadraticBezierTo(center.dx + inner, center.dy, center.dx, center.dy + inner);
+    path.quadraticBezierTo(center.dx, center.dy + inner, center.dx, center.dy + radius);
+    path.quadraticBezierTo(center.dx, center.dy + inner, center.dx - inner, center.dy);
+    path.quadraticBezierTo(center.dx - inner, center.dy, center.dx - radius, center.dy);
+    path.quadraticBezierTo(center.dx - inner, center.dy, center.dx, center.dy - inner);
     path.close();
 
-    canvas.drawPath(path, Paint()..color = color..style = PaintingStyle.fill);
-    canvas.drawPath(path, borderPaint..strokeWidth = 1.2);
+    canvas.drawPath(path, paint);
   }
 
   @override
-  bool shouldRepaint(covariant _DoodleCatCustomPainter oldDelegate) {
+  bool shouldRepaint(covariant _SwaggerSquadCustomPainter oldDelegate) {
     return oldDelegate.pullRatio != pullRatio ||
         oldDelegate.isReady != isReady ||
         oldDelegate.isRefreshing != isRefreshing ||
         oldDelegate.isSuccess != isSuccess ||
-        oldDelegate.spinPhase != spinPhase;
+        oldDelegate.groovePhase != groovePhase;
   }
 }
 
-/// 🎨 Particle Canvas Painter for Floating Doodle Glyphs (⭐, ✨, 🐾, ✦)
-class _DoodleParticleCanvasPainter extends CustomPainter {
-  final List<_DoodleParticle> particles;
+/// 🎨 Particle Canvas Painter for Floating Street Sparkles
+class _SwaggerParticleCanvasPainter extends CustomPainter {
+  final List<_SwaggerParticle> particles;
   final double intensity;
 
-  _DoodleParticleCanvasPainter({
+  _SwaggerParticleCanvasPainter({
     required this.particles,
     required this.intensity,
   });
@@ -789,7 +1157,7 @@ class _DoodleParticleCanvasPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (final p in particles) {
-      final x = p.xRatio * size.width + math.sin(p.wobblePhase) * 10.0;
+      final x = p.xRatio * size.width + math.sin(p.wobblePhase) * 12.0;
       final y = p.yRatio * size.height;
 
       final textSpan = TextSpan(
@@ -809,5 +1177,5 @@ class _DoodleParticleCanvasPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _DoodleParticleCanvasPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _SwaggerParticleCanvasPainter oldDelegate) => true;
 }
