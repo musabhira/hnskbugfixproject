@@ -1642,35 +1642,26 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   onLongPress: () => _showMessageContextMenu(message, isMe),
                   child: Container(
                     decoration: BoxDecoration(
-                      gradient: isMe
-                          ? const LinearGradient(
-                              colors: [Color(0xFFFFFC00), Color(0xFFFFD600)], // Signature Snapchat Cyber-Yellow
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                          : const LinearGradient(
-                              colors: [Color(0xFF1E2433), Color(0xFF131722)], // Deep Obsidian Glass
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
+                      color: isMe
+                          ? const Color(0xFFFFFC00)
+                          : const Color(0xFF161C26),
                       borderRadius: BorderRadius.circular(16).copyWith(
-                        bottomRight: isMe ? const Radius.circular(3) : const Radius.circular(16),
-                        bottomLeft: !isMe ? const Radius.circular(3) : const Radius.circular(16),
+                        bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+                        bottomLeft: !isMe ? const Radius.circular(4) : const Radius.circular(16),
                       ),
                       border: Border.all(
                         color: isMe
-                            ? const Color(0xFFFFD600).withValues(alpha: 0.8)
+                            ? Colors.transparent
                             : Colors.white.withValues(alpha: 0.08),
                         width: 1,
                       ),
                       boxShadow: [
                         BoxShadow(
                           color: isMe
-                              ? const Color(0xFFFFD600).withValues(alpha: 0.25)
-                              : Colors.black.withValues(alpha: 0.4),
-                          offset: const Offset(0, 3),
-                          blurRadius: 8,
-                          spreadRadius: 0.5,
+                              ? Colors.black.withValues(alpha: 0.1)
+                              : Colors.black.withValues(alpha: 0.25),
+                          offset: const Offset(0, 2),
+                          blurRadius: 6,
                         )
                       ],
                     ),

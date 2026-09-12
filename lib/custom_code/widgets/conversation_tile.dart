@@ -283,30 +283,43 @@ class _ConversationTileState extends State<ConversationTile> {
 
     return material.Material(
       color: Colors.transparent,
-      child: material.InkWell(
-        onTap: () {
-          final isSnap = widget.conversation.lastMessage?.contains('Snap') == true ||
-              widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
-              widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true;
-          if (isSnap && widget.conversation.unreadCount > 0 && widget.onSnapViewTap != null) {
-            widget.onSnapViewTap!();
-          } else {
-            widget.onTap();
-          }
-        },
-        onLongPress: widget.onLongPress,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: Border(
-              bottom: BorderSide(
-                color: borderColor,
-                width: 1,
-              ),
-            ),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 3.5),
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF131B26).withValues(alpha: 0.75)
+              : Colors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.07)
+                : Colors.black.withValues(alpha: 0.05),
+            width: 1,
           ),
-          child: Row(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 1.5),
+            ),
+          ],
+        ),
+        child: material.InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            final isSnap = widget.conversation.lastMessage?.contains('Snap') == true ||
+                widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
+                widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true;
+            if (isSnap && widget.conversation.unreadCount > 0 && widget.onSnapViewTap != null) {
+              widget.onSnapViewTap!();
+            } else {
+              widget.onTap();
+            }
+          },
+          onLongPress: widget.onLongPress,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
             children: [
               GestureDetector(
                 onTap: widget.conversation.hasStatus

@@ -84,6 +84,29 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   int _refreshKeyCount = 0;
   late PageController _pageController;
   int _searchTabIndex = 0; // 0 for People, 1 for Products
+  int _searchPeopleFilterIndex = 0; // 0: All, 1: Humans, 2: Robots
+  bool _isCongestedSearch = false; // Toggle for Congested / Compact View
+  int _searchPeopleOffset = 0;
+  bool _hasMorePeopleSearch = true;
+  bool _isLoadingMorePeopleSearch = false;
+  int _searchProductsOffset = 0;
+  bool _hasMoreProductsSearch = true;
+  bool _isLoadingMoreProductsSearch = false;
+
+  List<Map<String, dynamic>> get _filteredPersonSearchResults {
+    if (_searchPeopleFilterIndex == 1) {
+      return _personSearchResults.where((p) {
+        final id = p['user_id']?.toString() ?? p['id']?.toString() ?? '';
+        return !PocketRobotService.isRobotId(id);
+      }).toList();
+    } else if (_searchPeopleFilterIndex == 2) {
+      return _personSearchResults.where((p) {
+        final id = p['user_id']?.toString() ?? p['id']?.toString() ?? '';
+        return PocketRobotService.isRobotId(id);
+      }).toList();
+    }
+    return _personSearchResults;
+  }
   List<Map<String, dynamic>> _personSearchResults = [];
   List<Map<String, dynamic>> _productSearchResults = [];
   bool _isSearchingPeople = false;
@@ -199,12 +222,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Future<void> _performSearch(String query) async {
-    if (query.trim().isEmpty) {
+    final trimmed = query.trim();
+    if (trimmed.isEmpty) {
       safeSetState(() {
         _personSearchResults = [];
         _productSearchResults = [];
         _isSearchingPeople = false;
         _isSearchingProducts = false;
+        _searchPeopleOffset = 0;
+        _searchProductsOffset = 0;
+        _hasMorePeopleSearch = true;
+        _hasMoreProductsSearch = true;
       });
       return;
     }
@@ -212,25 +240,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     safeSetState(() {
       _isSearchingPeople = true;
       _isSearchingProducts = true;
+      _searchPeopleOffset = 0;
+      _searchProductsOffset = 0;
+      _hasMorePeopleSearch = true;
+      _hasMoreProductsSearch = true;
     });
 
     try {
-      // 1. Search People
+      // 1. Search People (with robot inclusions)
       final peopleResponse = await supabase
           .from('profile')
           .select()
-          .or('name.ilike.%$query%,slug.ilike.%$query%')
-          .limit(15);
+          .or('name.ilike.%$trimmed%,slug.ilike.%$trimmed%')
+          .range(0, 14);
 
       // 2. Search Products (Gallery & Services)
       final galleryResults = await supabase
           .from('gallery')
           .select('*, profile(name, verified, profile_image_url)')
-          .ilike('title', '%$query%')
-          .limit(20);
+          .ilike('title', '%$trimmed%')
+          .range(0, 14);
 
       safeSetState(() {
         _personSearchResults = List<Map<String, dynamic>>.from(peopleResponse);
+        _hasMorePeopleSearch = _personSearchResults.length >= 15;
 
         // Map gallery results for products (marking services appropriately)
         List<Map<String, dynamic>> products = [];
@@ -239,6 +272,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           products.add({...item, 'type': isService ? 'service' : 'gallery'});
         }
         _productSearchResults = products;
+        _hasMoreProductsSearch = products.length >= 15;
 
         _isSearchingPeople = false;
         _isSearchingProducts = false;
@@ -250,6 +284,76 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         _isSearchingProducts = false;
       });
     }
+  }
+
+  Future<void> _loadMoreSearchPeople() async {
+    if (_isLoadingMorePeopleSearch || !_hasMorePeopleSearch || _searchQuery.trim().isEmpty) return;
+    setState(() => _isLoadingMorePeopleSearch = true);
+    try {
+      final nextOffset = _searchPeopleOffset + 15;
+      final query = _searchQuery.trim();
+      final peopleResponse = await supabase
+          .from('profile')
+          .select()
+          .or('name.ilike.%$query%,slug.ilike.%$query%')
+          .range(nextOffset, nextOffset + 14);
+      final newPeople = List<Map<String, dynamic>>.from(peopleResponse);
+      if (mounted) {
+        safeSetState(() {
+          _personSearchResults.addAll(newPeople);
+          _searchPeopleOffset = nextOffset;
+          _hasMorePeopleSearch = newPeople.length >= 15;
+          _isLoadingMorePeopleSearch = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Load more people error: $e');
+      if (mounted) safeSetState(() => _isLoadingMorePeopleSearch = false);
+    }
+  }
+
+  Future<void> _loadMoreSearchProducts() async {
+    if (_isLoadingMoreProductsSearch || !_hasMoreProductsSearch || _searchQuery.trim().isEmpty) return;
+    setState(() => _isLoadingMoreProductsSearch = true);
+    try {
+      final nextOffset = _searchProductsOffset + 15;
+      final query = _searchQuery.trim();
+      final galleryResults = await supabase
+          .from('gallery')
+          .select('*, profile(name, verified, profile_image_url)')
+          .ilike('title', '%$query%')
+          .range(nextOffset, nextOffset + 14);
+
+      List<Map<String, dynamic>> products = [];
+      for (var item in galleryResults) {
+        final isService = item['is_service'] == true;
+        products.add({...item, 'type': isService ? 'service' : 'gallery'});
+      }
+      if (mounted) {
+        safeSetState(() {
+          _productSearchResults.addAll(products);
+          _searchProductsOffset = nextOffset;
+          _hasMoreProductsSearch = products.length >= 15;
+          _isLoadingMoreProductsSearch = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Load more products error: $e');
+      if (mounted) safeSetState(() => _isLoadingMoreProductsSearch = false);
+    }
+  }
+
+  bool _onSearchScrollNotification(ScrollNotification notification) {
+    if (notification.metrics.pixels >= notification.metrics.maxScrollExtent - 250) {
+      if (_searchQuery.trim().isNotEmpty) {
+        if (_searchTabIndex == 0 && !_isLoadingMorePeopleSearch && _hasMorePeopleSearch) {
+          _loadMoreSearchPeople();
+        } else if (_searchTabIndex == 1 && !_isLoadingMoreProductsSearch && _hasMoreProductsSearch) {
+          _loadMoreSearchProducts();
+        }
+      }
+    }
+    return false;
   }
 
   @override
@@ -932,14 +1036,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                     controller: _pageController,
                                     onPageChanged: _onPageChanged,
                                     children: [
-                                      material.CustomScrollView(
-                                        physics: const BouncingScrollPhysics(
-                                            parent:
-                                                AlwaysScrollableScrollPhysics()),
-                                        slivers: [
-                                          _buildChatListSliver(
-                                              conversationsAsync),
-                                        ],
+                                      material.NotificationListener<ScrollNotification>(
+                                        onNotification: _onSearchScrollNotification,
+                                        child: material.CustomScrollView(
+                                          physics: const BouncingScrollPhysics(
+                                              parent:
+                                                  AlwaysScrollableScrollPhysics()),
+                                          slivers: [
+                                            _buildChatListSliver(
+                                                conversationsAsync),
+                                          ],
+                                        ),
                                       ),
                                       _buildVibesSection(),
                                       ThoughtsFeedSection(
@@ -1745,7 +1852,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           slivers: [
             const SliverToBoxAdapter(child: SizedBox(height: 8)),
             if (_searchQuery.isNotEmpty) ...[
-              // Search Tabs (People / Products)
+              // Search Tabs (People / Products) + Congested View Toggle
               SliverToBoxAdapter(
                 child: Padding(
                   padding:
@@ -1753,223 +1860,349 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   child: Row(
                     children: [
                       _buildSearchTabItem('People', 0),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       _buildSearchTabItem('Products', 1),
+                      const Spacer(),
+                      material.InkWell(
+                        onTap: () {
+                          safeSetState(() {
+                            _isCongestedSearch = !_isCongestedSearch;
+                          });
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: _isCongestedSearch
+                                ? const Color(0xFFFFFC00).withValues(alpha: 0.18)
+                                : material.Colors.white.withValues(alpha: 0.06),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: _isCongestedSearch
+                                  ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
+                                  : material.Colors.white.withValues(alpha: 0.1),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                _isCongestedSearch
+                                    ? material.Icons.grid_view_rounded
+                                    : material.Icons.view_agenda_outlined,
+                                size: 13,
+                                color: _isCongestedSearch
+                                    ? const Color(0xFFFFFC00)
+                                    : material.Colors.white70,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                _isCongestedSearch ? 'Congested' : 'Normal',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: _isCongestedSearch
+                                      ? const Color(0xFFFFFC00)
+                                      : material.Colors.white70,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
 
               if (_searchTabIndex == 0) ...[
-                // People: Filtered Active Conversations first
-                if (filteredConversations.isNotEmpty) ...[
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                      child: Text(
-                        'Active Chats',
-                        style: GoogleFonts.outfit(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: material.Colors.white.withValues(alpha: 0.4),
-                          letterSpacing: 0.5,
-                        ),
+                // Sub-filter chips for People (All, Humans, Robots)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildSearchFilterChip(
+                            label: 'All',
+                            isSelected: _searchPeopleFilterIndex == 0,
+                            onTap: () => safeSetState(() => _searchPeopleFilterIndex = 0),
+                          ),
+                          const SizedBox(width: 8),
+                          _buildSearchFilterChip(
+                            label: 'Humans',
+                            icon: material.Icons.person_rounded,
+                            isSelected: _searchPeopleFilterIndex == 1,
+                            onTap: () => safeSetState(() => _searchPeopleFilterIndex = 1),
+                          ),
+                          const SizedBox(width: 8),
+                          _buildSearchFilterChip(
+                            label: 'Robots',
+                            icon: material.Icons.smart_toy_rounded,
+                            isSelected: _searchPeopleFilterIndex == 2,
+                            onTap: () => safeSetState(() => _searchPeopleFilterIndex = 2),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        final conversation = filteredConversations[index];
-                        if (conversation.id == 'notifications_aggregator') {
-                          return _buildNotificationsTile(
-                              allNotifications.length);
-                        }
-                        return ConversationTile(
-                          key: ValueKey(conversation.id),
-                          conversation: conversation,
-                          currentUserId: _currentUserId ?? '',
-                          onTap: () {
-                            if (conversation.isTool) {
-                              _navigateToTool(conversation.toolTitle ?? '');
-                              return;
-                            }
+                ),
 
-                            if (conversation.isNotification) {
-                              _showNotificationDetails(context, conversation);
-                            } else if (conversation.isActiveTimer) {
-                              if (conversation.teamData != null) {
-                                try {
-                                  final team =
-                                      Team.fromJson(conversation.teamData!);
-                                  Navigator.push(
-                                    context,
-                                    material.MaterialPageRoute(
-                                      builder: (context) =>
-                                          TeamDetailPage(team: team),
-                                    ),
-                                  );
-                                } catch (e) {
-                                  debugPrint('Team error: $e');
-                                }
-                              }
-                            } else if (conversation.isGroup) {
-                              Navigator.push(
-                                context,
-                                material.MaterialPageRoute(
-                                  builder: (context) => WhatsAppGroupChat(
-                                    groupId: conversation.id,
-                                    groupName: conversation.name,
-                                    groupImage: conversation.imageUrl,
-                                  ),
-                                ),
-                              );
-                            } else {
-                              // Mark as read
-                              ref
-                                  .read(conversationsProvider.notifier)
-                                  .markAsRead(conversation.id, false);
+                // People: Filtered Active Conversations first
+                Builder(
+                  builder: (context) {
+                    final displayActiveConversations = filteredConversations.where((c) {
+                      if (_searchPeopleFilterIndex == 1) {
+                        return !PocketRobotService.isRobotId(c.id);
+                      } else if (_searchPeopleFilterIndex == 2) {
+                        return PocketRobotService.isRobotId(c.id);
+                      }
+                      return true;
+                    }).toList();
 
-                              Navigator.push(
-                                context,
-                                material.MaterialPageRoute(
-                                  builder: (context) => WhatsAppGroupChat(
-                                    groupId: 'p:${conversation.id}',
-                                    groupName: conversation.name,
-                                    groupImage: conversation.imageUrl,
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                          onLongPress: () => _showConversationActionSheet(conversation),
-                          onSnapCameraTap: () {
-                            PocketSnapService.launchSnapWorkflow(
-                              context,
-                              userId: _currentUserId ?? '',
-                              profileId: _currentUserId ?? '',
-                              preselectedRecipientId: conversation.id,
-                              onUploaded: _handleRefresh,
-                            );
-                          },
-                          onSnapViewTap: () {
-                            SnapViewDialog.show(
-                              context: context,
-                              mediaUrl: conversation.snapMediaUrl ?? conversation.imageUrl ?? '',
-                              caption: conversation.snapCaption,
-                              senderName: conversation.name,
-                              isMe: false,
-                              onBurned: () {
-                                ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
-                                if (PocketRobotService.isRobotId(conversation.id)) {
-                                  PocketRobotService.markRobotSnapAsRead(_currentUserId ?? '', conversation.id);
-                                }
-                                _handleRefresh();
-                              },
-                            );
-                          },
-                          onStatusTap: () {
-                            if (conversation.hasStatus &&
-                                conversation.statusData != null) {
-                              Navigator.push(
-                                context,
-                                material.MaterialPageRoute(
-                                  builder: (context) => StatusViewerWrapper(
-                                    allStatusGroups: [
-                                      {
-                                        'profile': {
-                                          'id': conversation.id,
-                                          'name': conversation.name,
-                                          'profile_image_url':
-                                              conversation.imageUrl,
-                                        },
-                                        'statuses': conversation.statusData,
-                                        'is_own': false,
-                                      }
-                                    ],
-                                    initialGroupIndex: 0,
-                                    currentUserId: _currentUserId ?? '',
-                                    currentProfileId: profileId ?? '',
-                                    isFromGroup: true,
-                                  ),
-                                ),
-                              );
-                            }
-                          },
-                        );
-                      },
-                      childCount: filteredConversations.length,
-                    ),
-                  ),
-                ],
+                    if (displayActiveConversations.isEmpty) {
+                      return const SliverToBoxAdapter(child: SizedBox.shrink());
+                    }
 
-                // Recommended registered user profiles horizontally at the bottom
-                SliverToBoxAdapter(
-                  child: _personSearchResults.isEmpty && !_isSearchingPeople
-                      ? (filteredConversations.isEmpty
-                          ? Padding(
-                              padding: const EdgeInsets.only(top: 80),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    material.Icons.search_rounded,
-                                    size: 64,
-                                    color: material.Colors.white
-                                        .withValues(alpha: 0.1),
-                                  ),
-                                  const SizedBox(height: 16),
-                                  Text(
-                                    'No results for "$_searchQuery"',
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 16,
-                                      color: material.Colors.white
-                                          .withValues(alpha: 0.3),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                          : const SizedBox.shrink())
-                      : Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.fromLTRB(20, 24, 20, 12),
-                              child: Row(
-                                children: [
-                                  Icon(material.Icons.people_rounded,
-                                      size: 18,
-                                      color: isDark
-                                          ? const Color(0xFFFFFC00)
-                                          : const Color(0xFFFFFC00)),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'SUGGESTED PEOPLE',
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                      color: isDark
-                                          ? const Color(0xFFFFFC00)
-                                          : const Color(0xFFFFFC00),
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
+                    return SliverMainAxisGroup(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                            child: Text(
+                              'Active Chats',
+                              style: GoogleFonts.outfit(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: material.Colors.white.withValues(alpha: 0.4),
+                                letterSpacing: 0.5,
                               ),
                             ),
-                            SizedBox(
-                              height: 120,
-                              child: ListView.builder(
-                                scrollDirection: Axis.horizontal,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                itemCount: _personSearchResults.length,
-                                itemBuilder: (context, index) {
-                                  final person = _personSearchResults[index];
+                          ),
+                        ),
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              final conversation = displayActiveConversations[index];
+                              if (conversation.id == 'notifications_aggregator') {
+                                return _buildNotificationsTile(
+                                    allNotifications.length);
+                              }
+                              return ConversationTile(
+                                key: ValueKey(conversation.id),
+                                conversation: conversation,
+                                currentUserId: _currentUserId ?? '',
+                                onTap: () {
+                                  if (conversation.isTool) {
+                                    _navigateToTool(conversation.toolTitle ?? '');
+                                    return;
+                                  }
+
+                                  if (conversation.isNotification) {
+                                    _showNotificationDetails(context, conversation);
+                                  } else if (conversation.isActiveTimer) {
+                                    if (conversation.teamData != null) {
+                                      try {
+                                        final team =
+                                            Team.fromJson(conversation.teamData!);
+                                        Navigator.push(
+                                          context,
+                                          material.MaterialPageRoute(
+                                            builder: (context) =>
+                                                TeamDetailPage(team: team),
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        debugPrint('Team error: $e');
+                                      }
+                                    }
+                                  } else if (conversation.isGroup) {
+                                    Navigator.push(
+                                      context,
+                                      material.MaterialPageRoute(
+                                        builder: (context) => WhatsAppGroupChat(
+                                          groupId: conversation.id,
+                                          groupName: conversation.name,
+                                          groupImage: conversation.imageUrl,
+                                        ),
+                                      ),
+                                    );
+                                  } else {
+                                    ref
+                                        .read(conversationsProvider.notifier)
+                                        .markAsRead(conversation.id, false);
+
+                                    Navigator.push(
+                                      context,
+                                      material.MaterialPageRoute(
+                                        builder: (context) => WhatsAppGroupChat(
+                                          groupId: 'p:${conversation.id}',
+                                          groupName: conversation.name,
+                                          groupImage: conversation.imageUrl,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                onLongPress: () => _showConversationActionSheet(conversation),
+                                onSnapCameraTap: () {
+                                  PocketSnapService.launchSnapWorkflow(
+                                    context,
+                                    userId: _currentUserId ?? '',
+                                    profileId: _currentUserId ?? '',
+                                    preselectedRecipientId: conversation.id,
+                                    onUploaded: _handleRefresh,
+                                  );
+                                },
+                                onSnapViewTap: () {
+                                  SnapViewDialog.show(
+                                    context: context,
+                                    mediaUrl: conversation.snapMediaUrl ?? conversation.imageUrl ?? '',
+                                    caption: conversation.snapCaption,
+                                    senderName: conversation.name,
+                                    isMe: false,
+                                    onBurned: () {
+                                      ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
+                                      if (PocketRobotService.isRobotId(conversation.id)) {
+                                        PocketRobotService.markRobotSnapAsRead(_currentUserId ?? '', conversation.id);
+                                      }
+                                      _handleRefresh();
+                                    },
+                                  );
+                                },
+                                onStatusTap: () {
+                                  if (conversation.hasStatus &&
+                                      conversation.statusData != null) {
+                                    Navigator.push(
+                                      context,
+                                      material.MaterialPageRoute(
+                                        builder: (context) => StatusViewerWrapper(
+                                          allStatusGroups: [
+                                            {
+                                              'profile': {
+                                                'id': conversation.id,
+                                                'name': conversation.name,
+                                                'profile_image_url':
+                                                    conversation.imageUrl,
+                                              },
+                                              'statuses': conversation.statusData,
+                                              'is_own': false,
+                                            }
+                                          ],
+                                          initialGroupIndex: 0,
+                                          currentUserId: _currentUserId ?? '',
+                                          currentProfileId: profileId ?? '',
+                                          isFromGroup: true,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              );
+                            },
+                            childCount: displayActiveConversations.length,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+
+                // Directory / Global Search Results
+                Builder(
+                  builder: (context) {
+                    final peopleResults = _filteredPersonSearchResults;
+                    if (peopleResults.isEmpty && !_isSearchingPeople) {
+                      return SliverToBoxAdapter(
+                        child: filteredConversations.isEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.only(top: 60),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      material.Icons.search_rounded,
+                                      size: 56,
+                                      color: material.Colors.white
+                                          .withValues(alpha: 0.1),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'No results for "$_searchQuery"',
+                                      style: GoogleFonts.outfit(
+                                        fontSize: 15,
+                                        color: material.Colors.white
+                                            .withValues(alpha: 0.3),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      );
+                    }
+
+                    if (peopleResults.isEmpty) {
+                      return const SliverToBoxAdapter(child: SizedBox.shrink());
+                    }
+
+                    return SliverMainAxisGroup(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _searchPeopleFilterIndex == 2
+                                      ? material.Icons.smart_toy_rounded
+                                      : material.Icons.people_rounded,
+                                  size: 16,
+                                  color: const Color(0xFFFFFC00),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  _searchPeopleFilterIndex == 1
+                                      ? 'HUMANS (${peopleResults.length})'
+                                      : (_searchPeopleFilterIndex == 2
+                                          ? 'ROBOTS (${peopleResults.length})'
+                                          : 'PEOPLE (${peopleResults.length})'),
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: const Color(0xFFFFFC00),
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        if (_isCongestedSearch)
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            sliver: SliverGrid(
+                              gridDelegate:
+                                  const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 3,
+                                mainAxisSpacing: 8,
+                                crossAxisSpacing: 8,
+                                childAspectRatio: 0.88,
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) {
+                                  final person = peopleResults[index];
                                   final name = person['name'] ?? 'Unknown';
                                   final avatarUrl = person['profile_image_url'];
+                                  final userId = person['user_id']?.toString() ??
+                                      person['id']?.toString() ??
+                                      '';
+                                  final isRobot =
+                                      PocketRobotService.isRobotId(userId);
 
                                   return GestureDetector(
                                     onTap: () {
@@ -1978,7 +2211,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                         material.MaterialPageRoute(
                                           builder: (context) =>
                                               WhatsAppGroupChat(
-                                            groupId: 'p:${person['user_id']}',
+                                            groupId: 'p:$userId',
                                             groupName: name,
                                             groupImage: avatarUrl,
                                           ),
@@ -1988,72 +2221,346 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       });
                                     },
                                     child: Container(
-                                      width: 80,
-                                      margin: const EdgeInsets.symmetric(
-                                          horizontal: 6),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: isDark
+                                            ? const Color(0xFF131B26)
+                                            : material.Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: isRobot
+                                              ? const Color(0xFFFFFC00)
+                                                  .withValues(alpha: 0.35)
+                                              : (isDark
+                                                  ? material.Colors.white
+                                                      .withValues(alpha: 0.08)
+                                                  : material.Colors.black
+                                                      .withValues(alpha: 0.06)),
+                                          width: 1,
+                                        ),
+                                      ),
                                       child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
-                                          Container(
-                                            padding: const EdgeInsets.all(2),
-                                            decoration: BoxDecoration(
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color: (isDark
-                                                        ? const Color(
-                                                            0xFFFFFC00)
-                                                        : const Color(
-                                                            0xFFFFFC00))
-                                                    .withValues(alpha: 0.5),
-                                                width: 1.5,
+                                          Stack(
+                                            clipBehavior: Clip.none,
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 22,
+                                                backgroundImage: avatarUrl != null
+                                                    ? NetworkImage(avatarUrl)
+                                                    : null,
+                                                backgroundColor:
+                                                    const Color(0xFFFFFC00),
+                                                child: avatarUrl == null
+                                                    ? Text(
+                                                        name.isNotEmpty
+                                                            ? name[0]
+                                                                .toUpperCase()
+                                                            : '?',
+                                                        style: const TextStyle(
+                                                          color: material
+                                                              .Colors.black,
+                                                          fontSize: 13,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                        ),
+                                                      )
+                                                    : null,
                                               ),
-                                            ),
-                                            child: CircleAvatar(
-                                              radius: 26,
-                                              backgroundImage: avatarUrl != null
-                                                  ? NetworkImage(avatarUrl)
-                                                  : null,
-                                              backgroundColor: isDark
-                                                  ? const Color(0xFFFFFC00)
-                                                  : const Color(0xFFFFFC00),
-                                              child: avatarUrl == null
-                                                  ? Text(
-                                                      name.isNotEmpty
-                                                          ? name[0]
-                                                              .toUpperCase()
-                                                          : '?',
-                                                      style: const TextStyle(
+                                              if (isRobot)
+                                                Positioned(
+                                                  bottom: -2,
+                                                  right: -2,
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.all(2),
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                      color: Color(0xFFFFFC00),
+                                                      shape: BoxShape.circle,
+                                                    ),
+                                                    child: const Icon(
+                                                        material.Icons
+                                                            .smart_toy_rounded,
+                                                        size: 10,
                                                         color: material
-                                                            .Colors.black,
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                      ),
-                                                    )
-                                                  : null,
-                                            ),
+                                                            .Colors.black),
+                                                  ),
+                                                ),
+                                            ],
                                           ),
                                           const SizedBox(height: 6),
                                           Text(
                                             name,
                                             style: GoogleFonts.outfit(
-                                              color: material.Colors.white
-                                                  .withValues(alpha: 0.8),
+                                              color: isDark
+                                                  ? material.Colors.white
+                                                      .withValues(alpha: 0.9)
+                                                  : material.Colors.black87,
                                               fontSize: 11,
+                                              fontWeight: FontWeight.w600,
                                             ),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                             textAlign: TextAlign.center,
                                           ),
+                                          if (isRobot)
+                                            Text(
+                                              'AI Bot',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFFFC00),
+                                                fontSize: 9,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
                                         ],
                                       ),
                                     ),
                                   );
                                 },
+                                childCount: peopleResults.length,
                               ),
                             ),
-                          ],
-                        ),
+                          )
+                        else
+                          SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final person = peopleResults[index];
+                                final name = person['name'] ?? 'Unknown';
+                                final avatarUrl = person['profile_image_url'];
+                                final userId = person['user_id']?.toString() ??
+                                    person['id']?.toString() ??
+                                    '';
+                                final isRobot =
+                                    PocketRobotService.isRobotId(userId);
+                                final bio = person['bio'] ??
+                                    (isRobot ? 'AI Companion' : '');
+
+                                return Container(
+                                  margin: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 3.5),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? const Color(0xFF131B26)
+                                        : material.Colors.white,
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isRobot
+                                          ? const Color(0xFFFFFC00)
+                                              .withValues(alpha: 0.3)
+                                          : (isDark
+                                              ? material.Colors.white
+                                                  .withValues(alpha: 0.06)
+                                              : material.Colors.black
+                                                  .withValues(alpha: 0.05)),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Stack(
+                                        children: [
+                                          CircleAvatar(
+                                            radius: 23,
+                                            backgroundImage: avatarUrl != null
+                                                ? NetworkImage(avatarUrl)
+                                                : null,
+                                            backgroundColor:
+                                                const Color(0xFFFFFC00),
+                                            child: avatarUrl == null
+                                                ? Text(
+                                                    name.isNotEmpty
+                                                        ? name[0].toUpperCase()
+                                                        : '?',
+                                                    style: const TextStyle(
+                                                      color:
+                                                          material.Colors.black,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  )
+                                                : null,
+                                          ),
+                                          if (isRobot)
+                                            Positioned(
+                                              bottom: 0,
+                                              right: 0,
+                                              child: Container(
+                                                padding:
+                                                    const EdgeInsets.all(2),
+                                                decoration: const BoxDecoration(
+                                                  color: Color(0xFFFFFC00),
+                                                  shape: BoxShape.circle,
+                                                ),
+                                                child: const Icon(
+                                                    material.Icons
+                                                        .smart_toy_rounded,
+                                                    size: 10,
+                                                    color:
+                                                        material.Colors.black),
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Flexible(
+                                                  child: Text(
+                                                    name,
+                                                    style: GoogleFonts.outfit(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                      color: isDark
+                                                          ? material.Colors.white
+                                                          : material
+                                                              .Colors.black87,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow:
+                                                        TextOverflow.ellipsis,
+                                                  ),
+                                                ),
+                                                if (isRobot) ...[
+                                                  const SizedBox(width: 6),
+                                                  Container(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 5,
+                                                        vertical: 1.5),
+                                                    decoration: BoxDecoration(
+                                                      color: const Color(
+                                                              0xFFFFFC00)
+                                                          .withValues(
+                                                              alpha: 0.2),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              6),
+                                                    ),
+                                                    child: Text(
+                                                      'AI BOT',
+                                                      style: GoogleFonts.outfit(
+                                                        fontSize: 9,
+                                                        fontWeight:
+                                                            FontWeight.bold,
+                                                        color: const Color(
+                                                            0xFFFFFC00),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                            if (bio.isNotEmpty) ...[
+                                              const SizedBox(height: 2),
+                                              Text(
+                                                bio,
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 12,
+                                                  color: isDark
+                                                      ? material.Colors.white
+                                                          .withValues(
+                                                              alpha: 0.5)
+                                                      : material.Colors.black54,
+                                                ),
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                      material.InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                            context,
+                                            material.MaterialPageRoute(
+                                              builder: (context) =>
+                                                  WhatsAppGroupChat(
+                                                groupId: 'p:$userId',
+                                                groupName: name,
+                                                groupImage: avatarUrl,
+                                              ),
+                                            ),
+                                          ).then((_) {
+                                            ref.invalidate(
+                                                conversationsProvider);
+                                          });
+                                        },
+                                        borderRadius: BorderRadius.circular(20),
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 12, vertical: 6),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFFFC00),
+                                            borderRadius:
+                                                BorderRadius.circular(20),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Icon(
+                                                  material.Icons
+                                                      .chat_bubble_outline_rounded,
+                                                  size: 13,
+                                                  color: material.Colors.black),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                'Chat',
+                                                style: GoogleFonts.outfit(
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: material.Colors.black,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                              childCount: peopleResults.length,
+                            ),
+                          ),
+                      ],
+                    );
+                  },
                 ),
+
+                // People lazy loading spinner
+                if (_isLoadingMorePeopleSearch)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
               ] else ...[
                 // Products Search Results
                 if (_productSearchResults.isEmpty && !_isSearchingProducts)
@@ -2066,6 +2573,27 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   TextStyle(color: material.Colors.white70))),
                     ),
                   )
+                else if (_isCongestedSearch)
+                  SliverPadding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    sliver: SliverGrid(
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        mainAxisSpacing: 8,
+                        crossAxisSpacing: 8,
+                        childAspectRatio: 0.78,
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        (context, index) {
+                          final product = _productSearchResults[index];
+                          return _buildCongestedProductCard(product);
+                        },
+                        childCount: _productSearchResults.length,
+                      ),
+                    ),
+                  )
                 else
                   SliverList(
                     delegate: SliverChildBuilderDelegate(
@@ -2074,6 +2602,25 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         return _buildProductResultTile(product);
                       },
                       childCount: _productSearchResults.length,
+                    ),
+                  ),
+
+                // Products lazy loading spinner
+                if (_isLoadingMoreProductsSearch)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 20),
+                      child: Center(
+                        child: SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
               ],
@@ -3302,6 +3849,183 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     ),
                   ],
                 ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchFilterChip({
+    required String label,
+    required bool isSelected,
+    required VoidCallback onTap,
+    IconData? icon,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return material.InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFFFFFC00)
+              : (isDark
+                  ? material.Colors.white.withValues(alpha: 0.05)
+                  : material.Colors.black.withValues(alpha: 0.04)),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected
+                ? const Color(0xFFFFFC00)
+                : (isDark
+                    ? material.Colors.white.withValues(alpha: 0.08)
+                    : material.Colors.black.withValues(alpha: 0.06)),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              Icon(
+                icon,
+                size: 13,
+                color: isSelected ? material.Colors.black : material.Colors.white70,
+              ),
+              const SizedBox(width: 4),
+            ],
+            Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: isSelected
+                    ? material.Colors.black
+                    : material.Colors.white.withValues(alpha: 0.7),
+                fontSize: 11.5,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCongestedProductCard(Map<String, dynamic> product) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bool isService = product['type'] == 'service';
+    final imageUrl = product['image_url'];
+    final title = product['title'] ?? 'Product';
+    final price = product['price'];
+
+    return material.Material(
+      color: material.Colors.transparent,
+      child: material.InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            material.MaterialPageRoute(
+              builder: (context) => MainProfileWidget(
+                userId: product['user_id'] ?? '',
+              ),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(14),
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF131B26) : material.Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark
+                  ? material.Colors.white.withValues(alpha: 0.08)
+                  : material.Colors.black.withValues(alpha: 0.06),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(13)),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      imageUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(
+                                color: material.Colors.grey.withValues(alpha: 0.1),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                color: material.Colors.grey.withValues(alpha: 0.1),
+                                child: const Icon(material.Icons.image_not_supported_rounded,
+                                    size: 20, color: material.Colors.grey),
+                              ),
+                            )
+                          : Container(
+                              color: material.Colors.grey.withValues(alpha: 0.1),
+                              child: const Icon(material.Icons.inventory_2_rounded,
+                                  size: 24, color: material.Colors.grey),
+                            ),
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: (isService
+                                    ? material.Colors.blue
+                                    : material.Colors.purple)
+                                .withValues(alpha: 0.85),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            isService ? 'SRV' : 'ITEM',
+                            style: GoogleFonts.outfit(
+                              fontSize: 8,
+                              fontWeight: FontWeight.bold,
+                              color: material.Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(6.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? material.Colors.white : material.Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (price != null)
+                      Text(
+                        '₹$price',
+                        style: GoogleFonts.outfit(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFFFFFC00),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

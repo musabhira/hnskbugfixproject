@@ -284,13 +284,13 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
         children: [
         // Minimal Sleek Tab Switcher
         Container(
-          height: 34,
-          margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+          height: 30,
+          margin: const EdgeInsets.symmetric(horizontal: 48, vertical: 4),
           decoration: BoxDecoration(
             color: isDark
                 ? const Color(0xFF1E293B).withValues(alpha: 0.5)
                 : Colors.black.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(17),
+            borderRadius: BorderRadius.circular(15),
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.08)
@@ -301,11 +301,11 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
             controller: _tabController,
             indicator: BoxDecoration(
               color: const Color(0xFFFFFC00),
-              borderRadius: BorderRadius.circular(17),
+              borderRadius: BorderRadius.circular(15),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
-                  blurRadius: 6,
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                  blurRadius: 4,
                   offset: const Offset(0, 1),
                 ),
               ],
@@ -314,9 +314,9 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
             labelColor: Colors.black,
             unselectedLabelColor: isDark ? Colors.white60 : Colors.black54,
             labelStyle:
-                GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 12),
+                GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 11.5),
             unselectedLabelStyle:
-                GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 12),
+                GoogleFonts.outfit(fontWeight: FontWeight.w600, fontSize: 11.5),
             dividerColor: Colors.transparent,
             tabs: const [
               Tab(text: 'Public'),

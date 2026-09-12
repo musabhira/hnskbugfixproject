@@ -1868,9 +1868,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           physics: const NeverScrollableScrollPhysics(),
                           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                             crossAxisCount: 2,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 14,
-                            childAspectRatio: 0.76,
+                            crossAxisSpacing: 10,
+                            mainAxisSpacing: 10,
+                            childAspectRatio: 1.1,
                           ),
                           itemCount: filteredTools.length,
                           itemBuilder: (context, index) {
@@ -1887,7 +1887,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 color: isDark
                                     ? const Color(0xFF131B26).withValues(alpha: 0.9)
                                     : Colors.white,
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(16),
                                 border: Border.all(
                                   color: isFav
                                       ? const Color(0xFFFFFC00).withValues(alpha: 0.8)
@@ -1898,9 +1898,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 3),
+                                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
                                   ),
                                 ],
                               ),
@@ -1908,23 +1908,24 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                 color: Colors.transparent,
                                 child: InkWell(
                                   onTap: tool['onTap'] as VoidCallback,
-                                  borderRadius: BorderRadius.circular(20),
+                                  borderRadius: BorderRadius.circular(16),
                                   child: Padding(
-                                    padding: const EdgeInsets.all(10),
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
                                     child: Column(
                                       crossAxisAlignment: CrossAxisAlignment.stretch,
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
                                         // Top Frame / Icon Preview Area
                                         Container(
-                                          height: 84,
+                                          height: 48,
                                           decoration: BoxDecoration(
                                             color: isDark
                                                 ? toolColor.withValues(alpha: 0.12)
                                                 : toolColor.withValues(alpha: 0.08),
-                                            borderRadius: BorderRadius.circular(16),
+                                            borderRadius: BorderRadius.circular(12),
                                             border: Border.all(
-                                              color: toolColor.withValues(alpha: 0.25),
-                                              width: 1,
+                                              color: toolColor.withValues(alpha: 0.22),
+                                              width: 0.8,
                                             ),
                                           ),
                                           child: Stack(
@@ -1933,25 +1934,25 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                                 child: Icon(
                                                   tool['icon'] as IconData,
                                                   color: toolColor,
-                                                  size: 34,
+                                                  size: 24,
                                                 ),
                                               ),
                                               // Top-right Favorite Button
                                               Positioned(
-                                                top: 4,
-                                                right: 4,
+                                                top: 2,
+                                                right: 2,
                                                 child: GestureDetector(
                                                   onTap: () => _toggleFavoriteTool(title),
                                                   behavior: HitTestBehavior.opaque,
                                                   child: Container(
-                                                    padding: const EdgeInsets.all(5),
+                                                    padding: const EdgeInsets.all(4),
                                                     decoration: BoxDecoration(
                                                       color: Colors.black.withValues(alpha: 0.35),
                                                       shape: BoxShape.circle,
                                                     ),
                                                     child: Icon(
                                                       isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                                      size: 14,
+                                                      size: 12,
                                                       color: isFav ? Colors.redAccent : Colors.white70,
                                                     ),
                                                   ),
@@ -1959,8 +1960,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                               ),
                                               // Top-left Share Button
                                               Positioned(
-                                                top: 4,
-                                                left: 4,
+                                                top: 2,
+                                                left: 2,
                                                 child: GestureDetector(
                                                   onTap: () {
                                                     final userId = SupaFlow.client.auth.currentUser?.id;
@@ -1984,14 +1985,14 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                                   },
                                                   behavior: HitTestBehavior.opaque,
                                                   child: Container(
-                                                    padding: const EdgeInsets.all(5),
+                                                    padding: const EdgeInsets.all(4),
                                                     decoration: BoxDecoration(
                                                       color: Colors.black.withValues(alpha: 0.35),
                                                       shape: BoxShape.circle,
                                                     ),
                                                     child: const Icon(
                                                       Icons.share_outlined,
-                                                      size: 13,
+                                                      size: 11,
                                                       color: Colors.white70,
                                                     ),
                                                   ),
@@ -2001,50 +2002,43 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                           ),
                                         ),
 
-                                        const SizedBox(height: 8),
-
-                                        // Title
-                                        Text(
-                                          title,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.outfit(
-                                            color: FlutterFlowTheme.of(context).primaryText,
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700,
+                                        // Title & Subtitle
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                title,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.outfit(
+                                                  color: FlutterFlowTheme.of(context).primaryText,
+                                                  fontSize: 12,
+                                                  fontWeight: FontWeight.w700,
+                                                ),
+                                              ),
+                                              Text(
+                                                subtitle,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: GoogleFonts.inter(
+                                                  color: FlutterFlowTheme.of(context).secondaryText,
+                                                  fontSize: 9.5,
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
 
-                                        const SizedBox(height: 2),
-
-                                        // Subtitle
-                                        Text(
-                                          subtitle,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: GoogleFonts.inter(
-                                            color: FlutterFlowTheme.of(context).secondaryText,
-                                            fontSize: 10.5,
-                                          ),
-                                        ),
-
-                                        const Spacer(),
-
-                                        // Pill Action Button ("OPEN", matching reference image "WATCH" pill)
+                                        // Compact Pill Action Button
                                         Container(
-                                          height: 28,
+                                          height: 24,
                                           decoration: BoxDecoration(
                                             color: isDark
                                                 ? const Color(0xFF1E2638)
                                                 : const Color(0xFF2B1B4D),
-                                            borderRadius: BorderRadius.circular(14),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black.withValues(alpha: 0.2),
-                                                blurRadius: 4,
-                                                offset: const Offset(0, 1),
-                                              ),
-                                            ],
+                                            borderRadius: BorderRadius.circular(12),
                                           ),
                                           alignment: Alignment.center,
                                           child: Row(
@@ -2053,16 +2047,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                                               Text(
                                                 'OPEN',
                                                 style: GoogleFonts.outfit(
-                                                  fontSize: 11,
+                                                  fontSize: 9.5,
                                                   fontWeight: FontWeight.w800,
-                                                  letterSpacing: 0.8,
+                                                  letterSpacing: 0.6,
                                                   color: Colors.white,
                                                 ),
                                               ),
-                                              const SizedBox(width: 4),
+                                              const SizedBox(width: 3),
                                               const Icon(
                                                 Icons.arrow_forward_rounded,
-                                                size: 12,
+                                                size: 10,
                                                 color: Colors.white,
                                               ),
                                             ],

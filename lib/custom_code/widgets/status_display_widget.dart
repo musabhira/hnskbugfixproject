@@ -883,27 +883,27 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     if (widget.isVertical) {
       return InkWell(
         onTap: _openStatusUpload,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(14),
             border: Border.all(
-                color: Colors.yellow.withValues(alpha: 0.3), width: 1),
-            color: Colors.yellow.withValues(alpha: 0.05),
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.3), width: 1),
+            color: const Color(0xFFFFFC00).withValues(alpha: 0.05),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               const Icon(Icons.add_circle_outline_rounded,
-                  color: Colors.yellow, size: 20),
-              const SizedBox(width: 12),
+                  color: Color(0xFFFFFC00), size: 18),
+              const SizedBox(width: 8),
               Text(
-                'Add',
+                'Add Vibe',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
-                  fontSize: 16,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -984,61 +984,72 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         : null;
 
     if (!isHorizontal) {
-      return InkWell(
-        onTap: () => _openStatusViewer(index, activeList),
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 10),
-          child: Row(
-            children: [
-              _buildAvatarWithRing(
-                profileImageUrl,
-                name,
-                60,
-                isGroup: isGroup,
-                isWatched: isFullyWatched,
-                vibePreviewUrl: vibePreviewUrl,
-                avatarConfigMap: avatarConfigMap,
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(isOwn ? 'My Vibes' : name,
-                        style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 2),
-                    Text(
-                        isGroup
-                            ? 'Community Update • $timeString'
-                            : (isOwn
-                                ? 'Tap to see your vibes'
-                                : timeString),
-                        style: GoogleFonts.outfit(
-                            color: Colors.white.withValues(alpha: 0.5),
-                            fontSize: 13.5)),
-                  ],
+      return Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+        decoration: BoxDecoration(
+          color: const Color(0xFF131B26).withValues(alpha: 0.7),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.06),
+            width: 1,
+          ),
+        ),
+        child: InkWell(
+          onTap: () => _openStatusViewer(index, activeList),
+          borderRadius: BorderRadius.circular(14),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                _buildAvatarWithRing(
+                  profileImageUrl,
+                  name,
+                  46,
+                  isGroup: isGroup,
+                  isWatched: isFullyWatched,
+                  vibePreviewUrl: vibePreviewUrl,
+                  avatarConfigMap: avatarConfigMap,
                 ),
-              ),
-              if (!isOwn)
-                if (!_followingStatuses.any((f) => f['profile']?['id'] == profile?['id']) && !isGroup)
-                  TextButton.icon(
-                    style: TextButton.styleFrom(
-                      backgroundColor: Colors.white.withValues(alpha: 0.1),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                    ),
-                    icon: const Icon(Icons.person_add, color: Color(0xFFFFFC00), size: 16),
-                    label: Text('Friend', style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold)),
-                    onPressed: () => _addFriend(profile?['id']?.toString() ?? ''),
-                  )
-                else
-                  const Icon(Icons.chevron_right_rounded, 
-                      color: Colors.white24, size: 24),
-            ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(isOwn ? 'My Vibes' : name,
+                          style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 1),
+                      Text(
+                          isGroup
+                              ? 'Community Update • $timeString'
+                              : (isOwn
+                                  ? 'Tap to see your vibes'
+                                  : timeString),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white.withValues(alpha: 0.45),
+                              fontSize: 11.5)),
+                    ],
+                  ),
+                ),
+                if (!isOwn)
+                  if (!_followingStatuses.any((f) => f['profile']?['id'] == profile?['id']) && !isGroup)
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        backgroundColor: Colors.white.withValues(alpha: 0.08),
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      icon: const Icon(Icons.person_add, color: Color(0xFFFFFC00), size: 14),
+                      label: Text('Friend', style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 11, fontWeight: FontWeight.bold)),
+                      onPressed: () => _addFriend(profile?['id']?.toString() ?? ''),
+                    )
+                  else
+                    const Icon(Icons.chevron_right_rounded, 
+                        color: Colors.white24, size: 20),
+              ],
+            ),
           ),
         ),
       );
