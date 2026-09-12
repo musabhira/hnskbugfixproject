@@ -271,7 +271,7 @@ class _ConversationTileState extends State<ConversationTile> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.05)
+        ? Colors.white.withValues(alpha: 0.07)
         : Colors.black.withValues(alpha: 0.05);
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final secondaryTextColor = isDark
@@ -291,9 +291,7 @@ class _ConversationTileState extends State<ConversationTile> {
               : Colors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.07)
-                : Colors.black.withValues(alpha: 0.05),
+            color: borderColor,
             width: 1,
           ),
           boxShadow: [
@@ -793,6 +791,7 @@ class _ConversationTileState extends State<ConversationTile> {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }
