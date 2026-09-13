@@ -15,22 +15,28 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
     super.key,
     this.width,
     this.height,
+    this.initialTab = 'people',
   });
 
   final double? width;
   final double? height;
+  final String? initialTab;
 
   @override
   State<SearchPage> createState() => _SearchPageState();
 }
 
 class _SearchPageState extends State<SearchPage> {
+  late String _selectedTab; // 'people' or 'market'
   String _currentSearchQuery = '';
   String _currentFilter = ''; // '', 'human', 'robot'
   int _totalResults = 0;
@@ -38,6 +44,12 @@ class _SearchPageState extends State<SearchPage> {
   bool _hasSearched = false;
   List<String> _searchHistory = [];
   final Map<String, int> _searchAnalytics = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedTab = (widget.initialTab == 'market') ? 'market' : 'people';
+  }
 
   String get _effectiveSearchQuery {
     if (_currentSearchQuery.isNotEmpty) return _currentSearchQuery;
@@ -96,6 +108,106 @@ class _SearchPageState extends State<SearchPage> {
 
     // Optional: Track popular searches
     _updatePopularSearches();
+  }
+
+  Widget _buildTopTabs() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Container(
+        height: 38,
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white10),
+        ),
+        padding: const EdgeInsets.all(3),
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  if (_selectedTab != 'people') {
+                    safeSetState(() {
+                      _selectedTab = 'people';
+                    });
+                  }
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  decoration: BoxDecoration(
+                    color: _selectedTab == 'people'
+                        ? const Color(0xFFFFFC00)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.people_alt_rounded,
+                        size: 15,
+                        color: _selectedTab == 'people' ? Colors.black : Colors.white60,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'People',
+                        style: GoogleFonts.outfit(
+                          color: _selectedTab == 'people' ? Colors.black : Colors.white70,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  if (_selectedTab != 'market') {
+                    safeSetState(() {
+                      _selectedTab = 'market';
+                    });
+                  }
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  decoration: BoxDecoration(
+                    color: _selectedTab == 'market'
+                        ? const Color(0xFFFFFC00)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.storefront_rounded,
+                        size: 17,
+                        color: _selectedTab == 'market' ? Colors.black : Colors.white60,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Market',
+                        style: GoogleFonts.outfit(
+                          color: _selectedTab == 'market' ? Colors.black : Colors.white70,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   void _logSearchAnalytics(String query, int resultCount) {
@@ -244,35 +356,47 @@ class _SearchPageState extends State<SearchPage> {
               onSearchChanged: _handleSearchChanged,
             ),
 
-            // Quick Minimal Filter Chips (All, Humans, Robots)
-            _buildMinimalFilterChips(),
+            // Top Tabs (People vs Market)
+            _buildTopTabs(),
 
-            // Results Counter / Status
-            if (_hasSearched)
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 18.0, vertical: 2.0),
-                child: Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    _searchStatus,
-                    style: GoogleFonts.inter(
-                      color: Colors.white38,
-                      fontSize: 10.5,
-                      fontWeight: FontWeight.w500,
-                      letterSpacing: 0.1,
+            if (_selectedTab == 'people') ...[
+              // Quick Minimal Filter Chips (All, Humans, Robots)
+              _buildMinimalFilterChips(),
+
+              // Results Counter / Status
+              if (_hasSearched)
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 18.0, vertical: 2.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      _searchStatus,
+                      style: GoogleFonts.inter(
+                        color: Colors.white38,
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w500,
+                        letterSpacing: 0.1,
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-            // Content
-            Expanded(
-              child: SearchResultsWidget(
-                searchQuery: _effectiveSearchQuery,
-                onResultsChanged: _handleResultsChanged,
+              // People Content
+              Expanded(
+                child: SearchResultsWidget(
+                  searchQuery: _effectiveSearchQuery,
+                  onResultsChanged: _handleResultsChanged,
+                ),
               ),
-            ),
+            ] else ...[
+              // Market Content
+              Expanded(
+                child: MarketSearchResultsWidget(
+                  searchQuery: _currentSearchQuery,
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -509,7 +633,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
     try {
       final response = await _supabase
           .from('profile')
-          .select('profile_image_url, shop_name, verified, user_id, name')
+          .select('profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
           .order('name', ascending: true)
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
 
@@ -536,12 +660,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
 
       safeSetState(() {
         var resultsToDisplay = List<Map<String, dynamic>>.from(response);
-        if (_currentPlan == 'free' && resultsToDisplay.length > 5) {
-          resultsToDisplay = resultsToDisplay.sublist(0, 5);
-          _hasMoreData = false;
-        } else {
-          _hasMoreData = response.length == _pageSize;
-        }
+        _hasMoreData = response.length == _pageSize;
         _searchResults = [...robotMaps, ...resultsToDisplay];
         _isLoading = false;
         _currentPage++;
@@ -589,7 +708,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       if (!isRobotOnly) {
         final queryBuilder = _supabase
             .from('profile')
-            .select('profile_image_url, shop_name, verified, user_id, name')
+            .select('profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
             .neq('is_private', true);
 
         if (isHumanOnly) {
@@ -629,12 +748,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
 
       safeSetState(() {
         var resultsToDisplay = List<Map<String, dynamic>>.from(response);
-        if (_currentPlan == 'free' && resultsToDisplay.length > 5) {
-          resultsToDisplay = resultsToDisplay.sublist(0, 5);
-          _hasMoreData = false;
-        } else {
-          _hasMoreData = response.length == _pageSize;
-        }
+        _hasMoreData = response.length == _pageSize;
         _searchResults = [...robotMaps, ...resultsToDisplay];
         _isLoading = false;
         _currentPage++;
@@ -665,7 +779,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       if (_currentQuery.isEmpty) {
         response = await _supabase
             .from('profile')
-            .select('profile_image_url, shop_name, verified, user_id, name')
+            .select('profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
             .neq('is_private', true)
             .order('name', ascending: true)
             .range(
@@ -673,7 +787,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
       } else {
         response = await _supabase
             .from('profile')
-            .select('profile_image_url, shop_name, verified, user_id, name')
+            .select('profile_image_url, shop_name, verified, user_id, name, learning_day, daily_streak, avatar_config')
             .neq('is_private', true)
             .or(
                 'name.ilike.%$_currentQuery%,shop_name.ilike.%$_currentQuery%,slug.ilike.%$_currentQuery%')
@@ -833,8 +947,10 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             ),
             child: Row(
               children: [
-                // Compact Avatar
+                // Compact Level Avatar
                 Container(
+                  width: 42,
+                  height: 42,
                   padding: const EdgeInsets.all(1.5),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
@@ -844,25 +960,28 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                         : (isVerified
                             ? const LinearGradient(
                                 colors: [Color(0xFFFFFC00), Colors.orangeAccent])
-                            : null),
+                            : LinearGradient(
+                                colors: [
+                                  const Color(0xFFFFFC00).withValues(alpha: 0.8),
+                                  const Color(0xFF10B981).withValues(alpha: 0.8),
+                                ],
+                              )),
                     border: (!isVerified && !isRobot)
                         ? Border.all(color: Colors.white12, width: 0.8)
                         : null,
                   ),
-                  child: CircleAvatar(
-                    radius: 19,
-                    backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-                    backgroundImage: profile['profile_image_url'] != null
-                        ? CachedNetworkImageProvider(
-                            profile['profile_image_url'])
-                        : null,
-                    child: profile['profile_image_url'] == null
-                        ? Icon(
-                            isRobot ? Icons.smart_toy_rounded : Icons.person_outline_rounded,
-                            color: Colors.white54,
-                            size: 19,
-                          )
-                        : null,
+                  child: ClipOval(
+                    child: Container(
+                      color: FlutterFlowTheme.of(context).primaryBackground,
+                      child: VectorAvatarWidget(
+                        config: isRobot
+                            ? VectorAvatarConfig.getEvolutionAvatarForStage((profile['robot_level'] as num?)?.toInt() ?? 1)
+                            : ((profile['avatar_config'] != null)
+                                ? VectorAvatarConfig.fromMap(Map<String, dynamic>.from(profile['avatar_config']))
+                                : VectorAvatarConfig.getEvolutionAvatarForStage((profile['learning_day'] as num?)?.toInt() ?? 1)),
+                        size: 38,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 11),
@@ -879,37 +998,42 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                               name,
                               style: GoogleFonts.outfit(
                                 color: FlutterFlowTheme.of(context).primaryText,
-                                fontSize: 14,
+                                fontSize: 15.5,
                                 fontWeight: FontWeight.w700,
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (isRobot) ...[
-                            const SizedBox(width: 5),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4.5, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(4),
-                                border: Border.all(
-                                  color: const Color(0xFF06B6D4).withValues(alpha: 0.6),
-                                  width: 0.6,
-                                ),
-                              ),
-                              child: Text(
-                                '🤖 ROBOT',
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFF06B6D4),
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 8,
-                                ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              color: isRobot
+                                  ? const Color(0xFF06B6D4).withValues(alpha: 0.18)
+                                  : const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: isRobot
+                                    ? const Color(0xFF06B6D4).withValues(alpha: 0.5)
+                                    : const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                                width: 0.6,
                               ),
                             ),
-                          ] else if (isVerified) ...[
+                            child: Text(
+                              isRobot
+                                  ? 'Lvl ${(profile['robot_level'] as num?)?.toInt() ?? 1} 🤖'
+                                  : 'Lvl ${(profile['learning_day'] as num?)?.toInt() ?? 1} ⭐',
+                              style: GoogleFonts.outfit(
+                                color: isRobot ? const Color(0xFF06B6D4) : const Color(0xFFFFFC00),
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          if (isVerified) ...[
                             const SizedBox(width: 4),
                             const Icon(Icons.verified_rounded,
-                                color: Color(0xFF38BDF8), size: 14),
+                                color: Color(0xFF38BDF8), size: 15),
                           ],
                         ],
                       ),
@@ -918,7 +1042,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                         children: [
                           if (isRobot) ...[
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
                               decoration: BoxDecoration(
                                 color: const Color(0xFF06B6D4).withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(4),
@@ -932,13 +1056,13 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                                 style: GoogleFonts.outfit(
                                   color: const Color(0xFF06B6D4),
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 10,
+                                  fontSize: 11,
                                 ),
                               ),
                             ),
                           ] else ...[
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                              padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
                               decoration: BoxDecoration(
                                 color: Colors.white.withValues(alpha: 0.06),
                                 borderRadius: BorderRadius.circular(4),
@@ -952,7 +1076,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                                 style: GoogleFonts.outfit(
                                   color: Colors.white70,
                                   fontWeight: FontWeight.w600,
-                                  fontSize: 10,
+                                  fontSize: 11,
                                 ),
                               ),
                             ),
@@ -966,7 +1090,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                                   color: isRobot
                                       ? const Color(0xFFFFFC00).withValues(alpha: 0.85)
                                       : Colors.white54,
-                                  fontSize: 11,
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w400,
                                 ),
                                 maxLines: 1,
@@ -983,7 +1107,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                 Icon(
                   Icons.chevron_right_rounded,
                   color: isRobot ? const Color(0xFF06B6D4).withValues(alpha: 0.6) : Colors.white24,
-                  size: 17,
+                  size: 20,
                 ),
               ],
             ),
@@ -1135,7 +1259,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                       },
                       icon: const Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 18),
                       label: Text(
-                        'AI Chat',
+                        'Chat',
                         style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       style: ElevatedButton.styleFrom(
@@ -2181,3 +2305,419 @@ class _ProfileDetailPageState extends State<ProfileDetailPage>
     }
   }
 }
+
+class MarketSearchResultsWidget extends StatefulWidget {
+  final String searchQuery;
+
+  const MarketSearchResultsWidget({
+    super.key,
+    required this.searchQuery,
+  });
+
+  @override
+  State<MarketSearchResultsWidget> createState() => _MarketSearchResultsWidgetState();
+}
+
+class _MarketSearchResultsWidgetState extends State<MarketSearchResultsWidget> {
+  final ScrollController _scrollController = ScrollController();
+  final _supabase = SupaFlow.client;
+
+  List<Map<String, dynamic>> _marketResults = [];
+  bool _isLoading = false;
+  bool _isLoadingMore = false;
+  bool _hasMoreData = true;
+  int _currentPage = 0;
+  final int _pageSize = 16;
+  String _currentQuery = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    _performMarketSearch(widget.searchQuery);
+  }
+
+  @override
+  void didUpdateWidget(MarketSearchResultsWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchQuery != widget.searchQuery) {
+      _performMarketSearch(widget.searchQuery);
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 250) {
+      if (!_isLoadingMore && _hasMoreData) {
+        _loadMoreMarketItems();
+      }
+    }
+  }
+
+  Future<void> _performMarketSearch(String query) async {
+    safeSetState(() {
+      _isLoading = true;
+      _currentPage = 0;
+      _marketResults.clear();
+      _hasMoreData = true;
+      _currentQuery = query;
+    });
+
+    final trimmed = query.trim();
+    try {
+      var queryBuilder = _supabase
+          .from('gallery')
+          .select('*, profile(name, verified, profile_image_url, learning_day, avatar_config)');
+
+      List<dynamic> response;
+      if (trimmed.isEmpty) {
+        response = await queryBuilder
+            .order('created_at', ascending: false)
+            .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+      } else {
+        response = await queryBuilder
+            .ilike('title', '%$trimmed%')
+            .order('created_at', ascending: false)
+            .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+      }
+
+      if (mounted) {
+        safeSetState(() {
+          _marketResults = List<Map<String, dynamic>>.from(response);
+          _isLoading = false;
+          _hasMoreData = response.length == _pageSize;
+          _currentPage++;
+        });
+      }
+    } catch (e) {
+      debugPrint('Market search error: $e');
+      if (mounted) {
+        safeSetState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMoreMarketItems() async {
+    if (_isLoadingMore || !_hasMoreData) return;
+
+    safeSetState(() {
+      _isLoadingMore = true;
+    });
+
+    final trimmed = _currentQuery.trim();
+    try {
+      var queryBuilder = _supabase
+          .from('gallery')
+          .select('*, profile(name, verified, profile_image_url, learning_day, avatar_config)');
+
+      List<dynamic> response;
+      if (trimmed.isEmpty) {
+        response = await queryBuilder
+            .order('created_at', ascending: false)
+            .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+      } else {
+        response = await queryBuilder
+            .ilike('title', '%$trimmed%')
+            .order('created_at', ascending: false)
+            .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
+      }
+
+      if (mounted) {
+        safeSetState(() {
+          _marketResults.addAll(List<Map<String, dynamic>>.from(response));
+          _isLoadingMore = false;
+          _hasMoreData = response.length == _pageSize;
+          _currentPage++;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading more market items: $e');
+      if (mounted) {
+        safeSetState(() {
+          _isLoadingMore = false;
+        });
+      }
+    }
+  }
+
+  void safeSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
+
+  static const List<Color> _cardAccentPalette = [
+    Color(0xFFFF5252), // Vibrant Coral / Red
+    Color(0xFFFFD124), // Cyber Yellow / Amber
+    Color(0xFF00E676), // Neon Emerald Green
+    Color(0xFF00D2FF), // Electric Sky Blue
+    Color(0xFFA855F7), // Neon Purple / Violet
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(
+        child: SizedBox(
+          width: 24,
+          height: 24,
+          child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color: Color(0xFFFFFC00),
+          ),
+        ),
+      );
+    }
+
+    if (_marketResults.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: () => _performMarketSearch(_currentQuery),
+        color: const Color(0xFFFFFC00),
+        backgroundColor: const Color(0xFF161822),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.04),
+                      border: Border.all(color: Colors.white12, width: 0.8),
+                    ),
+                    child: const Icon(Icons.storefront_outlined, color: Colors.white38, size: 36),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'No products found',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Pull down to refresh or try another search',
+                    style: GoogleFonts.inter(
+                      color: Colors.white38,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final int cols = width >= 1200 ? 6 : (width >= 900 ? 5 : (width >= 600 ? 4 : 3));
+
+        return RefreshIndicator(
+          onRefresh: () => _performMarketSearch(_currentQuery),
+          color: const Color(0xFFFFFC00),
+          backgroundColor: const Color(0xFF161822),
+          child: GridView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: cols,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 0.68,
+            ),
+            itemCount: _marketResults.length + (_hasMoreData ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == _marketResults.length) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(12),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(color: Color(0xFFFFFC00), strokeWidth: 2),
+                    ),
+                  ),
+                );
+              }
+
+              final item = _marketResults[index];
+              final accentColor = _cardAccentPalette[index % _cardAccentPalette.length];
+              final imageUrl = item['gallery_image_url'] ?? item['image_url'];
+              final title = item['gallery_title'] ?? item['title'] ?? 'Product';
+              final price = item['gallery_price'] ?? item['price'];
+              final profile = item['profile'] as Map<String, dynamic>?;
+              final sellerName = profile?['name'] ?? item['name'] ?? 'Creator';
+              final sellerDay = (profile?['learning_day'] as num?)?.toInt() ?? 1;
+
+              final VectorAvatarConfig sellerAvatar = (profile?['avatar_config'] != null)
+                  ? VectorAvatarConfig.fromMap(Map<String, dynamic>.from(profile!['avatar_config']))
+                  : VectorAvatarConfig.getEvolutionAvatarForStage(sellerDay);
+
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GalleryDetailsPage(
+                        item: item,
+                        allItems: _marketResults,
+                        initialIndex: index,
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF13151D),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: accentColor.withValues(alpha: 0.25),
+                      width: 0.9,
+                    ),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Thumbnail
+                      Expanded(
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (imageUrl != null && imageUrl.toString().isNotEmpty)
+                              CachedNetworkImage(
+                                imageUrl: imageUrl.toString(),
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(
+                                  color: accentColor.withValues(alpha: 0.06),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.image_outlined,
+                                      size: 20,
+                                      color: accentColor.withValues(alpha: 0.35),
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) => Container(
+                                  color: Colors.white.withValues(alpha: 0.04),
+                                  child: const Center(
+                                    child: Icon(
+                                      Icons.broken_image_outlined,
+                                      size: 20,
+                                      color: Colors.white24,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            else
+                              Container(
+                                color: accentColor.withValues(alpha: 0.06),
+                                child: Center(
+                                  child: Icon(
+                                    Icons.shopping_bag_outlined,
+                                    size: 22,
+                                    color: accentColor.withValues(alpha: 0.4),
+                                  ),
+                                ),
+                              ),
+                            if (price != null)
+                              Positioned(
+                                top: 5,
+                                right: 5,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.82),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: accentColor.withValues(alpha: 0.55),
+                                      width: 0.6,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    '₹$price',
+                                    style: GoogleFonts.outfit(
+                                      color: accentColor,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+
+                      // Minimal Info Section
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(6, 6, 6, 6),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              title,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              children: [
+                                ClipOval(
+                                  child: VectorAvatarWidget(
+                                    config: sellerAvatar,
+                                    size: 13,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    sellerName,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white54,
+                                      fontSize: 9.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+

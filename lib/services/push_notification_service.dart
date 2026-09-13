@@ -24,24 +24,9 @@ class PushNotificationService {
       if (Firebase.apps.isEmpty) {
         await Firebase.initializeApp();
       }
-      // 1. Android Notification Channel setup
-      const AndroidNotificationChannel channel = AndroidNotificationChannel(
-        'high_importance_channel',
-        'High Importance Notifications',
-        description: 'This channel is used for important notifications.',
-        importance: Importance.max,
-      );
-
-      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-        await _localNotificationsPlugin
-            .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>()
-            ?.createNotificationChannel(channel);
-      }
-
-      // 2. Initialize Local Notifications
+      // 1. Initialize Local Notifications FIRST before calling platform specific methods
       const AndroidInitializationSettings initializationSettingsAndroid =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
+          AndroidInitializationSettings('@mipmap/launcher_icon');
       const DarwinInitializationSettings initializationSettingsIOS =
           DarwinInitializationSettings();
       const InitializationSettings initializationSettings =
@@ -50,66 +35,104 @@ class PushNotificationService {
         iOS: initializationSettingsIOS,
       );
 
-      await _localNotificationsPlugin.initialize(
-        settings: initializationSettings,
-        onDidReceiveNotificationResponse: (NotificationResponse response) {
-          // Handle notification tap
-        },
-      );
+      try {
+        await _localNotificationsPlugin.initialize(
+          settings: initializationSettings,
+          onDidReceiveNotificationResponse: (NotificationResponse response) {
+            // Handle notification tap
+          },
+        );
+      } catch (localInitError) {
+        debugPrint('PushNotificationService: Local notifications init note: $localInitError');
+      }
+
+      // 2. Android Notification Channel setup
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        try {
+          const AndroidNotificationChannel channel = AndroidNotificationChannel(
+            'high_importance_channel',
+            'High Importance Notifications',
+            description: 'This channel is used for important notifications.',
+            importance: Importance.max,
+          );
+          await _localNotificationsPlugin
+              .resolvePlatformSpecificImplementation<
+                  AndroidFlutterLocalNotificationsPlugin>()
+              ?.createNotificationChannel(channel);
+        } catch (channelError) {
+          debugPrint('PushNotificationService: Notification channel note: $channelError');
+        }
+      }
 
       // Access FCM only after potential Firebase initialization
       final FirebaseMessaging fcm = FirebaseMessaging.instance;
 
-      // 3. Request permissions
-      NotificationSettings settings = await fcm.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
+      // 3. Request permissions safely
+      try {
+        NotificationSettings settings = await fcm.requestPermission(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
 
-      if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-        debugPrint('User granted permission');
+        if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+          debugPrint('PushNotificationService: User granted permission');
+        }
+      } catch (permError) {
+        debugPrint('PushNotificationService: Permission request note: $permError');
       }
 
-      // 4. Token management
-      String? token = await fcm.getToken();
-      if (token != null) {
-        debugPrint('FCM Token: $token');
-        await _saveTokenToSupabase(token);
-      }
+      // 4. Token management safely
+      try {
+        String? token = await fcm.getToken();
+        if (token != null) {
+          debugPrint('PushNotificationService: FCM Token: $token');
+          await _saveTokenToSupabase(token);
+        }
 
-      fcm.onTokenRefresh.listen(_saveTokenToSupabase);
+        fcm.onTokenRefresh.listen(_saveTokenToSupabase);
+      } catch (tokenError) {
+        debugPrint('PushNotificationService: FCM Token retrieval note: $tokenError');
+      }
 
       // 5. Handling messages
-      FirebaseMessaging.onBackgroundMessage(
-          _firebaseMessagingBackgroundHandler);
+      try {
+        FirebaseMessaging.onBackgroundMessage(
+            _firebaseMessagingBackgroundHandler);
+      } catch (bgError) {
+        debugPrint('PushNotificationService: Background handler registration note: $bgError');
+      }
 
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-        RemoteNotification? notification = message.notification;
+      try {
+        FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+          RemoteNotification? notification = message.notification;
 
-        if (notification != null && !kIsWeb) {
-          _localNotificationsPlugin.show(
-            id: notification.hashCode,
-            title: notification.title,
-            body: notification.body,
-            notificationDetails: const NotificationDetails(
-              android: AndroidNotificationDetails(
-                'high_importance_channel',
-                'High Importance Notifications',
-                channelDescription: 'This channel is used for important notifications.',
-                icon: '@mipmap/ic_launcher',
-                importance: Importance.max,
-                priority: Priority.high,
+          if (notification != null && !kIsWeb) {
+            _localNotificationsPlugin.show(
+              id: notification.hashCode,
+              title: notification.title,
+              body: notification.body,
+              notificationDetails: const NotificationDetails(
+                android: AndroidNotificationDetails(
+                  'high_importance_channel',
+                  'High Importance Notifications',
+                  channelDescription: 'This channel is used for important notifications.',
+                  icon: '@mipmap/launcher_icon',
+                  importance: Importance.max,
+                  priority: Priority.high,
+                ),
+                iOS: DarwinNotificationDetails(
+                  presentAlert: true,
+                  presentBadge: true,
+                  presentSound: true,
+                ),
               ),
-              iOS: DarwinNotificationDetails(
-                presentAlert: true,
-                presentBadge: true,
-                presentSound: true,
-              ),
-            ),
-          );
-        }
-      });
+            );
+          }
+        });
+      } catch (msgError) {
+        debugPrint('PushNotificationService: onMessage listener note: $msgError');
+      }
     } catch (e) {
       debugPrint('PushNotificationService initialization error: $e');
     }
@@ -142,7 +165,7 @@ class PushNotificationService {
             'high_importance_channel',
             'High Importance Notifications',
             channelDescription: 'This channel is used for important notifications.',
-            icon: '@mipmap/ic_launcher',
+            icon: '@mipmap/launcher_icon',
             importance: Importance.max,
             priority: Priority.high,
           ),
@@ -182,6 +205,7 @@ class PushNotificationService {
   }
 }
 
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
     await Firebase.initializeApp();

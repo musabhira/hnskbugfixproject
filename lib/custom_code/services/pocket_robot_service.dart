@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -171,15 +172,108 @@ class PocketRobotService {
     try {
       return _allRobots.firstWhere((r) => r.id == id);
     } catch (_) {
+      // Check if it's in the format pocket_robo_18 or pocket_robot_lvl_18
+      final match = RegExp(r'(\d+)').firstMatch(id);
+      if (match != null) {
+        final lvl = int.tryParse(match.group(1) ?? '1') ?? 1;
+        return getRobotByLevel(lvl);
+      }
       return null;
     }
   }
 
   /// Check if an ID belongs to a Pocket Robot
   static bool isRobotId(String id) {
+    if (id.isEmpty) return false;
     return id.startsWith('pocket_robot_') ||
         id.startsWith('robot_') ||
+        id.startsWith('pocket_robo_') ||
+        id.startsWith('pocket_') ||
+        id == 'pocket' ||
         _allRobots.any((r) => r.id == id);
+  }
+
+  // 🔁 Dynamic 1 to 90 Looping Progression System
+  static const String _kProgressionEpochKey = 'pocket_robot_progression_epoch_v1';
+  static const String _kManualDayOffsetKey = 'pocket_robot_manual_day_offset_v1';
+
+  static int _cachedDaysElapsed = 0;
+  static bool _hasLoadedDays = false;
+
+  /// Retrieve the global days elapsed in the robot progression cycle
+  static Future<int> getGlobalElapsedDays() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      var epoch = prefs.getInt(_kProgressionEpochKey);
+      if (epoch == null || epoch == 0) {
+        epoch = DateTime.now().millisecondsSinceEpoch;
+        await prefs.setInt(_kProgressionEpochKey, epoch);
+      }
+      final manualOffset = prefs.getInt(_kManualDayOffsetKey) ?? 0;
+      final diffMs = DateTime.now().millisecondsSinceEpoch - epoch;
+      final autoDays = diffMs > 0 ? (diffMs ~/ (1000 * 60 * 60 * 24)) : 0;
+      _cachedDaysElapsed = autoDays + manualOffset;
+      _hasLoadedDays = true;
+      return _cachedDaysElapsed;
+    } catch (_) {
+      return _cachedDaysElapsed;
+    }
+  }
+
+  /// Synchronous getter for current elapsed days
+  static int get cachedElapsedDays => _cachedDaysElapsed;
+  static bool get hasLoadedDays => _hasLoadedDays;
+
+  /// Advance progression by N days (for testing or manual admin triggers)
+  static Future<int> advanceProgressionByDays(int days) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentOffset = prefs.getInt(_kManualDayOffsetKey) ?? 0;
+    final newOffset = currentOffset + days;
+    await prefs.setInt(_kManualDayOffsetKey, newOffset);
+    return await getGlobalElapsedDays();
+  }
+
+  /// Reset progression back to day 0
+  static Future<void> resetProgression() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_kProgressionEpochKey, DateTime.now().millisecondsSinceEpoch);
+    await prefs.setInt(_kManualDayOffsetKey, 0);
+    _cachedDaysElapsed = 0;
+  }
+
+  /// Calculate the looped level (1 -> 90 -> 1) for any robot
+  /// Formula: ((baseLevel - 1 + daysElapsed) % 90) + 1
+  static int getDynamicLevel(PocketRobot robot, {int? daysElapsed}) {
+    final days = daysElapsed ?? _cachedDaysElapsed;
+    return ((robot.level - 1 + days) % 90) + 1;
+  }
+
+  /// Get dynamic CEFR description for a level
+  static String getCefrForLevel(int lvl) {
+    if (lvl <= 15) return 'A1 Beginner';
+    if (lvl <= 30) return 'A2 Elementary';
+    if (lvl <= 50) return 'B1 Intermediate';
+    if (lvl <= 70) return 'B2 Upper-Intermediate';
+    if (lvl <= 85) return 'C1 Advanced';
+    return 'C2 Grandmaster Sovereign';
+  }
+
+  /// Get a robot instance reflecting their dynamic looped level
+  static PocketRobot getDynamicRobot(PocketRobot base, {int? daysElapsed}) {
+    final dynLvl = getDynamicLevel(base, daysElapsed: daysElapsed);
+    return PocketRobot(
+      id: base.id,
+      name: base.name,
+      level: dynLvl,
+      archetype: base.archetype,
+      cefrRank: getCefrForLevel(dynLvl),
+      bio: base.bio,
+      avatarUrl: base.avatarUrl,
+      housePalette: base.housePalette,
+      status: '🤖 Pocket Robot • Active Level $dynLvl (Loop Day)',
+      openingMessage: base.openingMessage,
+      catchphrases: base.catchphrases,
+    );
   }
 
   // 🌐 Free AI Model Pipeline for Authentic Human-Like Real-Time Conversations
@@ -399,6 +493,535 @@ class PocketRobotService {
     }
   }
 
+  /// 🤝 Enqueue a user-initiated request to a robot with human-like response delay
+  /// Fulfills user directive: "നമ്മൾ അങ്ങോട്ട് റിക്വസ്റ്റ് അയച്ചാൽ ചില റോബോട്ടുകൾ സമയം വൈകും, ചില റോബോട്ടുകൾ നേരത്തെ റിപ്ലൈ തരും, ചില റോബോട്ടുകൾ അക്സെപ്റ്റ് ചെയ്യും. ഫ്രണ്ട്സ് ആവും."
+  static Future<void> enqueueUserRequestToRobot({
+    required String userId,
+    required String robotId,
+  }) async {
+    if (userId.isEmpty || robotId.isEmpty) return;
+    final prefs = await SharedPreferences.getInstance();
+    final robot = getRobotById(robotId) ?? getRobotByLevel(1);
+
+    // Realistic human response delay based on archetype
+    // Cheerful/Romantic: 10-25s
+    // Trendsetter: 25-45s
+    // Intellectual/Grandmaster: 45-80s
+    // Grumpy: 60-150s (takes longest to warm up)
+    int delaySeconds;
+    final rnd = math.Random();
+    switch (robot.archetype) {
+      case RobotArchetype.cheerful:
+      case RobotArchetype.romantic:
+        delaySeconds = 10 + rnd.nextInt(15);
+        break;
+      case RobotArchetype.trendsetter:
+        delaySeconds = 25 + rnd.nextInt(20);
+        break;
+      case RobotArchetype.intellectual:
+      case RobotArchetype.grandmaster:
+        delaySeconds = 45 + rnd.nextInt(35);
+        break;
+      case RobotArchetype.grumpy:
+        delaySeconds = 60 + rnd.nextInt(90);
+        break;
+    }
+
+    final key = 'pending_user_to_robot_requests_$userId';
+    final raw = prefs.getString(key);
+    List<Map<String, dynamic>> queue = [];
+    if (raw != null && raw.isNotEmpty) {
+      try {
+        queue = List<Map<String, dynamic>>.from(jsonDecode(raw));
+      } catch (_) {}
+    }
+
+    // Remove any existing entry for this robot
+    queue.removeWhere((item) => item['robotId'] == robotId);
+
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final scheduledAcceptAt = nowMs + (delaySeconds * 1000);
+
+    queue.add({
+      'robotId': robotId,
+      'enqueuedAt': nowMs,
+      'scheduledAcceptAt': scheduledAcceptAt,
+      'delaySeconds': delaySeconds,
+    });
+    await prefs.setString(key, jsonEncode(queue));
+
+    // Also trigger in-memory Timer for seamless live app responsiveness
+    Timer(Duration(seconds: delaySeconds), () async {
+      try {
+        await acceptRobotRequest(myId: userId, robotId: robotId);
+        final curRaw = prefs.getString(key);
+        if (curRaw != null) {
+          try {
+            List<Map<String, dynamic>> curQueue =
+                List<Map<String, dynamic>>.from(jsonDecode(curRaw));
+            curQueue.removeWhere((item) => item['robotId'] == robotId);
+            await prefs.setString(key, jsonEncode(curQueue));
+          } catch (_) {}
+        }
+      } catch (_) {}
+    });
+  }
+
+  /// Process any user-to-robot requests whose simulated response time has passed
+  static Future<void> processPendingUserRequestsToRobots(String userId) async {
+    if (userId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'pending_user_to_robot_requests_$userId';
+      final raw = prefs.getString(key);
+      if (raw == null || raw.isEmpty) return;
+
+      List<Map<String, dynamic>> queue = [];
+      try {
+        queue = List<Map<String, dynamic>>.from(jsonDecode(raw));
+      } catch (_) {
+        return;
+      }
+
+      final nowMs = DateTime.now().millisecondsSinceEpoch;
+      final List<String> toAccept = [];
+
+      for (var item in queue) {
+        final scheduled = item['scheduledAcceptAt'] as num? ?? 0;
+        final rId = item['robotId']?.toString() ?? '';
+        if (rId.isNotEmpty && nowMs >= scheduled) {
+          toAccept.add(rId);
+        }
+      }
+
+      if (toAccept.isNotEmpty) {
+        queue.removeWhere((item) => toAccept.contains(item['robotId']));
+        await prefs.setString(key, jsonEncode(queue));
+
+        for (final rId in toAccept) {
+          await acceptRobotRequest(myId: userId, robotId: rId);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error processing pending user requests to robots: $e');
+    }
+  }
+
+  /// 🚫 Mutual blocking system: Block a robot
+  static Future<void> blockRobot(String userId, String robotId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userBlockKey = 'blocked_robots_$userId';
+    List<String> blocked = prefs.getStringList(userBlockKey) ?? [];
+    if (!blocked.contains(robotId)) {
+      blocked.add(robotId);
+      await prefs.setStringList(userBlockKey, blocked);
+    }
+    // Robot also mutually blocks back
+    final robotBlockKey = 'robots_blocking_user_$userId';
+    List<String> robotBlocked = prefs.getStringList(robotBlockKey) ?? [];
+    if (!robotBlocked.contains(robotId)) {
+      robotBlocked.add(robotId);
+      await prefs.setStringList(robotBlockKey, robotBlocked);
+    }
+  }
+
+  /// Unblock a robot
+  static Future<void> unblockRobot(String userId, String robotId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final userBlockKey = 'blocked_robots_$userId';
+    List<String> blocked = prefs.getStringList(userBlockKey) ?? [];
+    blocked.remove(robotId);
+    await prefs.setStringList(userBlockKey, blocked);
+
+    final robotBlockKey = 'robots_blocking_user_$userId';
+    List<String> robotBlocked = prefs.getStringList(robotBlockKey) ?? [];
+    robotBlocked.remove(robotId);
+    await prefs.setStringList(robotBlockKey, robotBlocked);
+  }
+
+  /// Check if user has blocked this robot
+  static Future<bool> isRobotBlocked(String userId, String robotId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final blocked = prefs.getStringList('blocked_robots_$userId') ?? [];
+    return blocked.contains(robotId);
+  }
+
+  /// Check if robot has blocked the user
+  static Future<bool> isUserBlockedByRobot(String userId, String robotId) async {
+    final prefs = await SharedPreferences.getInstance();
+    final blocked = prefs.getStringList('robots_blocking_user_$userId') ?? [];
+    return blocked.contains(robotId);
+  }
+
+  // -------------------------------------------------------------
+  // 📸 Robot Vibes (Stories) Engine
+  // -------------------------------------------------------------
+  static const String _kRobotVibesStoreKey = 'robot_active_vibes_store';
+
+  /// Get active (non-expired) vibes for a specific robot
+  static Future<List<Map<String, dynamic>>> getActiveRobotVibes(String robotId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kRobotVibesStoreKey);
+      if (raw == null || raw.isEmpty) return [];
+
+      final List<dynamic> list = jsonDecode(raw);
+      final now = DateTime.now();
+
+      return list
+          .whereType<Map<String, dynamic>>()
+          .where((v) {
+            if (v['profile_id'] != robotId) return false;
+            final expStr = v['expires_at']?.toString();
+            if (expStr == null) return true;
+            final exp = DateTime.tryParse(expStr);
+            return exp != null && exp.isAfter(now);
+          })
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// Get all active (non-expired) robot vibes across all robots
+  static Future<List<Map<String, dynamic>>> getAllActiveRobotVibes() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kRobotVibesStoreKey);
+      if (raw == null || raw.isEmpty) return [];
+
+      final List<dynamic> list = jsonDecode(raw);
+      final now = DateTime.now();
+
+      return list
+          .whereType<Map<String, dynamic>>()
+          .where((v) {
+            final expStr = v['expires_at']?.toString();
+            if (expStr == null) return true;
+            final exp = DateTime.tryParse(expStr);
+            return exp != null && exp.isAfter(now);
+          })
+          .toList();
+    } catch (e) {
+      return [];
+    }
+  }
+
+  /// 🎨 Educational English Text Canvas Vibe Templates for Pocket Robots
+  static final List<Map<String, dynamic>> _robotCanvasPrompts = [
+    {
+      'tag': '📖 Word of the Day',
+      'category': 'Vocabulary',
+      'text': '✨ Serendipity (noun)\n\nFinding something good without looking for it.\n\n"Meeting you in Pocket World was pure serendipity!"',
+      'colors': [0xFF7C3AED, 0xFFDB2777],
+    },
+    {
+      'tag': '🎯 Native Idiom',
+      'category': 'Idioms',
+      'text': '⚡ Bite the Bullet\n\nMeaning: Facing an inevitable, difficult situation with courage.\n\n"I dreaded the interview, but decided to bite the bullet and give it my best!"',
+      'colors': [0xFF0D9488, 0xFF0284C7],
+    },
+    {
+      'tag': '⚡ Grammar Hack',
+      'category': 'Grammar',
+      'text': '💡 Pro Tip:\n\nStop saying "Very happy" ➔ Say "Ecstatic" or "Thrilled"!\n\nStop saying "Very tired" ➔ Say "Exhausted"!\n\nLevel up your adjective game today! 🚀',
+      'colors': [0xFFEA580C, 0xFFEAB308],
+    },
+    {
+      'tag': '💬 Fluent Speaking',
+      'category': 'Conversation',
+      'text': '🗣️ Sound 10x More Natural:\n\nInstead of saying "What?", say:\n• "Could you repeat that, please?"\n• "Come again?"\n• "Pardon me?"\n\nPolite and conversational! ✨',
+      'colors': [0xFF4F46E5, 0xFF06B6D4],
+    },
+    {
+      'tag': '💼 Interview Tip',
+      'category': 'Career English',
+      'text': '🎯 Email Etiquette:\n\nInstead of: "I am waiting for your reply"\n\nSay: "I look forward to hearing from you at your earliest convenience." 💼',
+      'colors': [0xFF059669, 0xFF10B981],
+    },
+    {
+      'tag': '🎯 Common Mistake',
+      'category': 'Grammar',
+      'text': '❌ "I have visited London last year."\n\n✅ "I visited London last year."\n\nRule: Use Simple Past when a specific past time (last year, yesterday) is mentioned! 💡',
+      'colors': [0xFF9333EA, 0xFFC026D3],
+    },
+    {
+      'tag': '🌟 Native Phrase',
+      'category': 'Slang & Idioms',
+      'text': '✨ Under the Weather\n\nMeaning: Feeling slightly unwell or sick.\n\n"I felt a bit under the weather yesterday, but I feel fantastic today!" ☀️',
+      'colors': [0xFFBE123C, 0xFFF43F5E],
+    },
+  ];
+
+  /// Generate and post a new Vibe (story) for a specific robot: alternates between Photo Snaps & Text Canvas Statuses
+  static Future<Map<String, dynamic>> generateRobotVibe({
+    required String robotId,
+    String? preferredCaption,
+  }) async {
+    final robot = getRobotById(robotId) ?? getRobotByLevel(1);
+    final dynLvl = getDynamicLevel(robot);
+    final now = DateTime.now();
+
+    final bool isCanvasText = preferredCaption == null && math.Random().nextBool();
+    Map<String, dynamic> vibeItem;
+
+    if (isCanvasText) {
+      final canvasPrompt = _robotCanvasPrompts[math.Random().nextInt(_robotCanvasPrompts.length)];
+      vibeItem = {
+        'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
+        'media_type': 'text',
+        'media_url': '',
+        'caption': canvasPrompt['text'],
+        'created_at': now.toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'profile_id': robot.id,
+        'is_active': true,
+        'is_robot': true,
+        'metadata': {
+          'tag': canvasPrompt['tag'],
+          'category': canvasPrompt['category'],
+          'gradient_colors': canvasPrompt['colors'],
+        },
+        'profile': {
+          'id': robot.id,
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'level': dynLvl,
+          'learning_day': dynLvl,
+          'learning_stage': dynLvl,
+          'stage': dynLvl,
+        },
+      };
+    } else {
+      final snapData = await RobotSnapDataset.getUniqueSnapForRobot(
+        userId: 'robot_vibe_system',
+        robot: robot,
+        userPreferredCaption: preferredCaption,
+      );
+
+      vibeItem = {
+        'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
+        'media_type': 'image',
+        'media_url': snapData['imageUrl'],
+        'caption': snapData['caption'],
+        'created_at': now.toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'profile_id': robot.id,
+        'is_active': true,
+        'is_robot': true,
+        'profile': {
+          'id': robot.id,
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'level': dynLvl,
+          'learning_day': dynLvl,
+          'learning_stage': dynLvl,
+          'stage': dynLvl,
+        },
+      };
+    }
+
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_kRobotVibesStoreKey);
+    List<Map<String, dynamic>> allVibes = [];
+    if (raw != null && raw.isNotEmpty) {
+      try {
+        allVibes = List<Map<String, dynamic>>.from(jsonDecode(raw));
+      } catch (_) {}
+    }
+
+    // Clean up expired ones
+    allVibes.removeWhere((v) {
+      final exp = DateTime.tryParse(v['expires_at']?.toString() ?? '');
+      return exp != null && exp.isBefore(now);
+    });
+
+    allVibes.insert(0, vibeItem);
+    await prefs.setString(_kRobotVibesStoreKey, jsonEncode(allVibes));
+
+    return vibeItem;
+  }
+
+  /// 📸 Retrieve rich Gallery Posts for a Pocket Robot's Profile
+  static List<Map<String, dynamic>> getRobotGalleryItems(String robotId) {
+    final robot = getRobotById(robotId) ?? getRobotByLevel(1);
+    final dynLvl = getDynamicLevel(robot);
+
+    final galleryThemes = [
+      {
+        'title': 'Mastering Phrasal Verbs 📖',
+        'description': 'Break down, carry on, and look into — essential phrasal verbs for effortless native conversation.',
+        'imageUrl': 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80',
+        'category': 'English Mastery',
+      },
+      {
+        'title': 'Coffee & Grammar Reflections ☕',
+        'description': 'Morning study session. Consistency is the secret to unlocking total English fluency!',
+        'imageUrl': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',
+        'category': 'Daily Habit',
+      },
+      {
+        'title': 'Vocabulary Booster: Synonyms 🎯',
+        'description': 'Upgrade everyday words into captivating expressions that impress in natural English conversations.',
+        'imageUrl': 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80',
+        'category': 'Vocabulary',
+      },
+      {
+        'title': 'Accent & Speech Pronunciation 🎙️',
+        'description': 'Clear articulation drills: focus on connected speech, linking sounds, and natural English rhythm.',
+        'imageUrl': 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&q=80',
+        'category': 'Speaking Pro',
+      },
+      {
+        'title': 'Confidence in Professional Interviews 💼',
+        'description': 'High-impact frameworks and phrases for answering challenging interview questions with composure.',
+        'imageUrl': 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80',
+        'category': 'Career English',
+      },
+      {
+        'title': 'Idioms & Cultural Nuances 🌍',
+        'description': 'How native speakers really talk — uncover natural expressions you won\'t find in standard textbooks.',
+        'imageUrl': 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80',
+        'category': 'Culture & Slang',
+      },
+    ];
+
+    final now = DateTime.now();
+    return galleryThemes.asMap().entries.map((entry) {
+      final idx = entry.key;
+      final t = entry.value;
+      return {
+        'id': 'gal_${robot.id}_$idx',
+        'title': t['title'],
+        'description': t['description'],
+        'image_url': t['imageUrl'],
+        'category': t['category'],
+        'user_id': robot.id,
+        'created_at': now.subtract(Duration(days: idx * 2 + 1)).toIso8601String(),
+        'likes_count': 28 + (dynLvl * 5) + (idx * 7),
+        'comment_count': 3 + (dynLvl % 8) + idx,
+        'user': {
+          'id': robot.id,
+          'profile': [
+            {
+              'name': robot.name,
+              'profile_image_url': robot.avatarUrl,
+            }
+          ]
+        },
+      };
+    }).toList();
+  }
+
+  /// 💭 Retrieve rich Thought Posts for a Pocket Robot's Profile and Feed
+  static List<Map<String, dynamic>> getRobotThreads(String robotId) {
+    final robot = getRobotById(robotId) ?? getRobotByLevel(1);
+    final dynLvl = getDynamicLevel(robot);
+
+    final questions = [
+      '🎯 English Quiz of the Day:\n\nWhat is the difference between "advice" (noun) and "advise" (verb)?\n\nDrop your best example sentence in the comments! 👇',
+      '💡 Pro Tip for today:\n\nWhen speaking, don\'t translate in your head from your native language. Start thinking directly in short English phrases. Who wants to practice with me in chat? 💬',
+      '🌟 Word of the Week:\n\n"Resilience" — the ability to bounce back from challenges.\n\nLearning a new language takes resilience. You are doing amazing!',
+      '🗣️ Quick Question:\n\nWhat is the hardest English sound for you to pronounce? Let\'s discuss and break it down together! 🎙️',
+    ];
+
+    final now = DateTime.now();
+    return questions.asMap().entries.map((entry) {
+      final idx = entry.key;
+      final content = entry.value;
+      return {
+        'id': 'thread_${robot.id}_$idx',
+        'content': content,
+        'user_id': robot.id,
+        'created_at': now.subtract(Duration(hours: (idx + 1) * 6)).toIso8601String(),
+        'like_count': 18 + (dynLvl * 3) + idx,
+        'comment_count': 4 + idx,
+        'user': {
+          'id': robot.id,
+          'profile': [
+            {
+              'name': robot.name,
+              'profile_image_url': robot.avatarUrl,
+            }
+          ]
+        },
+      };
+    }).toList();
+  }
+
+  /// ⏰ Check and generate occasional robot vibes naturally (not bulk dumped!)
+  /// Ensures 2 to 5 robots have active vibes at any time, rotated smoothly
+  static Future<void> checkAndGenerateOccasionalRobotVibes(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final now = DateTime.now();
+      final lastVibeGen = prefs.getInt('last_robot_vibe_generation_time') ?? 0;
+      final hoursPassed = (now.millisecondsSinceEpoch - lastVibeGen) / (1000 * 60 * 60);
+
+      // Clean existing expired vibes first
+      final activeVibes = await getAllActiveRobotVibes();
+
+      // If fewer than 3 vibes active, or more than 4 hours have passed since last generation
+      if (activeVibes.length < 3 || hoursPassed >= 4.0) {
+        // Pick 1 or 2 robots that don't currently have active vibes
+        final activeRobotIds = activeVibes.map((v) => v['profile_id']?.toString() ?? '').toSet();
+        
+        final mates = prefs.getStringList('pocket_mates_$userId') ?? [];
+        final robotMates = mates.where((id) => isRobotId(id)).toList();
+
+        final candidates = _allRobots.where((r) => !activeRobotIds.contains(r.id)).toList();
+        if (candidates.isNotEmpty) {
+          // Pick one mate if available, or random candidate
+          PocketRobot chosen;
+          final mateCandidates = candidates.where((r) => robotMates.contains(r.id)).toList();
+          if (mateCandidates.isNotEmpty) {
+            chosen = mateCandidates[math.Random().nextInt(mateCandidates.length)];
+          } else {
+            chosen = candidates[math.Random().nextInt(candidates.length)];
+          }
+
+          await generateRobotVibe(robotId: chosen.id);
+          await prefs.setInt('last_robot_vibe_generation_time', now.millisecondsSinceEpoch);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error generating occasional robot vibes: $e');
+    }
+  }
+
+  /// 🧠 Central Autonomous Human Engine Loop
+  /// Fulfills user directive:
+  /// - Loops daily progression (1 to 90 levels)
+  /// - Staggers friend requests from robots
+  /// - Manages realistic delayed acceptance when user requests robots
+  /// - Proactively sends friendly English messages
+  /// - Generates realistic occasional Vibes / Stories
+  /// - Enforces human busy-state behavior & mutual blocking
+  static Future<void> runAutonomousHumanEngine(String currentUserId) async {
+    if (currentUserId.isEmpty) return;
+    try {
+      // 1. Advance daily progression cycle
+      await getGlobalElapsedDays();
+
+      // 2. Process any pending user-to-robot friend requests that reached acceptance time
+      await processPendingUserRequestsToRobots(currentUserId);
+
+      // 3. Check and introduce incoming robot friend requests (staggered, realistic)
+      await ensureIncomingRobotRequests(currentUserId, 1);
+
+      // 4. Check and trigger proactive friendly conversational English check-in
+      await checkAndTriggerProactiveMatesMessages(currentUserId);
+
+      // 5. Check and generate occasional robot vibes (stories)
+      await checkAndGenerateOccasionalRobotVibes(currentUserId);
+
+      // 6. Check and trigger occasional snaps from connected robot mates
+      await checkAndTriggerOccasionalRobotSnaps(currentUserId);
+    } catch (e) {
+      debugPrint('Autonomous Human Engine error: $e');
+    }
+  }
+
   /// ⚡ Dispatch a realistic Snapchat-style Snap from a Pocket Robot to the user
   /// Powered by 500+ curated photos & Pollinations AI dynamic generator (0% duplicates!)
   static Future<Map<String, dynamic>> sendRobotSnap({
@@ -462,10 +1085,12 @@ class PocketRobotService {
       );
     } catch (_) {}
 
-    // Record timestamp
+    // Record timestamp (both global user timestamp and per-robot timestamp)
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setInt('last_robot_snap_time_$userId', DateTime.now().millisecondsSinceEpoch);
+      final snapNow = DateTime.now().millisecondsSinceEpoch;
+      await prefs.setInt('last_robot_snap_time_$userId', snapNow);
+      await prefs.setInt('last_robot_snap_time_${userId}_${robot.id}', snapNow);
     } catch (_) {}
 
     return snapMessage;
@@ -497,33 +1122,24 @@ class PocketRobotService {
       'created_at': DateTime.now().toIso8601String(),
       'metadata': {
         'is_snap': true,
-        'caption': userCaption,
+        'caption': userCaption ?? '🔥 Pocket Snap',
         'is_burned': false,
+        'is_read': true,
       },
     };
     await saveRobotChatMessage(userId, robot.id, userSnapMessage);
 
-    // 2. Realistic 2.5 second delay: Robot opens and views the snap
+    // 2. Robot replies with simulated appreciation & sends snap back after 2.5s delay
     Future.delayed(const Duration(milliseconds: 2500), () async {
-      // Burn user snap on robot's end
-      if (userSnapMessage['metadata'] is Map) {
-        (userSnapMessage['metadata'] as Map)['is_burned'] = true;
-      }
+      // Check if robot was blocked in the interim
+      if (await isRobotBlocked(userId, robot.id)) return;
 
-      // 3. Generate appreciation chat message
-      final replies = [
-        'Loved your snap! That was awesome 🔥 Check out what I\'m doing right now!',
-        'Super cool snap, Mate! ⚡ Let me snap you back from my Level ${robot.level} station!',
-        'Got your snap! Looking sharp! 🚀 Sending one right back to you!',
-        'Awesome snap! That energized my neural circuits! Here\'s my view ✨',
-      ];
-      final reactionText = replies[math.Random().nextInt(replies.length)];
-
-      final robotChatMsg = {
-        'id': 'robot_msg_${DateTime.now().millisecondsSinceEpoch}',
+      final replyText = _generateSnapAppreciationReply(robot);
+      final textMessage = {
+        'id': 'robot_msg_${robot.id}_${DateTime.now().millisecondsSinceEpoch}',
         'sender_id': robot.id,
         'receiver_id': userId,
-        'message_text': reactionText,
+        'message_text': replyText,
         'message_type': 'text',
         'created_at': DateTime.now().toIso8601String(),
         'is_read': false,
@@ -532,7 +1148,25 @@ class PocketRobotService {
           'profile_image_url': robot.avatarUrl,
         },
       };
-      await saveRobotChatMessage(userId, robot.id, robotChatMsg);
+
+      await saveRobotChatMessage(userId, robot.id, textMessage);
+
+      // 3. Dispatch text message update instantaneously
+      try {
+        final localMsg = ChatMessage(
+          id: textMessage['id'] as String,
+          senderId: robot.id,
+          receiverId: userId,
+          messageText: replyText,
+          messageType: 'text',
+          createdAt: DateTime.now(),
+        );
+        LocalSyncServer().dispatchInstantMessage(
+          userId: robot.id,
+          chatOrGroupId: userId,
+          message: localMsg.toJson(),
+        );
+      } catch (_) {}
 
       // 4. Robot dispatches a snap back after 1.5 seconds!
       Future.delayed(const Duration(milliseconds: 1500), () {
@@ -545,8 +1179,22 @@ class PocketRobotService {
     });
   }
 
+  static String _generateSnapAppreciationReply(PocketRobot robot) {
+    final replies = [
+      'Loved your snap! That was awesome 🔥 Check out what I\'m doing right now!',
+      'Super cool snap, Mate! ⚡ Let me snap you back from my Level ${robot.level} station!',
+      'Got your snap! Looking sharp! 🚀 Sending one right back to you!',
+      'Awesome snap! That energized my neural circuits! Here\'s my view ✨',
+    ];
+    return replies[math.Random().nextInt(replies.length)];
+  }
+
   /// ⏰ Check and trigger occasional Snaps from connected Robot Mates
-  /// Directly fulfills: "ഇടയ്ക്ക് സ്നാപ്പ് ഒക്കെ അയക്കണം... റോബോട്ടുകൾ സ്നാപ്പ് അയക്കുക, കണക്റ്റ് ആയിക്കഴിഞ്ഞുകഴിഞ്ഞാൽ"
+  /// Directly fulfills user audio instruction:
+  /// "പിന്നെ ബൾക്കായി അയക്കരുത്, ഇടയ്ക്കൊക്കെ... ഒരു 4 റോബോട്ടായിട്ട് ഫ്രണ്ട്സ് ആയിട്ടുണ്ടെങ്കിൽ അവർ ഇടയ്ക്കൊക്കെ ഇടുക, വെറുപ്പിക്കാത്ത രീതിയിൽ"
+  /// - Enforces 6.0 hour global cooldown across all robots so user is NEVER bombarded
+  /// - Enforces 24.0 hour per-robot cooldown so the same robot doesn't repeatedly send snaps
+  /// - Selects exactly ONE eligible robot mate per cycle
   static Future<void> checkAndTriggerOccasionalRobotSnaps(String userId) async {
     if (userId.isEmpty) return;
     try {
@@ -557,26 +1205,43 @@ class PocketRobotService {
 
       if (robotMates.isEmpty) return;
 
-      final lastSnapTime = prefs.getInt('last_robot_snap_time_$userId') ?? 0;
       final now = DateTime.now().millisecondsSinceEpoch;
-      // If no snap sent yet, or more than 4 hours passed
-      final hoursPassed = (now - lastSnapTime) / (1000 * 60 * 60);
+      // 1. Global cooldown: at least 6 hours between ANY robot snap
+      final lastGlobalSnapTime = prefs.getInt('last_robot_snap_time_$userId') ?? 0;
+      final globalHoursPassed = (now - lastGlobalSnapTime) / (1000 * 60 * 60);
 
-      if (lastSnapTime == 0 || hoursPassed >= 4.0) {
-        // Pick a random connected robot mate
-        final targetRobotId = robotMates[math.Random().nextInt(robotMates.length)];
-        await sendRobotSnap(
-          userId: userId,
-          robotId: targetRobotId,
-        );
+      if (lastGlobalSnapTime != 0 && globalHoursPassed < 6.0) {
+        return; // Natural spacing active: do not disturb user
       }
+
+      // 2. Per-robot filter: at least 24 hours for the specific robot, and not blocked
+      final eligibleRobots = <String>[];
+      for (final rId in robotMates) {
+        if (await isRobotBlocked(userId, rId)) continue;
+        final lastRobotTime = prefs.getInt('last_robot_snap_time_${userId}_$rId') ?? 0;
+        final robotHoursPassed = (now - lastRobotTime) / (1000 * 60 * 60);
+        if (lastRobotTime == 0 || robotHoursPassed >= 24.0) {
+          eligibleRobots.add(rId);
+        }
+      }
+
+      if (eligibleRobots.isEmpty) return;
+
+      // Pick exactly ONE eligible robot mate (never bulk dump)
+      eligibleRobots.shuffle();
+      final targetRobotId = eligibleRobots.first;
+      await sendRobotSnap(
+        userId: userId,
+        robotId: targetRobotId,
+      );
     } catch (e) {
       debugPrint('Error triggering occasional robot snap: $e');
     }
   }
 
   /// ⏰ Check and trigger occasional proactive friendly messages from connected Robot Mates
-  /// Spaced out naturally (at most once every 24-48 hours), fulfilling the 365-day engagement plan without spamming
+  /// Spaced out naturally (at most once every 20 hours globally, 48 hours per robot),
+  /// directly fulfills: "നമ്മളോട് തന്നെ കുറെ ചോദ്യങ്ങൾ ചോദിക്കും", asking engaging questions without spamming
   static Future<void> checkAndTriggerProactiveMatesMessages(String userId) async {
     if (userId.isEmpty) return;
     try {
@@ -587,49 +1252,66 @@ class PocketRobotService {
 
       if (robotMates.isEmpty) return;
 
-      final lastMsgTime = prefs.getInt('last_robot_proactive_time_$userId') ?? 0;
       final now = DateTime.now().millisecondsSinceEpoch;
-      final hoursPassed = (now - lastMsgTime) / (1000 * 60 * 60);
+      final lastGlobalMsgTime = prefs.getInt('last_robot_proactive_time_$userId') ?? 0;
+      final globalHoursPassed = (now - lastGlobalMsgTime) / (1000 * 60 * 60);
 
-      // Only send if at least 24 hours have passed since the last proactive message
-      if (lastMsgTime == 0 || hoursPassed >= 24.0) {
-        final targetRobotId = robotMates[math.Random().nextInt(robotMates.length)];
-        final robot = getRobotById(targetRobotId) ?? getRobotByLevel(1);
-        final greeting = RobotSnapDataset.getProactiveGreeting(robot);
-
-        final proactiveMsg = {
-          'id': 'robot_proactive_${DateTime.now().millisecondsSinceEpoch}',
-          'sender_id': robot.id,
-          'receiver_id': userId,
-          'message_text': greeting,
-          'message_type': 'text',
-          'created_at': DateTime.now().toIso8601String(),
-          'is_read': false,
-          'sender_profile': {
-            'name': robot.name,
-            'profile_image_url': robot.avatarUrl,
-          },
-        };
-
-        await saveRobotChatMessage(userId, robot.id, proactiveMsg);
-        await prefs.setInt('last_robot_proactive_time_$userId', now);
-
-        try {
-          final localMsg = ChatMessage(
-            id: proactiveMsg['id'] as String,
-            senderId: robot.id,
-            receiverId: userId,
-            messageText: greeting,
-            messageType: 'text',
-            createdAt: DateTime.now(),
-          );
-          LocalSyncServer().dispatchInstantMessage(
-            userId: robot.id,
-            chatOrGroupId: userId,
-            message: localMsg.toJson(),
-          );
-        } catch (_) {}
+      // Global cooldown: At least 20 hours between ANY proactive check-in from ANY robot
+      if (lastGlobalMsgTime != 0 && globalHoursPassed < 20.0) {
+        return;
       }
+
+      // Filter eligible robots (not blocked, at least 48 hours since this specific robot proactively messaged)
+      final eligibleRobots = <String>[];
+      for (final rId in robotMates) {
+        if (await isRobotBlocked(userId, rId)) continue;
+        final lastRobotTime = prefs.getInt('last_robot_proactive_time_${userId}_$rId') ?? 0;
+        final robotHoursPassed = (now - lastRobotTime) / (1000 * 60 * 60);
+        if (lastRobotTime == 0 || robotHoursPassed >= 48.0) {
+          eligibleRobots.add(rId);
+        }
+      }
+
+      if (eligibleRobots.isEmpty) return;
+
+      eligibleRobots.shuffle();
+      final targetRobotId = eligibleRobots.first;
+      final robot = getRobotById(targetRobotId) ?? getRobotByLevel(1);
+      final greeting = RobotSnapDataset.getProactiveGreeting(robot);
+
+      final proactiveMsg = {
+        'id': 'robot_proactive_${DateTime.now().millisecondsSinceEpoch}',
+        'sender_id': robot.id,
+        'receiver_id': userId,
+        'message_text': greeting,
+        'message_type': 'text',
+        'created_at': DateTime.now().toIso8601String(),
+        'is_read': false,
+        'sender_profile': {
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+        },
+      };
+
+      await saveRobotChatMessage(userId, robot.id, proactiveMsg);
+      await prefs.setInt('last_robot_proactive_time_$userId', now);
+      await prefs.setInt('last_robot_proactive_time_${userId}_${robot.id}', now);
+
+      try {
+        final localMsg = ChatMessage(
+          id: proactiveMsg['id'] as String,
+          senderId: robot.id,
+          receiverId: userId,
+          messageText: greeting,
+          messageType: 'text',
+          createdAt: DateTime.now(),
+        );
+        LocalSyncServer().dispatchInstantMessage(
+          userId: robot.id,
+          chatOrGroupId: userId,
+          message: localMsg.toJson(),
+        );
+      } catch (_) {}
     } catch (e) {
       debugPrint('Error triggering proactive robot message: $e');
     }
@@ -732,12 +1414,37 @@ class PocketRobotService {
     return manglishPattern.hasMatch(text);
   }
 
-  /// ⏰ Check if robot is currently busy
+  /// ⏰ Check if robot is currently busy (sleep hours, study drills, meetings)
   static bool isRobotBusy(PocketRobot robot) {
-    final hour = DateTime.now().hour;
-    // Late night hours 1:00 AM - 5:30 AM or busy state
-    if (hour >= 2 && hour < 6) return true;
+    final now = DateTime.now();
+    final hour = now.hour;
+    // Late night hours 1:00 AM - 5:30 AM
+    if (hour >= 1 && hour < 6) return true;
+
+    // Dynamic busy slots during the day: short 8-minute focus windows based on level
+    final busyMinuteStart = (robot.level * 9) % 60;
+    if (now.minute >= busyMinuteStart && now.minute <= (busyMinuteStart + 7)) {
+      return true;
+    }
     return false;
+  }
+
+  /// Get personality-distinct busy message for this robot
+  static String getBusyReply(PocketRobot robot) {
+    switch (robot.archetype) {
+      case RobotArchetype.romantic:
+        return 'Hey! I\'m a little busy with study right now sweet friend! I promise to message you as soon as I finish 💕';
+      case RobotArchetype.grumpy:
+        return 'I\'m busy defending my Level ${robot.level} Citadel right now! Stop interrupting and practice your vocabulary. Talk later! 😤';
+      case RobotArchetype.cheerful:
+        return 'Hey Mate! I\'m in the middle of an intensive speaking sprint right now! Let\'s catch up in a little bit! Keep smiling! 🌟';
+      case RobotArchetype.intellectual:
+        return 'Greetings. I am presently engrossed in scholarly analysis and syntax research. I shall resume our conversation shortly.';
+      case RobotArchetype.trendsetter:
+        return 'Yo! Super busy at the moment bro! Catch you in a bit, keep the streak blazing hot 🔥';
+      case RobotArchetype.grandmaster:
+        return 'Discipline demands my focus upon higher study at this hour. We shall resume our scholarly discourse shortly.';
+    }
   }
 
   /// 💬 Contextual AI Conversation Engine for Pocket Robots
@@ -746,8 +1453,17 @@ class PocketRobotService {
     required PocketRobot robot,
     required String userMessage,
     List<Map<String, dynamic>>? history,
+    String? currentUserId,
   }) async {
-    // 0. Language Check: If user wrote in Malayalam or Manglish, politely redirect to English
+    // 0. Check mutual block
+    if (currentUserId != null && currentUserId.isNotEmpty) {
+      if (await isRobotBlocked(currentUserId, robot.id) ||
+          await isUserBlockedByRobot(currentUserId, robot.id)) {
+        return '⚠️ This conversation is currently blocked.';
+      }
+    }
+
+    // 0.5 Language Check: If user wrote in Malayalam or Manglish, politely redirect to English
     if (isMalayalamOrManglish(userMessage)) {
       final englishReminders = [
         'Hey! Here in Pocket Mates, we only speak English to build our fluency! 🌟 Let\'s practice speaking in English together. How can I help you today?',
@@ -759,7 +1475,7 @@ class PocketRobotService {
 
     // 1. Realistic Busy / Rest hours check
     if (isRobotBusy(robot)) {
-      return 'Hey! I\'m currently busy with my grammar drill right now, I\'ll catch up with you soon! 📚';
+      return getBusyReply(robot);
     }
 
     // 2. Query free AI models first for realistic, dynamic human-like responses

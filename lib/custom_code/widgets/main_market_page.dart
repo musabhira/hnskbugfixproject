@@ -3,13 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'main_market_logic.dart';
 import 'gallery_profile_search_page.dart';
 import 'gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_ambient_flame_background.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
 class MainMarketPage extends ConsumerStatefulWidget {
@@ -41,46 +41,35 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
-      body: Stack(
-        children: [
-          const Positioned.fill(
-            child: PocketAmbientFlameBackground(
-              showTopFlameGlow: true,
-              emberDensity: 0.65,
-            ),
-          ),
-          NestedScrollView(
+      body: NestedScrollView(
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
               floating: true,
               pinned: true,
               snap: true,
-              backgroundColor: FlutterFlowTheme.of(context).primaryBackground.withValues(alpha: 0.85),
-              title: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('🔥 ', style: TextStyle(fontSize: 17)),
-                  Text(
-                    'MARKET',
-                    style: TextStyle(
-                      color: FlutterFlowTheme.of(context).primaryText,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 2,
-                      fontSize: 18,
-                    ),
-                  ),
-                ],
+              elevation: 0,
+              backgroundColor: FlutterFlowTheme.of(context).primaryBackground.withValues(alpha: 0.95),
+              title: Text(
+                'MARKET',
+                style: GoogleFonts.outfit(
+                  color: FlutterFlowTheme.of(context).primaryText,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 2,
+                  fontSize: 16,
+                ),
               ),
               centerTitle: true,
               bottom: TabBar(
                 controller: _mainTabController,
-                indicatorColor: Color(0xFFFFFC00),
-                indicatorWeight: 3,
-                labelColor: Color(0xFFFFFC00),
+                indicatorColor: const Color(0xFFFFFC00),
+                indicatorWeight: 2.5,
+                labelColor: const Color(0xFFFFFC00),
                 unselectedLabelColor: FlutterFlowTheme.of(context).secondaryText,
                 labelStyle:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                    GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                unselectedLabelStyle:
+                    GoogleFonts.inter(fontWeight: FontWeight.w500, fontSize: 13),
                 tabs: const [
                   Tab(text: 'EXPLORE'),
                   Tab(text: 'FOLLOWING'),
@@ -91,16 +80,16 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                   onPressed: () =>
                       ref.read(marketProvider.notifier).loadCategories(),
                   icon:
-                      Icon(Icons.refresh, color: FlutterFlowTheme.of(context).primaryText, size: 22),
+                      Icon(Icons.refresh, color: FlutterFlowTheme.of(context).primaryText, size: 20),
                   tooltip: 'Refresh Categories',
                 ),
                 IconButton(
                   onPressed: _showInterestSelection,
-                  icon: Icon(Icons.tune, color: FlutterFlowTheme.of(context).primaryText, size: 22),
+                  icon: Icon(Icons.tune, color: FlutterFlowTheme.of(context).primaryText, size: 20),
                   tooltip: 'Edit Interests',
                 ),
                 IconButton(
-                  icon: Icon(Icons.search, color: FlutterFlowTheme.of(context).secondaryText),
+                  icon: Icon(Icons.search, color: FlutterFlowTheme.of(context).secondaryText, size: 20),
                   onPressed: () {
                     // Navigate to a search page or show search bar
                     Navigator.push(
@@ -122,8 +111,6 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
             MarketFollowingTabView(),
           ],
         ),
-      ),
-        ],
       ),
     );
   }
@@ -372,21 +359,28 @@ class MarketExploreTabView extends ConsumerWidget {
       child: Column(
         children: [
           Container(
-            height: 60,
+            height: 42,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).primaryBackground,
               border: Border(
-                  bottom:
-                      BorderSide(color: FlutterFlowTheme.of(context).alternate)),
+                bottom: BorderSide(
+                  color: FlutterFlowTheme.of(context).alternate.withValues(alpha: 0.4),
+                  width: 0.8,
+                ),
+              ),
             ),
             child: TabBar(
               isScrollable: true,
+              tabAlignment: TabAlignment.start,
               indicator: const UnderlineTabIndicator(
                 borderSide: BorderSide(color: Color(0xFFFFFC00), width: 2),
-                insets: EdgeInsets.symmetric(horizontal: 20),
+                insets: EdgeInsets.symmetric(horizontal: 14),
               ),
-              labelColor: Color(0xFFFFFC00),
+              labelColor: const Color(0xFFFFFC00),
               unselectedLabelColor: FlutterFlowTheme.of(context).secondaryText,
+              labelPadding: const EdgeInsets.symmetric(horizontal: 10),
+              labelStyle: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w700),
+              unselectedLabelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500),
               onTap: (index) {
                 final category = state.categories[index];
                 if (state.itemsByCategory[category] == null) {
@@ -394,15 +388,7 @@ class MarketExploreTabView extends ConsumerWidget {
                 }
               },
               tabs: state.categories
-                  .map((c) => Tab(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 8),
-                          child: Text(c,
-                              style: const TextStyle(
-                                  fontSize: 13, fontWeight: FontWeight.w600)),
-                        ),
-                      ))
+                  .map((c) => Tab(text: c))
                   .toList(),
             ),
           ),
@@ -424,9 +410,9 @@ class MarketItemsList extends ConsumerWidget {
   const MarketItemsList({super.key, required this.category});
 
   int _getCrossAxisCount(double width) {
-    if (width > 1200) return 5;
-    if (width > 900) return 4;
-    if (width > 600) return 3;
+    if (width > 1200) return 6;
+    if (width > 900) return 5;
+    if (width > 600) return 4;
     return 2;
   }
 
@@ -448,8 +434,8 @@ class MarketItemsList extends ConsumerWidget {
         onRefresh: () => ref
             .read(marketProvider.notifier)
             .loadItems(category, isRefresh: true),
-        color: Color(0xFFFFFC00),
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        color: const Color(0xFFFFFC00),
+        backgroundColor: const Color(0xFF161822),
         child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
             if (notification is ScrollEndNotification &&
@@ -460,9 +446,10 @@ class MarketItemsList extends ConsumerWidget {
           },
           child: MasonryGridView.count(
             crossAxisCount: crossAxisCount,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            padding: const EdgeInsets.all(16),
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             itemCount: items.length +
                 (items.length >= 6 ? (items.length ~/ 6) : 0) +
                 (state.isLoadingMore[category] == true ? crossAxisCount : 0),
@@ -510,9 +497,9 @@ class _MarketFollowingTabViewState
   }
 
   int _getCrossAxisCount(double width) {
-    if (width > 1200) return 5;
-    if (width > 900) return 4;
-    if (width > 600) return 3;
+    if (width > 1200) return 6;
+    if (width > 900) return 5;
+    if (width > 600) return 4;
     return 2;
   }
 
@@ -525,18 +512,51 @@ class _MarketFollowingTabViewState
     }
 
     if (state.items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.people_outline,
-                size: 80, color: FlutterFlowTheme.of(context).secondaryText.withValues(alpha: 0.15)),
-            const SizedBox(height: 24),
-            Text(
-              "No artworks from people you follow",
-              style: TextStyle(color: FlutterFlowTheme.of(context).secondaryText, fontSize: 16),
+      return RefreshIndicator(
+        onRefresh: () => ref
+            .read(followingMarketProvider.notifier)
+            .loadFollowingItems(isRefresh: true),
+        color: const Color(0xFFFFFC00),
+        backgroundColor: const Color(0xFF161822),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 80, horizontal: 24),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.04),
+                      border: Border.all(color: Colors.white12, width: 0.8),
+                    ),
+                    child: const Icon(Icons.people_outline,
+                        size: 36, color: Colors.white38),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    "No artworks from creators you follow",
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "Pull down to refresh or follow more artists",
+                    style: GoogleFonts.inter(
+                      color: Colors.white38,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       );
     }
@@ -548,8 +568,8 @@ class _MarketFollowingTabViewState
         onRefresh: () => ref
             .read(followingMarketProvider.notifier)
             .loadFollowingItems(isRefresh: true),
-        color: Color(0xFFFFFC00),
-        backgroundColor: FlutterFlowTheme.of(context).primaryBackground,
+        color: const Color(0xFFFFFC00),
+        backgroundColor: const Color(0xFF161822),
         child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
             if (notification is ScrollEndNotification &&
@@ -560,9 +580,10 @@ class _MarketFollowingTabViewState
           },
           child: MasonryGridView.count(
             crossAxisCount: crossAxisCount,
-            mainAxisSpacing: 16,
-            crossAxisSpacing: 16,
-            padding: const EdgeInsets.all(16),
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             itemCount: state.items.length,
             itemBuilder: (context, index) {
               return MarketItemCard(
@@ -594,202 +615,183 @@ class MarketItemCard extends StatefulWidget {
 }
 
 class _MarketItemCardState extends State<MarketItemCard> {
-  bool _isHovered = false;
+  static const List<Color> _cardAccentPalette = [
+    Color(0xFFFF5252), // Vibrant Coral / Red
+    Color(0xFFFFD124), // Cyber Yellow / Amber
+    Color(0xFF00E676), // Neon Emerald Green
+    Color(0xFF00D2FF), // Electric Sky Blue
+    Color(0xFFA855F7), // Neon Purple / Violet
+  ];
 
   @override
   Widget build(BuildContext context) {
     final item = widget.item;
     final index = widget.index;
+    final accentColor = _cardAccentPalette[index % _cardAccentPalette.length];
     final imageUrl = item['gallery_image_url'] ?? item['image_url'];
     final title = item['gallery_title'] ?? item['title'] ?? 'Untitled';
     final price = item['gallery_price'] ?? item['price'];
     final userName = item['name'] ?? 'Artist';
     final userProfileImg = item['profile_image_url'];
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => GalleryDetailsPage(
-                item: item,
-                allItems: widget.allItems,
-                initialIndex: index,
-              ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => GalleryDetailsPage(
+              item: item,
+              allItems: widget.allItems,
+              initialIndex: index,
             ),
-          );
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          transform: _isHovered
-              ? (Matrix4.identity()..scale(1.02))
-              : Matrix4.identity(),
-          decoration: BoxDecoration(
-            color: FlutterFlowTheme.of(context).secondaryBackground,
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: _isHovered
-                  ? Color(0xFFFFFC00).withValues(alpha: 0.3)
-                  : FlutterFlowTheme.of(context).alternate,
-              width: 1,
-            ),
-            boxShadow: [
-              if (_isHovered)
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  blurRadius: 15,
-                  offset: const Offset(0, 8),
-                ),
-            ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ClipRRect(
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(20)),
-                child: Stack(
-                  children: [
-                    CachedNetworkImage(
-                      imageUrl: imageUrl.toString(),
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        height: 180 + (index % 4 * 25).toDouble(),
-                        color: FlutterFlowTheme.of(context).primaryBackground,
-                        child: Shimmer.fromColors(
-                          baseColor: FlutterFlowTheme.of(context).secondaryBackground,
-                          highlightColor: FlutterFlowTheme.of(context).alternate,
-                          child: Container(color: FlutterFlowTheme.of(context).primaryBackground),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        height: 150,
-                        color: FlutterFlowTheme.of(context).primaryBackground,
-                        child: Icon(Icons.broken_image_outlined,
-                            color: FlutterFlowTheme.of(context).secondaryText, size: 30),
-                      ),
-                    ),
-                    // Gradient Overlay for readability
-                    Positioned.fill(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Colors.transparent,
-                              Colors.black.withValues(alpha: 0.4),
-                            ],
-                            stops: const [0.6, 1.0],
-                          ),
-                        ),
-                      ),
-                    ),
-                    if (price != null)
-                      Positioned(
-                        bottom: 10,
-                        right: 10,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.85),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              width: 0.5,
+        );
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFF13151D),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: accentColor.withValues(alpha: 0.25),
+            width: 0.9,
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Thumbnail with minimal price badge
+            Stack(
+              children: [
+                AspectRatio(
+                  aspectRatio: 1.0,
+                  child: imageUrl != null && imageUrl.toString().isNotEmpty
+                      ? CachedNetworkImage(
+                          imageUrl: imageUrl.toString(),
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: accentColor.withValues(alpha: 0.06),
+                            child: Center(
+                              child: Icon(
+                                Icons.image_outlined,
+                                size: 20,
+                                color: accentColor.withValues(alpha: 0.35),
+                              ),
                             ),
                           ),
-                          child: Text(
-                            '₹$price',
-                            style: const TextStyle(
-                              color: Color(0xFFFFFC00),
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.5,
+                          errorWidget: (context, url, error) => Container(
+                            color: Colors.white.withValues(alpha: 0.04),
+                            child: const Center(
+                              child: Icon(
+                                Icons.broken_image_outlined,
+                                size: 20,
+                                color: Colors.white24,
+                              ),
+                            ),
+                          ),
+                        )
+                      : Container(
+                          color: accentColor.withValues(alpha: 0.06),
+                          child: Center(
+                            child: Icon(
+                              Icons.palette_outlined,
+                              size: 22,
+                              color: accentColor.withValues(alpha: 0.4),
                             ),
                           ),
                         ),
-                      ),
-                  ],
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: FlutterFlowTheme.of(context).primaryText,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
+                if (price != null)
+                  Positioned(
+                    top: 5,
+                    right: 5,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.82),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: accentColor.withValues(alpha: 0.55),
+                          width: 0.6,
+                        ),
+                      ),
+                      child: Text(
+                        '₹$price',
+                        style: GoogleFonts.outfit(
+                          color: accentColor,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
-                        Container(
-                          width: 24,
-                          height: 24,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
-                              width: 1.2,
-                            ),
-                          ),
-                          child: ClipOval(
-                            child: item['avatar_config'] != null
-                                ? VectorAvatarWidget(
-                                    config: VectorAvatarConfig.fromJson(item['avatar_config']),
-                                    size: 24,
-                                    showAura: false,
+                  ),
+              ],
+            ),
+            // Minimal Info Section
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      ClipOval(
+                        child: item['avatar_config'] != null
+                            ? VectorAvatarWidget(
+                                config: VectorAvatarConfig.fromJson(item['avatar_config']),
+                                size: 16,
+                                showAura: false,
+                              )
+                            : (userProfileImg != null && userProfileImg.toString().isNotEmpty
+                                ? Image.network(
+                                    userProfileImg,
+                                    width: 16,
+                                    height: 16,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        const Icon(Icons.person, size: 12, color: Colors.white60),
                                   )
-                                : (userProfileImg != null && userProfileImg.toString().isNotEmpty
-                                    ? Image.network(
-                                        userProfileImg,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => const Icon(Icons.person, size: 14, color: Colors.white70),
-                                      )
-                                    : VectorAvatarWidget(
-                                        config: VectorAvatarConfig(
-                                          hairStyle: 'anime_spiky',
-                                          auraStyle: 'pocket_gold',
-                                          outfitStyle: 'artist_beret',
-                                        ),
-                                        size: 24,
-                                        showAura: false,
-                                      )),
+                                : VectorAvatarWidget(
+                                    config: VectorAvatarConfig(
+                                      hairStyle: 'anime_spiky',
+                                      auraStyle: 'pocket_gold',
+                                      outfitStyle: 'artist_beret',
+                                    ),
+                                    size: 16,
+                                    showAura: false,
+                                  )),
+                      ),
+                      const SizedBox(width: 5),
+                      Expanded(
+                        child: Text(
+                          userName,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: Colors.white54,
+                            fontSize: 11.5,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            userName,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: FlutterFlowTheme.of(context).secondaryText,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -802,14 +804,14 @@ class MarketLoadingSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Shimmer.fromColors(
-      baseColor: FlutterFlowTheme.of(context).secondaryBackground,
-      highlightColor: FlutterFlowTheme.of(context).alternate,
+      baseColor: const Color(0xFF13151D),
+      highlightColor: const Color(0xFF1E2230),
       child: MasonryGridView.count(
-        crossAxisCount: 2,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        padding: const EdgeInsets.all(16),
-        itemCount: 8,
+        crossAxisCount: 3,
+        mainAxisSpacing: 8,
+        crossAxisSpacing: 8,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        itemCount: 9,
         itemBuilder: (context, index) => const ItemSkeleton(),
       ),
     );
@@ -822,16 +824,17 @@ class ItemSkeleton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 220,
+      height: 145,
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF13151D),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.05), width: 0.8),
       ),
     );
   }
 }
 
-/// A Native Sponsor Product Card that fits seamlessly inside Market Masonry Grid
+/// A Native Sponsor Product Card that fits seamlessly inside Market Grid
 class MarketNativeProductAdCard extends StatefulWidget {
   const MarketNativeProductAdCard({super.key});
 
@@ -844,31 +847,25 @@ class _MarketNativeProductAdCardState extends State<MarketNativeProductAdCard> {
 
   final List<Map<String, dynamic>> _sponsorProducts = [
     {
-      'title': 'Oxford Spoken English 30-Day Master Kit',
+      'title': 'Oxford 30D Master Kit',
       'price': '₹499',
-      'brand': 'Oxford Learning Hub',
-      'tag': 'BESTSELLER',
-      'rating': '4.9 ★',
+      'brand': 'Oxford Hub',
       'badge': 'SPONSORED',
       'accent': Color(0xFF38BDF8),
       'icon': Icons.menu_book_rounded,
     },
     {
-      'title': 'IELTS Band 8+ AI Speaking Simulator',
+      'title': 'IELTS AI Simulator',
       'price': '₹299',
-      'brand': 'Global Prep Academy',
-      'tag': '50% OFF',
-      'rating': '4.8 ★',
+      'brand': 'Global Prep',
       'badge': 'SPONSORED',
-      'accent': Color(0xFFFFD700),
+      'accent': Color(0xFFFFD124),
       'icon': Icons.record_voice_over_rounded,
     },
     {
-      'title': 'Remote Tech & Interview Prep Guide 2026',
+      'title': 'Tech Interview Guide',
       'price': '₹399',
-      'brand': 'CareerSprint Tech',
-      'tag': 'HOT',
-      'rating': '5.0 ★',
+      'brand': 'CareerSprint',
       'badge': 'SPONSORED',
       'accent': Color(0xFF10B981),
       'icon': Icons.work_outline_rounded,
@@ -897,162 +894,107 @@ class _MarketNativeProductAdCardState extends State<MarketNativeProductAdCard> {
 
     return Container(
       decoration: BoxDecoration(
-        color: FlutterFlowTheme.of(context).secondaryBackground,
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF13151D),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: accent.withValues(alpha: 0.4),
-          width: 1.2,
+          color: accent.withValues(alpha: 0.35),
+          width: 0.9,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: accent.withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Banner Artwork
-          Container(
-            height: 150,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(19)),
-              gradient: LinearGradient(
-                colors: [accent.withValues(alpha: 0.25), const Color(0xFF0F172A)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          // Banner
+          AspectRatio(
+            aspectRatio: 1.0,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [accent.withValues(alpha: 0.22), const Color(0xFF0F172A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Icon(
+                      _ad['icon'] as IconData,
+                      size: 28,
+                      color: accent,
+                    ),
+                  ),
+                  Positioned(
+                    top: 5,
+                    left: 5,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(color: accent.withValues(alpha: 0.6), width: 0.5),
+                      ),
+                      child: Text(
+                        'AD',
+                        style: GoogleFonts.outfit(
+                          color: accent,
+                          fontSize: 9.0,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 5,
+                    right: 5,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.82),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: accent.withValues(alpha: 0.6), width: 0.6),
+                      ),
+                      child: Text(
+                        _ad['price'] as String,
+                        style: GoogleFonts.outfit(
+                          color: accent,
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-            child: Stack(
-              children: [
-                Center(
-                  child: Icon(
-                    _ad['icon'] as IconData,
-                    size: 52,
-                    color: accent,
-                  ),
-                ),
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.7),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: accent.withValues(alpha: 0.5)),
-                    ),
-                    child: Text(
-                      _ad['badge'] as String,
-                      style: TextStyle(
-                        color: accent,
-                        fontSize: 8.5,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: accent,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Text(
-                      _ad['tag'] as String,
-                      style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 8.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
           ),
-
-          // Details & Price
+          // Info
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  _ad['brand'] as String,
-                  style: TextStyle(
-                    color: FlutterFlowTheme.of(context).secondaryText,
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  _ad['title'] as String,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _ad['title'] as String,
-                  style: TextStyle(
-                    color: FlutterFlowTheme.of(context).primaryText,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.bold,
-                    height: 1.2,
-                  ),
-                  maxLines: 2,
+                  _ad['brand'] as String,
+                  maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      _ad['price'] as String,
-                      style: TextStyle(
-                        color: accent,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                    Text(
-                      _ad['rating'] as String,
-                      style: const TextStyle(
-                        color: Color(0xFFFFD700),
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Opening sponsor deal...'),
-                          duration: Duration(milliseconds: 700),
-                        ),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: accent,
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      minimumSize: const Size(0, 32),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'View Deal',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-                    ),
+                  style: GoogleFonts.inter(
+                    color: Colors.white54,
+                    fontSize: 11.5,
                   ),
                 ),
               ],

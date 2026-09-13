@@ -1,5 +1,5 @@
-// Automatic FlutterFlow imports
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 import '/backend/supabase/supabase.dart';
 import 'package:flutter/material.dart';
@@ -23,30 +23,22 @@ class VerfiedSwitchPage extends StatefulWidget {
 }
 
 class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
-  // Color? _selectedColor;
-  // String? _colorCode;
-  // Color? _selectedColor1;
-  // String? _colorCode1;
-  // Color? _selectedColor2;
-  // String? _colorCode2;
-  // Color? _selectedColor3;
-  // String? _colorCode3;
-
   String? selectedCountry;
   String? selectedState;
   String? selectedCity;
-  // final scaffoldKey = GlobalKey<ScaffoldState>(); // Removed material scaffold key
   final TextEditingController _shopNameController = TextEditingController();
   final _supabase = SupaFlow.client;
 
   bool _isLoading = false;
   int? selectedContainer;
-  // String? _imageUrl;
   bool _isVerified = false;
 
   // Premium features variables
   int? _selectedHomeDesign;
-  // bool _hasPremiumFeatures = false;
+
+  bool get _isRobot =>
+      PocketRobotService.isRobotId(widget.userId) ||
+      !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.userId);
 
   @override
   void initState() {
@@ -58,6 +50,15 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
 
   // New method to load premium features
   Future<void> _loadPremiumFeatures() async {
+    if (_isRobot) {
+      if (mounted) {
+        setState(() {
+          _selectedHomeDesign = 1;
+        });
+      }
+      return;
+    }
+
     try {
       final premiumResponse = await _supabase
           .from('premium_features')
@@ -68,28 +69,37 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       if (premiumResponse != null && mounted) {
         setState(() {
           _selectedHomeDesign = premiumResponse['selected_home_design'] ?? 1;
-          // _hasPremiumFeatures = true;
         });
       } else {
-        // User doesn't have premium features, use default
         setState(() {
           _selectedHomeDesign = 1; // Default design
-          // _hasPremiumFeatures = false;
         });
       }
     } catch (error) {
-      print('Error loading premium features: $error');
-      // Use default if error occurs
+      debugPrint('Error loading premium features: $error');
       if (mounted) {
         setState(() {
           _selectedHomeDesign = 1;
-          // _hasPremiumFeatures = false;
         });
       }
     }
   }
 
   Future<void> _loadProfileData() async {
+    if (_isRobot) {
+      final robot = PocketRobotService.getRobotById(widget.userId) ??
+          PocketRobotService.getRobotByLevel(1);
+      if (mounted) {
+        setState(() {
+          _shopNameController.text = robot.archetype.label;
+          _isVerified = true;
+          _selectedHomeDesign = 1;
+          _isLoading = false;
+        });
+      }
+      return;
+    }
+
     try {
       setState(() => _isLoading = true);
 
@@ -101,33 +111,19 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
           .eq('user_id', widget.userId)
           .maybeSingle();
 
-      print(profileResponse);
-
       if (profileResponse != null && mounted) {
         setState(() {
           _shopNameController.text = profileResponse['shop_name'] ?? '';
-          // _colorCode = profileResponse['bg_color_code'] ?? '';
-          // _colorCode1 = profileResponse['bg_text_color'] ?? '';
-          // _colorCode2 = profileResponse['button_color_code'] ?? '';
-          // _colorCode3 = profileResponse['button_text_color'] ?? '';
-          _isVerified = profileResponse['verified']; // Get verification status
+          _isVerified = profileResponse['verified'] ?? false;
         });
       }
     } catch (error) {
+      debugPrint('Error loading profile: $error');
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Error'),
-            content: Text('Error loading profile: $error'),
-            actions: [
-              TextButton(
-                child: const Text('OK'),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-        );
+        setState(() {
+          _isVerified = false;
+          _selectedHomeDesign = 1;
+        });
       }
     } finally {
       if (mounted) {
@@ -146,6 +142,35 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
 
     final double screenWidth = MediaQuery.of(context).size.width;
     final double screenHeight = MediaQuery.of(context).size.height;
+
+    if (_isRobot) {
+      final robot = PocketRobotService.getRobotById(widget.userId) ??
+          PocketRobotService.getRobotByLevel(1);
+      final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
+      return MainProfileWidget(
+        width: screenWidth,
+        height: screenHeight,
+        userId: robot.id,
+        preloadedProfile: {
+          'user_id': robot.id,
+          'first_name': robot.name,
+          'name': robot.name,
+          'shop_name': robot.archetype.label,
+          'bio': robot.bio,
+          'profile_image_url': robot.avatarUrl,
+          'learning_day': dynamicLevel,
+          'streak': dynamicLevel,
+          'rank': robot.cefrRank,
+          'palette_id': robot.housePalette,
+          'is_pocket_robo': true,
+          'verified': true,
+          'bg_color_code': '#0F111A',
+          'bg_text_color': '#FFFFFF',
+          'button_color_code': '#0095F6',
+          'button_text_color': '#FFFFFF',
+        },
+      );
+    }
 
     // Check verification status first
     if (_isVerified == true) {

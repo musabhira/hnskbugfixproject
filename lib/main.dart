@@ -16,50 +16,76 @@ import 'flutter_flow/flutter_flow_util.dart';
 import 'custom_code/services/local_sync_server.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/push_notification_service.dart';
-import 'services/shorebird_service.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() {
+  runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  if (kIsWeb) {
-    usePathUrlStrategy();
-  }
+    // Catch synchronous framework-level errors
+    FlutterError.onError = (FlutterErrorDetails details) {
+      FlutterError.presentError(details);
+      debugPrint('Main: FlutterError caught: ${details.exceptionAsString()}');
+    };
 
-  // Initialize core application services with a timeout to prevent hanging
-  try {
-    debugPrint('Main: Starting core service initialization...');
-    await Future.wait([
-      SupaFlow.initialize().then((_) => debugPrint('Main: SupaFlow initialized.')),
-      LocalSyncServer().initialize().then((_) => debugPrint('Main: LocalSyncServer initialized.')),
-      FlutterFlowTheme.initialize().then((_) => debugPrint('Main: FlutterFlowTheme initialized.')),
-      ShorebirdService().initialize().then((_) => debugPrint('Main: ShorebirdService initialized.')),
-    ]).timeout(const Duration(seconds: 10), onTimeout: () {
-      debugPrint('Core service initialization timed out. Proceeding anyway...');
-      return [];
-    });
-    debugPrint('Main: Core service initialization complete or timed out.');
-  } catch (e) {
-    debugPrint('Core service initialization error: $e');
-  }
+    // Catch asynchronous uncaught errors and prevent process termination
+    PlatformDispatcher.instance.onError = (error, stack) {
+      debugPrint('Main: PlatformDispatcher caught uncaught error: $error\n$stack');
+      return true; // Mark as handled to prevent native app crash dialog
+    };
 
-  // Start optional services in the background without blocking the UI
-  final isFirebaseSupported = kIsWeb || 
-      (defaultTargetPlatform == TargetPlatform.android || 
-       defaultTargetPlatform == TargetPlatform.iOS || 
-       defaultTargetPlatform == TargetPlatform.macOS);
+    if (kIsWeb) {
+      usePathUrlStrategy();
+    }
 
-  if (isFirebaseSupported) {
-    unawaited(Firebase.initializeApp().then((_) {
-      PushNotificationService.initialize();
-    }).catchError((e) {
-      debugPrint('Optional service error: $e');
-      return null;
-    }));
-  } else {
-    debugPrint('Firebase is not supported on this platform ($defaultTargetPlatform). Skipping initialization.');
-  }
+    // Initialize core application services sequentially to avoid race conditions
+    try {
+      debugPrint('Main: Starting core service initialization...');
+      // 1. SupaFlow MUST be initialized first before anything accesses Supabase
+      await SupaFlow.initialize().then((_) => debugPrint('Main: SupaFlow initialized.'));
+      
+      // 2. Initialize Theme
+      await FlutterFlowTheme.initialize().then((_) => debugPrint('Main: FlutterFlowTheme initialized.'));
 
-  runApp(const MyApp());
+      // 3. Initialize LocalSyncServer safely
+      try {
+        await LocalSyncServer().initialize().then((_) => debugPrint('Main: LocalSyncServer initialized.'));
+      } catch (e) {
+        debugPrint('Main: LocalSyncServer initialization error: $e');
+      }
+
+      // Shorebird code push disabled per user requirement to prevent native startup crashes
+      // await ShorebirdService().initialize();
+      
+      debugPrint('Main: Core service initialization complete.');
+    } catch (e) {
+      debugPrint('Core service initialization error: $e');
+    }
+
+    // Initialize Firebase in the background safely without blocking the UI
+    final isFirebaseSupported = !kIsWeb && 
+        (defaultTargetPlatform == TargetPlatform.android || 
+         defaultTargetPlatform == TargetPlatform.iOS || 
+         defaultTargetPlatform == TargetPlatform.macOS);
+
+    if (isFirebaseSupported) {
+      unawaited(() async {
+        try {
+          if (Firebase.apps.isEmpty) {
+            await Firebase.initializeApp();
+            debugPrint('Main: Firebase core initialized.');
+          }
+        } catch (e) {
+          debugPrint('Main: Firebase core initialization error: $e');
+        }
+      }());
+    } else {
+      debugPrint('Firebase is not supported on this platform ($defaultTargetPlatform). Skipping initialization.');
+    }
+
+    runApp(const MyApp());
+  }, (error, stackTrace) {
+    debugPrint('Main: Global runZonedGuarded caught unhandled error: $error\n$stackTrace');
+  });
 }
 
 class MyApp extends StatefulWidget {
@@ -82,7 +108,7 @@ class MyAppScrollBehavior extends ScrollBehavior {
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = FlutterFlowTheme.themeMode;
+  ThemeMode _themeMode = ThemeMode.dark;
   Key _key = UniqueKey();
 
   void restartApp() {
@@ -132,7 +158,11 @@ class _MyAppState extends State<MyApp> {
         if (user.loggedIn) {
           debugPrint('Main: User is logged in. Dismissing splash.');
           _appStateNotifier.stopShowingSplashImage();
-          PushNotificationService.initialize();
+          try {
+            PushNotificationService.initialize();
+          } catch (e) {
+            debugPrint('Main: PushNotificationService error on login: $e');
+          }
         } else {
           // If not logged in, we give Supabase a tiny bit more time (500ms) 
           // to ensure it wasn't just a slow initial storage read.
@@ -151,8 +181,8 @@ class _MyAppState extends State<MyApp> {
   }
 
   void setThemeMode(ThemeMode mode) => safeSetState(() {
-        _themeMode = mode;
-        FlutterFlowTheme.saveThemeMode(mode);
+        _themeMode = ThemeMode.dark;
+        FlutterFlowTheme.saveThemeMode(ThemeMode.dark);
       });
 
   @override
@@ -162,7 +192,7 @@ class _MyAppState extends State<MyApp> {
       child: ProviderScope(
         child: MaterialApp.router(
           debugShowCheckedModeBanner: false,
-          title: 'Pocketmates',
+          title: 'PoketMates',
           scrollBehavior: MyAppScrollBehavior(),
           localizationsDelegates: const [
             GlobalMaterialLocalizations.delegate,
@@ -171,8 +201,9 @@ class _MyAppState extends State<MyApp> {
           ],
           supportedLocales: const [Locale('en', '')],
           theme: ThemeData(
-            brightness: Brightness.light,
+            brightness: Brightness.dark,
             primarySwatch: Colors.blue,
+            scaffoldBackgroundColor: Colors.black,
           ),
           darkTheme: ThemeData(
             brightness: Brightness.dark,

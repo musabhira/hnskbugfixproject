@@ -507,6 +507,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   String? _stagedDocumentPath;
   String? _stagedAudioPath;
 
+  VectorAvatarConfig _getPersonalAvatarConfig(String targetId) {
+    if (PocketRobotService.isRobotId(targetId)) {
+      final robot = PocketRobotService.getRobotById(targetId) ??
+          PocketRobotService.getRobotByLevel(1);
+      final dynLvl = PocketRobotService.getDynamicLevel(robot);
+      return VectorAvatarConfig.getEvolutionAvatarForStage(dynLvl);
+    }
+    final stage = (targetId.hashCode.abs() % 90) + 1;
+    return VectorAvatarConfig.getEvolutionAvatarForStage(stage);
+  }
+
   Future<void> _fetchMembers() async {
     if (widget.groupId.startsWith('p:')) return;
     try {
@@ -685,6 +696,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     Map<String, dynamic>? metadata,
   }) async {
     if (_isSending) return null;
+    if (_currentUserId.isEmpty) {
+      AuthAlertBox.checkAuthAndShowAlert(context: context);
+      return null;
+    }
 
     if (_isEnglishHubGroup && text != null && text.trim().isNotEmpty) {
       if (!_isEnglishOnly(text)) {
@@ -1069,23 +1084,28 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         appBar: AppBar(
           backgroundColor: appBarColor,
           elevation: 0,
-          leadingWidth: widget.showBackButton ? 70 : 48,
-          titleSpacing: widget.showBackButton ? 0 : 8,
+          toolbarHeight: 52,
+          leadingWidth: widget.showBackButton ? 64 : 42,
+          titleSpacing: widget.showBackButton ? 0 : 6,
           leading: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (widget.showBackButton) ...[
                 InkWell(
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(20),
                   onTap: () => Navigator.pop(context),
                   child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 4),
-                    child: Icon(Icons.arrow_back, color: Colors.white),
+                    padding: EdgeInsets.symmetric(horizontal: 2),
+                    child: Icon(Icons.arrow_back, color: Colors.white, size: 20),
                   ),
                 ),
               ],
               GestureDetector(
                 onTap: () {
+                  if (widget.groupId.startsWith('p:')) {
+                    _showGroupInfo();
+                    return;
+                  }
                   if (widget.groupImage != null) {
                     Navigator.push(
                       context,
@@ -1100,24 +1120,52 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 },
                 child: Hero(
                   tag: 'group_avatar_${widget.groupId}',
-                  child: widget.groupImage != null
-                      ? CircleAvatar(
-                          radius: 19,
-                          backgroundColor: Colors.grey[800],
-                          backgroundImage: NetworkImage(widget.groupImage!),
-                        )
-                      : widget.groupId.startsWith('p:')
-                          ? const VectorAvatarWidget(
-                              config: VectorAvatarConfig(
-                                hairColor: '#FFFFFC00',
-                                hairStyle: 'dreadlocks',
-                                outfitStyle: 'hoodie',
+                  child: widget.groupId.startsWith('p:')
+                      ? Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            Container(
+                              width: 34,
+                              height: 34,
+                              decoration: const BoxDecoration(
+                                shape: BoxShape.circle,
                               ),
-                              size: 38,
+                              child: ClipOval(
+                                child: VectorAvatarWidget(
+                                  config: _getPersonalAvatarConfig(
+                                    widget.groupId.substring(2),
+                                  ),
+                                  size: 34,
+                                ),
+                              ),
+                            ),
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: 9,
+                                height: 9,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF22C55E),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFF121B22),
+                                    width: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : (widget.groupImage != null
+                          ? CircleAvatar(
+                              radius: 17,
+                              backgroundColor: Colors.grey[800],
+                              backgroundImage: NetworkImage(widget.groupImage!),
                             )
                           : Container(
-                              width: 38,
-                              height: 38,
+                              width: 34,
+                              height: 34,
                               decoration: const BoxDecoration(
                                 shape: BoxShape.circle,
                                 gradient: LinearGradient(
@@ -1125,9 +1173,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                 ),
                               ),
                               child: const Center(
-                                child: Icon(Icons.groups_rounded, color: Colors.white, size: 20),
+                                child: Icon(Icons.groups_rounded, color: Colors.white, size: 18),
                               ),
-                            ),
+                            )),
                 ),
               ),
             ],
@@ -1136,6 +1184,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             onTap: _showGroupInfo,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -1144,46 +1193,66 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       child: Text(
                         widget.groupName,
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
+                          letterSpacing: 0.2,
                         ),
+                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     if (widget.groupId.startsWith('p:')) ...[
-                      const SizedBox(width: 4),
-                      const Icon(Icons.lock_outline, color: Color(0xFFFFFC00), size: 12),
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF22C55E),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
                     ],
                   ],
                 ),
-                const SizedBox(height: 2),
                 Builder(
                   builder: (context) {
-                    final targetId = widget.groupId.startsWith('p:') ? widget.groupId.substring(2) : widget.groupId;
+                    final targetId = widget.groupId.startsWith('p:')
+                        ? widget.groupId.substring(2)
+                        : widget.groupId;
                     final isRobot = PocketRobotService.isRobotId(targetId);
                     if (isRobot) {
                       final robot = PocketRobotService.getRobotById(targetId);
-                      final lvl = robot != null ? 'Level ${robot.level}' : '';
-                      final archetype = robot != null ? robot.archetype.label : '';
-                      return Text(
-                        '🤖 AI Pocket Robot • $lvl ($archetype) • Online',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF06B6D4),
-                          fontWeight: FontWeight.w600,
+                      final lvl = robot != null ? 'Lvl ${robot.level}' : '';
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 1.5),
+                        child: Text(
+                          lvl.isNotEmpty ? 'Pocket Robot • $lvl' : 'Pocket Robot',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF38BDF8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       );
                     }
-                    return Text(
-                      widget.groupId.startsWith('p:')
-                          ? '👤 Human Mate • 🔒 End-to-End Encrypted'
-                          : (_groupMembers.isEmpty
-                              ? 'Tap for community info'
-                              : '${_groupMembers.length} members • English Lounge'),
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: Colors.white70,
+                    if (widget.groupId.startsWith('p:')) {
+                      return const SizedBox.shrink();
+                    }
+                    final count = _groupMembers.length;
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 1.5),
+                      child: Text(
+                        count > 0 ? '$count members' : 'Group',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: Colors.white60,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     );
                   },
@@ -1612,7 +1681,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             message.senderName ?? 'User',
                             style: const TextStyle(
                               color: Color(0xFFFFFC00),
-                              fontSize: 12,
+                              fontSize: 13,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -1620,7 +1689,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             const SizedBox(width: 4),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 4, vertical: 1),
+                                  horizontal: 5, vertical: 1.5),
                               decoration: BoxDecoration(
                                 color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(4),
@@ -1630,7 +1699,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               child: const Text(
                                 'Admin',
                                 style:
-                                    TextStyle(color: Color(0xFFFFFC00), fontSize: 8),
+                                    TextStyle(color: Color(0xFFFFFC00), fontSize: 9.5, fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
@@ -1643,29 +1712,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   child: Container(
                     decoration: BoxDecoration(
                       color: isMe
-                          ? const Color(0xFFFFFC00)
-                          : const Color(0xFF161C26),
-                      borderRadius: BorderRadius.circular(16).copyWith(
-                        bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
-                        bottomLeft: !isMe ? const Radius.circular(4) : const Radius.circular(16),
+                          ? const Color(0xFF005C4B)
+                          : const Color(0xFF1F2C34),
+                      borderRadius: BorderRadius.circular(12).copyWith(
+                        bottomRight: isMe ? const Radius.circular(2) : const Radius.circular(12),
+                        bottomLeft: !isMe ? const Radius.circular(2) : const Radius.circular(12),
                       ),
                       border: Border.all(
-                        color: isMe
-                            ? Colors.transparent
-                            : Colors.white.withValues(alpha: 0.08),
-                        width: 1,
+                        color: Colors.white.withValues(alpha: 0.05),
+                        width: 0.8,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isMe
-                              ? Colors.black.withValues(alpha: 0.1)
-                              : Colors.black.withValues(alpha: 0.25),
-                          offset: const Offset(0, 2),
-                          blurRadius: 6,
-                        )
-                      ],
                     ),
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     child: Stack(
                       children: [
                         Padding(
@@ -1684,6 +1742,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               if (message.messageType == 'voice' &&
                                   message.fileUrl != null)
                                 _buildVoiceMessage(message),
+                              if (message.messageType == 'robot_voice')
+                                _buildRobotVoiceMessage(message, isMe),
                               if (message.messageType == 'thought' &&
                                   message.thought != null)
                                 _buildThoughtMessage(message.thought!, isMe),
@@ -1702,6 +1762,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               if (message.messageType == 'course' &&
                                   message.metadata != null)
                                 _buildCourseMessage(message.metadata!, isMe),
+                              if (message.messageText != null &&
+                                  message.messageText!.isNotEmpty &&
+                                  message.messageType != 'robot_voice' &&
+                                  message.messageType != 'voice' &&
+                                  message.messageType != 'snap')
                                 Padding(
                                   padding: const EdgeInsets.only(
                                       left: 8, right: 8, top: 4, bottom: 4),
@@ -1711,11 +1776,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                        Text(
                                          message.messageText!,
                                          style: GoogleFonts.inter(
-                                           color: isMe ? const Color(0xFF0F172A) : Colors.white,
-                                           fontSize: 15,
-                                           fontWeight: isMe ? FontWeight.w600 : FontWeight.w400,
+                                           color: Colors.white,
+                                           fontSize: 14.5,
+                                           fontWeight: FontWeight.w400,
                                            height: 1.35,
-                                           letterSpacing: 0.2,
+                                           letterSpacing: 0.1,
                                          ),
                                        ),
                                       if (_loadingAnalysisMessageIds.contains(message.id))
@@ -1814,7 +1879,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                   child: Icon(
                                     Icons.copy,
                                     size: 11,
-                                    color: isMe ? const Color(0xFF0F172A).withValues(alpha: 0.6) : Colors.white.withValues(alpha: 0.65),
+                                    color: Colors.white.withValues(alpha: 0.5),
                                   ),
                                 ),
                                 const SizedBox(width: 4),
@@ -1822,9 +1887,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               Text(
                                 _formatTime(message.createdAt),
                                 style: GoogleFonts.inter(
-                                  color: isMe ? const Color(0xFF0F172A).withValues(alpha: 0.75) : Colors.white.withValues(alpha: 0.7),
+                                  color: Colors.white.withValues(alpha: 0.65),
                                   fontSize: 10,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                               if (isMe) ...[
@@ -3014,6 +3079,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
+  Widget _buildRobotVoiceMessage(ChatMessage message, bool isMe) {
+    return RobotVoiceMessagePlayer(
+      messageText: message.messageText ?? '',
+      durationSeconds: message.voiceDuration ?? 5,
+      isFromCurrentUser: isMe,
+      metadata: message.metadata,
+    );
+  }
+
+
   Widget _buildAIHelperPill() {
     return Container(
       alignment: Alignment.centerRight,
@@ -3086,17 +3161,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFF070B0D),
         border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            offset: const Offset(0, -4),
-            blurRadius: 16,
-          ),
-        ],
       ),
       child: Row(
         children: [
@@ -3104,12 +3172,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             child: Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF121B22),
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(22),
                 border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
               ),
               child: Row(
                 children: [
                   IconButton(
+                    iconSize: 20,
+                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                     icon: Icon(
                         _showEmojiPicker
                             ? Icons.keyboard
@@ -3124,18 +3194,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     child: TextField(
                       controller: _messageController,
                       focusNode: _focusNode,
-                      style: const TextStyle(color: Colors.white),
+                      style: const TextStyle(color: Colors.white, fontSize: 14.5),
                       decoration: InputDecoration(
                         hintText: !widget.groupId.startsWith('p:')
                             ? 'Type in English only... 🇬🇧'
                             : 'Type a message...',
-                        hintStyle: const TextStyle(color: Colors.white38),
+                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
                         border: InputBorder.none,
                         contentPadding:
-                            EdgeInsets.symmetric(horizontal: 12),
+                            const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                       ),
                       minLines: 1,
-                      maxLines: 6,
+                      maxLines: 5,
                     ),
                   ),
                   ValueListenableBuilder<TextEditingValue>(
@@ -3146,13 +3216,20 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
+                              iconSize: 20,
+                              constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
+                              padding: EdgeInsets.zero,
                               icon: const Icon(Icons.attach_file, color: Colors.white70),
                               onPressed: () => _showAttachmentBottomSheet(),
                             ),
                             IconButton(
+                              iconSize: 20,
+                              constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
+                              padding: EdgeInsets.zero,
                               icon: const Icon(Icons.camera_alt, color: Colors.white70),
                               onPressed: () => _handleCameraAction(),
                             ),
+                            const SizedBox(width: 4),
                           ],
                         );
                       } else if (!_isRecording) {
@@ -3160,9 +3237,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                            mainAxisSize: MainAxisSize.min,
                            children: [
                              IconButton(
+                               iconSize: 20,
+                               constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
+                               padding: EdgeInsets.zero,
                                icon: const Icon(Icons.attach_file, color: Colors.white70),
                                onPressed: () => _showAttachmentBottomSheet(),
                              ),
+                             const SizedBox(width: 4),
                            ],
                          );
                       }
@@ -3173,7 +3254,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               ),
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 6),
           ValueListenableBuilder<TextEditingValue>(
             valueListenable: _messageController,
             builder: (context, value, child) {
@@ -3188,10 +3269,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               if (showSend) {
                 return GestureDetector(
                   onTap: _isEditing ? _submitEdit : _handleSendAction,
-                  child: CircleAvatar(
-                    backgroundColor: Colors.yellow,
-                    radius: 24,
-                    child: Icon(_isEditing ? Icons.check : Icons.send, color: Colors.black),
+                  child: const CircleAvatar(
+                    backgroundColor: Color(0xFFFFD600),
+                    radius: 20,
+                    child: Icon(Icons.send, color: Colors.black, size: 18),
                   ),
                 );
               } else if (_isEnglishHubGroup) {
@@ -3200,8 +3281,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   onTap: _toggleEnglishSpeechDictation,
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 250),
-                    width: 48,
-                    height: 48,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       gradient: LinearGradient(
@@ -3215,15 +3296,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         BoxShadow(
                           color: (_isSttListening ? Colors.redAccent : const Color(0xFF10B981))
                               .withValues(alpha: 0.5),
-                          blurRadius: _isSttListening ? 16 : 8,
-                          spreadRadius: _isSttListening ? 3 : 0,
+                          blurRadius: _isSttListening ? 12 : 6,
+                          spreadRadius: _isSttListening ? 2 : 0,
                         ),
                       ],
                     ),
                     child: Icon(
                       _isSttListening ? Icons.mic_rounded : Icons.mic_none_rounded,
                       color: Colors.black,
-                      size: 24,
+                      size: 20,
                     ),
                   ),
                 );

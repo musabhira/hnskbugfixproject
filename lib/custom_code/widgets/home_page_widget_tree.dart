@@ -66,7 +66,7 @@ class HomePageWidgetTree extends ConsumerStatefulWidget {
 class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final supabase = SupaFlow.client;
   // final scaffoldKey = GlobalKey<ScaffoldState>(); // Removed ScaffoldKey
-  int _currentIndex = 2;
+  int _currentIndex = 1;
   String? profileId;
   bool _isVerified = false;
   bool _isLoading = true;
@@ -124,8 +124,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (uid == null || uid.isEmpty) return;
     if (mounted) setState(() => _isLoadingRequests = true);
     try {
-      await PocketRobotService.checkAndTriggerOccasionalRobotSnaps(uid);
-      await PocketRobotService.checkAndTriggerProactiveMatesMessages(uid);
+      await PocketRobotService.runAutonomousHumanEngine(uid);
       final reqs = await PocketMateService.getPendingRequests(uid);
       if (mounted) {
         setState(() {
@@ -778,10 +777,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         initialTab = 2;
         break;
       case 'Diagrams':
-        initialTab = 3;
+        page = const DiagramListScreen();
         break;
       case 'Teams':
-        initialTab = 4;
+        page = const TeamsDedicatedPage();
         break;
       case 'AI Tools':
         initialTab = 5;
@@ -865,9 +864,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Widget build(BuildContext context) {
     final conversationsAsync = ref.watch(conversationsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final gradientColors = isDark
-        ? [const Color(0xFF111B21), const Color(0xFF0B141A)]
-        : [const Color(0xFFF4F4F9), const Color(0xFFFFFFFF)];
+    final gradientColors = const [Color(0xFF111B21), Color(0xFF0B141A)];
 
     return GestureDetector(
       onTap: () {
@@ -901,13 +898,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       height: 36,
                       margin: const EdgeInsets.only(bottom: 6),
                       child: material.FloatingActionButton.extended(
-                        onPressed: () {
-                          material.Navigator.push(
-                            context,
-                            material.MaterialPageRoute(
-                              builder: (context) => const AnonymousEnglishChatPage(),
-                            ),
+                        onPressed: () async {
+                          final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                            context: context,
+                            customMessage: "Please login to start Anonymous English Chat",
                           );
+                          if (isAuth && mounted) {
+                            material.Navigator.push(
+                              context,
+                              material.MaterialPageRoute(
+                                builder: (context) => const AnonymousEnglishChatPage(),
+                              ),
+                            );
+                          }
                         },
                         backgroundColor: const Color(0xFFFFFC00),
                         foregroundColor: material.Colors.black,
@@ -1996,7 +1999,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 key: ValueKey(conversation.id),
                                 conversation: conversation,
                                 currentUserId: _currentUserId ?? '',
-                                onTap: () {
+                                onTap: () async {
                                   if (conversation.isTool) {
                                     _navigateToTool(conversation.toolTitle ?? '');
                                     return;
@@ -2004,7 +2007,20 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
                                   if (conversation.isNotification) {
                                     _showNotificationDetails(context, conversation);
-                                  } else if (conversation.isActiveTimer) {
+                                    return;
+                                  }
+
+                                  if (_currentUserId == null || _currentUserId!.isEmpty) {
+                                    final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                                      context: context,
+                                      customMessage: conversation.isGroup
+                                          ? "Please login to access this Group Chat"
+                                          : "Please login to chat with ${conversation.name}",
+                                    );
+                                    if (!isAuth) return;
+                                  }
+
+                                  if (conversation.isActiveTimer) {
                                     if (conversation.teamData != null) {
                                       try {
                                         final team =
@@ -2049,7 +2065,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   }
                                 },
                                 onLongPress: () => _showConversationActionSheet(conversation),
-                                onSnapCameraTap: () {
+                                onSnapCameraTap: () async {
+                                  if (_currentUserId == null || _currentUserId!.isEmpty) {
+                                    final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                                      context: context,
+                                      customMessage: "Please login to send snaps",
+                                    );
+                                    if (!isAuth) return;
+                                  }
                                   PocketSnapService.launchSnapWorkflow(
                                     context,
                                     userId: _currentUserId ?? '',
@@ -2669,7 +2692,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               key: ValueKey(conversation.id),
                               conversation: conversation,
                               currentUserId: _currentUserId ?? '',
-                              onTap: () {
+                              onTap: () async {
                                 if (conversation.isTool) {
                                   _navigateToTool(conversation.toolTitle ?? '');
                                   return;
@@ -2677,7 +2700,20 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
                                 if (conversation.isNotification) {
                                   _showNotificationDetails(context, conversation);
-                                } else if (conversation.isActiveTimer) {
+                                  return;
+                                }
+
+                                if (_currentUserId == null || _currentUserId!.isEmpty) {
+                                  final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                                    context: context,
+                                    customMessage: conversation.isGroup
+                                        ? "Please login to access this Group Chat"
+                                        : "Please login to chat with ${conversation.name}",
+                                  );
+                                  if (!isAuth) return;
+                                }
+
+                                if (conversation.isActiveTimer) {
                                   if (conversation.teamData != null) {
                                     try {
                                       final team = Team.fromJson(conversation.teamData!);
@@ -2719,7 +2755,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 }
                               },
                               onLongPress: () => _showConversationActionSheet(conversation),
-                              onSnapCameraTap: () {
+                              onSnapCameraTap: () async {
+                                if (_currentUserId == null || _currentUserId!.isEmpty) {
+                                  final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                                    context: context,
+                                    customMessage: "Please login to send snaps",
+                                  );
+                                  if (!isAuth) return;
+                                }
                                 PocketSnapService.launchSnapWorkflow(
                                   context,
                                   userId: _currentUserId ?? '',
@@ -2888,12 +2931,36 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 _buildNavItem(
                   icon: material.Icons.group_rounded,
                   isSelected: _currentIndex == 2,
-                  onTap: () => setState(() => _currentIndex = 2),
+                  onTap: () async {
+                    if (_currentUserId == null || _currentUserId!.isEmpty) {
+                      final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                        context: context,
+                        customMessage: "Please login to join Group Chats and English Hub",
+                      );
+                      if (isAuth && mounted) {
+                        setState(() => _currentIndex = 2);
+                      }
+                    } else {
+                      setState(() => _currentIndex = 2);
+                    }
+                  },
                 ),
                 _buildNavItem(
                   icon: material.Icons.track_changes_rounded,
                   isSelected: _currentIndex == 3,
-                  onTap: () => setState(() => _currentIndex = 3),
+                  onTap: () async {
+                    if (_currentUserId == null || _currentUserId!.isEmpty) {
+                      final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                        context: context,
+                        customMessage: "Please login to access your Daily Missions and Progress",
+                      );
+                      if (isAuth && mounted) {
+                        setState(() => _currentIndex = 3);
+                      }
+                    } else {
+                      setState(() => _currentIndex = 3);
+                    }
+                  },
                 ),
                 _buildProfileNavItem(),
               ],
@@ -3475,6 +3542,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     String mode,
     String currentProfileId,
   ) async {
+    if (_currentUserId == null || _currentUserId!.isEmpty) {
+      await AuthAlertBox.checkAuthAndShowAlert(
+        context: context,
+        customMessage: "Please login to connect and match with mates",
+      );
+      return;
+    }
+
     final activeUsersState = ref.read(activeUsersProvider(currentProfileId));
 
     if (!activeUsersState.hasValue) {
@@ -3550,7 +3625,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Widget _buildNotificationsTile(int count) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.05)
+        ? Colors.white.withValues(alpha: 0.07)
         : Colors.black.withValues(alpha: 0.05);
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final secondaryTextColor = isDark
@@ -3558,119 +3633,132 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         : Colors.black.withValues(alpha: 0.45);
 
     return material.Material(
-      color: material.Colors.transparent,
-      child: material.InkWell(
-        onTap: () => Navigator.push(
-          context,
-          material.MaterialPageRoute(
-            builder: (context) => const NotificationsListPage(),
+      color: Colors.transparent,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 3.5),
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF131B26).withValues(alpha: 0.75)
+              : Colors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: borderColor,
+            width: 1,
           ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 1.5),
+            ),
+          ],
         ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: material.Colors.transparent,
-            border: Border(
-              bottom: BorderSide(
-                color: borderColor,
-                width: 1,
-              ),
+        child: material.InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => Navigator.push(
+            context,
+            material.MaterialPageRoute(
+              builder: (context) => const NotificationsListPage(),
             ),
           ),
-          child: Row(
-            children: [
-              Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  Container(
-                    width: 58,
-                    height: 58,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF262626)
-                          : const Color(0xFFE2E8F0),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.1)
-                            : Colors.black.withValues(alpha: 0.1),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Center(
-                      child: Icon(
-                        material.Icons.notifications_rounded,
-                        color: isDark
-                            ? const Color(0xFFFFFC00)
-                            : const Color(0xFFFFFC00),
-                        size: 26,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    right: -4,
-                    top: -4,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 5, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: material.Colors.redAccent,
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isDark
-                              ? const Color(0xFF111B21)
-                              : const Color(0xFFFFFFFF),
-                          width: 2,
-                        ),
-                      ),
-                      constraints: const BoxConstraints(
-                        minWidth: 18,
-                        minHeight: 18,
-                      ),
-                      child: Text(
-                        count.toString(),
-                        style: const TextStyle(
-                          color: material.Colors.white,
-                          fontSize: 9,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: material.CrossAxisAlignment.start,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Row(
+              children: [
+                Stack(
+                  clipBehavior: Clip.none,
                   children: [
-                    Text(
-                      'Notifications',
-                      style: GoogleFonts.outfit(
-                        color: primaryTextColor,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.2,
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          material.Icons.notifications_rounded,
+                          color: Color(0xFFFFFC00),
+                          size: 20,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 6),
-                    Text(
-                      'You have $count new notification${count > 1 ? 's' : ''}',
-                      style: GoogleFonts.outfit(
-                        color: secondaryTextColor,
-                        fontSize: 14,
+                    if (count > 0)
+                      Positioned(
+                        right: -2,
+                        top: -2,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 5, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFF2A55),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: isDark
+                                  ? const Color(0xFF131B26)
+                                  : const Color(0xFFFFFFFF),
+                              width: 1.5,
+                            ),
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 16,
+                            minHeight: 16,
+                          ),
+                          child: Text(
+                            count > 99 ? '99+' : count.toString(),
+                            style: const TextStyle(
+                              color: material.Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                       ),
-                    ),
                   ],
                 ),
-              ),
-              Icon(
-                Icons.chevron_right,
-                color: secondaryTextColor.withValues(alpha: 0.5),
-                size: 16,
-              ),
-            ],
+                const SizedBox(width: 11),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: material.CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Notifications',
+                        style: GoogleFonts.outfit(
+                          color: primaryTextColor,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.1,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        count > 0
+                            ? '$count new update${count > 1 ? 's' : ''}'
+                            : 'No new notifications',
+                        style: GoogleFonts.outfit(
+                          color: count > 0
+                              ? const Color(0xFFFFFC00).withValues(alpha: 0.85)
+                              : secondaryTextColor,
+                          fontSize: 12.5,
+                          fontWeight: count > 0 ? FontWeight.w500 : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(
+                  Icons.chevron_right,
+                  color: secondaryTextColor.withValues(alpha: 0.4),
+                  size: 16,
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -4175,13 +4263,12 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.pendingRequestsCount,
   });
 
-  static const double topBarHeight = 42.0;
-  static const double vibesHeaderHeight = 28.0;
-  static const double statusWidgetHeight = 104.0;
-  static const double tabBarHeight = 36.0;
-  static const double searchBarHeight = 46.0;
+  static const double topBarHeight = 44.0;
+  static const double statusWidgetHeight = 118.0;
+  static const double tabBarHeight = 38.0;
+  static const double searchBarHeight = 48.0;
 
-  double get scrollableHeight => topBarHeight + vibesHeaderHeight + statusWidgetHeight;
+  double get scrollableHeight => topBarHeight + statusWidgetHeight;
   double get stickyHeight => tabBarHeight + searchBarHeight;
 
   @override
@@ -4194,16 +4281,14 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
     final double scrollProgress = (shrinkOffset / scrollableHeight).clamp(0.0, 1.0);
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headerColor =
-        isDark ? const Color(0xFF111B21) : const Color(0xFFF4F4F9);
+    const headerColor = Color(0xFF111B21);
 
     return material.Material(
       color: headerColor,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // 1. Scrollable Section (Top App Bar + Minimal Vibes Row + Status Circles)
+          // 1. Scrollable Section (Top App Bar + Status Story Row)
           Positioned(
             top: topPadding - shrinkOffset,
             left: 0,
@@ -4223,12 +4308,10 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                       child: Row(
                         children: [
                           Text(
-                            'Pocket Mates',
+                            'PoketMates',
                             style: GoogleFonts.outfit(
-                              color: isDark
-                                  ? material.Colors.white
-                                  : material.Colors.black87,
-                              fontSize: 18.5,
+                              color: material.Colors.white,
+                              fontSize: 20.0,
                               fontWeight: FontWeight.bold,
                               letterSpacing: -0.2,
                             ),
@@ -4294,48 +4377,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         ],
                       ),
                     ),
-                    // Minimal Vibes Header: ONLY the 'Add Vibe' button!
-                    Container(
-                      height: vibesHeaderHeight,
-                      padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
-                      alignment: Alignment.centerLeft,
-                      child: material.InkWell(
-                        onTap: onTapAdd,
-                        borderRadius: BorderRadius.circular(14),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 3.5),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFFC00),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(material.Icons.add_rounded,
-                                  size: 13, color: material.Colors.black),
-                              const SizedBox(width: 3),
-                              Text(
-                                'Add Vibe',
-                                style: GoogleFonts.outfit(
-                                  color: material.Colors.black,
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Status Story Row (Compact)
+                    // Status Story Row (Comfortable Instagram-Style sizing)
                     SizedBox(
                       height: statusWidgetHeight,
                       child: StatusDisplayWidget(
@@ -4381,23 +4423,17 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                   padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF202C33)
-                          : const Color(0xFFF0F2F5),
+                      color: const Color(0xFF202C33),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: isDark
-                            ? material.Colors.white.withValues(alpha: 0.08)
-                            : material.Colors.black.withValues(alpha: 0.08),
+                        color: material.Colors.white.withValues(alpha: 0.08),
                         width: 1,
                       ),
                     ),
                     child: material.TextField(
                       controller: searchController,
                       style: GoogleFonts.outfit(
-                        color: isDark
-                            ? material.Colors.white
-                            : material.Colors.black87,
+                        color: material.Colors.white,
                         fontSize: 13,
                       ),
                       cursorColor: const Color(0xFFFFFC00),
@@ -4411,9 +4447,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                     ? 'Search vibes & stories...'
                                     : 'Search chats, mates, tools...',
                         hintStyle: GoogleFonts.outfit(
-                          color: isDark
-                              ? material.Colors.white.withValues(alpha: 0.35)
-                              : material.Colors.black.withValues(alpha: 0.35),
+                          color: material.Colors.white.withValues(alpha: 0.35),
                           fontSize: 13,
                         ),
                         prefixIcon: Padding(
@@ -4450,9 +4484,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 child: material.IconButton(
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                                  icon: Icon(
+                                  icon: const Icon(
                                     material.Icons.clear_rounded,
-                                    color: isDark ? material.Colors.white30 : material.Colors.black38,
+                                    color: material.Colors.white38,
                                     size: 16,
                                   ),
                                   onPressed: () => searchController.clear(),
@@ -4475,12 +4509,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   Widget _buildTabItem(BuildContext context, String label, int index) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isSelected = selectedIndex == index;
-    final themeYellow = const Color(0xFFFFFC00);
-    final textUnselected = isDark
-        ? material.Colors.white.withValues(alpha: 0.5)
-        : material.Colors.black.withValues(alpha: 0.5);
+    const themeYellow = Color(0xFFFFFC00);
+    final textUnselected = material.Colors.white.withValues(alpha: 0.5);
 
     return Expanded(
       child: material.Material(
@@ -4491,7 +4522,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             duration: const Duration(milliseconds: 200),
             decoration: BoxDecoration(
               border: isSelected
-                  ? Border(
+                  ? const Border(
                       bottom: BorderSide(
                         color: themeYellow,
                         width: 2.0,
@@ -4517,14 +4548,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   Widget _buildHeaderIconButton(BuildContext context,
       {required IconData icon, required VoidCallback onTap, int badgeCount = 0}) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark
-        ? material.Colors.white.withValues(alpha: 0.08)
-        : material.Colors.black.withValues(alpha: 0.05);
-    final borderColor = isDark
-        ? material.Colors.white.withValues(alpha: 0.05)
-        : material.Colors.black.withValues(alpha: 0.05);
-    final iconColor = isDark ? material.Colors.white : material.Colors.black87;
+    final bgColor = material.Colors.white.withValues(alpha: 0.08);
+    final borderColor = material.Colors.white.withValues(alpha: 0.05);
+    const iconColor = material.Colors.white;
 
     return material.Material(
       color: material.Colors.transparent,
@@ -4532,7 +4558,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
         onTap: onTap,
         customBorder: const CircleBorder(),
         child: Container(
-          padding: const EdgeInsets.all(6.5),
+          padding: const EdgeInsets.all(8.0),
           decoration: BoxDecoration(
             color: bgColor,
             shape: BoxShape.circle,
@@ -4544,7 +4570,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Icon(icon, color: iconColor, size: 17),
+              Icon(icon, color: iconColor, size: 20),
               if (badgeCount > 0)
                 Positioned(
                   top: -4,

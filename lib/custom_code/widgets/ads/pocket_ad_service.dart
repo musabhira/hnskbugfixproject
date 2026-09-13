@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
 
 /// Architecture for Google AdMob and Sponsor Monetization with Ad-Free VIP Bypass
 class PocketAdService {
@@ -124,7 +125,7 @@ class _PocketNativeAdWidgetState extends State<PocketNativeAdWidget> {
     },
   ];
 
-  late final Map<String, dynamic> _adData;
+  late Map<String, dynamic> _adData;
 
   @override
   void initState() {
@@ -135,6 +136,23 @@ class _PocketNativeAdWidgetState extends State<PocketNativeAdWidget> {
 
   Future<void> _checkSubscription() async {
     final sub = await PocketAdService().isUserSubscribed();
+    try {
+      final shouldShowHouse = await MonetizationService().shouldShowHouseAd();
+      if (shouldShowHouse) {
+        final campaign = await MonetizationService().getActiveCampaign();
+        _curatedSponsors.insert(0, {
+          'headline': campaign.title,
+          'body': campaign.subtitle,
+          'advertiser': 'Official • Pocket Mates VIP',
+          'cta': campaign.ctaText,
+          'icon': Icons.workspace_premium_rounded,
+          'color': const Color(0xFFFF8906),
+          'isHouseAd': true,
+        });
+        _adData = _curatedSponsors.first;
+      }
+    } catch (_) {}
+
     if (mounted) {
       setState(() {
         _isSubscribed = sub;
@@ -224,14 +242,18 @@ class _PocketNativeAdWidgetState extends State<PocketNativeAdWidget> {
           const SizedBox(width: 8),
           ElevatedButton(
             onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Opening sponsor link...',
-                      style: GoogleFonts.outfit()),
-                  duration: const Duration(milliseconds: 700),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
+              if (_adData['isHouseAd'] == true) {
+                MonetizationService().launchCheckout(context);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Opening sponsor link...',
+                        style: GoogleFonts.outfit()),
+                    duration: const Duration(milliseconds: 700),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: color,

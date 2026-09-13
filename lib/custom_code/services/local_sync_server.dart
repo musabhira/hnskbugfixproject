@@ -16,7 +16,7 @@ class LocalSyncServer {
   late Box _messageBox;
 
   bool _isInitialized = false;
-  final SupabaseClient _supabase = SupaFlow.client;
+  SupabaseClient get _supabase => SupaFlow.client;
 
   // Streams for UI to listen to
   final _conversationController =
@@ -121,6 +121,7 @@ class LocalSyncServer {
   }
 
   Future<void> saveConversations(String userId, List<ChatConversation> conversations) async {
+    if (!_isInitialized) return;
     final List<Map<String, dynamic>> jsonList =
         conversations.map((e) => e.toJson()).toList();
     await _conversationBox.put('list_$userId', jsonList);
@@ -150,7 +151,9 @@ class LocalSyncServer {
     _memoryMessageCache[key] = jsonList;
 
     // 2. Persistent storage
-    await _messageBox.put(key, jsonList);
+    if (_isInitialized) {
+      await _messageBox.put(key, jsonList);
+    }
   }
 
   List<dynamic> getCachedMessages(String userId, String chatOrGroupId) {

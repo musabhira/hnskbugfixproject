@@ -5225,22 +5225,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       margin: const EdgeInsets.only(top: 4),
       child: OutlinedButton(
         onPressed: () async {
-          HapticFeedback.heavyImpact();
           final nextDay = (widget.day < 90) ? widget.day + 1 : 90;
-          final myId = SupaFlow.client.auth.currentUser?.id;
           try {
+            final myId = SupaFlow.client.auth.currentUser?.id;
             final prefs = await SharedPreferences.getInstance();
-            await prefs.setInt('pocket_learning_user_stage', nextDay);
-            await prefs.setBool('pocket_day_${widget.day}_completed', true);
-            await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
-            await prefs.setString(
-              'learning_day_${widget.day}_completed_date',
-              '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}',
-            );
-            await prefs.setString(
-                'last_learning_date', DateTime.now().toIso8601String());
-            await prefs.setInt('learning_last_completed_day', widget.day);
-            await prefs.setBool('pocket_world_rules_accepted_v1', true);
+            if (myId != null) {
+              await prefs.setInt('pocket_learning_user_stage_$myId', nextDay);
+              await prefs.setBool('pocket_day_${myId}_${widget.day}_completed', true);
+              await prefs.setBool('pocket_day_${myId}_${nextDay}_unlocked', true);
+              await prefs.setString(
+                'learning_day_${myId}_${widget.day}_completed_date',
+                '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}',
+              );
+              await prefs.setString(
+                  'last_learning_date', DateTime.now().toIso8601String());
+              await prefs.setInt('learning_last_completed_day_$myId', widget.day);
+              await prefs.setBool('pocket_world_rules_accepted_${myId}_v1', true);
+            }
 
             // 🪙 Award full 200 PTS to unified Pocket Score
             await PocketFortressDefenseService.awardPoints(200);
@@ -12558,19 +12559,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           'daily_mission',
                         );
                       } else {
+                        final currentUid = SupaFlow.client.auth.currentUser?.id;
                         final prefs = await SharedPreferences.getInstance();
                         final todayStr =
                             '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
-                        await prefs.setBool(
-                            'pocket_day_${widget.day}_completed', true);
-                        await prefs.setString(
-                            'learning_day_${widget.day}_completed_date',
-                            todayStr);
-                        await prefs.setInt(
-                            'learning_day_${widget.day}_completed_timestamp',
-                            DateTime.now().millisecondsSinceEpoch);
-                        await prefs.setInt(
-                            'learning_last_completed_day', widget.day);
+                        if (currentUid != null) {
+                          await prefs.setBool(
+                              'pocket_day_${currentUid}_${widget.day}_completed', true);
+                          await prefs.setString(
+                              'learning_day_${currentUid}_${widget.day}_completed_date',
+                              todayStr);
+                          await prefs.setInt(
+                              'learning_day_${currentUid}_${widget.day}_completed_timestamp',
+                              DateTime.now().millisecondsSinceEpoch);
+                          await prefs.setInt(
+                              'learning_last_completed_day_$currentUid', widget.day);
+                        }
                       }
                       // Award 50 bonus coins to vault store
                       await PocketFortressDefenseService.awardRaidLoot(50);

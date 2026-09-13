@@ -360,13 +360,6 @@ class EnglishHubLevelGroupService {
   /// 🎯 Get current user learning level from SharedPreferences / Supabase
   static Future<int> resolveCurrentUserLevel() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final localStage = prefs.getInt('pocket_learning_user_stage');
-      final localDay = prefs.getInt('learning_last_completed_day');
-      final targetDay = (localStage != null && localStage > 0)
-          ? localStage
-          : ((localDay != null && localDay > 0) ? (localDay + 1) : 1);
-
       final user = _supabase.auth.currentUser;
       if (user != null) {
         try {
@@ -376,12 +369,20 @@ class EnglishHubLevelGroupService {
               .eq('user_id', user.id)
               .maybeSingle();
           if (res != null && res['learning_day'] != null) {
-            final supaDay = (res['learning_day'] as num).toInt();
-            return supaDay > targetDay ? supaDay : targetDay;
+            return (res['learning_day'] as num).toInt().clamp(1, 90);
           }
         } catch (_) {}
       }
-      return targetDay;
+
+      final prefs = await SharedPreferences.getInstance();
+      final uid = user?.id;
+      final localStage = uid != null ? prefs.getInt('pocket_learning_user_stage_$uid') : null;
+      final localDay = uid != null ? prefs.getInt('learning_last_completed_day_$uid') : null;
+      final targetDay = (localStage != null && localStage > 0)
+          ? localStage
+          : ((localDay != null && localDay > 0) ? (localDay + 1) : 1);
+
+      return targetDay.clamp(1, 90);
     } catch (_) {
       return 1;
     }

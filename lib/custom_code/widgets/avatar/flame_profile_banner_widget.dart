@@ -44,17 +44,17 @@ class FlameProfileBannerGame extends FlameGame with TapCallbacks {
 
   void _spawnInitialDoodles() {
     _doodles.clear();
-    final count = 10;
+    const count = 3;
     for (int i = 0; i < count; i++) {
       _doodles.add(
         _BannerDoodle(
           x: _random.nextDouble() * (size.x > 0 ? size.x : 380),
           y: _random.nextDouble() * (size.y > 0 ? size.y : 220),
-          vx: (_random.nextDouble() - 0.5) * 16.0,
-          vy: -8.0 - _random.nextDouble() * 12.0,
-          size: 10.0 + _random.nextDouble() * 14.0,
+          vx: (_random.nextDouble() - 0.5) * 8.0,
+          vy: -4.0 - _random.nextDouble() * 6.0,
+          size: 7.0 + _random.nextDouble() * 6.0,
           rotation: _random.nextDouble() * math.pi * 2,
-          rotationSpeed: (_random.nextDouble() - 0.5) * 1.5,
+          rotationSpeed: (_random.nextDouble() - 0.5) * 0.8,
           color: _getDoodleColor(),
           type: _getDoodleTypeForSpecies(config.species),
           phase: _random.nextDouble() * math.pi * 2,
@@ -128,8 +128,8 @@ class FlameProfileBannerGame extends FlameGame with TapCallbacks {
 
     // Diverse Atmospheric Weather Simulation (User audio: "ബബിൾസ് മാത്രം വരാതെ ചിലപ്പോൾ റെയിൻ ആക്കുക, ഓരോന്നിനനുസരിച്ച് ഡെക്കറേറ്റ് ആക്കുക")
     final weather = getWeatherType();
-    final maxParticles = (weather == BannerWeatherType.rain) ? 30 : 18;
-    if (_particles.length < maxParticles && _random.nextDouble() < 0.45) {
+    const maxParticles = 6;
+    if (_particles.length < maxParticles && _random.nextDouble() < 0.12) {
       final accent = VectorAvatarConfig.parseHex(
         config.outfitAccentColor,
         fallback: const Color(0xFFFFD700),
@@ -270,7 +270,7 @@ class FlameProfileBannerGame extends FlameGame with TapCallbacks {
 
     // 1. Render Floating Biome Doodles
     for (final d in _doodles) {
-      final alpha = (0.35 + math.sin(_elapsedTime * 2.0 + d.phase) * 0.15).clamp(0.1, 0.7);
+      final alpha = (0.22 + math.sin(_elapsedTime * 1.5 + d.phase) * 0.08).clamp(0.08, 0.35);
       final paint = Paint()
         ..color = d.color.withValues(alpha: alpha)
         ..style = PaintingStyle.fill;

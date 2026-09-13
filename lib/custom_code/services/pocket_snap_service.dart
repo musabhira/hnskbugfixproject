@@ -10,6 +10,8 @@ import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
@@ -279,86 +281,140 @@ class _SnapLauncherSheet extends StatelessWidget {
     );
   }
 
+  void _openAddThoughts(BuildContext context) {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreateThreadPage(),
+      ),
+    );
+  }
+
+  void _openAddGallery(BuildContext context) {
+    Navigator.pop(context);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreateGalleryWidget(
+          width: double.infinity,
+          height: double.infinity,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
-        color: Color(0xFF141721),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        color: Color(0xFF0F121A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      padding: const EdgeInsets.fromLTRB(18, 12, 18, 20),
       child: SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle bar
-            Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
+            // Drag handle
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 14),
+            // Minimal Header
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFFC00),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.flash_on_rounded, color: Colors.black, size: 20),
-                ),
-                const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Pocket Snap & Vibe',
+                      'Add',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
+                        letterSpacing: -0.2,
                       ),
                     ),
+                    const SizedBox(height: 2),
                     Text(
-                      'Capture, style with stickers & send to Mates',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white60,
-                        fontSize: 12,
+                      'Snap, thoughts, products & services',
+                      style: GoogleFonts.inter(
+                        color: Colors.white38,
+                        fontSize: 11.5,
                       ),
                     ),
                   ],
                 ),
+                GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.close_rounded,
+                      color: Colors.white60,
+                      size: 16,
+                    ),
+                  ),
+                ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
+            // Options List
             _SnapOptionTile(
-              icon: Icons.camera_alt_rounded,
+              icon: Icons.camera_alt_outlined,
               iconColor: const Color(0xFFFFFC00),
               title: 'Take Snap (Camera)',
-              subtitle: 'Shoot instant photo with lens & audio',
+              subtitle: 'Shoot instant photo with lens',
               onTap: () => _pickFromCamera(context),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SnapOptionTile(
-              icon: Icons.photo_library_rounded,
-              iconColor: Colors.cyanAccent,
+              icon: Icons.photo_library_outlined,
+              iconColor: const Color(0xFF38BDF8),
               title: 'Choose from Gallery',
               subtitle: 'Select an existing photo from device',
               onTap: () => _pickFromGallery(context),
             ),
-            const SizedBox(height: 10),
+            const SizedBox(height: 8),
             _SnapOptionTile(
-              icon: Icons.brush_rounded,
-              iconColor: Colors.pinkAccent,
+              icon: Icons.draw_outlined,
+              iconColor: const Color(0xFFF472B6),
               title: 'Snap Canvas & Doodles',
-              subtitle: 'Create thought story with avatar stickers',
+              subtitle: 'Create story canvas with stickers & text',
               onTap: () => _openCanvas(context),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
+            _SnapOptionTile(
+              icon: Icons.chat_bubble_outline_rounded,
+              iconColor: const Color(0xFFA78BFA),
+              title: 'Add Thoughts',
+              subtitle: 'Share opinions, ideas & discussions',
+              onTap: () => _openAddThoughts(context),
+            ),
+            const SizedBox(height: 8),
+            _SnapOptionTile(
+              icon: Icons.storefront_outlined,
+              iconColor: const Color(0xFF34D399),
+              title: 'Add Gallery / Market',
+              subtitle: 'Showcase Product or Service for sale',
+              onTap: () => _openAddGallery(context),
+            ),
+            const SizedBox(height: 6),
           ],
         ),
       ),
@@ -387,27 +443,33 @@ class _SnapOptionTile extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(14),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+            color: const Color(0xFF161A26),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.06),
+              width: 1,
+            ),
           ),
           child: Row(
             children: [
               Container(
-                width: 44,
-                height: 44,
+                width: 36,
+                height: 36,
                 decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: iconColor.withValues(alpha: 0.3)),
+                  color: iconColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: iconColor.withValues(alpha: 0.25),
+                    width: 1,
+                  ),
                 ),
-                child: Icon(icon, color: iconColor, size: 22),
+                child: Icon(icon, color: iconColor, size: 18),
               ),
-              const SizedBox(width: 14),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -416,22 +478,26 @@ class _SnapOptionTile extends StatelessWidget {
                       title,
                       style: GoogleFonts.outfit(
                         color: Colors.white,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
                       subtitle,
-                      style: GoogleFonts.outfit(
-                        color: Colors.white54,
-                        fontSize: 12,
+                      style: GoogleFonts.inter(
+                        color: Colors.white38,
+                        fontSize: 11,
                       ),
                     ),
                   ],
                 ),
               ),
-              const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white30, size: 14),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: Colors.white.withValues(alpha: 0.25),
+                size: 18,
+              ),
             ],
           ),
         ),

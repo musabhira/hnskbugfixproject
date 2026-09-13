@@ -46,7 +46,7 @@ export 'gallery_following_tab_view.dart' show GalleryFollowingTabViewPage;
 export 'create_gallery_widget.dart' show CreateGalleryWidget;
 
 // Tools & Specialized Pages
-export 'tools_page.dart' show ToolsPage;
+export 'tools_page.dart' show ToolsPage, DiagramListScreen, TeamsDedicatedPage;
 export 'courses_widget.dart' show CoursesWidget, CourseDetailPage, WhatsAppShareHelper;
 export 'admin_panel_page.dart' show AdminDashboardPage;
 export 'chess_game_page.dart';

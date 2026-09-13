@@ -790,7 +790,7 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
   }
 
   Future<void> _shareExternal() async {
-    final content = '${widget.contentToShare}\n\nShared via PocketMates';
+    final content = '${widget.contentToShare}\n\nShared via PoketMates';
     await SharePlus.instance.share(ShareParams(text: content));
   }
 }

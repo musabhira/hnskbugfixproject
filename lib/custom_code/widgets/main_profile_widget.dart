@@ -17,7 +17,6 @@ import 'package:pocket_mates_app/custom_code/widgets/posters_tab.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
-import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_profile_banner_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
@@ -26,6 +25,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defen
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_snap_flame_refresh.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -96,7 +97,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _loadLocalUserStage() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final stage = prefs.getInt('pocket_learning_user_stage') ?? prefs.getInt('learning_day_$userId') ?? 1;
+      final stage = prefs.getInt('pocket_learning_user_stage_$userId') ?? prefs.getInt('learning_day_$userId') ?? 1;
       if (mounted && stage != _localUserStage) {
         setState(() => _localUserStage = stage);
       }
@@ -161,9 +162,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   @override
   void initState() {
     super.initState();
-    // Independent tab controllers: My Account (1 tab) and Public Profile (3 tabs: Gallery, Thoughts, Posters)
+    // Default to Public Profile view when opening another user's profile
+    if (!isMe) {
+      _isPublicProfileView = true;
+    }
+    // Independent tab controllers: My Account (1 tab) and Public Profile.
+    // Show Posters only in Main Profile (isMe: 3 tabs: Gallery, Thoughts, Posters).
+    // In Search / Other Profile (!isMe: 2 tabs: Gallery, Thoughts).
     _myAccountTabController = material.TabController(length: 1, vsync: this);
-    _publicTabController = material.TabController(length: 3, vsync: this);
+    _publicTabController = material.TabController(length: isMe ? 3 : 2, vsync: this);
     _myAccountTabController.addListener(() { if (mounted) setState(() {}); });
     _publicTabController.addListener(() { if (mounted) setState(() {}); });
     _loadInitialData(); // Instant load strategy
@@ -397,104 +404,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
   }
 
-  Future<void> _testCycleNextStageColor() async {
-    final stages = LearningMilestoneStage.allStages;
-    _testStageIndex = (_testStageIndex + 1) % stages.length;
-    final stage = stages[_testStageIndex];
-    await _jumpToStage(stage.stageNumber);
-  }
 
-  void _showTestingJumpModal() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF0F111A),
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Icon(Icons.palette_rounded, color: Color(0xFFFFFC00), size: 22),
-                const SizedBox(width: 10),
-                Text(
-                  '🎨 90-Stage Fast-Forward Tester',
-                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Select any major milestone to immediately preview the Profile UI Transformation:',
-              style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
-            ),
-            const SizedBox(height: 14),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildJumpButton(ctx, 1, '🌱 Day 1 (Genesis Slate)'),
-                _buildJumpButton(ctx, 15, '🔮 Day 15 (Royal Lavender)'),
-                _buildJumpButton(ctx, 21, '🎯 Day 21 (Habit Anchor)'),
-                _buildJumpButton(ctx, 30, '🥈 Day 30 (Silver Gate UI)'),
-                _buildJumpButton(ctx, 45, '🏰 Day 45 (Golden Citadel)'),
-                _buildJumpButton(ctx, 60, '🥇 Day 60 (24K Gold Sovereign)'),
-                _buildJumpButton(ctx, 71, '🏛️ Day 71 (Victorian Manor)'),
-                _buildJumpButton(ctx, 78, '🏰 Day 78 (Rear Palace Expansion)'),
-                _buildJumpButton(ctx, 81, '⛲ Day 81 (Royal Mezzanine & Fountains)'),
-                _buildJumpButton(ctx, 84, '🦁 Day 84 (Twin Bastion Watchtowers)'),
-                _buildJumpButton(ctx, 87, '👑 Day 87 (Baroque Imperial Dome)'),
-                _buildJumpButton(ctx, 90, '💎 Day 90 (Imperial Sovereign Citadel)'),
-              ],
-            ),
-            const SizedBox(height: 14),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  _testCycleNextStageColor();
-                },
-                icon: const Icon(Icons.skip_next_rounded, color: Colors.black),
-                label: Text(
-                  'Cycle to Next Stage (+1)',
-                  style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFFC00),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildJumpButton(BuildContext ctx, int day, String label) {
-    return InkWell(
-      onTap: () {
-        Navigator.pop(ctx);
-        _jumpToStage(day);
-      },
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1B1E2D),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white12),
-        ),
-        child: Text(
-          label,
-          style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w600),
-        ),
-      ),
-    );
-  }
 
   void _applyProfileData(Map<String, dynamic> data) {
     _profileData = data;
@@ -517,6 +427,59 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _fetchFreshData() async {
     try {
       if (mounted && _profileData == null) setState(() => _isLoading = true);
+
+      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+      final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+
+      if (isRobot) {
+        final robot = PocketRobotService.getRobotById(userId) ??
+            PocketRobotService.getRobotByLevel(1);
+        final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
+        final myId = _supabase.auth.currentUser?.id ?? '';
+        final isMate = myId.isNotEmpty ? await PocketMateService.isMate(myId, robot.id) : false;
+        final prefs = await SharedPreferences.getInstance();
+        final blockedList = myId.isNotEmpty ? (prefs.getStringList('blocked_users_$myId') ?? []) : <String>[];
+        final isBlocked = blockedList.contains(robot.id);
+
+        final robotData = {
+          'user_id': robot.id,
+          'first_name': robot.name,
+          'name': robot.name,
+          'shop_name': robot.archetype.label,
+          'bio': robot.bio,
+          'profile_image_url': robot.avatarUrl,
+          'learning_day': dynamicLevel,
+          'streak': dynamicLevel,
+          'rank': robot.cefrRank,
+          'palette_id': robot.housePalette,
+          'is_pocket_robo': true,
+          'verified': true,
+          'bg_color_code': '#0F111A',
+          'bg_text_color': '#FFFFFF',
+          'button_color_code': '#0095F6',
+          'button_text_color': '#FFFFFF',
+        };
+
+        final robotGallery = PocketRobotService.getRobotGalleryItems(robot.id);
+        final robotThreads = PocketRobotService.getRobotThreads(robot.id);
+
+        if (mounted) {
+          setState(() {
+            _isFollowing = isMate;
+            _isBlocked = isBlocked;
+            _isRequested = false;
+            _followersCount = 100 + (dynamicLevel * 14);
+            _followingCount = 15 + (dynamicLevel % 30);
+            _friendsCount = dynamicLevel * 3;
+            _applyProfileData(robotData);
+            _galleryItems = robotGallery;
+            _filteredGalleryItems = robotGallery;
+            _threadItems = robotThreads;
+            _isLoading = false;
+          });
+        }
+        return;
+      }
 
       final myId = _supabase.auth.currentUser?.id;
       final responses = await Future.wait<dynamic>([
@@ -617,6 +580,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Future<void> _fetchFullLists() async {
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    if (!isUuid || PocketRobotService.isRobotId(userId)) return;
+
     // Fetch remaining gallery
     try {
       final allGallery = await _supabase
@@ -662,6 +628,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Future<void> _fetchThreads() async {
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    if (!isUuid || PocketRobotService.isRobotId(userId)) {
+      final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(1);
+      if (mounted) {
+        setState(() {
+          _threadItems = robot.catchphrases.map((c) => {
+            'content': c,
+            'created_at': DateTime.now().subtract(const Duration(hours: 3)).toIso8601String(),
+            'user_id': robot.id,
+            'user_name': robot.name,
+            'user_image_url': robot.avatarUrl,
+          }).toList();
+        });
+      }
+      return;
+    }
+
     try {
       final res = await _supabase
           .from('threads_view')
@@ -680,6 +663,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Future<Map<String, int>> _fetchFollowCountsMap() async {
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    if (!isUuid || PocketRobotService.isRobotId(userId)) {
+      final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(1);
+      final dynLvl = PocketRobotService.getDynamicLevel(robot);
+      return {
+        'followers': 100 + (dynLvl * 14),
+        'following': 15 + (dynLvl % 30),
+        'friends': dynLvl * 3,
+      };
+    }
+
     try {
       // Get followers count - people who follow this user
       final followersRes = await _supabase
@@ -724,6 +718,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<bool> _checkFollowStatusBool() async {
     final myId = _supabase.auth.currentUser?.id;
     if (myId == null) return false;
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    if (!isUuid || PocketRobotService.isRobotId(userId)) {
+      return await PocketMateService.isMate(myId, userId);
+    }
     final res = await _supabase
         .from('follows')
         .select()
@@ -736,6 +734,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<bool> _checkBlockStatusBool() async {
     final myId = _supabase.auth.currentUser?.id;
     if (myId == null) return false;
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    if (!isUuid || PocketRobotService.isRobotId(userId)) {
+      final prefs = await SharedPreferences.getInstance();
+      final blocked = prefs.getStringList('blocked_users_$myId') ?? [];
+      return blocked.contains(userId);
+    }
     final res = await _supabase
         .from('blocks')
         .select()
@@ -777,6 +781,45 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   Future<void> _toggleFollow() async {
     final myId = _supabase.auth.currentUser?.id;
     if (myId == null) return;
+
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+
+    if (isRobot) {
+      final robot = PocketRobotService.getRobotById(userId) ??
+          PocketRobotService.getRobotByLevel(1);
+      final newFollow = !_isFollowing;
+      setState(() {
+        _isFollowing = newFollow;
+        _followersCount += newFollow ? 1 : -1;
+      });
+      if (newFollow) {
+        await PocketRobotService.acceptRobotRequest(myId: myId, robotId: robot.id);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Connected with ${robot.name}! You are now Pocket Mates ✨'),
+              backgroundColor: const Color(0xFF10B981),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      } else {
+        final prefs = await SharedPreferences.getInstance();
+        final list = prefs.getStringList('pocket_mates_$myId') ?? [];
+        list.remove(robot.id);
+        await prefs.setStringList('pocket_mates_$myId', list);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Removed ${robot.name} from Pocket Mates.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+      return;
+    }
 
     final isPrivate = _profileData?['is_private'] == true;
 
@@ -940,33 +983,54 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     onPressed: () => AutoLoginBottomSheet.show(context),
                     tooltip: 'Switch Account',
                   ),
-                  material.Tooltip(
-                    message: 'Tap: Next Stage (+1) | Long-Press: Select Milestone',
-                    child: material.InkWell(
-                      borderRadius: BorderRadius.circular(20),
-                      onTap: _fastForwardStage,
-                      onLongPress: _showTestingJumpModal,
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Icon(
-                          material.Icons.palette_rounded,
-                          size: 22,
-                          color: Color(0xFFFFFC00),
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
                 if (!isMe)
                   PopupMenuButton<String>(
                     icon: const Icon(material.Icons.more_vert),
                     color: bgColor,
                     iconColor: textColor,
-                    onSelected: (value) {
+                    onSelected: (value) async {
+                      final myId = _supabase.auth.currentUser?.id;
                       if (value == 'Report') {
-                        // Report logic
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Report submitted. Thank you for keeping Pocket Mates safe.'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
                       } else if (value == 'Block') {
-                        // Block logic
+                        final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+                        final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+                        if (myId != null) {
+                          final prefs = await SharedPreferences.getInstance();
+                          final blocked = prefs.getStringList('blocked_users_$myId') ?? [];
+                          if (!blocked.contains(userId)) {
+                            blocked.add(userId);
+                            await prefs.setStringList('blocked_users_$myId', blocked);
+                          }
+                          final mates = prefs.getStringList('pocket_mates_$myId') ?? [];
+                          mates.remove(userId);
+                          await prefs.setStringList('pocket_mates_$myId', mates);
+
+                          if (!isRobot) {
+                            try {
+                              await _supabase.from('blocks').insert({'blocker_id': myId, 'blocked_id': userId});
+                              await _supabase.from('follows').delete().eq('follower_id', myId).eq('followed_id', userId);
+                            } catch (_) {}
+                          }
+                        }
+                        if (mounted) {
+                          setState(() {
+                            _isBlocked = true;
+                            _isFollowing = false;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('User blocked.'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
                       }
                     },
                     itemBuilder: (context) => [
@@ -1003,10 +1067,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     indicatorColor: btnColor,
                     indicatorWeight: 3,
                     labelStyle: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                    tabs: const [
-                      material.Tab(text: "🖼️ Gallery"),
-                      material.Tab(text: "💭 Thoughts"),
-                      material.Tab(text: "📜 Posters"),
+                    tabs: [
+                      const material.Tab(text: "🖼️ Gallery"),
+                      const material.Tab(text: "💭 Thoughts"),
+                      if (isMe) const material.Tab(text: "📜 Posters"),
                     ],
                   ),
                   bgColor,
@@ -1067,7 +1131,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                           style: GoogleFonts.outfit(
                                             color: const Color(0xFFFCA5A5),
                                             fontWeight: FontWeight.w900,
-                                            fontSize: 11,
+                                            fontSize: 12,
                                             letterSpacing: 0.5,
                                           ),
                                         ),
@@ -1077,15 +1141,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                           style: TextStyle(
                                             color: _recentRaids.first.breached ? const Color(0xFFF87171) : const Color(0xFF34D399),
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 10.5,
+                                            fontSize: 12,
                                           ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 2),
+                                    const SizedBox(height: 3),
                                     Text(
                                       'Attacked by ${_recentRaids.first.attackerName} using ${_recentRaids.first.attackerWeapon}!',
-                                      style: const TextStyle(color: Colors.white, fontSize: 11.5, fontWeight: FontWeight.bold),
+                                      style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
@@ -1251,12 +1315,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 btnColor: btnColor,
                                 btnTextColor: btnTextColor,
                               ),
-                              PostersTab(
-                                profileData: _profileData,
-                                galleryItems: _galleryItems,
-                                services: const [],
-                                thoughts: _threadItems,
-                              ),
+                              if (isMe)
+                                PostersTab(
+                                  profileData: _profileData,
+                                  galleryItems: _galleryItems,
+                                  services: const [],
+                                  thoughts: _threadItems,
+                                ),
                             ],
                           ),
                         ),
@@ -1317,7 +1382,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   hasQuestions ? '${_shieldQuestions.length} Armed' : '0 Armed',
                   style: TextStyle(
                     color: hasQuestions ? const Color(0xFF34D399) : Colors.white54,
-                    fontSize: 10,
+                    fontSize: 11.5,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
@@ -1332,7 +1397,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 : (isMe
                     ? 'Defenses unlock as you advance in levels'
                     : 'No active defenses set yet'),
-            style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+            style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
           ),
           children: [
             if (hasQuestions)
@@ -1349,7 +1414,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     children: [
                       Text(
                         '${index + 1}.',
-                        style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 13, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
@@ -1358,19 +1423,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           children: [
                             Text(
                               q.question,
-                              style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
                             ),
                             if (isMe && q.options.isNotEmpty && q.correctIndex < q.options.length) ...[
                               const SizedBox(height: 2),
                               Text(
                                 'Answer: ${q.options[q.correctIndex]}',
-                                style: const TextStyle(color: Color(0xFF34D399), fontSize: 10.5, fontWeight: FontWeight.w600),
+                                style: const TextStyle(color: Color(0xFF34D399), fontSize: 11.5, fontWeight: FontWeight.w600),
                               ),
                             ] else if (!isMe) ...[
                               const SizedBox(height: 2),
                               Text(
                                 '${q.options.length} guarded options 🛡️',
-                                style: const TextStyle(color: Colors.white54, fontSize: 10.5, fontWeight: FontWeight.w500),
+                                style: const TextStyle(color: Colors.white54, fontSize: 11.5, fontWeight: FontWeight.w500),
                               ),
                             ],
                           ],
@@ -1792,8 +1857,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final avatar = _getAvatarConfig();
     final bannerUrl = _profileData?['banner_image_url'] ?? _profileData?['banner_url'];
 
-    // If viewing Public Profile and user has custom banner uploaded, display it:
-    if (_isPublicProfileView && bannerUrl != null && bannerUrl.toString().isNotEmpty) {
+    // If viewing Public Profile or another user's profile and custom banner exists, display it:
+    if ((_isPublicProfileView || !isMe) && bannerUrl != null && bannerUrl.toString().isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: bannerUrl.toString(),
         fit: BoxFit.cover,
@@ -2593,59 +2658,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
             ),
           ],
-          if (slug != null && slug.toString().isNotEmpty) ...[
-            const SizedBox(height: 10),
-            GestureDetector(
-              onTap: () async {
-                final url = Uri.parse('https://handskillapp.web.app/$slug');
-                if (await canLaunchUrl(url)) {
-                  await launchUrl(url, mode: LaunchMode.externalApplication);
-                }
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: btnColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: btnColor.withValues(alpha: 0.35), width: 1),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.language_rounded, size: 16, color: btnColor),
-                    const SizedBox(width: 6),
-                    Flexible(
-                      child: Text(
-                        'handskillapp.web.app/$slug',
-                        style: GoogleFonts.inter(
-                          fontSize: 12.5,
-                          color: btnColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: btnColor,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        '3D WEB',
-                        style: GoogleFonts.outfit(
-                          color: btnTextColor,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+          // Hand Skill 3D Web link hidden per user request
         ],
       ),
     );
@@ -3541,35 +3554,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  void _fastForwardStage() {
-    final currentDay = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
-    if (currentDay >= 90) {
-      HapticFeedback.heavyImpact();
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Text('👑', style: TextStyle(fontSize: 18)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '💎 DAY 90 CITADEL COMPLETE! Long-press palette icon to test any milestone.',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFFFFFC00)),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: const Color(0xFF0F172A),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(milliseconds: 2000),
-        ),
-      );
-      return;
-    }
-    final nextDay = currentDay + 1;
-    _jumpToDay(nextDay);
-  }
+
 
   void _jumpToDay(int nextDay) {
     HapticFeedback.lightImpact();
@@ -4102,18 +4087,10 @@ class _GalleryTab extends StatelessWidget {
             },
             child: Container(
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: textColor.withValues(alpha: 0.04),
+                borderRadius: BorderRadius.circular(14),
+                color: textColor.withValues(alpha: 0.03),
                 border: Border.all(
-                    color: textColor.withValues(alpha: 0.08), width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: btnColor.withValues(alpha: 0.05),
-                    blurRadius: 15,
-                    spreadRadius: -2,
-                    offset: const Offset(0, 8),
-                  )
-                ],
+                    color: textColor.withValues(alpha: 0.08), width: 1.0),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -4122,19 +4099,19 @@ class _GalleryTab extends StatelessWidget {
                     children: [
                       ClipRRect(
                         borderRadius:
-                            const BorderRadius.vertical(top: Radius.circular(20)),
+                            const BorderRadius.vertical(top: Radius.circular(14)),
                         child: imageUrl != null && imageUrl.toString().isNotEmpty
                             ? CachedNetworkImage(
                                 imageUrl: imageUrl,
                                 memCacheWidth: 400,
                                 fit: BoxFit.cover,
                                 placeholder: (context, url) => Container(
-                                  height: 160,
+                                  height: 150,
                                   color: textColor.withValues(alpha: 0.03),
                                   child: Center(
                                     child: material.SizedBox(
-                                      width: 20,
-                                      height: 20,
+                                      width: 18,
+                                      height: 18,
                                       child: material.CircularProgressIndicator(
                                         strokeWidth: 2,
                                         valueColor: material
@@ -4145,38 +4122,37 @@ class _GalleryTab extends StatelessWidget {
                                   ),
                                 ),
                                 errorWidget: (context, url, error) => Container(
-                                  height: 160,
+                                  height: 150,
                                   color: textColor.withValues(alpha: 0.05),
                                   child: Icon(material.Icons.grid_view_rounded,
-                                      color: textColor.withValues(alpha: 0.3), size: 40),
+                                      color: textColor.withValues(alpha: 0.3), size: 36),
                                 ),
                               )
                             : Container(
-                                height: 160,
+                                height: 150,
                                 color: textColor.withValues(alpha: 0.05)),
                       ),
                       if (price != null)
                         Positioned(
-                          top: 10,
-                          right: 10,
+                          top: 8,
+                          right: 8,
                           child: Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color:
-                                  material.Colors.black.withValues(alpha: 0.65),
-                              borderRadius: BorderRadius.circular(12),
+                                  material.Colors.black.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(8),
                               border: Border.all(
                                   color: material.Colors.white
-                                      .withValues(alpha: 0.15)),
+                                      .withValues(alpha: 0.12)),
                             ),
                             child: Text(
                               '₹$price',
-                              style: GoogleFonts.outfit(
+                              style: GoogleFonts.inter(
                                 color: material.Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
                               ),
                             ),
                           ),
@@ -4186,27 +4162,26 @@ class _GalleryTab extends StatelessWidget {
                   if (title != null && title.toString().isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(
-                          left: 14.0, right: 14.0, top: 12.0, bottom: 4.0),
+                          left: 10.0, right: 10.0, top: 8.0, bottom: 2.0),
                       child: Text(
                         title,
-                        style: GoogleFonts.outfit(
+                        style: GoogleFonts.inter(
                           color: textColor,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: -0.2,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(14.0, 0, 14.0, 12.0),
+                    padding: const EdgeInsets.fromLTRB(10.0, 0, 10.0, 8.0),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(
                         color: isService 
-                            ? btnColor.withValues(alpha: 0.12)
-                            : textColor.withValues(alpha: 0.06),
+                            ? btnColor.withValues(alpha: 0.1)
+                            : textColor.withValues(alpha: 0.05),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Row(
@@ -4215,16 +4190,15 @@ class _GalleryTab extends StatelessWidget {
                           Icon(
                             isService ? material.Icons.handyman_outlined : material.Icons.shopping_bag_outlined,
                             size: 10,
-                            color: isService ? btnColor : textColor.withValues(alpha: 0.7),
+                            color: isService ? btnColor : textColor.withValues(alpha: 0.6),
                           ),
                           const SizedBox(width: 4),
                           Text(
                             isService ? 'Service' : 'Product',
-                            style: GoogleFonts.outfit(
-                              color: isService ? btnColor : textColor.withValues(alpha: 0.7),
-                              fontSize: 10,
+                            style: GoogleFonts.inter(
+                              color: isService ? btnColor : textColor.withValues(alpha: 0.6),
+                              fontSize: 9.5,
                               fontWeight: FontWeight.w600,
-                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
@@ -4264,16 +4238,16 @@ class _ThreadsTab extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(material.Icons.chat,
-                size: 48, color: textColor.withValues(alpha: 0.3)),
-            const SizedBox(height: 16),
+                size: 40, color: textColor.withValues(alpha: 0.3)),
+            const SizedBox(height: 12),
             Text("No thoughts shared yet",
-                style: TextStyle(color: textColor.withValues(alpha: 0.5))),
+                style: TextStyle(color: textColor.withValues(alpha: 0.5), fontSize: 13)),
           ],
         ),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(12),
       itemCount: items.length,
       itemBuilder: (ctx, idx) {
         final thread = items[idx];
@@ -4283,12 +4257,12 @@ class _ThreadsTab extends StatelessWidget {
             createdAt != null ? timeago.format(DateTime.parse(createdAt)) : '';
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(20),
+          margin: const EdgeInsets.only(bottom: 10),
+          padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: textColor.withValues(alpha: 0.04),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: textColor.withValues(alpha: 0.08)),
+            color: textColor.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: textColor.withValues(alpha: 0.07)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -4296,41 +4270,41 @@ class _ThreadsTab extends StatelessWidget {
               Row(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 28,
+                    height: 28,
                     decoration: BoxDecoration(
                       color: btnColor.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(material.Icons.person, color: btnColor, size: 14),
+                    child: Icon(material.Icons.person, color: btnColor, size: 13),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Text(
                     timeStr,
                     style: GoogleFonts.inter(
                       color: textColor.withValues(alpha: 0.4),
-                      fontSize: 12,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const Spacer(),
                   material.IconButton(
                     icon: Icon(material.Icons.more_vert,
-                        size: 16, color: textColor.withValues(alpha: 0.3)),
+                        size: 15, color: textColor.withValues(alpha: 0.3)),
                     onPressed: () {},
                     padding: material.EdgeInsets.zero,
                     constraints: const material.BoxConstraints(),
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
               Text(
                 content,
                 style: GoogleFonts.inter(
                   color: textColor,
-                  fontSize: 16,
-                  height: 1.6,
-                  letterSpacing: -0.2,
+                  fontSize: 14.5,
+                  height: 1.45,
+                  letterSpacing: -0.1,
                 ),
               ),
               const SizedBox(height: 20),

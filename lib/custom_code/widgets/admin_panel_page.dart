@@ -7,6 +7,12 @@ import 'package:file_picker/file_picker.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:google_fonts/google_fonts.dart'; 
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
+import 'dart:math' as math;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -67,19 +73,116 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   List<Map<String, dynamic>> _hubLearners = [];
   bool _isLoadingHubLearners = false;
   String _hubLearnerSearchQuery = '';
+  String _robotSearchQuery = '';
+  int _robotDaysElapsed = 0;
+  int _activeVibesCount = 0;
+
+  // Monetization & House Ads Management State
+  HousePromoCampaign? _adminCampaign;
+  bool _isLoadingMonetization = false;
+  bool _adminHouseAdsEnabled = true;
+  final TextEditingController _promoTitleController = TextEditingController();
+  final TextEditingController _promoSubtitleController = TextEditingController();
+  final TextEditingController _promoBadgeController = TextEditingController();
+  final TextEditingController _promoCtaController = TextEditingController();
+  final TextEditingController _promoWebUrlController = TextEditingController();
+  final TextEditingController _promoMonthlyPriceController = TextEditingController();
+  final TextEditingController _promoYearlyPriceController = TextEditingController();
+  final TextEditingController _promoUpiIdController = TextEditingController();
+  String _promoTargetPlatform = 'all';
+  bool _promoIsActive = true;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 9, vsync: this);
+    _tabController = TabController(length: 11, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
+      _loadRobotCycleData();
+      _loadMonetizationData();
     });
+  }
+
+  Future<void> _loadRobotCycleData() async {
+    final days = await PocketRobotService.getGlobalElapsedDays();
+    final vibes = await PocketRobotService.getAllActiveRobotVibes();
+    if (mounted) {
+      setState(() {
+        _robotDaysElapsed = days;
+        _activeVibesCount = vibes.length;
+      });
+    }
+  }
+
+  Future<void> _loadMonetizationData() async {
+    setState(() => _isLoadingMonetization = true);
+    try {
+      final campaign = await MonetizationService().getActiveCampaign();
+      final enabled = await MonetizationService().isHouseAdsEnabled();
+      _adminCampaign = campaign;
+      _adminHouseAdsEnabled = enabled;
+      _promoTitleController.text = campaign.title;
+      _promoSubtitleController.text = campaign.subtitle;
+      _promoBadgeController.text = campaign.discountBadge;
+      _promoCtaController.text = campaign.ctaText;
+      _promoWebUrlController.text = campaign.webCheckoutUrl;
+      _promoMonthlyPriceController.text = campaign.inAppMonthlyPrice.toString();
+      _promoYearlyPriceController.text = campaign.inAppYearlyPrice.toString();
+      _promoUpiIdController.text = campaign.upiId;
+      _promoTargetPlatform = campaign.targetPlatform;
+      _promoIsActive = campaign.isActive;
+    } catch (_) {}
+    if (mounted) setState(() => _isLoadingMonetization = false);
+  }
+
+  Future<void> _saveMonetizationData() async {
+    final updated = HousePromoCampaign(
+      id: _adminCampaign?.id ?? 'default_pro',
+      title: _promoTitleController.text.trim().isEmpty
+          ? 'Upgrade to Pocket Mates Pro'
+          : _promoTitleController.text.trim(),
+      subtitle: _promoSubtitleController.text.trim(),
+      discountBadge: _promoBadgeController.text.trim(),
+      ctaText: _promoCtaController.text.trim().isEmpty
+          ? 'Claim Offer'
+          : _promoCtaController.text.trim(),
+      webCheckoutUrl: _promoWebUrlController.text.trim().isEmpty
+          ? 'https://pocketmates.app/premium'
+          : _promoWebUrlController.text.trim(),
+      inAppMonthlyPrice:
+          int.tryParse(_promoMonthlyPriceController.text.trim()) ?? 49,
+      inAppYearlyPrice:
+          int.tryParse(_promoYearlyPriceController.text.trim()) ?? 399,
+      upiId: _promoUpiIdController.text.trim().isEmpty
+          ? 'pocketmates@upi'
+          : _promoUpiIdController.text.trim(),
+      targetPlatform: _promoTargetPlatform,
+      isActive: _promoIsActive,
+    );
+
+    await MonetizationService().saveCampaign(updated);
+    await MonetizationService().setHouseAdsEnabled(_adminHouseAdsEnabled);
+    setState(() => _adminCampaign = updated);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Monetization & House Ads settings saved! 🚀'),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _promoTitleController.dispose();
+    _promoSubtitleController.dispose();
+    _promoBadgeController.dispose();
+    _promoCtaController.dispose();
+    _promoWebUrlController.dispose();
+    _promoMonthlyPriceController.dispose();
+    _promoYearlyPriceController.dispose();
+    _promoUpiIdController.dispose();
     super.dispose();
   }
 
@@ -420,6 +523,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             Tab(icon: Icon(Icons.build_circle_outlined), text: 'Tools'),
             Tab(icon: Icon(Icons.collections_bookmark_outlined), text: 'E-Learning'),
             Tab(icon: Icon(Icons.forum_outlined), text: 'English Hub'),
+            Tab(icon: Icon(Icons.smart_toy_outlined), text: 'Robots'),
+            Tab(icon: Icon(Icons.monetization_on_outlined), text: 'Monetization'),
           ],
         ),
       ),
@@ -435,6 +540,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           _buildToolsTab(),
           _buildELearningTab(),
           _buildEnglishHubTab(),
+          _buildRobotsTab(),
+          _buildMonetizationTab(),
         ],
       ),
     );
@@ -4912,6 +5019,914 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           ],
         ),
       ),
+    );
+  }
+
+  // ==========================================
+  // 🤖 Pocket Robots & AI Bots Admin Controller
+  // ==========================================
+  Widget _buildRobotsTab() {
+    final allRobots = PocketRobotService.getAll90Robots();
+    final q = _robotSearchQuery.trim().toLowerCase();
+    final filtered = allRobots.where((r) {
+      if (q.isEmpty) return true;
+      final dynLvl = PocketRobotService.getDynamicLevel(r, daysElapsed: _robotDaysElapsed);
+      if (r.name.toLowerCase().contains(q)) return true;
+      if (r.archetype.label.toLowerCase().contains(q)) return true;
+      if (r.cefrRank.toLowerCase().contains(q)) return true;
+      if ('level $dynLvl'.contains(q) || '$dynLvl' == q) return true;
+      return false;
+    }).toList();
+
+    final currentCycle = (_robotDaysElapsed ~/ 90) + 1;
+    final currentCycleDay = (_robotDaysElapsed % 90) + 1;
+
+    return RefreshIndicator(
+      onRefresh: _loadRobotCycleData,
+      color: const Color(0xFFFFFC00),
+      backgroundColor: const Color(0xFF1E293B),
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          // Header card
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFF334155)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.smart_toy_rounded, color: Color(0xFFFFFC00), size: 28),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pocket Robots Simulation Engine',
+                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            'Dynamic 1–90 Day looping system • Real-time Level updates',
+                            style: GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Every day at UTC midnight, all 90 robots progress by +1 level. When any robot reaches Level 90, it seamlessly loops back to Level 1, continuously generating simulated active peer community learning.',
+                  style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                // Stats Badges
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 10,
+                  children: [
+                    _buildRoboBadge('Total Robots', '90 Bots', Icons.group_work_rounded, const Color(0xFF38BDF8)),
+                    _buildRoboBadge('Active Cycle', 'Cycle $currentCycle', Icons.loop_rounded, const Color(0xFFF43F5E)),
+                    _buildRoboBadge('Current Day', 'Day $currentCycleDay / 90 🔁', Icons.calendar_month_rounded, const Color(0xFF10B981)),
+                    _buildRoboBadge('Days Elapsed', '+$_robotDaysElapsed Days', Icons.history_rounded, const Color(0xFFF59E0B)),
+                    _buildRoboBadge('Active Vibes', '$_activeVibesCount Stories', Icons.auto_awesome_rounded, const Color(0xFFA855F7)),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                // Quick Action Controls
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final newDays = await PocketRobotService.advanceProgressionByDays(1);
+                        if (!mounted) return;
+                        setState(() => _robotDaysElapsed = newDays);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('⏩ Advanced progression by +1 Day! (Total: $newDays Days)'),
+                            backgroundColor: const Color(0xFF10B981),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0284C7),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.fast_forward_rounded, size: 16),
+                      label: const Text('+1 Day Loop'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final newDays = await PocketRobotService.advanceProgressionByDays(10);
+                        if (!mounted) return;
+                        setState(() => _robotDaysElapsed = newDays);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('⏩ Advanced progression by +10 Days! (Total: $newDays Days)'),
+                            backgroundColor: const Color(0xFF0284C7),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6366F1),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.skip_next_rounded, size: 16),
+                      label: const Text('+10 Days'),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        await PocketRobotService.resetProgression();
+                        if (!mounted) return;
+                        setState(() => _robotDaysElapsed = 0);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('🔄 Robot progression cycle reset to Day 0.'),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: Colors.white70,
+                        side: const BorderSide(color: Colors.white30),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.restart_alt_rounded, size: 16),
+                      label: const Text('Reset Cycle'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final myId = supabase.auth.currentUser?.id;
+                        if (myId != null) {
+                          await PocketRobotService.ensureIncomingRobotRequests(myId, 1);
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('💌 Robot Mate Request triggered for current user!'),
+                              backgroundColor: Color(0xFF10B981),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        } else {
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Please log in first to receive a robot request.'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFFC00),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.mark_email_unread_rounded, size: 16),
+                      label: const Text('Trigger Mate Request', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final all = PocketRobotService.getAll90Robots();
+                        final r = all[math.Random().nextInt(all.length)];
+                        await PocketRobotService.generateRobotVibe(robotId: r.id);
+                        await _loadRobotCycleData();
+                        if (!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('✨ Generated authentic Vibe story for ${r.name}!'),
+                            backgroundColor: const Color(0xFFA855F7),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFA855F7),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.auto_awesome_rounded, size: 16),
+                      label: const Text('Post Robot Vibe'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final myId = supabase.auth.currentUser?.id;
+                        if (myId != null) {
+                          await PocketRobotService.checkAndTriggerProactiveMatesMessages(myId);
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('💬 Dispatched proactive conversational message!'),
+                              backgroundColor: Color(0xFF059669),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF059669),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                      label: const Text('Proactive Chat'),
+                    ),
+                    ElevatedButton.icon(
+                      onPressed: () async {
+                        final myId = supabase.auth.currentUser?.id;
+                        if (myId != null) {
+                          await PocketRobotService.runAutonomousHumanEngine(myId);
+                          await _loadRobotCycleData();
+                          if (!mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('🧠 Full Autonomous Human Engine cycle executed!'),
+                              backgroundColor: Color(0xFFFFFC00),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFE11D48),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      icon: const Icon(Icons.psychology_rounded, size: 16),
+                      label: const Text('Run Human Engine', style: TextStyle(fontWeight: FontWeight.bold)),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Search Field
+          TextField(
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Search 90 robots by name, level, or archetype...',
+              hintStyle: const TextStyle(color: Colors.white38),
+              prefixIcon: const Icon(Icons.search, color: Color(0xFFFFFC00)),
+              filled: true,
+              fillColor: const Color(0xFF1E293B),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            onChanged: (val) => setState(() => _robotSearchQuery = val),
+          ),
+          const SizedBox(height: 16),
+          // Robot Count indicator
+          Text(
+            'Showing ${filtered.length} of 90 Pocket Robots',
+            style: GoogleFonts.outfit(color: Colors.white54, fontSize: 13),
+          ),
+          const SizedBox(height: 10),
+          // Robot Cards List
+          ...filtered.map((r) {
+            final dynLvl = PocketRobotService.getDynamicLevel(r, daysElapsed: _robotDaysElapsed);
+            final cefr = PocketRobotService.getCefrForLevel(dynLvl);
+            final isLooped = dynLvl != r.level;
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: isLooped
+                      ? const Color(0xFFFFFC00).withValues(alpha: 0.3)
+                      : Colors.white10,
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Avatar
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      width: 52,
+                      height: 52,
+                      color: const Color(0xFF0F172A),
+                      child: CachedNetworkImage(
+                        imageUrl: r.avatarUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (ctx, url) => const Center(
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFFFC00)),
+                          ),
+                        ),
+                        errorWidget: (ctx, url, err) => const Center(
+                          child: Icon(Icons.smart_toy_rounded, color: Color(0xFFFFFC00)),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  // Details
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                r.name,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFFFFC00)),
+                              ),
+                              child: Text(
+                                'Lvl $dynLvl / 90 🔁',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFFC00),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 4,
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: r.archetype.color.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '${r.archetype.icon} ${r.archetype.label}',
+                                style: TextStyle(color: r.archetype.color, fontSize: 11, fontWeight: FontWeight.w600),
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.white10,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                cefr,
+                                style: const TextStyle(color: Colors.white70, fontSize: 11),
+                              ),
+                            ),
+                            if (isLooped)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Base: Lvl ${r.level}',
+                                  style: const TextStyle(color: Color(0xFF10B981), fontSize: 10),
+                                ),
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          r.bio,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
+                        ),
+                        const SizedBox(height: 10),
+                        // Actions
+                        Row(
+                          children: [
+                            ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => VerfiedSwitchPage(userId: r.id),
+                                  ),
+                                );
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0284C7),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              icon: const Icon(Icons.person_outline, size: 14),
+                              label: const Text('View Profile', style: TextStyle(fontSize: 12)),
+                            ),
+                            const SizedBox(width: 8),
+                            OutlinedButton.icon(
+                              onPressed: () async {
+                                final myId = supabase.auth.currentUser?.id ?? '';
+                                if (myId.isNotEmpty) {
+                                  final isM = await PocketMateService.isMate(myId, r.id);
+                                  if (isM) {
+                                    final prefs = await SharedPreferences.getInstance();
+                                    final list = prefs.getStringList('pocket_mates_$myId') ?? [];
+                                    list.remove(r.id);
+                                    await prefs.setStringList('pocket_mates_$myId', list);
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Removed ${r.name} from Mates.')),
+                                    );
+                                  } else {
+                                    await PocketRobotService.acceptRobotRequest(myId: myId, robotId: r.id);
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Connected with ${r.name} as Pocket Mate! ✨'),
+                                        backgroundColor: const Color(0xFF10B981),
+                                      ),
+                                    );
+                                  }
+                                  setState(() {});
+                                }
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: Colors.white70,
+                                side: const BorderSide(color: Colors.white24),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              icon: const Icon(Icons.handshake_outlined, size: 14),
+                              label: const Text('Toggle Mate', style: TextStyle(fontSize: 12)),
+                            ),
+                            const SizedBox(width: 8),
+                            OutlinedButton.icon(
+                              onPressed: () async {
+                                await PocketRobotService.generateRobotVibe(robotId: r.id);
+                                await _loadRobotCycleData();
+                                if (!mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('📸 Posted vibe story for ${r.name}!'),
+                                    backgroundColor: const Color(0xFFA855F7),
+                                  ),
+                                );
+                              },
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: const Color(0xFFA855F7),
+                                side: const BorderSide(color: Color(0xFFA855F7)),
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              ),
+                              icon: const Icon(Icons.auto_awesome, size: 14),
+                              label: const Text('Post Vibe', style: TextStyle(fontSize: 12)),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRoboBadge(String title, String val, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: color, size: 16),
+          const SizedBox(width: 6),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 10)),
+              Text(val, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonetizationTab() {
+    if (_isLoadingMonetization) {
+      return const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)));
+    }
+
+    return RefreshIndicator(
+      onRefresh: _loadMonetizationData,
+      color: const Color(0xFFFFFC00),
+      backgroundColor: const Color(0xFF1E293B),
+      child: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // Header Card
+          Container(
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E1B4B), Color(0xFF312E81)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(Icons.monetization_on_rounded, color: Colors.black, size: 24),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Pocket Mates Monetization Suite',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Platform-Smart House Ads & Subscription Strategy',
+                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Divider(color: Colors.white12),
+                const SizedBox(height: 10),
+
+                // Global House Ads Toggle
+                Row(
+                  children: [
+                    const Icon(Icons.campaign_rounded, color: Color(0xFFFF8906), size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Global In-App House Ads',
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                          ),
+                          Text(
+                            _adminHouseAdsEnabled ? 'Active (Displaying across app)' : 'Muted (Hidden from all users)',
+                            style: TextStyle(color: _adminHouseAdsEnabled ? Colors.green : Colors.grey, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Switch(
+                      value: _adminHouseAdsEnabled,
+                      activeThumbColor: const Color(0xFFFFFC00),
+                      onChanged: (val) {
+                        setState(() => _adminHouseAdsEnabled = val);
+                        MonetizationService().setHouseAdsEnabled(val);
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 18),
+
+          // Strategy Guide Card
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.grey[900],
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.security_rounded, color: Colors.blueAccent, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Apple & Android Payment Compliance',
+                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  '• 🍏 iOS Anti-Steering: On Apple devices, users who tap Pro promo banners are redirected to the official external Web Checkout URL. This complies 100% with Apple guidelines and bypasses the 30% App Store cut.\n'
+                  '• 🤖 Android Flow: On Android, users receive instant UPI intent (GPay/PhonePe/Paytm) with web portal fallback.',
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, height: 1.45),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 22),
+
+          // Live Preview Header
+          Row(
+            children: [
+              const Icon(Icons.visibility_rounded, color: Color(0xFFFFFC00), size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'Live In-App Banner Preview',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+
+          // Live Banner Mock
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF4338CA)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        'POCKET PRO',
+                        style: GoogleFonts.outfit(color: Colors.black, fontSize: 9.5, fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: Colors.white12,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        _promoBadgeController.text.isNotEmpty ? _promoBadgeController.text : 'OFFER',
+                        style: GoogleFonts.inter(color: const Color(0xFFFF8906), fontSize: 9.5, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  _promoTitleController.text.isNotEmpty ? _promoTitleController.text : 'Upgrade to Pocket Mates Pro',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _promoSubtitleController.text.isNotEmpty ? _promoSubtitleController.text : 'Unlimited perks & features',
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '₹${_promoMonthlyPriceController.text}/mo',
+                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(colors: [Color(0xFFFFFC00), Color(0xFFFF8906)]),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _promoCtaController.text.isNotEmpty ? _promoCtaController.text : 'Claim Offer',
+                        style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 11),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Campaign Studio Title
+          Row(
+            children: [
+              const Icon(Icons.edit_note_rounded, color: Color(0xFFFFFC00), size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Campaign Studio & Strategy Controls',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Active Status Toggle
+          SwitchListTile(
+            contentPadding: EdgeInsets.zero,
+            title: const Text('Campaign Active Status', style: TextStyle(color: Colors.white, fontSize: 13)),
+            subtitle: Text(_promoIsActive ? 'Campaign is LIVE' : 'Campaign is PAUSED',
+                style: TextStyle(color: _promoIsActive ? Colors.green : Colors.red, fontSize: 11)),
+            value: _promoIsActive,
+            activeThumbColor: const Color(0xFFFFFC00),
+            onChanged: (v) => setState(() => _promoIsActive = v),
+          ),
+
+          const SizedBox(height: 12),
+
+          // Target Platform Chips
+          const Text('Target Platform', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              ChoiceChip(
+                label: const Text('All Platforms'),
+                selected: _promoTargetPlatform == 'all',
+                onSelected: (sel) => setState(() => _promoTargetPlatform = 'all'),
+                selectedColor: const Color(0xFFFFFC00),
+                labelStyle: TextStyle(
+                  color: _promoTargetPlatform == 'all' ? Colors.black : Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+              const SizedBox(width: 8),
+              ChoiceChip(
+                label: const Text('🍏 iOS Only'),
+                selected: _promoTargetPlatform == 'ios',
+                onSelected: (sel) => setState(() => _promoTargetPlatform = 'ios'),
+                selectedColor: const Color(0xFFFFFC00),
+                labelStyle: TextStyle(
+                  color: _promoTargetPlatform == 'ios' ? Colors.black : Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+              const SizedBox(width: 8),
+              ChoiceChip(
+                label: const Text('🤖 Android Only'),
+                selected: _promoTargetPlatform == 'android',
+                onSelected: (sel) => setState(() => _promoTargetPlatform = 'android'),
+                selectedColor: const Color(0xFFFFFC00),
+                labelStyle: TextStyle(
+                  color: _promoTargetPlatform == 'android' ? Colors.black : Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Text fields
+          _buildMonetizationInput('Campaign Headline', _promoTitleController, Icons.title_rounded),
+          const SizedBox(height: 12),
+          _buildMonetizationInput('Perks / Subtitle (comma separated)', _promoSubtitleController, Icons.subtitles_rounded, maxLines: 2),
+          const SizedBox(height: 12),
+          _buildMonetizationInput('Discount Pill Badge (e.g. 50% OFF)', _promoBadgeController, Icons.discount_rounded),
+          const SizedBox(height: 12),
+          _buildMonetizationInput('Call-To-Action Text', _promoCtaController, Icons.touch_app_rounded),
+          const SizedBox(height: 12),
+          _buildMonetizationInput('Official Web Checkout URL (for iOS & Web)', _promoWebUrlController, Icons.link_rounded),
+          const SizedBox(height: 12),
+
+          Row(
+            children: [
+              Expanded(
+                child: _buildMonetizationInput('Monthly (₹)', _promoMonthlyPriceController, Icons.currency_rupee_rounded),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildMonetizationInput('Yearly (₹)', _promoYearlyPriceController, Icons.calendar_today_rounded),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          _buildMonetizationInput('Direct UPI ID (for Android Intent)', _promoUpiIdController, Icons.account_balance_rounded),
+
+          const SizedBox(height: 26),
+
+          // Save Button
+          ElevatedButton.icon(
+            onPressed: _saveMonetizationData,
+            icon: const Icon(Icons.save_rounded, color: Colors.black),
+            label: Text(
+              'Save & Deploy Campaign',
+              style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFFC00),
+              padding: const EdgeInsets.symmetric(vertical: 14),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+          ),
+          const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMonetizationInput(
+    String label,
+    TextEditingController controller,
+    IconData icon, {
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        const SizedBox(height: 6),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          style: const TextStyle(color: Colors.white, fontSize: 13),
+          onChanged: (_) => setState(() {}),
+          decoration: InputDecoration(
+            prefixIcon: Icon(icon, color: const Color(0xFFFFFC00), size: 18),
+            filled: true,
+            fillColor: Colors.grey[900],
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: BorderSide.none,
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -73,23 +73,23 @@ class Learning60DayService {
       }
 
       final prefs = await SharedPreferences.getInstance();
-      final localStage = prefs.getInt('pocket_learning_user_stage') ?? prefs.getInt('learning_day_$userId') ?? 1;
-      if (localStage > day) {
+      final localStage = prefs.getInt('pocket_learning_user_stage_$userId') ?? prefs.getInt('learning_day_$userId') ?? day;
+      if (localStage > day && res == null) {
         day = localStage;
       }
 
       // Midnight Progression: Check if previous day was completed and midnight has passed
-      final lastCompletedDay = prefs.getInt('learning_last_completed_day') ?? 0;
+      final lastCompletedDay = prefs.getInt('learning_last_completed_day_$userId') ?? 0;
       if (lastCompletedDay > 0 && lastCompletedDay < 90) {
-        final completedDateStr = prefs.getString('learning_day_${lastCompletedDay}_completed_date');
+        final completedDateStr = prefs.getString('learning_day_${userId}_${lastCompletedDay}_completed_date');
         final todayDateStr = '${now.year}-${now.month}-${now.day}';
         // If completed date is earlier than today, midnight has passed -> enter next day!
         if (completedDateStr != null && completedDateStr != todayDateStr) {
           if (day <= lastCompletedDay) {
             day = lastCompletedDay + 1;
             await prefs.setInt('learning_day_$userId', day);
-            await prefs.setInt('pocket_learning_user_stage', day);
-            await prefs.setBool('pocket_day_${day}_unlocked', true);
+            await prefs.setInt('pocket_learning_user_stage_$userId', day);
+            await prefs.setBool('pocket_day_${userId}_${day}_unlocked', true);
             PushNotificationService.showMissionUnlockedNotification(day: day);
           }
         }
@@ -247,11 +247,13 @@ class Learning60DayService {
   }
 
   /// Checks if day is waiting for midnight unlock (completed previous day today, next day not yet unlocked)
-  static Future<bool> isDayWaitingForMidnightUnlock(int day) async {
+  static Future<bool> isDayWaitingForMidnightUnlock(int day, {String? userId}) async {
+    final uid = userId ?? SupaFlow.client.auth.currentUser?.id;
+    if (uid == null) return false;
     final prefs = await SharedPreferences.getInstance();
-    final lastCompletedDay = prefs.getInt('learning_last_completed_day') ?? 0;
+    final lastCompletedDay = prefs.getInt('learning_last_completed_day_$uid') ?? 0;
     if (day != lastCompletedDay + 1) return false;
-    final completedDateStr = prefs.getString('learning_day_${lastCompletedDay}_completed_date');
+    final completedDateStr = prefs.getString('learning_day_${uid}_${lastCompletedDay}_completed_date');
     if (completedDateStr == null) return false;
     final now = DateTime.now();
     final todayStr = '${now.year}-${now.month}-${now.day}';
@@ -270,11 +272,11 @@ class Learning60DayService {
     final prefs = await SharedPreferences.getInstance();
     final todayStr = '${now.year}-${now.month}-${now.day}';
 
-    // 1. Mark current day completed
-    await prefs.setBool('pocket_day_${day}_completed', true);
-    await prefs.setString('learning_day_${day}_completed_date', todayStr);
-    await prefs.setInt('learning_day_${day}_completed_timestamp', now.millisecondsSinceEpoch);
-    await prefs.setInt('learning_last_completed_day', day);
+    // 1. Mark current day completed for this user
+    await prefs.setBool('pocket_day_${userId}_${day}_completed', true);
+    await prefs.setString('learning_day_${userId}_${day}_completed_date', todayStr);
+    await prefs.setInt('learning_day_${userId}_${day}_completed_timestamp', now.millisecondsSinceEpoch);
+    await prefs.setInt('learning_last_completed_day_$userId', day);
 
     // 2. Schedule morning notification for next day (at 8:30 AM)
     final nextDay = (day < 90) ? day + 1 : 90;
@@ -282,7 +284,7 @@ class Learning60DayService {
 
     // If advanceToNextDay is explicitly true (e.g. in developer test / fast forward), unlock nextDay immediately
     if (advanceToNextDay) {
-      await prefs.setBool('pocket_day_${nextDay}_unlocked', true);
+      await prefs.setBool('pocket_day_${userId}_${nextDay}_unlocked', true);
     }
 
     // 3. Fetch progress & increment points
@@ -294,7 +296,7 @@ class Learning60DayService {
     final stage = LearningMilestoneStage.getStageForDay(targetDay);
 
     await prefs.setInt('learning_day_$userId', targetDay);
-    await prefs.setInt('pocket_learning_user_stage', targetDay);
+    await prefs.setInt('pocket_learning_user_stage_$userId', targetDay);
     await prefs.setInt('learning_points_$userId', newPoints);
     await prefs.setInt('learning_streak_$userId', newStreak);
 
@@ -326,9 +328,9 @@ class Learning60DayService {
     final stage = LearningMilestoneStage.getStageForDay(clamped);
 
     await prefs.setInt('learning_day_$userId', clamped);
-    await prefs.setInt('pocket_learning_user_stage', clamped);
-    await prefs.setBool('pocket_day_${clamped}_unlocked', true);
-    await prefs.setBool('pocket_world_rules_accepted_v1', true);
+    await prefs.setInt('pocket_learning_user_stage_$userId', clamped);
+    await prefs.setBool('pocket_day_${userId}_${clamped}_unlocked', true);
+    await prefs.setBool('pocket_world_rules_accepted_${userId}_v1', true);
     await prefs.setString('last_learning_date', DateTime.now().toIso8601String());
 
     try {

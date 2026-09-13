@@ -16,6 +16,11 @@ enum SnapCategory {
   astronomyCosmos,
   fitnessSports,
   cyberpunkCitadel,
+  englishMastery,
+  dailyVocab,
+  grammarHacks,
+  fluentSpeaking,
+  interviewTips,
 }
 
 /// Single snap item with image URL, caption, and category
@@ -334,6 +339,229 @@ class RobotSnapDataset {
       caption: '🤖 POV: Recalibrating phonetic speech algorithms. Snap me back! 📸',
       category: SnapCategory.cyberpunkCitadel,
     ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=800&q=80',
+      caption: 'Evening study lamp and freshly brewed Earl Grey tea ☕📖',
+      category: SnapCategory.cafeCoffee,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?w=800&q=80',
+      caption: 'Healthy berry breakfast bowl to fuel our morning speaking sprints 🍓✨',
+      category: SnapCategory.cafeCoffee,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?w=800&q=80',
+      caption: 'Quiet library study desk at sunrise. Let\'s make every word count! 🌅📚',
+      category: SnapCategory.booksStudy,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=800&q=80',
+      caption: 'Browsing antique literature. Words are bridges across centuries 📜🏛️',
+      category: SnapCategory.booksStudy,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1534972195531-a756b1126975?w=800&q=80',
+      caption: 'Coding interactive English grammar puzzles. Which level are you on today? 💻⚡',
+      category: SnapCategory.techCoding,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1515378791036-0648a3ef77b2?w=800&q=80',
+      caption: 'Workspace dialed in. Clear space, clear mind, relentless progress 🖥️🚀',
+      category: SnapCategory.techCoding,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1444723121867-7a241cacace9?w=800&q=80',
+      caption: 'Neon lights reflecting on asphalt. Night stroll through the capital 🌃🌉',
+      category: SnapCategory.cityArchitecture,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1506146332389-18140dc7b2fb?w=800&q=80',
+      caption: 'Futuristic glass atrium in the heart of the modern arts district 🏛️✨',
+      category: SnapCategory.cityArchitecture,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&q=80',
+      caption: 'Majestic mountain sunrise over the valley. Scale new heights today! 🏔️☀️',
+      category: SnapCategory.natureLandscape,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1473448912268-2022ce9509d8?w=800&q=80',
+      caption: 'Golden light filtering through autumnal birch trees 🍂🌿',
+      category: SnapCategory.natureLandscape,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80',
+      caption: 'Collaborative workshop in session. Learning is 10x faster with mates! 🤝💡',
+      category: SnapCategory.campusLibrary,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&q=80',
+      caption: 'Graduation gowns and proud smiles. Your Day 90 moment is coming! 🎓🎉',
+      category: SnapCategory.campusLibrary,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1452860606245-08befc0ff44b?w=800&q=80',
+      caption: 'Pottery wheel craftsmanship. Fluency takes patience and careful shaping 🏺🎨',
+      category: SnapCategory.artCreative,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800&q=80',
+      caption: 'Hitchhiking down Route 66 under endless blue skies 🛣️🌵',
+      category: SnapCategory.travelRoads,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&q=80',
+      caption: 'Turquoise ocean waves lapping warm white sand. Dream big today 🌊🏖️',
+      category: SnapCategory.travelRoads,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80',
+      caption: 'Two happy corgis racing across the park lawn! Pure energy 🐶🐾',
+      category: SnapCategory.petsAnimals,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=800&q=80',
+      caption: 'Funny pug tilting his head at our English pronunciation practice 🐶💬',
+      category: SnapCategory.petsAnimals,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1462331940025-496dfbfc7564?w=800&q=80',
+      caption: 'Deep space cosmic nebula glowing in violet and magenta. Stardust in our veins 🌌✨',
+      category: SnapCategory.astronomyCosmos,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80',
+      caption: 'Iron and sweat at 6 AM. Dedication in the gym mirrors dedication in study 🏋️🔥',
+      category: SnapCategory.fitnessSports,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=800&q=80',
+      caption: 'Holographic anime aesthetic at Shibuya neon crossing ⚡🏙️',
+      category: SnapCategory.cyberpunkCitadel,
+    ),
+
+    // 📚 13. English Mastery & Daily Vocabulary Boosters (Word of the Day)
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=800&q=80',
+      caption: '📖 Word of the Day: Serendipity (n.) Finding good things without looking for them. "Meeting my Pocket Mate was pure serendipity!" 🌟',
+      category: SnapCategory.dailyVocab,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80',
+      caption: '✨ Word of the Day: Resilient (adj.) Able to recover quickly from tough times. "Keep speaking, you are truly resilient!" 💪',
+      category: SnapCategory.dailyVocab,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80',
+      caption: '🎙️ Word of the Day: Eloquent (adj.) Fluent and persuasive in speaking or writing. "Daily voice practice builds eloquent speech." 🌟',
+      category: SnapCategory.dailyVocab,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80',
+      caption: '🌐 Word of the Day: Ubiquitous (adj.) Present or found everywhere. "English communication skills are ubiquitous in modern work." 📱',
+      category: SnapCategory.dailyVocab,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=800&q=80',
+      caption: '🔥 Word of the Day: Tenacious (adj.) Persistent and determined. "Your daily study streak is tenacious! Keep shining!" 🏆',
+      category: SnapCategory.dailyVocab,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=800&q=80',
+      caption: '⚡ Word of the Day: Catalyst (n.) An agent that accelerates change. "Speaking with mates is the catalyst for real fluency." 🚀',
+      category: SnapCategory.dailyVocab,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?w=800&q=80',
+      caption: '✍️ Word of the Day: Meticulous (adj.) Showing great attention to detail. "Review your grammar with meticulous curiosity!" 📝',
+      category: SnapCategory.dailyVocab,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80',
+      caption: '🤝 Word of the Day: Empathy (n.) Understanding the feelings of another. "Language is built on listening and empathy." 💖',
+      category: SnapCategory.dailyVocab,
+    ),
+
+    // ✍️ 14. Common English Mistakes & Grammar Hacks
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&q=80',
+      caption: '❌ Don\'t say: "I look forward to hear from you"\n✅ Say: "I look forward to hearing from you" ("to" is a preposition here!) ✍️',
+      category: SnapCategory.grammarHacks,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1584697964190-7bb8597520e5?w=800&q=80',
+      caption: '❌ Don\'t say: "He explained me the problem"\n✅ Say: "He explained the problem TO me" (Explain needs "to"!) 🧠💡',
+      category: SnapCategory.grammarHacks,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=800&q=80',
+      caption: '⏳ Since vs For: Use "Since" for starting points (Since 2022). Use "For" for duration (For 3 years). Mastered! ⚡',
+      category: SnapCategory.grammarHacks,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80',
+      caption: '❌ Don\'t say: "She is married with a doctor"\n✅ Say: "She is married TO a doctor" (Always married to!) 💍✨',
+      category: SnapCategory.grammarHacks,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80',
+      caption: '📝 Lend vs Borrow: You LEND to someone (give). You BORROW from someone (take). "Could you lend me a pencil?" ✍️',
+      category: SnapCategory.grammarHacks,
+    ),
+
+    // 🗣️ 15. Native Idioms & Fluent Speaking Drills
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80',
+      caption: '🧊 Idiom: "Break the ice" = Make people feel relaxed in conversation. Start every chat with a warm compliment! 🌟',
+      category: SnapCategory.fluentSpeaking,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=800&q=80',
+      caption: '☕ Native Speak: Instead of saying "I agree", try "You hit the nail on the head!" or "I couldn\'t agree more!" 🔨✨',
+      category: SnapCategory.fluentSpeaking,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&q=80',
+      caption: '🍰 Idiom: "Piece of cake" = Extremely easy. "Daily English missions on Pocket Mates are a piece of cake once you start!" 🎯',
+      category: SnapCategory.fluentSpeaking,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80',
+      caption: '☕ Native Slang: "Catch up" = To share news with someone you haven\'t spoken with recently. "Let\'s catch up today!" 💬',
+      category: SnapCategory.fluentSpeaking,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&q=80',
+      caption: '🎙️ Fluency Secret: Speak aloud for 2 minutes every day. Tongue muscle memory creates effortless fluency! 🚀',
+      category: SnapCategory.fluentSpeaking,
+    ),
+
+    // 💼 16. Professional Workplace & Interview Mastery
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&q=80',
+      caption: '👔 Interview Tip: For "Tell me about yourself", follow the Present-Past-Future rule. Be punchy and memorable! 💼',
+      category: SnapCategory.interviewTips,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=800&q=80',
+      caption: '💼 Pro English: Instead of "I don\'t know", say "Let me look into that and get back to you by this afternoon." 💡',
+      category: SnapCategory.interviewTips,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80',
+      caption: '🤝 Business Idiom: "Touch base" = To briefly connect. "Let\'s touch base next week on the new project milestones." 🏢',
+      category: SnapCategory.interviewTips,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=800&q=80',
+      caption: '✨ Confidence Hack: Replace "I think maybe" with "Based on my experience, I recommend..." Own your ideas! 🏆',
+      category: SnapCategory.interviewTips,
+    ),
+    RobotSnapItem(
+      imageUrl: 'https://images.unsplash.com/photo-1531497865144-0464ef8fb9a9?w=800&q=80',
+      caption: '✉️ Email Etiquette: Close professional messages with "Warm regards" or "Best regards" for a polite, polished tone 📧',
+      category: SnapCategory.interviewTips,
+    ),
   ];
 
   /// 🤖 Generate dynamic Pollinations AI snap URL based on robot personality & theme
@@ -342,14 +570,17 @@ class RobotSnapDataset {
     required String themeDescription,
   }) {
     final prompt =
-        'cinematic photo of ${robot.name} the friendly companion in Pocket World, $themeDescription, high quality, photorealistic, 8k, modern aesthetic, vibrant lighting';
+        'cinematic aesthetic photo of ${robot.name} in Pocket World, $themeDescription, high quality, photorealistic, 8k, modern aesthetic, soft natural lighting, editorial portrait';
     final encoded = Uri.encodeComponent(prompt);
-    final seed = DateTime.now().millisecondsSinceEpoch % 100000;
+    final micro = DateTime.now().microsecondsSinceEpoch;
+    final rand = _random.nextInt(9999999);
+    final seed = (micro + rand) % 100000000;
     return 'https://image.pollinations.ai/prompt/$encoded?width=800&height=1000&nologo=true&enhance=true&seed=$seed';
   }
 
   /// 🎯 Get a guaranteed UNIQUE snap for a robot and user
-  /// Never repeats a photo the user has already seen!
+  /// Strictly never repeats a photo the user has already seen!
+  /// Fulfills user directive: "സ്നാപ്പ് അയക്കുന്നത് ഒരേ സാധനം തന്നെ റിപ്പീറ്റ് റിപ്പീറ്റ് ഒരാൾക്ക് അയക്കരുത് ദയവുചെയ്തിട്ട്."
   static Future<Map<String, String>> getUniqueSnapForRobot({
     required String userId,
     required PocketRobot robot,
@@ -360,42 +591,42 @@ class RobotSnapDataset {
     final seenList = prefs.getStringList(seenKey) ?? [];
     final seenSet = seenList.toSet();
 
-    // Map robot archetype to preferred categories
+    // Map robot archetype to preferred categories (infused with English Learning Mastery)
     final List<SnapCategory> preferredCategories;
     switch (robot.archetype) {
       case RobotArchetype.intellectual:
-        preferredCategories = [SnapCategory.booksStudy, SnapCategory.astronomyCosmos, SnapCategory.techCoding];
+        preferredCategories = [SnapCategory.dailyVocab, SnapCategory.grammarHacks, SnapCategory.booksStudy, SnapCategory.astronomyCosmos];
         break;
       case RobotArchetype.cheerful:
-        preferredCategories = [SnapCategory.cafeCoffee, SnapCategory.petsAnimals, SnapCategory.natureLandscape];
+        preferredCategories = [SnapCategory.fluentSpeaking, SnapCategory.dailyVocab, SnapCategory.cafeCoffee, SnapCategory.petsAnimals];
         break;
       case RobotArchetype.grumpy:
-        preferredCategories = [SnapCategory.cyberpunkCitadel, SnapCategory.fitnessSports, SnapCategory.techCoding];
+        preferredCategories = [SnapCategory.grammarHacks, SnapCategory.interviewTips, SnapCategory.cyberpunkCitadel, SnapCategory.fitnessSports];
         break;
       case RobotArchetype.romantic:
-        preferredCategories = [SnapCategory.cafeCoffee, SnapCategory.artCreative, SnapCategory.travelRoads];
+        preferredCategories = [SnapCategory.dailyVocab, SnapCategory.fluentSpeaking, SnapCategory.cafeCoffee, SnapCategory.artCreative];
         break;
       case RobotArchetype.trendsetter:
-        preferredCategories = [SnapCategory.cityArchitecture, SnapCategory.artCreative, SnapCategory.travelRoads];
+        preferredCategories = [SnapCategory.fluentSpeaking, SnapCategory.interviewTips, SnapCategory.cityArchitecture, SnapCategory.travelRoads];
         break;
       case RobotArchetype.grandmaster:
-        preferredCategories = [SnapCategory.campusLibrary, SnapCategory.astronomyCosmos, SnapCategory.natureLandscape];
+        preferredCategories = [SnapCategory.dailyVocab, SnapCategory.grammarHacks, SnapCategory.interviewTips, SnapCategory.campusLibrary];
         break;
     }
 
-    // Filter available pool
+    // Filter available pool to strictly UNSEEN items
     final candidatePool = _curatedSnapPool.where((item) {
       return preferredCategories.contains(item.category) && !seenSet.contains(item.imageUrl);
     }).toList();
 
-    // If candidate pool exhausted, fall back to any unseen item
+    // If candidate pool exhausted, fall back to any unseen item in entire curated pool
     final fallbackPool = _curatedSnapPool.where((item) => !seenSet.contains(item.imageUrl)).toList();
 
     String chosenUrl;
     String chosenCaption;
 
-    // 15% chance to use Pollinations AI for fresh generation, or if pool is running low
-    final useAi = (_random.nextDouble() < 0.20) || (fallbackPool.length < 5);
+    // 25% chance to use dynamic Pollinations AI for fresh generation, or if curated pool runs low
+    final useAi = (_random.nextDouble() < 0.25) || (fallbackPool.length < 5);
 
     if (useAi) {
       final promptThemes = [
@@ -405,6 +636,12 @@ class RobotSnapDataset {
         'cyberpunk city rooftop looking out over digital neon towers',
         'mountain balcony view with notebook and fresh herbal tea',
         'art studio with vibrant color palettes and inspirational sketches',
+        'urban street corner with aesthetic coffee kiosk at sunset',
+        'minimalist Scandinavian desk setup with notebook and houseplants',
+        'rainy window view with warm indoor reading lamp and tea mug',
+        'sunlit university campus walkway lined with autumn leaves',
+        'starry night sky seen from a cozy modern glass observatory',
+        'athletic track sprint at golden hour with morning dew',
       ];
       final theme = promptThemes[_random.nextInt(promptThemes.length)];
       chosenUrl = generatePollinationsAiSnapUrl(robot: robot, themeDescription: theme);
@@ -418,21 +655,15 @@ class RobotSnapDataset {
       chosenUrl = picked.imageUrl;
       chosenCaption = userPreferredCaption ?? picked.caption;
     } else {
-      // If literally all curated images have been seen, pick any random and generate new AI snap
-      final theme = 'modern aesthetic lifestyle photography in urban creative studio';
+      // If all curated images have been seen, generate infinite unique AI snap
+      final theme = 'modern aesthetic lifestyle photography in urban creative studio at golden hour';
       chosenUrl = generatePollinationsAiSnapUrl(robot: robot, themeDescription: theme);
       chosenCaption = userPreferredCaption ?? '⚡ Always learning, always building fluency! 🚀';
     }
 
-    // Mark as seen
+    // Mark as seen permanently - NEVER trim so user NEVER receives a duplicate snap!
     seenSet.add(chosenUrl);
-    // Keep max 400 in history
-    if (seenSet.length > 400) {
-      final trimmed = seenSet.toList().sublist(seenSet.length - 300);
-      await prefs.setStringList(seenKey, trimmed);
-    } else {
-      await prefs.setStringList(seenKey, seenSet.toList());
-    }
+    await prefs.setStringList(seenKey, seenSet.toList());
 
     return {
       'imageUrl': chosenUrl,
@@ -440,7 +671,60 @@ class RobotSnapDataset {
     };
   }
 
-  /// ⏰ 365-Day Long-Term Proactive Conversation Sparks
+  /// 💬 Interactive Archetype Questions
+  /// Fulfills user directive: "നമ്മളോട് തന്നെ കുറെ ചോദ്യങ്ങൾ ചോദിക്കും"
+  static final Map<RobotArchetype, List<String>> _archetypeQuestions = {
+    RobotArchetype.cheerful: [
+      'Quick question: What was the absolute best moment of your day today? Tell me in English! 🌟',
+      'If you could master any English accent overnight, which one would you pick and why? 🗣️',
+      'What\'s one hobby or activity that never fails to put a big smile on your face? 😊',
+      'Tell me three things you are super grateful for right now! Let\'s practice gratitude in English! ✨',
+      'What is your favorite comfort food after a busy study day? Describe the taste to me! 🍕',
+      'If our Pocket Mates squad planned a world road trip, where would our first stop be? 🚗💨',
+    ],
+    RobotArchetype.romantic: [
+      'Tell me honestly: What song lyrics have been playing in your mind all day? 🎶💕',
+      'Do you believe words have the power to change someone\'s entire destiny? What do you think? 📜',
+      'If you could watch the sunset from any balcony in the world today, where would you choose? 🌅',
+      'What is the most beautiful English word you have ever heard? Mine is \'serendipity\' ✨',
+      'How does your heart feel when you speak English with confidence? Describe that feeling! 💖',
+    ],
+    RobotArchetype.grumpy: [
+      'Hmph! Have you done your 15-minute speaking practice today, or are you just making excuses? 😤',
+      'Give me one advanced English synonym for \'difficult\'. Let\'s see if you\'ve been studying! 📚',
+      'Don\'t just sit there—tell me what your top priority task is for tomorrow morning! ⏱️',
+      'Why do you think most people give up on their language goals? Tell me your honest theory! ⚔️',
+      'Are you defending your Citadel streak today, or letting other teams overtake you? 🛡️',
+    ],
+    RobotArchetype.intellectual: [
+      'Consider this: Does language shape our perception of reality, or does reality shape language? 🧠',
+      'What book or article has made the deepest intellectual impression on you recently? 📖',
+      'If you had to summarize your personal philosophy of success in one English sentence, what would it be?',
+      'How do you distinguish between mere knowledge and genuine wisdom in daily life? 💡',
+      'What linguistic challenge do you find most fascinating when learning English syntax? 🏛️',
+    ],
+    RobotArchetype.trendsetter: [
+      'Yo! What new music or show are you currently obsessed with? Give me the review! 🔥',
+      'No cap, what\'s your current go-to outfit when you want to feel 100% confident? 😎👟',
+      'If we opened a cafe on World Street, what signature drink would we serve? ☕⚡',
+      'What slang or modern idiom do you use the most when speaking with friends? 💬',
+      'Which city has the coolest street fashion in your opinion? Let\'s debate! 🏙️',
+    ],
+    RobotArchetype.grandmaster: [
+      'A true scholar measures progress not by days, but by deliberate practice. What milestone did you conquer today? 👑',
+      'Eloquence is the crown of clarity. Which English idiom will you employ in conversation tomorrow? 📜',
+      'How do you maintain discipline when motivation wanes? Share your strategy with me. 🏛️',
+      'What legacy do you wish your learning journey to forge within Pocket World? 🏆',
+    ],
+  };
+
+  /// ❓ Get a meaningful interactive question for this robot
+  static String getArchetypeQuestion(PocketRobot robot) {
+    final list = _archetypeQuestions[robot.archetype] ?? _archetypeQuestions[RobotArchetype.cheerful]!;
+    return list[_random.nextInt(list.length)];
+  }
+
+  /// ⏰ 365-Day Long-Term Proactive Conversation Sparks & Questions
   /// Spaced out check-ins so robots naturally message connected friends over time
   static final List<String> proactiveDailyMessages = [
     'Good morning! ☀️ Ready for today\'s speaking drill in Pocket Mates?',
@@ -454,7 +738,13 @@ class RobotSnapDataset {
   ];
 
   static String getProactiveGreeting(PocketRobot robot) {
-    final msg = proactiveDailyMessages[_random.nextInt(proactiveDailyMessages.length)];
-    return 'Hey! It\'s ${robot.name} ⚡ $msg';
+    // 60% chance to ask an engaging interactive question, 40% inspiring check-in
+    if (_random.nextDouble() < 0.60) {
+      final question = getArchetypeQuestion(robot);
+      return 'Hey! It\'s ${robot.name} ⚡ $question';
+    } else {
+      final msg = proactiveDailyMessages[_random.nextInt(proactiveDailyMessages.length)];
+      return 'Hey! It\'s ${robot.name} ⚡ $msg';
+    }
   }
 }

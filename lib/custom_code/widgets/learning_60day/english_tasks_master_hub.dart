@@ -18,6 +18,7 @@ import 'pocket_arsenal_store_modal.dart';
 import 'day90_vip_master_card_dialog.dart';
 import 'pocket_daily_mission_page.dart';
 import 'pocket_world_game_rules_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
@@ -239,13 +240,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final score = await PocketFortressDefenseService.getUnifiedScore(uid);
 
     final prefs = await SharedPreferences.getInstance();
-    final lastCompDay = prefs.getInt('learning_last_completed_day') ?? 0;
-    final lastCompDate = prefs.getString('learning_day_${lastCompDay}_completed_date');
+    final lastCompDay = prefs.getInt('learning_last_completed_day_$uid') ?? 0;
+    final lastCompDate = prefs.getString('learning_day_${uid}_${lastCompDay}_completed_date');
 
-    // Collect all actually completed days
+    // Collect all actually completed days for this user
     final Set<int> completed = {};
     for (int d = 1; d <= _totalDays; d++) {
-      if (prefs.getBool('pocket_day_${d}_completed') == true) {
+      if (prefs.getBool('pocket_day_${uid}_${d}_completed') == true) {
         completed.add(d);
       }
     }
@@ -265,15 +266,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         break;
       }
     }
+    // Respect Supabase profile learning_day if it represents legitimate authenticated progress
+    if (progRaw.currentDay > calculatedCurrentDay) {
+      calculatedCurrentDay = progRaw.currentDay;
+      for (int d = 1; d < calculatedCurrentDay; d++) {
+        completed.add(d);
+      }
+    }
     calculatedCurrentDay = calculatedCurrentDay.clamp(1, _totalDays);
 
-    // Prune any stray test flags above calculatedCurrentDay
-    if ((prefs.getInt('pocket_learning_user_stage') ?? 1) > calculatedCurrentDay) {
-      await prefs.setInt('pocket_learning_user_stage', calculatedCurrentDay);
+    // Prune any stray test flags above calculatedCurrentDay for this user
+    if ((prefs.getInt('pocket_learning_user_stage_$uid') ?? 1) > calculatedCurrentDay) {
+      await prefs.setInt('pocket_learning_user_stage_$uid', calculatedCurrentDay);
       await prefs.setInt('learning_day_$uid', calculatedCurrentDay);
       for (int d = calculatedCurrentDay + 1; d <= _totalDays; d++) {
-        await prefs.remove('pocket_day_${d}_unlocked');
-        await prefs.remove('pocket_day_${d}_completed');
+        await prefs.remove('pocket_day_${uid}_${d}_unlocked');
+        await prefs.remove('pocket_day_${uid}_${d}_completed');
       }
     }
 
@@ -287,7 +295,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     } catch (_) {}
 
     final rulesAccepted = (prog.currentDay > 1) ||
-        (prefs.getBool('pocket_world_rules_accepted_v1') ?? false);
+        (prefs.getBool('pocket_world_rules_accepted_${uid}_v1') ??
+         prefs.getBool('pocket_world_rules_accepted_v1') ?? false);
 
     if (mounted) {
       setState(() {
@@ -375,6 +384,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   void _openAvatarCard(int day) {
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) {
+      AuthAlertBox.checkAuthAndShowAlert(context: context);
+      return;
+    }
     final config = _getAvatarForDay(day);
     NftTradingCardDialog.show(
       context,
@@ -387,7 +400,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   Future<void> _completeTodayTasks() async {
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
-    if (uid == null || _progress == null) return;
+    if (uid == null || uid.isEmpty) {
+      AuthAlertBox.checkAuthAndShowAlert(context: context);
+      return;
+    }
+    if (_progress == null) return;
 
     HapticFeedback.heavyImpact();
     for (var task in _progress!.todayTasks) {
@@ -431,6 +448,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   void _navigateToMissionPage(int day) {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) {
+      AuthAlertBox.checkAuthAndShowAlert(context: context);
+      return;
+    }
     HapticFeedback.selectionClick();
     Navigator.push(
       context,
@@ -456,49 +478,23 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: Colors.transparent,
+      backgroundColor: const Color(0xFF0F172A),
       isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
       builder: (ctx) {
-        return Container(
-          margin: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF13172A),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: isCurrent
-                  ? const Color(0xFFFFFC00)
-                  : (isCompleted
-                      ? const Color(0xFF10B981)
-                      : (isUnlocked
-                          ? const Color(0xFF00E5FF)
-                          : Colors.white.withValues(alpha: 0.18))),
-              width: 2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (isCurrent
-                        ? const Color(0xFFFFFC00)
-                        : (isCompleted
-                            ? const Color(0xFF10B981)
-                            : (isUnlocked
-                                ? const Color(0xFF00E5FF)
-                                : Colors.black)))
-                    .withValues(alpha: 0.28),
-                blurRadius: 28,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
+        return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 16, 22, 24),
+            padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Drag handle
+                // Minimal drag handle
                 Center(
                   child: Container(
-                    width: 44,
+                    width: 36,
                     height: 4,
                     decoration: BoxDecoration(
                       color: Colors.white24,
@@ -506,45 +502,49 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                // Top Header Deck with Badge & Stars
+                // Top Header: Level & Tier & Close
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    Text(
+                      'Level $day',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 12, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: stage.gradientColors),
-                        borderRadius: BorderRadius.circular(10),
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        'LEVEL $day • ${stage.fluencyTier.toUpperCase()}',
-                        style: GoogleFonts.outfit(
-                          color: stage.buttonTextColor,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 11,
-                          letterSpacing: 0.8,
+                        stage.fluencyTier.toUpperCase(),
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                    Row(
-                      children: List.generate(3, (i) {
-                        return Icon(
-                          Icons.star_rounded,
-                          size: 22,
-                          color: isCompleted
-                              ? const Color(0xFFFFD700)
-                              : Colors.white24,
-                        );
-                      }),
+                    const Spacer(),
+                    InkWell(
+                      onTap: () => Navigator.pop(ctx),
+                      borderRadius: BorderRadius.circular(16),
+                      child: const Padding(
+                        padding: EdgeInsets.all(4),
+                        child: Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                      ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
 
-                // Lesson Title & Avatar Preview
+                // Lesson Title & Avatar Row
                 Row(
                   children: [
                     GestureDetector(
@@ -553,25 +553,25 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         _openAvatarCard(day);
                       },
                       child: Container(
-                        width: 52,
-                        height: 52,
+                        width: 38,
+                        height: 38,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.7),
-                            width: 2,
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                            width: 1.5,
                           ),
                         ),
                         child: ClipOval(
                           child: VectorAvatarWidget(
                             config: avatarConfig,
-                            size: 48,
+                            size: 36,
                             showAura: false,
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -581,162 +581,128 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
-                              fontSize: 17,
+                              fontSize: 14.5,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                           Text(
                             lesson.focusArea,
                             style: GoogleFonts.inter(
-                              color: const Color(0xFFFFFC00),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11.5,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
 
-                // Mission Tasks Card
+                // Clean Minimal Tasks List
                 Container(
-                  padding: const EdgeInsets.all(14),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1A1F36),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white12),
+                    color: Colors.white.withValues(alpha: 0.04),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     children: [
                       _buildMissionRow(
-                        icon: Icons.record_voice_over_rounded,
+                        icon: Icons.chat_bubble_outline_rounded,
                         color: const Color(0xFF10B981),
-                        title: '4-Mate Peer Voice Chat',
+                        title: 'Peer Chat',
                         subtitle: lesson.peerChatMission,
                         isDone: isCompleted,
                       ),
-                      const Divider(color: Colors.white10, height: 16),
+                      const SizedBox(height: 6),
                       _buildMissionRow(
-                        icon: Icons.mic_rounded,
+                        icon: Icons.mic_none_rounded,
                         color: const Color(0xFF38BDF8),
-                        title: 'Daily Speaking Drill',
+                        title: 'Speaking Drill',
                         subtitle: lesson.speakingDrill,
                         isDone: isCompleted,
                       ),
-                      const Divider(color: Colors.white10, height: 16),
+                      const SizedBox(height: 6),
                       _buildMissionRow(
-                        icon: Icons.psychology_rounded,
+                        icon: Icons.psychology_outlined,
                         color: const Color(0xFFFFD700),
-                        title: 'Grammar & Thought Mechanics',
+                        title: 'Grammar',
                         subtitle: lesson.grammarConcept,
                         isDone: isCompleted,
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
 
-                // Rewards Banner
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                        color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Row(
-                        children: [
-                          const Icon(Icons.flash_on_rounded,
-                              color: Color(0xFFFFFC00), size: 16),
-                          const SizedBox(width: 4),
-                          Text('+${lesson.xpReward} XP',
-                              style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13)),
-                        ],
+                // Minimal Rewards Tag
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      '+${lesson.xpReward} XP',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFFC00),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
-                      Row(
-                        children: [
-                          const Icon(Icons.timer_rounded,
-                              color: Color(0xFF38BDF8), size: 16),
-                          const SizedBox(width: 4),
-                          Text('${lesson.targetMinutes} Mins',
-                              style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13)),
-                        ],
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('•', style: TextStyle(color: Colors.white30, fontSize: 11)),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${lesson.targetMinutes} Mins Practice',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF38BDF8),
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11.5,
                       ),
-                      Row(
-                        children: [
-                          const Icon(Icons.auto_awesome,
-                              color: Color(0xFFFF007A), size: 16),
-                          const SizedBox(width: 4),
-                          Text('Evolved NFT',
-                              style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13)),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 14),
 
                 // Action Buttons
                 if (isCurrent || isUnlocked) ...[
                   Row(
                     children: [
                       Expanded(
-                        child: ElevatedButton.icon(
+                        child: ElevatedButton(
                           onPressed: () {
                             Navigator.pop(ctx);
                             _navigateToMissionPage(day);
                           },
-                          icon: const Icon(Icons.play_arrow_rounded,
-                              color: Colors.black, size: 20),
-                          label: Text(
-                            isCurrent ? 'START MISSION 🎮' : 'ENTER LEVEL $day 🎮',
-                            style: GoogleFonts.outfit(
-                              color: Colors.black,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isCurrent ? const Color(0xFFFFFC00) : const Color(0xFF00E5FF),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
-                            elevation: 4,
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            elevation: 0,
+                          ),
+                          child: Text(
+                            isCurrent ? 'START MISSION' : 'ENTER LEVEL $day',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 13.5,
+                              letterSpacing: 0.5,
+                            ),
                           ),
                         ),
                       ),
                       if (isCurrent) ...[
-                        const SizedBox(width: 10),
-                        ElevatedButton(
+                        const SizedBox(width: 8),
+                        IconButton(
                           onPressed: () {
                             Navigator.pop(ctx);
                             _completeTodayTasks();
                           },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
-                          ),
-                          child: const Icon(Icons.check_rounded,
-                              color: Colors.white, size: 22),
+                          icon: const Icon(Icons.check_circle_outline_rounded, color: Color(0xFF10B981), size: 24),
+                          tooltip: 'Complete tasks',
                         ),
                       ],
                     ],
@@ -744,7 +710,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ] else if (isCompleted) ...[
                   SizedBox(
                     width: double.infinity,
-                    child: OutlinedButton.icon(
+                    child: OutlinedButton(
                       onPressed: () {
                         Navigator.pop(ctx);
                         Navigator.push(
@@ -757,197 +723,70 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           ),
                         );
                       },
-                      icon: const Icon(Icons.replay_rounded,
-                          color: Color(0xFF10B981), size: 18),
-                      label: Text(
-                        'Replay Mission Review (Completed ⭐⭐⭐)',
-                        style: GoogleFonts.outfit(
-                            color: const Color(0xFF10B981),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13.5),
-                      ),
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: Color(0xFF10B981)),
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'REVIEW LEVEL $day (COMPLETED ✓)',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF10B981),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
                       ),
                     ),
                   ),
                 ] else ...[
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (_isDayWaitingForMidnight(day)) ...[
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(14),
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
-                            ),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.6),
-                              width: 1.5,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.2),
-                                blurRadius: 14,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text('⏳', style: TextStyle(fontSize: 18)),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'UNLOCKS AT MIDNIGHT (12:00 AM)',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFFFFD700),
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 13,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'You completed Day $_lastCompletedDay today!\nDay $day will automatically unlock tonight at midnight.',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  color: Colors.white70,
-                                  fontSize: 11.5,
-                                  height: 1.3,
-                                ),
-                              ),
-                              const SizedBox(height: 10),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.4),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
-                                ),
-                                child: Text(
-                                  Learning60DayService.formatRemainingCountdown(_timeUntilMidnight),
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFFFD700),
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 16,
-                                    letterSpacing: 1.0,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-
-                      // 🧪 Interactive Locked Container: Tap directly to test
-                      Material(
-                        color: Colors.transparent,
-                        child: InkWell(
-                          borderRadius: BorderRadius.circular(12),
-                          onTap: () {
-                            Navigator.pop(ctx);
-                            _navigateToMissionPage(day);
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                            alignment: Alignment.center,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF00E5FF).withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(
-                                color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.lock_clock_rounded,
-                                    color: Color(0xFF00E5FF), size: 16),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    _isDayWaitingForMidnight(day)
-                                        ? 'Testing 🧪: Enter Day $day Now'
-                                        : 'Locked • Tap to Test Level $day 🧪',
-                                    style: GoogleFonts.outfit(
-                                        color: const Color(0xFF00E5FF),
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                  if (_isDayWaitingForMidnight(day)) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                       ),
-                      const SizedBox(height: 10),
-
-                      // 🧪 Testing Purpose: Direct Mission Entrance
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.pop(ctx);
-                            _navigateToMissionPage(day);
-                          },
-                          icon: const Icon(Icons.science_rounded,
-                              color: Colors.black, size: 18),
-                          label: Text(
-                            'ENTER DAY $day MISSION (TESTING 🧪)',
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('⏳', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Unlocks at midnight • ${Learning60DayService.formatRemainingCountdown(_timeUntilMidnight)}',
                             style: GoogleFonts.outfit(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                              letterSpacing: 0.5,
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
                             ),
                           ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF00E5FF),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(14)),
-                            elevation: 4,
-                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _navigateToMissionPage(day);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
+                        padding: const EdgeInsets.symmetric(vertical: 11),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: Text(
+                        'Preview Level $day',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.5,
                         ),
                       ),
-                      const SizedBox(height: 6),
-
-                      // 🔓 Fast-Forward / Unlock Day for Testing
-                      TextButton.icon(
-                        onPressed: () async {
-                          Navigator.pop(ctx);
-                          final uid = _supabase.auth.currentUser?.id;
-                          if (uid != null) {
-                            await Learning60DayService().jumpToDay(uid, day);
-                            await _loadData();
-                          }
-                        },
-                        icon: const Icon(Icons.lock_open_rounded,
-                            color: Color(0xFFFFD700), size: 15),
-                        label: Text(
-                          'Fast-Forward / Unlock Day $day for Testing 🔓',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFD700),
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
                 ],
               ],
@@ -966,17 +805,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     required bool isDone,
   }) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(5),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.15),
+            color: color.withValues(alpha: 0.12),
             shape: BoxShape.circle,
           ),
-          child: Icon(icon, color: color, size: 18),
+          child: Icon(icon, color: color, size: 14),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -984,15 +823,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               Text(
                 title,
                 style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13.5),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
               ),
-              const SizedBox(height: 2),
               Text(
                 subtitle,
-                style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
-                maxLines: 2,
+                style: GoogleFonts.inter(color: Colors.white60, fontSize: 10.5),
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ],
@@ -1000,9 +839,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         ),
         if (isDone)
           const Padding(
-            padding: EdgeInsets.only(left: 6, top: 4),
+            padding: EdgeInsets.only(left: 6),
             child: Icon(Icons.check_circle_rounded,
-                color: Color(0xFF10B981), size: 18),
+                color: Color(0xFF10B981), size: 15),
           ),
       ],
     );
@@ -2152,9 +1991,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  /// 🐾 Minimal Flame Animal Card in the Open Space Beside Level Nodes (Audio Requirement!)
-  /// Shows the animal avatar, species title, day, and lock/unlock status.
-  /// Tapping opens the deep, holographic NftTradingCardDialog with all traits & achievements!
+  /// 🐾 Minimal Animal Card in the Open Space Beside Level Nodes (Audio Requirement!)
+  /// Shows the animal avatar, species title, day, and minimal status badge.
   Widget _buildMapMiniAnimalCard(int day, double screenWidth, int currentDay) {
     final nodeX = _getNodeX(day, screenWidth);
     final nodeY = _getNodeY(day);
@@ -2164,10 +2002,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final isCompleted = _isDayCompleted(day);
     final config = _getAvatarForDay(day);
 
-    // Position in wide empty space on opposite side of node
-    final double cardWidth = ((screenWidth / 2) - 34.0).clamp(120.0, 165.0);
-    final double cardLeft = isRightSide ? 14.0 : (screenWidth - cardWidth - 14.0);
-    final double cardTop = nodeY - 26.0;
+    // Responsive compact width that never collides or overflows
+    final double cardWidth = ((screenWidth / 2) - 42.0).clamp(100.0, 140.0);
+    final double cardLeft = isRightSide ? 12.0 : (screenWidth - cardWidth - 12.0);
+    final double cardTop = nodeY - 21.0;
 
     final speciesTitle = config.species
         .replaceAll('_', ' ')
@@ -2200,28 +2038,28 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         },
         child: Container(
           width: cardWidth,
-          height: 52,
-          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFF111726).withValues(alpha: 0.88),
-            borderRadius: BorderRadius.circular(13),
+            color: const Color(0xFF111726).withValues(alpha: 0.90),
+            borderRadius: BorderRadius.circular(11),
             border: Border.all(
               color: isWaitingForMidnight
-                  ? const Color(0xFFFFD700).withValues(alpha: 0.75)
+                  ? const Color(0xFFFFD700).withValues(alpha: 0.65)
                   : (isUnlocked
-                      ? rarityColor.withValues(alpha: 0.75)
-                      : Colors.white.withValues(alpha: 0.12)),
-              width: (isUnlocked || isWaitingForMidnight) ? 1.4 : 0.9,
+                      ? rarityColor.withValues(alpha: 0.65)
+                      : Colors.white.withValues(alpha: 0.10)),
+              width: (isUnlocked || isWaitingForMidnight) ? 1.2 : 0.8,
             ),
             boxShadow: [
               BoxShadow(
                 color: isWaitingForMidnight
-                    ? const Color(0xFFFFD700).withValues(alpha: 0.22)
+                    ? const Color(0xFFFFD700).withValues(alpha: 0.15)
                     : (isUnlocked
-                        ? rarityColor.withValues(alpha: 0.22)
-                        : Colors.black.withValues(alpha: 0.35)),
-                blurRadius: 8,
-                offset: const Offset(0, 3),
+                        ? rarityColor.withValues(alpha: 0.15)
+                        : Colors.black.withValues(alpha: 0.25)),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
             ],
           ),
@@ -2229,24 +2067,26 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             children: [
               // Avatar Thumbnail Frame
               Container(
-                width: 38,
-                height: 38,
+                width: 28,
+                height: 28,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isWaitingForMidnight ? const Color(0xFFFFD700) : (isUnlocked ? rarityColor : Colors.white24),
+                    color: isWaitingForMidnight
+                        ? const Color(0xFFFFD700)
+                        : (isUnlocked ? rarityColor : Colors.white24),
                     width: 1,
                   ),
                 ),
                 child: ClipOval(
                   child: VectorAvatarWidget(
                     config: config,
-                    size: 36,
+                    size: 26,
                     showAura: false,
                   ),
                 ),
               ),
-              const SizedBox(width: 7),
+              const SizedBox(width: 6),
 
               // Title & Day & Rarity
               Expanded(
@@ -2258,14 +2098,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       speciesTitle,
                       style: GoogleFonts.outfit(
                         color: isUnlocked ? Colors.white : Colors.white70,
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w700,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
                           'Day $day',
@@ -2273,26 +2114,32 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             color: isWaitingForMidnight
                                 ? const Color(0xFFFFD700)
                                 : (isUnlocked ? const Color(0xFFFFFC00) : Colors.white38),
-                            fontSize: 9,
+                            fontSize: 8.5,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          isCompleted
-                              ? '• ⭐ Evolved'
-                              : (isUnlocked
-                                  ? '• 🔓 Active'
-                                  : (isWaitingForMidnight
-                                      ? '• ⏳ Tonight'
-                                      : (day == 1 && !_hasAcceptedRules ? '• 🔒 Rules Req.' : '• 🔒 Locked'))),
-                          style: GoogleFonts.inter(
-                            color: isCompleted
-                                ? const Color(0xFF10B981)
+                        const SizedBox(width: 3),
+                        Flexible(
+                          child: Text(
+                            isCompleted
+                                ? '• ✓'
                                 : (isWaitingForMidnight
-                                    ? const Color(0xFFFFD700)
-                                    : (isUnlocked ? const Color(0xFFFFFC00) : Colors.white38)),
-                            fontSize: 8.5,
+                                    ? '• ⏳'
+                                    : (isUnlocked
+                                        ? '• ⚡'
+                                        : '• 🔒')),
+                            style: TextStyle(
+                              color: isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : (isWaitingForMidnight
+                                      ? const Color(0xFFFFD700)
+                                      : (isUnlocked
+                                          ? const Color(0xFFFFFC00)
+                                          : Colors.white38)),
+                              fontSize: 8,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -2304,8 +2151,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 isUnlocked
                     ? Icons.chevron_right_rounded
                     : (isWaitingForMidnight ? Icons.hourglass_top_rounded : Icons.lock_outline_rounded),
-                color: isWaitingForMidnight ? const Color(0xFFFFD700) : (isUnlocked ? rarityColor : Colors.white30),
-                size: 14,
+                color: isWaitingForMidnight ? const Color(0xFFFFD700) : (isUnlocked ? rarityColor : Colors.white24),
+                size: 12,
               ),
             ],
           ),

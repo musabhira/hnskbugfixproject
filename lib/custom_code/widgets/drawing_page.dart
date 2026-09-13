@@ -17,6 +17,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 // import 'package:ed_screen_recorder/ed_screen_recorder.dart';
 import 'drawing_page_models.dart';
 import 'drawing_page_painters.dart';
+import 'drawing_academy_home_page.dart';
 
 class DrawingPage extends StatefulWidget {
   final String? sessionPath;
@@ -813,64 +814,216 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     )
   );
 
-  Widget _buildLeftSidebar(FlutterFlowTheme theme) {
-    return Container(
-      width: 52, padding: const EdgeInsets.symmetric(vertical: 12),
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A2A).withValues(alpha: 0.95), 
-        borderRadius: BorderRadius.circular(20), 
-        border: Border.all(color: Colors.white10), 
-        boxShadow: [BoxShadow(color: Colors.black45, blurRadius: 10)]
-      ),
-      child: Column(mainAxisSize: MainAxisSize.min, children: [
-        _sideBtn(Icons.brush, _activeTool == DrawingTool.brush && !_isEraser, () {
-          if (_activeTool == DrawingTool.brush && !_isEraser) {
-            _showBrushPickerSheet();
-          } else {
-            setState(() { _activeTool = DrawingTool.brush; _isEraser = false; _selectedOverlayId = null; });
-          }
-        }),
-        _sideBtn(Icons.auto_fix_high, _activeTool == DrawingTool.eraser || _isEraser, () => setState(() { _isEraser = true; _activeTool = DrawingTool.eraser; _selectedOverlayId = null; })),
-        _sideBtn(Icons.move_up_rounded, _activeTool == DrawingTool.transform, () => setState(() => _activeTool = DrawingTool.transform)),
-        _sideBtn(Icons.gesture_rounded, _activeTool == DrawingTool.lasso, () => setState(() => _activeTool = DrawingTool.lasso)),
-        _sideBtn(Icons.crop_square, _activeTool == DrawingTool.shape, () {
-          if (_activeTool == DrawingTool.shape) {
-            _showShapePicker();
-          } else {
-            setState(() { _activeTool = DrawingTool.shape; _selectedOverlayId = null; });
-          }
-        }),
-        _sideBtn(Icons.text_fields, false, _addText),
-        const SizedBox(height: 8),
-        GestureDetector(
-          onTap: _showColorPicker, 
-          child: Container(
-            width: 28, height: 28, 
-            decoration: BoxDecoration(
-              color: _selectedColor, 
-              shape: BoxShape.circle, 
-              border: Border.all(color: Colors.white, width: 2.5),
-              boxShadow: [BoxShadow(color: _selectedColor.withValues(alpha: 0.5), blurRadius: 8)]
-            )
-          )
-        ),
-        const SizedBox(height: 12),
-        GestureDetector(
-          onTap: () => setState(() => _showBrushSettings = !_showBrushSettings),
-          child: Container(
-            width: 28, height: 28,
-            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white54, width: 1.5)),
-            child: Center(child: Container(width: 14, height: 14, decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: _strokeOpacity)))),
-          ),
-        ),
-        const SizedBox(height: 8),
-        _sideBtn(Icons.image_outlined, false, _importImage),
-        _sideBtn(Icons.more_horiz, false, _showOptionsSheet),
-      ]),
-    );
+  void _undo() {
+    if (_layers.isEmpty) return;
+    if (_layers[_activeLayerIndex].strokes.isNotEmpty) {
+      HapticFeedback.lightImpact();
+      setState(() {
+        final stroke = _layers[_activeLayerIndex].strokes.removeLast();
+        _layers[_activeLayerIndex].redoStack.add(stroke);
+      });
+      _autoSave();
+    }
   }
 
-  Widget _sideBtn(IconData icon, bool active, VoidCallback onTap) => IconButton(icon: Icon(icon, color: active ? Color(0xFFFFFC00) : Colors.white30, size: 22), onPressed: onTap);
+  void _redo() {
+    if (_layers.isEmpty) return;
+    if (_layers[_activeLayerIndex].redoStack.isNotEmpty) {
+      HapticFeedback.lightImpact();
+      setState(() {
+        final stroke = _layers[_activeLayerIndex].redoStack.removeLast();
+        _layers[_activeLayerIndex].strokes.add(stroke);
+      });
+      _autoSave();
+    }
+  }
+
+  Widget _buildLeftSidebar(FlutterFlowTheme theme) {
+    const accentYellow = Color(0xFFFFFC00);
+    final canUndo = _layers.isNotEmpty && _layers[_activeLayerIndex].strokes.isNotEmpty;
+    final canRedo = _layers.isNotEmpty && _layers[_activeLayerIndex].redoStack.isNotEmpty;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Procreate Signature Dual-Slider Capsule
+        Container(
+          width: 52,
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E).withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: Colors.white12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Top Slider: Brush Size
+              RotatedBox(
+                quarterTurns: 3,
+                child: SizedBox(
+                  width: 100,
+                  height: 38,
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 4,
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                      thumbColor: accentYellow,
+                      activeTrackColor: accentYellow,
+                      inactiveTrackColor: Colors.white24,
+                    ),
+                    child: Slider(
+                      value: _isEraser ? _eraserWidth : _strokeWidth,
+                      min: 0.5,
+                      max: _isEraser ? 150 : 80,
+                      onChanged: (val) {
+                        setState(() {
+                          if (_isEraser) {
+                            _eraserWidth = val;
+                          } else {
+                            _strokeWidth = val;
+                          }
+                        });
+                      },
+                    ),
+                  ),
+                ),
+              ),
+
+              // Size badge
+              Container(
+                margin: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${(_isEraser ? _eraserWidth : _strokeWidth).toInt()}px',
+                  style: const TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.bold),
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              // Quick Eyedropper / Color swatch
+              GestureDetector(
+                onTap: _showColorPicker,
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: _selectedColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _selectedColor.withValues(alpha: 0.5),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 6),
+
+              // Bottom Slider: Opacity
+              RotatedBox(
+                quarterTurns: 3,
+                child: SizedBox(
+                  width: 100,
+                  height: 38,
+                  child: SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 4,
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+                      thumbColor: accentYellow,
+                      activeTrackColor: accentYellow,
+                      inactiveTrackColor: Colors.white24,
+                    ),
+                    child: Slider(
+                      value: _strokeOpacity,
+                      min: 0.05,
+                      max: 1.0,
+                      onChanged: (val) {
+                        setState(() => _strokeOpacity = val);
+                      },
+                    ),
+                  ),
+                ),
+              ),
+
+              // Opacity badge
+              Container(
+                margin: const EdgeInsets.only(top: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.black54,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '${(_strokeOpacity * 100).toInt()}%',
+                  style: const TextStyle(color: Colors.white70, fontSize: 9, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 12),
+
+        // Procreate Undo & Redo Tactile Buttons
+        Container(
+          width: 52,
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E1E1E).withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 12,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.undo_rounded,
+                  color: canUndo ? Colors.white : Colors.white24,
+                  size: 22,
+                ),
+                tooltip: 'Undo',
+                onPressed: canUndo ? _undo : null,
+              ),
+              const Divider(color: Colors.white10, height: 1, indent: 8, endIndent: 8),
+              IconButton(
+                icon: Icon(
+                  Icons.redo_rounded,
+                  color: canRedo ? Colors.white : Colors.white24,
+                  size: 22,
+                ),
+                tooltip: 'Redo',
+                onPressed: canRedo ? _redo : null,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   Future<void> _convertTo1of1Avatar() async {
     try {
@@ -930,18 +1083,148 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     }
   }
 
-  Widget _buildTopBar(FlutterFlowTheme theme) => Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-    _headerBtn(Icons.arrow_back_ios_new_rounded, () => Navigator.pop(context)),
-    Row(children: [
-      _headerBtn(Icons.face_retouching_natural_rounded, _convertTo1of1Avatar),
-      const SizedBox(width: 8),
-      _headerBtn(Icons.save_outlined, _saveImage),
-      const SizedBox(width: 8),
-      _headerBtn(Icons.layers_outlined, () => setState(() => _showLayersPanel = !_showLayersPanel)),
-    ]),
-  ]);
+  Widget _buildTopBar(FlutterFlowTheme theme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E1E1E).withValues(alpha: 0.94),
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: Colors.white12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.5),
+            blurRadius: 18,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Left: Gallery / Back, Actions (Wrench), Magic Adjustments / Shapes
+          Row(
+            children: [
+              _topBarBtn(Icons.arrow_back_ios_new_rounded, 'Gallery', () => Navigator.pop(context)),
+              const SizedBox(width: 4),
+              _topBarBtn(Icons.build_rounded, 'Actions', _showOptionsSheet),
+              const SizedBox(width: 4),
+              _topBarBtn(Icons.crop_square_rounded, 'Shapes', _showShapePicker),
+              const SizedBox(width: 4),
+              _topBarBtn(Icons.text_fields_rounded, 'Text', _addText),
+            ],
+          ),
 
-  Widget _headerBtn(IconData icon, VoidCallback onTap) => GestureDetector(onTap: onTap, child: Container(padding: const EdgeInsets.all(8), decoration: const BoxDecoration(color: Colors.black38, shape: BoxShape.circle), child: Icon(icon, color: Colors.white70, size: 20)));
+          // Right: Brush, Smudge, Eraser, Layers, Active Color Disc
+          Row(
+            children: [
+              // Brush
+              _topBarBtn(
+                Icons.brush_rounded,
+                'Brushes',
+                () {
+                  if (_activeTool == DrawingTool.brush && !_isEraser) {
+                    _showBrushPickerSheet();
+                  } else {
+                    setState(() {
+                      _activeTool = DrawingTool.brush;
+                      _isEraser = false;
+                      _selectedOverlayId = null;
+                    });
+                  }
+                },
+                isActive: _activeTool == DrawingTool.brush && !_isEraser,
+              ),
+              const SizedBox(width: 4),
+
+              // Smudge / Blend
+              _topBarBtn(
+                Icons.water_drop_outlined,
+                'Smudge',
+                () {
+                  setState(() {
+                    _selectedBrushType = BrushType.watercolor;
+                    _activeTool = DrawingTool.brush;
+                    _isEraser = false;
+                  });
+                },
+                isActive: _selectedBrushType == BrushType.watercolor && !_isEraser,
+              ),
+              const SizedBox(width: 4),
+
+              // Eraser
+              _topBarBtn(
+                Icons.cleaning_services_rounded,
+                'Eraser',
+                () {
+                  setState(() {
+                    _isEraser = !_isEraser;
+                    _activeTool = _isEraser ? DrawingTool.eraser : DrawingTool.brush;
+                    _selectedOverlayId = null;
+                  });
+                },
+                isActive: _isEraser,
+              ),
+              const SizedBox(width: 4),
+
+              // Layers
+              _topBarBtn(
+                Icons.layers_rounded,
+                'Layers',
+                () => setState(() => _showLayersPanel = !_showLayersPanel),
+                isActive: _showLayersPanel,
+              ),
+              const SizedBox(width: 8),
+
+              // Procreate Signature Color Disc
+              GestureDetector(
+                onTap: _showColorPicker,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: _selectedColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 2.2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: _selectedColor.withValues(alpha: 0.6),
+                        blurRadius: 8,
+                        spreadRadius: 1,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _topBarBtn(IconData icon, String tooltip, VoidCallback onTap, {bool isActive = false}) {
+    const accentYellow = Color(0xFFFFFC00);
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isActive ? accentYellow.withValues(alpha: 0.18) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: isActive ? Border.all(color: accentYellow.withValues(alpha: 0.5), width: 1) : null,
+        ),
+        child: Icon(
+          icon,
+          color: isActive ? accentYellow : Colors.white70,
+          size: 20,
+        ),
+      ),
+    );
+  }
+
 
   void _deleteLayer(int index) {
     if (_layers.length <= 1) return;
@@ -1143,6 +1426,21 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
     ));
   }
 
+  Widget _headerBtn(IconData icon, VoidCallback onTap, {Color? color}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E1E1E),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white12),
+        ),
+        child: Icon(icon, color: color ?? Colors.white, size: 20),
+      ),
+    );
+  }
+
   void _showBrushPickerSheet() {
     showModalBottomSheet(
       context: context, isScrollControlled: true, backgroundColor: Colors.transparent,
@@ -1286,14 +1584,17 @@ class _DrawingPageState extends State<DrawingPage> with TickerProviderStateMixin
           const SizedBox(height: 20),
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
             _optBtn(Icons.file_upload_outlined, 'Import', () { Navigator.pop(ctx); _importImage(); }),
-
+            _optBtn(Icons.play_circle_outline_rounded, 'Replay', () { Navigator.pop(ctx); _replayDrawing(); }),
             _optBtn(Icons.ios_share_rounded, 'Export', () { Navigator.pop(ctx); _exportImage(); }),
           ]),
           const SizedBox(height: 20),
           Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-            _optBtn(Icons.public, 'Explore', () => Navigator.pop(ctx)),
-            _optBtn(Icons.school_outlined, 'Learn', () => Navigator.pop(ctx)),
-            _optBtn(Icons.settings_outlined, 'App Settings', () { Navigator.pop(ctx); _showSettingsSheet(); }),
+            _optBtn(Icons.stars_rounded, '1-of-1 NFT', () { Navigator.pop(ctx); _convertTo1of1Avatar(); }, highlight: true),
+            _optBtn(Icons.school_outlined, 'Learn', () {
+              Navigator.pop(ctx);
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const DrawingAcademyHomePage()));
+            }),
+            _optBtn(Icons.settings_outlined, 'Settings', () { Navigator.pop(ctx); _showSettingsSheet(); }),
           ]),
         ]),
       ),

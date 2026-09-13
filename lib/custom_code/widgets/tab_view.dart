@@ -134,15 +134,21 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
           .select('category')
           .not('category', 'is', null);
 
-      final uniqueGalleryCategories = <String>{};
+      final Map<String, int> catCounts = {};
       for (var item in galleryCategories) {
-        if (item['category'] != null &&
-            item['category'].toString().isNotEmpty) {
-          uniqueGalleryCategories.add(item['category'].toString());
+        final cat = item['category']?.toString().trim();
+        if (cat != null && cat.isNotEmpty && cat.toLowerCase() != 'all') {
+          catCounts[cat] = (catCounts[cat] ?? 0) + 1;
         }
       }
 
-      _allAvailableCategories = uniqueGalleryCategories.toList()..sort();
+      _allAvailableCategories = catCounts.keys.toList()
+        ..sort((a, b) {
+          final countA = catCounts[a] ?? 0;
+          final countB = catCounts[b] ?? 0;
+          if (countB != countA) return countB.compareTo(countA);
+          return a.toLowerCase().compareTo(b.toLowerCase());
+        });
 
       List<String> orderedCategories = [];
 
@@ -1195,7 +1201,7 @@ class MasonryGalleryItemCard extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Join Pocketmates Community',
+            'Join PoketMates Community',
             style: TextStyle(
               color: Colors.white,
               fontSize: 15,

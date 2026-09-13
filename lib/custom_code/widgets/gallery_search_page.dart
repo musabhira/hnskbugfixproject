@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
 import 'index.dart';
@@ -790,35 +791,6 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     }
   }
 
-  Widget buildAnimatedShareButton(BuildContext context) {
-    return AnimatedButtonWithMenu(
-      mainIcon: Icons.share,
-      mainLabel: 'Share on WhatsApp',
-      mainColor: Colors.green,
-      onMainTap: () => WhatsAppShareHelper.shareToWhatsApp(
-        context: context,
-        item: widget.item,
-      ),
-      menuItems: [
-        MenuFlyoutItem(
-          leading: const Icon(Icons.description, size: 16),
-          text: const Text('Share all details'),
-          onPressed: () => WhatsAppShareHelper.shareToWhatsApp(
-            context: context,
-            item: widget.item,
-          ),
-        ),
-        MenuFlyoutItem(
-          leading: const Icon(Icons.link, size: 16),
-          text: const Text('Share link only'),
-          onPressed: () => WhatsAppShareHelper.shareOnlyLink(
-            context: context,
-            item: widget.item,
-          ),
-        ),
-      ],
-    );
-  }
 
   Widget _buildDetailRow(IconData icon, String label, String value) {
     return Padding(
@@ -859,48 +831,6 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     }
   }
 
-  Widget buildAnimatedDirectMessageButton(BuildContext context) {
-    if (!_canMessage) return const SizedBox.shrink();
-
-    return widget.item['phone_no'] != null &&
-            widget.item['phone_no'].toString().isNotEmpty
-        ? AnimatedButtonWithMenu(
-            mainIcon: Icons.message,
-            mainLabel: 'Message on WhatsApp',
-            mainColor: Colors.green.shade700,
-            onMainTap: () => WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
-              context: context,
-              item: widget.item,
-              phoneNumber: widget.item['phone_no'].toString(),
-              includeFullDetails: false, // Simple message for direct contact
-            ),
-            menuItems: [
-              MenuFlyoutItem(
-                leading: const Icon(Icons.chat_bubble_outline, size: 16),
-                text: const Text('Send simple message'),
-                onPressed: () =>
-                    WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
-                  context: context,
-                  item: widget.item,
-                  phoneNumber: widget.item['phone_no'].toString(),
-                  includeFullDetails: false,
-                ),
-              ),
-              MenuFlyoutItem(
-                leading: const Icon(Icons.info_outline, size: 16),
-                text: const Text('Send with full details'),
-                onPressed: () =>
-                    WhatsAppShareHelper.shareToSpecificWhatsAppNumber(
-                  context: context,
-                  item: widget.item,
-                  phoneNumber: widget.item['phone_no'].toString(),
-                  includeFullDetails: true,
-                ),
-              ),
-            ],
-          )
-        : const SizedBox.shrink();
-  }
 
 
 
@@ -1170,45 +1100,45 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                 margin: const EdgeInsets.symmetric(horizontal: 16),
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.grey[900],
+                  color: const Color(0xFF131622),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey[800]!, width: 1),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.07), width: 1),
                 ),
                 child: Row(
                   children: [
                     CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Color(0xFFFFFC00),
+                      radius: 24,
+                      backgroundColor: const Color(0xFFFFFC00),
                       backgroundImage: item['profile_image_url'] != null
                           ? NetworkImage(item['profile_image_url'])
                           : null,
                       child: item['profile_image_url'] == null
                           ? const Icon(
                               Icons.person,
-                              size: 30,
+                              size: 24,
                               color: Colors.black,
                             )
                           : null,
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 14),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             item['name'] ?? 'Unknown Creator',
-                            style: const TextStyle(
+                            style: GoogleFonts.outfit(
                               color: Colors.white,
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 2),
                           Text(
                             'Creator',
-                            style: TextStyle(
-                              color: Colors.grey[400],
-                              fontSize: 14,
+                            style: GoogleFonts.inter(
+                              color: Colors.white38,
+                              fontSize: 12,
                             ),
                           ),
                         ],
@@ -1219,16 +1149,16 @@ class BuildDetailContentState extends State<BuildDetailContent> {
               ),
             ),
 
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
             // Details Section
             Container(
               margin: const EdgeInsets.symmetric(horizontal: 16),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.grey[900],
+                color: const Color(0xFF131622),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey[800]!, width: 1),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.07), width: 1),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1272,77 +1202,50 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
             const SizedBox(height: 16),
 
-            // General share button
+            // In-app Chat Button (App internal direct chat only)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  (hideData == null || hideData?['is_hidden'] == true || _supabase.auth.currentUser == null)
-                      ? const SizedBox()
-                      : Expanded(child: buildAnimatedShareButton(context)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  (hideData == null || hideData?['is_hidden'] == true || _supabase.auth.currentUser == null)
-                      ? const SizedBox()
-                      : Expanded(
-                          child: buildAnimatedDirectMessageButton(context)),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.only(left: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      onPressed: () async {
-                        final isAuthenticated =
-                            await AuthAlertBox.checkAuthAndShowAlert(
-                          context: context,
-                          customMessage: "Please login to Chat with this user",
-                        );
-                        if (isAuthenticated) {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WhatsAppGroupChat(
-                                groupId: 'p:${item['user_id']}',
-                                groupName: item['name'] ?? 'User',
-                                groupImage: item['profile_image_url'],
-                              ),
-                            ),
-                          );
-                        }
-                      },
-                      icon: const Icon(Icons.chat_bubble_outline,
-                          color: Colors.black),
-                      label: const Text(
-                        'Chat',
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+              child: SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final isAuthenticated =
+                        await AuthAlertBox.checkAuthAndShowAlert(
+                      context: context,
+                      customMessage: "Please login to chat with this creator",
+                    );
+                    if (isAuthenticated) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WhatsAppGroupChat(
+                            groupId: 'p:${item['user_id']}',
+                            groupName: item['name'] ?? 'User',
+                            groupImage: item['profile_image_url'],
+                          ),
                         ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(0xFFFFFC00),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.chat_bubble_outline_rounded,
+                      color: Colors.black, size: 20),
+                  label: Text(
+                    'Chat with Creator',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                ],
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFFC00),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    elevation: 0,
+                  ),
+                ),
               ),
             ),
             Padding(

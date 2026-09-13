@@ -36,6 +36,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -73,9 +75,59 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   bool _isLoading = true;
   TabController? _tabController;
   String _vibesFilter = 'Public'; // Default to Public
+  final Set<String> _seenGroupIds = {};
+
+  Future<void> _loadSeenStatuses() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final seen = prefs.getStringList('seen_story_groups_${widget.currentUserId}') ?? [];
+      if (mounted) {
+        setState(() {
+          _seenGroupIds.clear();
+          _seenGroupIds.addAll(seen);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading seen statuses: $e');
+    }
+  }
+
+  Future<void> _markGroupAsSeen(String groupId) async {
+    if (groupId.isEmpty) return;
+    _seenGroupIds.add(groupId);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('seen_story_groups_${widget.currentUserId}', _seenGroupIds.toList());
+    } catch (_) {}
+    if (mounted) setState(() {});
+  }
+
+  bool _isUuid(String id) {
+    return RegExp(
+            r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
+        .hasMatch(id);
+  }
 
   Future<void> _addFriend(String followedId) async {
     try {
+      if (PocketRobotService.isRobotId(followedId) || !_isUuid(followedId)) {
+        await PocketRobotService.acceptRobotRequest(
+          myId: widget.currentUserId,
+          robotId: followedId,
+        );
+        _loadStatusesOptimized();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✨ Added robot to your Pocket Mates!'),
+              backgroundColor: Color(0xFF10B981),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
       await supabase.from('follows').insert({
         'follower_id': widget.currentUserId,
         'followed_id': followedId,
@@ -104,6 +156,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         setState(() {});
       }
     });
+    _loadSeenStatuses();
     _loadVibesFilter().then((_) {
       _loadCachedStatuses();
       _loadStatusesOptimized();
@@ -229,13 +282,16 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         for (var g in myGroupsRes) g['group_id'].toString(): g['groups']
       };
 
-      // 2. Fetch following list using Auth ID
+      // 2. Fetch following list using Auth ID + local robot mates
       final followingRes = await supabase
           .from('follows')
           .select('followed_id')
           .eq('follower_id', widget.currentUserId);
       final followingIds = List<String>.from(
           followingRes.map((e) => e['followed_id'].toString()));
+      final prefs = await SharedPreferences.getInstance();
+      final robotMates = prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? [];
+      final Set<String> allFollowingIds = {...followingIds, ...robotMates};
 
       // 3. Optimized Single Query with Join - include user_id for follow check
       final response = await supabase
@@ -320,9 +376,50 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         }
       }
 
+      // 4.2 Include Robot Vibes from Autonomous Robot Engine
+      try {
+        final robotVibes = await PocketRobotService.getAllActiveRobotVibes();
+        for (final v in robotVibes) {
+          final rId = v['profile_id']?.toString() ?? '';
+          final rProfile = v['profile'] ?? {
+            'id': rId,
+            'name': 'Pocket Robot',
+            'profile_image_url': v['media_url'],
+          };
+          if (!publicGroups.containsKey(rId)) {
+            publicGroups[rId] = {
+              'profile': rProfile,
+              'statuses': [],
+              'is_own': false,
+              'is_group': false,
+              'is_robot': true,
+            };
+          }
+          (publicGroups[rId]!['statuses'] as List).add(v);
+
+          // If robot is in following/mates, also add to followingGroups
+          if (allFollowingIds.contains(rId)) {
+            if (!followingGroups.containsKey(rId)) {
+              followingGroups[rId] = {
+                'profile': rProfile,
+                'statuses': [],
+                'is_own': false,
+                'is_group': false,
+                'is_robot': true,
+              };
+            }
+            (followingGroups[rId]!['statuses'] as List).add(v);
+          }
+        }
+      } catch (e) {
+        debugPrint('Error loading robot vibes: $e');
+      }
+
       // 4.5 Compute is_fully_watched for each group
       void computeWatched(Map<String, Map<String, dynamic>> groups) {
         for (var group in groups.values) {
+          final profile = group['profile'];
+          final gId = profile != null ? (profile['id']?.toString() ?? '') : (group['id']?.toString() ?? '');
           final statuses = group['statuses'] as List;
           bool fullyWatched = statuses.isNotEmpty;
           for (var s in statuses) {
@@ -331,7 +428,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               break;
             }
           }
-          group['is_fully_watched'] = fullyWatched;
+          group['is_fully_watched'] = fullyWatched || _seenGroupIds.contains(gId);
         }
       }
       
@@ -339,7 +436,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       computeWatched(publicGroups);
       computeWatched(communityVibeBuckets);
 
-      // 5. Combine and Sort
+      // 5. Combine and Sort: Unseen ALWAYS in front, Watched/Seen ALWAYS at the END
       final List<Map<String, dynamic>> followingList = [
         ...followingGroups.values,
         ...communityVibeBuckets.values
@@ -347,23 +444,40 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final List<Map<String, dynamic>> publicList =
           publicGroups.values.toList();
 
+      bool isGroupWatched(Map<String, dynamic> group) {
+        final profile = group['profile'];
+        final gId = profile != null ? (profile['id']?.toString() ?? '') : (group['id']?.toString() ?? '');
+        return group['is_fully_watched'] == true || _seenGroupIds.contains(gId);
+      }
+
       int sortingFunc(Map<String, dynamic> a, Map<String, dynamic> b) {
         if (a['is_own'] == true && b['is_own'] != true) return -1;
         if (a['is_own'] != true && b['is_own'] == true) return 1;
 
-        final bool aWatched = a['is_fully_watched'] ?? false;
-        final bool bWatched = b['is_fully_watched'] ?? false;
+        final bool aWatched = isGroupWatched(a);
+        final bool bWatched = isGroupWatched(b);
+        // Unseen always comes before seen!
         if (!aWatched && bWatched) return -1;
         if (aWatched && !bWatched) return 1;
 
         // Since we fetch ascending: true, statuses.last is the NEWEST
-        final aTime = (a['statuses'] as List).last['created_at'];
-        final bTime = (b['statuses'] as List).last['created_at'];
-        return DateTime.parse(bTime).compareTo(DateTime.parse(aTime));
+        final aStatuses = a['statuses'] as List? ?? [];
+        final bStatuses = b['statuses'] as List? ?? [];
+        if (aStatuses.isEmpty) return 1;
+        if (bStatuses.isEmpty) return -1;
+        final aTime = aStatuses.last['created_at'];
+        final bTime = bStatuses.last['created_at'];
+        final aDt = DateTime.tryParse(aTime.toString()) ?? DateTime.fromMillisecondsSinceEpoch(0);
+        final bDt = DateTime.tryParse(bTime.toString()) ?? DateTime.fromMillisecondsSinceEpoch(0);
+        return bDt.compareTo(aDt);
       }
 
       followingList.sort(sortingFunc);
-      publicList.sort(sortingFunc);
+
+      // For public list: unseen mates are shuffled so fresh mates appear front and center!
+      final unseenPublic = publicList.where((p) => !isGroupWatched(p)).toList()..shuffle();
+      final seenPublic = publicList.where((p) => isGroupWatched(p)).toList()..sort(sortingFunc);
+      final sortedPublicList = [...unseenPublic, ...seenPublic];
 
       // Cache the following list (primary view)
       _saveStatusesToCache(followingList);
@@ -371,8 +485,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       if (mounted) {
         setState(() {
           _followingStatuses = followingList;
-          _publicStatuses = publicList;
-          _statuses = (_vibesFilter == 'Public') ? publicList : followingList;
+          _publicStatuses = sortedPublicList;
+          _statuses = (_vibesFilter == 'Public') ? sortedPublicList : followingList;
           _isLoading = false;
         });
         _precacheAllStatuses();
@@ -394,7 +508,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       for (var i = 0; i < statuses.length && i < 3; i++) {
         final status = statuses[i];
         final url = status['media_url'];
-        if (url != null) {
+        if (url != null &&
+            url is String &&
+            (url.startsWith('http://') || url.startsWith('https://'))) {
           try {
             // Download and cache file specifically
             await DefaultCacheManager().downloadFile(url);
@@ -414,6 +530,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   }
 
   void _openStatusViewer(int initialIndex, List<Map<String, dynamic>> list) {
+    if (initialIndex >= 0 && initialIndex < list.length) {
+      final grp = list[initialIndex];
+      final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
+      _markGroupAsSeen(gId);
+    }
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -422,6 +543,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           initialGroupIndex: initialIndex,
           currentUserId: widget.currentUserId,
           currentProfileId: widget.currentProfileId,
+          onGroupWatched: (groupId) {
+            _markGroupAsSeen(groupId);
+          },
         ),
       ),
     ).then((_) {
@@ -432,6 +556,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   }
 
   void _openStatusUpload() async {
+    if (widget.currentUserId.isEmpty || supabase.auth.currentUser == null) {
+      final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+        context: context,
+        customMessage: "Please login to share your Vibe story",
+      );
+      if (!isAuth) return;
+    }
+
     await PocketSnapService.launchSnapWorkflow(
       context,
       userId: widget.currentUserId,
@@ -464,7 +596,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 102,
+        height: 118,
         alignment: Alignment.center,
         child: _isLoading
             ? _buildShimmerLoading()
@@ -494,24 +626,40 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
 
   List<dynamic> _getCombinedHorizontalStatuses() {
-    final following = _followingStatuses;
-    final publicExcludingFollowing = _publicStatuses.where((p) => 
-      !_followingStatuses.any((f) => f['profile']['id'] == p['profile']['id'])
+    bool isWatched(dynamic item) {
+      if (item is! Map<String, dynamic>) return false;
+      final profile = item['profile'];
+      final gId = profile != null ? (profile['id']?.toString() ?? '') : (item['id']?.toString() ?? '');
+      return item['is_fully_watched'] == true || _seenGroupIds.contains(gId);
+    }
+
+    // Partition Following: My Vibe first -> Unseen Following -> Seen Following at the end
+    final own = _followingStatuses.where((s) => s['is_own'] == true).toList();
+    final unseenFollowing = _followingStatuses.where((s) => s['is_own'] != true && !isWatched(s)).toList();
+    final seenFollowing = _followingStatuses.where((s) => s['is_own'] != true && isWatched(s)).toList();
+    final followingSorted = [...own, ...unseenFollowing, ...seenFollowing];
+
+    // Partition Public (excluding following): Unseen Public first -> Seen Public at the end
+    final publicRemaining = _publicStatuses.where((p) => 
+      !_followingStatuses.any((f) => f['profile']?['id'] == p['profile']?['id'])
     ).toList();
+    final unseenPublic = publicRemaining.where((p) => !isWatched(p)).toList();
+    final seenPublic = publicRemaining.where((p) => isWatched(p)).toList();
+    final publicSorted = [...unseenPublic, ...seenPublic];
 
-    if (following.isEmpty) return publicExcludingFollowing;
-    if (publicExcludingFollowing.isEmpty) return following;
+    if (followingSorted.isEmpty) return publicSorted;
+    if (publicSorted.isEmpty) return followingSorted;
 
-    return [...following, 'DIVIDER', ...publicExcludingFollowing];
+    return [...followingSorted, 'DIVIDER', ...publicSorted];
   }
 
   Widget _buildMiniDivider() {
     return Container(
       width: 1.5,
-      height: 48,
-      margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      height: 56,
+      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(1),
       ),
     );
@@ -622,7 +770,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
       physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics()),
       itemCount: filteredData.length,
@@ -664,7 +812,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
   Widget _buildVerticalSectionHeader(String label) {
     return Padding(
-      padding: const EdgeInsets.only(top: 20, bottom: 12, left: 4),
+      padding: const EdgeInsets.only(top: 20, bottom: 12, left: 16),
       child: Text(
         label,
         style: GoogleFonts.outfit(
@@ -738,11 +886,41 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   ],
                 ),
               )
+            else if (mediaType == 'text')
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF7C3AED), Color(0xFFDB2777)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.auto_awesome,
+                        color: Color(0xFFFFFC00), size: 20),
+                    const SizedBox(height: 6),
+                    Text(
+                      lastStatus['caption'] ?? '',
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              )
             else
               Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                    colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+                    colors: [Color(0xFF7C3AED), Color(0xFFDB2777)],
                   ),
                 ),
                 child: const Icon(Icons.text_format, color: Colors.white70),
@@ -917,13 +1095,13 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       onTap: _openStatusUpload,
       onLongPress: _openStatusUpload,
       child: Container(
-        width: 66,
-        margin: const EdgeInsets.only(right: 10),
+        width: 76,
+        margin: const EdgeInsets.only(right: 12),
         child: Column(
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 64,
+              height: 64,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -937,14 +1115,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 ],
               ),
               child:
-                  const Icon(Icons.add_rounded, size: 24, color: Color(0xFFFFFC00)),
+                  const Icon(Icons.add_rounded, size: 28, color: Color(0xFFFFFC00)),
             ),
             const SizedBox(height: 5),
             Text(
               'Add Vibe',
               style: GoogleFonts.outfit(
                 color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 11,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -960,7 +1138,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     final profile = statusGroup['profile'];
     final isOwn = statusGroup['is_own'] ?? false;
     final isGroup = statusGroup['is_group'] ?? false;
-    final isFullyWatched = statusGroup['is_fully_watched'] ?? false;
+    final groupId = profile != null ? (profile['id']?.toString() ?? '') : (statusGroup['id']?.toString() ?? '');
+    final isFullyWatched = statusGroup['is_fully_watched'] == true || _seenGroupIds.contains(groupId);
     final name = profile != null ? (profile['name'] ?? 'Unknown') : 'Unknown';
     final profileImageUrl = profile != null ? profile['profile_image_url'] : null;
     final statuses = (statusGroup['statuses'] as List?) ?? [];
@@ -985,10 +1164,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     if (!isHorizontal) {
       return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
         decoration: BoxDecoration(
           color: const Color(0xFF131B26).withValues(alpha: 0.7),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: Colors.white.withValues(alpha: 0.06),
             width: 1,
@@ -996,19 +1175,20 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         ),
         child: InkWell(
           onTap: () => _openStatusViewer(index, activeList),
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
               children: [
                 _buildAvatarWithRing(
                   profileImageUrl,
                   name,
-                  46,
+                  52,
                   isGroup: isGroup,
                   isWatched: isFullyWatched,
                   vibePreviewUrl: vibePreviewUrl,
                   avatarConfigMap: avatarConfigMap,
+                  profile: profile,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1017,10 +1197,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     children: [
                       Text(isOwn ? 'My Vibes' : name,
                           style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 13.5,
+                              color: isFullyWatched ? Colors.white70 : Colors.white,
+                              fontSize: 15.5,
                               fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 1),
+                      const SizedBox(height: 2),
                       Text(
                           isGroup
                               ? 'Community Update • $timeString'
@@ -1029,7 +1209,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                                   : timeString),
                           style: GoogleFonts.outfit(
                               color: Colors.white.withValues(alpha: 0.45),
-                              fontSize: 11.5)),
+                              fontSize: 13.0)),
                     ],
                   ),
                 ),
@@ -1058,25 +1238,26 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return GestureDetector(
       onTap: () => _openStatusViewer(index, activeList),
       child: Container(
-        width: 66,
-        margin: const EdgeInsets.only(right: 10),
+        width: 76,
+        margin: const EdgeInsets.only(right: 12),
         child: Column(
           children: [
             _buildAvatarWithRing(
               profileImageUrl,
               name,
-              54,
+              64,
               isGroup: isGroup,
               isWatched: isFullyWatched,
               vibePreviewUrl: vibePreviewUrl,
               avatarConfigMap: avatarConfigMap,
+              profile: profile,
             ),
-            const SizedBox(height: 3),
+            const SizedBox(height: 4),
             Text(isOwn ? 'My Vibes' : name,
                 style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+                  color: isFullyWatched ? Colors.white60 : Colors.white,
+                  fontSize: 12,
+                  fontWeight: isFullyWatched ? FontWeight.w400 : FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,
                 maxLines: 1),
@@ -1094,6 +1275,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     bool isWatched = false,
     String? vibePreviewUrl,
     Map<String, dynamic>? avatarConfigMap,
+    Map<String, dynamic>? profile,
   }) {
     final hasVibePreview = vibePreviewUrl != null && vibePreviewUrl.isNotEmpty;
     final displayUrl = hasVibePreview ? vibePreviewUrl : url;
@@ -1104,15 +1286,22 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         avatarConfig = VectorAvatarConfig.fromMap(avatarConfigMap);
       } catch (_) {}
     } else {
-      final nameHash = name.hashCode.abs();
-      final hairs = VectorAvatarPalette.hairStyles;
-      final hairColors = VectorAvatarPalette.hairColors;
-      final outfits = VectorAvatarPalette.outfitStyles;
-      avatarConfig = VectorAvatarConfig(
-        hairStyle: hairs[nameHash % hairs.length]['id'],
-        hairColor: hairColors[(nameHash ~/ 3) % hairColors.length],
-        outfitStyle: outfits[(nameHash ~/ 5) % outfits.length]['id'],
-      );
+      final profileId = profile != null ? (profile['id']?.toString() ?? '') : '';
+      int stage = 1;
+      if (PocketRobotService.isRobotId(profileId)) {
+        final robot = PocketRobotService.getRobotById(profileId) ?? PocketRobotService.getRobotByLevel(1);
+        stage = PocketRobotService.getDynamicLevel(robot);
+      } else if (profile != null) {
+        final st = profile['learning_day'] ?? profile['learning_stage'] ?? profile['stage'];
+        if (st is num && st > 0) {
+          stage = st.toInt();
+        } else {
+          stage = (name.hashCode.abs() % 90) + 1;
+        }
+      } else {
+        stage = (name.hashCode.abs() % 90) + 1;
+      }
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
     }
 
     return Container(
@@ -1123,7 +1312,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         shape: BoxShape.circle,
         gradient: isWatched
             ? const LinearGradient(
-                colors: [Color(0xFF555555), Color(0xFF555555)],
+                colors: [Color(0xFF475569), Color(0xFF334155)], // Dimmed sleek slate gray for viewed
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               )
             : isGroup
                 ? const LinearGradient(
@@ -1137,8 +1328,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   )
                 : const LinearGradient(
                     colors: [
-                      Color(0xFFFFB703),
-                      Color(0xFFFB8500),
+                      Color(0xFFFFFC00), // Vibrant Yellow
+                      Color(0xFFFF8906), // Vivid Orange
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -1189,6 +1380,7 @@ class StatusViewerWrapper extends StatefulWidget {
   final String currentUserId;
   final String currentProfileId;
   final bool isFromGroup;
+  final ValueChanged<String>? onGroupWatched;
 
   const StatusViewerWrapper({
     super.key,
@@ -1197,6 +1389,7 @@ class StatusViewerWrapper extends StatefulWidget {
     required this.currentUserId,
     required this.currentProfileId,
     this.isFromGroup = false,
+    this.onGroupWatched,
   });
 
   @override
@@ -1213,6 +1406,11 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
   void initState() {
     super.initState();
     _currentGroupIndex = widget.initialGroupIndex;
+    if (_currentGroupIndex >= 0 && _currentGroupIndex < widget.allStatusGroups.length) {
+      final grp = widget.allStatusGroups[_currentGroupIndex];
+      final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
+      widget.onGroupWatched?.call(gId);
+    }
     _checkVipStatus();
     _preloadAdjacentGroups();
   }
@@ -1272,6 +1470,9 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
         _showingAd = false;
         _currentGroupIndex++;
       });
+      final grp = widget.allStatusGroups[_currentGroupIndex];
+      final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
+      widget.onGroupWatched?.call(gId);
       _preloadAdjacentGroups();
     } else {
       Navigator.pop(context);
@@ -1440,7 +1641,30 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     super.dispose();
   }
 
+  bool _isUuid(String id) {
+    return RegExp(
+            r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$')
+        .hasMatch(id);
+  }
+
   Future<void> _loadLikeStatus(String statusId) async {
+    if (!_isUuid(statusId)) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final liked = prefs.getBool('vibe_local_liked_${statusId}_${widget.currentUserId}') ?? false;
+        final count = prefs.getInt('vibe_local_likes_$statusId') ?? 14;
+        if (mounted) {
+          setState(() {
+            _isLiked = liked;
+            _likeCount = count;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error loading local like status: $e');
+      }
+      return;
+    }
+
     try {
       final response = await supabase
           .from('status_likes')
@@ -1455,16 +1679,37 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           .eq('status_id', statusId)
           .count(CountOption.exact);
 
-      setState(() {
-        _isLiked = response != null;
-        _likeCount = likesCount.count;
-      });
+      if (mounted) {
+        setState(() {
+          _isLiked = response != null;
+          _likeCount = likesCount.count;
+        });
+      }
     } catch (e) {
       debugPrint('Error loading like status: $e');
     }
   }
 
   Future<void> _toggleLike(String statusId) async {
+    if (!_isUuid(statusId)) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final newLiked = !_isLiked;
+        final newCount = (_likeCount + (newLiked ? 1 : -1)).clamp(0, 999999);
+        await prefs.setBool('vibe_local_liked_${statusId}_${widget.currentUserId}', newLiked);
+        await prefs.setInt('vibe_local_likes_$statusId', newCount);
+        if (mounted) {
+          setState(() {
+            _isLiked = newLiked;
+            _likeCount = newCount;
+          });
+        }
+      } catch (e) {
+        debugPrint('Error toggling local like: $e');
+      }
+      return;
+    }
+
     try {
       if (_isLiked) {
         await supabase
@@ -1480,10 +1725,12 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         });
       }
 
-      setState(() {
-        _isLiked = !_isLiked;
-        _likeCount += _isLiked ? 1 : -1;
-      });
+      if (mounted) {
+        setState(() {
+          _isLiked = !_isLiked;
+          _likeCount += _isLiked ? 1 : -1;
+        });
+      }
     } catch (e) {
       debugPrint('Error toggling like: $e');
     }
@@ -3061,28 +3308,74 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         ),
       );
     } else if (status['media_type'] == 'text') {
+      final metadata = status['metadata'] is Map ? status['metadata'] as Map : {};
+      final category = metadata['tag'] ?? metadata['category'] ?? (status['is_robot'] == true ? '🤖 Robot English Vibe' : '✨ Pocket Vibe');
+      final List<dynamic>? gradientList = metadata['gradient_colors'];
+      final List<Color> bgColors = (gradientList != null && gradientList.length >= 2)
+          ? gradientList.map((c) => Color(int.tryParse(c.toString()) ?? 0xFF7C3AED)).toList()
+          : const [Color(0xFF7C3AED), Color(0xFFDB2777)];
+
       content = Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+            colors: bgColors,
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
         ),
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 48),
         alignment: Alignment.center,
-        child: SingleChildScrollView(
-          child: Text(
-            status['caption'] ?? '',
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              height: 1.4,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: Colors.white24, width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 14),
+                      const SizedBox(width: 6),
+                      Text(
+                        category.toString(),
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+                Text(
+                  status['caption'] ?? '',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 23,
+                    fontWeight: FontWeight.w700,
+                    height: 1.45,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        blurRadius: 16,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
             ),
-            textAlign: TextAlign.center,
           ),
         ),
       );

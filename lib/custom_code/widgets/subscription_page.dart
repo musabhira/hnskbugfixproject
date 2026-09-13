@@ -451,7 +451,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
 
     // Standard NPCI UPI URI Scheme
     final upiUri = Uri.parse(
-      'upi://pay?pa=handskill@okaxis&pn=PocketMates&am=$price&cu=INR&tn=VIP_Plan_${plan['id']}',
+      'upi://pay?pa=handskill@okaxis&pn=PoketMates&am=$price&cu=INR&tn=VIP_Plan_${plan['id']}',
     );
 
     try {

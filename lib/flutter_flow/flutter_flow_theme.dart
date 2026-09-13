@@ -13,6 +13,11 @@ abstract class FlutterFlowTheme {
   static Future initialize() async =>
       _prefs = await SharedPreferences.getInstance();
 
+  // Always enforce Dark Mode by default across all platforms and devices
+  static ThemeMode get themeMode => ThemeMode.dark;
+
+  /*
+  // Preserved for future reference:
   static ThemeMode get themeMode {
     final darkMode = _prefs?.getBool(kThemeModeKey);
     return darkMode == null
@@ -21,15 +26,19 @@ abstract class FlutterFlowTheme {
             ? ThemeMode.dark
             : ThemeMode.light;
   }
+  */
 
-  static void saveThemeMode(ThemeMode mode) => mode == ThemeMode.system
-      ? _prefs?.remove(kThemeModeKey)
-      : _prefs?.setBool(kThemeModeKey, mode == ThemeMode.dark);
+  static void saveThemeMode(ThemeMode mode) =>
+      _prefs?.setBool(kThemeModeKey, true);
 
   static FlutterFlowTheme of(BuildContext context) {
+    // Return DarkModeTheme() for consistent dark styling across all screens
+    return DarkModeTheme();
+    /*
     return Theme.of(context).brightness == Brightness.dark
         ? DarkModeTheme()
         : LightModeTheme();
+    */
   }
 
   @Deprecated('Use primary instead')

@@ -509,7 +509,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                       ),
                     ),
                     child: CircleAvatar(
-                      radius: 16,
+                      radius: 18,
                       backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
                       backgroundImage: avatar != null
                           ? CachedNetworkImageProvider(avatar)
@@ -518,7 +518,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                           ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
                               style: const TextStyle(
                                 color: Color(0xFFFFFC00),
-                                fontSize: 12,
+                                fontSize: 13,
                                 fontWeight: FontWeight.bold,
                               ))
                           : null,
@@ -535,7 +535,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                         name,
                         style: GoogleFonts.outfit(
                           fontWeight: FontWeight.w700,
-                          fontSize: 13.5,
+                          fontSize: 14.5,
                           color: FlutterFlowTheme.of(context).primaryText,
                         ),
                       ),
@@ -543,7 +543,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                         timeago.format(createdAt, locale: 'en_short'),
                         style: GoogleFonts.inter(
                           color: FlutterFlowTheme.of(context).secondaryText,
-                          fontSize: 11,
+                          fontSize: 11.5,
                         ),
                       ),
                     ],
@@ -572,8 +572,8 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                     displayedContent,
                     style: GoogleFonts.inter(
                       color: FlutterFlowTheme.of(context).primaryText,
-                      fontSize: 13,
-                      height: 1.4,
+                      fontSize: 14.0,
+                      height: 1.45,
                     ),
                   ),
                   if (isLongContent)
@@ -584,7 +584,7 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFFC00),
                           fontWeight: FontWeight.bold,
-                          fontSize: 12,
+                          fontSize: 12.5,
                         ),
                       ),
                     ),
@@ -809,17 +809,17 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: color),
+            Icon(icon, size: 17.5, color: color),
             if (label.isNotEmpty) ...[
-              const SizedBox(width: 4),
+              const SizedBox(width: 4.5),
               Text(
                 label,
                 style: GoogleFonts.inter(
-                  fontSize: 11.5,
+                  fontSize: 12.5,
                   color: color,
                   fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
                 ),

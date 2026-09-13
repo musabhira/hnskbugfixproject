@@ -58,12 +58,14 @@ class _EulaComplianceDialogState extends State<EulaComplianceDialog> {
               children: [
                 const Icon(Icons.security_rounded, color: Color(0xFFFFFC00), size: 28),
                 const SizedBox(width: 12),
-                Text(
-                  'Community Safety (EULA)',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Text(
+                    'Community Safety (EULA)',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ],

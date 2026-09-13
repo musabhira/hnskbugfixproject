@@ -74,16 +74,25 @@ class MarketNotifier extends Notifier<MarketState> {
           .not('category', 'is', null);
       final List<dynamic> data = response as List<dynamic>;
 
-      final uniqueCategories = <String>{};
+      final Map<String, int> categoryCounts = {};
       for (var item in data) {
-        if (item['category'] != null &&
-            item['category'].toString().trim().isNotEmpty &&
-            item['category'].toString().toLowerCase() != 'all') {
-          uniqueCategories.add(item['category'].toString().trim());
+        final cat = item['category']?.toString().trim();
+        if (cat != null && cat.isNotEmpty && cat.toLowerCase() != 'all') {
+          categoryCounts[cat] = (categoryCounts[cat] ?? 0) + 1;
         }
       }
 
-      List<String> orderedCategories = ['All', ...uniqueCategories.toList()..sort()];
+      final sortedCategories = categoryCounts.keys.toList()
+        ..sort((a, b) {
+          final countA = categoryCounts[a] ?? 0;
+          final countB = categoryCounts[b] ?? 0;
+          if (countB != countA) {
+            return countB.compareTo(countA); // Most items first!
+          }
+          return a.toLowerCase().compareTo(b.toLowerCase());
+        });
+
+      List<String> orderedCategories = ['All', ...sortedCategories];
 
       if (user != null) {
         try {

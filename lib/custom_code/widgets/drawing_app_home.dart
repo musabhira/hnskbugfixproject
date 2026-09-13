@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'drawing_page.dart';
+import 'drawing_academy_home_page.dart';
 
 class DrawingAppHome extends StatefulWidget {
   const DrawingAppHome({super.key, this.width, this.height});
@@ -67,7 +68,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCanvasSelectionDialog(context),
-        backgroundColor: Color(0xFFFFFC00),
+        backgroundColor: const Color(0xFFFFFC00),
         icon: const Icon(Icons.add, color: Colors.black),
         label: Text('New Masterpiece', style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold)),
       ).animate().scale(delay: 400.ms),
@@ -94,7 +95,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0xFFFFFC00).withValues(alpha: 0.2), Colors.black],
+              colors: [const Color(0xFFFFFC00).withValues(alpha: 0.2), Colors.black],
             ),
           ),
         ),
@@ -112,7 +113,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
               child: _actionCard(
                 'New Canvas', 
                 Icons.add_photo_alternate_rounded, 
-                Color(0xFFFFFC00), 
+                const Color(0xFFFFFC00), 
                 () => _showCanvasSelectionDialog(context)
               ),
             ),
@@ -122,7 +123,14 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
                 'Tutorials', 
                 Icons.school_rounded, 
                 Colors.blueAccent, 
-                () => {} // Navigate to Academy
+                () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DrawingAcademyHomePage(),
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -130,6 +138,7 @@ class _DrawingAppHomeState extends State<DrawingAppHome> {
       ),
     );
   }
+
 
   Widget _actionCard(String title, IconData icon, Color color, VoidCallback onTap) {
     return GestureDetector(

@@ -535,6 +535,9 @@ class Conversations extends _$Conversations {
                 ? DateTime.tryParse(lastMsgObj['created_at'].toString()) ?? DateTime.now()
                 : DateTime.now();
 
+            final robotVibes = await PocketRobotService.getActiveRobotVibes(robot.id);
+            final hasStatus = robotVibes.isNotEmpty;
+
             updatedPersonal.add(ChatConversation(
               id: robot.id,
               name: robot.name,
@@ -548,6 +551,8 @@ class Conversations extends _$Conversations {
               isGroup: false,
               isOnline: true,
               isPinned: pinnedIds.contains(robot.id),
+              hasStatus: hasStatus,
+              statusData: hasStatus ? robotVibes : null,
             ));
           }
         }

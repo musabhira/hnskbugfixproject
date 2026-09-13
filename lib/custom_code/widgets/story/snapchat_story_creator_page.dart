@@ -625,12 +625,16 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
             .toList(),
       };
 
+      final String? finalCaption = _captionController.text.trim().isNotEmpty
+          ? _captionController.text.trim()
+          : (_overlayText.isNotEmpty ? _overlayText : null);
+
       final statusData = {
         'user_id': widget.userId,
         'profile_id': widget.profileId,
-        'media_type': _selectedFile != null ? _mediaType : 'thought',
+        'media_type': _selectedFile != null ? _mediaType : 'text',
         'media_url': mediaUrl.isNotEmpty ? mediaUrl : (widget.sharedContent ?? ''),
-        'caption': _captionController.text.trim().isEmpty ? null : _captionController.text.trim(),
+        'caption': finalCaption,
         'metadata': metadata,
         'duration': _storyDuration,
         'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
@@ -1010,7 +1014,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                 : Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [Color(0xFF1B182B), Color(0xFF090A10)],
+                        colors: [Color(0xFF13151D), Color(0xFF090A0E)],
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
                       ),
@@ -1019,18 +1023,57 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          VectorAvatarWidget(config: _myAvatarConfig, size: 90, showAura: true),
-                          const SizedBox(height: 16),
+                          VectorAvatarWidget(config: _myAvatarConfig, size: 68, showAura: false),
+                          const SizedBox(height: 12),
                           Text(
-                            'Pocket Mates Story Canvas',
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                            'Story Canvas',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.2,
+                            ),
                           ),
-                          const SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            onPressed: () => _pickMedia(ImageSource.gallery),
-                            icon: const Icon(Icons.photo_library, color: Colors.black),
-                            label: const Text('Pick from Gallery', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFFC00)),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Add text, stickers, or choose photo',
+                            style: GoogleFonts.inter(
+                              color: Colors.white38,
+                              fontSize: 12,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Wrap(
+                            spacing: 10,
+                            children: [
+                              OutlinedButton.icon(
+                                onPressed: () => _pickMedia(ImageSource.gallery),
+                                icon: const Icon(Icons.photo_library_outlined, size: 16, color: Colors.white),
+                                label: Text(
+                                  'Choose Photo',
+                                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                ),
+                              ),
+                              ElevatedButton.icon(
+                                onPressed: () => setState(() => _isAddingText = true),
+                                icon: const Icon(Icons.title_rounded, size: 16, color: Colors.black),
+                                label: Text(
+                                  'Add Text',
+                                  style: GoogleFonts.outfit(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFFC00),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  elevation: 0,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -1184,11 +1227,20 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   // Close Button
-                  CircleAvatar(
-                    backgroundColor: Colors.black45,
-                    child: IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () => Navigator.pop(context),
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Icon(Icons.close_rounded, color: Colors.white, size: 18),
                     ),
                   ),
 
@@ -1201,30 +1253,31 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                       HapticFeedback.lightImpact();
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                       decoration: BoxDecoration(
-                        color: _isPrivateStory
-                            ? const Color(0xFF00E5FF).withValues(alpha: 0.3)
-                            : const Color(0xFFFFFC00).withValues(alpha: 0.3),
-                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.black.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(18),
                         border: Border.all(
-                          color: _isPrivateStory ? const Color(0xFF00E5FF) : const Color(0xFFFFFC00),
+                          color: _isPrivateStory
+                              ? const Color(0xFF38BDF8)
+                              : const Color(0xFFFFFC00),
+                          width: 1,
                         ),
                       ),
                       child: Row(
                         children: [
                           Icon(
-                            _isPrivateStory ? Icons.lock_person : Icons.public,
-                            color: _isPrivateStory ? const Color(0xFF00E5FF) : const Color(0xFFFFFC00),
-                            size: 16,
+                            _isPrivateStory ? Icons.lock_outline_rounded : Icons.public_rounded,
+                            color: _isPrivateStory ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00),
+                            size: 14,
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 5),
                           Text(
-                            _isPrivateStory ? 'Pocket Mates Only 🔒' : 'Public Vibe 🌟',
+                            _isPrivateStory ? 'Pocket Mates' : 'Public Vibe',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],
@@ -1375,20 +1428,23 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(24),
+                      color: const Color(0xFF161922),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.08),
+                      ),
                     ),
                     child: TextField(
                       controller: _captionController,
                       style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
                       decoration: const InputDecoration(
-                        hintText: 'Add a vibe story caption...',
+                        hintText: 'Add a vibe caption...',
                         hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
                         border: InputBorder.none,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 10),
 
                   // Action Buttons (Post Story)
                   Row(
@@ -1399,40 +1455,40 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                           shape: BoxShape.circle,
                           border: Border.all(color: const Color(0xFFFFFC00), width: 1.5),
                         ),
-                        child: VectorAvatarWidget(config: _myAvatarConfig, size: 42, showAura: true),
+                        child: VectorAvatarWidget(config: _myAvatarConfig, size: 38, showAura: false),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
 
                       // Send to Story Button
                       Expanded(
                         child: SizedBox(
-                          height: 46,
+                          height: 44,
                           child: ElevatedButton(
                             onPressed: _isUploading ? null : _uploadStory,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFFFFFC00),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(18),
                               ),
-                              elevation: 4,
+                              elevation: 0,
                             ),
                             child: _isUploading
                                 ? Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       SizedBox(
-                                        width: 18,
-                                        height: 18,
+                                        width: 16,
+                                        height: 16,
                                         child: CircularProgressIndicator(
                                           value: _uploadProgress,
                                           strokeWidth: 2,
                                           color: Colors.black,
                                         ),
                                       ),
-                                      const SizedBox(width: 10),
+                                      const SizedBox(width: 8),
                                       Text(
-                                        'Posting Vibe...',
-                                        style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                                        'Posting...',
+                                        style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
                                       ),
                                     ],
                                   )
@@ -1440,15 +1496,15 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        _isPrivateStory ? 'Post to Mates 🔒' : 'Post to Story 🌟',
+                                        _isPrivateStory ? 'Send to Mates' : 'Post to Vibe',
                                         style: GoogleFonts.outfit(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 13,
+                                          fontSize: 14,
                                         ),
                                       ),
                                       const SizedBox(width: 6),
-                                      const Icon(Icons.send_rounded, color: Colors.black, size: 18),
+                                      const Icon(Icons.send_rounded, size: 16, color: Colors.black),
                                     ],
                                   ),
                           ),
@@ -1594,17 +1650,20 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
       child: Column(
         children: [
           Container(
-            width: 44,
-            height: 44,
+            width: 40,
+            height: 40,
             decoration: BoxDecoration(
-              color: isActive ? const Color(0xFFFFFC00) : Colors.black45,
+              color: isActive ? const Color(0xFFFFFC00) : Colors.black.withValues(alpha: 0.45),
               shape: BoxShape.circle,
-              border: Border.all(color: isActive ? const Color(0xFFFFFC00) : Colors.white38),
+              border: Border.all(
+                color: isActive ? const Color(0xFFFFFC00) : Colors.white.withValues(alpha: 0.15),
+                width: 1,
+              ),
             ),
             child: Icon(
               icon,
               color: isActive ? Colors.black : Colors.white,
-              size: 20,
+              size: 19,
             ),
           ),
           const SizedBox(height: 3),

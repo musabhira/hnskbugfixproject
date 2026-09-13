@@ -535,19 +535,21 @@ class ChatMessages extends _$ChatMessages {
         PocketRobotService.transcribeAudio(audioUrl: fileUrl).then((transcript) {
           final effectiveText = (transcript != null && transcript.trim().isNotEmpty)
               ? transcript.trim()
-              : (text.isNotEmpty ? text : 'I sent a voice note to you!');
+              : (text.isNotEmpty && text != 'Voice Message 🎤' ? text : 'I sent a voice note to you!');
           _triggerRobotAiReply(
             robot: robot,
             userText: effectiveText,
             uid: uid,
             robotId: actualId,
+            replyAsVoice: true,
           );
         }).catchError((_) {
           _triggerRobotAiReply(
             robot: robot,
-            userText: text.isNotEmpty ? text : 'I sent a voice note to you!',
+            userText: (text.isNotEmpty && text != 'Voice Message 🎤') ? text : 'I sent a voice note to you!',
             uid: uid,
             robotId: actualId,
+            replyAsVoice: true,
           );
         });
       } else {
@@ -556,6 +558,7 @@ class ChatMessages extends _$ChatMessages {
           userText: text,
           uid: uid,
           robotId: actualId,
+          replyAsVoice: false,
         );
       }
 
@@ -744,6 +747,7 @@ class ChatMessages extends _$ChatMessages {
     required String userText,
     required String uid,
     required String robotId,
+    bool replyAsVoice = false,
   }) async {
     try {
       final history = await PocketRobotService.getRobotChatHistory(uid, robotId);
@@ -753,14 +757,22 @@ class ChatMessages extends _$ChatMessages {
         history: history,
       );
 
+      final wordCount = aiReply.split(RegExp(r'\s+')).length;
+      final estimatedVoiceDuration = (wordCount / 2.5).round().clamp(3, 45);
+
       final robotMessage = ChatMessage(
         id: 'robot_msg_${DateTime.now().millisecondsSinceEpoch}',
         receiverId: uid,
         senderId: robotId,
         messageText: aiReply,
-        messageType: 'text',
+        messageType: replyAsVoice ? 'robot_voice' : 'text',
+        voiceDuration: replyAsVoice ? estimatedVoiceDuration : null,
         createdAt: DateTime.now(),
         isRead: false,
+        metadata: {
+          'is_robot_voice': replyAsVoice,
+          'transcript': aiReply,
+        },
         senderProfile: {
           'name': robot.name,
           'profile_image_url': robot.avatarUrl,

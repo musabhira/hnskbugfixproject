@@ -12,6 +12,7 @@ import 'package:flutter/material.dart';
 
 import 'package:timeago/timeago.dart' as timeago;
 import 'ai_prompt_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 class ThreadFeedPage extends StatefulWidget {
   final double? width;
@@ -458,8 +459,18 @@ class _ThreadFeedPageState extends State<ThreadFeedPage> {
           .range(_currentPage * _pageSize, (_currentPage + 1) * _pageSize - 1);
 
       if (mounted) {
+        final List<Map<String, dynamic>> combined = List<Map<String, dynamic>>.from(response);
+        // Interleave educational thoughts from active Pocket Robots
+        final roboThoughts = PocketRobotService.getRobotThreads('robot_citadel_1_0');
+        if (roboThoughts.isNotEmpty) {
+          combined.insert(0, roboThoughts.first);
+          if (roboThoughts.length > 1 && combined.length > 3) {
+            combined.insert(3, roboThoughts[1]);
+          }
+        }
+
         safeSetState(() {
-          threads = List<Map<String, dynamic>>.from(response);
+          threads = combined;
           isLoading = false;
           _hasMoreData = response.length == _pageSize;
           _currentPage = 1;

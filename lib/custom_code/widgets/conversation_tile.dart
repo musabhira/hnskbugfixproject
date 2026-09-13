@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -40,27 +41,60 @@ class _ConversationTileState extends State<ConversationTile> {
   String _elapsedString = '';
   bool _showRealPhoto = false;
 
+  String? _getStoryThumbnailUrl() {
+    if (!widget.conversation.hasStatus) return null;
+    if (widget.conversation.statusData != null &&
+        widget.conversation.statusData!.isNotEmpty) {
+      final first = widget.conversation.statusData!.first;
+      final url = (first['media_url'] ??
+              first['content'] ??
+              first['file_url'] ??
+              first['imageUrl'] ??
+              first['url'])
+          ?.toString();
+      if (url != null && url.isNotEmpty) return url;
+    }
+    if (widget.conversation.snapMediaUrl != null &&
+        widget.conversation.snapMediaUrl!.isNotEmpty) {
+      return widget.conversation.snapMediaUrl;
+    }
+    return null;
+  }
+
   VectorAvatarConfig _getAvatarConfig() {
+    // 1. If it's a Pocket Robot, always use their exact dynamic looped level evolution avatar
+    if (PocketRobotService.isRobotId(widget.conversation.id)) {
+      final robot = PocketRobotService.getRobotById(widget.conversation.id) ??
+          PocketRobotService.getRobotByLevel(1);
+      final dynLvl = PocketRobotService.getDynamicLevel(robot);
+      return VectorAvatarConfig.getEvolutionAvatarForStage(dynLvl);
+    }
+
+    // 2. Check if avatarConfig map contains an explicit stage or evolution avatar
     if (widget.conversation.avatarConfig != null) {
+      final cfg = widget.conversation.avatarConfig!;
+      final stage = cfg['stage'] ?? cfg['learning_day'] ?? cfg['day'] ?? cfg['level'];
+      if (stage != null && stage is num && stage > 0) {
+        return VectorAvatarConfig.getEvolutionAvatarForStage(stage.toInt());
+      }
       try {
-        return VectorAvatarConfig.fromMap(widget.conversation.avatarConfig!);
+        return VectorAvatarConfig.fromMap(cfg);
       } catch (_) {}
     }
-    final nameHash = widget.conversation.name.hashCode.abs();
-    final idHash = widget.conversation.id.hashCode.abs();
-    final hairs = VectorAvatarPalette.hairStyles;
-    final hairColors = VectorAvatarPalette.hairColors;
-    final outfits = VectorAvatarPalette.outfitStyles;
-    final auras = VectorAvatarPalette.auraStyles;
-    final faces = ['oval', 'round', 'sharp', 'square'];
 
-    return VectorAvatarConfig(
-      faceShape: faces[(nameHash ~/ 2) % faces.length],
-      hairStyle: hairs[nameHash % hairs.length]['id'],
-      hairColor: hairColors[(idHash ~/ 3) % hairColors.length],
-      outfitStyle: outfits[(nameHash ~/ 5) % outfits.length]['id'],
-      auraStyle: auras[(idHash ~/ 7) % auras.length]['id'],
-    );
+    // 3. Fallback to stage based on teamData or peer ID position
+    int stage = 1;
+    if (widget.conversation.teamData != null) {
+      final tStage = widget.conversation.teamData!['learning_day'] ??
+          widget.conversation.teamData!['stage'];
+      if (tStage != null && tStage is num && tStage > 0) {
+        stage = tStage.toInt();
+      }
+    } else {
+      stage = (widget.conversation.id.hashCode.abs() % 90) + 1;
+    }
+
+    return VectorAvatarConfig.getEvolutionAvatarForStage(stage);
   }
 
   @override
@@ -284,7 +318,7 @@ class _ConversationTileState extends State<ConversationTile> {
     return material.Material(
       color: Colors.transparent,
       child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 3.5),
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
         decoration: BoxDecoration(
           color: isDark
               ? const Color(0xFF131B26).withValues(alpha: 0.75)
@@ -316,7 +350,7 @@ class _ConversationTileState extends State<ConversationTile> {
           },
           onLongPress: widget.onLongPress,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
             children: [
               GestureDetector(
@@ -328,8 +362,8 @@ class _ConversationTileState extends State<ConversationTile> {
                   children: [
                     if (widget.conversation.hasStatus)
                       Container(
-                        width: 50,
-                        height: 50,
+                        width: 58,
+                        height: 58,
                         decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           gradient: LinearGradient(
@@ -365,8 +399,8 @@ class _ConversationTileState extends State<ConversationTile> {
                         }
                       },
                       child: Container(
-                        width: 44,
-                        height: 44,
+                        width: 50,
+                        height: 50,
                         decoration: BoxDecoration(
                           color: widget.conversation.isActiveTimer
                               ? material.Colors.green.withValues(alpha: 0.1)
@@ -386,38 +420,69 @@ class _ConversationTileState extends State<ConversationTile> {
                                         : Colors.black.withValues(alpha: 0.1)),
                             width: widget.conversation.isTool ? 1.5 : 1.2,
                           ),
-                          image: (_showRealPhoto && widget.conversation.imageUrl != null)
-                              ? DecorationImage(
-                                  image: NetworkImage(widget.conversation.imageUrl!),
-                                  fit: BoxFit.cover,
-                                )
-                              : (widget.conversation.isGroup && widget.conversation.imageUrl != null)
+                          image: (_getStoryThumbnailUrl() != null)
+                              ? null
+                              : ((_showRealPhoto && widget.conversation.imageUrl != null)
                                   ? DecorationImage(
                                       image: NetworkImage(widget.conversation.imageUrl!),
                                       fit: BoxFit.cover,
                                     )
-                                  : null,
+                                  : (widget.conversation.isGroup && widget.conversation.imageUrl != null)
+                                      ? DecorationImage(
+                                          image: NetworkImage(widget.conversation.imageUrl!),
+                                          fit: BoxFit.cover,
+                                        )
+                                      : null),
                         ),
-                        child: (!_showRealPhoto || widget.conversation.imageUrl == null)
-                            ? (!widget.conversation.isGroup &&
-                                    !widget.conversation.isTool &&
-                                    !widget.conversation.isNotification &&
-                                    !widget.conversation.isActiveTimer)
-                                ? VectorAvatarWidget(
-                                    config: _getAvatarConfig(),
-                                    size: 42,
-                                    showAura: true,
-                                  )
-                                : (widget.conversation.imageUrl == null
-                                    ? Center(
-                                        child: Icon(
-                                          _getIconData(),
-                                          color: _getIconColor(isDark),
-                                          size: 20,
+                        child: _getStoryThumbnailUrl() != null
+                            ? ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: _getStoryThumbnailUrl()!,
+                                  width: 50,
+                                  height: 50,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => Container(
+                                    width: 50,
+                                    height: 50,
+                                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 14,
+                                        height: 14,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 1.5,
+                                          color: Color(0xFFFFFC00),
                                         ),
+                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, err) => VectorAvatarWidget(
+                                    config: _getAvatarConfig(),
+                                    size: 48,
+                                    showAura: false,
+                                  ),
+                                ),
+                              )
+                            : ((!_showRealPhoto || widget.conversation.imageUrl == null)
+                                ? (!widget.conversation.isGroup &&
+                                        !widget.conversation.isTool &&
+                                        !widget.conversation.isNotification &&
+                                        !widget.conversation.isActiveTimer)
+                                    ? VectorAvatarWidget(
+                                        config: _getAvatarConfig(),
+                                        size: 48,
+                                        showAura: true,
                                       )
-                                    : null)
-                            : null,
+                                    : (widget.conversation.imageUrl == null
+                                        ? Center(
+                                            child: Icon(
+                                              _getIconData(),
+                                              color: _getIconColor(isDark),
+                                              size: 24,
+                                            ),
+                                          )
+                                        : null)
+                                : null),
                       ),
                     ),
                     if (widget.conversation.isOnline &&
@@ -461,7 +526,7 @@ class _ConversationTileState extends State<ConversationTile> {
                                   ),
                                   style: GoogleFonts.outfit(
                                     color: primaryTextColor,
-                                    fontSize: 14.5,
+                                    fontSize: 15.5,
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: 0.1,
                                   ),
@@ -480,7 +545,7 @@ class _ConversationTileState extends State<ConversationTile> {
                                   if (isRobot) {
                                     return Container(
                                       margin: const EdgeInsets.only(left: 6),
-                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                      padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
                                         borderRadius: BorderRadius.circular(4),
@@ -494,14 +559,14 @@ class _ConversationTileState extends State<ConversationTile> {
                                         style: GoogleFonts.outfit(
                                           color: const Color(0xFF06B6D4),
                                           fontWeight: FontWeight.bold,
-                                          fontSize: 9.5,
+                                          fontSize: 10,
                                         ),
                                       ),
                                     );
                                   } else if (isHumanMate) {
                                     return Container(
                                       margin: const EdgeInsets.only(left: 6),
-                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                      padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 2),
                                       decoration: BoxDecoration(
                                         color: Colors.white.withValues(alpha: 0.06),
                                         borderRadius: BorderRadius.circular(4),
@@ -515,7 +580,7 @@ class _ConversationTileState extends State<ConversationTile> {
                                         style: GoogleFonts.outfit(
                                           color: secondaryTextColor,
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 9.5,
+                                          fontSize: 10,
                                         ),
                                       ),
                                     );
@@ -585,12 +650,12 @@ class _ConversationTileState extends State<ConversationTile> {
                                   return Row(
                                     children: [
                                       Container(
-                                        width: 10,
-                                        height: 10,
+                                        width: 11,
+                                        height: 11,
                                         margin: const EdgeInsets.only(right: 5),
                                         decoration: BoxDecoration(
                                           color: const Color(0xFFEF4444),
-                                          borderRadius: BorderRadius.circular(2.5),
+                                          borderRadius: BorderRadius.circular(3),
                                           boxShadow: [
                                             BoxShadow(
                                               color: const Color(0xFFEF4444).withValues(alpha: 0.5),
@@ -604,7 +669,7 @@ class _ConversationTileState extends State<ConversationTile> {
                                           'New Snap • Tap to view ⚡',
                                           style: GoogleFonts.outfit(
                                             color: const Color(0xFFF87171),
-                                            fontSize: 12.5,
+                                            fontSize: 13.5,
                                             fontWeight: FontWeight.bold,
                                           ),
                                           maxLines: 1,
@@ -616,14 +681,14 @@ class _ConversationTileState extends State<ConversationTile> {
                                 } else if (widget.conversation.lastSenderId == widget.currentUserId) {
                                   return Row(
                                     children: [
-                                      const Icon(material.Icons.near_me_rounded, size: 11, color: Color(0xFFEF4444)),
-                                      const SizedBox(width: 3),
+                                      const Icon(material.Icons.near_me_rounded, size: 12, color: Color(0xFFEF4444)),
+                                      const SizedBox(width: 4),
                                       Flexible(
                                         child: Text(
                                           'Delivered Snap ⚡',
                                           style: GoogleFonts.outfit(
                                             color: secondaryTextColor,
-                                            fontSize: 12.5,
+                                            fontSize: 13.5,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -635,12 +700,12 @@ class _ConversationTileState extends State<ConversationTile> {
                                   return Row(
                                     children: [
                                       Container(
-                                        width: 9,
-                                        height: 9,
+                                        width: 10,
+                                        height: 10,
                                         margin: const EdgeInsets.only(right: 5),
                                         decoration: BoxDecoration(
-                                          border: Border.all(color: secondaryTextColor, width: 1.2),
-                                          borderRadius: BorderRadius.circular(2),
+                                          border: Border.all(color: secondaryTextColor, width: 1.3),
+                                          borderRadius: BorderRadius.circular(2.5),
                                         ),
                                       ),
                                       Flexible(
@@ -648,7 +713,7 @@ class _ConversationTileState extends State<ConversationTile> {
                                           'Opened Snap',
                                           style: GoogleFonts.outfit(
                                             color: secondaryTextColor,
-                                            fontSize: 12.5,
+                                            fontSize: 13.5,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -672,7 +737,7 @@ class _ConversationTileState extends State<ConversationTile> {
                                           widget.conversation.isActiveTimer
                                       ? unreadTextColor
                                       : secondaryTextColor,
-                                  fontSize: 12.5,
+                                  fontSize: 13.5,
                                   fontWeight: widget.conversation.unreadCount > 0 ||
                                           widget.conversation.isActiveTimer
                                       ? FontWeight.w500
@@ -699,7 +764,7 @@ class _ConversationTileState extends State<ConversationTile> {
                       _elapsedString,
                       style: GoogleFonts.outfit(
                         color: material.Colors.greenAccent,
-                        fontSize: 12.5,
+                        fontSize: 13,
                         fontWeight: FontWeight.bold,
                         fontFeatures: const [FontFeature.tabularFigures()],
                       ),
@@ -716,7 +781,7 @@ class _ConversationTileState extends State<ConversationTile> {
                             : (isDark
                                 ? Colors.white.withValues(alpha: 0.35)
                                 : Colors.black.withValues(alpha: 0.35)),
-                        fontSize: 11,
+                        fontSize: 11.5,
                         fontWeight: widget.conversation.unreadCount > 0
                             ? FontWeight.bold
                             : FontWeight.w500,
@@ -725,13 +790,13 @@ class _ConversationTileState extends State<ConversationTile> {
                   if (widget.conversation.unreadCount > 0) ...[
                     const SizedBox(height: 5),
                     Container(
-                      constraints: const BoxConstraints(minWidth: 17),
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                      constraints: const BoxConstraints(minWidth: 19),
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2.5),
                       decoration: BoxDecoration(
                         color: isDark
                             ? const Color(0xFFFFD600)
                             : const Color(0xFFFFF500),
-                        borderRadius: BorderRadius.circular(9),
+                        borderRadius: BorderRadius.circular(10),
                         boxShadow: [
                           BoxShadow(
                             color: (isDark
@@ -748,7 +813,7 @@ class _ConversationTileState extends State<ConversationTile> {
                           widget.conversation.unreadCount.toString(),
                           style: GoogleFonts.outfit(
                             color: isDark ? Colors.black : Colors.white,
-                            fontSize: 9.5,
+                            fontSize: 10.5,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -767,10 +832,10 @@ class _ConversationTileState extends State<ConversationTile> {
                   icon: const Icon(
                     material.Icons.camera_alt_rounded,
                     color: Color(0xFFFFFC00),
-                    size: 18,
+                    size: 20,
                   ),
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     if (widget.onSnapCameraTap != null) {

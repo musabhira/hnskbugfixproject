@@ -4,7 +4,6 @@ import 'package:pocket_mates_app/custom_code/widgets/legal_policy_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/index.dart';
 import 'package:go_router/go_router.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:pocket_mates_app/main.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -139,6 +138,21 @@ class _SettingsPageState extends State<SettingsPage> {
             padding: const EdgeInsets.all(16),
             children: [
               const _SectionHeader(title: 'Appearance'),
+              // Dark mode is permanently enforced across all devices. Light mode toggle commented out for future use.
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.dark_mode, color: Color(0xFFFFFC00)),
+                title: const Text('Theme', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text('Dark (Default)', style: TextStyle(color: Color(0xFFFFFC00), fontSize: 13, fontWeight: FontWeight.w600)),
+                ),
+              ),
+              /*
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
                 title: const Text('Dark Mode', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500)),
@@ -150,6 +164,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   setState(() {});
                 },
               ),
+              */
               const SizedBox(height: 24),
               const _SectionHeader(title: 'Legal'),
               _SettingsTile(

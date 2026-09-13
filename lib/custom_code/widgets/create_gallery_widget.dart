@@ -1,6 +1,5 @@
 import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
 import 'package:pocket_mates_app/custom_code/widgets/choice_chip_widget.dart';
-import 'package:pocket_mates_app/flutter_flow/flutter_flow_widgets.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
@@ -407,63 +406,32 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
-        backgroundColor: FlutterFlowTheme.of(context).secondaryBackground,
+        backgroundColor: const Color(0xFF0F1118),
         body: CustomScrollView(
           slivers: [
-            // Modern App Bar with gradient
+            // Minimal App Bar
             SliverAppBar(
-              expandedHeight: 120.0,
               floating: false,
               pinned: true,
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.transparent,
-              flexibleSpace: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [
-                      FlutterFlowTheme.of(context).primary,
-                      FlutterFlowTheme.of(context).primary.withValues(alpha: 0.8),
-                    ],
-                  ),
-                ),
-                child: FlexibleSpaceBar(
-                  centerTitle: false,
-                  titlePadding: const EdgeInsets.only(left: 20, bottom: 16),
-                  title: Text(
-                    'Add Your Gallery',
-                    style: safeTextStyle(
-                            FlutterFlowTheme.of(context).headlineMedium)
-                        .copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.black,
-                            letterSpacing: 0.0,
-                            fontSize: 16),
-                  ),
+              elevation: 0,
+              backgroundColor: const Color(0xFF0F1118),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                onPressed: () => Navigator.pop(context),
+              ),
+              centerTitle: true,
+              title: Text(
+                _isService ? 'Add Service' : 'Add to Market',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 17,
                 ),
               ),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12.0),
-                      border: Border.all(
-                        color: Colors.black.withValues(alpha: 0.15),
-                        width: 1.0,
-                      ),
-                    ),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.close_rounded,
-                        color: Colors.black,
-                        size: 16.0,
-                      ),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded, color: Colors.white70, size: 20),
+                  onPressed: () => Navigator.pop(context),
                 ),
               ],
             ),
@@ -472,12 +440,8 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
             SliverToBoxAdapter(
               child: Container(
                 margin: const EdgeInsets.only(top: 8),
-                decoration: BoxDecoration(
-                  color: FlutterFlowTheme.of(context).secondaryBackground,
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(30),
-                    topRight: Radius.circular(30),
-                  ),
+                decoration: const BoxDecoration(
+                  color: Color(0xFF0F1118),
                 ),
                 child: Padding(
                   padding:
@@ -485,97 +449,139 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // 1. Content Type Toggle (Product vs Service)
+                      Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF161924),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => safeSetState(() => _isService = false),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: !_isService
+                                        ? const Color(0xFFFFFC00)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.shopping_bag_outlined,
+                                        size: 16,
+                                        color: !_isService ? Colors.black : Colors.white60,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Product',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: !_isService ? Colors.black : Colors.white60,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => safeSetState(() => _isService = true),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 180),
+                                  padding: const EdgeInsets.symmetric(vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: _isService
+                                        ? const Color(0xFFFFFC00)
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  alignment: Alignment.center,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.handyman_outlined,
+                                        size: 16,
+                                        color: _isService ? Colors.black : Colors.white60,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Service',
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.bold,
+                                          color: _isService ? Colors.black : Colors.white60,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 14.0),
+
                       // Image Upload Card
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(4.0),
+                        padding: const EdgeInsets.all(12.0),
                         decoration: BoxDecoration(
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          borderRadius: BorderRadius.circular(24.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 20.0,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
+                          color: const Color(0xFF161924),
+                          borderRadius: BorderRadius.circular(16.0),
                           border: Border.all(
-                            color: FlutterFlowTheme.of(context)
-                                    .alternate
-                                    .withValues(alpha: 0.3),
+                            color: Colors.white.withValues(alpha: 0.08),
                             width: 1.0,
                           ),
                         ),
                         child: Column(
                           children: [
                             Padding(
-                              padding: const EdgeInsets.all(20.0),
+                              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
                               child: Row(
                                 children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12.0),
-                                    decoration: BoxDecoration(
-                                      color: FlutterFlowTheme.of(context)
-                                          .primary
-                                          .withValues(alpha: 0.1),
-                                      borderRadius: BorderRadius.circular(12.0),
-                                    ),
-                                    child: Icon(
-                                      Icons.photo_library_outlined,
-                                      color:
-                                          FlutterFlowTheme.of(context).primary,
-                                      size: 16.0,
-                                    ),
+                                  Icon(
+                                    Icons.photo_library_outlined,
+                                    color: const Color(0xFFFFFC00),
+                                    size: 18.0,
                                   ),
-                                  const SizedBox(width: 16.0),
+                                  const SizedBox(width: 10.0),
                                   Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Showcase Image',
-                                          style: safeTextStyle(
-                                                  FlutterFlowTheme.of(context)
-                                                      .headlineSmall)
-                                              .copyWith(
-                                                  fontFamily: 'Poppins',
-                                                  fontWeight: FontWeight.w600,
-                                                  letterSpacing: 0.0,
-                                                  fontSize: 16),
-                                        ),
-                                        const SizedBox(height: 4.0),
-                                        Text(
-                                          'Add a beautiful image to showcase your work',
-                                          style: safeTextStyle(
-                                                  FlutterFlowTheme.of(context)
-                                                      .bodyMedium)
-                                              .copyWith(
-                                                  color: FlutterFlowTheme.of(
-                                                          context)
-                                                      .secondaryText,
-                                                  letterSpacing: 0.0,
-                                                  fontSize: 14),
-                                        ),
-                                      ],
+                                    child: Text(
+                                      _isService ? 'Service Cover Image' : 'Product Showcase Image',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
+                            const SizedBox(height: 8.0),
 
                             // Image Display Area
                             Container(
-                              margin:
-                                  const EdgeInsets.symmetric(horizontal: 8.0),
                               decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(20.0),
+                                borderRadius: BorderRadius.circular(14.0),
                                 border: Border.all(
-                                  color: FlutterFlowTheme.of(context)
-                                          .alternate
-                                          .withValues(alpha: 0.5),
-                                  width: 2,
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  width: 1,
                                 ),
                               ),
                               child: Stack(
@@ -583,11 +589,10 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                                 children: [
                                   Container(
                                     width: double.infinity,
-                                    height: 280.0,
+                                    height: 210.0,
                                     decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(18.0),
-                                      color: FlutterFlowTheme.of(context)
-                                          .primaryBackground,
+                                      borderRadius: BorderRadius.circular(14.0),
+                                      color: const Color(0xFF10131C),
                                     ),
                                     child: _isCompressingImage
                                         ? // Show loading during compression
@@ -822,25 +827,28 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 7.0, vertical: 12),
+                            horizontal: 4.0, vertical: 8),
                         child: Container(
                           decoration: BoxDecoration(
-                            // ignore: deprecated_member_use
-                            color:
-                                Colors.yellow.withValues(alpha: 0.2), // less opacity
-                            borderRadius: BorderRadius.circular(10),
+                            color: const Color(0xFF161924),
+                            borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.06)),
                           ),
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 14, vertical: 10),
                           child: Row(
                             children: [
+                              const Icon(Icons.info_outline,
+                                  size: 16, color: Color(0xFFFFFF00)),
+                              const SizedBox(width: 10),
                               Expanded(
                                 child: Text(
-                                  'Please avoid using inappropriate words in your title , Image , or description.',
-                                  style: TextStyle(
-                                    color: Colors.yellow[
-                                        800], // slightly darker text for contrast
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
+                                  'Please avoid using inappropriate words in title, image, or description.',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w400,
                                   ),
                                 ),
                               ),
@@ -849,27 +857,17 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                         ),
                       ),
 
-                      const SizedBox(height: 8.0),
+                      const SizedBox(height: 12.0),
 
                       // Details Card
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          borderRadius: BorderRadius.circular(20.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 20.0,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
+                          color: const Color(0xFF161924),
+                          borderRadius: BorderRadius.circular(16.0),
                           border: Border.all(
-                            color: FlutterFlowTheme.of(context)
-                                .alternate
-                                .withValues(alpha: 0.5),
+                            color: Colors.white.withValues(alpha: 0.07),
                             width: 1.0,
                           ),
                         ),
@@ -879,34 +877,30 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(12.0),
+                                  padding: const EdgeInsets.all(8.0),
                                   decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primary
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12.0),
+                                    color: const Color(0xFFFFFF00)
+                                        .withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(10.0),
                                   ),
-                                  child: Icon(
-                                    Icons.info_outline,
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    size: 16.0,
+                                  child: const Icon(
+                                    Icons.edit_note_rounded,
+                                    color: Color(0xFFFFFF00),
+                                    size: 18.0,
                                   ),
                                 ),
-                                const SizedBox(width: 16.0),
+                                const SizedBox(width: 12.0),
                                 Text(
                                   'Showcase Details',
-                                  style: safeTextStyle(
-                                          FlutterFlowTheme.of(context)
-                                              .headlineSmall)
-                                      .copyWith(
-                                          fontFamily: 'Poppins',
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.0,
-                                          fontSize: 16),
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 8.0),
+                            const SizedBox(height: 16.0),
 
                             // Title Field
                             CustomTextField(
@@ -988,181 +982,15 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
 
                       const SizedBox(height: 24.0),
 
-                      // Content Type Selection Card (Product vs Service)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          color: FlutterFlowTheme.of(context).secondaryBackground,
-                          borderRadius: BorderRadius.circular(20.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 20.0,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
-                          border: Border.all(
-                            color: FlutterFlowTheme.of(context)
-                                    .alternate
-                                    .withValues(alpha: 0.5),
-                            width: 1.0,
-                          ),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12.0),
-                                  decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primary
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12.0),
-                                  ),
-                                  child: Icon(
-                                    Icons.layers_outlined,
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    size: 16.0,
-                                  ),
-                                ),
-                                const SizedBox(width: 16.0),
-                                Text(
-                                  'Content Type',
-                                  style: safeTextStyle(
-                                          FlutterFlowTheme.of(context)
-                                              .headlineSmall)
-                                      .copyWith(
-                                          fontFamily: 'Poppins',
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.0,
-                                          fontSize: 16),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16.0),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () => safeSetState(() => _isService = false),
-                                    child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
-                                      decoration: BoxDecoration(
-                                        color: !_isService
-                                            ? FlutterFlowTheme.of(context).primary.withValues(alpha: 0.15)
-                                            : FlutterFlowTheme.of(context).primaryBackground,
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(
-                                          color: !_isService
-                                              ? FlutterFlowTheme.of(context).primary
-                                              : FlutterFlowTheme.of(context).alternate.withValues(alpha: 0.5),
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.shopping_bag_outlined,
-                                            size: 18,
-                                            color: !_isService
-                                                ? FlutterFlowTheme.of(context).primaryText
-                                                : FlutterFlowTheme.of(context).secondaryText,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Product',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: !_isService
-                                                  ? FlutterFlowTheme.of(context).primaryText
-                                                  : FlutterFlowTheme.of(context).secondaryText,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: GestureDetector(
-                                    onTap: () => safeSetState(() => _isService = true),
-                                    child: AnimatedContainer(
-                                      duration: const Duration(milliseconds: 200),
-                                      padding: const EdgeInsets.symmetric(vertical: 14),
-                                      decoration: BoxDecoration(
-                                        color: _isService
-                                            ? FlutterFlowTheme.of(context).primary.withValues(alpha: 0.15)
-                                            : FlutterFlowTheme.of(context).primaryBackground,
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(
-                                          color: _isService
-                                              ? FlutterFlowTheme.of(context).primary
-                                              : FlutterFlowTheme.of(context).alternate.withValues(alpha: 0.5),
-                                          width: 1.5,
-                                        ),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.handyman_outlined,
-                                            size: 18,
-                                            color: _isService
-                                                ? FlutterFlowTheme.of(context).primaryText
-                                                : FlutterFlowTheme.of(context).secondaryText,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Service',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: _isService
-                                                  ? FlutterFlowTheme.of(context).primaryText
-                                                  : FlutterFlowTheme.of(context).secondaryText,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 24.0),
-
                       // Category Selection Card
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(16.0),
                         decoration: BoxDecoration(
-                          color:
-                              FlutterFlowTheme.of(context).secondaryBackground,
-                          borderRadius: BorderRadius.circular(20.0),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 20.0,
-                              offset: const Offset(0, 5),
-                            ),
-                          ],
+                          color: const Color(0xFF161924),
+                          borderRadius: BorderRadius.circular(16.0),
                           border: Border.all(
-                            color: FlutterFlowTheme.of(context)
-                                    .alternate
-                                    .withValues(alpha: 0.5),
+                            color: Colors.white.withValues(alpha: 0.07),
                             width: 1.0,
                           ),
                         ),
@@ -1172,30 +1000,26 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                             Row(
                               children: [
                                 Container(
-                                  padding: const EdgeInsets.all(12.0),
+                                  padding: const EdgeInsets.all(8.0),
                                   decoration: BoxDecoration(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primary
-                                        .withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(12.0),
+                                    color: const Color(0xFFFFFF00)
+                                        .withValues(alpha: 0.12),
+                                    borderRadius: BorderRadius.circular(10.0),
                                   ),
-                                  child: Icon(
+                                  child: const Icon(
                                     Icons.category_outlined,
-                                    color: FlutterFlowTheme.of(context).primary,
-                                    size: 16.0,
+                                    color: Color(0xFFFFFF00),
+                                    size: 18.0,
                                   ),
                                 ),
-                                const SizedBox(width: 16.0),
+                                const SizedBox(width: 12.0),
                                 Text(
                                   'Category',
-                                  style: safeTextStyle(
-                                          FlutterFlowTheme.of(context)
-                                              .headlineSmall)
-                                      .copyWith(
-                                          fontFamily: 'Poppins',
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.0,
-                                          fontSize: 16),
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ],
                             ),
@@ -1272,61 +1096,43 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                       const SizedBox(height: 24.0),
 
                       // Save Button
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              constraints: const BoxConstraints(maxWidth: 300),
-                              height: 56.0,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    FlutterFlowTheme.of(context).primary,
-                                    FlutterFlowTheme.of(context)
-                                        .primary
-                                        // ignore: deprecated_member_use
-                                        .withValues(alpha: 0.8),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(16.0),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: FlutterFlowTheme.of(context)
-                                        .primary
-                                        // ignore: deprecated_member_use
-                                        .withValues(alpha: 0.3),
-                                    blurRadius: 15.0,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              child: FFButtonWidget(
-                                onPressed: (_isLoading || !_isFormValid())
-                                    ? null
-                                    : _saveProfile,
-                                text: _isLoading ? 'Creating...' : 'Save',
-                                options: FFButtonOptions(
-                                  width: double.infinity,
-                                  height: 56.0,
-                                  color: Colors.transparent,
-                                  textStyle: safeTextStyle(
-                                          FlutterFlowTheme.of(context)
-                                              .titleMedium)
-                                      .copyWith(
-                                    fontFamily: 'Poppins',
-                                    color: Colors.white,
-                                    fontSize: 18.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                  elevation: 0.0,
-                                  borderSide: BorderSide.none,
-                                  borderRadius: BorderRadius.circular(16.0),
-                                ),
-                              ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52.0,
+                        child: ElevatedButton(
+                          onPressed: (_isLoading || !_isFormValid())
+                              ? null
+                              : _saveProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFFF00),
+                            disabledBackgroundColor:
+                                const Color(0xFFFFFF00).withValues(alpha: 0.2),
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14.0),
                             ),
                           ),
-                        ],
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.2,
+                                    color: Colors.black,
+                                  ),
+                                )
+                              : Text(
+                                  _isService
+                                      ? 'Publish Service'
+                                      : 'Publish Product',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                        ),
                       ),
 
                       const SizedBox(height: 30.0),

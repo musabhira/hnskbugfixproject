@@ -22,6 +22,12 @@ class PocketMateService {
       final list = prefs.getStringList('pocket_mates_$myId') ?? [];
       if (list.contains(otherUserId)) return true;
 
+      // If other user is a robot, check local list only (robots don't exist in Supabase follows table)
+      if (PocketRobotService.isRobotId(otherUserId) ||
+          !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(otherUserId)) {
+        return false;
+      }
+
       // Check follows / friendships in DB
       final res = await _supabase
           .from('follows')
@@ -51,6 +57,19 @@ class PocketMateService {
   }) async {
     if (senderId.isEmpty || receiverId.isEmpty) return false;
     try {
+      // If sending to a robot, enqueue with human-like response delay
+      if (PocketRobotService.isRobotId(receiverId) ||
+          !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(receiverId)) {
+        await PocketRobotService.enqueueUserRequestToRobot(userId: senderId, robotId: receiverId);
+        final prefs = await SharedPreferences.getInstance();
+        final sentList = prefs.getStringList('sent_mate_requests_$senderId') ?? [];
+        if (!sentList.contains(receiverId)) {
+          sentList.add(receiverId);
+          await prefs.setStringList('sent_mate_requests_$senderId', sentList);
+        }
+        return true;
+      }
+
       // Get sender name if not passed
       String name = senderName ?? 'Pocket Mate';
       if (senderName == null || senderName.isEmpty) {
