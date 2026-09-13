@@ -934,7 +934,45 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                 onTapUp: (details) {
                   _game.handleTapAt(details.localPosition);
                 },
-                child: GameWidget(game: _game),
+                child: GameWidget(
+                  game: _game,
+                  loadingBuilder: (context) => Container(
+                    color: const Color(0xFF070B14),
+                    child: Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 38,
+                            height: 38,
+                            child: CircularProgressIndicator(
+                              color: Color(0xFF00F0FF),
+                              strokeWidth: 2.5,
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Loading Pocket World...',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white70,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Generating terrain & learning zones',
+                            style: GoogleFonts.inter(
+                              color: Colors.white38,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ),
 
               // 2. Ultra-Minimal Top Navigation Bar

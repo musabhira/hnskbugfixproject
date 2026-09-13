@@ -756,7 +756,8 @@ class Conversations extends _$Conversations {
           .from('conversations')
           .select('*')
           .or('user1_id.eq.$userId,user2_id.eq.$userId')
-          .order('updated_at', ascending: false);
+          .order('updated_at', ascending: false)
+          .limit(50);
 
       if (response.isEmpty) return [];
 

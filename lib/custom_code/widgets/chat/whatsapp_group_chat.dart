@@ -444,8 +444,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
         // Pagination Trigger: Call loadMoreMessages when reaching the top of scrollable area
         // In reverse: true, maxScrollExtent is the "top" (older messages)
-        if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-          ref.read(chatMessagesProvider(widget.groupId).notifier).loadMoreMessages();
+        if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 250) {
+          final notifier = ref.read(chatMessagesProvider(widget.groupId).notifier);
+          if (notifier.hasMoreMessages && !notifier.isLoadingMore) {
+            notifier.loadMoreMessages();
+          }
         }
       }
     });
@@ -1483,6 +1486,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             controller: _scrollController,
                             physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
                             reverse: true,
+                            cacheExtent: 350,
                             padding: const EdgeInsets.only(bottom: 8, top: 8),
                             itemCount: filteredMessages.length + 1,
                             itemBuilder: (context, index) {

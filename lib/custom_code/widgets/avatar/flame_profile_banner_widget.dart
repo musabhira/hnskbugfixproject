@@ -588,14 +588,6 @@ class _FlameProfileBannerWidgetState extends State<FlameProfileBannerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final speciesTitle = widget.avatar.species
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
-        .join(' ');
-
-    final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.day);
-
     return Container(
       decoration: VectorAvatarConfig.getEvolutionBannerDecoration(widget.day),
       child: Stack(
@@ -607,7 +599,10 @@ class _FlameProfileBannerWidgetState extends State<FlameProfileBannerWidget> {
 
           // 1. Live Flame-Powered Canvas (Floating Biome Doodles & Embers)
           Positioned.fill(
-            child: GameWidget(game: _game),
+            child: GameWidget(
+              game: _game,
+              loadingBuilder: (context) => const SizedBox.shrink(),
+            ),
           ),
 
           // 2. Top Header HUD: Active Companion & Active Perk Badge

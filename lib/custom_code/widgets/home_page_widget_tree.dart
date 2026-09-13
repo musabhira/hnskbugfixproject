@@ -1042,6 +1042,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       material.NotificationListener<ScrollNotification>(
                                         onNotification: _onSearchScrollNotification,
                                         child: material.CustomScrollView(
+                                          cacheExtent: 400,
                                           physics: const BouncingScrollPhysics(
                                               parent:
                                                   AlwaysScrollableScrollPhysics()),

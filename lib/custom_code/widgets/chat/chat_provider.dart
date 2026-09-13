@@ -32,6 +32,9 @@ class ChatMessages extends _$ChatMessages {
   static const int _pageSize = 50; // Load 50 messages at a time
   int _currentPage = 0;
   bool _hasMoreMessages = true;
+  bool _isLoadingMore = false;
+  bool get hasMoreMessages => _hasMoreMessages;
+  bool get isLoadingMore => _isLoadingMore;
   Timer? _debounceTimer;
   Timer? _pollingTimer;
   final List<ChatMessage> _optimisticMessages = [];
@@ -374,6 +377,9 @@ class ChatMessages extends _$ChatMessages {
           .range(offset, offset + _pageSize - 1);
 
       final List<dynamic> responseList = response as List;
+      if (!forceLatest) {
+        _hasMoreMessages = responseList.length >= _pageSize;
+      }
       final remoteMessages = responseList.map((data) {
         final sender = _safeGet(data['sender']);
         final senderProfile = _safeGet(sender?['profile']);
@@ -389,10 +395,12 @@ class ChatMessages extends _$ChatMessages {
       }).toList();
 
       final List<ChatMessage> cachedMessages = await _loadFromCache();
+      final List<ChatMessage> existingMessages = state.hasValue ? (state.value ?? []) : [];
 
-      // Combine unique messages (favor remote/fresh data)
+      // Combine unique messages (favor remote/fresh data, preserve already paged messages)
       final Map<String, ChatMessage> combinedMap = {
         for (var m in cachedMessages) m.id: m,
+        for (var m in existingMessages) m.id: m,
         for (var m in remoteMessages) m.id: m,
       };
 
@@ -473,8 +481,9 @@ class ChatMessages extends _$ChatMessages {
 
   // Load more messages (pagination)
   Future<void> loadMoreMessages() async {
-    if (!_hasMoreMessages || state.isLoading) return;
+    if (!_hasMoreMessages || state.isLoading || _isLoadingMore) return;
 
+    _isLoadingMore = true;
     _currentPage++;
 
     try {
@@ -484,6 +493,8 @@ class ChatMessages extends _$ChatMessages {
     } catch (e) {
       _currentPage--; // Revert on error
       rethrow;
+    } finally {
+      _isLoadingMore = false;
     }
   }
 

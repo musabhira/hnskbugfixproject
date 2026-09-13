@@ -4727,26 +4727,26 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 // Quick Sovereign Action Bar: Rules & 90d Guarantee, Reading Library, Code English
                 _buildSovereignActionBar(),
 
-                // Mission Body Content
+                // Mission Body Content (Lazy loaded for high 60/120fps performance)
                 Expanded(
-                  child: ListView(
-                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
-                    children: [
-                      // ⏱️ 60-Min Daily Practice Study Timer Card
-                      _buildDailyStudyTimerCard(),
+                  child: Builder(
+                    builder: (context) {
+                      final List<Widget> missionWidgets = [
+                        // ⏱️ 60-Min Daily Practice Study Timer Card
+                        _buildDailyStudyTimerCard(),
 
-                      const SizedBox(height: 18),
+                        const SizedBox(height: 18),
 
-                      // 📋 Mission Subtasks Tracker Header
-                      _buildMissionProgressCard(),
+                        // 📋 Mission Subtasks Tracker Header
+                        _buildMissionProgressCard(),
 
-                      const SizedBox(height: 18),
+                        const SizedBox(height: 18),
 
-                      // 🔤 Foundation: Alphabet & 44 Phonics Sound System (User Audio Directive)
-                      if (_hasAlphabetPhonics) ...[
-                        _buildAlphabetPhonicsCard(),
-                        const SizedBox(height: 14),
-                      ],
+                        // 🔤 Foundation: Alphabet & 44 Phonics Sound System (User Audio Directive)
+                        if (_hasAlphabetPhonics) ...[
+                          _buildAlphabetPhonicsCard(),
+                          const SizedBox(height: 14),
+                        ],
 
                       // Subtask 1: 💬 English Hub Group Practice
                       _buildSubtaskCard(
@@ -5128,9 +5128,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       // 🧪 DEV TEST: Complete & Advance to Next Day
                       _buildDevAdvanceButton(),
-                    ],
-                  ),
+                    ];
+
+                    return ListView.builder(
+                      cacheExtent: 450,
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+                      itemCount: missionWidgets.length,
+                      itemBuilder: (context, index) => missionWidgets[index],
+                    );
+                  },
                 ),
+              ),
               ],
             ),
           ),

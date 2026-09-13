@@ -293,18 +293,22 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final robotMates = prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? [];
       final Set<String> allFollowingIds = {...followingIds, ...robotMates};
 
-      // 3. Optimized Single Query with Join - include user_id for follow check
       final response = await supabase
           .from('statuses')
           .select(
               '*, profile:profile_id(id, name, profile_image_url, user_id), thought:thought_id(*, user:users!user_id(profile:profile!user_id(name, profile_image_url)))')
           .eq('is_active', true)
           .gt('expires_at', DateTime.now().toIso8601String())
-          .order('created_at',
-              ascending: true); // Show oldest first for story timeline
+          .order('created_at', ascending: false) // Latest active statuses first
+          .limit(100);
 
       final List<Map<String, dynamic>> data =
-          List<Map<String, dynamic>>.from(response);
+          List<Map<String, dynamic>>.from(response)
+            ..sort((a, b) {
+              final at = DateTime.tryParse(a['created_at']?.toString() ?? '') ?? DateTime(0);
+              final bt = DateTime.tryParse(b['created_at']?.toString() ?? '') ?? DateTime(0);
+              return at.compareTo(bt);
+            });
 
       // 3.5 Fetch viewed status IDs for the current user
       final viewsRes = await supabase
@@ -602,6 +606,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             ? _buildShimmerLoading()
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
+                cacheExtent: 350,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                 itemCount: combined.length + 1, // Add 1 for "Add"
                 itemBuilder: (context, index) {
@@ -771,6 +776,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+      cacheExtent: 350,
       physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics()),
       itemCount: filteredData.length,
