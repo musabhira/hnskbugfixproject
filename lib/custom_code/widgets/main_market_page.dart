@@ -359,7 +359,7 @@ class MarketExploreTabView extends ConsumerWidget {
       child: Column(
         children: [
           Container(
-            height: 42,
+            height: 46,
             decoration: BoxDecoration(
               color: FlutterFlowTheme.of(context).primaryBackground,
               border: Border(
@@ -373,14 +373,14 @@ class MarketExploreTabView extends ConsumerWidget {
               isScrollable: true,
               tabAlignment: TabAlignment.start,
               indicator: const UnderlineTabIndicator(
-                borderSide: BorderSide(color: Color(0xFFFFFC00), width: 2),
+                borderSide: BorderSide(color: Color(0xFFFFFC00), width: 2.2),
                 insets: EdgeInsets.symmetric(horizontal: 14),
               ),
               labelColor: const Color(0xFFFFFC00),
               unselectedLabelColor: FlutterFlowTheme.of(context).secondaryText,
-              labelPadding: const EdgeInsets.symmetric(horizontal: 10),
-              labelStyle: GoogleFonts.outfit(fontSize: 12, fontWeight: FontWeight.w700),
-              unselectedLabelStyle: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500),
+              labelPadding: const EdgeInsets.symmetric(horizontal: 14),
+              labelStyle: GoogleFonts.outfit(fontSize: 13.5, fontWeight: FontWeight.w700),
+              unselectedLabelStyle: GoogleFonts.inter(fontSize: 13, fontWeight: FontWeight.w500),
               onTap: (index) {
                 final category = state.categories[index];
                 if (state.itemsByCategory[category] == null) {

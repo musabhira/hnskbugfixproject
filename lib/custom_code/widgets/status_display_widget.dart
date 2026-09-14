@@ -600,7 +600,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 118,
+        height: 126,
         alignment: Alignment.center,
         child: _isLoading
             ? _buildShimmerLoading()
@@ -660,11 +660,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
   Widget _buildMiniDivider() {
     return Container(
-      width: 1.5,
-      height: 56,
-      margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      width: 1.0,
+      height: 38,
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(1),
       ),
     );
@@ -1101,34 +1101,34 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       onTap: _openStatusUpload,
       onLongPress: _openStatusUpload,
       child: Container(
-        width: 76,
+        width: 82,
         margin: const EdgeInsets.only(right: 12),
         child: Column(
           children: [
             Container(
-              width: 64,
-              height: 64,
+              width: 72,
+              height: 72,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: const Color(0xFFFFFC00).withValues(alpha: 0.5), width: 1.5),
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.6), width: 1.8),
                 color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                    blurRadius: 6,
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                    blurRadius: 8,
                   )
                 ],
               ),
               child:
-                  const Icon(Icons.add_rounded, size: 28, color: Color(0xFFFFFC00)),
+                  const Icon(Icons.add_rounded, size: 32, color: Color(0xFFFFFC00)),
             ),
             const SizedBox(height: 5),
             Text(
               'Add Vibe',
               style: GoogleFonts.outfit(
-                color: Colors.white.withValues(alpha: 0.8),
-                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.85),
+                fontSize: 12.5,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -1244,14 +1244,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return GestureDetector(
       onTap: () => _openStatusViewer(index, activeList),
       child: Container(
-        width: 76,
+        width: 82,
         margin: const EdgeInsets.only(right: 12),
         child: Column(
           children: [
             _buildAvatarWithRing(
               profileImageUrl,
               name,
-              64,
+              72,
               isGroup: isGroup,
               isWatched: isFullyWatched,
               vibePreviewUrl: vibePreviewUrl,
@@ -1262,7 +1262,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             Text(isOwn ? 'My Vibes' : name,
                 style: GoogleFonts.outfit(
                   color: isFullyWatched ? Colors.white60 : Colors.white,
-                  fontSize: 12,
+                  fontSize: 12.5,
                   fontWeight: isFullyWatched ? FontWeight.w400 : FontWeight.w600,
                 ),
                 overflow: TextOverflow.ellipsis,

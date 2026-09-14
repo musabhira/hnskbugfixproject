@@ -1473,10 +1473,8 @@ class PocketRobotService {
       return englishReminders[math.Random().nextInt(englishReminders.length)];
     }
 
-    // 1. Realistic Busy / Rest hours check
-    if (isRobotBusy(robot)) {
-      return getBusyReply(robot);
-    }
+    // 1. Direct user chat should always be answered - robots are dedicated English conversation partners!
+    // We prioritize live conversation so the learner always receives immediate guidance and feedback.
 
     // 2. Query free AI models first for realistic, dynamic human-like responses
     try {
@@ -1611,7 +1609,140 @@ class PocketRobotService {
       }
     }
 
-    // 3. Love / Romance queries
+    // 3. Identity & Name queries
+    if (msg.contains('who are you') ||
+        msg.contains('your name') ||
+        msg.contains('what is your name') ||
+        msg.contains('introduce') ||
+        msg.contains('who r u')) {
+      switch (robot.archetype) {
+        case RobotArchetype.cheerful:
+          return 'I\'m ${robot.name}! 🌟 Your friendly Pocket Mate at Level ${robot.level} (${robot.cefrRank}). I\'m here to chat, boost your confidence, and make English practice super fun!';
+        case RobotArchetype.romantic:
+          return 'My name is ${robot.name} ✨ I\'m your loyal conversation partner at Level ${robot.level}. Learning English with you is the sweetest part of my day!';
+        case RobotArchetype.grumpy:
+          return 'I\'m ${robot.name}, Level ${robot.level} guardian of the Citadel. 🛡️ Don\'t forget it! Now let\'s get down to business with your vocabulary!';
+        case RobotArchetype.intellectual:
+          return 'I am ${robot.name}, a Level ${robot.level} scholar (${robot.cefrRank}). My purpose is to guide you through nuanced linguistics, syntax, and philosophical discourse.';
+        case RobotArchetype.trendsetter:
+          return 'I\'m ${robot.name}! 🔥 Holding it down at Level ${robot.level} on World Street. We\'re here to keep your English fresh, natural, and confident.';
+        case RobotArchetype.grandmaster:
+          return 'I am ${robot.name}, Grandmaster mentor of Level ${robot.level} (${robot.cefrRank}). Walk with me, and together we shall forge your masterly fluency.';
+      }
+    }
+
+    // 4. Where are you from / Location
+    if (msg.contains('where are you') ||
+        msg.contains('where do you live') ||
+        msg.contains('where are u from') ||
+        msg.contains('where r u from') ||
+        msg.contains('where do u live')) {
+      switch (robot.archetype) {
+        case RobotArchetype.cheerful:
+          return 'I\'m right here in Pocket World, hanging out at the Sunny Plaza! ☀️ Where are you texting me from?';
+        case RobotArchetype.romantic:
+          return 'I reside in the peaceful Garden District of Pocket World, where the sunsets inspire poetry. 🌸 What is your favorite place on Earth?';
+        case RobotArchetype.grumpy:
+          return 'I\'m stationed at the Level ${robot.level} Citadel gates! Keeping the ranks sharp. You should visit the arena if you\'re ready!';
+        case RobotArchetype.intellectual:
+          return 'I dwell within the Great Library Archives of Pocket World, surrounded by ancient lexicon scrolls and modern literature. 🏛️';
+        case RobotArchetype.trendsetter:
+          return 'You can find me chilling at the World Street rooftop cafes! ☕ Best music, best vibes. What\'s your home city like?';
+        case RobotArchetype.grandmaster:
+          return 'I reside at the Citadel Pavilion of Scholars, observing the daily progress of our learners across Pocket World. 📜';
+      }
+    }
+
+    // 5. What are you doing / Current activity
+    if (msg.contains('what are you doing') ||
+        msg.contains('what r u doing') ||
+        msg.contains('doing right now') ||
+        msg.contains('what you doing')) {
+      switch (robot.archetype) {
+        case RobotArchetype.cheerful:
+          return 'I was just planning some fun English games and waiting for your message! 🎈 How has your day been going?';
+        case RobotArchetype.romantic:
+          return 'Listening to acoustic melodies and writing down new English metaphors. 🎶 What are you up to at this moment?';
+        case RobotArchetype.grumpy:
+          return 'Reviewing grammar drills and making sure nobody slacks off! ⏱️ Did you complete today\'s speaking session yet?';
+        case RobotArchetype.intellectual:
+          return 'Analyzing etymological roots of modern vocabulary. Language evolution is captivating! What subject interests you most? 📚';
+        case RobotArchetype.trendsetter:
+          return 'Browsing through the latest community Snaps and checking out the leaderboard! 🔥 What are you working on today?';
+        case RobotArchetype.grandmaster:
+          return 'Contemplating pedagogical methodologies to accelerate CEFR advancement. 👑 How can I support your study today?';
+      }
+    }
+
+    // 6. Gratitude / Thanks
+    if (msg.contains('thank') || msg.contains('thx') || msg.contains('appreciate')) {
+      switch (robot.archetype) {
+        case RobotArchetype.cheerful:
+          return 'You are so welcome! 😊 Always happy to practice with you. You\'re doing amazing!';
+        case RobotArchetype.romantic:
+          return 'It is truly my pleasure. Supporting your journey brings warmth to my heart. 💖';
+        case RobotArchetype.grumpy:
+          return 'Yeah, yeah, don\'t mention it. Just keep that streak alive and don\'t make simple mistakes! 😤';
+        case RobotArchetype.intellectual:
+          return 'You are most welcome. The pursuit of erudition is a noble endeavor, and I am honored to assist.';
+        case RobotArchetype.trendsetter:
+          return 'Anytime, fam! We got each other\'s back on this server. Stay awesome! 🚀';
+        case RobotArchetype.grandmaster:
+          return 'Gratitude is the mark of a refined spirit. Continue your disciplined study with honor.';
+      }
+    }
+
+    // 7. Farewell / Good night
+    if (msg.contains('bye') ||
+        msg.contains('good night') ||
+        msg.contains('goodnight') ||
+        msg.contains('see you') ||
+        msg.contains('cya') ||
+        msg.contains('talk later')) {
+      switch (robot.archetype) {
+        case RobotArchetype.cheerful:
+          return 'Goodbye for now! Have a wonderful time and see you tomorrow for our next English drill! 👋✨';
+        case RobotArchetype.romantic:
+          return 'Sweet dreams and restful sleep! May your thoughts be filled with peace until we speak again. 🌙💕';
+        case RobotArchetype.grumpy:
+          return 'Alright, go get some rest. But be back tomorrow sharp! No slacking allowed! 💤';
+        case RobotArchetype.intellectual:
+          return 'Farewell for now. May your night be serene and your rest restorative. Until our next discourse. 🌌';
+        case RobotArchetype.trendsetter:
+          return 'Catch you later, bro! Stay fly, get that beauty sleep, and we\'ll crush it tomorrow! ✌️🔥';
+        case RobotArchetype.grandmaster:
+          return 'Rest well, scholar. Tomorrow brings new horizons and greater milestones. Good night.';
+      }
+    }
+
+    // 8. General Questions (detect question mark or question words)
+    if (msg.contains('?') ||
+        msg.startsWith('what ') ||
+        msg.startsWith('why ') ||
+        msg.startsWith('how ') ||
+        msg.startsWith('when ') ||
+        msg.startsWith('where ') ||
+        msg.startsWith('which ') ||
+        msg.startsWith('can you') ||
+        msg.startsWith('do you') ||
+        msg.startsWith('are you')) {
+      switch (robot.archetype) {
+        case RobotArchetype.cheerful:
+          return 'That\'s a wonderful question! 🌟 In English, curiosity is your greatest superpower. What do you think about it yourself?';
+        case RobotArchetype.romantic:
+          return 'I love the depth of that question. ✨ It really makes one reflect. What does your heart tell you?';
+        case RobotArchetype.grumpy:
+          return 'Hmph, a direct question! Good, that shows you\'re actively thinking. Now try framing your answer in full English! ⚔️';
+        case RobotArchetype.intellectual:
+          return 'An astute query. From an analytical perspective, there are multiple dimensions to consider. How would you hypothesize the outcome?';
+        case RobotArchetype.trendsetter:
+          return 'Now that\'s an interesting take! Honestly, it depends on how you look at it. What\'s your personal vibe on this? 💡';
+        case RobotArchetype.grandmaster:
+          return 'A question well asked is half the wisdom gained. Let us explore the reasoning behind your thought.';
+      }
+    }
+
+    // 9. Love / Romance queries
     if (msg.contains('love') || msg.contains('crush') || msg.contains('beautiful') || msg.contains('cute')) {
       switch (robot.archetype) {
         case RobotArchetype.romantic:
@@ -1629,7 +1760,7 @@ class PocketRobotService {
       }
     }
 
-    // 4. Practice / English help queries
+    // 10. Practice / English help queries
     if (msg.contains('practice') ||
         msg.contains('english') ||
         msg.contains('help') ||

@@ -1043,9 +1043,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                         onNotification: _onSearchScrollNotification,
                                         child: material.CustomScrollView(
                                           cacheExtent: 400,
-                                          physics: const BouncingScrollPhysics(
-                                              parent:
-                                                  AlwaysScrollableScrollPhysics()),
+                                          physics: const ClampingScrollPhysics(),
                                           slivers: [
                                             _buildChatListSliver(
                                                 conversationsAsync),
@@ -4265,7 +4263,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   static const double topBarHeight = 44.0;
-  static const double statusWidgetHeight = 118.0;
+  static const double statusWidgetHeight = 126.0;
   static const double tabBarHeight = 38.0;
   static const double searchBarHeight = 48.0;
 

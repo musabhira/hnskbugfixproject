@@ -5201,22 +5201,22 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
         decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.12),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: color.withValues(alpha: 0.4)),
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(11),
+          border: Border.all(color: color.withValues(alpha: 0.5), width: 1.1),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(icon, style: const TextStyle(fontSize: 13)),
+            Text(icon, style: const TextStyle(fontSize: 15.5)),
             const SizedBox(width: 6),
             Text(
               label,
               style: GoogleFonts.outfit(
                 color: Colors.white,
-                fontSize: 10.5,
+                fontSize: 12.5,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 0.4,
               ),
@@ -5352,12 +5352,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   // --- TOP APP BAR HEADER ---
   Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         border: Border(
           bottom: BorderSide(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+            color: const Color(0xFFFFD700).withValues(alpha: 0.35),
             width: 1.2,
           ),
         ),
@@ -5366,7 +5366,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                color: Colors.white, size: 20),
+                color: Colors.white, size: 22),
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 4),
@@ -5379,16 +5379,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 7, vertical: 2),
+                          horizontal: 9, vertical: 3.5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFC00),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(7),
                       ),
                       child: Text(
                         'DAY ${widget.day}',
                         style: GoogleFonts.outfit(
                           color: Colors.black,
-                          fontSize: 10.5,
+                          fontSize: 12,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -5396,24 +5396,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        'ENGLISH LEARNING MISSION',
+                        'ENGLISH MISSION',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 13,
+                          fontSize: 15.5,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                          letterSpacing: 0.6,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 3),
                 Text(
                   'Stage ${widget.day}/90 • Reward: +${100 + (widget.day - 1) * 50} XP',
                   style: GoogleFonts.inter(
                     color: const Color(0xFF6EE7B7),
-                    fontSize: 11,
+                    fontSize: 12.5,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -5421,23 +5421,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(10),
               border:
-                  Border.all(color: Colors.amberAccent.withValues(alpha: 0.4)),
+                  Border.all(color: Colors.amberAccent.withValues(alpha: 0.45)),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('⚡', style: TextStyle(fontSize: 12)),
-                const SizedBox(width: 3),
+                const Text('⚡', style: TextStyle(fontSize: 13)),
+                const SizedBox(width: 4),
                 Text(
                   '+${100 + (widget.day - 1) * 50} XP',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
-                    fontSize: 11,
+                    fontSize: 12,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -5446,7 +5446,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   '• $_completedSubtasksCount/7',
                   style: GoogleFonts.inter(
                     color: Colors.white70,
-                    fontSize: 10.5,
+                    fontSize: 11.5,
                   ),
                 ),
               ],
