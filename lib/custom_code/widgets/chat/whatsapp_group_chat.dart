@@ -18,6 +18,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:google_fonts/google_fonts.dart' hide Config;
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image/image.dart' as img;
 import 'dart:io';
 
@@ -516,6 +517,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           PocketRobotService.getRobotByLevel(1);
       final dynLvl = PocketRobotService.getDynamicLevel(robot);
       return VectorAvatarConfig.getEvolutionAvatarForStage(dynLvl);
+    }
+    final member = _groupMembers.firstWhere(
+      (m) => m['user_id'] == targetId,
+      orElse: () => {},
+    );
+    final profile = member['profile'];
+    final lvl = (profile?['learning_day'] as num?)?.toInt() ??
+        (profile?['stage'] as num?)?.toInt() ??
+        (profile?['level'] as num?)?.toInt();
+    if (lvl != null && lvl > 0) {
+      return VectorAvatarConfig.getEvolutionAvatarForStage(lvl.clamp(1, 90));
     }
     final stage = (targetId.hashCode.abs() % 90) + 1;
     return VectorAvatarConfig.getEvolutionAvatarForStage(stage);
@@ -1543,7 +1555,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       _stagedAudioPath != null)
                     _buildStagedPreview(),
                   if (_showMentionSuggestions) _buildMentionSuggestions(),
-                  if (_isEnglishHubGroup)
+                  if (_isEnglishHubGroup || (widget.groupId.startsWith('p:') && PocketRobotService.isRobotId(widget.groupId.substring(2))))
                     ValueListenableBuilder<TextEditingValue>(
                       valueListenable: _messageController,
                       builder: (context, value, child) {
@@ -1648,18 +1660,25 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               onTap: () => _showUserOptionsDialog(message.senderId, message.senderName ?? 'User'),
               child: Padding(
                 padding: const EdgeInsets.only(left: 8, bottom: 4),
-                child: CircleAvatar(
-                  radius: 14,
-                  backgroundColor: Colors.grey[800],
-                  backgroundImage: () {
-                    final member = _groupMembers.firstWhere(
-                        (m) => m['user_id'] == message.senderId,
-                        orElse: () => {});
-                    final url = member['profile']?['profile_image_url'];
-                    return url != null ? NetworkImage(url) : null;
-                  }(),
-                  child: const Icon(Icons.person, size: 14, color: Colors.white),
-                ),
+                child: () {
+                  final isRobot = PocketRobotService.isRobotId(message.senderId);
+                  final member = _groupMembers.firstWhere(
+                      (m) => m['user_id'] == message.senderId,
+                      orElse: () => {});
+                  final url = member['profile']?['profile_image_url'];
+                  if (url != null && url.toString().isNotEmpty && !isRobot) {
+                    return CircleAvatar(
+                      radius: 14,
+                      backgroundColor: Colors.grey[800],
+                      backgroundImage: NetworkImage(url.toString()),
+                    );
+                  }
+                  return VectorAvatarWidget(
+                    config: _getPersonalAvatarConfig(message.senderId),
+                    size: 28,
+                    showAura: false,
+                  );
+                }(),
               ),
             ),
 
@@ -3124,7 +3143,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 12),
                 const SizedBox(width: 5),
                 Text(
-                  _isCorrectingText ? 'Checking...' : 'AI Polish',
+                  _isCorrectingText ? 'Checking...' : 'AI Correct ✨',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -3242,6 +3261,23 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                          return Row(
                            mainAxisSize: MainAxisSize.min,
                            children: [
+                             IconButton(
+                               iconSize: 18,
+                               constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
+                               padding: EdgeInsets.zero,
+                               tooltip: 'AI Correct Grammar ✨',
+                               icon: _isCorrectingText
+                                   ? const SizedBox(
+                                       width: 14,
+                                       height: 14,
+                                       child: CircularProgressIndicator(
+                                         strokeWidth: 1.5,
+                                         color: Color(0xFFFFFC00),
+                                       ),
+                                     )
+                                   : const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 18),
+                               onPressed: _isCorrectingText ? null : _correctTextWithAI,
+                             ),
                              IconButton(
                                iconSize: 20,
                                constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
@@ -3594,14 +3630,26 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   }
 
   Future<void> _handleCameraAction() async {
-    final status = await Permission.camera.request();
-    if (status.isGranted) {
-      _pickAndUploadImage(ImageSource.camera);
-    } else if (status.isPermanentlyDenied) {
-      _showErrorSnackBar('Camera access is permanently denied. Please enable it in settings.');
-      openAppSettings();
-    } else {
-      _showErrorSnackBar('Camera access denied. Please allow it to take photos.');
+    try {
+      if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+        await _pickAndUploadImage(ImageSource.camera);
+        return;
+      }
+      final status = await Permission.camera.request();
+      if (status.isGranted) {
+        await _pickAndUploadImage(ImageSource.camera);
+      } else if (status.isPermanentlyDenied) {
+        _showErrorSnackBar('Camera access is permanently denied. Please enable it in settings.');
+        openAppSettings();
+      } else {
+        await _pickAndUploadImage(ImageSource.camera);
+      }
+    } catch (_) {
+      try {
+        await _pickAndUploadImage(ImageSource.gallery);
+      } catch (e) {
+        _showErrorSnackBar('Could not open camera: $e');
+      }
     }
   }
 

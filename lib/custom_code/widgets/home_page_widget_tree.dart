@@ -1043,7 +1043,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                         onNotification: _onSearchScrollNotification,
                                         child: material.CustomScrollView(
                                           cacheExtent: 400,
-                                          physics: const ClampingScrollPhysics(),
+                                          physics: const BouncingScrollPhysics(
+                                              parent:
+                                                  AlwaysScrollableScrollPhysics()),
                                           slivers: [
                                             _buildChatListSliver(
                                                 conversationsAsync),

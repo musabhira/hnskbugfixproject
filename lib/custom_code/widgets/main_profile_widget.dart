@@ -185,6 +185,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Future<void> _loadPocketScore() async {
     try {
+      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+      final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+      if (isRobot) {
+        final robot = PocketRobotService.getRobotById(userId) ??
+            PocketRobotService.getRobotByLevel(1);
+        final dynLvl = PocketRobotService.getDynamicLevel(robot);
+        final robotScore = dynLvl * 100;
+        if (mounted) setState(() => _pocketScore = robotScore);
+        return;
+      }
       final score = await PocketFortressDefenseService.getUnifiedScore(userId);
       if (mounted) setState(() => _pocketScore = score);
     } catch (_) {}
@@ -412,8 +422,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final stage = LearningMilestoneStage.getStageForDay(day);
     _testStageIndex = (stage.stageNumber - 1).clamp(0, LearningMilestoneStage.allStages.length - 1);
 
-    final fromProfile = (data['learning_points'] as num?)?.toInt() ?? (data['xp'] as num?)?.toInt() ?? 0;
-    if (fromProfile > _pocketScore) {
+    final fromProfile = (data['learning_points'] as num?)?.toInt() ?? (data['xp'] as num?)?.toInt();
+    if (fromProfile != null) {
       _pocketScore = fromProfile;
     }
 

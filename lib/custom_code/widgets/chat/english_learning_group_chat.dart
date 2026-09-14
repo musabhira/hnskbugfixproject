@@ -205,7 +205,7 @@ class _EnglishLearningGroupChatWidgetState
     if (_isMember && _groupId != null) {
       return WhatsAppGroupChat(
         groupId: _groupId!,
-        groupName: _groupName ?? _levelGroup?.groupName ?? 'English Hub (Lvl 1 - 6)',
+        groupName: _groupName ?? _levelGroup?.groupName ?? 'English Hub (All Learners • Lvl 1 - 90)',
         showBackButton: false,
       );
     }

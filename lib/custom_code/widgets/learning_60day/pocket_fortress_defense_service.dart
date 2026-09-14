@@ -461,24 +461,45 @@ class PocketFortressDefenseService {
   static const String _pointsKey = 'user_house_points_v1';
   static const String _jailedHousesListKey = 'pocket_jailed_houses_list';
 
-  /// 🪙 Unified Pocket Score (Single coherent currency & progression score across entire app)
-  /// User audio directive: "ഒരു പോക്കറ്റ് സ്കോർ മാത്രമേ ഉള്ളൂ. ചാറ്റ് ചെയ്യുമ്പോൾ, ഗ്രൂപ്പ് ചാറ്റ് ചെയ്യുമ്പോൾ, ലെവൽ കഴിയുമ്പോൾ ഒക്കെയാണ് പോക്കറ്റ് സ്കോർ കൂടുന്നത്."
+  /// 🪙 Unified Pocket Score (Single coherent currency & progression score strictly scoped per user)
   static Future<int> getUnifiedScore([String? uid]) async {
     final prefs = await SharedPreferences.getInstance();
     final myId = uid ?? SupaFlow.client.auth.currentUser?.id;
-    final coins = prefs.getInt(_coinsKey) ?? 0;
-    final points = prefs.getInt(_pointsKey) ?? 0;
-    final learningPts = myId != null ? (prefs.getInt('learning_points_$myId') ?? 0) : 0;
-
-    int unified = math.max(coins, math.max(points, learningPts));
-
-    // Keep all local keys in absolute parity
-    await prefs.setInt(_coinsKey, unified);
-    await prefs.setInt(_pointsKey, unified);
-    if (myId != null) {
-      await prefs.setInt('learning_points_$myId', unified);
+    if (myId == null || myId.isEmpty) {
+      return 0;
     }
-    return unified;
+
+    // Clean up legacy global shared keys so they never cross-contaminate accounts
+    if (prefs.containsKey('user_pocket_coins')) {
+      prefs.remove('user_pocket_coins');
+    }
+    if (prefs.containsKey('user_house_points_v1')) {
+      prefs.remove('user_house_points_v1');
+    }
+
+    final userScoreKey = 'user_pocket_score_$myId';
+    int? userScore = prefs.getInt(userScoreKey);
+
+    if (userScore == null) {
+      // Fetch user-specific score from Supabase
+      try {
+        final profile = await SupaFlow.client
+            .from('profile')
+            .select('xp, learning_points')
+            .eq('user_id', myId)
+            .maybeSingle();
+        if (profile != null) {
+          final xp = (profile['xp'] as num?)?.toInt();
+          final lp = (profile['learning_points'] as num?)?.toInt();
+          userScore = math.max(xp ?? 0, lp ?? 0);
+        }
+      } catch (_) {}
+
+      userScore ??= prefs.getInt('learning_points_$myId') ?? 0;
+      await prefs.setInt(userScoreKey, userScore);
+    }
+
+    return userScore;
   }
 
   /// Update the unified Pocket Score everywhere (Coins, Points, Supabase XP & learning_points)
@@ -487,9 +508,8 @@ class PocketFortressDefenseService {
     final myId = uid ?? SupaFlow.client.auth.currentUser?.id;
     final score = math.max(0, newScore);
 
-    await prefs.setInt(_coinsKey, score);
-    await prefs.setInt(_pointsKey, score);
-    if (myId != null) {
+    if (myId != null && myId.isNotEmpty) {
+      await prefs.setInt('user_pocket_score_$myId', score);
       await prefs.setInt('learning_points_$myId', score);
       try {
         await SupaFlow.client.from('profile').update({
@@ -1878,9 +1898,8 @@ class PocketFortressDefenseService {
 
   /// Award coins after a successful raid
   static Future<void> awardRaidLoot(int coins) async {
-    final prefs = await SharedPreferences.getInstance();
-    final currentCoins = prefs.getInt(_coinsKey) ?? 150;
-    await prefs.setInt(_coinsKey, currentCoins + coins);
+    final currentCoins = await getUnifiedScore();
+    await setUnifiedScore(currentCoins + coins);
   }
 
   /// Load custom shield questions

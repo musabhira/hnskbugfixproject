@@ -674,10 +674,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   Widget _buildMiniDivider() {
     return Container(
       width: 1.0,
-      height: 38,
-      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 16),
+      height: 26,
+      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 22),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.18),
+        color: Colors.white.withValues(alpha: 0.16),
         borderRadius: BorderRadius.circular(1),
       ),
     );
@@ -1133,8 +1133,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       onTap: _openStatusUpload,
       onLongPress: _openStatusUpload,
       child: Container(
-        width: 82,
-        margin: const EdgeInsets.only(right: 12),
+        width: 80,
+        margin: const EdgeInsets.only(right: 16),
         child: Column(
           children: [
             Container(
@@ -1276,8 +1276,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return GestureDetector(
       onTap: () => _openStatusViewer(index, activeList),
       child: Container(
-        width: 82,
-        margin: const EdgeInsets.only(right: 12),
+        width: 80,
+        margin: const EdgeInsets.only(right: 16),
         child: Column(
           children: [
             _buildAvatarWithRing(

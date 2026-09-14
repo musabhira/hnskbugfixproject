@@ -23,7 +23,7 @@ class PocketSnapService {
 
   static final _supabase = SupaFlow.client;
 
-  /// 📸 Launch the Snapchat-style Snap flow with graceful Windows/Desktop camera fallback
+  /// 📸 Launch camera directly for instant Snap creation
   static Future<void> launchSnapWorkflow(
     BuildContext context, {
     required String userId,
@@ -31,17 +31,48 @@ class PocketSnapService {
     String? preselectedRecipientId,
     VoidCallback? onUploaded,
   }) async {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) => _SnapLauncherSheet(
-        userId: userId,
-        profileId: profileId,
-        preselectedRecipientId: preselectedRecipientId,
-        onUploaded: onUploaded,
-      ),
-    );
+    try {
+      XFile? photo;
+      if (!kIsWeb && io.Platform.isWindows) {
+        photo = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 90);
+      } else {
+        photo = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 85);
+      }
+
+      if (photo != null && context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SnapchatStoryCreatorPage(
+              userId: userId,
+              profileId: profileId,
+              initialFile: photo,
+              initialMediaType: 'image',
+              onStatusUploaded: onUploaded,
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Direct camera error: $e, falling back to gallery');
+      try {
+        final photo = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 90);
+        if (photo != null && context.mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => SnapchatStoryCreatorPage(
+                userId: userId,
+                profileId: profileId,
+                initialFile: photo,
+                initialMediaType: 'image',
+                onStatusUploaded: onUploaded,
+              ),
+            ),
+          );
+        }
+      } catch (_) {}
+    }
   }
 
   /// 🚀 Send a direct Snap to one or more Pocket Mates + optionally post to Story
@@ -182,13 +213,14 @@ class PocketSnapService {
 }
 
 /// 📱 Bottom Action Sheet for Snapchat-Style Snap launcher
-class _SnapLauncherSheet extends StatelessWidget {
+class SnapLauncherSheet extends StatelessWidget {
   final String userId;
   final String profileId;
   final String? preselectedRecipientId;
   final VoidCallback? onUploaded;
 
-  const _SnapLauncherSheet({
+  const SnapLauncherSheet({
+    super.key,
     required this.userId,
     required this.profileId,
     this.preselectedRecipientId,

@@ -216,7 +216,7 @@ class EnglishHubLevelGroupService {
     },
   ];
 
-  /// Fetch all active level groups from Supabase, auto-seeding defaults if empty
+  /// Fetch all active level groups from Supabase, auto-seeding single unified hub if empty
   static Future<List<EnglishHubLevelGroup>> getLevelGroups({bool activeOnly = true}) async {
     try {
       var query = _supabase.from('english_hub_level_groups').select('*');
@@ -226,12 +226,7 @@ class EnglishHubLevelGroupService {
       final res = await query.order('min_level', ascending: true);
       var list = (res as List).map((m) => EnglishHubLevelGroup.fromMap(m)).toList();
 
-      // Ensure Level 1-5 and Level 6-11 are strictly enforced (auto-reseed if stale brackets exist)
-      final bool needsReSeed = list.isEmpty ||
-          !list.any((g) => g.minLevel == 6) ||
-          list.any((g) => g.minLevel == 1 && g.maxLevel > 5);
-
-      if (needsReSeed) {
+      if (list.isEmpty) {
         await seedDefaultLevelGroups();
         var reQuery = _supabase.from('english_hub_level_groups').select('*');
         if (activeOnly) {
@@ -243,8 +238,8 @@ class EnglishHubLevelGroupService {
       return list;
     } catch (e) {
       debugPrint('Error loading english_hub_level_groups: $e');
-      // Fallback in-memory list
-      return kDefaultBrackets.map((b) => EnglishHubLevelGroup(
+      // Fallback in-memory list (default single unified hub for all learners)
+      return kPresetSingleUnifiedHub.map((b) => EnglishHubLevelGroup(
         id: 'fallback_${b['order']}',
         groupId: 'english_hub_lvl_${b['min']}_${b['max']}',
         groupName: b['name'] as String,
@@ -259,10 +254,12 @@ class EnglishHubLevelGroupService {
   }
 
   /// Provision default level groups into `groups` and `english_hub_level_groups`
-  static Future<void> seedDefaultLevelGroups() async {
+  /// Defaults to Single Unified Hub (1 - 90) unless custom brackets provided
+  static Future<void> seedDefaultLevelGroups([List<Map<String, dynamic>>? brackets]) async {
     try {
+      final toSeed = brackets ?? kPresetSingleUnifiedHub;
       final currentUserId = _supabase.auth.currentUser?.id;
-      for (final b in kDefaultBrackets) {
+      for (final b in toSeed) {
         final groupName = b['name'] as String;
         final minLvl = b['min'] as int;
         final maxLvl = b['max'] as int;
@@ -347,13 +344,13 @@ class EnglishHubLevelGroupService {
     }
     return const EnglishHubLevelGroup(
       id: 'default',
-      groupId: '5ffb8e2d-86a9-4ad7-ac93-9fdefdf43e87',
-      groupName: 'English Hub (Lvl 1 - 5)',
+      groupId: 'english_hub_all_learners',
+      groupName: 'English Hub (All Learners • Lvl 1 - 90)',
       minLevel: 1,
-      maxLevel: 5,
-      stageTitle: 'Rookie Foundations',
-      tagBadge: 'A1 Beginner',
-      iconEmoji: '🌱',
+      maxLevel: 90,
+      stageTitle: 'The Sovereign English Commonwealth',
+      tagBadge: 'All 90 Levels',
+      iconEmoji: '🌟',
     );
   }
 
