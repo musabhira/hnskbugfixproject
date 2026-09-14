@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Pocket Mates</title>
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #FFFC00;
+            --primary-hover: #E6E300;
+            --bg-dark: #0B0E14;
+            --card-bg: rgba(26, 32, 44, 0.75);
+            --border-color: rgba(255, 252, 0, 0.15);
+            --text-main: #FFFFFF;
+            --text-muted: #A0AEC0;
+            --accent: #00F0FF;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        .ambient-glow {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 252, 0, 0.08) 0%, rgba(11, 14, 20, 0) 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        header {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 20px 0;
+            position: sticky;
+            top: 0;
+            background: rgba(11, 14, 20, 0.85);
+            backdrop-filter: blur(16px);
+            z-index: 10;
+        }
+
+        .header-content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .logo-img {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .logo-text {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--primary);
+        }
+
+        .badge-live {
+            background: rgba(255, 252, 0, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(255, 252, 0, 0.3);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        main {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 40px auto 80px;
+            padding: 0 24px;
+        }
+
+        .policy-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 48px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.6rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            letter-spacing: -0.8px;
+            margin-bottom: 8px;
+        }
+
+        .meta-info {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 36px;
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .meta-info span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 36px;
+            margin-bottom: 14px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(255, 252, 0, 0.1);
+        }
+
+        p {
+            margin-bottom: 16px;
+            color: #E2E8F0;
+            font-size: 1rem;
+        }
+
+        ul {
+            margin-bottom: 20px;
+            padding-left: 24px;
+        }
+
+        li {
+            margin-bottom: 10px;
+            color: #CBD5E0;
+            font-size: 0.95rem;
+        }
+
+        li strong {
+            color: #FFFFFF;
+        }
+
+        .highlight-box {
+            background: rgba(255, 252, 0, 0.05);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 24px 0;
+            font-size: 0.95rem;
+            color: #F7FAFC;
+        }
+
+        .contact-box {
+            background: rgba(0, 240, 255, 0.05);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 36px;
+        }
+
+        .contact-box h3 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--accent);
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        a:hover {
+            color: var(--primary-hover);
+            text-decoration: underline;
+        }
+
+        footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 30px 0;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        @media (max-width: 640px) {
+            .policy-card {
+                padding: 24px 18px;
+                border-radius: 18px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            h2 {
+                font-size: 1.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow"></div>
+
+    <header>
+        <div class="header-content">
+            <a href="/" class="logo-area">
+                <img src="favicon.png" alt="Pocket Mates Logo" class="logo-img">
+                <span class="logo-text">Pocket Mates</span>
+            </a>
+            <span class="badge-live">Official Policy</span>
+        </div>
+    </header>
+
+    <main>
+        <div class="policy-card">
+            <h1>Privacy Policy</h1>
+            <div class="meta-info">
+                <span>📅 <strong>Effective Date:</strong> September 14, 2026</span>
+                <span>📱 <strong>Application:</strong> Pocket Mates</span>
+                <span>🏷️ <strong>Package ID:</strong> com.mycompany.pocketmatesapp</span>
+            </div>
+
+            <p>Welcome to <strong>Pocket Mates</strong> ("we," "us," or "our"). We are dedicated to protecting your privacy and ensuring you have a safe, transparent, and empowering experience while learning, communicating, and interacting with friends, learners, and companion AI tutors.</p>
+            
+            <p>This Privacy Policy outlines how our application collects, uses, handles, and discloses your information in full compliance with the <strong>Google Play Developer Program Policies</strong>, including the User Data Policy and European/international data protection laws (GDPR/CCPA).</p>
+
+            <div class="highlight-box">
+                <strong>Key Summary:</strong> We never sell your personal data. We only collect information strictly required to provide real-time messaging, audio/video interaction, English learning progress tracking, and community safety. You maintain full ownership and control over your account and data at all times.
+            </div>
+
+            <h2>1. Information We Collect</h2>
+            <p>We collect information to provide, maintain, and improve our services across three primary categories:</p>
+
+            <ul>
+                <li><strong>Account & Profile Information:</strong> When you register, we collect your name, email address, password (securely hashed), profile picture, biography, and learning goals.</li>
+                <li><strong>Messages & User-Generated Content (UGC):</strong> We process messages, voice notes, photos, and media that you choose to send in private 1-on-1 chats, group hubs (such as the English Hub), or share as Vibes (status stories).</li>
+                <li><strong>Camera, Microphone & Storage:</strong> With your explicit runtime permission:
+                    <ul>
+                        <li><strong>Camera & Photos:</strong> Accessed only when you capture photos/videos for Pocket Snaps, update your profile picture, or engage in video calling.</li>
+                        <li><strong>Microphone:</strong> Accessed only when you record voice notes, practice English pronunciation, or participate in live voice calls.</li>
+                    </ul>
+                </li>
+                <li><strong>Learning Milestones & Progression:</strong> To track your 90-Day English mastery, we record completed tasks, streaks, quiz scores, and unified Pocket Scores.</li>
+                <li><strong>Technical & Diagnostic Data:</strong> Device model, operating system version, crash logs, and network performance indicators collected to troubleshoot crashes and maintain high availability.</li>
+            </ul>
+
+            <h2>2. How We Use Your Information</h2>
+            <p>Your information is used strictly for legitimate operational purposes:</p>
+            <ul>
+                <li><strong>Core Functionality:</strong> Facilitating instant messaging, real-time peer-to-peer audio/video calling, and community learning feeds.</li>
+                <li><strong>AI Tutoring & Speech Correction:</strong> Providing grammar correction, speech-to-text assistance, and interactive English conversational coaching.</li>
+                <li><strong>Account Security & Moderation:</strong> Protecting users by verifying accounts, detecting abusive content, enforcing user blocks, and preventing spam.</li>
+                <li><strong>Push Notifications:</strong> Delivering alerts regarding incoming direct messages, friend requests, and study streak reminders.</li>
+            </ul>
+
+            <h2>3. Data Sharing & Third-Party Service Providers</h2>
+            <p>We do not sell, rent, or trade your personal data to advertisers or third-party brokers. We share data only with industry-leading infrastructure providers necessary to operate the application:</p>
+            <ul>
+                <li><strong>Supabase:</strong> For secure database management, user authentication, and cloud asset storage using encrypted connections (TLS/SSL).</li>
+                <li><strong>Google Firebase:</strong> For reliable real-time notifications, hosting, and operational telemetry.</li>
+                <li><strong>WebRTC Protocols:</strong> Audio and video calls are established peer-to-peer directly between callers where feasible; call stream media is not recorded or stored on our servers.</li>
+            </ul>
+
+            <h2>4. Safety, Moderation & Anti-Harassment Standards</h2>
+            <p>To foster a respectful and safe global community, Pocket Mates maintains strict policies against objectionable content:</p>
+            <ul>
+                <li><strong>In-App Blocking:</strong> You can instantly block any user or automated companion at any time from their profile or chat view.</li>
+                <li><strong>In-App Reporting:</strong> You can report objectionable messages, inappropriate content, or abusive behavior directly through the report dialog.</li>
+                <li><strong>Zero Tolerance:</strong> Reported content is reviewed promptly. Violating content is removed and offending accounts are subject to immediate suspension.</li>
+            </ul>
+
+            <h2>5. Data Retention & Account Deletion Policy</h2>
+            <p>We retain your data only for as long as your account remains active or as required to provide services. You retain full autonomy over your data:</p>
+            <ul>
+                <li><strong>Self-Service Account Deletion:</strong> You can permanently delete your account and all associated personal data directly within the app settings.</li>
+                <li><strong>Immediate Purge:</strong> Upon deletion, your profile information, private messages, and media will be permanently deleted from our active database systems.</li>
+                <li><strong>Data Request:</strong> You may also request an export or manual erasure of your data by contacting us directly at our support email.</li>
+            </ul>
+
+            <h2>6. Children's Privacy</h2>
+            <p>Pocket Mates does not knowingly solicit or collect personal information from children under the age of 13. If we become aware that a child under 13 has provided personal information without verified parental consent, we will take prompt steps to delete such data from our servers.</p>
+
+            <h2>7. Changes to This Policy</h2>
+            <p>We may update our Privacy Policy periodically to reflect technological improvements or regulatory adjustments. We will notify you of any material changes by updating the "Effective Date" at the top of this page and providing a notice within the app.</p>
+
+            <div class="contact-box">
+                <h3>Contact & Data Protection Officer</h3>
+                <p>If you have questions, concerns, or requests regarding this Privacy Policy or your personal data, please contact our support team:</p>
+                <p><strong>Email:</strong> <a href="mailto:support@pocketmates.com">support@pocketmates.com</a></p>
+                <p><strong>Developer:</strong> Pocket Mates Team</p>
+                <p><strong>Application:</strong> Pocket Mates (Android & Web)</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Pocket Mates. All rights reserved.</p>
+    </footer>
+</body>
+</html>
