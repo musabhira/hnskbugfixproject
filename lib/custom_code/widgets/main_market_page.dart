@@ -448,6 +448,9 @@ class MarketItemsList extends ConsumerWidget {
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
+            cacheExtent: 500,
+            addAutomaticKeepAlives: true,
+            addRepaintBoundaries: true,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             itemCount: items.length +
@@ -467,10 +470,15 @@ class MarketItemsList extends ConsumerWidget {
               if (actualItemIndex >= items.length) {
                 return const ItemSkeleton();
               }
-              return MarketItemCard(
-                  item: items[actualItemIndex],
-                  index: actualItemIndex,
-                  allItems: items);
+              final currentItem = items[actualItemIndex];
+              final itemId = currentItem['id']?.toString() ?? '$actualItemIndex';
+              return RepaintBoundary(
+                key: ValueKey('market_item_${itemId}_$actualItemIndex'),
+                child: MarketItemCard(
+                    item: currentItem,
+                    index: actualItemIndex,
+                    allItems: items),
+              );
             },
           ),
         ),
@@ -582,14 +590,22 @@ class _MarketFollowingTabViewState
             crossAxisCount: crossAxisCount,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
+            cacheExtent: 500,
+            addAutomaticKeepAlives: true,
+            addRepaintBoundaries: true,
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
             itemCount: state.items.length,
             itemBuilder: (context, index) {
-              return MarketItemCard(
-                  item: state.items[index],
-                  index: index,
-                  allItems: state.items);
+              final item = state.items[index];
+              final itemId = item['id']?.toString() ?? '$index';
+              return RepaintBoundary(
+                key: ValueKey('following_item_${itemId}_$index'),
+                child: MarketItemCard(
+                    item: item,
+                    index: index,
+                    allItems: state.items),
+              );
             },
           ),
         ),
@@ -634,7 +650,8 @@ class _MarketItemCardState extends State<MarketItemCard> {
     final userName = item['name'] ?? 'Artist';
     final userProfileImg = item['profile_image_url'];
 
-    return GestureDetector(
+    return RepaintBoundary(
+      child: GestureDetector(
       onTap: () {
         Navigator.push(
           context,
@@ -794,6 +811,7 @@ class _MarketItemCardState extends State<MarketItemCard> {
           ],
         ),
       ),
+    ),
     );
   }
 }

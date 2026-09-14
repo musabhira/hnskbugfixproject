@@ -606,22 +606,35 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             ? _buildShimmerLoading()
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
-                cacheExtent: 350,
+                cacheExtent: 400,
+                addAutomaticKeepAlives: true,
+                addRepaintBoundaries: true,
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
                 itemCount: combined.length + 1, // Add 1 for "Add"
                 itemBuilder: (context, index) {
-                  if (index == 0) return _buildAddStatusButton();
+                  if (index == 0) {
+                    return RepaintBoundary(
+                      key: const ValueKey('add_status_btn'),
+                      child: _buildAddStatusButton(),
+                    );
+                  }
                   
                   final item = combined[index - 1];
                   if (item is String && item == 'DIVIDER') {
-                    return _buildMiniDivider();
+                    return RepaintBoundary(
+                      key: const ValueKey('status_divider'),
+                      child: _buildMiniDivider(),
+                    );
                   }
 
                   final statusGroup = item as Map<String, dynamic>;
-                  // Calculate the actual index in the maps-only list for the viewer
                   final actualMapIndex = onlyGroups.indexOf(statusGroup);
+                  final profileId = statusGroup['profile']?['id']?.toString() ?? '$index';
                   
-                  return _buildStatusItem(statusGroup, actualMapIndex, true, listOverride: onlyGroups);
+                  return RepaintBoundary(
+                    key: ValueKey('status_h_$profileId'),
+                    child: _buildStatusItem(statusGroup, actualMapIndex, true, listOverride: onlyGroups),
+                  );
                 },
               ),
       ),
@@ -755,6 +768,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           Expanded(
             child: GridView.builder(
               padding: const EdgeInsets.all(16),
+              cacheExtent: 400,
+              addAutomaticKeepAlives: true,
+              addRepaintBoundaries: true,
               physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics()),
               itemCount: onlyGroups.length, // Use onlyGroups for grid
@@ -766,7 +782,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               ),
               itemBuilder: (context, index) {
                 final statusGroup = onlyGroups[index];
-                return _buildGridStatusItem(statusGroup, index, onlyGroups);
+                final profileId = statusGroup['profile']?['id']?.toString() ?? '$index';
+                return RepaintBoundary(
+                  key: ValueKey('grid_status_${profileId}_$index'),
+                  child: _buildGridStatusItem(statusGroup, index, onlyGroups),
+                );
               },
             ),
           ),
@@ -776,7 +796,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
-      cacheExtent: 350,
+      cacheExtent: 400,
+      addAutomaticKeepAlives: true,
+      addRepaintBoundaries: true,
       physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics()),
       itemCount: filteredData.length,
@@ -790,28 +812,38 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
            final statusGroup = item as Map<String, dynamic>;
            final viewerIndex = onlyGroups.indexOf(statusGroup);
            
-           return Column(
-             crossAxisAlignment: CrossAxisAlignment.start,
-             children: [
-               _buildVerticalSectionHeader('My Vibes'),
-               _buildStatusItem(statusGroup, viewerIndex, false,
-                   listOverride: onlyGroups),
-             ],
+           return RepaintBoundary(
+             key: const ValueKey('vertical_my_vibes'),
+             child: Column(
+               crossAxisAlignment: CrossAxisAlignment.start,
+               children: [
+                 _buildVerticalSectionHeader('My Vibes'),
+                 _buildStatusItem(statusGroup, viewerIndex, false,
+                     listOverride: onlyGroups),
+               ],
+             ),
            );
         }
         
         final item = filteredData[index];
         
         if (item is String && item == 'DIVIDER') {
-           return _buildVerticalSectionHeader('Explore Vibes');
+           return RepaintBoundary(
+             key: const ValueKey('vertical_vibes_divider'),
+             child: _buildVerticalSectionHeader('Explore Vibes'),
+           );
         }
 
         final statusGroup = item as Map<String, dynamic>;
         // Calculate index among Map items for the viewer
         final viewerIndex = onlyGroups.indexOf(statusGroup);
+        final profileId = statusGroup['profile']?['id']?.toString() ?? '$index';
         
-        return _buildStatusItem(statusGroup, viewerIndex, false,
-            listOverride: onlyGroups);
+        return RepaintBoundary(
+          key: ValueKey('vertical_status_${profileId}_$index'),
+          child: _buildStatusItem(statusGroup, viewerIndex, false,
+              listOverride: onlyGroups),
+        );
       },
     );
   }

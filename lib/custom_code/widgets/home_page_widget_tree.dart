@@ -1700,103 +1700,109 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       delegate: SliverChildBuilderDelegate(
         (context, index) {
           final req = _pendingRequests[index];
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E293B) : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark ? Colors.white10 : Colors.black12,
-                width: 1,
-              ),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
-                  backgroundImage: req['sender_profile_image'] != null
-                      ? NetworkImage(req['sender_profile_image'])
-                      : null,
-                  child: req['sender_profile_image'] == null
-                      ? Text(
-                          (req['sender_name'] ?? 'M')[0].toUpperCase(),
-                          style: const TextStyle(
-                            color: Color(0xFFFFFC00),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        )
-                      : null,
+          final reqId = req['id']?.toString() ?? '$index';
+          return RepaintBoundary(
+            key: ValueKey(reqId),
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : Colors.black12,
+                  width: 1,
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                    backgroundImage: req['sender_profile_image'] != null
+                        ? NetworkImage(req['sender_profile_image'])
+                        : null,
+                    child: req['sender_profile_image'] == null
+                        ? Text(
+                            (req['sender_name'] ?? 'M')[0].toUpperCase(),
+                            style: const TextStyle(
+                              color: Color(0xFFFFFC00),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          )
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          req['sender_name'] ?? 'Pocket Mate',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          req['message'] ?? 'wants to connect as a Mate',
+                          style: GoogleFonts.inter(
+                            fontSize: 12,
+                            color: isDark ? Colors.white54 : Colors.black54,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        req['sender_name'] ?? 'Pocket Mate',
-                        style: GoogleFonts.outfit(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
+                      // Accept button
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFFC00),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          minimumSize: const Size(60, 32),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 0,
+                        ),
+                        onPressed: () => _acceptMateRequest(req),
+                        child: Text(
+                          'Accept',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        req['message'] ?? 'Wants to become your Pocket Mate',
-                        style: GoogleFonts.outfit(
-                          color: isDark ? Colors.white70 : Colors.black54,
-                          fontSize: 13,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
+                      const SizedBox(width: 6),
+                      // Decline button
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        padding: EdgeInsets.zero,
+                        onPressed: () => _declineMateRequest(req),
+                        tooltip: 'Decline',
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(width: 8),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Accept button
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        minimumSize: Size.zero,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        elevation: 0,
-                      ),
-                      onPressed: () => _acceptMateRequest(req),
-                      child: Text(
-                        'Accept',
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    // Decline button
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                      padding: EdgeInsets.zero,
-                      onPressed: () => _declineMateRequest(req),
-                      tooltip: 'Decline',
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },
         childCount: _pendingRequests.length,
+        addAutomaticKeepAlives: true,
+        addRepaintBoundaries: true,
       ),
     );
   }
@@ -1994,7 +2000,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 return _buildNotificationsTile(
                                     allNotifications.length);
                               }
-                              return ConversationTile(
+                              return RepaintBoundary(
+                                key: ValueKey(conversation.id),
+                                child: ConversationTile(
                                 key: ValueKey(conversation.id),
                                 conversation: conversation,
                                 currentUserId: _currentUserId ?? '',
@@ -2124,9 +2132,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                     );
                                   }
                                 },
+                              ),
                               );
                             },
                             childCount: displayActiveConversations.length,
+                            addAutomaticKeepAlives: true,
+                            addRepaintBoundaries: true,
                           ),
                         ),
                       ],
@@ -2226,7 +2237,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   final isRobot =
                                       PocketRobotService.isRobotId(userId);
 
-                                  return GestureDetector(
+                                  return RepaintBoundary(
+                                    key: ValueKey('person_grid_${userId}_$index'),
+                                    child: GestureDetector(
                                     onTap: () {
                                       Navigator.push(
                                         context,
@@ -2268,25 +2281,31 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             MainAxisAlignment.center,
                                         children: [
                                           Stack(
-                                            clipBehavior: Clip.none,
+                                            alignment: Alignment.bottomRight,
                                             children: [
                                               CircleAvatar(
-                                                radius: 22,
-                                                backgroundImage: avatarUrl != null
-                                                    ? NetworkImage(avatarUrl)
+                                                radius: 20,
+                                                backgroundColor: const Color(
+                                                        0xFFFFFC00)
+                                                    .withValues(alpha: 0.15),
+                                                backgroundImage: (avatarUrl !=
+                                                            null &&
+                                                        avatarUrl.isNotEmpty)
+                                                    ? CachedNetworkImageProvider(
+                                                        avatarUrl)
                                                     : null,
-                                                backgroundColor:
-                                                    const Color(0xFFFFFC00),
-                                                child: avatarUrl == null
+                                                child: (avatarUrl == null ||
+                                                        avatarUrl.isEmpty)
                                                     ? Text(
                                                         name.isNotEmpty
                                                             ? name[0]
                                                                 .toUpperCase()
                                                             : '?',
-                                                        style: const TextStyle(
-                                                          color: material
-                                                              .Colors.black,
-                                                          fontSize: 13,
+                                                        style:
+                                                            GoogleFonts.outfit(
+                                                          color: const Color(
+                                                              0xFFFFFC00),
+                                                          fontSize: 14,
                                                           fontWeight:
                                                               FontWeight.bold,
                                                         ),
@@ -2295,8 +2314,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               ),
                                               if (isRobot)
                                                 Positioned(
-                                                  bottom: -2,
                                                   right: -2,
+                                                  bottom: -2,
                                                   child: Container(
                                                     padding:
                                                         const EdgeInsets.all(2),
@@ -2342,9 +2361,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                         ],
                                       ),
                                     ),
+                                  ),
                                   );
                                 },
                                 childCount: peopleResults.length,
+                                addAutomaticKeepAlives: true,
+                                addRepaintBoundaries: true,
                               ),
                             ),
                           )
@@ -2363,7 +2385,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 final bio = person['bio'] ??
                                     (isRobot ? 'AI Companion' : '');
 
-                                return Container(
+                                return RepaintBoundary(
+                                  key: ValueKey('person_list_${userId}_$index'),
+                                  child: Container(
                                   margin: const EdgeInsets.symmetric(
                                       horizontal: 14, vertical: 3.5),
                                   padding: const EdgeInsets.symmetric(
@@ -2372,39 +2396,42 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                     color: isDark
                                         ? const Color(0xFF131B26)
                                         : material.Colors.white,
-                                    borderRadius: BorderRadius.circular(16),
+                                    borderRadius: BorderRadius.circular(14),
                                     border: Border.all(
-                                      color: isRobot
-                                          ? const Color(0xFFFFFC00)
-                                              .withValues(alpha: 0.3)
-                                          : (isDark
-                                              ? material.Colors.white
-                                                  .withValues(alpha: 0.06)
-                                              : material.Colors.black
-                                                  .withValues(alpha: 0.05)),
+                                      color: isDark
+                                          ? material.Colors.white
+                                              .withValues(alpha: 0.08)
+                                          : material.Colors.black
+                                              .withValues(alpha: 0.06),
                                       width: 1,
                                     ),
                                   ),
                                   child: Row(
                                     children: [
                                       Stack(
+                                        clipBehavior: Clip.none,
                                         children: [
                                           CircleAvatar(
-                                            radius: 23,
-                                            backgroundImage: avatarUrl != null
-                                                ? NetworkImage(avatarUrl)
+                                            radius: 22,
+                                            backgroundImage: (avatarUrl !=
+                                                        null &&
+                                                    avatarUrl.isNotEmpty)
+                                                ? CachedNetworkImageProvider(
+                                                    avatarUrl)
                                                 : null,
                                             backgroundColor:
                                                 const Color(0xFFFFFC00),
-                                            child: avatarUrl == null
+                                            child: (avatarUrl == null ||
+                                                    avatarUrl.isEmpty)
                                                 ? Text(
                                                     name.isNotEmpty
-                                                        ? name[0].toUpperCase()
+                                                        ? name[0]
+                                                            .toUpperCase()
                                                         : '?',
                                                     style: const TextStyle(
-                                                      color:
-                                                          material.Colors.black,
-                                                      fontSize: 15,
+                                                      color: material
+                                                          .Colors.black,
+                                                      fontSize: 13,
                                                       fontWeight:
                                                           FontWeight.bold,
                                                     ),
@@ -2413,8 +2440,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           ),
                                           if (isRobot)
                                             Positioned(
-                                              bottom: 0,
-                                              right: 0,
+                                              bottom: -2,
+                                              right: -2,
                                               child: Container(
                                                 padding:
                                                     const EdgeInsets.all(2),
@@ -2426,8 +2453,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                                     material.Icons
                                                         .smart_toy_rounded,
                                                     size: 10,
-                                                    color:
-                                                        material.Colors.black),
+                                                    color: material
+                                                        .Colors.black),
                                               ),
                                             ),
                                         ],
@@ -2448,7 +2475,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                                       fontWeight:
                                                           FontWeight.w600,
                                                       color: isDark
-                                                          ? material.Colors.white
+                                                          ? material
+                                                              .Colors.white
                                                           : material
                                                               .Colors.black87,
                                                     ),
@@ -2497,7 +2525,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                                       ? material.Colors.white
                                                           .withValues(
                                                               alpha: 0.5)
-                                                      : material.Colors.black54,
+                                                      : material
+                                                          .Colors.black54,
                                                 ),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
@@ -2523,23 +2552,28 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                                 conversationsProvider);
                                           });
                                         },
-                                        borderRadius: BorderRadius.circular(20),
+                                        borderRadius:
+                                            BorderRadius.circular(10),
                                         child: Container(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 6),
+                                          padding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 14,
+                                                  vertical: 7),
                                           decoration: BoxDecoration(
                                             color: const Color(0xFFFFFC00),
                                             borderRadius:
-                                                BorderRadius.circular(20),
+                                                BorderRadius.circular(10),
                                           ),
                                           child: Row(
-                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisSize:
+                                                MainAxisSize.min,
                                             children: [
                                               const Icon(
-                                                  material.Icons
-                                                      .chat_bubble_outline_rounded,
-                                                  size: 13,
-                                                  color: material.Colors.black),
+                                                material.Icons
+                                                    .chat_bubble_outline_rounded,
+                                                size: 13,
+                                                color: material.Colors.black,
+                                              ),
                                               const SizedBox(width: 4),
                                               Text(
                                                 'Chat',
@@ -2555,9 +2589,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       ),
                                     ],
                                   ),
+                                ),
                                 );
                               },
                               childCount: peopleResults.length,
+                              addAutomaticKeepAlives: true,
+                              addRepaintBoundaries: true,
                             ),
                           ),
                       ],
@@ -2610,9 +2647,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
                           final product = _productSearchResults[index];
-                          return _buildCongestedProductCard(product);
+                          final prodId = product['id']?.toString() ?? '$index';
+                          return RepaintBoundary(
+                            key: ValueKey('prod_grid_${prodId}_$index'),
+                            child: _buildCongestedProductCard(product),
+                          );
                         },
                         childCount: _productSearchResults.length,
+                        addAutomaticKeepAlives: true,
+                        addRepaintBoundaries: true,
                       ),
                     ),
                   )
@@ -2621,9 +2664,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     delegate: SliverChildBuilderDelegate(
                       (context, index) {
                         final product = _productSearchResults[index];
-                        return _buildProductResultTile(product);
+                        final prodId = product['id']?.toString() ?? '$index';
+                        return RepaintBoundary(
+                          key: ValueKey('prod_list_${prodId}_$index'),
+                          child: _buildProductResultTile(product),
+                        );
                       },
                       childCount: _productSearchResults.length,
+                      addAutomaticKeepAlives: true,
+                      addRepaintBoundaries: true,
                     ),
                   ),
 
@@ -2687,135 +2736,140 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             if (conversation.id == 'notifications_aggregator') {
                               return _buildNotificationsTile(allNotifications.length);
                             }
-                            return ConversationTile(
+                            return RepaintBoundary(
                               key: ValueKey(conversation.id),
-                              conversation: conversation,
-                              currentUserId: _currentUserId ?? '',
-                              onTap: () async {
-                                if (conversation.isTool) {
-                                  _navigateToTool(conversation.toolTitle ?? '');
-                                  return;
-                                }
-
-                                if (conversation.isNotification) {
-                                  _showNotificationDetails(context, conversation);
-                                  return;
-                                }
-
-                                if (_currentUserId == null || _currentUserId!.isEmpty) {
-                                  final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
-                                    context: context,
-                                    customMessage: conversation.isGroup
-                                        ? "Please login to access this Group Chat"
-                                        : "Please login to chat with ${conversation.name}",
-                                  );
-                                  if (!isAuth) return;
-                                }
-
-                                if (conversation.isActiveTimer) {
-                                  if (conversation.teamData != null) {
-                                    try {
-                                      final team = Team.fromJson(conversation.teamData!);
-                                      Navigator.push(
-                                        context,
-                                        material.MaterialPageRoute(
-                                          builder: (context) => TeamDetailPage(team: team),
-                                        ),
-                                      );
-                                    } catch (e) {
-                                      debugPrint('Team error: $e');
-                                    }
+                              child: ConversationTile(
+                                key: ValueKey(conversation.id),
+                                conversation: conversation,
+                                currentUserId: _currentUserId ?? '',
+                                onTap: () async {
+                                  if (conversation.isTool) {
+                                    _navigateToTool(conversation.toolTitle ?? '');
+                                    return;
                                   }
-                                } else if (conversation.isGroup) {
-                                  Navigator.push(
-                                    context,
-                                    material.MaterialPageRoute(
-                                      builder: (context) => WhatsAppGroupChat(
-                                        groupId: conversation.id,
-                                        groupName: conversation.name,
-                                        groupImage: conversation.imageUrl,
-                                      ),
-                                    ),
-                                  );
-                                } else {
-                                  // Mark as read
-                                  ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
 
-                                  Navigator.push(
-                                    context,
-                                    material.MaterialPageRoute(
-                                      builder: (context) => WhatsAppGroupChat(
-                                        groupId: 'p:${conversation.id}',
-                                        groupName: conversation.name,
-                                        groupImage: conversation.imageUrl,
-                                      ),
-                                    ),
-                                  );
-                                }
-                              },
-                              onLongPress: () => _showConversationActionSheet(conversation),
-                              onSnapCameraTap: () async {
-                                if (_currentUserId == null || _currentUserId!.isEmpty) {
-                                  final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
-                                    context: context,
-                                    customMessage: "Please login to send snaps",
-                                  );
-                                  if (!isAuth) return;
-                                }
-                                PocketSnapService.launchSnapWorkflow(
-                                  context,
-                                  userId: _currentUserId ?? '',
-                                  profileId: _currentUserId ?? '',
-                                  preselectedRecipientId: conversation.id,
-                                  onUploaded: _handleRefresh,
-                                );
-                              },
-                              onSnapViewTap: () {
-                                SnapViewDialog.show(
-                                  context: context,
-                                  mediaUrl: conversation.snapMediaUrl ?? conversation.imageUrl ?? '',
-                                  caption: conversation.snapCaption,
-                                  senderName: conversation.name,
-                                  isMe: false,
-                                  onBurned: () {
-                                    ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
-                                    if (PocketRobotService.isRobotId(conversation.id)) {
-                                      PocketRobotService.markRobotSnapAsRead(_currentUserId ?? '', conversation.id);
+                                  if (conversation.isNotification) {
+                                    _showNotificationDetails(context, conversation);
+                                    return;
+                                  }
+
+                                  if (_currentUserId == null || _currentUserId!.isEmpty) {
+                                    final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                                      context: context,
+                                      customMessage: conversation.isGroup
+                                          ? "Please login to access this Group Chat"
+                                          : "Please login to chat with ${conversation.name}",
+                                    );
+                                    if (!isAuth) return;
+                                  }
+
+                                  if (conversation.isActiveTimer) {
+                                    if (conversation.teamData != null) {
+                                      try {
+                                        final team = Team.fromJson(conversation.teamData!);
+                                        Navigator.push(
+                                          context,
+                                          material.MaterialPageRoute(
+                                            builder: (context) => TeamDetailPage(team: team),
+                                          ),
+                                        );
+                                      } catch (e) {
+                                        debugPrint('Team error: $e');
+                                      }
                                     }
-                                    _handleRefresh();
-                                  },
-                                );
-                              },
-                              onStatusTap: () {
-                                if (conversation.hasStatus &&
-                                    conversation.statusData != null) {
-                                  Navigator.push(
-                                    context,
-                                    material.MaterialPageRoute(
-                                      builder: (context) => StatusViewerWrapper(
-                                        allStatusGroups: [
-                                          {
-                                            'profile': {
-                                              'id': conversation.id,
-                                              'name': conversation.name,
-                                              'profile_image_url': conversation.imageUrl,
-                                            },
-                                            'statuses': conversation.statusData,
-                                            'is_own': false,
-                                          }
-                                        ],
-                                        initialGroupIndex: 0,
-                                        currentUserId: _currentUserId ?? '',
-                                        currentProfileId: profileId ?? '',
-                                        isFromGroup: true,
+                                  } else if (conversation.isGroup) {
+                                    Navigator.push(
+                                      context,
+                                      material.MaterialPageRoute(
+                                        builder: (context) => WhatsAppGroupChat(
+                                          groupId: conversation.id,
+                                          groupName: conversation.name,
+                                          groupImage: conversation.imageUrl,
+                                        ),
                                       ),
-                                    ),
+                                    );
+                                  } else {
+                                    // Mark as read
+                                    ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
+
+                                    Navigator.push(
+                                      context,
+                                      material.MaterialPageRoute(
+                                        builder: (context) => WhatsAppGroupChat(
+                                          groupId: 'p:${conversation.id}',
+                                          groupName: conversation.name,
+                                          groupImage: conversation.imageUrl,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                onLongPress: () => _showConversationActionSheet(conversation),
+                                onSnapCameraTap: () async {
+                                  if (_currentUserId == null || _currentUserId!.isEmpty) {
+                                    final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                                      context: context,
+                                      customMessage: "Please login to send snaps",
+                                    );
+                                    if (!isAuth) return;
+                                  }
+                                  PocketSnapService.launchSnapWorkflow(
+                                    context,
+                                    userId: _currentUserId ?? '',
+                                    profileId: _currentUserId ?? '',
+                                    preselectedRecipientId: conversation.id,
+                                    onUploaded: _handleRefresh,
                                   );
-                                }
-                              },
+                                },
+                                onSnapViewTap: () {
+                                  SnapViewDialog.show(
+                                    context: context,
+                                    mediaUrl: conversation.snapMediaUrl ?? conversation.imageUrl ?? '',
+                                    caption: conversation.snapCaption,
+                                    senderName: conversation.name,
+                                    isMe: false,
+                                    onBurned: () {
+                                      ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
+                                      if (PocketRobotService.isRobotId(conversation.id)) {
+                                        PocketRobotService.markRobotSnapAsRead(_currentUserId ?? '', conversation.id);
+                                      }
+                                      _handleRefresh();
+                                    },
+                                  );
+                                },
+                                onStatusTap: () {
+                                  if (conversation.hasStatus &&
+                                      conversation.statusData != null) {
+                                    Navigator.push(
+                                      context,
+                                      material.MaterialPageRoute(
+                                        builder: (context) => StatusViewerWrapper(
+                                          allStatusGroups: [
+                                            {
+                                              'profile': {
+                                                'id': conversation.id,
+                                                'name': conversation.name,
+                                                'profile_image_url': conversation.imageUrl,
+                                              },
+                                              'statuses': conversation.statusData,
+                                              'is_own': false,
+                                            }
+                                          ],
+                                          initialGroupIndex: 0,
+                                          currentUserId: _currentUserId ?? '',
+                                          currentProfileId: profileId ?? '',
+                                          isFromGroup: true,
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                              ),
                             );
                           },
                           childCount: activeFiltered.length,
+                          addAutomaticKeepAlives: true,
+                          addRepaintBoundaries: true,
                         ),
                       );
                     }

@@ -607,6 +607,9 @@ class _ThreadFeedPageState extends State<ThreadFeedPage> {
                     )
                   : ListView.builder(
                       controller: _scrollController,
+                      cacheExtent: 400,
+                      addAutomaticKeepAlives: true,
+                      addRepaintBoundaries: true,
                       padding: const EdgeInsets.only(top: 8, bottom: 80),
                       itemCount: threads.length + (_hasMoreData ? 1 : 0),
                       itemBuilder: (context, index) {
@@ -622,19 +625,22 @@ class _ThreadFeedPageState extends State<ThreadFeedPage> {
                         }
 
                         final thread = threads[index];
-                        final String threadId = thread['id'];
+                        final String threadId = thread['id']?.toString() ?? '$index';
                         final bool isLikedByCurrentUser =
                             likedThreadIds.contains(threadId);
 
-                        return ModernCard(
-                          cardData: thread,
-                          isLiked: isLikedByCurrentUser,
-                          onLike: (id) {
-                            _likeThread(id);
-                          },
-                          onComment: (id, content) {
-                            _showComments(id, content);
-                          },
+                        return RepaintBoundary(
+                          key: ValueKey('thread_card_$threadId'),
+                          child: ModernCard(
+                            cardData: thread,
+                            isLiked: isLikedByCurrentUser,
+                            onLike: (id) {
+                              _likeThread(id);
+                            },
+                            onComment: (id, content) {
+                              _showComments(id, content);
+                            },
+                          ),
                         );
                       },
                     ),

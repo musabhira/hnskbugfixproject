@@ -1486,7 +1486,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             controller: _scrollController,
                             physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
                             reverse: true,
-                            cacheExtent: 350,
+                            cacheExtent: 400,
+                            addAutomaticKeepAlives: true,
+                            addRepaintBoundaries: true,
                             padding: const EdgeInsets.only(bottom: 8, top: 8),
                             itemCount: filteredMessages.length + 1,
                             itemBuilder: (context, index) {
@@ -1510,8 +1512,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
                               final showNativeAd = index > 0 && index % 12 == 0;
 
-                              return Container(
-                                key: ValueKey(message.id),
+                              return RepaintBoundary(
+                                key: ValueKey('msg_bubble_${message.id}'),
                                 child: Column(
                                   children: [
                                     if (showDate)
