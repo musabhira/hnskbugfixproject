@@ -62,7 +62,7 @@ class LegalPolicyWidget extends StatelessWidget {
             const SizedBox(height: 48),
             Center(
               child: Text(
-                '© 2026 Pocket Mates. All rights reserved.',
+                '© 2026 Poket Mates. All rights reserved.',
                 style: GoogleFonts.inter(
                   color: Colors.white.withValues(alpha: 0.3),
                   fontSize: 12,
@@ -85,7 +85,7 @@ class PrivacyPolicyPage extends StatelessWidget {
     return const LegalPolicyWidget(
       title: 'Privacy Policy',
       content: '''
-At Pocket Mates, your privacy is our top priority. This Privacy Policy describes how we collect, use, and protect your information globally.
+At Poket Mates, your privacy is our top priority. This Privacy Policy describes how we collect, use, and protect your information globally.
 
 1. Information Collection
 • Account Information: We collect your name, email, profile picture, and bio to provide basic social features.
@@ -121,10 +121,10 @@ class TermsOfServicePage extends StatelessWidget {
     return const LegalPolicyWidget(
       title: 'Terms of Service',
       content: '''
-Welcome to Pocket Mates! By using our platform, you agree to the following terms.
+Welcome to Poket Mates! By using our platform, you agree to the following terms.
 
 1. User Conduct & Content (UGC)
-Pocket Mates is a community-driven app. You are solely responsible for the content you post. 
+Poket Mates is a community-driven app. You are solely responsible for the content you post. 
 • Zero Tolerance: There is NO tolerance for objectionable content or abusive users. This includes, but is not limited to, harassment, hate speech, explicit adult content, and illegal activities.
 • Reporting: Users can report any objectionable content using the "Report" button.
 • Blocking: Users can block any other user instantly. Blocked users will not be able to interact with you.
@@ -138,10 +138,10 @@ We reserve the right to:
 Our real-time communication tools (WebRTC) are provided as-is. You agree not to use these tools for unsolicited marketing or harassment.
 
 4. Intellectual Property
-You retain ownership of the content you post, but you grant Pocket Mates a non-exclusive license to host and display it within the app structure.
+You retain ownership of the content you post, but you grant Poket Mates a non-exclusive license to host and display it within the app structure.
 
 5. Limitation of Liability
-Pocket Mates is not liable for damages resulting from user interactions or content posted by third parties.
+Poket Mates is not liable for damages resulting from user interactions or content posted by third parties.
 ''',
     );
   }
@@ -155,7 +155,7 @@ class TermsAndConditionsPage extends StatelessWidget {
     return const LegalPolicyWidget(
       title: 'Terms & Conditions',
       content: '''
-These Terms govern your legal relationship with Pocket Mates.
+These Terms govern your legal relationship with Poket Mates.
 
 1. Eligibility
 You must be at least 13 years old (or the legal minimum age in your country) to use this service.

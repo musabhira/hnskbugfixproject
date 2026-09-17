@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:record/record.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -75,8 +77,13 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder>
 
         _timer = Timer.periodic(const Duration(milliseconds: 100), (t) {
           if (mounted) {
+            final nextDuration = _duration + const Duration(milliseconds: 100);
+            if (nextDuration.inSeconds >= 30) {
+              _stop(isCancel: false);
+              return;
+            }
             setState(() {
-              _duration += const Duration(milliseconds: 100);
+              _duration = nextDuration;
             });
           }
         });
@@ -128,9 +135,8 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder>
   }
 
   String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
+    final seconds = d.inSeconds.clamp(0, 30);
+    return '${seconds.toString().padLeft(2, '0')}/30s';
   }
 
   @override
@@ -139,60 +145,148 @@ class _VoiceMessageRecorderState extends State<VoiceMessageRecorder>
       return GestureDetector(
         onTap: _start,
         child: Container(
-          width: 50,
-          height: 50,
-          decoration: const BoxDecoration(
-            color: Colors.yellow,
+          width: 42,
+          height: 42,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFFC00),
             shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                blurRadius: 8,
+              ),
+            ],
           ),
           child: const Icon(
-            Icons.mic,
+            Icons.mic_rounded,
             color: Colors.black,
-            size: 24,
+            size: 22,
           ),
         ),
       );
     }
 
     return Container(
-      height: 50,
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      height: 48,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF121B22),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        color: const Color(0xFF11141D),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+          width: 1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
+            blurRadius: 10,
+          ),
+        ],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
-            icon: const Icon(Icons.close, color: Colors.grey, size: 24),
-            onPressed: () => _stop(isCancel: true),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
+          // Cancel / Delete
+          InkWell(
+            onTap: () => _stop(isCancel: true),
+            borderRadius: BorderRadius.circular(20),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.delete_outline_rounded,
+                  color: Colors.redAccent, size: 20),
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
+
+          // Pulsing record dot
           FadeTransition(
             opacity: _animationController,
-            child: const Icon(Icons.circle, color: Colors.red, size: 10),
+            child: Container(
+              width: 9,
+              height: 9,
+              decoration: const BoxDecoration(
+                color: Colors.redAccent,
+                shape: BoxShape.circle,
+              ),
+            ),
           ),
-          const SizedBox(width: 4),
+          const SizedBox(width: 6),
+
+          // Duration
           Text(
             _formatDuration(_duration),
-            style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 10),
+
+          // Live animated audio waveform bars
+          ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 80, maxWidth: 160),
+            child: SizedBox(
+              height: 26,
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, _) {
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: List.generate(16, (index) {
+                      final wave = math
+                          .sin((_animationController.value * 2 * math.pi) +
+                              (index * 0.45))
+                          .abs();
+                      final barHeight = (4.0 + (wave * 20.0)).clamp(4.0, 24.0);
+                      return Container(
+                        width: 2.6,
+                        height: barHeight,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFFFFFC00),
+                              index % 2 == 0
+                                  ? const Color(0xFFFFD700)
+                                  : const Color(0xFF00F0FF),
+                            ],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      );
+                    }),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+
+          // Send button
           GestureDetector(
             onTap: () => _stop(isCancel: false),
             child: Container(
               width: 36,
               height: 36,
-              decoration: const BoxDecoration(
-                color: Colors.yellow,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFC00),
                 shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                    blurRadius: 6,
+                  ),
+                ],
               ),
-              child: const Icon(Icons.send, color: Colors.black, size: 16),
+              child: const Icon(Icons.send_rounded,
+                  color: Colors.black, size: 18),
             ),
           ),
         ],

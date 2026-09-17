@@ -207,7 +207,7 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
       return list.first;
     }
     if (lower.contains('how are you') || lower.contains('sup')) {
-      return "I'm doing great! Just exploring Pocket Mates. How about yourself?";
+      return "I'm doing great! Just exploring Poket Mates. How about yourself?";
     }
     if (lower.contains('where') || lower.contains('place') || lower.contains('from')) {
       return "I'm checking in from Kerala! What about you?";
@@ -219,9 +219,9 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
       "That is super interesting! Tell me more about it.",
       "Totally agree with you on that. How did you get into that?",
       "Nice! I was actually thinking about the exact same thing earlier today.",
-      "Haha that's awesome. Pocket Mates is full of cool surprises!",
+      "Haha that's awesome. Poket Mates is full of cool surprises!",
       "I feel you! By the way, what kind of movies or music are you into?",
-      "That's really cool! Have you been on Pocket Mates for long?",
+      "That's really cool! Have you been on Poket Mates for long?",
     ];
     defaultReplies.shuffle();
     return defaultReplies.first;
@@ -272,7 +272,7 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
       senderId: myId,
       receiverId: peerUserId,
       senderName: myName,
-      message: 'Matched from Anonymous Chat! Wants to add you to their Pocket Mates.',
+      message: 'Matched from Anonymous Chat! Wants to add you to their Poket Mates.',
       contextType: 'anonymous_chat',
     );
 
@@ -608,7 +608,7 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
                         const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 14),
                         const SizedBox(width: 4),
                         Text(
-                          'Pocket Mates',
+                          'Poket Mates',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF10B981),
                             fontWeight: FontWeight.bold,

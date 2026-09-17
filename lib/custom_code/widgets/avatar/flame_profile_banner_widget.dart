@@ -605,52 +605,7 @@ class _FlameProfileBannerWidgetState extends State<FlameProfileBannerWidget> {
             ),
           ),
 
-          // 2. Top Header HUD: Active Companion & Active Perk Badge
-          Positioned(
-            top: 14,
-            left: 14,
-            right: 14,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                // Active Companion Stage Chip
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: widget.stage.buttonColor.withValues(alpha: 0.7),
-                      width: 1.0,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF10B981),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                      const SizedBox(width: 5),
-                      Text(
-                        'DAY ${widget.day}/90',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
+
 
           // 3. Subtle Interactive Tap Hint on Banner (Bottom-Right)
           Positioned(

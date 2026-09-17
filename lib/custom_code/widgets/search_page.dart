@@ -18,6 +18,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -917,6 +918,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         final shopName = profile['shop_name'];
         final isVerified = profile['verified'] == true;
         final isRobot = profile['is_robot'] == true;
+        final userDay = (profile['learning_day'] as num?)?.toInt() ?? 1;
+        final userStage = isRobot ? null : LearningMilestoneStage.getStageForDay(userDay);
 
         return GestureDetector(
           onTap: () {
@@ -936,13 +939,22 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
-              color: FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7),
+              color: isRobot
+                  ? FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7)
+                  : (userStage != null
+                      ? Color.alphaBlend(
+                          userStage.bgColor.withValues(alpha: 0.22),
+                          FlutterFlowTheme.of(context).secondaryBackground,
+                        )
+                      : FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7)),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: isRobot
-                    ? const Color(0xFF06B6D4).withValues(alpha: 0.25)
-                    : Colors.white.withValues(alpha: 0.05),
-                width: 0.8,
+                    ? const Color(0xFF06B6D4).withValues(alpha: 0.35)
+                    : (userStage != null
+                        ? userStage.buttonColor.withValues(alpha: 0.35)
+                        : Colors.white.withValues(alpha: 0.05)),
+                width: 0.9,
               ),
             ),
             child: Row(
@@ -957,16 +969,22 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                     gradient: isRobot
                         ? const LinearGradient(
                             colors: [Color(0xFF06B6D4), Color(0xFF3B82F6)])
-                        : (isVerified
-                            ? const LinearGradient(
-                                colors: [Color(0xFFFFFC00), Colors.orangeAccent])
-                            : LinearGradient(
-                                colors: [
-                                  const Color(0xFFFFFC00).withValues(alpha: 0.8),
-                                  const Color(0xFF10B981).withValues(alpha: 0.8),
-                                ],
-                              )),
-                    border: (!isVerified && !isRobot)
+                        : (userStage != null
+                            ? LinearGradient(
+                                colors: [userStage.buttonColor, userStage.tickColor],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              )
+                            : (isVerified
+                                ? const LinearGradient(
+                                    colors: [Color(0xFFFFFC00), Colors.orangeAccent])
+                                : LinearGradient(
+                                    colors: [
+                                      const Color(0xFFFFFC00).withValues(alpha: 0.8),
+                                      const Color(0xFF10B981).withValues(alpha: 0.8),
+                                    ],
+                                  ))),
+                    border: (!isVerified && !isRobot && userStage == null)
                         ? Border.all(color: Colors.white12, width: 0.8)
                         : null,
                   ),
@@ -978,7 +996,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                             ? VectorAvatarConfig.getEvolutionAvatarForStage((profile['robot_level'] as num?)?.toInt() ?? 1)
                             : ((profile['avatar_config'] != null)
                                 ? VectorAvatarConfig.fromMap(Map<String, dynamic>.from(profile['avatar_config']))
-                                : VectorAvatarConfig.getEvolutionAvatarForStage((profile['learning_day'] as num?)?.toInt() ?? 1)),
+                                : VectorAvatarConfig.getEvolutionAvatarForStage(userDay)),
                         size: 38,
                       ),
                     ),
@@ -1010,21 +1028,27 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                             decoration: BoxDecoration(
                               color: isRobot
                                   ? const Color(0xFF06B6D4).withValues(alpha: 0.18)
-                                  : const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                  : (userStage != null
+                                      ? userStage.buttonColor.withValues(alpha: 0.18)
+                                      : const Color(0xFFFFFC00).withValues(alpha: 0.15)),
                               borderRadius: BorderRadius.circular(6),
                               border: Border.all(
                                 color: isRobot
                                     ? const Color(0xFF06B6D4).withValues(alpha: 0.5)
-                                    : const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                                    : (userStage != null
+                                        ? userStage.buttonColor.withValues(alpha: 0.6)
+                                        : const Color(0xFFFFFC00).withValues(alpha: 0.5)),
                                 width: 0.6,
                               ),
                             ),
                             child: Text(
                               isRobot
                                   ? 'Lvl ${(profile['robot_level'] as num?)?.toInt() ?? 1} 🤖'
-                                  : 'Lvl ${(profile['learning_day'] as num?)?.toInt() ?? 1} ⭐',
+                                  : 'Lvl $userDay ${userStage?.emoji ?? "⭐"}',
                               style: GoogleFonts.outfit(
-                                color: isRobot ? const Color(0xFF06B6D4) : const Color(0xFFFFFC00),
+                                color: isRobot
+                                    ? const Color(0xFF06B6D4)
+                                    : (userStage?.buttonColor ?? const Color(0xFFFFFC00)),
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
                               ),
@@ -1032,8 +1056,9 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                           ),
                           if (isVerified) ...[
                             const SizedBox(width: 4),
-                            const Icon(Icons.verified_rounded,
-                                color: Color(0xFF38BDF8), size: 15),
+                            Icon(Icons.verified_rounded,
+                                color: userStage?.tickColor ?? const Color(0xFF38BDF8),
+                                size: 15),
                           ],
                         ],
                       ),
@@ -1060,24 +1085,28 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                                 ),
                               ),
                             ),
-                          ] else ...[
+                          ] else if (userStage != null) ...[
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.06),
+                                color: userStage.buttonColor.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(4),
                                 border: Border.all(
-                                  color: Colors.white10,
+                                  color: userStage.buttonColor.withValues(alpha: 0.35),
                                   width: 0.6,
                                 ),
                               ),
                               child: Text(
-                                '👤 Human',
+                                '${userStage.emoji} ${userStage.stageName}',
                                 style: GoogleFonts.outfit(
-                                  color: Colors.white70,
+                                  color: userStage.buttonColor.computeLuminance() > 0.8
+                                      ? const Color(0xFFCBD5E1)
+                                      : userStage.buttonColor,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 11,
                                 ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],
@@ -1223,7 +1252,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('✨ Added ${robotData['name']} to your Pocket Mates!'),
+                              content: Text('✨ Added ${robotData['name']} to your Poket Mates!'),
                               backgroundColor: const Color(0xFF10B981),
                             ),
                           );

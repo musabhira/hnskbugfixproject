@@ -19,7 +19,7 @@ class PocketMatesDashboard extends StatefulWidget {
 }
 
 class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
-  String? _selectedMode;
+  String? _selectedMode = 'Voice';
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
       width: widget.width ?? double.infinity,
       height: widget.height ?? double.infinity,
       decoration: const BoxDecoration(
-        color: Colors.black,
+        color: Color(0xFF0B0D13),
       ),
       child: Scaffold(
         backgroundColor: Colors.transparent,
@@ -41,11 +41,12 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.grey[900],
+                      color: const Color(0xFF131722),
                       shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF1E2430)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.yellow.withValues(alpha: 0.2),
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                           blurRadius: 30,
                           spreadRadius: 5,
                         ),
@@ -53,7 +54,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                     ),
                     child: const FaIcon(
                       FontAwesomeIcons.userGroup,
-                      color: Colors.yellow,
+                      color: Color(0xFFFFFC00),
                       size: 40,
                     ),
                   ).animate().scale(
@@ -62,7 +63,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                       curve: Curves.elasticOut),
                   const SizedBox(height: 20),
                   Text(
-                    'Pocketmates',
+                    'PoketMates',
                     style: GoogleFonts.outfit(
                       fontSize: 32,
                       fontWeight: FontWeight.bold,
@@ -96,26 +97,12 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                       ),
                     ).animate().fadeIn(delay: 800.ms),
                     const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildModeCard(
-                            'Video',
-                            FontAwesomeIcons.video,
-                            Colors.yellow,
-                            'Meet face-to-face',
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildModeCard(
-                            'Voice',
-                            FontAwesomeIcons.microphone,
-                            Colors.yellow,
-                            'Hear their voice',
-                          ),
-                        ),
-                      ],
+                    _buildModeCard(
+                      'Voice',
+                      FontAwesomeIcons.microphone,
+                      const Color(0xFFFFFC00),
+                      '1-on-1 Spoken English Voice Call',
+                      isWide: true,
                     )
                         .animate()
                         .slideY(
@@ -129,8 +116,8 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                     _buildModeCard(
                       'Text',
                       FontAwesomeIcons.solidCommentDots,
-                      Colors.yellow,
-                      'Quick anonymous chatting',
+                      const Color(0xFFFFFC00),
+                      'Practice English by messaging & notes',
                       isWide: true,
                     )
                         .animate()
@@ -153,14 +140,14 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
                 child: ElevatedButton(
                   onPressed: _selectedMode == null ? null : _handleStart,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.yellow,
+                    backgroundColor: const Color(0xFFFFFC00),
                     foregroundColor: Colors.black,
                     minimumSize: const Size(double.infinity, 64),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
                     elevation: 12,
-                    shadowColor: Colors.yellow.withValues(alpha: 0.4),
+                    shadowColor: const Color(0xFFFFFC00).withValues(alpha: 0.3),
                   ),
                   child: Text(
                     _selectedMode == null
@@ -216,17 +203,17 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: isSelected
-              ? Colors.grey[900]
-              : Colors.grey[900]?.withValues(alpha: 0.5),
+              ? const Color(0xFF131722)
+              : const Color(0xFF131722).withValues(alpha: 0.6),
           borderRadius: BorderRadius.circular(24),
           border: Border.all(
-            color: isSelected ? Colors.yellow : Colors.grey[800]!,
-            width: isSelected ? 3 : 1,
+            color: isSelected ? const Color(0xFFFFFC00) : const Color(0xFF1E2430),
+            width: isSelected ? 2 : 1,
           ),
           boxShadow: [
             if (isSelected)
               BoxShadow(
-                color: Colors.yellow.withValues(alpha: 0.15),
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                 blurRadius: 20,
                 offset: const Offset(0, 0),
               ),
@@ -235,7 +222,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
         child: Column(
           children: [
             Icon(icon,
-                color: isSelected ? Colors.yellow : Colors.grey[400], size: 28),
+                color: isSelected ? const Color(0xFFFFFC00) : Colors.grey[400], size: 28),
             const SizedBox(height: 12),
             Text(
               title,
@@ -266,7 +253,7 @@ class _PocketMatesDashboardState extends State<PocketMatesDashboard> {
       context,
       MaterialPageRoute(
         builder: (context) => NativeWebRTCCallScreen(
-          mode: _selectedMode ?? 'Video',
+          mode: _selectedMode ?? 'Voice',
         ),
       ),
     );

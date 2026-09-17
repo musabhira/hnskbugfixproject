@@ -302,13 +302,6 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
             indicator: BoxDecoration(
               color: const Color(0xFFFFFC00),
               borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
-                  blurRadius: 4,
-                  offset: const Offset(0, 1),
-                ),
-              ],
             ),
             indicatorSize: TabBarIndicatorSize.tab,
             labelColor: Colors.black,
@@ -322,6 +315,78 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
               Tab(text: 'Public'),
               Tab(text: 'Following'),
             ],
+          ),
+        ),
+
+        // Thoughts Compose Prompt Bar
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+          child: InkWell(
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      CreateThreadPage(userId: widget.currentUserId),
+                ),
+              );
+              _fetchThreads(refresh: true);
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1B2232) : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.grey.shade300,
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 15,
+                    backgroundColor:
+                        const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                    child: const Icon(
+                      Icons.edit_note_rounded,
+                      color: Color(0xFFFFFC00),
+                      size: 18,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      "What's on your mind? Share a thought...",
+                      style: GoogleFonts.outfit(
+                        color: isDark ? Colors.white54 : Colors.black45,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFC00),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'Post',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
 

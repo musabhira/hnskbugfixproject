@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import 'flame_english_house_game.dart';
@@ -85,6 +86,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
       });
     });
     _loadNeighborsFromSupabase();
+    _loadUserHousePalette();
 
     // Audio Directive: Dynamic level matching (Level 4 targets Level 6) & Dynamic Robot Homes
     final dynamicTargetHomes = PocketFortressDefenseService.generateDynamicTargetBracketHomes(widget.currentDay, count: 6);
@@ -110,6 +112,36 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
         _rollRandomRaidTarget();
       });
     }
+  }
+
+  Future<void> _loadUserHousePalette() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedPalette = prefs.getString('house_theme_palette_id');
+      if (savedPalette != null && mounted) {
+        setState(() {
+          final idx = _neighbors.indexWhere((n) => n.isMe);
+          if (idx != -1) {
+            final me = _neighbors[idx];
+            _neighbors[idx] = PocketNeighbor(
+              id: me.id,
+              name: me.name,
+              day: me.day,
+              streak: me.streak,
+              rank: me.rank,
+              paletteId: savedPalette,
+              isMe: true,
+              hasActiveShield: me.hasActiveShield,
+              statusMessage: me.statusMessage,
+              isDamaged: me.isDamaged,
+              hp: me.hp,
+              maxHp: me.maxHp,
+              isPocketRobo: me.isPocketRobo,
+            );
+          }
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadBannedAndProtectedHouses() async {
@@ -142,9 +174,46 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
   Future<void> _loadNeighborsFromSupabase() async {
     try {
       final supaNeighbors = await PocketFortressDefenseService.fetchSupabaseNeighbors(limit: 30);
+      final prefs = await SharedPreferences.getInstance();
+      final savedPalette = prefs.getString('house_theme_palette_id') ?? 'terracotta';
+
       if (supaNeighbors.isNotEmpty && mounted) {
         setState(() {
-          final me = _neighbors.firstWhere((n) => n.isMe, orElse: () => _neighbors[0]);
+          var me = _neighbors.firstWhere((n) => n.isMe, orElse: () => _neighbors[0]);
+          final supaMe = supaNeighbors.where((n) => n.isMe).firstOrNull;
+          if (supaMe != null) {
+            me = PocketNeighbor(
+              id: supaMe.id,
+              name: supaMe.name,
+              day: supaMe.day,
+              streak: supaMe.streak,
+              rank: supaMe.rank,
+              paletteId: savedPalette.isNotEmpty ? savedPalette : supaMe.paletteId,
+              isMe: true,
+              hasActiveShield: supaMe.hasActiveShield,
+              statusMessage: supaMe.statusMessage,
+              isDamaged: supaMe.isDamaged,
+              hp: supaMe.hp,
+              maxHp: supaMe.maxHp,
+              isPocketRobo: false,
+            );
+          } else {
+            me = PocketNeighbor(
+              id: me.id,
+              name: me.name,
+              day: me.day,
+              streak: me.streak,
+              rank: me.rank,
+              paletteId: savedPalette,
+              isMe: true,
+              hasActiveShield: me.hasActiveShield,
+              statusMessage: me.statusMessage,
+              isDamaged: me.isDamaged,
+              hp: me.hp,
+              maxHp: me.maxHp,
+              isPocketRobo: false,
+            );
+          }
           final robo = _neighbors.firstWhere((n) => n.isPocketRobo, orElse: () => _neighbors[1]);
           final otherNeighbors = supaNeighbors.where((n) => !n.isMe).toList();
 

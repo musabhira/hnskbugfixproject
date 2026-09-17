@@ -116,7 +116,7 @@ class _StagePeerMatchmakerPageState extends State<StagePeerMatchmakerPage> {
               Icon(isAlreadyPocket ? Icons.remove_circle_outline : Icons.star_rounded, color: const Color(0xFFFFFC00)),
               const SizedBox(width: 8),
               Text(
-                isAlreadyPocket ? 'Removed $peerName from Pocket Mates' : '✨ Added $peerName to your Pocket Mates!',
+                isAlreadyPocket ? 'Removed $peerName from Poket Mates' : '✨ Added $peerName to your Poket Mates!',
                 style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
               ),
             ],

@@ -36,10 +36,10 @@ class PocketSnapFlameRefresh extends StatefulWidget {
     this.restingHeight = 150.0,
     this.primaryFlameColor = const Color(0xFFF59E0B),
     this.accentFlameColor = const Color(0xFFFFC107),
-    this.pullText = 'Pull to connect Pocket Mates',
-    this.readyText = 'Release to connect Pocket Mates',
-    this.refreshingText = 'Connecting Pocket Mates...',
-    this.successText = 'Pocket Mates Connected! ✨',
+    this.pullText = 'Pull to connect Poket Mates',
+    this.readyText = 'Release to connect Poket Mates',
+    this.refreshingText = 'Connecting Poket Mates...',
+    this.successText = 'Poket Mates Connected! ✨',
   });
 
   @override
@@ -437,8 +437,8 @@ class _PhotoboothStripHeader extends StatelessWidget {
                     else
                       Text(
                         isReady
-                            ? '⚡ Release to connect Pocket Mates'
-                            : '⬇️ Pull to connect Pocket Mates',
+                            ? '⚡ Release to connect Poket Mates'
+                            : '⬇️ Pull to connect Poket Mates',
                         style: GoogleFonts.caveat(
                           fontSize: 14.5,
                           fontWeight: FontWeight.bold,
@@ -450,8 +450,8 @@ class _PhotoboothStripHeader extends StatelessWidget {
                     if (isRefreshing)
                       Text(
                         isSuccess
-                            ? 'Pocket Mates Connected! ✨'
-                            : 'Connecting Pocket Mates...',
+                            ? 'Poket Mates Connected! ✨'
+                            : 'Connecting Poket Mates...',
                         style: GoogleFonts.caveat(
                           fontSize: 14.5,
                           fontWeight: FontWeight.bold,
@@ -545,7 +545,7 @@ class _TabletopDoodleBackgroundPainter extends CustomPainter {
 /// 🎨 Precision Painter for the Photobooth Polaroid Filmstrip
 /// Recreates the user's reference sketches inside the 2 photo frames:
 /// - Frame 1 (Top): Two swagger buddies pointing dual finger-guns (👉👉) with cool sunglasses,
-///   blue ink crown 👑, and handwritten "Pocket Mates" signature.
+///   blue ink crown 👑, and handwritten "Poket Mates" signature.
 /// - Frame 2 (Bottom): The Swagger Squad: Center mate dabbing, Right mate with dual peace
 ///   signs (✌️✌️) and blue devil horns 😈, Left mate chilling on elbow with blue star ⭐,
 ///   and blue ink heart ♡ & smiley :)
@@ -690,8 +690,8 @@ class _PhotoboothStripPainter extends CustomPainter {
     // 1. Royal Crown 👑 over Mate A's head
     _drawDoodleCrown(canvas, Offset(mateAHead.dx, mateAHead.dy - 23), doodleBlue);
 
-    // 2. Handwritten "Pocket Mates" in blue pen with underline
-    _drawHandwrittenText(canvas, Offset(w * 0.06, frameHeight * 0.20), "Pocket Mates", doodleBlue);
+    // 2. Handwritten "Poket Mates" in blue pen with underline
+    _drawHandwrittenText(canvas, Offset(w * 0.06, frameHeight * 0.20), "Poket Mates", doodleBlue);
     canvas.drawLine(
       Offset(w * 0.06, frameHeight * 0.26),
       Offset(w * 0.44, frameHeight * 0.22),

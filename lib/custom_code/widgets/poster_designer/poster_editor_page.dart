@@ -557,7 +557,7 @@ class _PosterEditorPageState extends State<PosterEditorPage> {
                             Navigator.pop(ctx);
                             SharePlus.instance.share(ShareParams(
                               files: [XFile(filePath)],
-                              text: 'Designed with PocketMates Poster Studio!',
+                              text: 'Designed with PoketMates Poster Studio!',
                             ));
                           },
                           style: ElevatedButton.styleFrom(

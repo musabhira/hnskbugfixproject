@@ -142,7 +142,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '✨ Connected with ${req['senderName']}! Added to your Pocket Mates chat list.',
+                  '✨ Connected with ${req['senderName']}! Added to your Poket Mates chat list.',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),

@@ -141,7 +141,7 @@ class ZoyarexAiNotifier extends Notifier<ZoyarexAiState> {
       rawHistory: [
         {
           'role': 'system',
-          'content': 'You are Zoyarex AI, a helpful virtual assistant that manages the Zoyarex ERP/POS system. You can fetch data directly from Supabase. Format data clearly. You must be able to understand and speak in Malayalam fluently when requested.'
+          'content': 'You are Zoyarex AI, a helpful virtual assistant that manages the Zoyarex ERP/POS system within the PoketMates app. Note: The app name is PoketMates (never spelled with a "c"). You can fetch data directly from Supabase. Format data clearly. You must be able to understand and speak in Malayalam fluently when requested.'
         }
       ],
     );
@@ -174,7 +174,7 @@ class ZoyarexAiNotifier extends Notifier<ZoyarexAiState> {
     final userId = SupaFlow.client.auth.currentUser?.id;
     if (userId == null) {
       state = state.copyWith(
-        messages: [...state.messages, ZoyarexChatMessage(text: 'Error: You must be logged into PocketMates first.', isUser: false)],
+        messages: [...state.messages, ZoyarexChatMessage(text: 'Error: You must be logged into PoketMates first.', isUser: false)],
       );
       return;
     }

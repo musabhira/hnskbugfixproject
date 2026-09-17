@@ -34,9 +34,19 @@ class PocketSnapService {
     try {
       XFile? photo;
       if (!kIsWeb && io.Platform.isWindows) {
-        photo = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 90);
+        photo = await ImagePicker().pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 1080,
+          maxHeight: 1920,
+          imageQuality: 80,
+        );
       } else {
-        photo = await ImagePicker().pickImage(source: ImageSource.camera, imageQuality: 85);
+        photo = await ImagePicker().pickImage(
+          source: ImageSource.camera,
+          maxWidth: 1080,
+          maxHeight: 1920,
+          imageQuality: 80,
+        );
       }
 
       if (photo != null && context.mounted) {
@@ -56,7 +66,12 @@ class PocketSnapService {
     } catch (e) {
       debugPrint('Direct camera error: $e, falling back to gallery');
       try {
-        final photo = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 90);
+        final photo = await ImagePicker().pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 1080,
+          maxHeight: 1920,
+          imageQuality: 80,
+        );
         if (photo != null && context.mounted) {
           Navigator.push(
             context,
@@ -84,17 +99,13 @@ class PocketSnapService {
     String? caption,
     bool postToStoryToo = false,
   }) async {
-    // 1. Optimize / compress image
+    // 1. Optimize / compress image in background worker isolate to keep UI 60/120fps smooth
     Uint8List bytesToUpload = imageBytes;
-    if (imageBytes.lengthInBytes > 1200 * 1024) {
+    if (imageBytes.lengthInBytes > 1000 * 1024) {
       try {
-        final originalImage = img.decodeImage(imageBytes);
-        if (originalImage != null) {
-          final resized = img.copyResize(originalImage, width: 1080);
-          bytesToUpload = Uint8List.fromList(img.encodeJpg(resized, quality: 80));
-        }
+        bytesToUpload = await compute(_compressSnapImageInIsolate, imageBytes);
       } catch (e) {
-        debugPrint('PocketSnapService compression fallback: $e');
+        debugPrint('PocketSnapService compute compression fallback: $e');
       }
     }
 
@@ -536,4 +547,18 @@ class _SnapOptionTile extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Top-level function for compute isolate compression
+Uint8List _compressSnapImageInIsolate(Uint8List imageBytes) {
+  try {
+    final originalImage = img.decodeImage(imageBytes);
+    if (originalImage != null) {
+      final resized = img.copyResize(originalImage, width: 1080);
+      return Uint8List.fromList(img.encodeJpg(resized, quality: 80));
+    }
+  } catch (e) {
+    debugPrint('Isolate snap compression error: $e');
+  }
+  return imageBytes;
 }

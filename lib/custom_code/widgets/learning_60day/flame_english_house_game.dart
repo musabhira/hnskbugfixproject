@@ -437,115 +437,2315 @@ class HouseMasterComponent extends Component {
     final cx = canvasSize.x / 2;
     final groundY = canvasSize.y - 34;
 
-    // 1. Garden lawn & stone pathway
-    _renderLawnAndPath(canvas, cx, groundY);
+    // Building apex and dimensions for dynamic auto-framing
+    final double buildingApexY;
+    final double totalBuildingW;
 
-    // 2. THE MULTI-STAGE PROGRESSION:
     if (day >= 71) {
-      // ============================================================
-      // 🏰 THE GRAND VICTORIAN MANOR & PROGRESSIVE CITADEL (DAYS 71–90)
-      // "ബാക്കിലോ മേലെയോ എന്തെങ്കിലുമൊക്കെ വെച്ച് പിന്നെയും ബാക്കിലൂടെയൊക്കെ എന്തെങ്കിലുമൊക്കെ ഡെവലപ്പ് ചെയ്യുക."
-      // ============================================================
-      final floor2Top = groundY - 134.0;
-
-      // [LAYER A: REAR PALATIAL EXPANSIONS - DRAWN BEHIND MANOR (ബാക്കിൽ)]
-      // Day 87+: Monumental Baroque Imperial Dome & Golden Clock Pavilion (soaring into upper sky)
-      if (day >= 87) {
-        _renderCentralImperialDome(canvas, cx, floor2Top - 24);
-      }
-
-      // Day 81+: Upper 3rd-Floor Royal Mezzanine Gallery
-      if (day >= 81) {
-        _renderRearRoyalMezzanine(canvas, cx, floor2Top);
-      }
-
-      // Day 78+: Monumental Rear Palace Wing with Arched Clerestory Windows & Twin Chateau Turrets
-      if (day >= 78) {
-        _renderRearPalaceWing(canvas, cx, groundY);
-        _renderRearTurretSpires(canvas, cx, floor2Top);
-      }
-
-      // Day 84+: Flanking 3-Story Fortified Bastion Watchtowers & Aerial Bridge Arcades
-      if (day >= 84) {
-        _renderFlankingBastionTowers(canvas, cx, groundY);
-      }
-
-      // [LAYER B: THE GRAND VICTORIAN MANOR FOREGROUND FAÇADE (മുന്നിൽ)]
-      // Preserves 100% of the beloved Victorian Manor up to Day 78 and beyond!
-      _renderGrandVictorianManor(canvas, cx, groundY);
-
-      // [LAYER C: FORECOURT PLAZA & ROYAL COURTYARD (മുറ്റത്ത്)]
-      // Day 78+: Wrought Iron Spearhead Perimeter Gates & Coach Lamps
-      if (day >= 78) {
-        _renderPalaceSpearGates(canvas, cx, groundY, (day >= 85) ? 346.0 : 320.0);
-      }
-
-      // Day 81+: Twin Cascading Marble Courtyard Fountains
-      if (day >= 81) {
-        _renderCourtyardFountain(canvas, cx - 146, groundY - 6);
-        _renderCourtyardFountain(canvas, cx + 146, groundY - 6);
-      }
-
-      // Day 84+: Twin Sculpted Golden Guardian Lion Pedestals
-      if (day >= 84) {
-        _renderGuardianLionPedestal(canvas, cx - 48, groundY - 14);
-        _renderGuardianLionPedestal(canvas, cx + 48, groundY - 14);
-      }
-
-      // Day 87+: Sweeping 5-Tier Marble Steps with Crimson Velvet Royal Carpet & Brass Rods
-      if (day >= 87) {
-        _renderImperialSteps(canvas, cx, groundY);
-      }
-
-      // Day 90: 24K Sovereign Imperial Eagle Crown with Sunburst Corona & Day 90 Golden Ribbon
-      if (day >= 90) {
-        _renderDay90DomeCrown(canvas, cx, groundY);
-        _renderDay90PalaceBanner(canvas, cx, groundY);
-      }
+      // 🏛️ Monumental Rajput & Indo-Saracenic Imperial Palace (Images 1 & 2)
+      buildingApexY = groundY - 256.0;
+      totalBuildingW = (day >= 86) ? 420.0 : 392.0;
+    } else if (day >= 46) {
+      // 🏰 Fortified Castle with Bastion Towers
+      buildingApexY = groundY - 200.0;
+      totalBuildingW = 370.0;
+    } else if (day >= 28) {
+      // 🏛️ Grand Victorian Manor
+      buildingApexY = groundY - 176.0;
+      totalBuildingW = 330.0;
+    } else if (day >= 16) {
+      // 🏡 2-to-3 Storey European Chateau
+      buildingApexY = groundY - 162.0;
+      totalBuildingW = 270.0;
+    } else if (day >= 8) {
+      // 🏠 Quirky Storybook European Townhouse (Image 3)
+      buildingApexY = groundY - 164.0;
+      totalBuildingW = 220.0;
     } else {
-      // 🏡 DAYS 1–70: PROGRESSIVE COTTAGE TO PYRAMID MANOR (Unchanged!)
-      if (day >= 11) _renderLeftWing(canvas, cx, groundY);
-      if (day >= 26) _renderRightWing(canvas, cx, groundY);
-      _renderCoreCottage(canvas, cx, groundY);
-      if (day >= 41) _renderSecondFloorCenter(canvas, cx, groundY);
-      if (day >= 56) _renderSecondFloorWings(canvas, cx, groundY);
-
-      // Distinct, prominent daily garden & house upgrades for Days 1-10:
-      if (day >= 2) _renderDay2FrontPorchAwning(canvas, cx, groundY);
-      if (day >= 3) _renderDay3GardenFlowerBeds(canvas, cx, groundY);
-      if (day >= 6) _renderDay6PicketFence(canvas, cx, groundY);
-      if (day >= 7) _renderDay7StreetLamps(canvas, cx, groundY);
-      if (day >= 8) _renderDay8AppleTree(canvas, cx, groundY);
-      if (day >= 9) _renderDay9GardenFountain(canvas, cx, groundY);
+      // 🛖 Storybook Cottage (Days 1–7)
+      buildingApexY = groundY - 138.0;
+      totalBuildingW = 240.0;
     }
 
-    // 3. Chimney Smoke Particles
-    if (day >= 84) {
+    final double totalBuildingH = groundY - buildingApexY;
+    final double availableH = canvasSize.y - 42.0;
+    final double availableW = canvasSize.x * 0.94;
+    final double scale = math.min(availableW / totalBuildingW, availableH / totalBuildingH).clamp(0.65, 1.05);
+
+    canvas.save();
+    canvas.translate(cx, groundY);
+    canvas.scale(scale);
+    canvas.translate(-cx, -groundY);
+
+    // 1. Garden lawn & stone pathway (drawn for European/Cottage/Castle stages)
+    if (day < 90) {
+      _renderLawnAndPath(canvas, cx, groundY);
+    }
+
+    // 2. Multi-Stage Architectural House & Citadel Progression
+    if (day >= 90) {
+      // ============================================================
+      // 🏛️ MONUMENTAL RAJPUT & INDO-SARACENIC IMPERIAL PALACE (DAY 90 APEX)
+      // ============================================================
+      _renderImperialRajputPalace(canvas, cx, groundY);
+    } else if (day >= 46) {
+      // ============================================================
+      // 🏰 FORTIFIED CASTLE CITADEL & BASTION KEEP (DAYS 46–89, വലിയ കോട്ട)
+      // ============================================================
+      _renderFortifiedCastleCitadel(canvas, cx, groundY);
+    } else if (day >= 28) {
+      // ============================================================
+      // 🏛️ THE BELOVED GRAND VICTORIAN MANOR (DAYS 28–45)
+      // ============================================================
+      _renderGrandVictorianManorWithGround(canvas, cx, groundY);
+    } else if (day >= 16) {
+      // ============================================================
+      // 🏡 TWO-STORY CHATEAU & PROGRESSIVE VILLA (DAYS 16–27)
+      // ============================================================
+      _renderDay16to27VictorianRising(canvas, cx, groundY);
+    } else if (day >= 8) {
+      // ============================================================
+      // 🏠 QUIRKY STORYBOOK EUROPEAN TOWNHOUSE (IMAGE 3, DAYS 8–15)
+      // ============================================================
+      _renderDay8to15Townhouse(canvas, cx, groundY);
+    } else {
+      // ============================================================
+      // 🛖 STORYBOOK COUNTRY COTTAGE (DAYS 1–7)
+      // ============================================================
+      _renderDay1to7Cottage(canvas, cx, groundY);
+    }
+
+    // Active Chimney Smoke Particles
+    if (day >= 86) {
       _renderSmoke(canvas, cx - 172, groundY - 240);
       _renderSmoke(canvas, cx - 50, groundY - 220);
       _renderSmoke(canvas, cx + 50, groundY - 220);
       _renderSmoke(canvas, cx + 172, groundY - 240);
-    } else if (day >= 71) {
-      _renderSmoke(canvas, cx - 50, groundY - 220);
-      _renderSmoke(canvas, cx + 50, groundY - 220);
+    } else if (day >= 28) {
+      _renderSmoke(canvas, cx - 50, groundY - 210);
+      _renderSmoke(canvas, cx + 50, groundY - 210);
+    } else if (day >= 8) {
+      _renderSmoke(canvas, cx - 36, groundY - 180);
+      _renderSmoke(canvas, cx + 36, groundY - 180);
     } else if (day >= 4) {
-      final chimX = cx - 54;
-      final chimY = (day >= 41) ? groundY - 210 : groundY - 175;
-      _renderSmoke(canvas, chimX, chimY);
+      _renderSmoke(canvas, cx - 54, groundY - 165);
     }
 
-    // 4. Lush Green Bushes & Garden Trees flanking the estate
-    _renderBushes(canvas, cx, groundY);
+    // Lush Garden Bushes (Cottage & Chateau phases)
+    if (day < 71) {
+      _renderBushes(canvas, cx, groundY);
+    }
 
-    // 5. 👑 Day 90 VIP Fleet: 24K Sovereign Limousine + 2 Armed Tactical Escorts (Alpha & Bravo)
+    // Day 90: Presidential VIP Motorcade with Security Strobe Lights
     if (day >= 90) {
       _renderDay90VipMotorcade(canvas, cx, groundY);
     }
 
-    // 6. 💥 House Damage & Rubble Visuals (Breach Aftermath)
+    // Raid Damage Overlay
     if (isDamaged) {
       _renderDamageOverlay(canvas, cx, groundY);
     }
+
+    canvas.restore();
+  }
+
+  // ============================================================
+  // 🛖 1. STORYBOOK COUNTRY COTTAGE (DAYS 1–7)
+  // ============================================================
+  void _renderDay1to7Cottage(Canvas canvas, double cx, double groundY) {
+    // Core Cottage (Walls, Brick Mortar, Windows & Door)
+    _renderCoreCottage(canvas, cx, groundY);
+
+    // Daily Prominent Upgrades:
+    if (day >= 2) _renderDay2FrontPorchAwning(canvas, cx, groundY);
+    if (day >= 3) _renderDay3GardenFlowerBeds(canvas, cx, groundY);
+    if (day >= 4) _renderChimneyShaft(canvas, cx - 54, groundY - 146, 14, 28);
+    if (day >= 5) _renderDay5StoneWalkway(canvas, cx, groundY);
+    if (day >= 6) _renderDay6PicketFence(canvas, cx, groundY);
+    if (day >= 7) {
+      _renderDay7StreetLamps(canvas, cx, groundY);
+      _renderDay7CottageWing(canvas, cx, groundY);
+    }
+  }
+
+  void _renderDay7CottageWing(Canvas canvas, double cx, double groundY) {
+    const wingW = 54.0;
+    const wingH = 74.0;
+    final wingLeft = cx - 88.0 - wingW + 6;
+    final wingTop = groundY - wingH;
+
+    // Stone foundation
+    canvas.drawRect(Rect.fromLTWH(wingLeft, groundY - 14, wingW, 14), Paint()..color = palette.foundationColor);
+
+    // Ashlar brick wall
+    final wRect = Rect.fromLTWH(wingLeft, wingTop, wingW, wingH - 14);
+    canvas.drawRect(wRect, Paint()..color = palette.wallColor);
+    canvas.drawRect(wRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
+
+    // Ashlar quoins on outer corner
+    for (double y = wingTop + 2; y < groundY - 14; y += 12) {
+      canvas.drawRect(Rect.fromLTWH(wingLeft, y, 7, 8), Paint()..color = palette.wallShade);
+    }
+
+    // Leaded mullion bay window
+    _renderStorybookWindow(canvas, wingLeft + wingW / 2, wingTop + 32, 28, 36);
+
+    // Steep gabled roof
+    final rPath = Path()
+      ..moveTo(wingLeft - 4, wingTop + 4)
+      ..lineTo(wingLeft + wingW / 2, wingTop - 26)
+      ..lineTo(cx - 88 + 4, wingTop + 4)
+      ..close();
+    canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.5);
+
+    // Gabled attic dormer on main cottage roof
+    _renderArchedDormer(canvas, cx, groundY - 98 - 28, 24, 30);
+  }
+
+  // ============================================================
+  // 🏠 2. QUIRKY STORYBOOK EUROPEAN TOWNHOUSE (IMAGE 3, DAYS 8–15)
+  // ============================================================
+  void _renderDay8to15Townhouse(Canvas canvas, double cx, double groundY) {
+    const coreW = 84.0;
+    const coreH = 138.0;
+    final coreTop = groundY - coreH;
+    final coreLeft = cx - coreW / 2;
+    final coreRight = cx + coreW / 2;
+
+    // Stone Foundation
+    final fRect = Rect.fromLTWH(coreLeft - 4, groundY - 12, coreW + 8, 12);
+    canvas.drawRect(fRect, Paint()..color = palette.foundationColor);
+
+    // Main 3-Storey Townhouse Facade Wall (Grey/Beige Ashlar like Image 3)
+    final wallRect = Rect.fromLTWH(coreLeft, coreTop, coreW, coreH - 12);
+    canvas.drawRect(wallRect, Paint()..color = palette.wallColor);
+
+    // Ashlar Stone Quoins on Outer Corners (Alternating white/cream blocks like Image 3)
+    final quoinPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+    final quoinBorder = Paint()..style = PaintingStyle.stroke ..color = Colors.black26 ..strokeWidth = 0.8;
+    for (double y = coreTop + 4; y < groundY - 14; y += 12) {
+      final qW = ((y ~/ 12) % 2 == 0) ? 9.0 : 6.0;
+      final qL = Rect.fromLTWH(coreLeft, y, qW, 10);
+      final qR = Rect.fromLTWH(coreRight - qW, y, qW, 10);
+      canvas.drawRect(qL, quoinPaint);
+      canvas.drawRect(qL, quoinBorder);
+      canvas.drawRect(qR, quoinPaint);
+      canvas.drawRect(qR, quoinBorder);
+    }
+
+    // Windows on Main Facade (Quaint Multi-Pane Storybook Windows)
+    // First Floor
+    _renderVictorianSashWindow(canvas, cx, coreTop + 84, 18, 28);
+    // Second Floor
+    _renderVictorianSashWindow(canvas, cx - 18, coreTop + 48, 16, 24);
+    _renderVictorianSashWindow(canvas, cx + 18, coreTop + 48, 16, 24);
+    // Third Floor Attic Windows
+    _renderVictorianSashWindow(canvas, cx - 18, coreTop + 16, 14, 20);
+    _renderVictorianSashWindow(canvas, cx + 18, coreTop + 16, 14, 20);
+
+    // Day 9+: Lower-Left Cantilevered Room (Directly from Image 3!)
+    if (day >= 9) {
+      const roomW = 32.0;
+      const roomH = 44.0;
+      final roomLeft = coreLeft - roomW + 4;
+      final roomTop = groundY - 82;
+      final rRect = Rect.fromLTWH(roomLeft, roomTop, roomW, roomH);
+      canvas.drawRect(rRect, Paint()..color = palette.wallShade);
+      canvas.drawRect(rRect, Paint()..style = PaintingStyle.stroke ..color = Colors.black26 ..strokeWidth = 1.0);
+
+      // Diagonal Timber Struts / Brackets supporting the cantilever (Image 3)
+      final strutPaint = Paint()..color = const Color(0xFF78350F) ..strokeWidth = 2.2;
+      canvas.drawLine(Offset(roomLeft + 6, roomTop + roomH), Offset(coreLeft, groundY - 16), strutPaint);
+      canvas.drawLine(Offset(roomLeft + roomW - 4, roomTop + roomH), Offset(coreLeft, groundY - 24), strutPaint);
+
+      // Casement Window
+      _renderVictorianSashWindow(canvas, roomLeft + roomW / 2, roomTop + 22, 16, 24);
+
+      // Blue Gabled Slate Roof
+      final rPath = Path()
+        ..moveTo(roomLeft - 4, roomTop)
+        ..lineTo(roomLeft + roomW / 2, roomTop - 18)
+        ..lineTo(roomLeft + roomW + 2, roomTop)
+        ..close();
+      canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+      canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.8);
+    }
+
+    // Day 10+: Upper-Left Cantilevered Bay Room (Directly from Image 3!)
+    if (day >= 10) {
+      const bayW = 28.0;
+      const bayH = 36.0;
+      final bayLeft = coreLeft - bayW + 6;
+      final bayTop = coreTop + 14;
+      final bRect = Rect.fromLTWH(bayLeft, bayTop, bayW, bayH);
+      canvas.drawRect(bRect, Paint()..color = palette.wallShade);
+      canvas.drawRect(bRect, Paint()..style = PaintingStyle.stroke ..color = Colors.black26 ..strokeWidth = 1.0);
+
+      // Angled Timber Strut
+      canvas.drawLine(Offset(bayLeft + 4, bayTop + bayH), Offset(coreLeft, bayTop + bayH + 18), Paint()..color = const Color(0xFF78350F) ..strokeWidth = 2.0);
+
+      // Bay Window & Wall Lamp
+      _renderVictorianSashWindow(canvas, bayLeft + bayW / 2, bayTop + 18, 14, 20);
+      canvas.drawCircle(Offset(bayLeft - 2, bayTop + 12), 2.5, Paint()..color = const Color(0xFFFFD700));
+
+      // Roof on Upper Bay
+      final bayRoof = Path()
+        ..moveTo(bayLeft - 3, bayTop)
+        ..lineTo(bayLeft + bayW / 2, bayTop - 14)
+        ..lineTo(bayLeft + bayW + 2, bayTop)
+        ..close();
+      canvas.drawPath(bayRoof, Paint()..color = palette.roofColor);
+      canvas.drawPath(bayRoof, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.5);
+    }
+
+    // Day 11+: Lower-Right Cantilevered Side Extension & Stairs (Image 3!)
+    if (day >= 11) {
+      const extW = 32.0;
+      const extH = 46.0;
+      final extLeft = coreRight - 4;
+      final extTop = groundY - 94;
+      final extRect = Rect.fromLTWH(extLeft, extTop, extW, extH);
+      canvas.drawRect(extRect, Paint()..color = palette.wallShade);
+      canvas.drawRect(extRect, Paint()..style = PaintingStyle.stroke ..color = Colors.black26 ..strokeWidth = 1.0);
+
+      // Exterior Wooden Staircase with White Handrail (Image 3)
+      final stairPaint = Paint()..color = Colors.white ..strokeWidth = 1.4;
+      for (int s = 0; s < 4; s++) {
+        final sy = extTop + extH - 4 - s * 6.0;
+        final sx = extLeft + extW - 2 - s * 5.0;
+        canvas.drawRect(Rect.fromLTWH(sx, sy, 7, 5), Paint()..color = const Color(0xFFCBD5E1));
+      }
+      canvas.drawLine(Offset(extLeft + extW - 2, extTop + extH - 12), Offset(extLeft + 8, extTop + 14), stairPaint);
+
+      // Side Door
+      canvas.drawRect(Rect.fromLTWH(extLeft + 6, extTop + 14, 14, 26), Paint()..color = const Color(0xFF78350F));
+
+      // Roof
+      final extRoof = Path()
+        ..moveTo(extLeft - 2, extTop)
+        ..lineTo(extLeft + extW / 2, extTop - 18)
+        ..lineTo(extLeft + extW + 4, extTop)
+        ..close();
+      canvas.drawPath(extRoof, Paint()..color = palette.roofColor);
+      canvas.drawPath(extRoof, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.8);
+    }
+
+    // Day 12+: Upper-Right Cantilevered Dormer Turret with Circular Window (Image 3!)
+    if (day >= 12) {
+      const turW = 28.0;
+      const turH = 34.0;
+      final turLeft = coreRight - 6;
+      final turTop = coreTop + 24;
+      final tRect = Rect.fromLTWH(turLeft, turTop, turW, turH);
+      canvas.drawRect(tRect, Paint()..color = palette.wallShade);
+      canvas.drawRect(tRect, Paint()..style = PaintingStyle.stroke ..color = Colors.black26 ..strokeWidth = 1.0);
+
+      // Diagonal Timber Strut
+      canvas.drawLine(Offset(turLeft + turW - 4, turTop + turH), Offset(coreRight, turTop + turH + 16), Paint()..color = const Color(0xFF78350F) ..strokeWidth = 2.0);
+
+      // Circular Portal Window (Image 3)
+      final pCenter = Offset(turLeft + turW / 2, turTop + 14);
+      canvas.drawCircle(pCenter, 7.0, Paint()..color = lightsOn ? palette.windowColor : const Color(0xFF1E293B));
+      canvas.drawCircle(pCenter, 7.0, Paint()..style = PaintingStyle.stroke ..color = Colors.white ..strokeWidth = 1.5);
+      canvas.drawLine(pCenter - const Offset(6, 0), pCenter + const Offset(6, 0), Paint()..color = Colors.white ..strokeWidth = 1.0);
+      canvas.drawLine(pCenter - const Offset(0, 6), pCenter + const Offset(0, 6), Paint()..color = Colors.white ..strokeWidth = 1.0);
+
+      // Window below
+      _renderVictorianSashWindow(canvas, turLeft + turW / 2, turTop + 26, 12, 14);
+
+      // Roof
+      final turRoof = Path()
+        ..moveTo(turLeft - 2, turTop)
+        ..lineTo(turLeft + turW / 2, turTop - 14)
+        ..lineTo(turLeft + turW + 4, turTop)
+        ..close();
+      canvas.drawPath(turRoof, Paint()..color = palette.roofColor);
+      canvas.drawPath(turRoof, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.5);
+    }
+
+    // Day 13+: High Steep French Mansard Roof atop Townhouse (Image 3!)
+    const mansardH = 46.0;
+    final mansardTop = coreTop - mansardH;
+    final mPath = Path()
+      ..moveTo(coreLeft - 6, coreTop + 2)
+      ..lineTo(coreLeft + 10, mansardTop)
+      ..lineTo(coreRight - 10, mansardTop)
+      ..lineTo(coreRight + 6, coreTop + 2)
+      ..close();
+    canvas.drawPath(mPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(mPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.5);
+
+    // Double Attic Dormer Windows (Image 3)
+    _renderVictorianArchedDormer(canvas, cx - 18, coreTop - 20, 14, 20);
+    _renderVictorianArchedDormer(canvas, cx + 18, coreTop - 20, 14, 20);
+
+    // Chimneys atop Roof with Smoke
+    _renderChimneyShaft(canvas, coreLeft + 8, mansardTop - 16, 10, 18);
+    _renderChimneyShaft(canvas, coreRight - 8, mansardTop - 16, 10, 18);
+
+    // Day 14+: Window Flower Boxes with Cascading Red & Purple Roses
+    if (day >= 14) {
+      _renderWindowFlowerBox(canvas, cx, coreTop + 84 + 18, 26);
+      _renderWindowFlowerBox(canvas, cx - 18, coreTop + 48 + 15, 22);
+      _renderWindowFlowerBox(canvas, cx + 18, coreTop + 48 + 15, 22);
+    }
+
+    // Day 15+: Grand Entrance Steps with Curved Railing & Arched Pediment (Image 3!)
+    if (day >= 15) {
+      _renderImage3FrontEntrance(canvas, cx, groundY);
+    } else {
+      _renderCottageFrontDoor(canvas, cx, groundY);
+    }
+
+    // Pathway & Garden accessories
+    _renderDay5StoneWalkway(canvas, cx, groundY);
+    if (day >= 6) _renderDay6PicketFence(canvas, cx, groundY);
+    if (day >= 7) _renderDay7StreetLamps(canvas, cx, groundY);
+    if (day >= 9) _renderDay9GardenFountain(canvas, cx - 64, groundY);
+    if (day >= 10) _renderDay8AppleTree(canvas, cx + 64, groundY);
+  }
+
+  void _renderImage3FrontEntrance(Canvas canvas, double cx, double groundY) {
+    const doorW = 24.0;
+    const doorH = 40.0;
+    final dRect = Rect.fromLTWH(cx - doorW / 2, groundY - doorH - 8, doorW, doorH);
+
+    // Classical Arched Stone Pediment Frame
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(dRect.left - 4, dRect.top - 6, doorW + 8, doorH + 6), const Radius.circular(4)),
+      Paint()..color = Colors.white,
+    );
+
+    // Double Panelled Wood Door with arched transom window
+    canvas.drawRect(dRect, Paint()..color = const Color(0xFF78350F));
+    canvas.drawArc(Rect.fromLTWH(dRect.left + 2, dRect.top + 2, doorW - 4, 14), math.pi, math.pi, true, Paint()..color = lightsOn ? const Color(0xFFFFE082) : const Color(0xFF1E293B));
+    canvas.drawCircle(Offset(cx - 3, dRect.center.dy + 4), 1.8, Paint()..color = const Color(0xFFFFD700));
+
+    // Curved Stone Steps with White Railings (Image 3!)
+    for (int i = 0; i < 3; i++) {
+      final sW = doorW + 8 + i * 6.0;
+      final sy = groundY - 8 + i * 3.0;
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(cx, sy), width: sW, height: 3.5), const Radius.circular(1.5)), Paint()..color = const Color(0xFFE2E8F0));
+    }
+    // White Railing posts
+    canvas.drawLine(Offset(cx - doorW / 2 - 6, groundY - 18), Offset(cx - doorW / 2 - 6, groundY - 2), Paint()..color = Colors.white ..strokeWidth = 2.0);
+    canvas.drawLine(Offset(cx + doorW / 2 + 6, groundY - 18), Offset(cx + doorW / 2 + 6, groundY - 2), Paint()..color = Colors.white ..strokeWidth = 2.0);
+  }
+
+  // ============================================================
+  // 🏛️ 3. THE BELOVED GRAND VICTORIAN MANOR (DAYS 28–45)
+  // ============================================================
+  void _renderGrandVictorianManorWithGround(Canvas canvas, double cx, double groundY) {
+    final floor2Top = groundY - 134.0;
+
+    // Core manor structure (Always full, complete, and glorious from Day 28!)
+    _renderGrandVictorianManor(canvas, cx, groundY);
+
+    // Day 29+: Classical 4-Pillar Portico with Carved Tympanum Pediment
+    if (day >= 29) {
+      _renderDay32ClassicalPortico(canvas, cx, groundY, groundY - 66.0);
+    }
+
+    // Day 30+: Central Chateau Clock Tower Pavilion & Spire
+    if (day >= 30) {
+      _renderCentralChateauTower(canvas, cx, floor2Top, 78.0);
+    }
+
+    // Day 31+: Wrought-Iron Rooftop Cresting along Mansard Roofs
+    if (day >= 31) {
+      _renderDay35RoofCrestings(canvas, cx, floor2Top);
+    }
+
+    // Day 33+: First-Floor Stone Balustrade
+    if (day >= 33) {
+      _renderDay36FirstFloorBalustrade(canvas, cx, groundY - 66.0);
+    }
+
+    // Day 34+: Terraced Grand Marble Steps
+    if (day >= 34) {
+      _renderGrandSteps(canvas, cx, groundY);
+    } else {
+      _renderDay5StoneWalkway(canvas, cx, groundY);
+    }
+
+    // Day 35+: Twin Cascading Courtyard Fountains
+    if (day >= 35) {
+      _renderCourtyardFountain(canvas, cx - 110, groundY - 6);
+      _renderCourtyardFountain(canvas, cx + 110, groundY - 6);
+    }
+
+    // Day 36+: Left Wing Ornate Glasshouse Conservatory (Winter Garden)
+    if (day >= 36) {
+      _renderDay41Conservatory(canvas, cx, groundY);
+    }
+
+    // Day 37+: Right Wing Grand Stone Balustraded Terrace with Classical Urns
+    if (day >= 37) {
+      _renderDay42Terrace(canvas, cx, groundY);
+    }
+
+    // Day 38+: Sculpted Stone Guardian Lions on Marble Pedestals
+    if (day >= 38) {
+      _renderGuardianLionPedestal(canvas, cx - 44, groundY - 14);
+      _renderGuardianLionPedestal(canvas, cx + 44, groundY - 14);
+    }
+
+    // Day 39+: Formal Parterre Topiary Boxwood Gardens
+    if (day >= 39) {
+      _renderVictorianParterreGarden(canvas, cx, groundY);
+    }
+
+    // Day 40+: Covered Porte-Cochère Carriage Portico with Amber Lantern
+    if (day >= 40) {
+      _renderDay44PorteCochere(canvas, cx, groundY);
+    }
+
+    // Day 41+: Stately Perimeter Stone Entrance Pillars with Carriage Lanterns
+    if (day >= 41) {
+      _renderDay45EstateLanternPillars(canvas, cx, groundY);
+    }
+
+    // Day 42+: Circular Paved Estate Carriage Driveway with Lawn Medallion
+    if (day >= 42) {
+      _renderDay42CircularDriveway(canvas, cx, groundY);
+    }
+
+    // Day 43+: Rooftop Classical Bronze Statues on Balustrade Pedestals
+    if (day >= 43) {
+      _renderDay37RooftopUrns(canvas, cx, floor2Top);
+    }
+
+    // Day 44+: Flanking Stone Guard Lodges at Estate Perimeter
+    if (day >= 44) {
+      _renderDay44GuardLodges(canvas, cx, groundY);
+    }
+
+    // Day 45+: Royal Wrought-Iron Spear Perimeter Gates
+    if (day >= 45) {
+      _renderPalaceSpearGates(canvas, cx, groundY, 320.0);
+    }
+  }
+
+  void _renderDay32ClassicalPortico(Canvas canvas, double cx, double groundY, double floor1Top) {
+    const porticoW = 74.0;
+    final porticoLeft = cx - porticoW / 2;
+    final porticoTop = floor1Top - 8;
+
+    // Triangular Pediment Tympanum
+    final pPath = Path()
+      ..moveTo(porticoLeft - 6, porticoTop + 4)
+      ..lineTo(cx, porticoTop - 24)
+      ..lineTo(porticoLeft + porticoW + 6, porticoTop + 4)
+      ..close();
+    canvas.drawPath(pPath, Paint()..color = palette.wallColor);
+    canvas.drawPath(pPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.5);
+
+    // Carved Rosette Medallion inside tympanum
+    canvas.drawCircle(Offset(cx, porticoTop - 8), 6.0, Paint()..color = palette.accentColor);
+    canvas.drawCircle(Offset(cx, porticoTop - 8), 4.0, Paint()..color = Colors.white);
+
+    // Entablature beam
+    canvas.drawRect(Rect.fromLTWH(porticoLeft - 4, porticoTop + 4, porticoW + 8, 6), Paint()..color = palette.roofTrim);
+
+    // 4 Grand Corinthian Fluted Columns
+    for (final px in [porticoLeft + 4, porticoLeft + 22, porticoLeft + porticoW - 22, porticoLeft + porticoW - 4]) {
+      final cRect = Rect.fromLTWH(px - 3.5, porticoTop + 10, 7, groundY - porticoTop - 24);
+      canvas.drawRect(cRect, Paint()..color = Colors.white);
+      canvas.drawRect(cRect, Paint()..style = PaintingStyle.stroke ..color = const Color(0xFFCBD5E1) ..strokeWidth = 1.0);
+      canvas.drawRect(Rect.fromLTWH(px - 5, porticoTop + 10, 10, 4), Paint()..color = Colors.white);
+      canvas.drawRect(Rect.fromLTWH(px - 5, groundY - 18, 10, 4), Paint()..color = Colors.white);
+    }
+  }
+
+  void _renderDay35RoofCrestings(Canvas canvas, double cx, double floor2Top) {
+    final crestPaint = Paint()..color = palette.accentColor ..strokeWidth = 1.4;
+    for (final wx in [cx - 90.0, cx + 90.0]) {
+      final y = floor2Top - 38.0;
+      canvas.drawLine(Offset(wx - 40, y), Offset(wx + 40, y), crestPaint);
+      for (double fx = wx - 36; fx <= wx + 36; fx += 8) {
+        canvas.drawLine(Offset(fx, y), Offset(fx, y - 5), crestPaint);
+        canvas.drawCircle(Offset(fx, y - 5), 1.2, crestPaint);
+      }
+    }
+  }
+
+  void _renderDay36FirstFloorBalustrade(Canvas canvas, double cx, double floor1Top) {
+    final bTop = floor1Top - 7.0;
+    canvas.drawLine(Offset(cx - 150, bTop), Offset(cx + 150, bTop), Paint()..color = Colors.white ..strokeWidth = 2.5);
+    for (double bx = cx - 146; bx <= cx + 146; bx += 8.0) {
+      if ((bx - cx).abs() > 36) {
+        canvas.drawLine(Offset(bx, bTop), Offset(bx, floor1Top), Paint()..color = const Color(0xFFCBD5E1) ..strokeWidth = 1.4);
+      }
+    }
+  }
+
+  void _renderDay37RooftopUrns(Canvas canvas, double cx, double floor2Top) {
+    _renderClassicalUrn(canvas, cx - 144, floor2Top - 38);
+    _renderClassicalUrn(canvas, cx - 44, floor2Top - 38);
+    _renderClassicalUrn(canvas, cx + 44, floor2Top - 38);
+    _renderClassicalUrn(canvas, cx + 144, floor2Top - 38);
+  }
+
+  void _renderVictorianParterreGarden(Canvas canvas, double cx, double groundY) {
+    final bPaint = Paint()..color = const Color(0xFF15803D);
+    for (final gx in [cx - 72.0, cx + 72.0]) {
+      canvas.drawCircle(Offset(gx, groundY - 4), 6.0, bPaint);
+      canvas.drawCircle(Offset(gx - 8, groundY - 2), 4.5, bPaint);
+      canvas.drawCircle(Offset(gx + 8, groundY - 2), 4.5, bPaint);
+      canvas.drawCircle(Offset(gx, groundY - 8), 2.0, Paint()..color = palette.accentColor);
+    }
+  }
+
+  void _renderDay41Conservatory(Canvas canvas, double cx, double groundY) {
+    const cW = 40.0;
+    const cH = 50.0;
+    final cLeft = cx - 160.0 - cW + 4;
+    final cTop = groundY - cH - 14;
+
+    canvas.drawRect(Rect.fromLTWH(cLeft, groundY - 14, cW, 14), Paint()..color = palette.foundationColor);
+    final gRect = Rect.fromLTWH(cLeft, cTop, cW, cH);
+    canvas.drawRect(gRect, Paint()..color = (lightsOn ? palette.windowColor : const Color(0xFF38BDF8)).withValues(alpha: 0.35));
+    canvas.drawRect(gRect, Paint()..style = PaintingStyle.stroke ..color = Colors.white ..strokeWidth = 1.5);
+
+    final rPath = Path()
+      ..moveTo(cLeft - 2, cTop)
+      ..cubicTo(cLeft + 4, cTop - 18, cLeft + cW - 4, cTop - 18, cLeft + cW + 2, cTop)
+      ..close();
+    canvas.drawPath(rPath, Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.45));
+    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = Colors.white ..strokeWidth = 1.5);
+
+    final pPaint = Paint()..color = const Color(0xFF22C55E);
+    canvas.drawCircle(Offset(cLeft + 12, groundY - 22), 5, pPaint);
+    canvas.drawCircle(Offset(cLeft + 20, groundY - 26), 7, pPaint);
+    canvas.drawCircle(Offset(cLeft + 28, groundY - 22), 5, pPaint);
+  }
+
+  void _renderDay42Terrace(Canvas canvas, double cx, double groundY) {
+    const tW = 40.0;
+    const tH = 34.0;
+    final tLeft = cx + 160.0 - 4;
+    final tTop = groundY - tH - 14;
+
+    canvas.drawRect(Rect.fromLTWH(tLeft, groundY - 14, tW, 14), Paint()..color = palette.foundationColor);
+    final wRect = Rect.fromLTWH(tLeft, tTop, tW, tH);
+    canvas.drawRect(wRect, Paint()..color = palette.wallColor);
+    canvas.drawRect(wRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.2);
+
+    final bTop = tTop - 6;
+    canvas.drawLine(Offset(tLeft, bTop), Offset(tLeft + tW, bTop), Paint()..color = Colors.white ..strokeWidth = 2.0);
+    for (double bx = tLeft + 4; bx <= tLeft + tW - 4; bx += 6.0) {
+      canvas.drawLine(Offset(bx, bTop), Offset(bx, tTop), Paint()..color = const Color(0xFFCBD5E1) ..strokeWidth = 1.2);
+    }
+    _renderClassicalUrn(canvas, tLeft + 6, bTop - 4);
+    _renderClassicalUrn(canvas, tLeft + tW - 6, bTop - 4);
+  }
+
+  void _renderDay44PorteCochere(Canvas canvas, double cx, double groundY) {
+    const pcW = 80.0;
+    final pcTop = groundY - 56.0;
+    final pcLeft = cx - pcW / 2;
+
+    final rPath = Path()
+      ..moveTo(pcLeft - 6, pcTop + 8)
+      ..lineTo(cx, pcTop - 12)
+      ..lineTo(pcLeft + pcW + 6, pcTop + 8)
+      ..close();
+    canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.5);
+
+    canvas.drawRect(Rect.fromLTWH(pcLeft + 2, pcTop + 8, 6, groundY - pcTop - 22), Paint()..color = Colors.white);
+    canvas.drawRect(Rect.fromLTWH(pcLeft + pcW - 8, pcTop + 8, 6, groundY - pcTop - 22), Paint()..color = Colors.white);
+
+    canvas.drawCircle(Offset(cx, pcTop + 2), 6.0, Paint()..color = Colors.amber.withValues(alpha: 0.5));
+    canvas.drawCircle(Offset(cx, pcTop + 2), 2.5, Paint()..color = palette.accentColor);
+  }
+
+  void _renderDay45EstateLanternPillars(Canvas canvas, double cx, double groundY) {
+    for (final px in [cx - 180.0, cx + 180.0]) {
+      final pRect = Rect.fromLTWH(px - 7, groundY - 42, 14, 42);
+      canvas.drawRect(pRect, Paint()..color = palette.wallColor);
+      canvas.drawRect(pRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.2);
+      canvas.drawRect(Rect.fromLTWH(px - 9, groundY - 45, 18, 4), Paint()..color = Colors.white);
+      canvas.drawRect(Rect.fromLTWH(px - 5, groundY - 57, 10, 12), Paint()..color = lightsOn ? Colors.amberAccent : const Color(0xFF334155));
+      canvas.drawRect(Rect.fromLTWH(px - 5, groundY - 57, 10, 12), Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.0);
+      canvas.drawCircle(Offset(px, groundY - 51), 3.0, Paint()..color = lightsOn ? Colors.white : Colors.white54);
+    }
+  }
+
+  void _renderDay42CircularDriveway(Canvas canvas, double cx, double groundY) {
+    final dRect = Rect.fromCenter(center: Offset(cx, groundY + 12), width: 140, height: 32);
+    canvas.drawOval(dRect, Paint()..color = const Color(0xFF94A3B8).withValues(alpha: 0.35));
+    canvas.drawOval(dRect, Paint()..style = PaintingStyle.stroke ..color = const Color(0xFF64748B) ..strokeWidth = 1.2);
+    canvas.drawOval(Rect.fromCenter(center: Offset(cx, groundY + 12), width: 60, height: 16), Paint()..color = const Color(0xFF16A34A));
+    canvas.drawCircle(Offset(cx, groundY + 12), 4.0, Paint()..color = palette.accentColor);
+  }
+
+  void _renderDay44GuardLodges(Canvas canvas, double cx, double groundY) {
+    for (final lx in [cx - 150.0, cx + 150.0]) {
+      final lRect = Rect.fromLTWH(lx - 12, groundY - 32, 24, 20);
+      canvas.drawRect(lRect, Paint()..color = palette.wallColor);
+      canvas.drawRect(lRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.0);
+      final rPath = Path()
+        ..moveTo(lx - 15, groundY - 32)
+        ..lineTo(lx, groundY - 44)
+        ..lineTo(lx + 15, groundY - 32)
+        ..close();
+      canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+      canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.2);
+      _renderVictorianSashWindow(canvas, lx, groundY - 22, 10, 12);
+    }
+  }
+
+  // ============================================================
+  // 🏰 4. FORTIFIED CASTLE CITADEL & BASTION KEEP (DAYS 46–70, വലിയ കോട്ട)
+  // ============================================================
+  void _renderFortifiedCastleCitadel(Canvas canvas, double cx, double groundY) {
+    final floor2Top = groundY - 134.0;
+
+    // Day 46+: Heavy Stone Ramparts Foundation
+    _renderCastleCurtainRamparts(canvas, cx, groundY);
+
+    // Left Bastion Tower (Days 48–51)
+    if (day >= 48) {
+      _renderProgressiveBastionTower(canvas, cx - 172, groundY - 14, isLeft: true);
+    }
+    // Left Aerial Arcade (Day 53+)
+    if (day >= 53) {
+      _renderConnectingArcade(canvas, cx - 162, cx - 110, groundY - 14, groundY - 120);
+    }
+
+    // Right Bastion Tower (Days 54–57)
+    if (day >= 54) {
+      _renderProgressiveBastionTower(canvas, cx + 172, groundY - 14, isLeft: false);
+    }
+    // Right Aerial Arcade (Day 58+)
+    if (day >= 58) {
+      _renderConnectingArcade(canvas, cx + 110, cx + 162, groundY - 14, groundY - 120);
+    }
+
+    // Victorian Manor Core (Kept as the central palace citadel)
+    _renderGrandVictorianManor(canvas, cx, groundY);
+    _renderCentralChateauTower(canvas, cx, floor2Top, 78.0);
+
+    // Day 52+: Heavy Portcullis Iron Gate
+    if (day >= 52) {
+      _renderPortcullisGate(canvas, cx, groundY);
+    }
+
+    // Day 60+: Sovereign Spear Gates
+    if (day >= 60) {
+      _renderPalaceSpearGates(canvas, cx, groundY, 320.0);
+    }
+
+    // Day 61+: Rear Great Keep (Donjon) rising high behind
+    if (day >= 61) {
+      _renderRearCitadelGreatKeep(canvas, cx, floor2Top);
+    }
+
+    // Day 64+: Left Rear Octagonal Spire Tower
+    if (day >= 64) {
+      _renderRearOctagonalSpire(canvas, cx - 94, floor2Top - 36, isLeft: true);
+    }
+    // Day 65+: Right Rear Octagonal Spire Tower
+    if (day >= 65) {
+      _renderRearOctagonalSpire(canvas, cx + 94, floor2Top - 36, isLeft: false);
+    }
+
+    // Day 66+: Elevated Battle-Bridge connecting rear towers
+    if (day >= 66) {
+      _renderElevatedBattleBridge(canvas, cx - 80, cx + 80, floor2Top - 70);
+    }
+
+    // Day 67+: Signal Belfry with Bell
+    if (day >= 67) {
+      _renderCitadelSignalBelfry(canvas, cx, floor2Top - 92);
+    }
+
+    // Day 68+: Flying Stone Buttresses
+    if (day >= 68) {
+      _renderFlyingButtresses(canvas, cx, groundY);
+    }
+
+    // Day 69+: Ballista Emplacements on Ramparts
+    if (day >= 69) {
+      _renderBallistaEmplacements(canvas, cx, groundY);
+    }
+
+    // Day 70+: Royal Citadel Standard Mast
+    if (day >= 70) {
+      _renderCitadelRoyalStandard(canvas, cx, floor2Top - 110);
+    }
+
+    // Day 71+: Deep Castle Moat & Heavy Drawbridge with Suspension Chains
+    if (day >= 71) {
+      _renderCastleMoatAndDrawbridge(canvas, cx, groundY);
+    }
+
+    // Day 72+: West Outer Barbican Watchtower
+    if (day >= 72) {
+      _renderBarbicanWatchtower(canvas, cx - 208, groundY, isLeft: true);
+    }
+
+    // Day 73+: East Outer Barbican Watchtower
+    if (day >= 73) {
+      _renderBarbicanWatchtower(canvas, cx + 208, groundY, isLeft: false);
+    }
+
+    // Day 74+: Apex Citadel War Standards & Golden Battle Cresting
+    if (day >= 74) {
+      _renderCitadelWarStandards(canvas, cx, floor2Top);
+    }
+
+    // ============================================================
+    // 👑 PROGRESSIVE CITADEL APEX UPGRADES (DAYS 75–89)
+    // Directly building upon Day 74 without removing anything!
+    // ============================================================
+
+    // Day 75+: High Royal Citadel 3rd Story Floor ("ഒരു നിലയും കൂടി add ചെയ്തു!")
+    if (day >= 75) {
+      _renderCitadelThirdStoryFloor(canvas, cx, floor2Top);
+    }
+
+    // Day 76+: Twin Cantilevered Corner Bartizans on 3rd Floor
+    if (day >= 76) {
+      _renderThirdStoryBartizans(canvas, cx, floor2Top);
+    }
+
+    // Day 77+: Machicolated Stone Parapet & Gilded Roof Cresting
+    if (day >= 77) {
+      _renderThirdStoryParapetAndCresting(canvas, cx, floor2Top);
+    }
+
+    // Day 78+: Soaring Central Octagonal Clock Spire & Belfry
+    if (day >= 78) {
+      _renderCitadelClockSpire(canvas, cx, floor2Top);
+    }
+
+    // Day 79+: Upper Rampart Heavy Bronze Fortress Cannons
+    if (day >= 79) {
+      _renderUpperRampartCannons(canvas, cx, groundY);
+    }
+
+    // Day 80+: Sprawling Stone Perimeter Curtain Enclosure Walls ("മതിലൊക്കെ കെട്ടി!")
+    if (day >= 80) {
+      _renderFortressPerimeterCurtainWalls(canvas, cx, groundY);
+    }
+
+    // Day 81+: West Outer Gatehouse Fortified Tower
+    if (day >= 81) {
+      _renderOuterGatehouseTower(canvas, cx - 238, groundY, isLeft: true);
+    }
+
+    // Day 82+: East Outer Gatehouse Fortified Tower
+    if (day >= 82) {
+      _renderOuterGatehouseTower(canvas, cx + 238, groundY, isLeft: false);
+    }
+
+    // Day 83+: Grand Triumphal Barbican Gate Arch over Drawbridge
+    if (day >= 83) {
+      _renderGrandBarbicanTriumphalArch(canvas, cx, groundY);
+    }
+
+    // Day 84+: High Aerial Stone Viaduct Skybridges connecting Outer Towers
+    if (day >= 84) {
+      _renderOuterViaductSkybridges(canvas, cx, groundY);
+    }
+
+    // Day 85+: Royal Imperial War Standards & Tower Pennants
+    if (day >= 85) {
+      _renderCitadelImperialWarBanners(canvas, cx, floor2Top);
+    }
+
+    // Day 86+: Deep Stone Moat Extended Across Entire Frontage
+    if (day >= 86) {
+      _renderExtendedPerimeterMoat(canvas, cx, groundY);
+    }
+
+    // Day 87+: Additional Courtyard Fountains (Quad Fountains Total)
+    if (day >= 87) {
+      _renderCourtyardFountain(canvas, cx - 180, groundY - 6);
+      _renderCourtyardFountain(canvas, cx + 180, groundY - 6);
+    }
+
+    // Day 88+: Additional Golden Guardian Lions (Quad Lions Total)
+    if (day >= 88) {
+      _renderGuardianLionPedestal(canvas, cx - 92, groundY - 14);
+      _renderGuardianLionPedestal(canvas, cx + 92, groundY - 14);
+    }
+
+    // Day 89+: Apex Night Torches, Flaming Sconces & Braziers
+    if (day >= 89) {
+      _renderFortressNightTorchesAndBraziers(canvas, cx, groundY, floor2Top);
+    }
+
+    _renderGrandSteps(canvas, cx, groundY);
+    _renderCourtyardFountain(canvas, cx - 146, groundY - 6);
+    _renderCourtyardFountain(canvas, cx + 146, groundY - 6);
+    _renderGuardianLionPedestal(canvas, cx - 48, groundY - 14);
+    _renderGuardianLionPedestal(canvas, cx + 48, groundY - 14);
+  }
+
+  void _renderCitadelThirdStoryFloor(Canvas canvas, double cx, double floor2Top) {
+    // Monumental 3rd Floor Citadel Gallery sitting atop the central core (groundY - 180)
+    const f3W = 168.0;
+    const f3H = 46.0;
+    final f3Top = floor2Top - f3H;
+    final f3Left = cx - f3W / 2;
+
+    // Solid ashlar masonry wall
+    final f3Rect = Rect.fromLTWH(f3Left, f3Top, f3W, f3H);
+    canvas.drawRect(f3Rect, Paint()..color = palette.wallColor);
+    canvas.drawRect(f3Rect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.4);
+
+    // Stone courses
+    final linePaint = Paint()..color = palette.roofUnderTrim.withValues(alpha: 0.30)..strokeWidth = 0.8;
+    for (double y = f3Top + 10; y <= floor2Top - 8; y += 9.0) {
+      canvas.drawLine(Offset(f3Left, y), Offset(f3Left + f3W, y), linePaint);
+    }
+
+    // Heavy Stone Base Molding
+    canvas.drawLine(Offset(f3Left - 4, floor2Top), Offset(f3Left + f3W + 4, floor2Top), Paint()..color = palette.foundationColor ..strokeWidth = 3.0);
+
+    // 5 Arched Lancet Windows across the 3rd floor
+    const winW = 14.0;
+    const winH = 24.0;
+    for (int i = -2; i <= 2; i++) {
+      final wx = cx + i * 32.0;
+      final wRect = Rect.fromLTWH(wx - winW / 2, f3Top + 10, winW, winH);
+      final winPath = Path()
+        ..moveTo(wRect.left, wRect.bottom)
+        ..lineTo(wRect.left, wRect.top + winW / 2)
+        ..arcToPoint(Offset(wRect.right, wRect.top + winW / 2), radius: Radius.circular(winW / 2))
+        ..lineTo(wRect.right, wRect.bottom)
+        ..close();
+
+      canvas.drawPath(winPath, Paint()..color = lightsOn ? palette.windowColor : const Color(0xFF1E293B));
+      canvas.drawPath(winPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.2);
+
+      // Window cross muntin
+      canvas.drawLine(Offset(wx, wRect.top + 4), Offset(wx, wRect.bottom), Paint()..color = palette.roofTrim ..strokeWidth = 0.8);
+      canvas.drawLine(Offset(wRect.left, wRect.top + 14), Offset(wRect.right, wRect.top + 14), Paint()..color = palette.roofTrim ..strokeWidth = 0.8);
+    }
+  }
+
+  void _renderThirdStoryBartizans(Canvas canvas, double cx, double floor2Top) {
+    const f3W = 168.0;
+    const f3H = 46.0;
+    final f3Top = floor2Top - f3H;
+
+    for (final isLeft in [true, false]) {
+      final bx = isLeft ? cx - f3W / 2 - 2 : cx + f3W / 2 + 2;
+      // Corbel brackets beneath bartizan
+      final bPath = Path()
+        ..moveTo(bx - 7, f3Top + 24)
+        ..lineTo(bx, f3Top + 36)
+        ..lineTo(bx + 7, f3Top + 24)
+        ..close();
+      canvas.drawPath(bPath, Paint()..color = palette.foundationColor);
+
+      // Turret body
+      final tRect = Rect.fromLTWH(bx - 8, f3Top + 2, 16, 22);
+      canvas.drawRect(tRect, Paint()..color = palette.wallShade);
+      canvas.drawRect(tRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.0);
+
+      // Arrow loop
+      canvas.drawLine(Offset(bx, f3Top + 8), Offset(bx, f3Top + 18), Paint()..color = const Color(0xFF0F172A) ..strokeWidth = 1.8);
+
+      // Conical roof
+      final cPath = Path()
+        ..moveTo(bx - 10, f3Top + 2)
+        ..lineTo(bx, f3Top - 16)
+        ..lineTo(bx + 10, f3Top + 2)
+        ..close();
+      canvas.drawPath(cPath, Paint()..color = palette.roofColor);
+      canvas.drawPath(cPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.2);
+    }
+  }
+
+  void _renderThirdStoryParapetAndCresting(Canvas canvas, double cx, double floor2Top) {
+    const f3W = 168.0;
+    const f3H = 46.0;
+    final f3Top = floor2Top - f3H;
+
+    // Overhanging machicolated parapet ledge
+    final pRect = Rect.fromLTWH(cx - f3W / 2 - 6, f3Top - 4, f3W + 12, 6);
+    canvas.drawRect(pRect, Paint()..color = palette.foundationColor);
+    canvas.drawRect(pRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.2);
+
+    // Crenellated merlons
+    for (double x = cx - f3W / 2 - 4; x <= cx + f3W / 2 - 2; x += 12.0) {
+      canvas.drawRect(Rect.fromLTWH(x, f3Top - 11, 7, 7), Paint()..color = palette.foundationColor);
+      canvas.drawRect(Rect.fromLTWH(x, f3Top - 11, 7, 7), Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 0.8);
+    }
+
+    // Wrought-iron gilded cresting along the parapet
+    final crestPaint = Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.0;
+    for (double x = cx - f3W / 2; x <= cx + f3W / 2; x += 8.0) {
+      canvas.drawLine(Offset(x, f3Top - 11), Offset(x, f3Top - 17), crestPaint);
+      canvas.drawCircle(Offset(x, f3Top - 17), 1.2, Paint()..color = const Color(0xFFFFD700));
+    }
+  }
+
+  void _renderCitadelClockSpire(Canvas canvas, double cx, double floor2Top) {
+    const f3H = 46.0;
+    final f3Top = floor2Top - f3H;
+    const spW = 34.0;
+    const spH = 26.0;
+    final spTop = f3Top - 11 - spH;
+
+    // Clock tower square chamber
+    final cRect = Rect.fromLTWH(cx - spW / 2, spTop, spW, spH);
+    canvas.drawRect(cRect, Paint()..color = palette.wallShade);
+    canvas.drawRect(cRect, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.5);
+
+    // Circular clock face
+    final clockCenter = Offset(cx, spTop + spH / 2);
+    canvas.drawCircle(clockCenter, 8.0, Paint()..color = lightsOn ? palette.windowColor : Colors.white70);
+    canvas.drawCircle(clockCenter, 8.0, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.2);
+    // Clock hands
+    canvas.drawLine(clockCenter, Offset(cx, clockCenter.dy - 5), Paint()..color = Colors.black87 ..strokeWidth = 1.2);
+    canvas.drawLine(clockCenter, Offset(cx + 4, clockCenter.dy), Paint()..color = Colors.black87 ..strokeWidth = 1.0);
+
+    // High soaring octagonal spire
+    final spireTop = spTop - 38.0;
+    final spPath = Path()
+      ..moveTo(cx - spW / 2 - 2, spTop)
+      ..lineTo(cx, spireTop)
+      ..lineTo(cx + spW / 2 + 2, spTop)
+      ..close();
+    canvas.drawPath(spPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(spPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.5);
+
+    // Golden Weathercock / Spire Finial
+    canvas.drawLine(Offset(cx, spireTop), Offset(cx, spireTop - 14), Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.8);
+    canvas.drawCircle(Offset(cx, spireTop - 14), 2.5, Paint()..color = const Color(0xFFFFD700));
+  }
+
+  void _renderUpperRampartCannons(Canvas canvas, double cx, double groundY) {
+    final cannonXs = [cx - 132.0, cx - 62.0, cx + 62.0, cx + 132.0];
+    for (final x in cannonXs) {
+      final isLeft = x < cx;
+      final cy = groundY - 24.0;
+      // Timber carriage
+      canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(x, cy + 2), width: 14, height: 6), const Radius.circular(1.5)), Paint()..color = const Color(0xFF4A3728));
+      // Carriage wheel
+      canvas.drawCircle(Offset(x, cy + 4), 3.0, Paint()..color = const Color(0xFF261C14));
+      // Bronze cannon barrel
+      final barrelPaint = Paint()..color = const Color(0xFFD97706) ..strokeWidth = 2.8;
+      canvas.drawLine(Offset(x, cy), Offset(isLeft ? x - 10 : x + 10, cy - 2), barrelPaint);
+      canvas.drawCircle(Offset(isLeft ? x - 10 : x + 10, cy - 2), 1.6, Paint()..color = const Color(0xFFB45309));
+    }
+  }
+
+  void _renderFortressPerimeterCurtainWalls(Canvas canvas, double cx, double groundY) {
+    const wallH = 32.0;
+    final wallTop = groundY - wallH;
+
+    for (final isLeft in [true, false]) {
+      final leftX = isLeft ? cx - 250.0 : cx + 192.0;
+      const wW = 58.0;
+
+      final wRect = Rect.fromLTWH(leftX, wallTop, wW, wallH - 12);
+      canvas.drawRect(wRect, Paint()..color = palette.wallShade);
+      canvas.drawRect(wRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.2);
+
+      // Stone courses
+      final linePaint = Paint()..color = palette.roofUnderTrim.withValues(alpha: 0.30)..strokeWidth = 0.8;
+      for (double y = wallTop + 6; y <= wallTop + wallH - 14; y += 7.0) {
+        canvas.drawLine(Offset(leftX, y), Offset(leftX + wW, y), linePaint);
+      }
+
+      // Battlements
+      for (double bx = leftX + 2; bx <= leftX + wW - 8; bx += 10.0) {
+        canvas.drawRect(Rect.fromLTWH(bx, wallTop - 5, 5, 5), Paint()..color = palette.foundationColor);
+        canvas.drawRect(Rect.fromLTWH(bx, wallTop - 5, 5, 5), Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 0.8);
+      }
+
+      // Iron Torch Sconce on wall
+      final tx = leftX + wW / 2;
+      canvas.drawCircle(Offset(tx, wallTop + 8), 2.2, Paint()..color = const Color(0xFFF59E0B));
+      canvas.drawLine(Offset(tx, wallTop + 8), Offset(tx, wallTop + 12), Paint()..color = const Color(0xFF0F172A) ..strokeWidth = 1.2);
+    }
+  }
+
+  void _renderOuterGatehouseTower(Canvas canvas, double tx, double groundY, {required bool isLeft}) {
+    const tW = 34.0;
+    const tH = 106.0;
+    final topY = groundY - tH;
+
+    final tRect = Rect.fromLTWH(tx - tW / 2, topY, tW, tH);
+    canvas.drawRect(tRect, Paint()..color = palette.wallColor);
+    canvas.drawRect(tRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
+
+    // Stone courses
+    final linePaint = Paint()..color = palette.roofUnderTrim.withValues(alpha: 0.35)..strokeWidth = 0.8;
+    for (double y = topY + 12; y <= groundY - 8; y += 10.0) {
+      canvas.drawLine(Offset(tRect.left, y), Offset(tRect.right, y), linePaint);
+    }
+
+    // Arched portal window
+    final winRect = Rect.fromCenter(center: Offset(tx, topY + 36), width: 8.0, height: 16.0);
+    canvas.drawRRect(RRect.fromRectAndRadius(winRect, const Radius.circular(3)), Paint()..color = lightsOn ? palette.windowColor : const Color(0xFF0F172A));
+
+    // Overhanging machicolated parapet
+    const pW = 42.0;
+    const pH = 12.0;
+    final pRect = Rect.fromLTWH(tx - pW / 2, topY - pH, pW, pH);
+    canvas.drawRect(pRect, Paint()..color = palette.foundationColor);
+    canvas.drawRect(pRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.4);
+
+    for (double bx = pRect.left + 2; bx <= pRect.right - 8; bx += 10.0) {
+      canvas.drawRect(Rect.fromLTWH(bx, topY - pH - 6, 6, 6), Paint()..color = palette.foundationColor);
+      canvas.drawRect(Rect.fromLTWH(bx, topY - pH - 6, 6, 6), Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 0.8);
+    }
+
+    // Pyramidal/conical slate roof
+    final roofPath = Path()
+      ..moveTo(tx - pW / 2 - 2, topY - pH - 6)
+      ..lineTo(tx, topY - pH - 34)
+      ..lineTo(tx + pW / 2 + 2, topY - pH - 6)
+      ..close();
+    canvas.drawPath(roofPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(roofPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.5);
+
+    // Royal Swallowtail Pennant
+    canvas.drawLine(Offset(tx, topY - pH - 34), Offset(tx, topY - pH - 50), Paint()..color = palette.accentColor ..strokeWidth = 1.6);
+    final flagPath = Path()
+      ..moveTo(tx, topY - pH - 50)
+      ..lineTo(isLeft ? tx - 18 : tx + 18, topY - pH - 43)
+      ..lineTo(tx, topY - pH - 36)
+      ..close();
+    canvas.drawPath(flagPath, Paint()..color = palette.accentColor);
+  }
+
+  void _renderGrandBarbicanTriumphalArch(Canvas canvas, double cx, double groundY) {
+    const archW = 68.0;
+    const archH = 46.0;
+    final archTop = groundY - archH;
+
+    // Twin stone archway pillars
+    final pPaint = Paint()..color = palette.foundationColor;
+    final pBorder = Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.5;
+    final leftPillar = Rect.fromLTWH(cx - archW / 2, archTop, 12, archH);
+    final rightPillar = Rect.fromLTWH(cx + archW / 2 - 12, archTop, 12, archH);
+    canvas.drawRect(leftPillar, pPaint);
+    canvas.drawRect(leftPillar, pBorder);
+    canvas.drawRect(rightPillar, pPaint);
+    canvas.drawRect(rightPillar, pBorder);
+
+    // Semicircular stone arch
+    final archPath = Path()
+      ..moveTo(cx - archW / 2, archTop + 8)
+      ..quadraticBezierTo(cx, archTop - 14, cx + archW / 2, archTop + 8)
+      ..lineTo(cx + archW / 2 - 10, archTop + 8)
+      ..quadraticBezierTo(cx, archTop - 6, cx - archW / 2 + 10, archTop + 8)
+      ..close();
+    canvas.drawPath(archPath, pPaint);
+    canvas.drawPath(archPath, pBorder);
+
+    // Carved Royal Escutcheon / Coat-of-Arms atop the arch
+    final escRect = Rect.fromCenter(center: Offset(cx, archTop - 12), width: 14, height: 16);
+    canvas.drawRRect(RRect.fromRectAndRadius(escRect, const Radius.circular(3)), Paint()..color = palette.accentColor);
+    canvas.drawRRect(RRect.fromRectAndRadius(escRect, const Radius.circular(3)), Paint()..style = PaintingStyle.stroke ..color = const Color(0xFFFFD700) ..strokeWidth = 1.0);
+  }
+
+  void _renderOuterViaductSkybridges(Canvas canvas, double cx, double groundY) {
+    final vPaint = Paint()..color = palette.wallShade;
+    final vBorder = Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.0;
+    for (final isLeft in [true, false]) {
+      final x1 = isLeft ? cx - 238.0 : cx + 208.0;
+      final x2 = isLeft ? cx - 208.0 : cx + 238.0;
+      final y = groundY - 58.0;
+      final vRect = Rect.fromLTRB(x1, y, x2, y + 12);
+      canvas.drawRect(vRect, vPaint);
+      canvas.drawRect(vRect, vBorder);
+
+      // Balustrade on viaduct
+      canvas.drawLine(Offset(x1, y - 4), Offset(x2, y - 4), Paint()..color = palette.roofTrim ..strokeWidth = 1.5);
+    }
+  }
+
+  void _renderCitadelImperialWarBanners(Canvas canvas, double cx, double floor2Top) {
+    final flagXs = [cx - 172.0, cx - 94.0, cx + 94.0, cx + 172.0];
+    for (final x in flagXs) {
+      final isLeft = x < cx;
+      final poleTop = floor2Top - 62.0;
+      canvas.drawLine(Offset(x, floor2Top - 36), Offset(x, poleTop), Paint()..color = palette.accentColor ..strokeWidth = 2.0);
+      canvas.drawCircle(Offset(x, poleTop), 2.2, Paint()..color = const Color(0xFFFFD700));
+
+      final flagPath = Path()
+        ..moveTo(x, poleTop)
+        ..lineTo(isLeft ? x - 22 : x + 22, poleTop + 6)
+        ..lineTo(x, poleTop + 14)
+        ..close();
+      canvas.drawPath(flagPath, Paint()..color = (x.abs() % 2 == 0) ? const Color(0xFFDC2626) : palette.accentColor);
+    }
+  }
+
+  void _renderExtendedPerimeterMoat(Canvas canvas, double cx, double groundY) {
+    final moatRect = Rect.fromLTWH(cx - 190, groundY + 8, 380, 22);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(moatRect, const Radius.circular(8)),
+      Paint()..color = const Color(0xFF1E3A8A).withValues(alpha: 0.85),
+    );
+    final ripplePaint = Paint()..color = const Color(0xFF60A5FA).withValues(alpha: 0.5)..strokeWidth = 1.5;
+    canvas.drawLine(Offset(cx - 160, groundY + 14), Offset(cx - 90, groundY + 14), ripplePaint);
+    canvas.drawLine(Offset(cx + 90, groundY + 16), Offset(cx + 160, groundY + 16), ripplePaint);
+    canvas.drawLine(Offset(cx - 60, groundY + 22), Offset(cx + 60, groundY + 22), ripplePaint);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(moatRect, const Radius.circular(8)),
+      Paint()..style = PaintingStyle.stroke ..color = palette.foundationColor ..strokeWidth = 2.5,
+    );
+  }
+
+  void _renderFortressNightTorchesAndBraziers(Canvas canvas, double cx, double groundY, double floor2Top) {
+    final brazierXs = [cx - 172.0, cx - 94.0, cx + 94.0, cx + 172.0];
+    for (final bx in brazierXs) {
+      final by = floor2Top - 20.0;
+      canvas.drawArc(Rect.fromCenter(center: Offset(bx, by), width: 12, height: 8), 0, 3.14159, false, Paint()..color = const Color(0xFF1E293B));
+      canvas.drawCircle(Offset(bx, by - 3), 5.0, Paint()..color = const Color(0xFFF59E0B).withValues(alpha: 0.85));
+      canvas.drawCircle(Offset(bx, by - 4), 3.0, Paint()..color = const Color(0xFFEF4444).withValues(alpha: 0.90));
+      canvas.drawCircle(Offset(bx, by - 5), 1.5, Paint()..color = const Color(0xFFFEF08A));
+    }
+  }
+
+  void _renderCastleMoatAndDrawbridge(Canvas canvas, double cx, double groundY) {
+    // Castle Moat with deep stone quay and glistening water
+    final moatRect = Rect.fromLTWH(cx - 150, groundY + 8, 300, 20);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(moatRect, const Radius.circular(8)),
+      Paint()..color = const Color(0xFF1E3A8A).withValues(alpha: 0.85),
+    );
+    final ripplePaint = Paint()..color = const Color(0xFF60A5FA).withValues(alpha: 0.5)..strokeWidth = 1.5;
+    canvas.drawLine(Offset(cx - 120, groundY + 14), Offset(cx - 70, groundY + 14), ripplePaint);
+    canvas.drawLine(Offset(cx + 60, groundY + 16), Offset(cx + 110, groundY + 16), ripplePaint);
+    canvas.drawLine(Offset(cx - 40, groundY + 22), Offset(cx + 40, groundY + 22), ripplePaint);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(moatRect, const Radius.circular(8)),
+      Paint()..style = PaintingStyle.stroke ..color = palette.foundationColor ..strokeWidth = 2.5,
+    );
+
+    // Heavy Timber Drawbridge
+    const bridgeW = 56.0;
+    const bridgeH = 26.0;
+    final bRect = Rect.fromLTWH(cx - bridgeW / 2, groundY + 2, bridgeW, bridgeH);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(bRect, const Radius.circular(3)),
+      Paint()..color = const Color(0xFF5C3A21),
+    );
+    final plankPaint = Paint()..color = const Color(0xFF3E2723)..strokeWidth = 1.5;
+    for (double y = groundY + 6; y <= groundY + bridgeH; y += 6.0) {
+      canvas.drawLine(Offset(bRect.left, y), Offset(bRect.right, y), plankPaint);
+    }
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(bRect, const Radius.circular(3)),
+      Paint()..style = PaintingStyle.stroke ..color = const Color(0xFF261C14) ..strokeWidth = 2.0,
+    );
+
+    // Suspension chains rising to portcullis gate
+    final chainPaint = Paint()..color = const Color(0xFF94A3B8) ..strokeWidth = 1.8;
+    canvas.drawLine(Offset(bRect.left + 4, bRect.bottom - 4), Offset(cx - 24, groundY - 26), chainPaint);
+    canvas.drawLine(Offset(bRect.right - 4, bRect.bottom - 4), Offset(cx + 24, groundY - 26), chainPaint);
+  }
+
+  void _renderBarbicanWatchtower(Canvas canvas, double tx, double groundY, {required bool isLeft}) {
+    const tW = 36.0;
+    const tH = 92.0;
+    final topY = groundY - tH;
+
+    final tRect = Rect.fromLTWH(tx - tW / 2, topY, tW, tH);
+    canvas.drawRect(tRect, Paint()..color = palette.wallShade);
+    canvas.drawRect(tRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
+
+    final linePaint = Paint()..color = palette.roofUnderTrim.withValues(alpha: 0.35)..strokeWidth = 0.8;
+    for (double y = topY + 12; y <= groundY - 8; y += 10.0) {
+      canvas.drawLine(Offset(tRect.left, y), Offset(tRect.right, y), linePaint);
+    }
+
+    final slitRect = Rect.fromCenter(center: Offset(tx, topY + 40), width: 4.0, height: 16.0);
+    canvas.drawRRect(RRect.fromRectAndRadius(slitRect, const Radius.circular(2)), Paint()..color = const Color(0xFF0F172A));
+
+    const pW = 44.0;
+    const pH = 12.0;
+    final pRect = Rect.fromLTWH(tx - pW / 2, topY - pH, pW, pH);
+    canvas.drawRect(pRect, Paint()..color = palette.foundationColor);
+    canvas.drawRect(pRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.4);
+
+    for (double bx = pRect.left + 2; bx <= pRect.right - 8; bx += 10.0) {
+      canvas.drawRect(Rect.fromLTWH(bx, topY - pH - 6, 6, 6), Paint()..color = palette.foundationColor);
+      canvas.drawRect(Rect.fromLTWH(bx, topY - pH - 6, 6, 6), Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.0);
+    }
+
+    final roofPath = Path()
+      ..moveTo(tx - pW / 2 - 2, topY - pH - 6)
+      ..lineTo(tx, topY - pH - 32)
+      ..lineTo(tx + pW / 2 + 2, topY - pH - 6)
+      ..close();
+    canvas.drawPath(roofPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(roofPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.5);
+
+    canvas.drawLine(Offset(tx, topY - pH - 32), Offset(tx, topY - pH - 46), Paint()..color = palette.accentColor ..strokeWidth = 1.5);
+    final pennantPath = Path()
+      ..moveTo(tx, topY - pH - 46)
+      ..lineTo(isLeft ? tx - 16 : tx + 16, topY - pH - 40)
+      ..lineTo(tx, topY - pH - 34)
+      ..close();
+    canvas.drawPath(pennantPath, Paint()..color = palette.accentColor);
+  }
+
+  void _renderCitadelWarStandards(Canvas canvas, double cx, double floor2Top) {
+    for (int i = -2; i <= 2; i++) {
+      if (i == 0) continue;
+      final sx = cx + i * 44.0;
+      final poleTop = floor2Top - 38.0;
+      canvas.drawLine(Offset(sx, floor2Top - 10), Offset(sx, poleTop), Paint()..color = palette.accentColor ..strokeWidth = 2.0);
+      canvas.drawCircle(Offset(sx, poleTop), 2.5, Paint()..color = const Color(0xFFFFD700));
+
+      final flagPath = Path()
+        ..moveTo(sx, poleTop)
+        ..lineTo(sx + (i < 0 ? -20 : 20), poleTop + 6)
+        ..lineTo(sx, poleTop + 12)
+        ..close();
+      canvas.drawPath(flagPath, Paint()..color = (i.abs() == 1) ? const Color(0xFFDC2626) : palette.accentColor);
+    }
+  }
+
+  void _renderCastleCurtainRamparts(Canvas canvas, double cx, double groundY) {
+    const rampW = 340.0;
+    const rampH = 22.0;
+    final rLeft = cx - rampW / 2;
+    final rTop = groundY - rampH;
+
+    final rRect = Rect.fromLTWH(rLeft, rTop, rampW, rampH);
+    canvas.drawRect(rRect, Paint()..color = palette.foundationColor);
+    canvas.drawRect(rRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.2);
+
+    if (day >= 47) {
+      final bPaint = Paint()..color = palette.wallShade;
+      final bBorder = Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.0;
+      for (double x = rLeft + 8; x <= rLeft + rampW - 16; x += 16.0) {
+        final merlonRect = Rect.fromLTWH(x, rTop - 8, 10, 8);
+        canvas.drawRect(merlonRect, bPaint);
+        canvas.drawRect(merlonRect, bBorder);
+        canvas.drawLine(Offset(x + 5, rTop - 6), Offset(x + 5, rTop - 2), Paint()..color = Colors.black45 ..strokeWidth = 1.2);
+      }
+    }
+  }
+
+  void _renderProgressiveBastionTower(Canvas canvas, double tx, double groundY, {required bool isLeft}) {
+    const towerW = 46.0;
+    const towerH = 150.0;
+    final towerTop = groundY - towerH;
+    final tLeft = tx - towerW / 2;
+
+    // Ground Floor & 2nd Floor Base (Solid Fortified Tower from Day 48/54!)
+    canvas.drawRect(Rect.fromLTWH(tLeft, groundY - 100, towerW, 86), Paint()..color = palette.wallColor);
+    canvas.drawRect(Rect.fromLTWH(tLeft, groundY - 100, towerW, 86), Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.2);
+    _renderVictorianSashWindow(canvas, tx, groundY - 76, 16, 28);
+    // Arrow loops on ground floor
+    canvas.drawRect(Rect.fromLTWH(tx - 1.5, groundY - 36, 3, 14), Paint()..color = const Color(0xFF0F172A));
+
+    final min3rd = isLeft ? 49 : 55;
+    if (day >= min3rd) {
+      canvas.drawRect(Rect.fromLTWH(tLeft, towerTop, towerW, 50), Paint()..color = palette.wallColor);
+      canvas.drawRect(Rect.fromLTWH(tLeft, towerTop, towerW, 50), Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.2);
+      _renderLancetWindow(canvas, tx, towerTop + 24, 14, 26);
+      canvas.drawRect(Rect.fromLTWH(tLeft - 3, towerTop - 6, towerW + 6, 7), Paint()..color = palette.roofTrim);
+    }
+
+    final minRoof = isLeft ? 50 : 56;
+    if (day >= minRoof) {
+      const roofH = 52.0;
+      final peakY = towerTop - 6 - roofH;
+      final rPath = Path()
+        ..moveTo(tLeft - 4, towerTop - 4)
+        ..lineTo(tx, peakY)
+        ..lineTo(tLeft + towerW + 4, towerTop - 4)
+        ..close();
+      canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+      canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.0);
+
+      final minFlag = isLeft ? 51 : 57;
+      if (day >= minFlag) {
+        final goldPaint = Paint()..color = palette.accentColor;
+        canvas.drawLine(Offset(tx, peakY), Offset(tx, peakY - 20), goldPaint..strokeWidth = 2.0);
+        final flagPath = Path()
+          ..moveTo(tx, peakY - 20)
+          ..lineTo(isLeft ? tx - 16 : tx + 16, peakY - 14)
+          ..lineTo(tx, peakY - 8)
+          ..close();
+        canvas.drawPath(flagPath, Paint()..color = isLeft ? palette.accentColor : palette.doorColor);
+      }
+    }
+  }
+
+  void _renderPortcullisGate(Canvas canvas, double cx, double groundY) {
+    const gW = 34.0;
+    const gH = 46.0;
+    final gRect = Rect.fromCenter(center: Offset(cx, groundY - gH / 2 - 14), width: gW, height: gH);
+    canvas.drawRRect(RRect.fromRectAndRadius(gRect, const Radius.circular(16)), Paint()..color = const Color(0xFF0F172A));
+    canvas.drawRRect(RRect.fromRectAndRadius(gRect, const Radius.circular(16)), Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.0);
+    final barPaint = Paint()..color = const Color(0xFF94A3B8) ..strokeWidth = 1.4;
+    for (double x = gRect.left + 5; x <= gRect.right - 5; x += 6.0) {
+      canvas.drawLine(Offset(x, gRect.top + 4), Offset(x, gRect.bottom), barPaint);
+    }
+    for (double y = gRect.top + 10; y <= gRect.bottom - 4; y += 8.0) {
+      canvas.drawLine(Offset(gRect.left + 2, y), Offset(gRect.right - 2, y), barPaint);
+    }
+  }
+
+  void _renderRearCitadelGreatKeep(Canvas canvas, double cx, double floor2Top) {
+    const keepW = 120.0;
+    const keepH = 70.0;
+    final kLeft = cx - keepW / 2;
+    final kTop = floor2Top - keepH;
+
+    // Heavy Ashlar stone Donjon Keep wall
+    final kRect = Rect.fromLTWH(kLeft, kTop, keepW, keepH);
+    canvas.drawRect(kRect, Paint()..color = palette.wallShade);
+    canvas.drawRect(kRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
+
+    // Stone masonry courses (Never looks like a flat board!)
+    final stoneLine = Paint()..color = palette.roofUnderTrim.withValues(alpha: 0.6) ..strokeWidth = 0.8;
+    for (double y = kTop + 14; y < floor2Top; y += 14) {
+      canvas.drawLine(Offset(kLeft, y), Offset(kLeft + keepW, y), stoneLine);
+    }
+    // Ashlar quoins on outer corners
+    for (double y = kTop; y < floor2Top; y += 12) {
+      canvas.drawRect(Rect.fromLTWH(kLeft, y, 7, 8), Paint()..color = palette.wallColor);
+      canvas.drawRect(Rect.fromLTWH(kLeft + keepW - 7, y, 7, 8), Paint()..color = palette.wallColor);
+    }
+
+    // Machicolations and crenellated battlements across Keep top (Always present Day 61+!)
+    final bPaint = Paint()..color = palette.wallColor;
+    final bBorder = Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.0;
+    for (double x = kLeft + 4; x <= kLeft + keepW - 12; x += 14.0) {
+      final mRect = Rect.fromLTWH(x, kTop - 8, 8, 8);
+      canvas.drawRect(mRect, bPaint);
+      canvas.drawRect(mRect, bBorder);
+    }
+    _renderBartizanTurret(canvas, kLeft + 2, kTop - 2);
+    _renderBartizanTurret(canvas, kLeft + keepW - 2, kTop - 2);
+
+    // Triple arched lancet stained-glass windows (Always present Day 61+!)
+    _renderLancetWindow(canvas, cx - 36, kTop + 28, 14, 28);
+    _renderLancetWindow(canvas, cx, kTop + 24, 16, 32);
+    _renderLancetWindow(canvas, cx + 36, kTop + 28, 14, 28);
+  }
+
+  void _renderBartizanTurret(Canvas canvas, double cx, double cy) {
+    canvas.drawCircle(Offset(cx, cy), 6.0, Paint()..color = palette.wallColor);
+    canvas.drawCircle(Offset(cx, cy), 6.0, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.2);
+    final cPath = Path()
+      ..moveTo(cx - 7, cy)
+      ..lineTo(cx, cy - 14)
+      ..lineTo(cx + 7, cy)
+      ..close();
+    canvas.drawPath(cPath, Paint()..color = palette.roofColor);
+  }
+
+  void _renderRearOctagonalSpire(Canvas canvas, double tx, double baseTop, {required bool isLeft}) {
+    const spW = 28.0;
+    const spH = 64.0;
+    final sTop = baseTop - spH;
+    final sLeft = tx - spW / 2;
+
+    canvas.drawRect(Rect.fromLTWH(sLeft, sTop, spW, spH), Paint()..color = palette.wallColor);
+    canvas.drawRect(Rect.fromLTWH(sLeft, sTop, spW, spH), Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.2);
+    _renderLancetWindow(canvas, tx, sTop + 28, 10, 20);
+
+    final peakY = sTop - 38.0;
+    final rPath = Path()
+      ..moveTo(sLeft - 2, sTop)
+      ..lineTo(tx, peakY)
+      ..lineTo(sLeft + spW + 2, sTop)
+      ..close();
+    canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.8);
+    canvas.drawLine(Offset(tx, peakY), Offset(tx, peakY - 12), Paint()..color = palette.accentColor ..strokeWidth = 1.8);
+  }
+
+  void _renderElevatedBattleBridge(Canvas canvas, double x1, double x2, double bridgeY) {
+    final bRect = Rect.fromLTRB(x1, bridgeY, x2, bridgeY + 10);
+    canvas.drawRect(bRect, Paint()..color = palette.wallShade);
+    canvas.drawRect(bRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.2);
+    canvas.drawLine(Offset(x1, bridgeY - 5), Offset(x2, bridgeY - 5), Paint()..color = Colors.white ..strokeWidth = 1.5);
+  }
+
+  void _renderCitadelSignalBelfry(Canvas canvas, double cx, double baseTop) {
+    const bW = 24.0;
+    const bH = 22.0;
+    final bRect = Rect.fromLTWH(cx - bW / 2, baseTop, bW, bH);
+    canvas.drawRect(bRect, Paint()..color = palette.wallColor);
+    canvas.drawRect(bRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.2);
+
+    canvas.drawCircle(Offset(cx, baseTop + 11), 5.0, Paint()..color = const Color(0xFF0F172A));
+    canvas.drawCircle(Offset(cx, baseTop + 10), 3.0, Paint()..color = palette.accentColor);
+
+    final rPath = Path()
+      ..moveTo(cx - bW / 2 - 2, baseTop)
+      ..lineTo(cx, baseTop - 14)
+      ..lineTo(cx + bW / 2 + 2, baseTop)
+      ..close();
+    canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+  }
+
+  void _renderFlyingButtresses(Canvas canvas, double cx, double groundY) {
+    final bPaint = Paint()..color = palette.wallShade ..strokeWidth = 2.4 ..style = PaintingStyle.stroke;
+    canvas.drawLine(Offset(cx - 160, groundY - 14), Offset(cx - 120, groundY - 70), bPaint);
+    canvas.drawLine(Offset(cx + 160, groundY - 14), Offset(cx + 120, groundY - 70), bPaint);
+  }
+
+  void _renderBallistaEmplacements(Canvas canvas, double cx, double groundY) {
+    final mPaint = Paint()..color = palette.accentColor;
+    for (final bx in [cx - 130.0, cx + 130.0]) {
+      canvas.drawCircle(Offset(bx, groundY - 30), 3.5, mPaint);
+      canvas.drawLine(Offset(bx, groundY - 30), Offset(bx - 6, groundY - 38), Paint()..color = const Color(0xFF334155) ..strokeWidth = 1.8);
+    }
+  }
+
+  void _renderCitadelRoyalStandard(Canvas canvas, double cx, double poleTop) {
+    canvas.drawLine(Offset(cx, poleTop + 24), Offset(cx, poleTop), Paint()..color = palette.accentColor ..strokeWidth = 2.2);
+    canvas.drawCircle(Offset(cx, poleTop), 2.5, Paint()..color = palette.accentColor);
+
+    final flagPath = Path()
+      ..moveTo(cx, poleTop)
+      ..lineTo(cx + 24, poleTop + 7)
+      ..lineTo(cx, poleTop + 14)
+      ..close();
+    canvas.drawPath(flagPath, Paint()..color = palette.roofColor);
+  }
+
+  // ============================================================
+  // 🏛️ 5. MONUMENTAL RAJPUT & INDO-SARACENIC IMPERIAL PALACE (DAY 90 APEX)
+  // ============================================================
+  void _renderImperialRajputPalace(Canvas canvas, double cx, double groundY) {
+    const palaceW = 420.0;
+    const floor1H = 68.0;
+    const floor2H = 64.0;
+    final floor1Top = groundY - floor1H;
+    final floor2Top = floor1Top - floor2H;
+    final palaceLeft = cx - palaceW / 2;
+    final palaceRight = cx + palaceW / 2;
+
+    // High Carved Sandstone & Terracotta Perimeter Boundary Walls ("മതിലൊക്കെ കെട്ടി!")
+    _renderPalaceBoundaryWalls(canvas, cx, groundY, palaceLeft, palaceRight);
+
+    // 1. Processional Grand Avenue / Boulevard (Directly from Image 1!)
+    _renderProcessionalBoulevard(canvas, cx, groundY);
+
+    // 2. Wide Sandstone & Terracotta Podium Base (Image 1 & 2 - Uses active palette!)
+    final pRect = Rect.fromLTWH(palaceLeft, groundY - 16, palaceW, 16);
+    canvas.drawRect(pRect, Paint()..color = palette.foundationColor);
+    canvas.drawRect(Rect.fromLTWH(palaceLeft - 4, groundY - 16, palaceW + 8, 4), Paint()..color = palette.roofTrim);
+
+    // 3. Ground Floor Colonnaded Arcade with Scalloped / Cusped Arches (Image 1 & 2)
+    final gRect = Rect.fromLTWH(palaceLeft + 8, floor1Top, palaceW - 16, floor1H - 12);
+    canvas.drawRect(gRect, Paint()..color = palette.wallColor.withValues(alpha: 0.22));
+
+    // Continuous Ground Colonnade with Cusped Trefoil Arches across the whole facade
+    const archSpacing = 28.0;
+    for (double x = palaceLeft + 24; x <= palaceRight - 24; x += archSpacing) {
+      if ((x - cx).abs() > 36) {
+        _renderCuspedPalaceArch(canvas, x, floor1Top, archSpacing - 4, floor1H - 14);
+        // Day 78+: Ornate Mughal Carved Stone Jalis (intricate latticework)
+        if (day >= 78) {
+          _renderMughalJaliScreen(canvas, x, floor1Top + 8, archSpacing - 8, floor1H - 24);
+        }
+      }
+    }
+
+    // 4. Grand Central Durbar Entrance Archway & Pavilion (Image 1 & 2)
+    _renderCentralDurbarPavilion(canvas, cx, groundY, floor1Top, floor2Top);
+
+    // 5. First Floor Arcaded Gallery & Jharokhas (Complete 2nd Floor from Day 75!)
+    final f2Rect = Rect.fromLTWH(palaceLeft + 18, floor2Top, palaceW - 36, floor2H);
+    canvas.drawRect(f2Rect, Paint()..color = palette.wallColor.withValues(alpha: 0.30));
+
+    // Upper Terrace Stone Balustrade with Ornamental Rosettes
+    final balY = floor1Top;
+    canvas.drawLine(Offset(palaceLeft + 12, balY), Offset(palaceRight - 12, balY), Paint()..color = palette.roofTrim ..strokeWidth = 3.0);
+    for (double bx = palaceLeft + 16; bx <= palaceRight - 16; bx += 8.0) {
+      canvas.drawLine(Offset(bx, balY - 6), Offset(bx, balY), Paint()..color = Colors.white ..strokeWidth = 1.5);
+    }
+
+    // First Floor Windows & Cantilevered Jharokhas (Image 2)
+    for (double x = palaceLeft + 36; x <= palaceRight - 36; x += archSpacing) {
+      if ((x - cx).abs() > 42) {
+        final isLeft = x < cx;
+        final isJharokhaSlot = ((x - palaceLeft) ~/ archSpacing) % 2 == 0;
+        if (isJharokhaSlot && ((isLeft && day >= 76) || (!isLeft && day >= 77))) {
+          _renderJharokhaBalcony(canvas, x, floor2Top + 32, 22, 34);
+        } else {
+          _renderCuspedPalaceArch(canvas, x, floor2Top + 6, archSpacing - 4, floor2H - 12);
+        }
+      }
+    }
+
+    // 6. Rooftop Parapet, Cornice Chhajjas (Overhanging Eaves) (Image 1 & 2)
+    final roofY = floor2Top;
+    final chhajjaPath = Path()
+      ..moveTo(palaceLeft + 10, roofY + 2)
+      ..lineTo(palaceLeft + 4, roofY - 5)
+      ..lineTo(palaceRight - 4, roofY - 5)
+      ..lineTo(palaceRight - 10, roofY + 2)
+      ..close();
+    canvas.drawPath(chhajjaPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(chhajjaPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.8);
+
+    // Day 80+: Rooftop Ornamental Gold Finials Balustrade
+    if (day >= 80) {
+      for (double fx = palaceLeft + 16; fx <= palaceRight - 16; fx += 14.0) {
+        canvas.drawLine(Offset(fx, roofY - 5), Offset(fx, roofY - 11), Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.5);
+        canvas.drawCircle(Offset(fx, roofY - 11), 1.8, Paint()..color = const Color(0xFFFFD700));
+      }
+    }
+
+    // Intermediate Rooftop Chhatris (Image 1 & 2):
+    if (day >= 81) {
+      _renderChhatriPavilion(canvas, cx - 85, floor2Top - 6, 24, 28, isOuter: false);
+    }
+    if (day >= 82) {
+      _renderChhatriPavilion(canvas, cx + 85, floor2Top - 6, 24, 28, isOuter: false);
+    }
+    if (day >= 85) {
+      _renderChhatriPavilion(canvas, cx - 130, floor2Top - 6, 24, 28, isOuter: false);
+      _renderChhatriPavilion(canvas, cx + 130, floor2Top - 6, 24, 28, isOuter: false);
+    }
+
+    // 7. Outer Left & Right Corner Bastion Towers with Grand Chhatris (Image 1 & 2):
+    if (day >= 83) {
+      _renderCornerChhatriTower(canvas, palaceLeft + 24, groundY, isLeft: true);
+    }
+    if (day >= 84) {
+      _renderCornerChhatriTower(canvas, palaceRight - 24, groundY, isLeft: false);
+    }
+
+    // 8. Day 87+: Central Grand Royal Fluted Chhatri Onion Dome (Image 1 & 2)
+    if (day >= 87) {
+      _renderApexPalaceGrandDome(canvas, cx, floor2Top - 28);
+    }
+
+    // 9. Forecourt Features (Steps, Fountains, Lions, Flags, Elephants)
+    _renderImperialSteps(canvas, cx, groundY);
+
+    // Day 79+: Grand Royal Plinth Elephant Statues
+    if (day >= 79) {
+      _renderRoyalElephantStatue(canvas, cx - 64, groundY - 12, isLeft: true);
+      _renderRoyalElephantStatue(canvas, cx + 64, groundY - 12, isLeft: false);
+    }
+
+    if (day >= 88) {
+      _renderGuardianLionPedestal(canvas, cx - 52, groundY - 14);
+      _renderGuardianLionPedestal(canvas, cx + 52, groundY - 14);
+      _renderCourtyardFountain(canvas, cx - 148, groundY - 6);
+      _renderCourtyardFountain(canvas, cx + 148, groundY - 6);
+    }
+
+    if (day >= 89) {
+      _renderDay90PalaceBanner(canvas, cx, groundY);
+    }
+
+    // Day 90 Apex: 24K Royal Sovereign Eagle Crown with radiant sunburst corona!
+    if (day >= 90) {
+      _renderDay90DomeCrown(canvas, cx, groundY);
+    }
+  }
+
+  void _renderMughalJaliScreen(Canvas canvas, double cx, double topY, double w, double h) {
+    final jaliPaint = Paint()
+      ..color = palette.accentColor.withValues(alpha: 0.65)
+      ..strokeWidth = 0.8;
+    final halfW = w / 2;
+    for (double dy = 0; dy <= h; dy += 5.0) {
+      canvas.drawLine(Offset(cx - halfW, topY + dy), Offset(cx + halfW, topY + dy + 4.0), jaliPaint);
+      canvas.drawLine(Offset(cx - halfW, topY + dy + 4.0), Offset(cx + halfW, topY + dy), jaliPaint);
+    }
+  }
+
+  void _renderRoyalElephantStatue(Canvas canvas, double ex, double ey, {required bool isLeft}) {
+    // Carved Marble Elephant Plinth
+    final plinthRect = Rect.fromCenter(center: Offset(ex, ey + 4), width: 22, height: 6);
+    canvas.drawRRect(RRect.fromRectAndRadius(plinthRect, const Radius.circular(2)), Paint()..color = palette.foundationColor);
+    canvas.drawRRect(RRect.fromRectAndRadius(plinthRect, const Radius.circular(2)), Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.0);
+
+    // Elephant Body (Rounded torso)
+    final bodyRect = Rect.fromCenter(center: Offset(ex, ey - 4), width: 16, height: 12);
+    canvas.drawRRect(RRect.fromRectAndRadius(bodyRect, const Radius.circular(4)), Paint()..color = Colors.white70);
+
+    // Elephant Head & Raised Trunk
+    final hx = isLeft ? ex + 7 : ex - 7;
+    canvas.drawCircle(Offset(hx, ey - 8), 4.5, Paint()..color = Colors.white70);
+
+    final trunkPath = Path()
+      ..moveTo(hx, ey - 8)
+      ..quadraticBezierTo(isLeft ? hx + 5 : hx - 5, ey - 14, isLeft ? hx + 3 : hx - 3, ey - 16);
+    canvas.drawPath(trunkPath, Paint()..style = PaintingStyle.stroke ..color = Colors.white70 ..strokeWidth = 2.0);
+
+    // Decorative Golden Howdah Saddle Cloth
+    final saddleRect = Rect.fromCenter(center: Offset(ex, ey - 6), width: 8, height: 6);
+    canvas.drawRect(saddleRect, Paint()..color = palette.accentColor);
+    canvas.drawRect(saddleRect, Paint()..style = PaintingStyle.stroke ..color = const Color(0xFFFFD700) ..strokeWidth = 0.8);
+  }
+
+  void _renderPalaceBoundaryWalls(Canvas canvas, double cx, double groundY, double palaceLeft, double palaceRight) {
+    const wallH = 42.0;
+    final wallTop = groundY - wallH;
+
+    // Left Boundary Wall
+    final leftWallRect = Rect.fromLTWH(palaceLeft - 70, wallTop, 74, wallH - 12);
+    canvas.drawRect(leftWallRect, Paint()..color = palette.wallColor.withValues(alpha: 0.35));
+    canvas.drawRect(leftWallRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.4);
+
+    // Right Boundary Wall
+    final rightWallRect = Rect.fromLTWH(palaceRight - 4, wallTop, 74, wallH - 12);
+    canvas.drawRect(rightWallRect, Paint()..color = palette.wallColor.withValues(alpha: 0.35));
+    canvas.drawRect(rightWallRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.4);
+
+    // Decorative cusped arches along the perimeter walls
+    for (double x = palaceLeft - 60; x <= palaceLeft - 16; x += 18.0) {
+      _renderCuspedPalaceArch(canvas, x, wallTop + 6, 12, wallH - 22);
+    }
+    for (double x = palaceRight + 12; x <= palaceRight + 56; x += 18.0) {
+      _renderCuspedPalaceArch(canvas, x, wallTop + 6, 12, wallH - 22);
+    }
+
+    // Outer boundary wall Chhatri kiosks at the far ends
+    _renderChhatriPavilion(canvas, palaceLeft - 66, wallTop, 20, 24, isOuter: true);
+    _renderChhatriPavilion(canvas, palaceRight + 66, wallTop, 20, 24, isOuter: true);
+  }
+
+  void _renderProcessionalBoulevard(Canvas canvas, double cx, double groundY) {
+    // Broad paved ceremonial boulevard extending into the foreground (Image 1!)
+    final pPath = Path()
+      ..moveTo(cx - 36, groundY - 6)
+      ..lineTo(cx - 96, groundY + 34)
+      ..lineTo(cx + 96, groundY + 34)
+      ..lineTo(cx + 36, groundY - 6)
+      ..close();
+    canvas.drawPath(pPath, Paint()..color = palette.wallColor.withValues(alpha: 0.28));
+
+    // Theme borders
+    canvas.drawLine(Offset(cx - 36, groundY - 6), Offset(cx - 96, groundY + 34), Paint()..color = palette.roofColor ..strokeWidth = 3.5);
+    canvas.drawLine(Offset(cx + 36, groundY - 6), Offset(cx + 96, groundY + 34), Paint()..color = palette.roofColor ..strokeWidth = 3.5);
+
+    // Central ceremonial runner
+    canvas.drawLine(Offset(cx, groundY - 6), Offset(cx, groundY + 34), Paint()..color = palette.accentColor ..strokeWidth = 2.0);
+
+    // Flanking stone flower urns along boulevard (Image 1)
+    for (int i = 0; i < 3; i++) {
+      final t = (i + 1) / 3.0;
+      final ly = groundY - 6 + 40.0 * t;
+      final lx = cx - 36 - 60.0 * t;
+      final rx = cx + 36 + 60.0 * t;
+      _renderClassicalUrn(canvas, lx, ly);
+      _renderClassicalUrn(canvas, rx, ly);
+    }
+  }
+
+  void _renderCuspedPalaceArch(Canvas canvas, double cx, double topY, double w, double h) {
+    // Cusped / trefoil scalloped archway (Image 1 & 2)
+    final aRect = Rect.fromLTWH(cx - w / 2, topY, w, h);
+    canvas.drawRect(aRect, Paint()..color = lightsOn ? palette.windowColor.withValues(alpha: 0.40) : const Color(0xFF1E293B));
+
+    // Slender marble/trim pillars
+    final pPaint = Paint()..color = palette.roofTrim ..strokeWidth = 2.0;
+    canvas.drawLine(Offset(aRect.left, aRect.top + 10), Offset(aRect.left, aRect.bottom), pPaint);
+    canvas.drawLine(Offset(aRect.right, aRect.top + 10), Offset(aRect.right, aRect.bottom), pPaint);
+
+    // Scalloped trefoil arch curve
+    final aPath = Path()
+      ..moveTo(aRect.left, aRect.top + 10)
+      ..cubicTo(aRect.left, aRect.top + 4, cx - 4, aRect.top + 4, cx, aRect.top)
+      ..cubicTo(cx + 4, aRect.top + 4, aRect.right, aRect.top + 4, aRect.right, aRect.top + 10);
+    canvas.drawPath(aPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.0);
+  }
+
+  void _renderCentralDurbarPavilion(Canvas canvas, double cx, double groundY, double floor1Top, double floor2Top) {
+    const pavilionW = 76.0;
+    final pavilionLeft = cx - pavilionW / 2;
+    final pavilionTop = (day >= 85) ? floor2Top - 42 : floor2Top - 24;
+
+    // Multi-tier Durbar Gateway Wall
+    final dRect = Rect.fromLTWH(pavilionLeft, pavilionTop, pavilionW, groundY - pavilionTop - 14);
+    canvas.drawRect(dRect, Paint()..color = palette.wallColor);
+    canvas.drawRect(dRect, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 2.0);
+
+    // Monumental Central Cusped Arch Gateway (Image 2)
+    const archW = 34.0;
+    const archH = 50.0;
+    final archRect = Rect.fromCenter(center: Offset(cx, groundY - archH / 2 - 14), width: archW, height: archH);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(archRect, const Radius.circular(16)),
+      Paint()..color = palette.doorColor,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(archRect, const Radius.circular(16)),
+      Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 2.0,
+    );
+
+    // Upper Royal Viewing Balcony (Baradari open gallery with pillars)
+    final vRect = Rect.fromCenter(center: Offset(cx, floor1Top - 6), width: 44, height: 26);
+    canvas.drawRect(vRect, Paint()..color = (lightsOn ? palette.windowColor : Colors.white).withValues(alpha: 0.85));
+    canvas.drawRect(vRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.8);
+    for (double x = vRect.left + 8; x <= vRect.right - 8; x += 9.0) {
+      canvas.drawLine(Offset(x, vRect.top), Offset(x, vRect.bottom), Paint()..color = palette.roofTrim ..strokeWidth = 1.4);
+    }
+
+    // Day 85+: Grand Central Royal Durbar Upper Pavilion (Image 2)
+    if (day >= 85) {
+      const uW = 54.0;
+      const uH = 22.0;
+      final uRect = Rect.fromLTWH(cx - uW / 2, pavilionTop + 2, uW, uH);
+      canvas.drawRect(uRect, Paint()..color = palette.wallShade);
+      canvas.drawRect(uRect, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.5);
+
+      // Triple miniature cusped archways with golden jaali screen
+      for (int a = -1; a <= 1; a++) {
+        final ax = cx + a * 15.0;
+        final aPath = Path()
+          ..moveTo(ax - 5, uRect.bottom)
+          ..lineTo(ax - 5, uRect.top + 6)
+          ..quadraticBezierTo(ax, uRect.top + 1, ax + 5, uRect.top + 6)
+          ..lineTo(ax + 5, uRect.bottom);
+        canvas.drawPath(aPath, Paint()..color = lightsOn ? palette.windowColor : const Color(0xFF1E293B));
+        canvas.drawPath(aPath, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.2);
+      }
+    }
+  }
+
+  void _renderJharokhaBalcony(Canvas canvas, double cx, double cy, double w, double h) {
+    // Rajasthani Cantilevered Jharokha Balcony (Image 2)
+    final jRect = Rect.fromCenter(center: Offset(cx, cy), width: w, height: h);
+
+    // Corbel bracket beneath balcony
+    final bPath = Path()
+      ..moveTo(cx - w / 2, jRect.bottom)
+      ..lineTo(cx, jRect.bottom + 8)
+      ..lineTo(cx + w / 2, jRect.bottom)
+      ..close();
+    canvas.drawPath(bPath, Paint()..color = palette.roofShade);
+
+    // Balcony Box with Lattice Jaali screen
+    canvas.drawRect(jRect, Paint()..color = palette.wallShade);
+    canvas.drawRect(jRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.2);
+
+    // Arched stained glass opening glowing inside
+    final winRect = Rect.fromCenter(center: Offset(cx, cy - 2), width: w - 8, height: h - 10);
+    canvas.drawRRect(RRect.fromRectAndRadius(winRect, const Radius.circular(4)), Paint()..color = lightsOn ? palette.windowColor : const Color(0xFF1E293B));
+    canvas.drawRRect(RRect.fromRectAndRadius(winRect, const Radius.circular(4)), Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.0);
+
+    // Domed hood atop Jharokha
+    final hoodPath = Path()
+      ..moveTo(cx - w / 2 - 2, jRect.top)
+      ..quadraticBezierTo(cx, jRect.top - 8, cx + w / 2 + 2, jRect.top)
+      ..close();
+    canvas.drawPath(hoodPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(hoodPath, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.2);
+  }
+
+  void _renderChhatriPavilion(Canvas canvas, double cx, double baseTop, double w, double h, {required bool isOuter}) {
+    // 4-Pillar Open Chhatri Kiosk (Image 1 & 2)
+    const pillarH = 14.0;
+    final pillarTop = baseTop - pillarH;
+    final pPaint = Paint()..color = palette.roofTrim ..strokeWidth = 1.5;
+
+    // Slender pillars
+    canvas.drawLine(Offset(cx - w / 2 + 3, baseTop), Offset(cx - w / 2 + 3, pillarTop), pPaint);
+    canvas.drawLine(Offset(cx + w / 2 - 3, baseTop), Offset(cx + w / 2 - 3, pillarTop), pPaint);
+    canvas.drawLine(Offset(cx - 3, baseTop), Offset(cx - 3, pillarTop), pPaint);
+    canvas.drawLine(Offset(cx + 3, baseTop), Offset(cx + 3, pillarTop), pPaint);
+
+    // Curved Rajput Dome Cupola
+    final domeH = h - pillarH;
+    final domeTop = pillarTop - domeH;
+    final dPath = Path()
+      ..moveTo(cx - w / 2 - 2, pillarTop)
+      ..cubicTo(cx - w / 2, domeTop + 4, cx - 4, domeTop + 2, cx, domeTop)
+      ..cubicTo(cx + 4, domeTop + 2, cx + w / 2, domeTop + 4, cx + w / 2 + 2, pillarTop)
+      ..close();
+    canvas.drawPath(dPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(dPath, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.2);
+
+    // Golden Kalasa Finial
+    canvas.drawLine(Offset(cx, domeTop), Offset(cx, domeTop - 6), Paint()..color = palette.accentColor ..strokeWidth = 1.8);
+    canvas.drawCircle(Offset(cx, domeTop - 6), 1.8, Paint()..color = palette.accentColor);
+  }
+
+  void _renderCornerChhatriTower(Canvas canvas, double cx, double groundY, {required bool isLeft}) {
+    const towerW = 34.0;
+    const towerH = 148.0;
+    final towerTop = groundY - towerH;
+    final tRect = Rect.fromLTWH(cx - towerW / 2, towerTop, towerW, towerH - 14);
+
+    // 3-Storey Rajput Bastion Tower (Image 1 & 2)
+    canvas.drawRect(tRect, Paint()..color = palette.wallColor);
+    canvas.drawRect(tRect, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.5);
+
+    // Arched windows on tower levels
+    for (int lvl = 0; lvl < 3; lvl++) {
+      final wy = towerTop + 24 + lvl * 40.0;
+      _renderVictorianSashWindow(canvas, cx, wy, 12, 18);
+    }
+
+    // Crowning Grand 4-Pillar Chhatri (Image 1 & 2)
+    _renderChhatriPavilion(canvas, cx, towerTop, 36, 32, isOuter: true);
+
+    // Royal Silk Flag
+    final flagColor = isLeft ? palette.accentColor : palette.doorColor;
+    final flagPath = Path()
+      ..moveTo(cx, towerTop - 36)
+      ..lineTo(isLeft ? cx - 18 : cx + 18, towerTop - 30)
+      ..lineTo(cx, towerTop - 24)
+      ..close();
+    canvas.drawPath(flagPath, Paint()..color = flagColor);
+  }
+
+  void _renderApexPalaceGrandDome(Canvas canvas, double cx, double baseTop) {
+    // Grand Central Fluted Golden Chhatri Dome (Image 1 & 2)
+    const domeW = 68.0;
+    const domeH = 48.0;
+    final domeTop = baseTop - domeH;
+
+    // Lotus petal drum base
+    final drumRect = Rect.fromCenter(center: Offset(cx, baseTop + 4), width: domeW - 8, height: 10);
+    canvas.drawRRect(RRect.fromRectAndRadius(drumRect, const Radius.circular(3)), Paint()..color = palette.roofTrim);
+    canvas.drawRRect(RRect.fromRectAndRadius(drumRect, const Radius.circular(3)), Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.5);
+
+    // Fluted Golden Dome
+    final dPath = Path()
+      ..moveTo(cx - domeW / 2, baseTop)
+      ..cubicTo(cx - domeW / 2 + 4, domeTop + 6, cx - 14, domeTop + 2, cx, domeTop)
+      ..cubicTo(cx + 14, domeTop + 2, cx + domeW / 2 - 4, domeTop + 6, cx + domeW / 2, baseTop)
+      ..close();
+    canvas.drawPath(dPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(dPath, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 2.0);
+
+    // Vertical Golden Fluting Ribs
+    final rib = Paint()..color = palette.accentColor ..strokeWidth = 1.4 ..style = PaintingStyle.stroke;
+    canvas.drawLine(Offset(cx, domeTop), Offset(cx, baseTop), rib);
+    canvas.drawLine(Offset(cx - 16, baseTop), Offset(cx - 6, domeTop + 14), rib);
+    canvas.drawLine(Offset(cx + 16, baseTop), Offset(cx + 6, domeTop + 14), rib);
+
+    // Ornate Golden Kalasa Finial Spire
+    canvas.drawLine(Offset(cx, domeTop), Offset(cx, domeTop - 22), Paint()..color = palette.accentColor ..strokeWidth = 2.4);
+    canvas.drawCircle(Offset(cx, domeTop - 22), 3.5, Paint()..color = palette.accentColor);
+    canvas.drawCircle(Offset(cx, domeTop - 12), 2.2, Paint()..color = palette.accentColor);
+  }
+
+  void _renderDay5StoneWalkway(Canvas canvas, double cx, double groundY) {
+    final stonePaint = Paint()..color = const Color(0xFF94A3B8);
+    final border = Paint()..color = const Color(0xFF64748B) ..style = PaintingStyle.stroke ..strokeWidth = 0.8;
+    for (int i = 0; i < 4; i++) {
+      final sy = groundY - 10 + i * 5.0;
+      final sw = 14.0 + (i % 2) * 4.0;
+      final rect = Rect.fromCenter(center: Offset(cx, sy), width: sw, height: 4.0);
+      canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(2)), stonePaint);
+      canvas.drawRRect(RRect.fromRectAndRadius(rect, const Radius.circular(2)), border);
+    }
+  }
+
+  void _renderWindowFlowerBox(Canvas canvas, double cx, double cy, double width) {
+    final boxRect = Rect.fromCenter(center: Offset(cx, cy), width: width, height: 6.0);
+    canvas.drawRRect(RRect.fromRectAndRadius(boxRect, const Radius.circular(2)), Paint()..color = const Color(0xFF78350F));
+    final colors = [const Color(0xFFE11D48), const Color(0xFFF43F5E), const Color(0xFFFB7185), const Color(0xFF22C55E)];
+    for (int i = 0; i < 5; i++) {
+      final fx = boxRect.left + 4 + i * ((width - 8) / 4);
+      final col = colors[i % colors.length];
+      canvas.drawCircle(Offset(fx, cy - 2.5), 2.2, Paint()..color = col);
+    }
+  }
+
+
+  // ============================================================
+  // 🏡 2. TWO-STORY CHATEAU & PROGRESSIVE VILLA (DAYS 16–27)
+  // ============================================================
+  void _renderDay16to27VictorianRising(Canvas canvas, double cx, double groundY) {
+    const estateWidth = 270.0;
+    const floor1Height = 66.0;
+    const floor2Height = 64.0;
+    final floor1Top = groundY - floor1Height;
+    final floor2Top = floor1Top - floor2Height;
+
+    // Foundation Base
+    final fRect = Rect.fromLTWH(cx - estateWidth / 2, groundY - 14, estateWidth, 14);
+    canvas.drawRect(fRect, Paint()..color = palette.foundationColor);
+    final fBorder = Paint()..color = Colors.black26 ..strokeWidth = 1.0;
+    for (double x = cx - estateWidth / 2 + 18; x < cx + estateWidth / 2; x += 18) {
+      canvas.drawLine(Offset(x, groundY - 14), Offset(x, groundY), fBorder);
+    }
+
+    // Ground Floor Wall
+    final gRect = Rect.fromLTWH(cx - estateWidth / 2 + 8, floor1Top, estateWidth - 16, floor1Height);
+    canvas.drawRect(gRect, Paint()..color = palette.wallColor);
+
+    // Ground Floor Symmetrical Windows & Door
+    _renderVictorianSashWindow(canvas, cx - 80, floor1Top + 32, 20, 34);
+    _renderVictorianSashWindow(canvas, cx + 80, floor1Top + 32, 20, 34);
+
+    if (day >= 25) {
+      _renderColonnadedPorch(canvas, cx, groundY, estateWidth, floor1Height);
+    } else {
+      _renderCottageFrontDoor(canvas, cx, groundY);
+      _renderDay2FrontPorchAwning(canvas, cx, groundY);
+    }
+
+    // Second Floor Center (Day 16+)
+    const centerW = 88.0;
+    final cRect = Rect.fromLTWH(cx - centerW / 2, floor2Top, centerW, floor2Height);
+    canvas.drawRect(cRect, Paint()..color = palette.wallColor);
+    canvas.drawRect(cRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
+
+    // French Doors & Juliet Balcony
+    final fDoor = Rect.fromCenter(center: Offset(cx, floor2Top + 30), width: 26, height: 38);
+    canvas.drawRRect(RRect.fromRectAndRadius(fDoor, const Radius.circular(2)), Paint()..color = lightsOn ? palette.windowColor : const Color(0xFF1E293B));
+    canvas.drawRRect(RRect.fromRectAndRadius(fDoor, const Radius.circular(2)), Paint()..style = PaintingStyle.stroke ..color = Colors.white ..strokeWidth = 1.8);
+    final bRail = Rect.fromCenter(center: Offset(cx, floor1Top - 5), width: 44, height: 10);
+    canvas.drawRRect(RRect.fromRectAndRadius(bRail, const Radius.circular(2)), Paint()..color = Colors.white);
+    for (double bx = cx - 18; bx <= cx + 18; bx += 6) {
+      canvas.drawLine(Offset(bx, bRail.top), Offset(bx, bRail.bottom), Paint()..color = const Color(0xFF94A3B8) ..strokeWidth = 1.2);
+    }
+
+    // Second Floor West Wing Bedchamber (Always complete Day 16+)
+    final wRect = Rect.fromLTWH(cx - estateWidth / 2 + 10, floor2Top + 6, (estateWidth - centerW) / 2 - 14, floor2Height - 6);
+    canvas.drawRect(wRect, Paint()..color = palette.wallShade);
+    _renderVictorianSashWindow(canvas, wRect.center.dx, floor2Top + 34, 20, 32);
+
+    // Second Floor East Wing Study (Always complete Day 16+)
+    final eRect = Rect.fromLTWH(cx + centerW / 2 + 4, floor2Top + 6, (estateWidth - centerW) / 2 - 14, floor2Height - 6);
+    canvas.drawRect(eRect, Paint()..color = palette.wallShade);
+    _renderVictorianSashWindow(canvas, eRect.center.dx, floor2Top + 34, 20, 32);
+
+    // Mansard Roofs on Wings (Always complete Day 16+)
+    _renderVictorianMansardRoof(canvas, cx - 80, floor2Top, 100, isLeft: true);
+    _renderVictorianMansardRoof(canvas, cx + 80, floor2Top, 100, isLeft: false);
+
+    // Twin Brick Chimneys with rising smoke (Always complete Day 16+)
+    _renderChimneyShaft(canvas, cx - 96, floor2Top - 24, 14, 26);
+    _renderChimneyShaft(canvas, cx + 96, floor2Top - 24, 14, 26);
+
+    // Day 17+: Front Terrace Stone Balustrade & Urns
+    if (day >= 17) {
+      final bTop = floor1Top - 6;
+      canvas.drawLine(Offset(cx - estateWidth / 2 + 12, bTop), Offset(cx + estateWidth / 2 - 12, bTop), Paint()..color = Colors.white ..strokeWidth = 2.0);
+      _renderClassicalUrn(canvas, cx - estateWidth / 2 + 16, bTop - 4);
+      _renderClassicalUrn(canvas, cx + estateWidth / 2 - 16, bTop - 4);
+    }
+
+    // Day 18+: Twin Blooming Trees Flanking Villa
+    if (day >= 18) {
+      _renderDay8AppleTree(canvas, cx - 110, groundY);
+      _renderDay8AppleTree(canvas, cx + 110, groundY);
+    }
+
+    // Day 19+: Cobblestone Promenade & Flower Beds
+    if (day >= 19) {
+      _renderDay5StoneWalkway(canvas, cx, groundY);
+      _renderDay3GardenFlowerBeds(canvas, cx, groundY);
+    }
+
+    // Day 20+: Symmetrical Roof Dormers
+    if (day >= 20) {
+      _renderVictorianArchedDormer(canvas, cx - 80, floor2Top - 18, 20, 26);
+      _renderVictorianArchedDormer(canvas, cx + 80, floor2Top - 18, 20, 26);
+    }
+
+    // Day 21+: Fluted Veranda Columns & Coach Lamps
+    if (day >= 21) {
+      _renderDay21PorchPillars(canvas, cx, groundY);
+    }
+
+    // Day 22+: Garden Gazebo / Tea Pavilion on the Lawn (Fixes "just a line"!)
+    if (day >= 22) {
+      _renderGardenGazebo(canvas, cx - 96, groundY);
+    }
+
+    // Day 23+: Stone Courtyard Fountain with Sparkling Water Ripples (Fixes "chumma 2 saadhanam"!)
+    if (day >= 23) {
+      _renderCourtyardFountain(canvas, cx + 96, groundY - 6);
+    }
+
+    // Day 24+: Topiary Shrubs
+    if (day >= 24) {
+      _renderVictorianParterreGarden(canvas, cx, groundY);
+    }
+
+    // Center gabled roof cap
+    final rPath = Path();
+    rPath.moveTo(cx - centerW / 2 - 6, floor2Top + 2);
+    rPath.lineTo(cx, floor2Top - 38);
+    rPath.lineTo(cx + centerW / 2 + 6, floor2Top + 2);
+    rPath.close();
+    canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 3.0);
+
+    // Day 26+: Rooftop Golden Eagle Weathervane & Carved Pediment Crest
+    if (day >= 26) {
+      _renderDay10Weathervane(canvas, cx, floor2Top - 38);
+      canvas.drawCircle(Offset(cx, floor2Top - 18), 4.5, Paint()..color = palette.accentColor);
+    }
+
+    // Day 27+: Grand Arched Stone Perimeter Gateway with Carriage Lanterns (Fixes "bottom pillar"!)
+    if (day >= 27) {
+      _renderDay27PerimeterGateway(canvas, cx, groundY);
+    }
+
+    // Garden & courtyard features
+    _renderDay6PicketFence(canvas, cx, groundY);
+    _renderDay7StreetLamps(canvas, cx, groundY);
+  }
+
+  void _renderDay21PorchPillars(Canvas canvas, double cx, double groundY) {
+    for (final px in [cx - 24.0, cx + 24.0]) {
+      final pRect = Rect.fromLTWH(px - 3, groundY - 50, 6, 36);
+      canvas.drawRect(pRect, Paint()..color = Colors.white);
+      canvas.drawRect(pRect, Paint()..style = PaintingStyle.stroke ..color = const Color(0xFFCBD5E1) ..strokeWidth = 1.0);
+      canvas.drawCircle(Offset(px, groundY - 42), 2.5, Paint()..color = lightsOn ? Colors.amber : Colors.white70);
+    }
+  }
+
+  void _renderGardenGazebo(Canvas canvas, double gx, double groundY) {
+    const gW = 38.0;
+    const gH = 44.0;
+    final gTop = groundY - gH - 12;
+    // Raised wooden deck base
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(gx - gW / 2 - 2, groundY - 14, gW + 4, 6), const Radius.circular(2)), Paint()..color = const Color(0xFF78350F));
+    // Slender wooden posts
+    final postPaint = Paint()..color = Colors.white ..strokeWidth = 2.0;
+    canvas.drawLine(Offset(gx - gW / 2 + 3, groundY - 14), Offset(gx - gW / 2 + 3, gTop + 10), postPaint);
+    canvas.drawLine(Offset(gx + gW / 2 - 3, groundY - 14), Offset(gx + gW / 2 - 3, gTop + 10), postPaint);
+    canvas.drawLine(Offset(gx - 5, groundY - 14), Offset(gx - 5, gTop + 10), postPaint);
+    canvas.drawLine(Offset(gx + 5, groundY - 14), Offset(gx + 5, gTop + 10), postPaint);
+    // Railing
+    canvas.drawLine(Offset(gx - gW / 2 + 3, groundY - 22), Offset(gx + gW / 2 - 3, groundY - 22), Paint()..color = Colors.white70 ..strokeWidth = 1.2);
+    // Bell-cast curved pagoda/gazebo roof
+    final rPath = Path()
+      ..moveTo(gx - gW / 2 - 4, gTop + 10)
+      ..quadraticBezierTo(gx, gTop + 2, gx, gTop - 4)
+      ..quadraticBezierTo(gx, gTop + 2, gx + gW / 2 + 4, gTop + 10)
+      ..close();
+    canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.5);
+    // Hanging glowing lantern
+    canvas.drawLine(Offset(gx, gTop + 6), Offset(gx, gTop + 14), Paint()..color = palette.accentColor ..strokeWidth = 1.0);
+    canvas.drawCircle(Offset(gx, gTop + 16), 3.0, Paint()..color = lightsOn ? Colors.amberAccent : Colors.white70);
+  }
+
+  void _renderDay27PerimeterGateway(Canvas canvas, double cx, double groundY) {
+    const gateW = 260.0;
+    final leftX = cx - gateW / 2;
+    final rightX = cx + gateW / 2;
+    // Wrought iron low perimeter fence
+    final fPaint = Paint()..color = const Color(0xFF334155) ..strokeWidth = 1.4;
+    canvas.drawLine(Offset(leftX, groundY - 22), Offset(cx - 36, groundY - 22), fPaint);
+    canvas.drawLine(Offset(cx + 36, groundY - 22), Offset(rightX, groundY - 22), fPaint);
+    for (double x = leftX + 4; x <= cx - 38; x += 8) {
+      canvas.drawLine(Offset(x, groundY - 26), Offset(x, groundY - 14), fPaint);
+    }
+    for (double x = cx + 38; x <= rightX - 4; x += 8) {
+      canvas.drawLine(Offset(x, groundY - 26), Offset(x, groundY - 14), fPaint);
+    }
+    // Twin Ashlar Stone Entrance Gate Pillars
+    for (final px in [cx - 36.0, cx + 36.0]) {
+      final pRect = Rect.fromLTWH(px - 5, groundY - 42, 10, 28);
+      canvas.drawRect(pRect, Paint()..color = palette.wallColor);
+      canvas.drawRect(pRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.0);
+      canvas.drawRect(Rect.fromLTWH(px - 7, groundY - 44, 14, 3), Paint()..color = Colors.white);
+      // Ornate coach lantern
+      canvas.drawCircle(Offset(px, groundY - 48), 2.8, Paint()..color = lightsOn ? Colors.amberAccent : Colors.white60);
+      canvas.drawCircle(Offset(px, groundY - 52), 1.8, Paint()..color = palette.accentColor);
+    }
+  }
+
+  // ============================================================
+  // 🏰 3. THE BELOVED GRAND VICTORIAN MANOR (DAYS 28–90)
+  // ============================================================
+  void _renderGrandVictorianManor(Canvas canvas, double cx, double groundY) {
+    final estateWidth = (day >= 85) ? 346.0 : 320.0;
+    final wingWidth = (day >= 85) ? 122.0 : 110.0;
+    const floor1Height = 66.0;
+    const floor2Height = 68.0;
+
+    final baseLeft = cx - estateWidth / 2;
+    final baseRight = cx + estateWidth / 2;
+    final floor1Top = groundY - floor1Height;
+    final floor2Top = floor1Top - floor2Height;
+
+    // --- Ashlar Stone Foundation Base ---
+    final fRect = Rect.fromLTWH(baseLeft, groundY - 14, estateWidth, 14);
+    canvas.drawRect(fRect, Paint()..color = palette.foundationColor);
+    final fBorder = Paint()..color = Colors.black26 ..strokeWidth = 1.2;
+    for (double x = baseLeft + 20; x < baseRight; x += 20) {
+      canvas.drawLine(Offset(x, groundY - 14), Offset(x, groundY), fBorder);
+    }
+
+    // --- Main Facade Wall (Ground & Second Floor) ---
+    final facadeRect = Rect.fromLTWH(baseLeft + 10, floor2Top, estateWidth - 20, floor1Height + floor2Height - 14);
+    canvas.drawRect(facadeRect, Paint()..color = palette.wallColor);
+
+    // Ashlar quoins on left and right outer corners
+    final quoinPaint = Paint()..color = palette.wallShade;
+    for (double y = floor2Top; y < groundY - 14; y += 12) {
+      canvas.drawRect(Rect.fromLTWH(baseLeft + 10, y, 10, 10), quoinPaint);
+      canvas.drawRect(Rect.fromLTWH(baseRight - 20, y, 10, 10), quoinPaint);
+    }
+
+    // --- Second Floor Sash Windows (Symmetrical Grand Estate Rows - Always present Day 28+) ---
+    final wingWinOffset = (day >= 85) ? 12.0 : 0.0;
+    // Left Wing Windows (3 pairs)
+    _renderVictorianSashWindow(canvas, cx - 124 - wingWinOffset, floor2Top + 32, 22, 38);
+    _renderVictorianSashWindow(canvas, cx - 90 - wingWinOffset * 0.5, floor2Top + 32, 22, 38);
+    _renderVictorianSashWindow(canvas, cx - 56, floor2Top + 32, 22, 38);
+
+    // Center Tower Windows (Double Sash)
+    _renderVictorianSashWindow(canvas, cx - 15, floor2Top + 32, 20, 38);
+    _renderVictorianSashWindow(canvas, cx + 15, floor2Top + 32, 20, 38);
+
+    // Right Wing Windows (3 pairs)
+    _renderVictorianSashWindow(canvas, cx + 56, floor2Top + 32, 22, 38);
+    _renderVictorianSashWindow(canvas, cx + 90 + wingWinOffset * 0.5, floor2Top + 32, 22, 38);
+    _renderVictorianSashWindow(canvas, cx + 124 + wingWinOffset, floor2Top + 32, 22, 38);
+
+    // --- Left & Right Mansard Roofs (Always present Day 28+) ---
+    _renderVictorianMansardRoof(canvas, cx - 92 - wingWinOffset * 0.5, floor2Top, wingWidth + 16, isLeft: true);
+    _renderVictorianMansardRoof(canvas, cx + 92 + wingWinOffset * 0.5, floor2Top, wingWidth + 16, isLeft: false);
+
+    // Left & Right Dormers - Day 32+
+    if (day >= 32) {
+      _renderVictorianArchedDormer(canvas, cx - 122 - wingWinOffset, floor2Top - 18, 20, 26);
+      _renderVictorianArchedDormer(canvas, cx - 68, floor2Top - 18, 20, 26);
+      _renderVictorianArchedDormer(canvas, cx + 68, floor2Top - 18, 20, 26);
+      _renderVictorianArchedDormer(canvas, cx + 122 + wingWinOffset, floor2Top - 18, 20, 26);
+    }
+
+    // --- Classical Colonnaded Portico Veranda (Ground Floor) ---
+    _renderColonnadedPorch(canvas, cx, groundY, estateWidth, floor1Height);
+
+    // Twin Brick Chimneys on Outer Wings (Always present Day 28+)
+    _renderChimneyShaft(canvas, cx - 146 - wingWinOffset, floor2Top - 28, 16, 32);
+    _renderChimneyShaft(canvas, cx + 146 + wingWinOffset, floor2Top - 28, 16, 32);
+  }
+
+  void _renderChimneyShaft(Canvas canvas, double cx, double topY, double w, double h) {
+    final rect = Rect.fromLTWH(cx - w / 2, topY, w, h);
+    canvas.drawRect(rect, Paint()..color = palette.roofShade);
+    // Corbelled stepped crown cap
+    canvas.drawRect(Rect.fromLTWH(cx - w / 2 - 2.5, topY - 4, w + 5, 5), Paint()..color = palette.roofTrim);
+    // Brick lines
+    final p = Paint()..color = palette.roofUnderTrim ..strokeWidth = 1.0;
+    canvas.drawLine(Offset(rect.left, topY + 12), Offset(rect.right, topY + 12), p);
+    canvas.drawLine(Offset(rect.left, topY + 24), Offset(rect.right, topY + 24), p);
+  }
+
+  void _renderVictorianMansardRoof(Canvas canvas, double cx, double floor2Top, double width, {required bool isLeft}) {
+    const roofH = 38.0;
+    final roofTop = floor2Top - roofH;
+    final rPath = Path();
+
+    if (isLeft) {
+      rPath.moveTo(cx - width / 2 - 8, floor2Top + 2);
+      rPath.lineTo(cx - width / 2 + 12, roofTop);
+      rPath.lineTo(cx + width / 2, roofTop);
+      rPath.lineTo(cx + width / 2, floor2Top + 2);
+    } else {
+      rPath.moveTo(cx - width / 2, floor2Top + 2);
+      rPath.lineTo(cx - width / 2, roofTop);
+      rPath.lineTo(cx + width / 2 - 12, roofTop);
+      rPath.lineTo(cx + width / 2 + 8, floor2Top + 2);
+    }
+    rPath.close();
+
+    canvas.drawPath(rPath, Paint()..color = palette.roofColor);
+    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 3.0);
+  }
+
+  void _renderCentralChateauTower(Canvas canvas, double cx, double floor2Top, double centerW) {
+    const towerH = 46.0;
+    final towerTop = floor2Top - towerH;
+    final towerLeft = cx - centerW / 2;
+
+    // 3rd floor center tower wall
+    canvas.drawRect(Rect.fromLTWH(towerLeft, towerTop, centerW, towerH), Paint()..color = palette.wallColor);
+    canvas.drawRect(
+      Rect.fromLTWH(towerLeft, towerTop, centerW, towerH),
+      Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5,
+    );
+
+    // Ornate Center Dormer with Romanesque Arch
+    _renderVictorianArchedDormer(canvas, cx, towerTop + 20, 24, 32);
+
+    // Steep High-Peaked Chateau Roof
+    const roofPeakHeight = 56.0;
+    final roofPeakY = towerTop - roofPeakHeight;
+    final rPath = Path();
+    rPath.moveTo(towerLeft - 6, towerTop + 2);
+    rPath.lineTo(cx, roofPeakY);
+    rPath.lineTo(towerLeft + centerW + 6, towerTop + 2);
+    rPath.close();
+
+    final rShader = LinearGradient(
+      colors: [palette.roofColor, palette.roofShade],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).createShader(Rect.fromLTWH(towerLeft, roofPeakY, centerW, roofPeakHeight));
+    canvas.drawPath(rPath, Paint()..shader = rShader);
+    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 3.5);
+
+    // Scalloped tile lines on chateau roof
+    for (double i = 1; i <= 3; i++) {
+      final t = i / 4.0;
+      final y = roofPeakY + roofPeakHeight * t;
+      final w = centerW * t;
+      canvas.drawLine(
+        Offset(cx - w / 2, y),
+        Offset(cx + w / 2, y),
+        Paint()..color = palette.roofUnderTrim.withValues(alpha: 0.5) ..strokeWidth = 1.5,
+      );
+    }
+
+    // Tall Pointed Finial Spire Spike at top peak
+    final finialPaint = Paint()..color = palette.accentColor;
+    canvas.drawLine(Offset(cx, roofPeakY), Offset(cx, roofPeakY - 18), finialPaint..strokeWidth = 2.5);
+    canvas.drawCircle(Offset(cx, roofPeakY - 18), 3.0, finialPaint);
+    canvas.drawCircle(Offset(cx, roofPeakY - 10), 2.0, finialPaint);
+  }
+
+
+
+  void _renderDay90DomeCrown(Canvas canvas, double cx, double groundY) {
+    final floor2Top = groundY - 134.0;
+    final crownCenter = Offset(cx, floor2Top - 156);
+    final goldPaint = Paint()..color = const Color(0xFFFFD700);
+    final redPaint = Paint()..color = const Color(0xFFDC2626);
+
+    final coronaPulse = (math.sin(animTimer * 4.0) + 1.0) / 2.0;
+    final rayPaint = Paint()
+      ..color = const Color(0xFFFFFC00).withValues(alpha: 0.60 + coronaPulse * 0.35)
+      ..strokeWidth = 2.0;
+    for (double a = -math.pi * 0.75; a <= math.pi * 0.75; a += 0.35) {
+      final r1 = 12.0;
+      final r2 = 20.0 + coronaPulse * 6.0;
+      canvas.drawLine(
+        Offset(crownCenter.dx + math.sin(a) * r1, crownCenter.dy - math.cos(a) * r1),
+        Offset(crownCenter.dx + math.sin(a) * r2, crownCenter.dy - math.cos(a) * r2),
+        rayPaint,
+      );
+    }
+
+    canvas.drawCircle(crownCenter, 7.5, goldPaint);
+    canvas.drawCircle(crownCenter, 4.5, redPaint);
+    canvas.drawCircle(crownCenter, 2.2, Paint()..color = const Color(0xFFFFFC00));
+
+    final eaglePath = Path();
+    eaglePath.moveTo(crownCenter.dx - 8, crownCenter.dy - 2);
+    eaglePath.lineTo(crownCenter.dx, crownCenter.dy - 12);
+    eaglePath.lineTo(crownCenter.dx + 8, crownCenter.dy - 2);
+    eaglePath.lineTo(crownCenter.dx, crownCenter.dy - 6);
+    eaglePath.close();
+    canvas.drawPath(eaglePath, goldPaint);
   }
 
   void _renderDamageOverlay(Canvas canvas, double cx, double groundY) {
@@ -762,85 +2962,7 @@ class HouseMasterComponent extends Component {
     canvas.drawCircle(Offset(vx + 27, vy - 4), 6.0, Paint()..color = Colors.amber.withValues(alpha: 0.45));
   }
 
-  // ============================================================
-  // 🏰 2. THE MAJESTIC GRAND VICTORIAN MANOR (DAYS 71–90, IMAGE 2)
-  // ============================================================
-  void _renderGrandVictorianManor(Canvas canvas, double cx, double groundY) {
-    final estateWidth = (day >= 85) ? 346.0 : 320.0;
-    final wingWidth = (day >= 85) ? 122.0 : 110.0;
-    const centerWidth = 78.0;
-    const floor1Height = 66.0;
-    const floor2Height = 68.0;
 
-    final baseLeft = cx - estateWidth / 2;
-    final baseRight = cx + estateWidth / 2;
-    final floor1Top = groundY - floor1Height;
-    final floor2Top = floor1Top - floor2Height;
-
-    // --- Ashlar Stone Foundation Base ---
-    final fRect = Rect.fromLTWH(baseLeft, groundY - 14, estateWidth, 14);
-    canvas.drawRect(fRect, Paint()..color = palette.foundationColor);
-    final fBorder = Paint()..color = Colors.black26 ..strokeWidth = 1.2;
-    for (double x = baseLeft + 20; x < baseRight; x += 20) {
-      canvas.drawLine(Offset(x, groundY - 14), Offset(x, groundY), fBorder);
-    }
-
-    // --- Main Facade Wall (Ground & Second Floor) ---
-    final facadeRect = Rect.fromLTWH(baseLeft + 10, floor2Top, estateWidth - 20, floor1Height + floor2Height - 14);
-    canvas.drawRect(facadeRect, Paint()..color = palette.wallColor);
-
-    // Ashlar quoins on left and right outer corners
-    final quoinPaint = Paint()..color = palette.wallShade;
-    for (double y = floor2Top; y < groundY - 14; y += 12) {
-      canvas.drawRect(Rect.fromLTWH(baseLeft + 10, y, 10, 10), quoinPaint);
-      canvas.drawRect(Rect.fromLTWH(baseRight - 20, y, 10, 10), quoinPaint);
-    }
-
-    // --- Second Floor Sash Windows (Symmetrical Grand Estate Rows) ---
-    final wingWinOffset = (day >= 85) ? 12.0 : 0.0;
-    // Left Wing Windows (3 pairs)
-    _renderVictorianSashWindow(canvas, cx - 124 - wingWinOffset, floor2Top + 32, 22, 38);
-    _renderVictorianSashWindow(canvas, cx - 90 - wingWinOffset * 0.5, floor2Top + 32, 22, 38);
-    _renderVictorianSashWindow(canvas, cx - 56, floor2Top + 32, 22, 38);
-
-    // Center Tower Windows (Double Sash)
-    _renderVictorianSashWindow(canvas, cx - 15, floor2Top + 32, 20, 38);
-    _renderVictorianSashWindow(canvas, cx + 15, floor2Top + 32, 20, 38);
-
-    // Right Wing Windows (3 pairs)
-    _renderVictorianSashWindow(canvas, cx + 56, floor2Top + 32, 22, 38);
-    _renderVictorianSashWindow(canvas, cx + 90 + wingWinOffset * 0.5, floor2Top + 32, 22, 38);
-    _renderVictorianSashWindow(canvas, cx + 124 + wingWinOffset, floor2Top + 32, 22, 38);
-
-    // --- Left & Right Mansard Roofs with Ornate Dormers ---
-    _renderVictorianMansardRoof(canvas, cx - 92 - wingWinOffset * 0.5, floor2Top, wingWidth + 16, isLeft: true);
-    _renderVictorianMansardRoof(canvas, cx + 92 + wingWinOffset * 0.5, floor2Top, wingWidth + 16, isLeft: false);
-
-    // Arched Dormer Windows on Wing Roofs
-    _renderVictorianArchedDormer(canvas, cx - 90 - wingWinOffset * 0.5, floor2Top - 22, 24, 30);
-    _renderVictorianArchedDormer(canvas, cx + 90 + wingWinOffset * 0.5, floor2Top - 22, 24, 30);
-
-    // --- Central Chateau Spire Tower (Soaring Peak with Finial) ---
-    _renderCentralChateauTower(canvas, cx, floor2Top, centerWidth);
-
-    // --- 4 Tall Brick Chimneys ---
-    final outerChimX = (day >= 85) ? 152.0 : 138.0;
-    _renderChimneyShaft(canvas, cx - outerChimX, floor2Top - 36, 16, 42);
-    _renderChimneyShaft(canvas, cx - 50, floor2Top - 44, 16, 48);
-    _renderChimneyShaft(canvas, cx + 50, floor2Top - 44, 16, 48);
-    _renderChimneyShaft(canvas, cx + outerChimX, floor2Top - 36, 16, 42);
-
-    // --- Colonnaded Porch / Veranda (Full Width Ground Floor) ---
-    _renderColonnadedPorch(canvas, cx, groundY, estateWidth, floor1Height);
-
-    // --- Grand Central Sweeping Front Steps ---
-    _renderGrandSteps(canvas, cx, groundY);
-
-    // --- Days 85–90 Royal Pennants & Carriage Lamps ---
-    if (day >= 85) {
-      _renderRoyalBannersAndCarriageLamps(canvas, cx, groundY, floor2Top);
-    }
-  }
 
   void _renderColonnadedPorch(Canvas canvas, double cx, double groundY, double estateWidth, double porchH) {
     final porchTop = groundY - porchH;
@@ -903,82 +3025,6 @@ class HouseMasterComponent extends Component {
     _renderVictorianSashWindow(canvas, cx + 104, porchTop + 26, 20, 32);
   }
 
-  void _renderCentralChateauTower(Canvas canvas, double cx, double floor2Top, double centerW) {
-    const towerH = 46.0;
-    final towerTop = floor2Top - towerH;
-    final towerLeft = cx - centerW / 2;
-
-    // 3rd floor center tower wall
-    canvas.drawRect(Rect.fromLTWH(towerLeft, towerTop, centerW, towerH), Paint()..color = palette.wallColor);
-    canvas.drawRect(Rect.fromLTWH(towerLeft, towerTop, centerW, towerH), Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
-
-    // Ornate Center Dormer with Romanesque Arch
-    _renderVictorianArchedDormer(canvas, cx, towerTop + 20, 24, 32);
-
-    // Steep High-Peaked Chateau Roof
-    const roofPeakHeight = 56.0;
-    final roofPeakY = towerTop - roofPeakHeight;
-    final rPath = Path();
-    rPath.moveTo(towerLeft - 6, towerTop + 2);
-    rPath.lineTo(cx, roofPeakY);
-    rPath.lineTo(towerLeft + centerW + 6, towerTop + 2);
-    rPath.close();
-
-    final rShader = LinearGradient(
-      colors: [palette.roofColor, palette.roofShade],
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-    ).createShader(Rect.fromLTWH(towerLeft, roofPeakY, centerW, roofPeakHeight));
-    canvas.drawPath(rPath, Paint()..shader = rShader);
-    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 3.5);
-
-    // Scalloped tile lines on chateau roof
-    for (double i = 1; i <= 3; i++) {
-      final t = i / 4.0;
-      final y = roofPeakY + roofPeakHeight * t;
-      final w = centerW * t;
-      canvas.drawLine(Offset(cx - w / 2, y), Offset(cx + w / 2, y), Paint()..color = palette.roofUnderTrim.withValues(alpha: 0.5) ..strokeWidth = 1.5);
-    }
-
-    // Tall Pointed Finial Spire Spike at top peak
-    final finialPaint = Paint()..color = palette.accentColor;
-    canvas.drawLine(Offset(cx, roofPeakY), Offset(cx, roofPeakY - 18), finialPaint..strokeWidth = 2.5);
-    canvas.drawCircle(Offset(cx, roofPeakY - 18), 3.0, finialPaint);
-    canvas.drawCircle(Offset(cx, roofPeakY - 10), 2.0, finialPaint);
-  }
-
-  void _renderVictorianMansardRoof(Canvas canvas, double cx, double floor2Top, double width, {required bool isLeft}) {
-    const roofH = 38.0;
-    final roofTop = floor2Top - roofH;
-    final rPath = Path();
-
-    if (isLeft) {
-      rPath.moveTo(cx - width / 2 - 8, floor2Top + 2);
-      rPath.lineTo(cx - width / 2 + 12, roofTop);
-      rPath.lineTo(cx + width / 2, roofTop);
-      rPath.lineTo(cx + width / 2, floor2Top + 2);
-    } else {
-      rPath.moveTo(cx - width / 2, floor2Top + 2);
-      rPath.lineTo(cx - width / 2, roofTop);
-      rPath.lineTo(cx + width / 2 - 12, roofTop);
-      rPath.lineTo(cx + width / 2 + 8, floor2Top + 2);
-    }
-    rPath.close();
-
-    canvas.drawPath(rPath, Paint()..color = palette.roofColor);
-    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 3.0);
-  }
-
-  void _renderChimneyShaft(Canvas canvas, double cx, double topY, double w, double h) {
-    final rect = Rect.fromLTWH(cx - w / 2, topY, w, h);
-    canvas.drawRect(rect, Paint()..color = palette.roofShade);
-    // Corbelled stepped crown cap
-    canvas.drawRect(Rect.fromLTWH(cx - w / 2 - 2.5, topY - 4, w + 5, 5), Paint()..color = palette.roofTrim);
-    // Brick lines
-    final p = Paint()..color = palette.roofUnderTrim ..strokeWidth = 1.0;
-    canvas.drawLine(Offset(rect.left, topY + 12), Offset(rect.right, topY + 12), p);
-    canvas.drawLine(Offset(rect.left, topY + 24), Offset(rect.right, topY + 24), p);
-  }
 
   void _renderVictorianSashWindow(Canvas canvas, double cx, double cy, double w, double h) {
     final rect = Rect.fromCenter(center: Offset(cx, cy), width: w, height: h);
@@ -1056,215 +3102,12 @@ class HouseMasterComponent extends Component {
   // "ബാക്കിലോ മേലെയോ എന്തെങ്കിലുമൊക്കെ വെച്ച് പിന്നെയും ബാക്കിലൂടെയൊക്കെ എന്തെങ്കിലുമൊക്കെ ഡെവലപ്പ് ചെയ്യുക."
   // ============================================================
 
-  /// 🏰 Days 78+: Monumental Rear Palace Wing rising behind the Victorian Manor
-  void _renderRearPalaceWing(Canvas canvas, double cx, double groundY) {
-    const rearW = 346.0;
-    const rearH = 176.0;
-    final rLeft = cx - rearW / 2;
-    final rTop = groundY - rearH;
 
-    // Rear wall body (slightly shaded stone tone for depth perspective)
-    final wallRect = Rect.fromLTWH(rLeft, rTop + 30, rearW, rearH - 30);
-    canvas.drawRect(wallRect, Paint()..color = palette.wallShade);
-    canvas.drawRect(
-      wallRect,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..color = palette.roofUnderTrim.withValues(alpha: 0.4)
-        ..strokeWidth = 1.2,
-    );
 
-    // High Grand Clerestory Windows glowing above the 2nd-floor roofline
-    final winY = rTop + 48;
-    for (final wx in [cx - 130.0, cx - 88.0, cx + 88.0, cx + 130.0]) {
-      _renderArchedClerestoryWindow(canvas, wx, winY, 18, 30);
-    }
 
-    // Rear Grand Mansard Roof Beam & Cornice
-    final roofPath = Path();
-    roofPath.moveTo(rLeft - 6, rTop + 32);
-    roofPath.lineTo(rLeft + 18, rTop);
-    roofPath.lineTo(rLeft + rearW - 18, rTop);
-    roofPath.lineTo(rLeft + rearW + 6, rTop + 32);
-    roofPath.close();
 
-    final roofShader = LinearGradient(
-      colors: [palette.roofShade, palette.roofColor],
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-    ).createShader(Rect.fromLTWH(rLeft, rTop, rearW, 32));
-    canvas.drawPath(roofPath, Paint()..shader = roofShader);
-    canvas.drawPath(
-      roofPath,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..color = palette.roofTrim
-        ..strokeWidth = 2.0,
-    );
 
-    // Decorative Rooftop Cresting / Fleur-de-lis Spikes
-    final crestPaint = Paint()
-      ..color = const Color(0xFFFFD700).withValues(alpha: 0.8)
-      ..strokeWidth = 1.2;
-    for (double x = rLeft + 24; x <= rLeft + rearW - 24; x += 12) {
-      canvas.drawLine(Offset(x, rTop), Offset(x, rTop - 5), crestPaint);
-      canvas.drawCircle(Offset(x, rTop - 5), 1.2, crestPaint);
-    }
-  }
 
-  void _renderArchedClerestoryWindow(Canvas canvas, double cx, double cy, double w, double h) {
-    final rect = Rect.fromCenter(center: Offset(cx, cy), width: w, height: h);
-    final rrect = RRect.fromRectAndCorners(
-      rect,
-      topLeft: Radius.circular(w / 2),
-      topRight: Radius.circular(w / 2),
-      bottomLeft: const Radius.circular(2),
-      bottomRight: const Radius.circular(2),
-    );
-    canvas.drawRRect(rrect.inflate(1.5), Paint()..color = Colors.white70);
-    final winColor = lightsOn ? palette.windowColor : const Color(0xFF1E293B);
-    canvas.drawRRect(rrect, Paint()..color = winColor);
-    if (lightsOn) {
-      canvas.drawCircle(Offset(cx, cy + 2), 4.0, Paint()..color = Colors.white60);
-    }
-    canvas.drawLine(Offset(cx, rect.top + 3), Offset(cx, rect.bottom), Paint()..color = Colors.white ..strokeWidth = 1.0);
-    canvas.drawLine(Offset(rect.left + 1, cy + 2), Offset(rect.right - 1, cy + 2), Paint()..color = Colors.white ..strokeWidth = 1.0);
-  }
-
-  /// 🏰 Days 78+: Twin Rear Octagonal Chateau Turret Spires rising behind left and right wings
-  void _renderRearTurretSpires(Canvas canvas, double cx, double floor2Top) {
-    for (final tx in [cx - 96.0, cx + 96.0]) {
-      const towerW = 32.0;
-      const towerH = 68.0;
-      final tTop = floor2Top - 40;
-      final tLeft = tx - towerW / 2;
-
-      // Tower stone body
-      final tRect = Rect.fromLTWH(tLeft, tTop, towerW, towerH);
-      canvas.drawRect(tRect, Paint()..color = palette.wallColor);
-      canvas.drawRect(
-        tRect,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..color = palette.roofUnderTrim.withValues(alpha: 0.5)
-          ..strokeWidth = 1.2,
-      );
-
-      // High arched stained glass window
-      _renderArchedClerestoryWindow(canvas, tx, tTop + 24, 12, 22);
-
-      // Conical slate roof with golden finial
-      const roofH = 42.0;
-      final peakY = tTop - roofH;
-      final rPath = Path();
-      rPath.moveTo(tLeft - 3, tTop + 1);
-      rPath.lineTo(tx, peakY);
-      rPath.lineTo(tLeft + towerW + 3, tTop + 1);
-      rPath.close();
-
-      final rShader = LinearGradient(
-        colors: [palette.roofColor, palette.roofShade],
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(tLeft, peakY, towerW, roofH));
-      canvas.drawPath(rPath, Paint()..shader = rShader);
-      canvas.drawPath(
-        rPath,
-        Paint()
-          ..style = PaintingStyle.stroke
-          ..color = palette.roofTrim
-          ..strokeWidth = 2.0,
-      );
-
-      // Golden Finial Needle & Ball
-      final fPaint = Paint()..color = const Color(0xFFFFD700);
-      canvas.drawLine(Offset(tx, peakY), Offset(tx, peakY - 14), fPaint..strokeWidth = 2.0);
-      canvas.drawCircle(Offset(tx, peakY - 14), 2.4, fPaint);
-    }
-  }
-
-  /// 👑 Days 81+: Upper 3rd-Floor Royal Mezzanine Gallery above Central Chateau
-  void _renderRearRoyalMezzanine(Canvas canvas, double cx, double floor2Top) {
-    const mezW = 104.0;
-    const mezH = 44.0;
-    final mTop = floor2Top - 48.0;
-    final mLeft = cx - mezW / 2;
-
-    // Stone wall
-    final mRect = Rect.fromLTWH(mLeft, mTop, mezW, mezH);
-    canvas.drawRect(mRect, Paint()..color = palette.wallColor);
-    canvas.drawRect(
-      mRect,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..color = palette.roofTrim
-        ..strokeWidth = 1.5,
-    );
-
-    // Triple arched palace gallery windows
-    for (int i = -1; i <= 1; i++) {
-      final wx = cx + i * 28.0;
-      _renderArchedClerestoryWindow(canvas, wx, mTop + 22, 16, 26);
-    }
-
-    // Rooftop balustrade & urns
-    final bTop = mTop - 8;
-    canvas.drawLine(Offset(mLeft, mTop), Offset(mLeft + mezW, mTop), Paint()..color = palette.roofTrim ..strokeWidth = 2.5);
-    canvas.drawLine(Offset(mLeft, bTop), Offset(mLeft + mezW, bTop), Paint()..color = Colors.white ..strokeWidth = 1.2);
-    for (double bx = mLeft + 6; bx <= mLeft + mezW - 6; bx += 8.0) {
-      canvas.drawLine(Offset(bx, bTop), Offset(bx, mTop), Paint()..color = Colors.white ..strokeWidth = 1.2);
-    }
-    _renderClassicalUrn(canvas, mLeft + 4, bTop - 4);
-    _renderClassicalUrn(canvas, cx, bTop - 4);
-    _renderClassicalUrn(canvas, mLeft + mezW - 4, bTop - 4);
-  }
-
-  /// 🏰 Days 84+: Flanking 3-Story Fortified Bastion Watchtowers & Aerial Arcades
-  void _renderFlankingBastionTowers(Canvas canvas, double cx, double groundY) {
-    _renderConnectingArcade(canvas, cx - 162, cx - 110, groundY - 14, groundY - 120);
-    _renderConnectingArcade(canvas, cx + 110, cx + 162, groundY - 14, groundY - 120);
-
-    _renderAuxiliaryBastionTower(canvas, cx - 172, groundY - 14, isLeft: true);
-    _renderAuxiliaryBastionTower(canvas, cx + 172, groundY - 14, isLeft: false);
-  }
-
-  /// 👑 Day 90: Radiant 24K Sovereign Imperial Eagle Crown atop Dome Pinnacle
-  void _renderDay90DomeCrown(Canvas canvas, double cx, double groundY) {
-    final floor2Top = groundY - 134.0;
-    // The central chateau dome peak sits at floor2Top - 24 - 100
-    final crownCenter = Offset(cx, floor2Top - 156);
-    final goldPaint = Paint()..color = const Color(0xFFFFD700);
-    final redPaint = Paint()..color = const Color(0xFFDC2626);
-
-    // Radiant Sunburst Corona Rays
-    final coronaPulse = (math.sin(animTimer * 4.0) + 1.0) / 2.0;
-    final rayPaint = Paint()
-      ..color = const Color(0xFFFFFC00).withValues(alpha: 0.60 + coronaPulse * 0.35)
-      ..strokeWidth = 2.0;
-    for (double a = -math.pi * 0.75; a <= math.pi * 0.75; a += 0.35) {
-      final r1 = 12.0;
-      final r2 = 20.0 + coronaPulse * 6.0;
-      canvas.drawLine(
-        Offset(crownCenter.dx + math.sin(a) * r1, crownCenter.dy - math.cos(a) * r1),
-        Offset(crownCenter.dx + math.sin(a) * r2, crownCenter.dy - math.cos(a) * r2),
-        rayPaint,
-      );
-    }
-
-    // Imperial Crown Base Ring & Jewel
-    canvas.drawCircle(crownCenter, 7.5, goldPaint);
-    canvas.drawCircle(crownCenter, 4.5, redPaint);
-    canvas.drawCircle(crownCenter, 2.2, Paint()..color = const Color(0xFFFFFC00));
-
-    // Sovereign Eagle Crest
-    final eaglePath = Path();
-    eaglePath.moveTo(crownCenter.dx - 8, crownCenter.dy - 2);
-    eaglePath.lineTo(crownCenter.dx, crownCenter.dy - 12);
-    eaglePath.lineTo(crownCenter.dx + 8, crownCenter.dy - 2);
-    eaglePath.lineTo(crownCenter.dx, crownCenter.dy - 6);
-    eaglePath.close();
-    canvas.drawPath(eaglePath, goldPaint);
-  }
 
   void _renderGrandSteps(Canvas canvas, double cx, double groundY) {
     final stepPaint = Paint()..color = const Color(0xFFE2E8F0);
@@ -1277,83 +3120,6 @@ class HouseMasterComponent extends Component {
       canvas.drawRRect(RRect.fromRectAndRadius(sRect, const Radius.circular(2)), stepPaint);
       canvas.drawRRect(RRect.fromRectAndRadius(sRect, const Radius.circular(2)), border);
     }
-  }
-
-  // ============================================================
-  // 👑 2B. THE MAJESTIC IMPERIAL PALACE CITADEL (DAYS 81–90)
-  // "വലിയൊരു കൊട്ടാരം പോലെ" - Massive multi-building palace citadel
-
-
-  void _renderAuxiliaryBastionTower(Canvas canvas, double tx, double groundY, {required bool isLeft}) {
-    const towerW = 48.0;
-    const towerH = 152.0;
-    final towerTop = groundY - towerH;
-    final tLeft = tx - towerW / 2;
-
-    // Fortified stone wall body
-    final tRect = Rect.fromLTWH(tLeft, towerTop, towerW, towerH);
-    canvas.drawRect(tRect, Paint()..color = palette.wallColor);
-
-    // Corner quoins
-    final qPaint = Paint()..color = palette.wallShade;
-    for (double y = towerTop; y < groundY; y += 12) {
-      canvas.drawRect(Rect.fromLTWH(tLeft, y, 7, 10), qPaint);
-      canvas.drawRect(Rect.fromLTWH(tLeft + towerW - 7, y, 7, 10), qPaint);
-    }
-
-    // Machicolation corbels (projecting stone brackets)
-    final corbelY = towerTop - 6;
-    canvas.drawRect(Rect.fromLTWH(tLeft - 3, corbelY, towerW + 6, 8), Paint()..color = palette.roofTrim);
-    for (double x = tLeft - 2; x <= tLeft + towerW + 2; x += 7) {
-      canvas.drawRect(Rect.fromLTWH(x, corbelY + 6, 4, 6), Paint()..color = palette.roofShade);
-    }
-
-    // Lancet Stained-Glass Windows on 3rd & 2nd floors
-    _renderLancetWindow(canvas, tx, towerTop + 24, 14, 28);
-    _renderVictorianSashWindow(canvas, tx, towerTop + 68, 16, 30);
-    // Cross arrow-slit on 1st floor
-    _renderArrowSlit(canvas, tx, towerTop + 114);
-
-    // Conical Chateau Turret Roof
-    const roofH = 54.0;
-    final roofPeakY = corbelY - roofH;
-    final rPath = Path();
-    rPath.moveTo(tLeft - 4, corbelY + 2);
-    rPath.lineTo(tx, roofPeakY);
-    rPath.lineTo(tLeft + towerW + 4, corbelY + 2);
-    rPath.close();
-
-    final rShader = LinearGradient(
-      colors: [palette.roofColor, palette.roofShade],
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-    ).createShader(Rect.fromLTWH(tLeft - 4, roofPeakY, towerW + 8, roofH));
-    canvas.drawPath(rPath, Paint()..shader = rShader);
-    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.5);
-
-    // Gilded Flagpole
-    final goldPaint = Paint()..color = const Color(0xFFFFD700);
-    canvas.drawLine(Offset(tx, roofPeakY), Offset(tx, roofPeakY - 24), goldPaint..strokeWidth = 2.2);
-    canvas.drawCircle(Offset(tx, roofPeakY - 24), 2.5, goldPaint);
-
-    // Fluttering Royal Swallowtail Banner
-    final wave = math.sin(animTimer * 4.8 + (isLeft ? 0.0 : 2.0)) * 4.5;
-    const flagW = 26.0;
-    const flagH = 15.0;
-    final flagTop = roofPeakY - 22;
-    final fPath = Path();
-    final flagDir = isLeft ? -1.0 : 1.0;
-    fPath.moveTo(tx, flagTop);
-    fPath.lineTo(tx + flagDir * flagW, flagTop + wave);
-    fPath.lineTo(tx + flagDir * (flagW - 7), flagTop + flagH / 2 + wave * 0.5);
-    fPath.lineTo(tx + flagDir * flagW, flagTop + flagH + wave);
-    fPath.lineTo(tx, flagTop + flagH);
-    fPath.close();
-
-    final flagColor = isLeft ? const Color(0xFF1D4ED8) : const Color(0xFFDC2626);
-    canvas.drawPath(fPath, Paint()..color = flagColor);
-    canvas.drawPath(fPath, Paint()..style = PaintingStyle.stroke ..color = const Color(0xFFFFD700) ..strokeWidth = 1.0);
-    canvas.drawCircle(Offset(tx + flagDir * 10, flagTop + flagH / 2 + wave * 0.5), 2.0, goldPaint);
   }
 
   void _renderLancetWindow(Canvas canvas, double cx, double cy, double w, double h) {
@@ -1375,11 +3141,7 @@ class HouseMasterComponent extends Component {
     canvas.drawLine(Offset(cx, rect.top + 4), Offset(cx, rect.bottom), Paint()..color = Colors.white70 ..strokeWidth = 1.0);
   }
 
-  void _renderArrowSlit(Canvas canvas, double cx, double cy) {
-    final p = Paint()..color = const Color(0xFF0F172A) ..strokeWidth = 2.0;
-    canvas.drawLine(Offset(cx, cy - 8), Offset(cx, cy + 8), p);
-    canvas.drawLine(Offset(cx - 5, cy - 2), Offset(cx + 5, cy - 2), p);
-  }
+
 
   void _renderConnectingArcade(Canvas canvas, double x1, double x2, double groundY, double roofTop) {
     final w = x2 - x1;
@@ -1431,109 +3193,6 @@ class HouseMasterComponent extends Component {
     final p = Paint()..color = const Color(0xFFFFD700);
     canvas.drawOval(Rect.fromCenter(center: Offset(cx, cy), width: 5, height: 7), p);
     canvas.drawRect(Rect.fromCenter(center: Offset(cx, cy + 4), width: 6, height: 2), p);
-  }
-
-  void _renderCentralImperialDome(Canvas canvas, double cx, double floor2Top) {
-    const centerW = 86.0;
-    const pavilionH = 46.0;
-    final pTop = floor2Top - pavilionH;
-    final pLeft = cx - centerW / 2;
-
-    // 1. Clock Pavilion Wall (Floor 3 Center)
-    final pRect = Rect.fromLTWH(pLeft, pTop, centerW, pavilionH);
-    canvas.drawRect(pRect, Paint()..color = palette.wallColor);
-    canvas.drawRect(pRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.0);
-
-    // 2. Central Imperial Clock
-    final clockCenter = Offset(cx, pTop + 23);
-    canvas.drawCircle(clockCenter, 14.5, Paint()..color = const Color(0xFFFFD700));
-    canvas.drawCircle(clockCenter, 12.0, Paint()..color = Colors.white);
-    // Hour markings
-    final markPaint = Paint()..color = const Color(0xFF0F172A) ..strokeWidth = 1.2;
-    canvas.drawLine(clockCenter - const Offset(0, 11), clockCenter - const Offset(0, 8), markPaint); // XII
-    canvas.drawLine(clockCenter + const Offset(0, 8), clockCenter + const Offset(0, 11), markPaint); // VI
-    canvas.drawLine(clockCenter - const Offset(11, 0), clockCenter - const Offset(8, 0), markPaint); // IX
-    canvas.drawLine(clockCenter + const Offset(8, 0), clockCenter + const Offset(11, 0), markPaint); // III
-    // Clock hands pointing to 10:10
-    canvas.drawLine(clockCenter, clockCenter + const Offset(-4, -6), Paint()..color = const Color(0xFF0F172A) ..strokeWidth = 1.6);
-    canvas.drawLine(clockCenter, clockCenter + const Offset(6, -4), Paint()..color = const Color(0xFF0F172A) ..strokeWidth = 1.2);
-    canvas.drawCircle(clockCenter, 1.8, Paint()..color = const Color(0xFFFFD700));
-
-    // Flanking Dormers on Clock Pavilion
-    _renderVictorianArchedDormer(canvas, cx - 28, pTop + 24, 16, 24);
-    _renderVictorianArchedDormer(canvas, cx + 28, pTop + 24, 16, 24);
-
-    // 3. Baroque Dome Drum
-    const drumW = 66.0;
-    const drumH = 14.0;
-    final drumTop = pTop - drumH;
-    final drumRect = Rect.fromLTWH(cx - drumW / 2, drumTop, drumW, drumH);
-    canvas.drawRect(drumRect, Paint()..color = palette.wallShade);
-    canvas.drawRect(drumRect, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.5);
-    // 3 Drum Windows
-    for (int i = -1; i <= 1; i++) {
-      final dx = cx + i * 18.0;
-      final dWin = Rect.fromCenter(center: Offset(dx, drumTop + 7), width: 8, height: 9);
-      canvas.drawRRect(RRect.fromRectAndRadius(dWin, const Radius.circular(3)), Paint()..color = lightsOn ? palette.windowColor : const Color(0xFF1E293B));
-    }
-
-    // 4. Grand Soaring Bell-Curve Dome
-    const domeW = 74.0;
-    const domeH = 46.0;
-    final domeTop = drumTop - domeH;
-    final dPath = Path();
-    dPath.moveTo(cx - domeW / 2, drumTop);
-    dPath.cubicTo(cx - domeW / 2 + 6, drumTop - domeH * 0.7, cx - 18, domeTop + 6, cx, domeTop);
-    dPath.cubicTo(cx + 18, domeTop + 6, cx + domeW / 2 - 6, drumTop - domeH * 0.7, cx + domeW / 2, drumTop);
-    dPath.close();
-
-    final domeShader = LinearGradient(
-      colors: [palette.roofColor, palette.roofShade],
-      begin: Alignment.topCenter,
-      end: Alignment.bottomCenter,
-    ).createShader(Rect.fromLTWH(cx - domeW / 2, domeTop, domeW, domeH));
-    canvas.drawPath(dPath, Paint()..shader = domeShader);
-    canvas.drawPath(dPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 2.5);
-
-    // Gilded Vertical Ribs on Dome
-    final ribPaint = Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.5 ..style = PaintingStyle.stroke;
-    canvas.drawLine(Offset(cx, domeTop), Offset(cx, drumTop), ribPaint);
-    final leftRib = Path()..moveTo(cx - domeW * 0.28, drumTop)..quadraticBezierTo(cx - 12, domeTop + 14, cx, domeTop);
-    final rightRib = Path()..moveTo(cx + domeW * 0.28, drumTop)..quadraticBezierTo(cx + 12, domeTop + 14, cx, domeTop);
-    canvas.drawPath(leftRib, ribPaint);
-    canvas.drawPath(rightRib, ribPaint);
-
-    // 5. Open Lantern Cupola & Spire
-    const cupolaW = 18.0;
-    const cupolaH = 14.0;
-    final cupolaTop = domeTop - cupolaH;
-    final cRect = Rect.fromLTWH(cx - cupolaW / 2, cupolaTop, cupolaW, cupolaH);
-    canvas.drawRect(cRect, Paint()..color = Colors.white);
-    // Lantern columns
-    canvas.drawLine(Offset(cx - 6, cupolaTop), Offset(cx - 6, domeTop), Paint()..color = const Color(0xFF64748B) ..strokeWidth = 1.2);
-    canvas.drawLine(Offset(cx + 6, cupolaTop), Offset(cx + 6, domeTop), Paint()..color = const Color(0xFF64748B) ..strokeWidth = 1.2);
-    // Lantern bell cap
-    canvas.drawArc(Rect.fromCenter(center: Offset(cx, cupolaTop), width: cupolaW + 4, height: 10), math.pi, math.pi, true, Paint()..color = const Color(0xFFFFD700));
-
-    // Tall Gilded Finial Spire
-    final finialTop = cupolaTop - 24;
-    final fPaint = Paint()..color = const Color(0xFFFFD700);
-    canvas.drawLine(Offset(cx, cupolaTop), Offset(cx, finialTop), fPaint..strokeWidth = 2.5);
-    canvas.drawCircle(Offset(cx, finialTop), 3.5, fPaint);
-    canvas.drawCircle(Offset(cx, finialTop + 8), 2.2, fPaint);
-
-    // 👑 DAY 90 MASTER PERK: Imperial Sovereign Eagle Crown at pinnacle!
-    if (day >= 90) {
-      final crownCenter = Offset(cx, finialTop - 6);
-      canvas.drawCircle(crownCenter, 6.0, Paint()..color = const Color(0xFFFFD700));
-      canvas.drawCircle(crownCenter, 3.5, Paint()..color = const Color(0xFFDC2626));
-      // Corona rays
-      for (double a = -0.7; a <= 0.7; a += 0.35) {
-        final rx = cx + math.sin(a) * 9.0;
-        final ry = crownCenter.dy - math.cos(a) * 9.0;
-        canvas.drawLine(crownCenter, Offset(rx, ry), Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.5);
-      }
-    }
   }
 
   void _renderImperialSteps(Canvas canvas, double cx, double groundY) {
@@ -1730,7 +3389,9 @@ class HouseMasterComponent extends Component {
     _renderStorybookWindow(canvas, cx + 48, wallTop + 38, 36, 44);
 
     _renderCottageFrontDoor(canvas, cx, groundY);
-    _renderCoreRoof(canvas, cx, wallTop, wallWidth);
+    if (day <= 7) {
+      _renderCoreRoof(canvas, cx, wallTop, wallWidth);
+    }
   }
 
   void _renderCoreRoof(Canvas canvas, double cx, double wallTop, double wallWidth) {
@@ -1804,128 +3465,6 @@ class HouseMasterComponent extends Component {
     }
   }
 
-  void _renderLeftWing(Canvas canvas, double cx, double groundY) {
-    const wingWidth = 60.0;
-    const wingHeight = 84.0;
-    final wingLeft = cx - 88.0 - wingWidth;
-    final wingTop = groundY - wingHeight;
-
-    canvas.drawRect(Rect.fromLTWH(wingLeft, groundY - 16, wingWidth, 16), Paint()..color = palette.foundationColor);
-    canvas.drawRect(Rect.fromLTWH(wingLeft, wingTop, wingWidth, wingHeight - 16), Paint()..color = palette.wallShade);
-    canvas.drawRect(Rect.fromLTWH(wingLeft, wingTop, wingWidth, wingHeight), Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
-
-    final roofPath = Path();
-    roofPath.moveTo(wingLeft - 8, wingTop + 4);
-    roofPath.lineTo(cx - 88, wingTop - 24);
-    roofPath.lineTo(cx - 88, wingTop + 4);
-    roofPath.close();
-    canvas.drawPath(roofPath, Paint()..color = palette.roofColor);
-    canvas.drawPath(roofPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 3.0);
-
-    _renderStorybookWindow(canvas, wingLeft + wingWidth / 2, wingTop + 34, 30, 38);
-  }
-
-  void _renderRightWing(Canvas canvas, double cx, double groundY) {
-    const wingWidth = 60.0;
-    const wingHeight = 84.0;
-    final wingLeft = cx + 88.0;
-    final wingTop = groundY - wingHeight;
-
-    canvas.drawRect(Rect.fromLTWH(wingLeft, groundY - 16, wingWidth, 16), Paint()..color = palette.foundationColor);
-    canvas.drawRect(Rect.fromLTWH(wingLeft, wingTop, wingWidth, wingHeight - 16), Paint()..color = palette.wallShade);
-    canvas.drawRect(Rect.fromLTWH(wingLeft, wingTop, wingWidth, wingHeight), Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
-
-    final roofPath = Path();
-    roofPath.moveTo(cx + 88, wingTop - 24);
-    roofPath.lineTo(wingLeft + wingWidth + 8, wingTop + 4);
-    roofPath.lineTo(cx + 88, wingTop + 4);
-    roofPath.close();
-    canvas.drawPath(roofPath, Paint()..color = palette.roofColor);
-    canvas.drawPath(roofPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 3.0);
-
-    _renderStorybookWindow(canvas, wingLeft + wingWidth / 2, wingTop + 34, 30, 38);
-  }
-
-  void _renderSecondFloorCenter(Canvas canvas, double cx, double groundY) {
-    const floorW = 116.0;
-    const floorH = 72.0;
-    final floorLeft = cx - floorW / 2;
-    final floorTop = groundY - 98.0 - floorH + 10;
-
-    canvas.drawRect(Rect.fromLTWH(floorLeft, floorTop, floorW, floorH), Paint()..color = palette.wallColor);
-    canvas.drawRect(Rect.fromLTWH(floorLeft, floorTop, floorW, floorH), Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 2.0);
-
-    final frenchDoorRect = Rect.fromCenter(center: Offset(cx, floorTop + floorH / 2 + 2), width: 34, height: 46);
-    canvas.drawRRect(RRect.fromRectAndRadius(frenchDoorRect, const Radius.circular(4)), Paint()..color = palette.windowColor);
-    canvas.drawRRect(RRect.fromRectAndRadius(frenchDoorRect, const Radius.circular(4)), Paint()..style = PaintingStyle.stroke ..color = Colors.white ..strokeWidth = 2.5);
-
-    final balconyRect = Rect.fromCenter(center: Offset(cx, floorTop + floorH - 6), width: 54, height: 16);
-    canvas.drawRRect(RRect.fromRectAndRadius(balconyRect, const Radius.circular(3)), Paint()..color = Colors.white);
-    canvas.drawRRect(RRect.fromRectAndRadius(balconyRect, const Radius.circular(3)), Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.2);
-    for (double bx = cx - 22; bx <= cx + 22; bx += 7) {
-      canvas.drawLine(Offset(bx, balconyRect.top), Offset(bx, balconyRect.bottom), Paint()..color = const Color(0xFF64748B) ..strokeWidth = 1.5);
-    }
-
-    const roofPeakHeight = 44.0;
-    final roofPeakY = floorTop - roofPeakHeight;
-    final rPath = Path();
-    rPath.moveTo(floorLeft - 10, floorTop + 2);
-    rPath.lineTo(cx, roofPeakY);
-    rPath.lineTo(floorLeft + floorW + 10, floorTop + 2);
-    rPath.close();
-
-    canvas.drawPath(rPath, Paint()..color = palette.roofColor);
-    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 4.5);
-    canvas.drawPath(rPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
-  }
-
-  void _renderSecondFloorWings(Canvas canvas, double cx, double groundY) {
-    // 🏛️ Solid 2nd-floor rooms sitting directly on top of 1st-floor wings (groundY - 84 to groundY - 148)
-    // Completely solves the floating windows & air gap issue from Days 56 to 70!
-    const wingW = 56.0;
-    const wingH = 64.0;
-    final wingTop = groundY - 148.0;
-
-    // --- Left 2nd Floor Room (cx - 146 to cx - 90) ---
-    final leftRoom = Rect.fromLTWH(cx - 146, wingTop, wingW, wingH);
-    canvas.drawRect(leftRoom, Paint()..color = palette.wallColor);
-    canvas.drawRect(leftRoom, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
-    // Ashlar quoins on outer edge
-    for (double y = wingTop; y < wingTop + wingH; y += 12) {
-      canvas.drawRect(Rect.fromLTWH(leftRoom.left, y, 7, 10), Paint()..color = palette.wallShade);
-    }
-    // Centered sash window
-    _renderStorybookWindow(canvas, leftRoom.center.dx, leftRoom.center.dy - 2, 26, 32);
-    // Sloped mansard roof on top
-    final leftRoofPath = Path();
-    leftRoofPath.moveTo(leftRoom.left - 6, wingTop + 2);
-    leftRoofPath.lineTo(leftRoom.left + 10, wingTop - 24);
-    leftRoofPath.lineTo(leftRoom.right, wingTop - 24);
-    leftRoofPath.lineTo(leftRoom.right, wingTop + 2);
-    leftRoofPath.close();
-    canvas.drawPath(leftRoofPath, Paint()..color = palette.roofColor);
-    canvas.drawPath(leftRoofPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 3.0);
-
-    // --- Right 2nd Floor Room (cx + 90 to cx + 146) ---
-    final rightRoom = Rect.fromLTWH(cx + 90, wingTop, wingW, wingH);
-    canvas.drawRect(rightRoom, Paint()..color = palette.wallColor);
-    canvas.drawRect(rightRoom, Paint()..style = PaintingStyle.stroke ..color = palette.roofUnderTrim ..strokeWidth = 1.5);
-    // Ashlar quoins on outer edge
-    for (double y = wingTop; y < wingTop + wingH; y += 12) {
-      canvas.drawRect(Rect.fromLTWH(rightRoom.right - 7, y, 7, 10), Paint()..color = palette.wallShade);
-    }
-    // Centered sash window
-    _renderStorybookWindow(canvas, rightRoom.center.dx, rightRoom.center.dy - 2, 26, 32);
-    // Sloped mansard roof on top
-    final rightRoofPath = Path();
-    rightRoofPath.moveTo(rightRoom.left, wingTop + 2);
-    rightRoofPath.lineTo(rightRoom.left, wingTop - 24);
-    rightRoofPath.lineTo(rightRoom.right - 10, wingTop - 24);
-    rightRoofPath.lineTo(rightRoom.right + 6, wingTop + 2);
-    rightRoofPath.close();
-    canvas.drawPath(rightRoofPath, Paint()..color = palette.roofColor);
-    canvas.drawPath(rightRoofPath, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 3.0);
-  }
 
   void _renderStorybookWindow(Canvas canvas, double cx, double cy, double w, double h) {
     final rect = Rect.fromCenter(center: Offset(cx, cy), width: w, height: h);
@@ -2208,33 +3747,6 @@ class HouseMasterComponent extends Component {
     canvas.drawCircle(Offset(cx, peakY - 18), 2.0, goldPaint);
   }
 
-  /// Days 85–90: Royal Pennants & Carriage Lanterns
-  void _renderRoyalBannersAndCarriageLamps(Canvas canvas, double cx, double groundY, double floor2Top) {
-    // Royal Pennants on wing roofs
-    final flagPaint = Paint()..color = const Color(0xFFDC2626);
-    final polePaint = Paint()
-      ..color = const Color(0xFFFFD700)
-      ..strokeWidth = 1.8;
-
-    for (final fx in [cx - 146.0, cx + 146.0]) {
-      final fy = floor2Top - 44;
-      canvas.drawLine(Offset(fx, fy), Offset(fx, fy - 16), polePaint);
-      final fPath = Path();
-      fPath.moveTo(fx, fy - 16);
-      fPath.lineTo(fx + (fx > cx ? 12 : -12), fy - 12);
-      fPath.lineTo(fx, fy - 8);
-      fPath.close();
-      canvas.drawPath(fPath, flagPaint);
-    }
-
-    // Carriage lanterns flanking front staircase
-    for (final lx in [cx - 30.0, cx + 30.0]) {
-      final ly = groundY - 18;
-      canvas.drawCircle(Offset(lx, ly), 6.0, Paint()..color = Colors.amber.withValues(alpha: 0.4));
-      canvas.drawCircle(Offset(lx, ly), 2.5, Paint()..color = const Color(0xFFFFD700));
-    }
-  }
-
   void _renderArchedDormer(Canvas canvas, double cx, double cy, double w, double h) {
     final frameRect = Rect.fromCenter(center: Offset(cx, cy), width: w, height: h);
     final rrect = RRect.fromRectAndCorners(
@@ -2404,6 +3916,8 @@ class HouseMasterComponent extends Component {
     final rightStrobe = strobe ? const Color(0xFF3B82F6) : const Color(0xFFEF4444);
     canvas.drawCircle(Offset(rightX + 8, limoY - 14), 2.8, Paint()..color = rightStrobe);
   }
+
+
 }
 
 class _SmokeParticle {
@@ -2439,10 +3953,12 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
   late FlameEnglishHouseGame _game;
   HousePalette _currentPalette = HousePalette.presets[0];
   HouseDefenseStatus _defenseStatus = const HouseDefenseStatus();
+  late int _previewDay;
 
   @override
   void initState() {
     super.initState();
+    _previewDay = widget.currentDay.clamp(1, 90);
     if (widget.paletteId != null) {
       _currentPalette = HousePalette.getById(widget.paletteId!);
     } else {
@@ -2455,10 +3971,346 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
     }
 
     _game = FlameEnglishHouseGame(
-      currentDay: widget.currentDay,
+      currentDay: _previewDay,
       streak: widget.streak,
       initialPalette: _currentPalette,
       isDamaged: widget.isDamaged ?? false,
+    );
+  }
+
+  void _stepPreviewDay(int delta) {
+    HapticFeedback.selectionClick();
+    final newDay = (_previewDay + delta).clamp(1, 90);
+    if (newDay != _previewDay) {
+      setState(() {
+        _previewDay = newDay;
+      });
+      _game.updateDayAndStreak(_previewDay, widget.streak);
+    }
+  }
+
+  void _setPreviewDay(int newDay) {
+    HapticFeedback.lightImpact();
+    final clamped = newDay.clamp(1, 90);
+    setState(() {
+      _previewDay = clamped;
+    });
+    _game.updateDayAndStreak(_previewDay, widget.streak);
+  }
+
+  String _getEstateStageTitle(int d) {
+    switch (d) {
+      case 1: return '🛖 Cozy Storybook Cottage';
+      case 2: return '🛖 Shingle Porch Awning';
+      case 3: return '🛖 English Garden Flowerbeds';
+      case 4: return '🛖 Red Brick Hearth & Chimney';
+      case 5: return '🛖 Cobblestone Garden Walkway';
+      case 6: return '🛖 Picket Fence & Garden Gate';
+      case 7: return '🏡 Cottage Wing & Attic Dormer';
+      case 8: return '🏠 3-Story Storybook Townhouse';
+      case 9: return '🏠 Cantilevered Ground Wing';
+      case 10: return '🏠 Cantilevered Upper Bay Room';
+      case 11: return '🏠 Side Wing & Wooden Staircase';
+      case 12: return '🏠 Turret Dormer & Portal Window';
+      case 13: return '🏠 French Mansard Double Dormers';
+      case 14: return '🏠 Cascading Rose Flower Boxes';
+      case 15: return '🏠 Grand Entrance Arched Pediment';
+      case 16: return '🏡 2-Story Chateau Central Hall';
+      case 17: return '🏡 West Wing Bedchamber Suite';
+      case 18: return '🏡 East Wing Library & Study';
+      case 19: return '🏡 Dual French Mansard Slate Roofs';
+      case 20: return '🏡 Symmetrical Arched Dormers';
+      case 21: return '🏡 Fluted Veranda Columns & Lamps';
+      case 22: return '🏡 Garden Tea Gazebo Pavilion';
+      case 23: return '🏡 Courtyard Cascading Stone Fountain';
+      case 24: return '🏡 Cobblestone Garden Walkway';
+      case 25: return '🏡 Classical Colonnaded Porch';
+      case 26: return '🏡 Rooftop Golden Eagle Weathervane';
+      case 27: return '🏡 Grand Perimeter Carriage Gateway';
+      case 28: return '🏛️ Grand Victorian Manor & Slate Mansard';
+      case 29: return '🏛️ Classical 4-Pillar Entrance Portico';
+      case 30: return '🏛️ Central Chateau Clock Spire Tower';
+      case 31: return '🏛️ Wrought-Iron Rooftop Cresting';
+      case 32: return '🏛️ Quad Arched Mansard Dormers';
+      case 33: return '🏛️ First-Floor Terrace Stone Balustrade';
+      case 34: return '🏛️ Terraced Grand Marble Steps & Runner';
+      case 35: return '🏛️ Twin Cascading Courtyard Fountains';
+      case 36: return '🏛️ Left Glasshouse Conservatory Winter Garden';
+      case 37: return '🏛️ Right Wing Stone Balustraded Terrace';
+      case 38: return '🏛️ Twin Sculpted Guardian Lions';
+      case 39: return '🏛️ Formal Geometric Parterre Topiary Gardens';
+      case 40: return '🏛️ Covered Porte-Cochère Carriage Portico';
+      case 41: return '🏛️ Stately Perimeter Stone Pillars & Lamps';
+      case 42: return '🏛️ Circular Estate Driveway & Medallion';
+      case 43: return '🏛️ Rooftop Bronze Classical Statues';
+      case 44: return '🏛️ Flanking Estate Stone Guard Lodges';
+      case 45: return '🏛️ Royal Spear Boundary Gate';
+      case 46: return '🏰 Fortress Heavy Stone Ramparts';
+      case 47: return '🏰 Machicolated Stone Battlements';
+      case 48: return '🏰 West Bastion Flanking Stone Tower';
+      case 49: return '🏰 West Bastion Arrow Loop Embrasures';
+      case 50: return '🏰 West Tower Crenellated Crown';
+      case 51: return '🏰 West Tower Conical Slate Turret';
+      case 52: return '🏰 Reinforced Portcullis Iron Gate';
+      case 53: return '🏰 Western Connecting Aerial Arcade';
+      case 54: return '🏰 East Bastion Flanking Stone Tower';
+      case 55: return '🏰 East Bastion Arrow Loop Embrasures';
+      case 56: return '🏰 East Tower Crenellated Crown';
+      case 57: return '🏰 East Tower Conical Slate Turret';
+      case 58: return '🏰 Eastern Connecting Aerial Arcade';
+      case 59: return '🏰 Rampart Bronze Heavy Cannons';
+      case 60: return '🏰 Sovereign Spear Rampart Gates';
+      case 61: return '🏰 Massive Donjon Great Keep';
+      case 62: return '🏰 Keep Lancet Stained Glass Windows';
+      case 63: return '🏰 Keep Machicolated Parapet Corbels';
+      case 64: return '🏰 West Rear Octagonal Spire Tower';
+      case 65: return '🏰 East Rear Octagonal Spire Tower';
+      case 66: return '🏰 Aerial Defensive Battle-Bridge';
+      case 67: return '🏰 Citadel Bronze Signal Belfry';
+      case 68: return '🏰 Flanking Flying Stone Buttresses';
+      case 69: return '🏰 Fortress Ballista Emplacements';
+      case 70: return '🏰 Citadel Royal Standard Mast';
+      case 71: return '🏰 Castle Moat & Heavy Drawbridge';
+      case 72: return '🏰 Western Outer Barbican Watchtower';
+      case 73: return '🏰 Eastern Outer Barbican Watchtower';
+      case 74: return '🏰 Citadel War Horns & Heraldic Standards';
+      case 75: return '🏰 High Citadel 3rd Story Royal Gallery';
+      case 76: return '🏰 Twin Cantilevered Corner Bartizans';
+      case 77: return '🏰 Machicolated Parapet & Gilded Cresting';
+      case 78: return '🏰 Soaring Octagonal Chateau Clock Spire';
+      case 79: return '🏰 Upper Rampart Heavy Bronze Cannons';
+      case 80: return '🏰 Sprawling Perimeter Stone Curtain Walls';
+      case 81: return '🏰 Western Outer Gatehouse Fortified Tower';
+      case 82: return '🏰 Eastern Outer Gatehouse Fortified Tower';
+      case 83: return '🏰 Grand Triumphal Barbican Gate Arch';
+      case 84: return '🏰 High Aerial Stone Viaduct Skybridges';
+      case 85: return '🏰 Royal Imperial War Standards & Pennants';
+      case 86: return '🏰 Extended Perimeter Deep Water Moat';
+      case 87: return '🏰 Quad Cascading Royal Courtyard Fountains';
+      case 88: return '🏰 Quad Sculpted Golden Guardian Lions';
+      case 89: return '🏰 Citadel Night Sconces, Torches & Braziers';
+      case 90: return '🏛️ Monumental Rajput Imperial Palace Apex';
+      default: return '🏰 Monumental Estate';
+    }
+  }
+
+  void _showDayTestingSheet() {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          return Padding(
+            padding: const EdgeInsets.fromLTRB(20, 18, 20, 32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('⚡', style: TextStyle(fontSize: 22)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Estate Day Testing Lab',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Scrub & inspect house stages from Day 1 to Day 90',
+                            style: GoogleFonts.inter(
+                              color: Colors.white60,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Active Day & Stage Name
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5), width: 1.2),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        _getEstateStageTitle(_previewDay),
+                        style: const TextStyle(
+                          color: Color(0xFFFFD700),
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Day $_previewDay / 90',
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Live Scrubbing Slider
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.remove_circle_outline, color: Colors.amberAccent, size: 24),
+                      onPressed: _previewDay > 1
+                          ? () {
+                              _stepPreviewDay(-1);
+                              setSheetState(() {});
+                            }
+                          : null,
+                    ),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 6,
+                          thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 10),
+                          activeTrackColor: const Color(0xFFFFD700),
+                          inactiveTrackColor: Colors.white12,
+                          thumbColor: const Color(0xFFFFD700),
+                          overlayColor: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                        ),
+                        child: Slider(
+                          value: _previewDay.toDouble(),
+                          min: 1,
+                          max: 90,
+                          divisions: 89,
+                          onChanged: (val) {
+                            final d = val.round();
+                            if (d != _previewDay) {
+                              _setPreviewDay(d);
+                              setSheetState(() {});
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.add_circle_outline, color: Colors.amberAccent, size: 24),
+                      onPressed: _previewDay < 90
+                          ? () {
+                              _stepPreviewDay(1);
+                              setSheetState(() {});
+                            }
+                          : null,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Quick Jump Milestone Pills
+                const Text(
+                  'Quick Milestone Jump:',
+                  style: TextStyle(color: Colors.white70, fontSize: 11.5, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    _buildMilestonePill(1, 'Day 1: Cottage', setSheetState),
+                    _buildMilestonePill(8, 'Day 8: Townhouse Base (Image 3)', setSheetState),
+                    _buildMilestonePill(11, 'Day 11: Cantilevered Townhouse (Image 3)', setSheetState),
+                    _buildMilestonePill(15, 'Day 15: Grand Townhouse (Image 3)', setSheetState),
+                    _buildMilestonePill(28, 'Day 28: Victorian Manor', setSheetState),
+                    _buildMilestonePill(46, 'Day 46: Fort Keep (വലിയ കോട്ട)', setSheetState),
+                    _buildMilestonePill(71, 'Day 71: Arcaded Rajput Palace (Image 1)', setSheetState),
+                    _buildMilestonePill(86, 'Day 86: Chhatri Durbar Palace (Image 2)', setSheetState),
+                    _buildMilestonePill(90, 'Day 90: Sovereign Imperial Apex', setSheetState),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Reset to Real Day Button
+                if (_previewDay != widget.currentDay)
+                  Center(
+                    child: OutlinedButton.icon(
+                      onPressed: () {
+                        _setPreviewDay(widget.currentDay);
+                        setSheetState(() {});
+                      },
+                      icon: const Icon(Icons.restore, size: 16, color: Color(0xFF38BDF8)),
+                      label: Text(
+                        'Reset to My Real Progress (Day ${widget.currentDay})',
+                        style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMilestonePill(int targetDay, String label, StateSetter setSheetState) {
+    final isSelected = _previewDay == targetDay;
+    return GestureDetector(
+      onTap: () {
+        _setPreviewDay(targetDay);
+        setSheetState(() {});
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFFFFD700) : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+            width: 1.0,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : Colors.white,
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w500,
+          ),
+        ),
+      ),
     );
   }
 
@@ -2503,7 +4355,8 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
   void didUpdateWidget(covariant FlameEnglishHouseWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.currentDay != widget.currentDay || oldWidget.streak != widget.streak) {
-      _game.updateDayAndStreak(widget.currentDay, widget.streak);
+      _previewDay = widget.currentDay.clamp(1, 90);
+      _game.updateDayAndStreak(_previewDay, widget.streak);
       if (widget.isDamaged == null && (widget.houseId == null || widget.houseId == 'me')) {
         _loadDefenseStatus();
       }
@@ -2615,10 +4468,185 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
     );
   }
 
+  /// 🔍 Fullscreen Interactive Estate Inspector (Zoom & Pan colossal multi-building citadel)
+  void _openFullscreenEstateViewer() {
+    HapticFeedback.mediumImpact();
+    final day = _previewDay;
+    String estateTitle;
+    String estateSubtitle;
+    if (day >= 90) {
+      estateTitle = '👑 Sovereign Imperial Fort & Citadel';
+      estateSubtitle = 'Day 90 Apex Fort • 24K Eagle Crown & Imperial Motorcade';
+    } else if (day >= 81) {
+      estateTitle = '🏛️ Monumental Royal Imperial Citadel';
+      estateSubtitle = 'Day 81+ • Royal Mezzanine Citadel & Marble Ramparts';
+    } else if (day >= 71) {
+      estateTitle = '🏰 Sprawling Grand Fort Citadel';
+      estateSubtitle = 'Day 71+ • High Watchtowers, Spires & Bastions';
+    } else if (day >= 46) {
+      estateTitle = '🏰 Fortified Stone Keep & Manor';
+      estateSubtitle = 'Day 46+ • Battlements, Rear Wings & Victorian Portico';
+    } else if (day >= 28) {
+      estateTitle = '🏛️ Grand Victorian Country Manor';
+      estateSubtitle = 'Day 28+ • Ashlar Stone, Colonnaded Portico & Dormers';
+    } else if (day >= 16) {
+      estateTitle = '🏡 Two-Story Balcony Villa';
+      estateSubtitle = 'Day 16+ • Mansard Roof, Balconies & Garden Wings';
+    } else if (day >= 8) {
+      estateTitle = '🏡 Country Garden Cottage';
+      estateSubtitle = 'Day 8+ • Expanded Wings, Oak Door & Orchard';
+    } else {
+      estateTitle = '🛖 Storybook English Cottage';
+      estateSubtitle = 'Days 1–7 • Cozy Hearth, Garden Beds & Lanterns';
+    }
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.88),
+      builder: (ctx) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 24),
+          child: Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: _currentPalette.accentColor.withValues(alpha: 0.6),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: _currentPalette.accentColor.withValues(alpha: 0.3),
+                  blurRadius: 24,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(18, 14, 14, 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+                      border: Border(
+                        bottom: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.1),
+                        ),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                estateTitle,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                estateSubtitle,
+                                style: GoogleFonts.inter(
+                                  color: _currentPalette.accentColor,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          icon: const Icon(Icons.close, color: Colors.white70, size: 22),
+                          padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Interactive Zoom & Pan Area
+                  Flexible(
+                    child: SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.70,
+                      child: Stack(
+                        children: [
+                          Positioned.fill(
+                            child: InteractiveViewer(
+                              minScale: 0.7,
+                              maxScale: 3.8,
+                              boundaryMargin: const EdgeInsets.all(120),
+                              child: Center(
+                                child: SizedBox(
+                                  width: 440,
+                                  height: 520,
+                                  child: GameWidget(
+                                    game: FlameEnglishHouseGame(
+                                      currentDay: _previewDay,
+                                      streak: widget.streak,
+                                      initialPalette: _currentPalette,
+                                      isDamaged: _defenseStatus.isDamaged,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          // Hint pill at bottom
+                          Positioned(
+                            bottom: 12,
+                            left: 20,
+                            right: 20,
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.78),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.white24, width: 1),
+                                ),
+                                child: Text(
+                                  '🔍 Pinch to zoom • Drag to explore wings & citadel • Tap house for glow',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final double widgetHeight = _previewDay >= 71
+        ? 520.0
+        : (_previewDay >= 36 ? 460.0 : 420.0);
     return SizedBox(
-      height: 408,
+      height: widgetHeight,
       width: double.infinity,
       child: Stack(
         children: [
@@ -2777,11 +4805,135 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
               ),
             ),
 
-          // 🎮 Top Floating Controls (Pocket World, Garage, Theme Switcher)
+          // ⚡ ROW 1: Dedicated Day Testing Bar (Fixed, Non-scrolling, 100% visible on any phone!)
           Positioned(
             top: 6,
-            left: 10,
-            right: 10,
+            left: 8,
+            right: 8,
+            child: Row(
+              children: [
+                // ◀ PREV Button
+                GestureDetector(
+                  onTap: () => _stepPreviewDay(-1),
+                  onLongPress: () => _stepPreviewDay(-5),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 1.3),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 6),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.arrow_back_ios_new_rounded, size: 13, color: Color(0xFFFFD700)),
+                        SizedBox(width: 3),
+                        Text('PREV', style: TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.w900)),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+
+                // Center Stage & Day Badge (Tap to open full 1-90 testing sheet)
+                Expanded(
+                  child: GestureDetector(
+                    onTap: _showDayTestingSheet,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: _previewDay != widget.currentDay ? const Color(0xFF38BDF8) : const Color(0xFFFFD700),
+                          width: 1.4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (_previewDay != widget.currentDay ? const Color(0xFF38BDF8) : const Color(0xFFFFD700)).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            _previewDay >= 90 ? '👑' : (_previewDay >= 71 ? '🏛️' : (_previewDay >= 28 ? '🏰' : (_previewDay >= 8 ? '🏠' : '🛖'))),
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                          const SizedBox(width: 4),
+                          Flexible(
+                            child: Text(
+                              'Day $_previewDay/90 • ${_getEstateStageTitle(_previewDay)}',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: _previewDay != widget.currentDay ? const Color(0xFF38BDF8) : const Color(0xFFFFD700),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+
+                // NEXT ▶ Button
+                GestureDetector(
+                  onTap: () => _stepPreviewDay(1),
+                  onLongPress: () => _stepPreviewDay(5),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 1.3),
+                      boxShadow: [
+                        BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 6),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('NEXT', style: TextStyle(color: Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.w900)),
+                        SizedBox(width: 3),
+                        Icon(Icons.arrow_forward_ios_rounded, size: 13, color: Color(0xFFFFD700)),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Reset Button if previewing a different day
+                if (_previewDay != widget.currentDay) ...[
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: () => _setPreviewDay(widget.currentDay),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 7),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0284C7),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                      ),
+                      child: const Icon(Icons.restore, size: 15, color: Colors.white),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          // 🎮 ROW 2: Secondary Utility Controls (Pocket World, Theme, Zoom)
+          Positioned(
+            top: 45,
+            left: 8,
+            right: 8,
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
@@ -2796,80 +4948,104 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => PocketWorldStreetPage(
-                            currentDay: widget.currentDay,
+                            currentDay: _previewDay,
                             streak: widget.streak,
                           ),
                         ),
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
                           colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
                         ),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: const Color(0xFF38BDF8),
-                          width: 1.2,
+                          width: 1.0,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF0284C7).withValues(alpha: 0.4),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                            blurRadius: 6,
                           ),
                         ],
                       ),
                       child: const Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text('🌍', style: TextStyle(fontSize: 12)),
-                          SizedBox(width: 5),
+                          Text('🌍', style: TextStyle(fontSize: 11)),
+                          SizedBox(width: 4),
                           Text(
                             'Pocket World',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 11,
+                              fontSize: 10.5,
                               fontWeight: FontWeight.w900,
-                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
 
-                  // 🎨 Discreet Floating Theme Switcher Button
+                  // 🎨 Theme Switcher Button
                   GestureDetector(
                     onTap: _openPalettePicker,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.65),
-                        borderRadius: BorderRadius.circular(16),
+                        color: Colors.black.withValues(alpha: 0.70),
+                        borderRadius: BorderRadius.circular(14),
                         border: Border.all(
                           color: _currentPalette.accentColor.withValues(alpha: 0.65),
-                          width: 1.2,
+                          width: 1.0,
                         ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: _currentPalette.accentColor.withValues(alpha: 0.25),
-                            blurRadius: 8,
-                          ),
-                        ],
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('🎨', style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 5),
+                          const Text('🎨', style: TextStyle(fontSize: 11)),
+                          const SizedBox(width: 4),
                           Text(
                             _currentPalette.name.split(' ').sublist(1).join(' '),
                             style: TextStyle(
                               color: _currentPalette.accentColor,
-                              fontSize: 11,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+
+                  // 🔍 Zoom Estate Button
+                  GestureDetector(
+                    onTap: _openFullscreenEstateViewer,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.70),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.75),
+                          width: 1.0,
+                        ),
+                      ),
+                      child: const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text('🔍', style: TextStyle(fontSize: 11)),
+                          SizedBox(width: 4),
+                          Text(
+                            'Zoom Estate',
+                            style: TextStyle(
+                              color: Color(0xFFFDE68A),
+                              fontSize: 10.5,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -2878,6 +5054,56 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
                     ),
                   ),
                 ],
+              ),
+            ),
+          ),
+
+          // ◀ Giant Floating Left Side Navigation Button on Canvas
+          Positioned(
+            left: 6,
+            top: widgetHeight * 0.44,
+            child: GestureDetector(
+              onTap: () => _stepPreviewDay(-1),
+              onLongPress: () => _stepPreviewDay(-5),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.85), width: 1.4),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 8, spreadRadius: 1),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(Icons.chevron_left_rounded, color: Color(0xFFFFD700), size: 24),
+                ),
+              ),
+            ),
+          ),
+
+          // ▶ Giant Floating Right Side Navigation Button on Canvas
+          Positioned(
+            right: 6,
+            top: widgetHeight * 0.44,
+            child: GestureDetector(
+              onTap: () => _stepPreviewDay(1),
+              onLongPress: () => _stepPreviewDay(5),
+              child: Container(
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.85), width: 1.4),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.5), blurRadius: 8, spreadRadius: 1),
+                  ],
+                ),
+                child: const Center(
+                  child: Icon(Icons.chevron_right_rounded, color: Color(0xFFFFD700), size: 24),
+                ),
               ),
             ),
           ),

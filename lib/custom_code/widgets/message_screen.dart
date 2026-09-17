@@ -423,8 +423,8 @@ class _MessageScreenState extends State<MessageScreen> {
   Future<void> _loadMessages() async {
     try {
       // 1. Try loading from LocalSyncServer FIRST for high speed
-      final cached =
-          await LocalSyncServer().getMessagesForChat(_senderId, widget.receiverId);
+      final cached = await LocalSyncServer()
+          .getMessagesForChat(_senderId, widget.receiverId);
       if (cached.isNotEmpty && mounted) {
         final merged = List<Map<String, dynamic>>.from(cached);
         final optimisticMessages =
@@ -482,29 +482,31 @@ class _MessageScreenState extends State<MessageScreen> {
       }
 
       // 3. MERGE with existing local cache (to preserve history NOT on server)
-      final existingCache = LocalSyncServer().getCachedMessages(_senderId, widget.receiverId);
+      final existingCache =
+          LocalSyncServer().getCachedMessages(_senderId, widget.receiverId);
       final Map<String, Map<String, dynamic>> combinedMap = {};
-      
-      // Add existing local messages first 
+
+      // Add existing local messages first
       for (var m in existingCache) {
         if (m is Map<String, dynamic>) {
           combinedMap[m['id'].toString()] = Map<String, dynamic>.from(m);
         }
       }
-      
+
       // Overwrite/Add with fresh server messages
       for (var m in messagesList) {
         combinedMap[m['id'].toString()] = Map<String, dynamic>.from(m);
       }
-      
+
       final finalMessagesList = combinedMap.values.toList()
         ..sort((a, b) => DateTime.parse(b['created_at'].toString())
             .compareTo(DateTime.parse(a['created_at'].toString())));
-      
+
       // Limit to 1000 messages for reasonable performance
       final limitedList = finalMessagesList.take(1000).toList();
-      
-      await LocalSyncServer().saveMessages(_senderId, widget.receiverId, limitedList);
+
+      await LocalSyncServer()
+          .saveMessages(_senderId, widget.receiverId, limitedList);
 
       _messagesStreamController.add(limitedList);
 
@@ -1286,7 +1288,6 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-
   void _makePhoneCall() async {
     if (_isBlocked || _isBlockedByOther) {
       _showErrorSnackBar('Cannot make phone call to blocked user');
@@ -1380,12 +1381,14 @@ class _MessageScreenState extends State<MessageScreen> {
     }
   }
 
-  void _confirmDelete(String messageId, {bool isEphemeral = false, Map<String, dynamic>? message}) {
+  void _confirmDelete(String messageId,
+      {bool isEphemeral = false, Map<String, dynamic>? message}) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: const Text('Delete Message', style: TextStyle(color: Colors.white)),
+        title:
+            const Text('Delete Message', style: TextStyle(color: Colors.white)),
         content: const Text('Are you sure you want to delete this message?',
             style: TextStyle(color: Colors.white70)),
         actions: [
@@ -1402,7 +1405,8 @@ class _MessageScreenState extends State<MessageScreen> {
                 _deleteMessage(messageId);
               }
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.redAccent)),
+            child:
+                const Text('Delete', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -1445,272 +1449,273 @@ class _MessageScreenState extends State<MessageScreen> {
       child: Scaffold(
         backgroundColor: Colors.black,
         appBar: AppBar(
-        elevation: 0,
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-        centerTitle: false,
-        title: InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) =>
-                    VerfiedSwitchPage(userId: widget.receiverId),
+          elevation: 0,
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+          centerTitle: false,
+          title: InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      VerfiedSwitchPage(userId: widget.receiverId),
+                ),
+              );
+            },
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundImage: widget.receiverProfileImage != null
+                      ? NetworkImage(widget.receiverProfileImage!)
+                      : null,
+                  backgroundColor: Colors.blue.shade100,
+                  child: widget.receiverProfileImage == null
+                      ? Text(
+                          widget.receiverName[0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.yellow,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      : null,
+                ),
+                const SizedBox(width: 12),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.receiverName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Text(
+                      _isBlocked
+                          ? 'Blocked ${_blockTime != null ? _formatBlockTime(_blockTime!) : ''}'
+                          : (_isBlockedByOther
+                              ? 'Blocked you ${_blockedByOtherTime != null ? _formatBlockTime(_blockedByOtherTime!) : ''}'
+                              : 'Online'),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _isBlocked || _isBlockedByOther
+                            ? Colors.red
+                            : Colors.green,
+                        fontWeight: FontWeight.normal,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.refresh, color: Colors.yellow),
+              onPressed: () {
+                _loadMessages();
+                _loadEphemeralMessages();
+              },
+              tooltip: 'Refresh',
+            ),
+            if (!_isBlocked &&
+                !_isBlockedByOther &&
+                _supabase.auth.currentUser != null &&
+                hideData != null &&
+                hideData?['is_hidden'] == false)
+              IconButton(
+                icon: const Icon(Icons.phone, color: Colors.green),
+                onPressed: _makePhoneCall,
+                tooltip: 'Normal Call',
               ),
-            );
-          },
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 20,
-                backgroundImage: widget.receiverProfileImage != null
-                    ? NetworkImage(widget.receiverProfileImage!)
-                    : null,
-                backgroundColor: Colors.blue.shade100,
-                child: widget.receiverProfileImage == null
-                    ? Text(
-                        widget.receiverName[0].toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.yellow,
-                          fontWeight: FontWeight.bold,
+            if (!_checkingBlockStatus)
+              PopupMenuButton<String>(
+                icon: const Icon(Icons.more_vert, color: Colors.white),
+                color: Colors.grey[800],
+                onSelected: (value) {
+                  if (value == 'block' || value == 'unblock') {
+                    _showBlockDialog();
+                  } else if (value == 'report') {
+                    ReportHelper.showReportDialog(
+                      context: context,
+                      contentType: 'chat',
+                      contentId: widget.receiverId.toString(),
+                      contentTitle: widget.receiverName,
+                      onReportSubmitted: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                                'Thank you for your report. We\'ll review it soon.'),
+                            backgroundColor: Colors.green,
+                          ),
+                        );
+                      },
+                    );
+                  }
+                },
+                itemBuilder: (BuildContext context) => [
+                  PopupMenuItem<String>(
+                    value: _isBlocked ? 'unblock' : 'block',
+                    child: Row(
+                      children: [
+                        Icon(
+                          _isBlocked ? Icons.person_add : Icons.block,
+                          color: _isBlocked ? Colors.green : Colors.red,
                         ),
-                      )
-                    : null,
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.receiverName,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                        const SizedBox(width: 8),
+                        Text(
+                          _isBlocked ? 'Unblock User' : 'Block User',
+                          style: TextStyle(
+                            color: _isBlocked ? Colors.green : Colors.red,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  Text(
-                    _isBlocked
-                        ? 'Blocked ${_blockTime != null ? _formatBlockTime(_blockTime!) : ''}'
-                        : (_isBlockedByOther
-                            ? 'Blocked you ${_blockedByOtherTime != null ? _formatBlockTime(_blockedByOtherTime!) : ''}'
-                            : 'Online'),
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: _isBlocked || _isBlockedByOther
-                          ? Colors.red
-                          : Colors.green,
-                      fontWeight: FontWeight.normal,
+                  const PopupMenuItem(
+                    value: 'report',
+                    child: Row(
+                      children: [
+                        Icon(Icons.report, color: Colors.yellow),
+                        SizedBox(width: 8),
+                        Text(
+                          'Report',
+                          style: TextStyle(color: Colors.yellow),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
+          ],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.yellow),
-            onPressed: () {
-              _loadMessages();
-              _loadEphemeralMessages();
-            },
-            tooltip: 'Refresh',
-          ),
-          if (!_isBlocked &&
-              !_isBlockedByOther &&
-              _supabase.auth.currentUser != null &&
-              hideData != null &&
-              hideData?['is_hidden'] == false)
-            IconButton(
-              icon: const Icon(Icons.phone, color: Colors.green),
-              onPressed: _makePhoneCall,
-              tooltip: 'Normal Call',
+        body: GestureDetector(
+          onTap: () {
+            FocusScope.of(context).unfocus();
+          },
+          child: Container(
+            decoration: const BoxDecoration(
+              color: Color.fromARGB(255, 32, 31, 31),
             ),
-          if (!_checkingBlockStatus)
-            PopupMenuButton<String>(
-              icon: const Icon(Icons.more_vert, color: Colors.white),
-              color: Colors.grey[800],
-              onSelected: (value) {
-                if (value == 'block' || value == 'unblock') {
-                  _showBlockDialog();
-                } else if (value == 'report') {
-                  ReportHelper.showReportDialog(
-                    context: context,
-                    contentType: 'chat',
-                    contentId: widget.receiverId.toString(),
-                    contentTitle: widget.receiverName,
-                    onReportSubmitted: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'Thank you for your report. We\'ll review it soon.'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
-              itemBuilder: (BuildContext context) => [
-                PopupMenuItem<String>(
-                  value: _isBlocked ? 'unblock' : 'block',
-                  child: Row(
-                    children: [
-                      Icon(
-                        _isBlocked ? Icons.person_add : Icons.block,
-                        color: _isBlocked ? Colors.green : Colors.red,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        _isBlocked ? 'Unblock User' : 'Block User',
-                        style: TextStyle(
-                          color: _isBlocked ? Colors.green : Colors.red,
-                        ),
-                      ),
-                    ],
-                  ),
+            child: Column(
+              children: [
+                Expanded(
+                  child: _checkingBlockStatus
+                      ? const Center(child: CircularProgressIndicator())
+                      : _buildMessagesView(),
                 ),
-                const PopupMenuItem(
-                  value: 'report',
-                  child: Row(
-                    children: [
-                      Icon(Icons.report, color: Colors.yellow),
-                      SizedBox(width: 8),
-                      Text(
-                        'Report',
-                        style: TextStyle(color: Colors.yellow),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-        ],
-      ),
-      body: GestureDetector(
-        onTap: () {
-          FocusScope.of(context).unfocus();
-        },
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Color.fromARGB(255, 32, 31, 31),
-          ),
-          child: Column(
-            children: [
-              Expanded(
-                child: _checkingBlockStatus
-                    ? const Center(child: CircularProgressIndicator())
-                    : _buildMessagesView(),
-              ),
-              if (_isBlocked)
-                _buildBlockedBottomBar()
-              else if (_isBlockedByOther)
-                _buildBlockedByOtherBottomBar()
-              else
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, -5),
-                      ),
-                    ],
-                  ),
-                  child: SafeArea(
-                    child: Row(
-                      children: [
-                        IconButton(
-                          icon: Icon(
-                            _isRecording
-                                ? Icons.stop_circle
-                                : Icons.add_circle_outline,
-                            color: _isRecording ? Colors.red : Colors.yellow,
-                          ),
-                          onPressed: _showMediaOptionsDialog,
+                if (_isBlocked)
+                  _buildBlockedBottomBar()
+                else if (_isBlockedByOther)
+                  _buildBlockedByOtherBottomBar()
+                else
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, -5),
                         ),
-                        // ⚡ Dedicated Snap / Camera button (Snapchat speed)
-                        IconButton(
-                          icon: const Icon(
-                            Icons.camera_alt_rounded,
-                            color: Color(0xFFFFFC00),
-                            size: 22,
-                          ),
-                          tooltip: 'Send Snap ⚡',
-                          onPressed: () {
-                            PocketSnapService.launchSnapWorkflow(
-                              context,
-                              userId: _senderId,
-                              profileId: _senderId,
-                              preselectedRecipientId: widget.receiverId,
-                              onUploaded: _loadMessages,
-                            );
-                          },
-                        ),
-                        Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            decoration: BoxDecoration(
-                              color: const Color.fromARGB(255, 31, 27, 27),
-                              borderRadius: BorderRadius.circular(24),
-                            ),
-                            child: _isRecording
-                                ? const Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 16),
-                                    child: Text('Recording...',
-                                        style: TextStyle(
-                                            color: Colors.red,
-                                            fontWeight: FontWeight.bold)))
-                                : TextField(
-                                    controller: _messageController,
-                                    decoration: const InputDecoration(
-                                      hintText: 'Type a message...',
-                                      border: InputBorder.none,
-                                      hintStyle:
-                                          TextStyle(color: Colors.white54),
-                                      contentPadding:
-                                          EdgeInsets.symmetric(vertical: 6),
-                                    ),
-                                    onChanged: (text) => safeSetState(() {}),
-                                    style: const TextStyle(color: Colors.white),
-                                    maxLines: null,
-                                    textCapitalization:
-                                        TextCapitalization.sentences,
-                                  ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        _isRecording || _messageController.text.trim().isEmpty
-                            ? VoiceMessageRecorder(
-                                onSendMessage: (path, duration) =>
-                                    _handleVoiceMessage(path, duration),
-                                onRecordingStateChanged: (recording) {
-                                  safeSetState(() => _isRecording = recording);
-                                },
-                              )
-                            : IconButton(
-                                icon: const Icon(Icons.send_rounded),
-                                color: Colors.yellow,
-                                onPressed: _sendMessage,
-                              ),
                       ],
                     ),
+                    child: SafeArea(
+                      child: Row(
+                        children: [
+                          IconButton(
+                            icon: Icon(
+                              _isRecording
+                                  ? Icons.stop_circle
+                                  : Icons.add_circle_outline,
+                              color: _isRecording ? Colors.red : Colors.yellow,
+                            ),
+                            onPressed: _showMediaOptionsDialog,
+                          ),
+                          // ⚡ Dedicated Snap / Camera button (Snapchat speed)
+                          IconButton(
+                            icon: const Icon(
+                              Icons.camera_alt_rounded,
+                              color: Color(0xFFFFFC00),
+                              size: 22,
+                            ),
+                            tooltip: 'Send Snap ⚡',
+                            onPressed: () {
+                              PocketSnapService.launchSnapWorkflow(
+                                context,
+                                userId: _senderId,
+                                profileId: _senderId,
+                                preselectedRecipientId: widget.receiverId,
+                                onUploaded: _loadMessages,
+                              );
+                            },
+                          ),
+                          Expanded(
+                            child: Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              decoration: BoxDecoration(
+                                color: const Color.fromARGB(255, 31, 27, 27),
+                                borderRadius: BorderRadius.circular(24),
+                              ),
+                              child: _isRecording
+                                  ? const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 16),
+                                      child: Text('Recording...',
+                                          style: TextStyle(
+                                              color: Colors.red,
+                                              fontWeight: FontWeight.bold)))
+                                  : TextField(
+                                      controller: _messageController,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Type a message...',
+                                        border: InputBorder.none,
+                                        hintStyle:
+                                            TextStyle(color: Colors.white54),
+                                        contentPadding:
+                                            EdgeInsets.symmetric(vertical: 6),
+                                      ),
+                                      onChanged: (text) => safeSetState(() {}),
+                                      style:
+                                          const TextStyle(color: Colors.white),
+                                      maxLines: null,
+                                      textCapitalization:
+                                          TextCapitalization.sentences,
+                                    ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          _isRecording || _messageController.text.trim().isEmpty
+                              ? VoiceMessageRecorder(
+                                  onSendMessage: (path, duration) =>
+                                      _handleVoiceMessage(path, duration),
+                                  onRecordingStateChanged: (recording) {
+                                    safeSetState(
+                                        () => _isRecording = recording);
+                                  },
+                                )
+                              : IconButton(
+                                  icon: const Icon(Icons.send_rounded),
+                                  color: Colors.yellow,
+                                  onPressed: _sendMessage,
+                                ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
-
-
+    );
+  }
 
   Widget _buildBlockedBottomBar() {
     return Container(
@@ -1735,9 +1740,11 @@ class _MessageScreenState extends State<MessageScreen> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               ),
-              child: const Text('Unblock', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Unblock',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -1754,7 +1761,10 @@ class _MessageScreenState extends State<MessageScreen> {
         child: Center(
           child: Text(
             'You cannot send messages to this user.',
-            style: TextStyle(color: Colors.white54, fontSize: 14, fontWeight: FontWeight.w500),
+            style: TextStyle(
+                color: Colors.white54,
+                fontSize: 14,
+                fontWeight: FontWeight.w500),
           ),
         ),
       ),
@@ -1766,7 +1776,8 @@ class _MessageScreenState extends State<MessageScreen> {
         ? const Center(child: CircularProgressIndicator())
         : ListView.builder(
             controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+            physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics()),
             reverse: true,
             padding: const EdgeInsets.symmetric(
               vertical: 8,
@@ -2050,9 +2061,7 @@ class _MessageScreenState extends State<MessageScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
-                          content.contains('Video')
-                              ? Icons.videocam
-                              : Icons.call,
+                          Icons.phone_in_talk_rounded,
                           color: isMe ? Colors.black : Colors.yellow,
                           size: 24,
                         ),
@@ -2073,8 +2082,7 @@ class _MessageScreenState extends State<MessageScreen> {
                           context,
                           MaterialPageRoute(
                             builder: (context) => NativeWebRTCCallScreen(
-                              mode:
-                                  content.contains('Video') ? 'Video' : 'Voice',
+                              mode: 'Voice',
                               targetUserId: widget.receiverId,
                             ),
                           ),
@@ -2238,7 +2246,9 @@ class _MessageScreenState extends State<MessageScreen> {
           decoration: BoxDecoration(
             color: const Color(0xFF131622),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4), width: 1.5),
+            border: Border.all(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                width: 1.5),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -2251,7 +2261,8 @@ class _MessageScreenState extends State<MessageScreen> {
                       color: Color(0xFFFFFC00),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.flash_on_rounded, color: Colors.black, size: 14),
+                    child: const Icon(Icons.flash_on_rounded,
+                        color: Colors.black, size: 14),
                   ),
                   const SizedBox(width: 8),
                   const Text(
@@ -2292,16 +2303,20 @@ class _MessageScreenState extends State<MessageScreen> {
                             height: 180,
                             color: Colors.black26,
                             child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFFFC00)),
+                              child: CircularProgressIndicator(
+                                  strokeWidth: 2, color: Color(0xFFFFFC00)),
                             ),
                           ),
-                          errorWidget: (c, u, e) => const Icon(Icons.broken_image, color: Colors.white54),
+                          errorWidget: (c, u, e) => const Icon(
+                              Icons.broken_image,
+                              color: Colors.white54),
                         ),
                         Positioned(
                           bottom: 8,
                           right: 8,
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: Colors.black87,
                               borderRadius: BorderRadius.circular(10),
@@ -2309,11 +2324,15 @@ class _MessageScreenState extends State<MessageScreen> {
                             child: const Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Icon(Icons.visibility, color: Color(0xFFFFFC00), size: 12),
+                                Icon(Icons.visibility,
+                                    color: Color(0xFFFFFC00), size: 12),
                                 SizedBox(width: 4),
                                 Text(
                                   'View Snap',
-                                  style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ],
                             ),
@@ -2323,7 +2342,8 @@ class _MessageScreenState extends State<MessageScreen> {
                     ),
                   ),
                 ),
-              if (caption.toString().isNotEmpty && caption != '🔥 Pocket Snap') ...[
+              if (caption.toString().isNotEmpty &&
+                  caption != '🔥 Pocket Snap') ...[
                 const SizedBox(height: 6),
                 Text(
                   caption.toString(),
@@ -2397,34 +2417,56 @@ class _MessageScreenState extends State<MessageScreen> {
                 alignment: Alignment.center,
                 children: [
                   ConstrainedBox(
-                    constraints: const BoxConstraints(maxHeight: 300, minHeight: 150, maxWidth: 200, minWidth: 200),
+                    constraints: const BoxConstraints(
+                        maxHeight: 300,
+                        minHeight: 150,
+                        maxWidth: 200,
+                        minWidth: 200),
                     child: localPath != null && File(localPath).existsSync()
-                      ? FutureBuilder<String?>(
-                          future: VideoCompress.getFileThumbnail(localPath).then((f) => f.path),
-                          builder: (context, snapshot) {
-                            return snapshot.hasData 
-                                ? Image.file(File(snapshot.data!), fit: BoxFit.cover, width: 200, height: 200) 
-                                : Container(color: Colors.black26, width: 200, height: 200);
-                          })
-                      : (url.isNotEmpty ? FutureBuilder<String?>(
-                          future: VideoCompress.getFileThumbnail(url).then((f) => f.path),
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData && snapshot.data != null) {
-                              return Image.file(File(snapshot.data!), fit: BoxFit.cover, width: 200, height: 200);
-                            }
-                            return Container(
-                              height: 200, 
-                              width: 200, 
-                              color: Colors.black12, 
-                              child: const Icon(Icons.videocam, color: Colors.white24, size: 40)
-                            );
-                          },
-                        ) : Container(color: Colors.black26, width: 200, height: 200)),
+                        ? FutureBuilder<String?>(
+                            future: VideoCompress.getFileThumbnail(localPath)
+                                .then((f) => f.path),
+                            builder: (context, snapshot) {
+                              return snapshot.hasData
+                                  ? Image.file(File(snapshot.data!),
+                                      fit: BoxFit.cover,
+                                      width: 200,
+                                      height: 200)
+                                  : Container(
+                                      color: Colors.black26,
+                                      width: 200,
+                                      height: 200);
+                            })
+                        : (url.isNotEmpty
+                            ? FutureBuilder<String?>(
+                                future: VideoCompress.getFileThumbnail(url)
+                                    .then((f) => f.path),
+                                builder: (context, snapshot) {
+                                  if (snapshot.hasData &&
+                                      snapshot.data != null) {
+                                    return Image.file(File(snapshot.data!),
+                                        fit: BoxFit.cover,
+                                        width: 200,
+                                        height: 200);
+                                  }
+                                  return Container(
+                                      height: 200,
+                                      width: 200,
+                                      color: Colors.black12,
+                                      child: const Icon(Icons.videocam,
+                                          color: Colors.white24, size: 40));
+                                },
+                              )
+                            : Container(
+                                color: Colors.black26,
+                                width: 200,
+                                height: 200)),
                   ),
                   const CircleAvatar(
                     backgroundColor: Colors.black45,
                     radius: 24,
-                    child: Icon(Icons.play_arrow, color: Colors.white, size: 30),
+                    child:
+                        Icon(Icons.play_arrow, color: Colors.white, size: 30),
                   ),
                 ],
               ),
@@ -2543,7 +2585,8 @@ class _MessageScreenState extends State<MessageScreen> {
                         Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: Color(0xFFFFFC00), width: 1),
+                            border:
+                                Border.all(color: Color(0xFFFFFC00), width: 1),
                           ),
                           child: CircleAvatar(
                             radius: 14,
@@ -2625,7 +2668,8 @@ class _MessageScreenState extends State<MessageScreen> {
                           decoration: BoxDecoration(
                             color: Colors.black.withValues(alpha: 0.7),
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Color(0xFFFFFC00), width: 0.5),
+                            border: Border.all(
+                                color: Color(0xFFFFFC00), width: 0.5),
                           ),
                           child: Text(
                             '\$$price',
@@ -3221,10 +3265,11 @@ class _EphemeralMediaViewerState extends State<EphemeralMediaViewer> {
               onPressed: () async {
                 try {
                   final tempDir = await getTemporaryDirectory();
-                  final path = '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+                  final path =
+                      '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
                   await Dio().download(mediaUrl, path);
                   await Gal.putImage(path);
-                  
+
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Image saved to gallery')),
@@ -3404,4 +3449,3 @@ class _EphemeralMediaViewerState extends State<EphemeralMediaViewer> {
     }
   }
 }
-

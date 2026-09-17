@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'index.dart';
 
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
@@ -96,6 +98,9 @@ class BuildDetailContentState extends State<BuildDetailContent> {
   String? sharetext;
   final TextEditingController _commentController = TextEditingController();
   bool _canMessage = true;
+  bool _isMate = false;
+  bool _isRequestSent = false;
+  bool _checkingMateStatus = true;
 
   @override
   void initState() {
@@ -106,6 +111,345 @@ class BuildDetailContentState extends State<BuildDetailContent> {
     _getLikeCount();
     fetchHideStatus();
     fetchPrivacyAndFollowStatus();
+    _checkMateStatus();
+  }
+
+  Future<void> _checkMateStatus() async {
+    try {
+      final currentUserId = _supabase.auth.currentUser?.id;
+      final ownerId = widget.item['user_id']?.toString();
+      if (currentUserId == null || ownerId == null || currentUserId == ownerId) {
+        safeSetState(() {
+          _isMate = true;
+          _checkingMateStatus = false;
+        });
+        return;
+      }
+      final isMate = await PocketMateService.isMate(currentUserId, ownerId);
+      final prefs = await SharedPreferences.getInstance();
+      final sentList = prefs.getStringList('sent_mate_requests_$currentUserId') ?? [];
+      safeSetState(() {
+        _isMate = isMate;
+        _isRequestSent = sentList.contains(ownerId);
+        _checkingMateStatus = false;
+      });
+    } catch (e) {
+      safeSetState(() {
+        _checkingMateStatus = false;
+      });
+    }
+  }
+
+  void _showInquiryBottomSheet() {
+    final creatorName = widget.item['name'] ?? 'Creator';
+    final title = widget.item['gallery_title'] ?? 'Artwork';
+    final price = widget.item['gallery_price'];
+    final imageUrl = widget.item['gallery_image_url'];
+
+    final textController = TextEditingController(
+      text: "Hi! I'm interested in '$title'. Is it still available?",
+    );
+
+    final suggestions = [
+      "Hi, is this available?",
+      "Can we negotiate the price?",
+      "Can you share more details?",
+      "I'd love to purchase this!",
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (bottomSheetContext) {
+        bool isSending = false;
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF13151F),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+                  border: Border(
+                    top: BorderSide(color: Color(0x33FFFC00), width: 1.2),
+                  ),
+                ),
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Center(
+                      child: Container(
+                        width: 36,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        const Icon(Icons.mark_email_unread_rounded,
+                            color: Color(0xFFFFFC00), size: 22),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Message Creator',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Row(
+                        children: [
+                          if (imageUrl != null && imageUrl.toString().isNotEmpty)
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: Image.network(
+                                imageUrl.toString(),
+                                width: 44,
+                                height: 44,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  title,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                if (price != null)
+                                  Text(
+                                    '₹$price',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFFC00),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'A message request will be sent to $creatorName. Once accepted, you both can chat freely as Poket Mates.',
+                      style: GoogleFonts.inter(
+                        color: Colors.white54,
+                        fontSize: 12,
+                        height: 1.3,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: suggestions.map((s) {
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: ActionChip(
+                              backgroundColor: Colors.white.withValues(alpha: 0.08),
+                              label: Text(
+                                s,
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 11.5),
+                              ),
+                              onPressed: () {
+                                setModalState(() {
+                                  textController.text = s;
+                                });
+                              },
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      controller: textController,
+                      maxLines: 3,
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        hintText: 'Write your message to the creator...',
+                        hintStyle: const TextStyle(color: Colors.white38),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.05),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide(
+                            color: Colors.white.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFFFFC00),
+                            width: 1.2,
+                          ),
+                        ),
+                        contentPadding: const EdgeInsets.all(12),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: isSending
+                            ? null
+                            : () async {
+                                final text = textController.text.trim();
+                                if (text.isEmpty) return;
+
+                                setModalState(() => isSending = true);
+                                Navigator.pop(bottomSheetContext);
+                                await _sendMarketInquiry(text);
+                              },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFFC00),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: Text(
+                          'Send Request',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _sendMarketInquiry(String messageText) async {
+    final currentUser = _supabase.auth.currentUser;
+    if (currentUser == null) return;
+    final ownerId = widget.item['user_id']?.toString();
+    if (ownerId == null) return;
+
+    try {
+      await PocketMateService.sendMateRequest(
+        senderId: currentUser.id,
+        receiverId: ownerId,
+        contextType: 'gallery_market',
+        message: messageText.trim(),
+      );
+
+      final trimmedText = messageText.trim();
+      final nowIso = DateTime.now().toIso8601String();
+
+      await _supabase.from('messages').insert({
+        'sender_id': currentUser.id,
+        'receiver_id': ownerId,
+        'content': trimmedText,
+        'message_text': trimmedText,
+        'message_type': 'gallery',
+        'gallery_id': widget.item['gallery_id'],
+        'updated_at': nowIso,
+        'is_read': false,
+        'metadata': {
+          'source': 'gallery_market',
+          'gallery_id': widget.item['gallery_id'],
+          'gallery_title': widget.item['gallery_title'],
+          'gallery_price': widget.item['gallery_price'],
+          'gallery_image_url': widget.item['gallery_image_url'],
+          'is_request': true,
+        },
+      });
+
+      // Update or create conversation record
+      try {
+        final existingConv = await _supabase
+            .from('conversations')
+            .select('id, unread_count')
+            .or('and(user1_id.eq.${currentUser.id},user2_id.eq.$ownerId),and(user1_id.eq.$ownerId,user2_id.eq.${currentUser.id})')
+            .maybeSingle();
+
+        if (existingConv != null) {
+          await _supabase.from('conversations').update({
+            'last_message': trimmedText,
+            'last_message_time': nowIso,
+            'last_sender_id': currentUser.id,
+            'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+            'updated_at': nowIso,
+          }).eq('id', existingConv['id']);
+        } else {
+          await _supabase.from('conversations').insert({
+            'user1_id': currentUser.id,
+            'user2_id': ownerId,
+            'last_message': trimmedText,
+            'last_message_time': nowIso,
+            'last_sender_id': currentUser.id,
+            'unread_count': 1,
+            'updated_at': nowIso,
+            'is_group': false,
+          });
+        }
+      } catch (convErr) {
+        debugPrint('Error updating conversation for market inquiry: $convErr');
+      }
+
+      safeSetState(() {
+        _isRequestSent = true;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Inquiry & Connection Request sent to ${widget.item['name'] ?? 'Creator'}! 🎨'),
+            backgroundColor: const Color(0xFFFFFC00),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error sending market inquiry: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send request: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -384,7 +728,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     Colors.white70), // Optional: lighter hint
                             prefixIcon: const Icon(
                               Icons.search,
-                              color: Colors.yellow, // Yellow icon
+                              color: Color(0xFFFFFC00),
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(30),
@@ -524,7 +868,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                                     fetchComments(setModalState);
                                   });
                                 },
-                                color: Colors.yellow,
+                                color: const Color(0xFFFFFC00),
                                 textColor: Colors.black,
                                 minWidth: 0,
                                 height: 36,
@@ -1017,7 +1361,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.yellow,
+                          backgroundColor: const Color(0xFFFFFC00),
                           foregroundColor: Colors.black,
                           padding: const EdgeInsets.all(13),
                           shape: RoundedRectangleBorder(
@@ -1056,7 +1400,7 @@ class BuildDetailContentState extends State<BuildDetailContent> {
                     height: 32,
                     width: 32,
                     decoration: BoxDecoration(
-                      color: Colors.yellow,
+                      color: const Color(0xFFFFFC00),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: IconButton(
@@ -1202,52 +1546,156 @@ class BuildDetailContentState extends State<BuildDetailContent> {
 
             const SizedBox(height: 16),
 
-            // In-app Chat Button (App internal direct chat only)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton.icon(
-                  onPressed: () async {
-                    final isAuthenticated =
-                        await AuthAlertBox.checkAuthAndShowAlert(
-                      context: context,
-                      customMessage: "Please login to chat with this creator",
-                    );
-                    if (isAuthenticated) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => WhatsAppGroupChat(
-                            groupId: 'p:${item['user_id']}',
-                            groupName: item['name'] ?? 'User',
-                            groupImage: item['profile_image_url'],
-                          ),
-                        ),
-                      );
-                    }
-                  },
-                  icon: const Icon(Icons.chat_bubble_outline_rounded,
-                      color: Colors.black, size: 20),
-                  label: Text(
-                    'Chat with Creator',
-                    style: GoogleFonts.outfit(
-                      color: Colors.black,
-                      fontSize: 15,
-                      fontWeight: FontWeight.bold,
+            // Creator Contact / Message Request Action Card
+            if (_supabase.auth.currentUser?.id != item['user_id']?.toString())
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131622),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                      width: 1,
                     ),
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFFC00),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            _isMate
+                                ? Icons.chat_bubble_rounded
+                                : (_isRequestSent
+                                    ? Icons.hourglass_top_rounded
+                                    : Icons.mark_email_unread_rounded),
+                            color: const Color(0xFFFFFC00),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            _isMate
+                                ? 'Direct Mate Chat'
+                                : (_isRequestSent
+                                    ? 'Request Pending'
+                                    : 'Connect with Creator'),
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          if (!_isMate && !_isRequestSent)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Request Required',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFFC00),
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        _isMate
+                            ? 'You and ${item['name'] ?? 'this creator'} are Poket Mates! Tap below to open instant chat.'
+                            : (_isRequestSent
+                                ? 'Your inquiry has been sent to ${item['name'] ?? 'the creator'}. Once accepted, full chat will open.'
+                                : 'Send an inquiry about this artwork. Once accepted, you both will connect as Poket Mates.'),
+                        style: GoogleFonts.inter(
+                          color: Colors.white54,
+                          fontSize: 12,
+                          height: 1.3,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: ElevatedButton.icon(
+                          onPressed: _checkingMateStatus
+                              ? null
+                              : () async {
+                                  final isAuthenticated =
+                                      await AuthAlertBox.checkAuthAndShowAlert(
+                                    context: context,
+                                    customMessage:
+                                        "Please login to message this creator",
+                                  );
+                                  if (!isAuthenticated) return;
+
+                                  if (_isMate) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => WhatsAppGroupChat(
+                                          groupId: 'p:${item['user_id']}',
+                                          groupName: item['name'] ?? 'User',
+                                          groupImage: item['profile_image_url'],
+                                        ),
+                                      ),
+                                    );
+                                  } else if (_isRequestSent) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Request already sent to ${item['name'] ?? 'Creator'}. Please wait for their acceptance! ⏳'),
+                                        backgroundColor: const Color(0xFFFFFC00),
+                                        behavior: SnackBarBehavior.floating,
+                                      ),
+                                    );
+                                  } else {
+                                    _showInquiryBottomSheet();
+                                  }
+                                },
+                          icon: Icon(
+                            _isMate
+                                ? Icons.chat_bubble_outline_rounded
+                                : (_isRequestSent
+                                    ? Icons.check_circle_outline_rounded
+                                    : Icons.mail_outline_rounded),
+                            color: Colors.black,
+                            size: 19,
+                          ),
+                          label: Text(
+                            _isMate
+                                ? 'Chat with Creator'
+                                : (_isRequestSent
+                                    ? 'Inquiry Request Sent'
+                                    : 'Send Inquiry / Message'),
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: _isRequestSent
+                                ? const Color(0xFFE2E8F0)
+                                : const Color(0xFFFFFC00),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
-            ),
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(

@@ -38,6 +38,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
   bool _isCheckingDna = false;
   bool _isOwnedByMe = false;
   String _currentDna = '';
+  int _userLevel = 1;
   String? _claimedByUsername;
   String? _selectedPersonaId;
   String _selectedRoleCategory = 'All';
@@ -86,17 +87,21 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
       if (user != null) {
         final profileRes = await SupaFlow.client
             .from('profile')
-            .select('avatar_config')
+            .select('avatar_config, learning_day')
             .eq('user_id', user.id)
             .maybeSingle();
 
-        if (profileRes != null && profileRes['avatar_config'] != null) {
-          final Map<String, dynamic> data =
-              Map<String, dynamic>.from(profileRes['avatar_config']);
-          if (mounted) {
-            setState(() {
-              _config = VectorAvatarConfig.fromMap(data);
-            });
+        if (profileRes != null) {
+          final lDay = (profileRes['learning_day'] as num?)?.toInt() ?? 1;
+          _userLevel = lDay > 0 ? lDay : 1;
+          if (profileRes['avatar_config'] != null) {
+            final Map<String, dynamic> data =
+                Map<String, dynamic>.from(profileRes['avatar_config']);
+            if (mounted) {
+              setState(() {
+                _config = VectorAvatarConfig.fromMap(data);
+              });
+            }
           }
         }
       }
@@ -164,6 +169,22 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
   }
 
   Future<void> _saveAvatar() async {
+    final reqLevel = VectorAvatarPalette.getRequiredLevel(_config.species);
+    if (_userLevel < reqLevel) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🔒 This animal companion unlocks at Level $reqLevel! Complete daily lessons to level up.',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: Colors.amber[900],
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     if (!_isDnaAvailable && !_isOwnedByMe) {
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
@@ -236,7 +257,7 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'Pocket Mates Avatar Studio',
+          'PoketMates Avatar Studio',
           style: GoogleFonts.outfit(
             color: Colors.white,
             fontWeight: FontWeight.bold,
@@ -824,7 +845,90 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
         ),
         const SizedBox(height: 14),
 
-        // Grid of 16+ Species Archetypes
+        // Level Progression Status Banner
+        Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF161928),
+                const Color(0xFF1E2238),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.10),
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.military_tech_rounded, color: Colors.black, size: 20),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'LEVEL $_userLevel MATE',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFFC00),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFF10B981), width: 0.7),
+                          ),
+                          child: Text(
+                            '${VectorAvatarPalette.getUnlockedCount(_userLevel)} UNLOCKED',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF10B981),
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      'Complete daily English lessons to level up and unlock rare animal companions!',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 10.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // Grid of 22+ Species Archetypes with Level Locks
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -837,11 +941,93 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
           itemCount: VectorAvatarPalette.speciesList.length,
           itemBuilder: (context, index) {
             final s = VectorAvatarPalette.speciesList[index];
+            final reqLevel = (s['requiredLevel'] as int?) ?? 1;
+            final isUnlocked = _userLevel >= reqLevel;
             final isSelected = _config.species == s['id'];
-            final badgeColor = s['badgeColor'] as Color? ?? const Color(0xFFFFD700);
+            final badgeColor = isUnlocked
+                ? (s['badgeColor'] as Color? ?? const Color(0xFFFFD700))
+                : Colors.grey;
 
             return GestureDetector(
               onTap: () {
+                if (!isUnlocked) {
+                  HapticFeedback.heavyImpact();
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: const Color(0xFF161928),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      title: Row(
+                        children: [
+                          Text(s['icon'], style: const TextStyle(fontSize: 28)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              '${s['name']}',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.lock_rounded, color: Color(0xFFFFFC00), size: 14),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Unlocks at Level $reqLevel',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFFC00),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Complete daily tasks in the 60-Day English Challenge to reach Level $reqLevel and unlock this companion!',
+                            style: GoogleFonts.inter(
+                              color: Colors.white70,
+                              fontSize: 13,
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: Text(
+                            'Keep Learning!',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                  return;
+                }
+
                 setState(() {
                   _config = _config.copyWith(
                     species: s['id'],
@@ -850,75 +1036,110 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
                 });
                 HapticFeedback.selectionClick();
               },
-              child: AnimatedContainer(
+              child: AnimatedOpacity(
                 duration: const Duration(milliseconds: 200),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF1E202E)
-                      : const Color(0xFF14151F),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected ? badgeColor : Colors.white12,
-                    width: isSelected ? 2 : 1,
-                  ),
-                  boxShadow: isSelected
-                      ? [
-                          BoxShadow(
-                            color: badgeColor.withValues(alpha: 0.35),
-                            blurRadius: 10,
-                            spreadRadius: 1,
-                          ),
-                        ]
-                      : [],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Row(
-                      children: [
-                        Text(s['icon'], style: const TextStyle(fontSize: 22)),
-                        const Spacer(),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: badgeColor.withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(color: badgeColor.withValues(alpha: 0.5), width: 0.8),
-                          ),
-                          child: Text(
-                            s['rarity'],
-                            style: GoogleFonts.outfit(
-                              color: badgeColor,
-                              fontSize: 8,
-                              fontWeight: FontWeight.w900,
+                opacity: isUnlocked ? 1.0 : 0.62,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFF1E202E)
+                        : (isUnlocked ? const Color(0xFF14151F) : const Color(0xFF0F1018)),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? badgeColor
+                          : (isUnlocked ? Colors.white12 : Colors.white.withValues(alpha: 0.06)),
+                      width: isSelected ? 2 : 1,
+                    ),
+                    boxShadow: isSelected
+                        ? [
+                            BoxShadow(
+                              color: badgeColor.withValues(alpha: 0.35),
+                              blurRadius: 10,
+                              spreadRadius: 1,
                             ),
-                          ),
+                          ]
+                        : [],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        children: [
+                          Text(s['icon'], style: const TextStyle(fontSize: 22)),
+                          const Spacer(),
+                          if (!isUnlocked)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.65),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: const Color(0xFFFFD700).withValues(alpha: 0.7),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.lock_rounded, size: 9, color: Color(0xFFFFD700)),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    'Lvl $reqLevel',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          else
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: badgeColor.withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: badgeColor.withValues(alpha: 0.5), width: 0.8),
+                              ),
+                              child: Text(
+                                s['rarity'],
+                                style: GoogleFonts.outfit(
+                                  color: badgeColor,
+                                  fontSize: 8,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        s['name'],
+                        style: GoogleFonts.outfit(
+                          color: isUnlocked ? Colors.white : Colors.white60,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12,
                         ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      s['name'],
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      s['desc'],
-                      style: GoogleFonts.inter(
-                        color: Colors.white54,
-                        fontSize: 9,
+                      Text(
+                        isUnlocked ? s['desc'] : '🔒 Unlocks at Level $reqLevel',
+                        style: GoogleFonts.inter(
+                          color: isUnlocked ? Colors.white54 : const Color(0xFFFFD700).withValues(alpha: 0.9),
+                          fontSize: 9,
+                          fontWeight: isUnlocked ? FontWeight.normal : FontWeight.bold,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             );
@@ -1533,9 +1754,23 @@ class _VectorAvatarStudioPageState extends State<VectorAvatarStudioPage>
 
   // --- TAB 2: Face & Skin ---
   Widget _buildFaceAndSkinTab() {
+    final isAnimal = _config.species.isNotEmpty && _config.species != 'human';
+
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
+        if (isAnimal) ...[
+          _buildSectionHeader('🐾 Fur & Coat Colors (Cat, Fox, Wolf, etc.)'),
+          _buildColorPalette(
+            colors: VectorAvatarPalette.animalFurColors,
+            selectedColor: _config.skinColor,
+            onColorSelected: (c) => setState(() {
+              _selectedPersonaId = null;
+              _config = _config.copyWith(skinColor: c);
+            }),
+          ),
+          const SizedBox(height: 24),
+        ],
         _buildSectionHeader('Skin Tone Palette'),
         _buildColorPalette(
           colors: VectorAvatarPalette.skinTones,

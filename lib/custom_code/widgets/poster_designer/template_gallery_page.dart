@@ -127,7 +127,7 @@ class _TemplateGalleryPageState extends State<TemplateGalleryPage> {
             DesignElement(
               id: 'ev1_date',
               type: ElementType.text,
-              text: '📅 Saturday, 7:00 PM IST\n📍 Pocket Mates Voice Lounge\n🎟️ Free Entry for all Mates',
+              text: '📅 Saturday, 7:00 PM IST\n📍 Poket Mates Voice Lounge\n🎟️ Free Entry for all Mates',
               position: const Offset(40, 360),
               size: const Size(280, 60),
               textAlign: TextAlign.left,
@@ -319,7 +319,7 @@ class _TemplateGalleryPageState extends State<TemplateGalleryPage> {
             DesignElement(
               id: 'ed1_tag',
               type: ElementType.text,
-              text: 'Pocket Mates Language Academy',
+              text: 'Poket Mates Language Academy',
               position: const Offset(30, 385),
               size: const Size(300, 24),
               textAlign: TextAlign.center,
@@ -439,7 +439,7 @@ class _TemplateGalleryPageState extends State<TemplateGalleryPage> {
             DesignElement(
               id: 'q2_sub',
               type: ElementType.text,
-              text: 'Daily Motivation · Pocket Mates',
+              text: 'Daily Motivation · Poket Mates',
               position: const Offset(40, 320),
               size: const Size(280, 24),
               textAlign: TextAlign.left,
@@ -588,7 +588,7 @@ class _TemplateGalleryPageState extends State<TemplateGalleryPage> {
             DesignElement(
               id: 'bs2_loc',
               type: ElementType.text,
-              text: 'Visit us at Pocket Mates Cafe & Lounge',
+              text: 'Visit us at Poket Mates Cafe & Lounge',
               position: const Offset(30, 350),
               size: const Size(300, 24),
               textAlign: TextAlign.left,
@@ -763,7 +763,7 @@ class _TemplateGalleryPageState extends State<TemplateGalleryPage> {
             DesignElement(
               id: 'sc1_listen',
               type: ElementType.text,
-              text: '🎧 STREAMING NOW ON POCKET MATES',
+              text: '🎧 STREAMING NOW ON POKET MATES',
               position: const Offset(30, 355),
               size: const Size(300, 24),
               textAlign: TextAlign.left,

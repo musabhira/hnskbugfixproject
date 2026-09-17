@@ -82,14 +82,13 @@ class PocketMateService {
       }
 
       final defaultMsg = contextType == 'gallery_market'
-          ? 'Inquired about your market item. Wants to connect as your Mate!'
-          : 'Matched from Anonymous English Chat! Wants to become your Pocket Mate.';
+          ? '$name inquired about your market item. Wants to connect as your Mate!'
+          : '$name matched from Anonymous English Chat! Wants to become your Pocket Mate.';
 
       await _supabase.from('notifications').insert({
         'user_id': receiverId,
         'sender_id': senderId,
         'source_id': senderId,
-        'sender_name': name,
         'type': 'mate_request',
         'message': message ?? defaultMsg,
         'status': 'pending',
@@ -202,7 +201,6 @@ class PocketMateService {
           'user_id': senderId,
           'sender_id': myId,
           'source_id': myId,
-          'sender_name': myName,
           'type': 'mate_accepted',
           'message': '✨ $myName accepted your Mate Request! You can now snap & chat.',
           'status': 'read',
@@ -250,9 +248,139 @@ class PocketMateService {
     }
   }
 
+  /// Check whether there is an outgoing pending request sent from senderId to receiverId
+  static Future<bool> hasPendingSentRequest(String senderId, String receiverId) async {
+    if (senderId.isEmpty || receiverId.isEmpty) return false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sentList = prefs.getStringList('sent_mate_requests_$senderId') ?? [];
+      if (sentList.contains(receiverId)) return true;
+
+      final res = await _supabase
+          .from('notifications')
+          .select('id')
+          .eq('sender_id', senderId)
+          .eq('user_id', receiverId)
+          .eq('type', 'mate_request')
+          .eq('status', 'pending')
+          .maybeSingle();
+
+      if (res != null) {
+        sentList.add(receiverId);
+        await prefs.setStringList('sent_mate_requests_$senderId', sentList);
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Get pending incoming request received by receiverId from senderId if any
+  static Future<Map<String, dynamic>?> getPendingIncomingRequest(String receiverId, String senderId) async {
+    if (receiverId.isEmpty || senderId.isEmpty) return null;
+    try {
+      final res = await _supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', receiverId)
+          .eq('sender_id', senderId)
+          .eq('type', 'mate_request')
+          .eq('status', 'pending')
+          .maybeSingle();
+
+      if (res != null) return Map<String, dynamic>.from(res);
+
+      if (PocketRobotService.isRobotId(senderId)) {
+        final prefs = await SharedPreferences.getInstance();
+        final localStr = prefs.getString('pending_pocket_requests_$receiverId');
+        if (localStr != null && localStr.isNotEmpty) {
+          final localReqs = List<Map<String, dynamic>>.from(json.decode(localStr));
+          final found = localReqs.firstWhere(
+            (x) => x['senderId'] == senderId,
+            orElse: () => {},
+          );
+          if (found.isNotEmpty) {
+            return {
+              'id': found['id'],
+              'sender_id': found['senderId'],
+              'sender_name': found['senderName'],
+              'message': found['message'],
+              'status': 'pending',
+              'is_robot': true,
+            };
+          }
+        }
+      }
+      return null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Get set of all user IDs where currentUser has sent a pending mate request
+  static Future<Set<String>> getPendingSentRequestUserIds(String myId) async {
+    if (myId.isEmpty) return {};
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sentList = prefs.getStringList('sent_mate_requests_$myId') ?? [];
+      final set = Set<String>.from(sentList);
+
+      final res = await _supabase
+          .from('notifications')
+          .select('user_id')
+          .eq('sender_id', myId)
+          .eq('type', 'mate_request')
+          .eq('status', 'pending');
+      for (final r in (res as List)) {
+        if (r['user_id'] != null) set.add(r['user_id'].toString());
+      }
+      return set;
+    } catch (_) {
+      return {};
+    }
+  }
+
   /// Check if a user ID is a Pocket Robot
   static bool isRobot(String userId) {
     return userId.startsWith('pocket_robot_') || userId.startsWith('robot_');
+  }
+
+  /// Fetch all sent requests by currentUser (both pending and recent)
+  static Future<List<Map<String, dynamic>>> getSentRequests(String myId) async {
+    if (myId.isEmpty) return [];
+    try {
+      final response = await _supabase
+          .from('notifications')
+          .select('*')
+          .eq('sender_id', myId)
+          .eq('type', 'mate_request')
+          .order('created_at', ascending: false);
+
+      final List<Map<String, dynamic>> sentRequests = [];
+      for (final r in (response as List)) {
+        final req = Map<String, dynamic>.from(r);
+        final receiverId = req['user_id']?.toString() ?? '';
+        if (receiverId.isNotEmpty) {
+          final profileRes = await _supabase
+              .from('profiles')
+              .select('name, profile_image_url')
+              .eq('id', receiverId)
+              .maybeSingle();
+          if (profileRes != null) {
+            req['receiver_name'] = profileRes['name'] ?? 'Poket Mate';
+            req['receiver_profile_image'] = profileRes['profile_image_url'];
+          } else {
+            req['receiver_name'] = 'Poket Mate';
+          }
+        }
+        sentRequests.add(req);
+      }
+      return sentRequests;
+    } catch (e) {
+      debugPrint('Error fetching sent requests: $e');
+      return [];
+    }
   }
 
   /// Fetch all pending connection requests for a user (combining Supabase & Local Robot requests)
@@ -269,7 +397,20 @@ class PocketMateService {
 
       final List<Map<String, dynamic>> requests = [];
       for (final item in (response as List)) {
-        requests.add(Map<String, dynamic>.from(item));
+        final map = Map<String, dynamic>.from(item);
+        if (map['sender_name'] == null && map['sender_id'] != null) {
+          try {
+            final prof = await _supabase
+                .from('profile')
+                .select('name')
+                .eq('user_id', map['sender_id'])
+                .maybeSingle();
+            map['sender_name'] = prof?['name'] ?? 'Pocket Mate';
+          } catch (_) {
+            map['sender_name'] = 'Pocket Mate';
+          }
+        }
+        requests.add(map);
       }
 
       // Merge with local robot requests

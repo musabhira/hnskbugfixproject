@@ -10,7 +10,9 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -37,12 +39,23 @@ class ConversationTile extends StatefulWidget {
 }
 
 class _ConversationTileState extends State<ConversationTile> {
-  async.Timer? _timer;
-  String _elapsedString = '';
+  late VectorAvatarConfig _cachedAvatarConfig;
   bool _showRealPhoto = false;
+  bool _isPendingSent = false;
+
+  bool get _hasUnwatchedStatus {
+    if (!widget.conversation.hasStatus) return false;
+    final isWatched = VibesSeenService.isWatched(
+      currentUserId: widget.currentUserId,
+      userId: widget.conversation.id,
+      profileId: widget.conversation.id,
+      statuses: widget.conversation.statusData,
+    );
+    return !isWatched;
+  }
 
   String? _getStoryThumbnailUrl() {
-    if (!widget.conversation.hasStatus) return null;
+    if (!_hasUnwatchedStatus) return null;
     if (widget.conversation.statusData != null &&
         widget.conversation.statusData!.isNotEmpty) {
       final first = widget.conversation.statusData!.first;
@@ -73,7 +86,8 @@ class _ConversationTileState extends State<ConversationTile> {
     // 2. Check if avatarConfig map contains an explicit stage or evolution avatar
     if (widget.conversation.avatarConfig != null) {
       final cfg = widget.conversation.avatarConfig!;
-      final stage = cfg['stage'] ?? cfg['learning_day'] ?? cfg['day'] ?? cfg['level'];
+      final stage =
+          cfg['stage'] ?? cfg['learning_day'] ?? cfg['day'] ?? cfg['level'];
       if (stage != null && stage is num && stage > 0) {
         return VectorAvatarConfig.getEvolutionAvatarForStage(stage.toInt());
       }
@@ -82,16 +96,15 @@ class _ConversationTileState extends State<ConversationTile> {
       } catch (_) {}
     }
 
-    // 3. Fallback to stage based on teamData or peer ID position
+    // 3. Fallback to stage based on teamData or clean default (Stage 1 Genesis)
     int stage = 1;
     if (widget.conversation.teamData != null) {
       final tStage = widget.conversation.teamData!['learning_day'] ??
-          widget.conversation.teamData!['stage'];
+          widget.conversation.teamData!['stage'] ??
+          widget.conversation.teamData!['learning_stage'];
       if (tStage != null && tStage is num && tStage > 0) {
         stage = tStage.toInt();
       }
-    } else {
-      stage = (widget.conversation.id.hashCode.abs() % 90) + 1;
     }
 
     return VectorAvatarConfig.getEvolutionAvatarForStage(stage);
@@ -100,38 +113,49 @@ class _ConversationTileState extends State<ConversationTile> {
   @override
   void initState() {
     super.initState();
-    if (widget.conversation.isActiveTimer) {
-      _startTicking();
+    _cachedAvatarConfig = _getAvatarConfig();
+    VibesSeenService.seenEpochNotifier.addListener(_onVibesSeenChanged);
+    _checkPendingSent();
+  }
+
+  void _checkPendingSent() {
+    if (!widget.conversation.isGroup &&
+        !widget.conversation.isTool &&
+        !widget.conversation.isNotification &&
+        widget.currentUserId.isNotEmpty &&
+        widget.conversation.id.isNotEmpty) {
+      PocketMateService.hasPendingSentRequest(
+        widget.currentUserId,
+        widget.conversation.id,
+      ).then((val) {
+        if (mounted && val != _isPendingSent) {
+          setState(() => _isPendingSent = val);
+        }
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ConversationTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.conversation.id != widget.conversation.id ||
+        oldWidget.conversation.avatarConfig != widget.conversation.avatarConfig ||
+        oldWidget.conversation.teamData != widget.conversation.teamData) {
+      _cachedAvatarConfig = _getAvatarConfig();
+    }
+    if (oldWidget.conversation.id != widget.conversation.id) {
+      _checkPendingSent();
     }
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    VibesSeenService.seenEpochNotifier.removeListener(_onVibesSeenChanged);
     super.dispose();
   }
 
-  void _startTicking() {
-    _updateElapsed();
-    _timer = async.Timer.periodic(const Duration(seconds: 1), (timer) {
-      _updateElapsed();
-    });
-  }
-
-  void _updateElapsed() {
-    if (!mounted) return;
-    final start = widget.conversation.timerStartTime;
-    if (start == null) return;
-
-    final diff = DateTime.now().difference(start);
-    final hours = diff.inHours.toString().padLeft(2, '0');
-    final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
-    final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
-
-    setState(() {
-      _elapsedString =
-          hours != '00' ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
-    });
+  void _onVibesSeenChanged() {
+    if (mounted) setState(() {});
   }
 
   material.IconData _getIconData() {
@@ -188,12 +212,9 @@ class _ConversationTileState extends State<ConversationTile> {
           return material.Icons.schema_rounded;
         case 'Teams':
           return material.Icons.diversity_3_rounded;
-        case 'Zoyarex POS Admin':
-        case 'Zoyarex Super Admin':
         case 'POS Tool':
         case 'POS & Billing':
           return material.Icons.admin_panel_settings_rounded;
-        case 'Zoyarex AI':
         case 'AI Tools':
           return material.Icons.smart_toy_rounded;
         case 'WhatsApp Web':
@@ -202,8 +223,6 @@ class _ConversationTileState extends State<ConversationTile> {
           return material.Icons.qr_code_scanner_rounded;
         case 'World Clock':
           return material.Icons.schedule_rounded;
-        case 'Test Feature':
-          return material.Icons.bug_report_rounded;
         case 'Dynamic Web App':
         case 'Web Search':
           return material.Icons.travel_explore_rounded;
@@ -270,12 +289,9 @@ class _ConversationTileState extends State<ConversationTile> {
           return const Color(0xFF8B5CF6);
         case 'Teams':
           return const Color(0xFFEC4899);
-        case 'Zoyarex POS Admin':
-        case 'Zoyarex Super Admin':
         case 'POS Tool':
         case 'POS & Billing':
           return const Color(0xFF2563EB);
-        case 'Zoyarex AI':
         case 'AI Tools':
           return const Color(0xFF6366F1);
         case 'WhatsApp Web':
@@ -284,8 +300,6 @@ class _ConversationTileState extends State<ConversationTile> {
           return const Color(0xFF64748B);
         case 'World Clock':
           return const Color(0xFFF97316);
-        case 'Test Feature':
-          return const Color(0xFFE11D48);
         case 'Dynamic Web App':
         case 'Web Search':
           return const Color(0xFFEAB308);
@@ -339,10 +353,15 @@ class _ConversationTileState extends State<ConversationTile> {
         child: material.InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            final isSnap = widget.conversation.lastMessage?.contains('Snap') == true ||
-                widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
-                widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true;
-            if (isSnap && widget.conversation.unreadCount > 0 && widget.onSnapViewTap != null) {
+            final isSnap = widget.conversation.lastMessage?.contains('Snap') ==
+                    true ||
+                widget.conversation.lastMessage?.contains('🔥 Pocket Snap') ==
+                    true ||
+                widget.conversation.lastMessage?.contains('⚡ Pocket Snap') ==
+                    true;
+            if (isSnap &&
+                widget.conversation.unreadCount > 0 &&
+                widget.onSnapViewTap != null) {
               widget.onSnapViewTap!();
             } else {
               widget.onTap();
@@ -352,511 +371,658 @@ class _ConversationTileState extends State<ConversationTile> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             child: Row(
-            children: [
-              GestureDetector(
-                onTap: widget.conversation.hasStatus
-                    ? widget.onStatusTap
-                    : widget.onTap,
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    if (widget.conversation.hasStatus)
-                      Container(
-                        width: 58,
-                        height: 58,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: LinearGradient(
-                            colors: [
-                              Color(0xFF833AB4), // Purple
-                              Color(0xFFF77737), // Orange
-                              Color(0xFFFCAF45), // Yellow
-                            ],
-                            begin: Alignment.topRight,
-                            end: Alignment.bottomLeft,
+              children: [
+                GestureDetector(
+                  onTap: _hasUnwatchedStatus
+                      ? widget.onStatusTap
+                      : widget.onTap,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (_hasUnwatchedStatus)
+                        Container(
+                          width: 58,
+                          height: 58,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF833AB4), // Purple
+                                Color(0xFFF77737), // Orange
+                                Color(0xFFFCAF45), // Yellow
+                              ],
+                              begin: Alignment.topRight,
+                              end: Alignment.bottomLeft,
+                            ),
                           ),
                         ),
-                      ),
-                    GestureDetector(
-                      onTap: () {
-                        if (widget.conversation.hasStatus && widget.onStatusTap != null) {
-                          widget.onStatusTap!();
-                        } else if (widget.conversation.imageUrl != null) {
-                          setState(() => _showRealPhoto = !_showRealPhoto);
-                          HapticFeedback.lightImpact();
-                        }
-                      },
-                      onDoubleTap: () {
-                        if (widget.conversation.imageUrl != null) {
-                          setState(() => _showRealPhoto = !_showRealPhoto);
-                          HapticFeedback.lightImpact();
-                        }
-                      },
-                      onLongPress: () {
-                        if (widget.conversation.imageUrl != null) {
-                          setState(() => _showRealPhoto = !_showRealPhoto);
-                          HapticFeedback.mediumImpact();
-                        }
-                      },
-                      child: Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: widget.conversation.isActiveTimer
-                              ? material.Colors.green.withValues(alpha: 0.1)
-                              : widget.conversation.isTool
-                                  ? _getIconColor(isDark).withValues(alpha: 0.15)
-                                  : (isDark
-                                      ? const Color(0xFF262626)
-                                      : const Color(0xFFE2E8F0)),
-                          shape: BoxShape.circle,
-                          border: Border.all(
+                      GestureDetector(
+                        onTap: () {
+                          if (_hasUnwatchedStatus &&
+                              widget.onStatusTap != null) {
+                            widget.onStatusTap!();
+                          } else if (widget.conversation.imageUrl != null) {
+                            setState(() => _showRealPhoto = !_showRealPhoto);
+                            HapticFeedback.lightImpact();
+                          }
+                        },
+                        onDoubleTap: () {
+                          if (widget.conversation.imageUrl != null) {
+                            setState(() => _showRealPhoto = !_showRealPhoto);
+                            HapticFeedback.lightImpact();
+                          }
+                        },
+                        onLongPress: () {
+                          if (widget.conversation.imageUrl != null) {
+                            setState(() => _showRealPhoto = !_showRealPhoto);
+                            HapticFeedback.mediumImpact();
+                          }
+                        },
+                        child: Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
                             color: widget.conversation.isActiveTimer
-                                ? material.Colors.greenAccent.withValues(alpha: 0.3)
+                                ? material.Colors.green.withValues(alpha: 0.1)
                                 : widget.conversation.isTool
-                                    ? _getIconColor(isDark).withValues(alpha: 0.45)
+                                    ? _getIconColor(isDark)
+                                        .withValues(alpha: 0.15)
                                     : (isDark
-                                        ? Colors.white.withValues(alpha: 0.1)
-                                        : Colors.black.withValues(alpha: 0.1)),
-                            width: widget.conversation.isTool ? 1.5 : 1.2,
+                                        ? const Color(0xFF262626)
+                                        : const Color(0xFFE2E8F0)),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: widget.conversation.isActiveTimer
+                                  ? material.Colors.greenAccent
+                                      .withValues(alpha: 0.3)
+                                  : widget.conversation.isTool
+                                      ? _getIconColor(isDark)
+                                          .withValues(alpha: 0.45)
+                                      : (isDark
+                                          ? Colors.white.withValues(alpha: 0.1)
+                                          : Colors.black
+                                              .withValues(alpha: 0.1)),
+                              width: widget.conversation.isTool ? 1.5 : 1.2,
+                            ),
+                            image: (_getStoryThumbnailUrl() != null)
+                                ? null
+                                : ((_showRealPhoto &&
+                                        widget.conversation.imageUrl != null)
+                                    ? DecorationImage(
+                                        image: CachedNetworkImageProvider(
+                                          widget.conversation.imageUrl!,
+                                          maxWidth: 120,
+                                          maxHeight: 120,
+                                        ),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : (widget.conversation.isGroup &&
+                                            widget.conversation.imageUrl !=
+                                                null)
+                                        ? DecorationImage(
+                                            image: CachedNetworkImageProvider(
+                                              widget.conversation.imageUrl!,
+                                              maxWidth: 120,
+                                              maxHeight: 120,
+                                            ),
+                                            fit: BoxFit.cover,
+                                          )
+                                        : null),
                           ),
-                          image: (_getStoryThumbnailUrl() != null)
-                              ? null
-                              : ((_showRealPhoto && widget.conversation.imageUrl != null)
-                                  ? DecorationImage(
-                                      image: NetworkImage(widget.conversation.imageUrl!),
-                                      fit: BoxFit.cover,
-                                    )
-                                  : (widget.conversation.isGroup && widget.conversation.imageUrl != null)
-                                      ? DecorationImage(
-                                          image: NetworkImage(widget.conversation.imageUrl!),
-                                          fit: BoxFit.cover,
-                                        )
-                                      : null),
-                        ),
-                        child: _getStoryThumbnailUrl() != null
-                            ? ClipOval(
-                                child: CachedNetworkImage(
-                                  imageUrl: _getStoryThumbnailUrl()!,
-                                  width: 50,
-                                  height: 50,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
+                          child: _getStoryThumbnailUrl() != null
+                              ? ClipOval(
+                                  child: CachedNetworkImage(
+                                    imageUrl: _getStoryThumbnailUrl()!,
                                     width: 50,
                                     height: 50,
-                                    color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-                                    child: const Center(
-                                      child: SizedBox(
-                                        width: 14,
-                                        height: 14,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 1.5,
-                                          color: Color(0xFFFFFC00),
+                                    memCacheWidth: 120,
+                                    memCacheHeight: 120,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Container(
+                                      width: 50,
+                                      height: 50,
+                                      color: isDark
+                                          ? const Color(0xFF1E293B)
+                                          : const Color(0xFFE2E8F0),
+                                      child: const Center(
+                                        child: SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 1.5,
+                                            color: Color(0xFFFFFC00),
+                                          ),
                                         ),
                                       ),
                                     ),
+                                    errorWidget: (context, url, err) =>
+                                        VectorAvatarWidget(
+                                      config: _cachedAvatarConfig,
+                                      size: 48,
+                                      showAura: false,
+                                    ),
                                   ),
-                                  errorWidget: (context, url, err) => VectorAvatarWidget(
-                                    config: _getAvatarConfig(),
-                                    size: 48,
-                                    showAura: false,
-                                  ),
-                                ),
-                              )
-                            : ((!_showRealPhoto || widget.conversation.imageUrl == null)
-                                ? (!widget.conversation.isGroup &&
-                                        !widget.conversation.isTool &&
-                                        !widget.conversation.isNotification &&
-                                        !widget.conversation.isActiveTimer)
-                                    ? VectorAvatarWidget(
-                                        config: _getAvatarConfig(),
-                                        size: 48,
-                                        showAura: true,
-                                      )
-                                    : (widget.conversation.imageUrl == null
-                                        ? Center(
-                                            child: Icon(
-                                              _getIconData(),
-                                              color: _getIconColor(isDark),
-                                              size: 24,
-                                            ),
-                                          )
-                                        : null)
-                                : null),
-                      ),
-                    ),
-                    if (widget.conversation.isOnline &&
-                        !widget.conversation.isGroup)
-                      Positioned(
-                        right: 1,
-                        bottom: 1,
-                        child: Container(
-                          width: 11,
-                          height: 11,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981), // Emerald
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: isDark
-                                  ? const Color(0xFF1A1A1A)
-                                  : const Color(0xFFFFFFFF),
-                              width: 2.0,
-                            ),
-                          ),
+                                )
+                              : ((!_showRealPhoto ||
+                                      widget.conversation.imageUrl == null)
+                                  ? (!widget.conversation.isGroup &&
+                                          !widget.conversation.isTool &&
+                                          !widget.conversation.isNotification &&
+                                          !widget.conversation.isActiveTimer)
+                                      ? VectorAvatarWidget(
+                                          config: _cachedAvatarConfig,
+                                          size: 48,
+                                          showAura: true,
+                                        )
+                                      : (widget.conversation.imageUrl == null
+                                          ? Center(
+                                              child: Icon(
+                                                _getIconData(),
+                                                color: _getIconColor(isDark),
+                                                size: 24,
+                                              ),
+                                            )
+                                          : null)
+                                  : null),
                         ),
                       ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 11),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  ContactsNameService().getDisplayName(
-                                    userId: widget.conversation.id,
-                                    fallbackName: widget.conversation.name,
-                                  ),
-                                  style: GoogleFonts.outfit(
-                                    color: primaryTextColor,
-                                    fontSize: 15.5,
-                                    fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.1,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              Builder(
-                                builder: (context) {
-                                  final isRobot = PocketRobotService.isRobotId(widget.conversation.id);
-                                  final isHumanMate = !widget.conversation.isGroup &&
-                                      !widget.conversation.isTool &&
-                                      !widget.conversation.isNotification &&
-                                      !widget.conversation.isActiveTimer &&
-                                      !isRobot;
-                                  if (isRobot) {
-                                    return Container(
-                                      margin: const EdgeInsets.only(left: 6),
-                                      padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(
-                                          color: const Color(0xFF06B6D4).withValues(alpha: 0.4),
-                                          width: 0.8,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        '🤖 Robot',
-                                        style: GoogleFonts.outfit(
-                                          color: const Color(0xFF06B6D4),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                    );
-                                  } else if (isHumanMate) {
-                                    return Container(
-                                      margin: const EdgeInsets.only(left: 6),
-                                      padding: const EdgeInsets.symmetric(horizontal: 5.5, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.06),
-                                        borderRadius: BorderRadius.circular(4),
-                                        border: Border.all(
-                                          color: Colors.white.withValues(alpha: 0.12),
-                                          width: 0.8,
-                                        ),
-                                      ),
-                                      child: Text(
-                                        '👤 Human',
-                                        style: GoogleFonts.outfit(
-                                          color: secondaryTextColor,
-                                          fontWeight: FontWeight.w600,
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                },
-                              ),
-                              if (widget.conversation.isPinned) ...[
-                                const SizedBox(width: 6),
-                                Icon(
-                                  material.Icons.push_pin,
-                                  size: 14,
-                                  color: secondaryTextColor,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        if (widget.conversation.isActiveTimer)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 2),
+                      if (widget.conversation.isOnline &&
+                          !widget.conversation.isGroup)
+                        Positioned(
+                          right: 1,
+                          bottom: 1,
+                          child: Container(
+                            width: 11,
+                            height: 11,
                             decoration: BoxDecoration(
-                              color:
-                                  material.Colors.green.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              'LIVE',
-                              style: GoogleFonts.outfit(
-                                color: material.Colors.greenAccent,
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
+                              color: const Color(0xFF10B981), // Emerald
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF1A1A1A)
+                                    : const Color(0xFFFFFFFF),
+                                width: 2.0,
                               ),
                             ),
                           ),
-                      ],
-                    ),
-                    const SizedBox(height: 3),
-                    Row(
-                      children: [
-                        if (!widget.conversation.isGroup &&
-                            !widget.conversation.isActiveTimer &&
-                            widget.conversation.lastSenderId ==
-                                widget.currentUserId)
-                          Padding(
-                            padding: const EdgeInsets.only(right: 5),
-                            child: Icon(
-                              widget.conversation.otherUnreadCount == 0
-                                  ? material.Icons.done_all_rounded
-                                  : material.Icons.check,
-                              size: 14,
-                              color: widget.conversation.otherUnreadCount == 0
-                                  ? material.Colors.blue.withValues(alpha: 0.8)
-                                  : material.Colors.grey.withValues(alpha: 0.7),
-                            ),
-                          ),
-                        Expanded(
-                          child: Builder(
-                            builder: (context) {
-                              final isSnap = widget.conversation.lastMessage?.contains('Snap') == true ||
-                                  widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
-                                  widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true;
-
-                              if (isSnap) {
-                                if (widget.conversation.unreadCount > 0) {
-                                  return Row(
-                                    children: [
-                                      Container(
-                                        width: 11,
-                                        height: 11,
-                                        margin: const EdgeInsets.only(right: 5),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 11),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    ContactsNameService().getDisplayName(
+                                      userId: widget.conversation.id,
+                                      fallbackName: widget.conversation.name,
+                                    ),
+                                    style: GoogleFonts.outfit(
+                                      color: primaryTextColor,
+                                      fontSize: 15.5,
+                                      fontWeight: FontWeight.w600,
+                                      letterSpacing: 0.1,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                Builder(
+                                  builder: (context) {
+                                    final isRobot =
+                                        PocketRobotService.isRobotId(
+                                            widget.conversation.id);
+                                    if (isRobot) {
+                                      return Container(
+                                        margin: const EdgeInsets.only(left: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5.5, vertical: 2),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFEF4444),
-                                          borderRadius: BorderRadius.circular(3),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: const Color(0xFFEF4444).withValues(alpha: 0.5),
-                                              blurRadius: 3,
+                                          color: const Color(0xFF06B6D4)
+                                              .withValues(alpha: 0.15),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                          border: Border.all(
+                                            color: const Color(0xFF06B6D4)
+                                                .withValues(alpha: 0.4),
+                                            width: 0.8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          '🤖 Robot',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFF06B6D4),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 10,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+                                if (_isPendingSent)
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(4),
+                                      border: Border.all(
+                                        color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                                        width: 0.8,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Request Sent ⏳',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFFFC00),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 9.5,
+                                      ),
+                                    ),
+                                  ),
+                                // 🔥 Snapchat-style Pocket Streak Badge
+                                Builder(
+                                  builder: (context) {
+                                    if (widget.conversation.isGroup ||
+                                        widget.conversation.isTool ||
+                                        widget.conversation.isNotification ||
+                                        PocketRobotService.isRobotId(widget.conversation.id)) {
+                                      return const SizedBox.shrink();
+                                    }
+                                    final lastTime = widget.conversation.lastMessageTime;
+                                    if (lastTime == null) return const SizedBox.shrink();
+                                    final diffDays = DateTime.now().difference(lastTime).inDays;
+                                    if (diffDays <= 2) {
+                                      final streakDays = (widget.conversation.id.hashCode.abs() % 7) + 2;
+                                      return Container(
+                                        margin: const EdgeInsets.only(left: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFF5722).withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(4),
+                                          border: Border.all(
+                                            color: const Color(0xFFFF5722).withValues(alpha: 0.4),
+                                            width: 0.8,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Text('🔥', style: TextStyle(fontSize: 10)),
+                                            const SizedBox(width: 2),
+                                            Text(
+                                              '$streakDays',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFF8A65),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10,
+                                              ),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      Flexible(
-                                        child: Text(
-                                          'New Snap • Tap to view ⚡',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFF87171),
-                                            fontSize: 13.5,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                } else if (widget.conversation.lastSenderId == widget.currentUserId) {
-                                  return Row(
-                                    children: [
-                                      const Icon(material.Icons.near_me_rounded, size: 12, color: Color(0xFFEF4444)),
-                                      const SizedBox(width: 4),
-                                      Flexible(
-                                        child: Text(
-                                          'Delivered Snap ⚡',
-                                          style: GoogleFonts.outfit(
-                                            color: secondaryTextColor,
-                                            fontSize: 13.5,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                } else {
-                                  return Row(
-                                    children: [
-                                      Container(
-                                        width: 10,
-                                        height: 10,
-                                        margin: const EdgeInsets.only(right: 5),
-                                        decoration: BoxDecoration(
-                                          border: Border.all(color: secondaryTextColor, width: 1.3),
-                                          borderRadius: BorderRadius.circular(2.5),
-                                        ),
-                                      ),
-                                      Flexible(
-                                        child: Text(
-                                          'Opened Snap',
-                                          style: GoogleFonts.outfit(
-                                            color: secondaryTextColor,
-                                            fontSize: 13.5,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                }
-                              }
-
-                              return Text(
-                                widget.conversation.isActiveTimer
-                                    ? (widget.conversation.taskTitle ??
-                                        'Active Task')
-                                    : (widget.conversation.lastMessage ??
-                                        (widget.conversation.isGroup
-                                            ? 'No messages yet'
-                                            : 'Start chatting')),
-                                style: GoogleFonts.outfit(
-                                  color: widget.conversation.unreadCount > 0 ||
-                                          widget.conversation.isActiveTimer
-                                      ? unreadTextColor
-                                      : secondaryTextColor,
-                                  fontSize: 13.5,
-                                  fontWeight: widget.conversation.unreadCount > 0 ||
-                                          widget.conversation.isActiveTimer
-                                      ? FontWeight.w500
-                                      : FontWeight.normal,
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              );
-                            },
+                                if (widget.conversation.isPinned) ...[
+                                  const SizedBox(width: 6),
+                                  Icon(
+                                    material.Icons.push_pin,
+                                    size: 14,
+                                    color: secondaryTextColor,
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (widget.conversation.isActiveTimer)
-                    Text(
-                      _elapsedString,
-                      style: GoogleFonts.outfit(
-                        color: material.Colors.greenAccent,
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        fontFeatures: const [FontFeature.tabularFigures()],
+                          if (widget.conversation.isActiveTimer)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: material.Colors.green
+                                    .withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'LIVE',
+                                style: GoogleFonts.outfit(
+                                  color: material.Colors.greenAccent,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
-                    )
-                  else if (widget.conversation.lastMessageTime != null)
-                    Text(
-                      timeago.format(widget.conversation.lastMessageTime!,
-                          locale: 'en_short'),
-                      style: GoogleFonts.outfit(
-                        color: widget.conversation.unreadCount > 0
-                            ? (isDark
-                                ? const Color(0xFFFFD600)
-                                : const Color(0xFFFFF500))
-                            : (isDark
-                                ? Colors.white.withValues(alpha: 0.35)
-                                : Colors.black.withValues(alpha: 0.35)),
-                        fontSize: 11.5,
-                        fontWeight: widget.conversation.unreadCount > 0
-                            ? FontWeight.bold
-                            : FontWeight.w500,
-                      ),
-                    ),
-                  if (widget.conversation.unreadCount > 0) ...[
-                    const SizedBox(height: 5),
-                    Container(
-                      constraints: const BoxConstraints(minWidth: 19),
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2.5),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? const Color(0xFFFFD600)
-                            : const Color(0xFFFFF500),
-                        borderRadius: BorderRadius.circular(10),
-                        boxShadow: [
-                          BoxShadow(
-                            color: (isDark
-                                    ? const Color(0xFFFFD600)
-                                    : const Color(0xFFFFF500))
-                                .withValues(alpha: 0.4),
-                            blurRadius: 3,
-                            spreadRadius: -1,
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          if (!widget.conversation.isGroup &&
+                              !widget.conversation.isActiveTimer &&
+                              widget.conversation.lastSenderId ==
+                                  widget.currentUserId)
+                            Padding(
+                              padding: const EdgeInsets.only(right: 5),
+                              child: Icon(
+                                widget.conversation.otherUnreadCount == 0
+                                    ? material.Icons.done_all_rounded
+                                    : material.Icons.check,
+                                size: 14,
+                                color: widget.conversation.otherUnreadCount == 0
+                                    ? material.Colors.blue
+                                        .withValues(alpha: 0.8)
+                                    : material.Colors.grey
+                                        .withValues(alpha: 0.7),
+                              ),
+                            ),
+                          Expanded(
+                            child: Builder(
+                              builder: (context) {
+                                final isSnap = widget.conversation.lastMessage
+                                            ?.contains('Snap') ==
+                                        true ||
+                                    widget.conversation.lastMessage
+                                            ?.contains('🔥 Pocket Snap') ==
+                                        true ||
+                                    widget.conversation.lastMessage
+                                            ?.contains('⚡ Pocket Snap') ==
+                                        true;
+
+                                if (isSnap) {
+                                  if (widget.conversation.unreadCount > 0) {
+                                    return Row(
+                                      children: [
+                                        Container(
+                                          width: 11,
+                                          height: 11,
+                                          margin:
+                                              const EdgeInsets.only(right: 5),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFEF4444),
+                                            borderRadius:
+                                                BorderRadius.circular(3),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFFEF4444)
+                                                    .withValues(alpha: 0.5),
+                                                blurRadius: 3,
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            'New Snap • Tap to view ⚡',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFF87171),
+                                              fontSize: 13.5,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  } else if (widget.conversation.lastSenderId ==
+                                      widget.currentUserId) {
+                                    return Row(
+                                      children: [
+                                        const Icon(
+                                            material.Icons.near_me_rounded,
+                                            size: 12,
+                                            color: Color(0xFFEF4444)),
+                                        const SizedBox(width: 4),
+                                        Flexible(
+                                          child: Text(
+                                            'Delivered Snap ⚡',
+                                            style: GoogleFonts.outfit(
+                                              color: secondaryTextColor,
+                                              fontSize: 13.5,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  } else {
+                                    return Row(
+                                      children: [
+                                        Container(
+                                          width: 10,
+                                          height: 10,
+                                          margin:
+                                              const EdgeInsets.only(right: 5),
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                                color: secondaryTextColor,
+                                                width: 1.3),
+                                            borderRadius:
+                                                BorderRadius.circular(2.5),
+                                          ),
+                                        ),
+                                        Flexible(
+                                          child: Text(
+                                            'Opened Snap',
+                                            style: GoogleFonts.outfit(
+                                              color: secondaryTextColor,
+                                              fontSize: 13.5,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }
+                                }
+
+                                return Text(
+                                  widget.conversation.isActiveTimer
+                                      ? (widget.conversation.taskTitle ??
+                                          'Active Task')
+                                      : (widget.conversation.lastMessage ??
+                                          (widget.conversation.isGroup
+                                              ? 'No messages yet'
+                                              : 'Start chatting')),
+                                  style: GoogleFonts.outfit(
+                                    color: widget.conversation.unreadCount >
+                                                0 ||
+                                            widget.conversation.isActiveTimer
+                                        ? unreadTextColor
+                                        : secondaryTextColor,
+                                    fontSize: 13.5,
+                                    fontWeight:
+                                        widget.conversation.unreadCount > 0 ||
+                                                widget
+                                                    .conversation.isActiveTimer
+                                            ? FontWeight.w500
+                                            : FontWeight.normal,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                );
+                              },
+                            ),
                           ),
                         ],
                       ),
-                      child: Center(
-                        child: Text(
-                          widget.conversation.unreadCount.toString(),
-                          style: GoogleFonts.outfit(
-                            color: isDark ? Colors.black : Colors.white,
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.bold,
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (widget.conversation.isActiveTimer)
+                      _TickingTimerBadge(startTime: widget.conversation.timerStartTime)
+                    else if (widget.conversation.lastMessageTime != null)
+                      Text(
+                        timeago.format(widget.conversation.lastMessageTime!,
+                            locale: 'en_short'),
+                        style: GoogleFonts.outfit(
+                          color: widget.conversation.unreadCount > 0
+                              ? (isDark
+                                  ? const Color(0xFFFFD600)
+                                  : const Color(0xFFFFF500))
+                              : (isDark
+                                  ? Colors.white.withValues(alpha: 0.35)
+                                  : Colors.black.withValues(alpha: 0.35)),
+                          fontSize: 11.5,
+                          fontWeight: widget.conversation.unreadCount > 0
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                        ),
+                      ),
+                    if (widget.conversation.unreadCount > 0) ...[
+                      const SizedBox(height: 5),
+                      Container(
+                        constraints: const BoxConstraints(minWidth: 19),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 2.5),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFFFFD600)
+                              : const Color(0xFFFFF500),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: (isDark
+                                      ? const Color(0xFFFFD600)
+                                      : const Color(0xFFFFF500))
+                                  .withValues(alpha: 0.4),
+                              blurRadius: 3,
+                              spreadRadius: -1,
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            widget.conversation.unreadCount.toString(),
+                            style: GoogleFonts.outfit(
+                              color: isDark ? Colors.black : Colors.white,
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
                   ],
-                ],
-              ),
-              // Snapchat-style Camera Button on Personal Chats
-              if (!widget.conversation.isGroup &&
-                  !widget.conversation.isTool &&
-                  !widget.conversation.isNotification &&
-                  !widget.conversation.isActiveTimer) ...[
-                const SizedBox(width: 6),
-                material.IconButton(
-                  icon: const Icon(
-                    material.Icons.camera_alt_rounded,
-                    color: Color(0xFFFFFC00),
-                    size: 20,
-                  ),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-                  onPressed: () {
-                    HapticFeedback.lightImpact();
-                    if (widget.onSnapCameraTap != null) {
-                      widget.onSnapCameraTap!();
-                    } else {
-                      PocketSnapService.launchSnapWorkflow(
-                        context,
-                        userId: widget.currentUserId,
-                        profileId: widget.currentUserId,
-                        preselectedRecipientId: widget.conversation.id,
-                      );
-                    }
-                  },
-                  tooltip: 'Send Snap',
                 ),
+                // Snapchat-style Camera Button on Personal Chats
+                if (!widget.conversation.isGroup &&
+                    !widget.conversation.isTool &&
+                    !widget.conversation.isNotification &&
+                    !widget.conversation.isActiveTimer) ...[
+                  const SizedBox(width: 6),
+                  material.IconButton(
+                    icon: const Icon(
+                      material.Icons.camera_alt_rounded,
+                      color: Color(0xFFFFFC00),
+                      size: 20,
+                    ),
+                    padding: EdgeInsets.zero,
+                    constraints:
+                        const BoxConstraints(minWidth: 30, minHeight: 30),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      if (widget.onSnapCameraTap != null) {
+                        widget.onSnapCameraTap!();
+                      } else {
+                        PocketSnapService.launchSnapWorkflow(
+                          context,
+                          userId: widget.currentUserId,
+                          profileId: widget.currentUserId,
+                          preselectedRecipientId: widget.conversation.id,
+                        );
+                      }
+                    },
+                    tooltip: 'Send Snap',
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
-    ),
-  );
+    );
+  }
+}
+
+class _TickingTimerBadge extends StatefulWidget {
+  final DateTime? startTime;
+  const _TickingTimerBadge({required this.startTime});
+
+  @override
+  State<_TickingTimerBadge> createState() => _TickingTimerBadgeState();
+}
+
+class _TickingTimerBadgeState extends State<_TickingTimerBadge> {
+  async.Timer? _timer;
+  String _elapsedString = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _updateElapsed();
+    _timer = async.Timer.periodic(const Duration(seconds: 1), (_) => _updateElapsed());
+  }
+
+  @override
+  void didUpdateWidget(covariant _TickingTimerBadge oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.startTime != widget.startTime) {
+      _updateElapsed();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void _updateElapsed() {
+    if (!mounted || widget.startTime == null) return;
+    final diff = DateTime.now().difference(widget.startTime!);
+    final hours = diff.inHours.toString().padLeft(2, '0');
+    final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+    final text = hours != '00' ? '$hours:$minutes:$seconds' : '$minutes:$seconds';
+    if (_elapsedString != text) {
+      setState(() {
+        _elapsedString = text;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      _elapsedString,
+      style: GoogleFonts.outfit(
+        color: material.Colors.greenAccent,
+        fontSize: 13,
+        fontWeight: FontWeight.bold,
+        fontFeatures: const [FontFeature.tabularFigures()],
+      ),
+    );
   }
 }

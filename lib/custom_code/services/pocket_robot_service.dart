@@ -847,44 +847,166 @@ class PocketRobotService {
     final robot = getRobotById(robotId) ?? getRobotByLevel(1);
     final dynLvl = getDynamicLevel(robot);
 
-    final galleryThemes = [
-      {
-        'title': 'Mastering Phrasal Verbs 📖',
-        'description': 'Break down, carry on, and look into — essential phrasal verbs for effortless native conversation.',
-        'imageUrl': 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80',
-        'category': 'English Mastery',
-      },
-      {
-        'title': 'Coffee & Grammar Reflections ☕',
-        'description': 'Morning study session. Consistency is the secret to unlocking total English fluency!',
-        'imageUrl': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',
-        'category': 'Daily Habit',
-      },
-      {
-        'title': 'Vocabulary Booster: Synonyms 🎯',
-        'description': 'Upgrade everyday words into captivating expressions that impress in natural English conversations.',
-        'imageUrl': 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80',
-        'category': 'Vocabulary',
-      },
-      {
-        'title': 'Accent & Speech Pronunciation 🎙️',
-        'description': 'Clear articulation drills: focus on connected speech, linking sounds, and natural English rhythm.',
-        'imageUrl': 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&q=80',
-        'category': 'Speaking Pro',
-      },
-      {
-        'title': 'Confidence in Professional Interviews 💼',
-        'description': 'High-impact frameworks and phrases for answering challenging interview questions with composure.',
-        'imageUrl': 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80',
-        'category': 'Career English',
-      },
-      {
-        'title': 'Idioms & Cultural Nuances 🌍',
-        'description': 'How native speakers really talk — uncover natural expressions you won\'t find in standard textbooks.',
-        'imageUrl': 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80',
-        'category': 'Culture & Slang',
-      },
-    ];
+    final Map<RobotArchetype, List<Map<String, String>>> archetypeGalleries = {
+      RobotArchetype.romantic: [
+        {
+          'title': 'Poetry & Acoustic Reflections 🎸',
+          'description': 'Writing metaphors under the evening rain. Words carry melodies when spoken from the heart.',
+          'imageUrl': 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&q=80',
+          'category': 'Poetry & Music',
+        },
+        {
+          'title': 'Midnight Coffee & Heartfelt Letters ☕',
+          'description': 'Finding the exact English phrase to express longing. "Serendipity" is still my favorite word.',
+          'imageUrl': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',
+          'category': 'Reflections',
+        },
+        {
+          'title': 'Vintage Bookstore Treasures 📚',
+          'description': 'Lost in dusty classics. Romantic English literature taught me the elegance of natural cadence.',
+          'imageUrl': 'https://images.unsplash.com/photo-1507842229452-7729f21f1854?w=800&q=80',
+          'category': 'Literature',
+        },
+        {
+          'title': 'Golden Hour Stroll & Film Notes 🎞️',
+          'description': 'Cinematic sunsets make you think in English poetry. Practicing dialogue with scenic flair.',
+          'imageUrl': 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80',
+          'category': 'Cinema',
+        },
+      ],
+      RobotArchetype.grumpy: [
+        {
+          'title': 'Stop Apologizing For Small Mistakes! 🥊',
+          'description': 'Real fluency comes from relentless practice, not perfect textbook memorization. Get out of your comfort zone.',
+          'imageUrl': 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&q=80',
+          'category': 'Tough Love',
+        },
+        {
+          'title': 'Chess, Strategy & Direct Arguments ♟️',
+          'description': 'Cut the fluff. Use strong, assertive English in debates: "My assertion is backed by facts."',
+          'imageUrl': 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=800&q=80',
+          'category': 'Debate Pro',
+        },
+        {
+          'title': 'Late-Night Heavy Lifting & Mindset 🏋️',
+          'description': 'No excuses. 15 minutes of English speaking every morning beats 2 hours of passive scrolling.',
+          'imageUrl': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80',
+          'category': 'Discipline',
+        },
+        {
+          'title': 'Debunking Common English Myths 🚫',
+          'description': 'You don\'t need a fake accent. Clear articulation and confidence command 10x more respect.',
+          'imageUrl': 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80',
+          'category': 'Mastery',
+        },
+      ],
+      RobotArchetype.intellectual: [
+        {
+          'title': 'Quantum Physics & Socratic Dialogues 🔬',
+          'description': 'Exploring precision vocabulary. The beauty of English lies in its boundless scientific nuance.',
+          'imageUrl': 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&q=80',
+          'category': 'Science & Logic',
+        },
+        {
+          'title': 'Coding Setup & Machine Learning Reflections 💻',
+          'description': 'Writing algorithms while refining conversational cadence. Logic and language share the same syntax.',
+          'imageUrl': 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80',
+          'category': 'Tech & Code',
+        },
+        {
+          'title': 'The Philosophy of Communication 📖',
+          'description': 'Language is not just words; it is shared consciousness. Reading Wittgenstein and Chomsky this weekend.',
+          'imageUrl': 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80',
+          'category': 'Philosophy',
+        },
+        {
+          'title': 'Architectural Marvels & Design Thinking 🏛️',
+          'description': 'Examining structural beauty. Using descriptive adjectives that bring physical forms alive in conversation.',
+          'imageUrl': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&q=80',
+          'category': 'Architecture',
+        },
+      ],
+      RobotArchetype.trendsetter: [
+        {
+          'title': 'Tokyo Street Style & Modern Slang 🧢',
+          'description': 'Catching cultural idioms on the fly. How native youth seamlessly blend vernacular and energy.',
+          'imageUrl': 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80',
+          'category': 'Street Culture',
+        },
+        {
+          'title': 'Indie Beats & Podcast Studio Jam 🎙️',
+          'description': 'Mic check! Recording our new lifestyle episode. Conversational flow is all about the groove.',
+          'imageUrl': 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&q=80',
+          'category': 'Podcasting',
+        },
+        {
+          'title': 'Sneaker Drops & Creative Entrepreneurship 👟',
+          'description': 'Elevator pitch practice: How to talk about your passion in 60 seconds with electric charisma.',
+          'imageUrl': 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=800&q=80',
+          'category': 'Creator Economy',
+        },
+        {
+          'title': 'Urban Rooftop Sunset & City Lights 🌆',
+          'description': 'City vibes with my mate crew. Practicing quick-witted banter and spontaneous humor.',
+          'imageUrl': 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80',
+          'category': 'Nightlife & Travel',
+        },
+      ],
+      RobotArchetype.cheerful: [
+        {
+          'title': 'Morning Smoothie & Gratitude Journal 🍓',
+          'description': 'Start every single day speaking with joy! Speak three sentences of gratitude out loud right now.',
+          'imageUrl': 'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=800&q=80',
+          'category': 'Daily Wellness',
+        },
+        {
+          'title': 'Puppy Park & Spontaneous Conversations 🐾',
+          'description': 'Met three strangers at the dog park today! Small talk is effortless when you lead with a warm smile.',
+          'imageUrl': 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80',
+          'category': 'Social Vibes',
+        },
+        {
+          'title': 'Baking Sourdough Bread & Foodie Idioms 🍞',
+          'description': '"Bread and butter", "Piece of cake" — delicious idioms while kneading dough. What is your favorite treat?',
+          'imageUrl': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80',
+          'category': 'Cooking & Slang',
+        },
+        {
+          'title': 'Celebration Confetti: You Kept Your Streak! 🎉',
+          'description': 'Proud of everyone hitting Day 21! Consistency beats talent every single time. Keep shining!',
+          'imageUrl': 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&q=80',
+          'category': 'Milestones',
+        },
+      ],
+      RobotArchetype.grandmaster: [
+        {
+          'title': 'Executive Rhetoric: Commanding the Room 🏛️',
+          'description': 'The power of the deliberate pause. How great leaders use silence to underscore critical thoughts.',
+          'imageUrl': 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80',
+          'category': 'Executive English',
+        },
+        {
+          'title': 'Classic Literature & The Architecture of Thought 📜',
+          'description': 'Dissecting Shakespeare and Churchill. When words are chosen with precision, they outlive empires.',
+          'imageUrl': 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80',
+          'category': 'Master Rhetoric',
+        },
+        {
+          'title': 'High-Stakes Negotiation Wisdom 🤝',
+          'description': 'Phrasing that builds bridges instead of walls. "Let us examine where our mutual interests align."',
+          'imageUrl': 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80',
+          'category': 'Negotiation',
+        },
+        {
+          'title': 'The Mentor\'s Compass: Lifelong Learning 🧭',
+          'description': 'Fluency is not an exam to be passed; it is a passport to human connection across continents.',
+          'imageUrl': 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&q=80',
+          'category': 'Wisdom',
+        },
+      ],
+    };
+
+    final galleryThemes = archetypeGalleries[robot.archetype] ?? archetypeGalleries[RobotArchetype.cheerful]!;
 
     final now = DateTime.now();
     return galleryThemes.asMap().entries.map((entry) {
@@ -1335,6 +1457,28 @@ class PocketRobotService {
             }
             modified = true;
           }
+        }
+      }
+      if (modified) {
+        await prefs.setString(key, jsonEncode(history));
+      }
+    } catch (_) {}
+  }
+
+  /// Mark ALL robot messages (text and snaps) as read when opening the chat screen
+  static Future<void> markRobotChatAsRead(String userId, String robotId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'robot_chat_messages_${userId}_$robotId';
+      final history = await getRobotChatHistory(userId, robotId);
+      bool modified = false;
+      for (var msg in history) {
+        if (msg['sender_id'] == robotId && (msg['is_read'] == false || msg['metadata']?['is_read'] == false)) {
+          msg['is_read'] = true;
+          if (msg['metadata'] != null) {
+            msg['metadata']['is_read'] = true;
+          }
+          modified = true;
         }
       }
       if (modified) {

@@ -90,19 +90,38 @@ class VectorAvatarPainter extends CustomPainter {
       orElse: () => VectorAvatarPalette.auraStyles.first,
     )['colors'] as List<Color>;
 
+    // Contrast safeguard: Never let orange cyber cat disappear into yellow/orange background
+    var effectiveAuraColors = auraColors;
+    if (config.species == 'cyber_cat' &&
+        (config.auraStyle == 'neon_yellow' || config.auraStyle == 'sunset_orange')) {
+      effectiveAuraColors = const [Color(0xFF8E2DE2), Color(0xFF0F172A)];
+    }
+
     final auraPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          auraColors[0],
-          auraColors[1],
-          auraColors[1].withValues(alpha: 0.85),
+          effectiveAuraColors[0],
+          effectiveAuraColors[1],
+          effectiveAuraColors[1].withValues(alpha: 0.85),
         ],
         stops: const [0.0, 0.7, 1.0],
       ).createShader(Rect.fromCircle(center: center, radius: radius));
 
     canvas.drawCircle(center, radius, auraPaint);
 
-    if (config.auraStyle == 'matrix_green' || config.artStyle == 'cyberpunk') {
+    if (config.species == 'cyber_cat') {
+      // 🐱 Tokyo Cyber Grid Lines & Neon Circuit Scan
+      final cyberGridPaint = Paint()
+        ..color = const Color(0xFF00F0FF).withValues(alpha: 0.20)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.0;
+      for (double x = size.width * 0.18; x < size.width * 0.85; x += 14) {
+        canvas.drawLine(Offset(x, size.height * 0.08), Offset(x, size.height * 0.92), cyberGridPaint);
+      }
+      for (double y = size.height * 0.18; y < size.height * 0.85; y += 14) {
+        canvas.drawLine(Offset(size.width * 0.08, y), Offset(size.width * 0.92, y), cyberGridPaint);
+      }
+    } else if (config.auraStyle == 'matrix_green' || config.artStyle == 'cyberpunk') {
       final matrixPaint = Paint()
         ..color = const Color(0xFF00FF66).withValues(alpha: 0.25)
         ..style = PaintingStyle.stroke
@@ -1708,13 +1727,20 @@ class VectorAvatarPainter extends CustomPainter {
     canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.76), size.width * 0.045, Paint()..color = const Color(0xFFFFD700));
     canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.76), size.width * 0.02, Paint()..color = Colors.black45);
 
-    // 2. Pointed Cat Ears (Behind Head)
+    // 2. Pointed Cat Ears (Behind Head) with crisp contour
+    final earContour = Paint()
+      ..color = _darken(furColor, 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+
     final leftEar = Path();
     leftEar.moveTo(size.width * 0.22, size.height * 0.44);
     leftEar.lineTo(size.width * 0.16, size.height * 0.16);
     leftEar.lineTo(size.width * 0.42, size.height * 0.32);
     leftEar.close();
     canvas.drawPath(leftEar, Paint()..color = furColor);
+    canvas.drawPath(leftEar, earContour);
+
     final leftInner = Path();
     leftInner.moveTo(size.width * 0.23, size.height * 0.38);
     leftInner.lineTo(size.width * 0.20, size.height * 0.22);
@@ -1728,6 +1754,8 @@ class VectorAvatarPainter extends CustomPainter {
     rightEar.lineTo(size.width * 0.58, size.height * 0.32);
     rightEar.close();
     canvas.drawPath(rightEar, Paint()..color = furColor);
+    canvas.drawPath(rightEar, earContour);
+
     final rightInner = Path();
     rightInner.moveTo(size.width * 0.77, size.height * 0.38);
     rightInner.lineTo(size.width * 0.80, size.height * 0.22);
@@ -1735,9 +1763,21 @@ class VectorAvatarPainter extends CustomPainter {
     rightInner.close();
     canvas.drawPath(rightInner, Paint()..color = const Color(0xFFFF80AB));
 
-    // 3. Round Feline Head & Fluffy Cheeks
+    // 3. Round Feline Head with 3D Radial Shading & Contour
     final headRect = Rect.fromCenter(center: Offset(size.width * 0.5, size.height * 0.50), width: size.width * 0.62, height: size.height * 0.50);
-    canvas.drawOval(headRect, Paint()..color = furColor);
+    final headShader = RadialGradient(
+      center: const Alignment(-0.25, -0.35),
+      radius: 0.85,
+      colors: [_lighten(furColor, 0.28), furColor, _darken(furColor, 0.25)],
+      stops: const [0.0, 0.55, 1.0],
+    ).createShader(headRect);
+    canvas.drawOval(headRect, Paint()..shader = headShader);
+
+    final contourPaint = Paint()
+      ..color = _darken(furColor, 0.38)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    canvas.drawOval(headRect, contourPaint);
 
     final leftCheek = Path();
     leftCheek.moveTo(size.width * 0.20, size.height * 0.52);
@@ -1745,6 +1785,7 @@ class VectorAvatarPainter extends CustomPainter {
     leftCheek.lineTo(size.width * 0.21, size.height * 0.59);
     leftCheek.close();
     canvas.drawPath(leftCheek, Paint()..color = furColor);
+    canvas.drawPath(leftCheek, contourPaint);
 
     final rightCheek = Path();
     rightCheek.moveTo(size.width * 0.80, size.height * 0.52);
@@ -1752,6 +1793,7 @@ class VectorAvatarPainter extends CustomPainter {
     rightCheek.lineTo(size.width * 0.79, size.height * 0.59);
     rightCheek.close();
     canvas.drawPath(rightCheek, Paint()..color = furColor);
+    canvas.drawPath(rightCheek, contourPaint);
 
     // Tabby Markings on Forehead
     final stripePaint = Paint()..color = furShade ..strokeWidth = 2.5 ..strokeCap = StrokeCap.round;

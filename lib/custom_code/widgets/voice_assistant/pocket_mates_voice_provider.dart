@@ -46,7 +46,7 @@ class PocketMatesVoiceNotifier extends Notifier<VoiceState> {
   final List<Map<String, dynamic>> _rawHistory = [
     {
       'role': 'system',
-      'content': 'You are PoketMates Voice AI, a helpful virtual assistant that controls the PoketMates app and the Zoyarex ERP module. Keep responses very short and conversational. When the user wants to go to a page, get data, send a message, or create a task, use the provided tools. You must be able to understand and speak in Malayalam fluently when requested.'
+      'content': 'You are PoketMates Voice AI, a helpful virtual assistant that controls the PoketMates app and the Zoyarex ERP module. Keep responses very short and conversational. Note: The app name is PoketMates (never spelled with a "c"). When the user wants to go to a page, get data, send a message, or create a task, use the provided tools. You must be able to understand and speak in Malayalam fluently when requested.'
     }
   ];
 
@@ -82,7 +82,7 @@ class PocketMatesVoiceNotifier extends Notifier<VoiceState> {
       'type': 'function',
       'function': {
         'name': 'send_chat_message',
-        'description': 'Sends a chat message to a specific user in PocketMates.',
+        'description': 'Sends a chat message to a specific user in PoketMates.',
         'parameters': {
           'type': 'object',
           'properties': {
@@ -97,7 +97,7 @@ class PocketMatesVoiceNotifier extends Notifier<VoiceState> {
       'type': 'function',
       'function': {
         'name': 'create_new_task',
-        'description': 'Creates a new task in PocketMates.',
+        'description': 'Creates a new task in PoketMates.',
         'parameters': {
           'type': 'object',
           'properties': {

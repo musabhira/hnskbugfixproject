@@ -541,6 +541,14 @@ class ChatMessages extends _$ChatMessages {
         _saveToCache(updated);
       });
 
+      // Instantly update conversations list tile
+      ref.read(conversationsProvider.notifier).updateLastMessage(
+        conversationId: actualId,
+        message: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Message' : 'Photo'),
+        time: DateTime.now(),
+        senderId: uid,
+      );
+
       // Asynchronously generate authentic AI response from robot
       if (messageType == 'voice' && fileUrl != null && fileUrl.isNotEmpty) {
         PocketRobotService.transcribeAudio(audioUrl: fileUrl).then((transcript) {
@@ -695,20 +703,53 @@ class ChatMessages extends _$ChatMessages {
 
       // Update relevant metadata for the chat list
       try {
+        final displayMsg = text.isNotEmpty
+            ? text
+            : (messageType == 'voice'
+                ? '🎤 Voice Message'
+                : (messageType == 'snap'
+                    ? '⚡ Pocket Snap'
+                    : (messageType == 'gallery' ? '🎨 Artwork' : 'Attachment')));
+
         if (isPersonal) {
-          await _supabase.from('conversations').update({
-            'last_message': text,
+          final updateRes = await _supabase.from('conversations').update({
+            'last_message': displayMsg,
             'last_message_time': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
             'last_sender_id': uid,
           }).or(
-              'and(user1_id.eq.$uid,user2_id.eq.$actualId),and(user1_id.eq.$actualId,user2_id.eq.$uid)');
+              'and(user1_id.eq.$uid,user2_id.eq.$actualId),and(user1_id.eq.$actualId,user2_id.eq.$uid)').select();
+
+          if (updateRes.isEmpty) {
+            await _supabase.from('conversations').insert({
+              'user1_id': uid,
+              'user2_id': actualId,
+              'last_message': displayMsg,
+              'last_message_time': DateTime.now().toIso8601String(),
+              'last_sender_id': uid,
+              'unread_count': 1,
+            });
+          }
+
+          ref.read(conversationsProvider.notifier).updateLastMessage(
+            conversationId: actualId,
+            message: displayMsg,
+            time: DateTime.now(),
+            senderId: uid,
+          );
         } else {
           await _supabase.from('groups').update({
-            'last_message': text,
+            'last_message': displayMsg,
             'last_message_time': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
           }).eq('id', actualId);
+
+          ref.read(conversationsProvider.notifier).updateLastMessage(
+            conversationId: actualId,
+            message: displayMsg,
+            time: DateTime.now(),
+            senderId: uid,
+          );
         }
       } catch (metaError) {
         debugPrint('Error updating metadata: $metaError');

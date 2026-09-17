@@ -307,18 +307,33 @@ class FFRoute {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const SizedBox(
-                              width: 50.0,
-                              height: 50.0,
-                              child: m.CircularProgressIndicator(
-                                color: m.Colors.blue,
-                                strokeWidth: 3,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(28),
+                              child: m.Image.asset(
+                                'assets/images/pocket_mates_logo.png',
+                                width: 112,
+                                height: 112,
+                                fit: BoxFit.contain,
                               ),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 32),
+                            const SizedBox(
+                              width: 38.0,
+                              height: 38.0,
+                              child: m.CircularProgressIndicator(
+                                color: m.Color(0xFFFFFC00),
+                                strokeWidth: 2.8,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
                             const Text(
-                              'Initializing...',
-                              style: TextStyle(color: m.Colors.white70, fontSize: 14),
+                              'Poket Mates',
+                              style: TextStyle(
+                                color: m.Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.5,
+                              ),
                             ),
                           ],
                         ),

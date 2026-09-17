@@ -5,8 +5,9 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:pocket_mates_app/backend/supabase/database/database.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class GalleryTabViewPage extends StatefulWidget {
   const GalleryTabViewPage({super.key});
@@ -569,6 +570,49 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
               ),
             ),
             const Spacer(),
+            InkWell(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const Scaffold(
+                      body: SafeArea(
+                        child: CreateGalleryWidget(
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+                _loadDynamicCategories();
+              },
+              borderRadius: BorderRadius.circular(20),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.add_photo_alternate_rounded,
+                        color: Colors.black, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Sell / Add',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
             IconButton(
               onPressed: _loadDynamicCategories,
               icon: const Icon(Icons.refresh, color: Colors.white, size: 24),
@@ -576,7 +620,7 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
               splashColor: const Color(0xFFFFFC00),
               highlightColor: const Color(0xFFFFFC00).withValues(alpha: 0.1),
             ),
-            const SizedBox(width: 8),
+            const SizedBox(width: 4),
             IconButton(
               onPressed: _showInterestSelection,
               icon: const Icon(Icons.tune, color: Colors.white, size: 24),
@@ -604,6 +648,36 @@ class _GalleryTabViewPageState extends State<GalleryTabViewPage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const Scaffold(
+                body: SafeArea(
+                  child: CreateGalleryWidget(
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                ),
+              ),
+            ),
+          );
+          _loadDynamicCategories();
+        },
+        backgroundColor: const Color(0xFFFFFC00),
+        foregroundColor: Colors.black,
+        elevation: 6,
+        icon: const Icon(Icons.add_photo_alternate_rounded, size: 20),
+        label: Text(
+          'Sell',
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.bold,
+            fontSize: 15,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ),
       body: Column(
         children: [
           _buildSearchBar(),

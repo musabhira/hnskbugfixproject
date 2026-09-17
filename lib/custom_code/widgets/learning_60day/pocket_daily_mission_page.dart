@@ -21,6 +21,7 @@ import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_game_rules_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_time_machine_trainer_modal.dart';
 
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
@@ -5183,6 +5184,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               onTap: () {
                 HapticFeedback.lightImpact();
                 PocketCodeEnglishDecoderModal.show(context,
+                    currentDay: widget.day);
+              },
+            ),
+            const SizedBox(width: 8),
+            _buildActionPill(
+              icon: '⏳',
+              label: 'TIME MACHINE (TENSES)',
+              color: const Color(0xFFFFD700),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                PocketTimeMachineTrainerModal.show(context,
                     currentDay: widget.day);
               },
             ),

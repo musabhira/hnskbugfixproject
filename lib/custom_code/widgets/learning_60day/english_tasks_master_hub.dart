@@ -15,11 +15,14 @@ import 'pocket_open_world_game_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
+import 'pocket_time_machine_trainer_modal.dart';
 import 'day90_vip_master_card_dialog.dart';
 import 'pocket_daily_mission_page.dart';
 import 'pocket_world_game_rules_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -151,6 +154,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   String? _equippedTalismanId;
   bool _hasAcceptedRules = false;
   final int _totalDays = 90;
+  bool _isSubscribed = false;
 
   // ⏱️ Midnight Daily Unlock Ticker
   Timer? _midnightTicker;
@@ -198,6 +202,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   bool _isDayWaitingForMidnight(int day) {
+    if (_isSubscribed) return false; // VIP Subscribers bypass the 24-hour midnight wait lock!
     if (day != _lastCompletedDay + 1) return false;
     if (_lastCompletedDateStr == null) return false;
     final now = DateTime.now();
@@ -298,8 +303,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         (prefs.getBool('pocket_world_rules_accepted_${uid}_v1') ??
          prefs.getBool('pocket_world_rules_accepted_v1') ?? false);
 
+    final isVip = await PocketAdService().isUserSubscribed();
+
     if (mounted) {
       setState(() {
+        _isSubscribed = isVip;
         _progress = prog;
         _unifiedPocketScore = score;
         _completedDays
@@ -478,7 +486,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: const Color(0xFF131722),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -765,6 +773,37 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ),
                     ),
                     const SizedBox(height: 8),
+                    // ⚡ Pocket VIP Binge Pass Button (₹199/mo)
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                          );
+                        },
+                        icon: const Icon(Icons.bolt_rounded, size: 17, color: Colors.black),
+                        label: Text(
+                          '⚡ FAST-TRACK NOW • Pocket VIP ₹199',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12.5,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFD700),
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          elevation: 0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
                   ],
                   SizedBox(
                     width: double.infinity,
@@ -927,105 +966,127 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               // 2. Sticky Glassmorphism Top HUD (Without Back button on tab navigation!)
               _buildTopHUD(prog),
 
-                // 3. ⚔️ & 🌐 Minimal Floating Actions Dock (User audio directive)
+                // 3. ⚔️ & 🌐 & ⏳ Minimal Floating Actions Dock + Mission Button
                 Positioned(
-                  left: 16,
-                  bottom: 18,
+                  left: 12,
+                  right: 12,
+                  bottom: 16,
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      _buildMinimalFloatingPill(
-                        icon: '⚔️',
-                        label: 'Battle',
-                        onTap: () {
-                          HapticFeedback.mediumImpact();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PocketWorldStreetPage(
-                                currentDay: prog.currentDay,
-                                streak: prog.streakDays,
+                      // Left actions: Battle, Open World, Time Machine
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _buildMinimalFloatingPill(
+                                icon: '⚔️',
+                                label: 'Battle',
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PocketWorldStreetPage(
+                                        currentDay: prog.currentDay,
+                                        streak: prog.streakDays,
+                                      ),
+                                    ),
+                                  );
+                                },
                               ),
-                            ),
-                          );
-                        },
+                              const SizedBox(width: 6),
+                              _buildMinimalFloatingPill(
+                                icon: '🌐',
+                                label: 'Open World',
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => PocketOpenWorldGamePage(
+                                        currentDay: prog.currentDay,
+                                        streak: prog.streakDays,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 6),
+                              _buildMinimalFloatingPill(
+                                icon: '⏳',
+                                label: 'Time Machine',
+                                highlightColor: const Color(0xFF38BDF8),
+                                onTap: () {
+                                  HapticFeedback.mediumImpact();
+                                  PocketTimeMachineTrainerModal.show(
+                                    context,
+                                    currentDay: prog.currentDay,
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                      const SizedBox(width: 6),
-                      _buildMinimalFloatingPill(
-                        icon: '🌐',
-                        label: 'Open World',
+                      const SizedBox(width: 8),
+
+                      // Right: 🎯 Minimal Today Mission Button
+                      InkWell(
                         onTap: () {
                           HapticFeedback.mediumImpact();
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => PocketOpenWorldGamePage(
-                                currentDay: prog.currentDay,
-                                streak: prog.streakDays,
-                              ),
-                            ),
-                          );
+                          if (!_hasAcceptedRules) {
+                            PocketWorldGameRulesModal.show(
+                              context,
+                              currentDay: prog.currentDay,
+                              onPledgeAccepted: () {
+                                setState(() => _hasAcceptedRules = true);
+                                _loadData();
+                              },
+                            );
+                            return;
+                          }
+                          _scrollToDay(prog.currentDay, animate: true);
+                          _navigateToMissionPage(prog.currentDay);
                         },
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00),
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                !_hasAcceptedRules ? Icons.menu_book_rounded : Icons.play_arrow_rounded,
+                                color: Colors.black,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                !_hasAcceptedRules ? 'Rules 📜' : 'Mission ${prog.currentDay}',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ],
-                  ),
-                ),
-
-                // Right: 🎯 Minimal Today Mission Button (User audio: "Mission 10ന്റെ mission mission day വന്നിട്ടുണ്ടല്ലോ, അതൊന്നു minimal ആക്കണം")
-                Positioned(
-                  right: 16,
-                  bottom: 18,
-                  child: InkWell(
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      if (!_hasAcceptedRules) {
-                        PocketWorldGameRulesModal.show(
-                          context,
-                          currentDay: prog.currentDay,
-                          onPledgeAccepted: () {
-                            setState(() => _hasAcceptedRules = true);
-                            _loadData();
-                          },
-                        );
-                        return;
-                      }
-                      _scrollToDay(prog.currentDay, animate: true);
-                      _navigateToMissionPage(prog.currentDay);
-                    },
-                    borderRadius: BorderRadius.circular(12),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFFC00),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.35),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            !_hasAcceptedRules ? Icons.menu_book_rounded : Icons.play_arrow_rounded,
-                            color: Colors.black,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            !_hasAcceptedRules ? 'Rules 📜' : 'Mission ${prog.currentDay}',
-                            style: GoogleFonts.outfit(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w800,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
                 ),
               ],
@@ -1037,6 +1098,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     required String icon,
     required String label,
     required VoidCallback onTap,
+    Color? highlightColor,
   }) {
     return InkWell(
       onTap: onTap,
@@ -1044,9 +1106,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+          color: highlightColor != null
+              ? highlightColor.withValues(alpha: 0.18)
+              : const Color(0xFF131722).withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white12, width: 0.8),
+          border: Border.all(
+            color: highlightColor?.withValues(alpha: 0.6) ?? Colors.white12,
+            width: 0.8,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.3),
@@ -1063,7 +1130,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             Text(
               label,
               style: GoogleFonts.outfit(
-                color: Colors.white,
+                color: highlightColor ?? Colors.white,
                 fontWeight: FontWeight.bold,
                 fontSize: 11,
               ),
@@ -1188,6 +1255,41 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                 ),
                 const SizedBox(width: 8),
+
+                // ⏳ Time Machine Quick Button
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    PocketTimeMachineTrainerModal.show(
+                      context,
+                      currentDay: prog.currentDay,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.16),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.45)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('⏳', style: TextStyle(fontSize: 11)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Tenses',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
 
                 // 🏪 Minimal Store Button
                 GestureDetector(
@@ -1335,7 +1437,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: const Color(0xFF131722),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(22),
           side: BorderSide(color: item.themeColor, width: 1.5),
@@ -1433,7 +1535,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: const Color(0xFF131722),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(22),
           side: const BorderSide(color: Colors.redAccent, width: 1.5),
@@ -1707,7 +1809,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           if (!_hasAcceptedRules && day == 1) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                backgroundColor: const Color(0xFF0F172A),
+                backgroundColor: const Color(0xFF131722),
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -2016,7 +2118,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     // Color by rarity
     final tier = config.rarityTier.toLowerCase();
     Color rarityColor;
-    if (tier.contains('mythic')) {
+    if (config.species == 'cyber_cat' || tier.contains('cyber cat')) {
+      rarityColor = const Color(0xFFEC4899);
+    } else if (tier.contains('mythic')) {
       rarityColor = const Color(0xFF00E5FF);
     } else if (tier.contains('legendary')) {
       rarityColor = const Color(0xFFFFD700);
@@ -2269,7 +2373,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       child: VectorAvatarWidget(
                         config: avatarConfig,
                         size: 56,
-                        showAura: false,
+                        showAura: true,
                       ),
                     ),
                   ),

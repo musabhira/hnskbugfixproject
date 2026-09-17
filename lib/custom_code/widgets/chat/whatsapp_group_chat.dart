@@ -23,6 +23,7 @@ import 'package:image/image.dart' as img;
 import 'dart:io';
 
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:shimmer/shimmer.dart';
@@ -103,6 +104,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   bool _showMentionSuggestions = false;
   String? _mentionQuery;
 
+  // Mate Fluency Streak & Conversation Starters
+  int _mateStreakDays = 1;
+  int _selectedTopicIndex = 0;
+
   // Editing state
   bool _isEditing = false;
   String? _editingMessageId;
@@ -113,6 +118,11 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   bool _isAdminBlockedFromHub = false;
   bool get _isEnglishHubGroup => widget.groupName.contains('English Hub');
+
+  // Instagram-style Mate Request & Inquiry state
+  bool _isMate = false;
+  bool _isOutgoingPendingRequest = false;
+  Map<String, dynamic>? _incomingPendingRequest;
 
   // Speech-to-Text for English Hub
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -433,7 +443,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _messageController.addListener(_onMessageChanged);
     // _setupSystemColor(); // New line from user's snippet, commented out to avoid compile error if not defined
     _fetchMembers();
+    _loadMateStreak();
     _checkEnglishHubAdminBlock();
+    _checkMateStatus();
 
     _scrollController.addListener(() {
       if (_scrollController.hasClients) {
@@ -459,6 +471,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         safeSetState(() => _showEmojiPicker = false);
       }
     });
+
+    // Auto-focus keyboard on personal chat entry for snappy instant messaging
+    if (widget.groupId.startsWith('p:')) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _focusNode.requestFocus();
+        }
+      });
+    }
 
     // Cleanup trigger
     Future.microtask(() => ref
@@ -498,6 +519,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _scrollController.dispose();
     _focusNode.dispose();
     super.dispose();
+  }
+
+  bool get _isEnglishHub {
+    final name = widget.groupName.toLowerCase();
+    return name.contains('english hub') ||
+        name.contains('english learning') ||
+        name.contains('english practice');
   }
 
   // Staged content for previews
@@ -575,83 +603,664 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     return true;
   }
 
-  Future<void> _correctTextWithAI() async {
-    final textToCorrect = _messageController.text.trim();
-    if (textToCorrect.isEmpty) return;
+  Future<void> _loadMateStreak() async {
+    if (!widget.groupId.startsWith('p:')) return;
+    try {
+      final mateUserId = widget.groupId.substring(2);
+      final prefs = await SharedPreferences.getInstance();
+      final cachedStreak = prefs.getInt('mate_streak_${widget.groupId}');
+      if (cachedStreak != null && cachedStreak > 0) {
+        safeSetState(() {
+          _mateStreakDays = cachedStreak;
+        });
+      }
 
-    safeSetState(() {
-      _isCorrectingText = true;
-    });
+      final profileRes = await _supabase
+          .from('profile')
+          .select('daily_streak, learning_day')
+          .eq('user_id', mateUserId)
+          .maybeSingle();
+
+      if (profileRes != null) {
+        final streak = (profileRes['daily_streak'] as num?)?.toInt() ?? 1;
+        await prefs.setInt('mate_streak_${widget.groupId}', streak);
+        safeSetState(() {
+          _mateStreakDays = streak;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error loading mate streak: $e');
+    }
+  }
+
+  Future<void> _checkMateStatus() async {
+    if (!widget.groupId.startsWith('p:')) return;
+    final otherUserId = widget.groupId.substring(2);
+    final uid = _supabase.auth.currentUser?.id ?? '';
+    if (uid.isEmpty || otherUserId.isEmpty) return;
 
     try {
-      final prompt = 'You are a strict English correction tool. Correct the following text if needed. If it is already correct, return it exactly as is. Output ONLY the raw corrected text with NO conversational filler, NO explanations, NO markdown formatting, and NO quotes.\n\nText: "$textToCorrect"';
-
-      final response = await AIService().generateText(prompt: prompt);
-
-      if (response.isSuccess && response.data != null) {
-        final cleanedText = response.data!.trim();
-        
-        if (cleanedText.toLowerCase() == textToCorrect.toLowerCase()) {
-          // Perfect sentence!
-          final prefs = await SharedPreferences.getInstance();
-          int currentStreak = prefs.getInt('english_hub_perfect_streak') ?? 0;
-          currentStreak++;
-          
-          if (currentStreak >= 3) {
-            // Reward for streak
-            int currentPoints = prefs.getInt('english_hub_points') ?? 0;
-            await prefs.setInt('english_hub_points', currentPoints + 5);
-            await prefs.setInt('english_hub_perfect_streak', 0); // reset streak
-            
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('🔥 Perfect Streak! +5 Bonus Points!'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-            }
-          } else {
-            await prefs.setInt('english_hub_perfect_streak', currentStreak);
-            if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('✨ Perfect sentence! Streak: $currentStreak/3'),
-                  backgroundColor: const Color(0xFF1B5E20),
-                ),
-              );
-            }
-          }
-        } else {
-          // Reset streak if there was a mistake
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setInt('english_hub_perfect_streak', 0);
+      final mate = await PocketMateService.isMate(uid, otherUserId);
+      if (mate) {
+        if (mounted) {
+          safeSetState(() {
+            _isMate = true;
+            _isOutgoingPendingRequest = false;
+            _incomingPendingRequest = null;
+          });
         }
+        return;
+      }
 
-        _messageController.text = cleanedText;
-        // Move cursor to end
+      final outgoing = await PocketMateService.hasPendingSentRequest(uid, otherUserId);
+      final incoming = await PocketMateService.getPendingIncomingRequest(uid, otherUserId);
+
+      if (mounted) {
+        safeSetState(() {
+          _isMate = false;
+          _isOutgoingPendingRequest = outgoing;
+          _incomingPendingRequest = incoming;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error checking mate status: $e');
+    }
+  }
+
+  Future<void> _acceptIncomingRequest() async {
+    if (_incomingPendingRequest == null) return;
+    final notifId = _incomingPendingRequest!['id']?.toString() ?? '';
+    final senderId = widget.groupId.substring(2);
+    final uid = _supabase.auth.currentUser?.id ?? '';
+
+    HapticFeedback.mediumImpact();
+    final success = await PocketMateService.acceptMateRequest(
+      notificationId: notifId,
+      myId: uid,
+      senderId: senderId,
+    );
+
+    if (success && mounted) {
+      safeSetState(() {
+        _isMate = true;
+        _incomingPendingRequest = null;
+        _isOutgoingPendingRequest = false;
+      });
+
+      ref.read(conversationsProvider.notifier).refreshNow();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('🎉', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'You and ${widget.groupName} are now Poket Mates! Chat unlocked.',
+                  style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFFFFFC00),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  Future<void> _declineIncomingRequest() async {
+    if (_incomingPendingRequest == null) return;
+    final notifId = _incomingPendingRequest!['id']?.toString() ?? '';
+    final senderId = widget.groupId.substring(2);
+    final uid = _supabase.auth.currentUser?.id ?? '';
+
+    HapticFeedback.lightImpact();
+    await PocketMateService.declineMateRequest(
+      notificationId: notifId,
+      myId: uid,
+      senderId: senderId,
+    );
+
+    ref.read(conversationsProvider.notifier).refreshNow();
+
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  void _showMateFluencyStreakSheet(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(color: const Color(0xFFFF8A00).withValues(alpha: 0.3)),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF8A00).withValues(alpha: 0.15),
+                blurRadius: 20,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFF8A00), Color(0xFFE52E71)],
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF8A00).withValues(alpha: 0.4),
+                      blurRadius: 14,
+                    ),
+                  ],
+                ),
+                child: const Text('🔥', style: TextStyle(fontSize: 34)),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                '$_mateStreakDays Day Fluency Streak!',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'You and ${widget.groupName} are building conversational mastery.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle_rounded, color: Color(0xFF22C55E), size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Daily English Chat Active (+15 XP)',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(color: Colors.white10, height: 20),
+                    Row(
+                      children: [
+                        const Icon(Icons.shield_rounded, color: Color(0xFF38BDF8), size: 20),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'Citadel Streak Freeze Insurance Active 🛡️',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white70,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFFC00),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  child: Text(
+                    'Keep Practicing English 💬',
+                    style: GoogleFonts.outfit(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  static const List<Map<String, String>> _icebreakerTopics = [
+    {
+      'cat': '🧠 Deep & Fun',
+      'emoji': '✨',
+      'en': 'If you could travel anywhere in the world tomorrow, which destination would you pick and why?',
+      'hint': 'Talk about places you have always dreamed of visiting.'
+    },
+    {
+      'cat': '🎬 Entertainment',
+      'emoji': '🍿',
+      'en': 'What is the most memorable movie or show you have watched recently? What made it so good?',
+      'hint': 'Describe the story or your favorite character.'
+    },
+    {
+      'cat': '🚀 Ambition',
+      'emoji': '🎯',
+      'en': 'What is one major skill or habit you are determined to master this year?',
+      'hint': 'Share your learning or career goal.'
+    },
+    {
+      'cat': '🍕 Food & Taste',
+      'emoji': '🍳',
+      'en': 'If you could only eat one cuisine or favorite comfort food forever, what would it be?',
+      'hint': 'Describe the taste and why it is special to you.'
+    },
+    {
+      'cat': '⚡ Fast Debate',
+      'emoji': '🔥',
+      'en': 'Do you prefer early mornings with quiet peace or late nights with high focus?',
+      'hint': 'Explain when you feel most productive and creative.'
+    },
+    {
+      'cat': '💡 Inspiration',
+      'emoji': '🌟',
+      'en': 'What is the most useful piece of advice someone has ever given you?',
+      'hint': 'Explain how that advice helped you in life.'
+    },
+    {
+      'cat': '🎧 Hobbies',
+      'emoji': '🎵',
+      'en': 'What song or playlist always lifts your mood no matter what?',
+      'hint': 'Tell why music plays an important role in your day.'
+    },
+    {
+      'cat': '🏰 Superpowers',
+      'emoji': '🦸',
+      'en': 'If you could have any superpower for 24 hours, how would you spend that day?',
+      'hint': 'Think about flying, teleportation, or invisibility!'
+    },
+  ];
+
+  void _showDailyIcebreakerModal() {
+    HapticFeedback.mediumImpact();
+    int currentIndex = _selectedTopicIndex;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final topic = _icebreakerTopics[currentIndex % _icebreakerTopics.length];
+            return Container(
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.7),
+                    blurRadius: 20,
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 44,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
+                        ),
+                        child: Text(
+                          '${topic['emoji']} ${topic['cat']}',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFFC00),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        tooltip: 'Shuffle Topic 🎲',
+                        icon: const Icon(Icons.shuffle_rounded, color: Color(0xFFFFFC00)),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          setModalState(() {
+                            currentIndex = (currentIndex + 1) % _icebreakerTopics.length;
+                            _selectedTopicIndex = currentIndex;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(18),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF1E293B),
+                          Color(0xFF0F172A),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '\"${topic['en']}\"',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            height: 1.4,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const Icon(Icons.lightbulb_outline, color: Color(0xFFFFD600), size: 14),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                topic['hint'] ?? '',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white54,
+                                  fontSize: 12,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            setModalState(() {
+                              currentIndex = (currentIndex + 1) % _icebreakerTopics.length;
+                              _selectedTopicIndex = currentIndex;
+                            });
+                          },
+                          icon: const Icon(Icons.casino_outlined, size: 18),
+                          label: const Text('🎲 Shuffle'),
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: Colors.white,
+                            side: const BorderSide(color: Colors.white24),
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            Navigator.pop(ctx);
+                            _messageController.text = topic['en']!;
+                            _messageController.selection = TextSelection.fromPosition(
+                              TextPosition(offset: _messageController.text.length),
+                            );
+                            _focusNode.requestFocus();
+                          },
+                          icon: const Icon(Icons.send_rounded, size: 18),
+                          label: const Text('Insert into Chat 💬'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFFC00),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showInstantEnglishStarters() {
+    HapticFeedback.lightImpact();
+    const starters = [
+      "Hey! How is your day going so far? 😊",
+      "What exciting projects or tasks are you working on today?",
+      "I was just thinking about our English practice goal!",
+      "Any good movie, podcast, or series recommendations?",
+      "Hope you are having an awesome and productive day!",
+      "Quick question: What is your favorite way to unwind on weekends?",
+      "Just checking in! How has your week been treating you?",
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('✨', style: TextStyle(fontSize: 20)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Instant English Starters',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Tap any opener to insert it directly into your chat:',
+                style: GoogleFonts.inter(color: Colors.white60, fontSize: 13),
+              ),
+              const SizedBox(height: 14),
+              Flexible(
+                child: ListView.separated(
+                  shrinkWrap: true,
+                  itemCount: starters.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                  itemBuilder: (context, i) {
+                    final s = starters[i];
+                    return InkWell(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        Navigator.pop(ctx);
+                        _messageController.text = s;
+                        _messageController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: _messageController.text.length),
+                        );
+                        _focusNode.requestFocus();
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.chat_bubble_outline_rounded,
+                                color: Color(0xFFFFFC00), size: 16),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                s,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios_rounded,
+                                color: Colors.white30, size: 12),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _polishEnglishDraft() async {
+    final draft = _messageController.text.trim();
+    if (draft.isEmpty) {
+      _showInstantEnglishStarters();
+      return;
+    }
+
+    safeSetState(() => _isCorrectingText = true);
+    HapticFeedback.lightImpact();
+
+    try {
+      final prompt = '''You are an elite English fluency and communication assistant.
+Transform the following draft message into natural, friendly, confident native English suitable for chatting with a friend or mate.
+Keep the original meaning, intent, and casual/friendly tone intact.
+Output ONLY the final polished sentence with NO explanations, NO markdown quotes, NO introductory greetings, and NO filler text.
+
+Draft: "$draft"''';
+
+      final res = await AIService().generateText(prompt: prompt);
+      if (res.isSuccess && res.data != null && res.data!.trim().isNotEmpty) {
+        final polished = res.data!.trim();
+        _messageController.text = polished;
         _messageController.selection = TextSelection.fromPosition(
           TextPosition(offset: _messageController.text.length),
         );
+        HapticFeedback.mediumImpact();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: const [
+                  Text('✨ ', style: TextStyle(fontSize: 16)),
+                  Expanded(
+                    child: Text(
+                      'Polished to Fluent English!',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF14532D),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          );
+        }
       } else {
-        throw Exception(response.error ?? 'Unknown AI service error');
+        throw Exception(res.error ?? 'Failed to polish text');
       }
     } catch (e) {
-      debugPrint('AI Correction error: $e');
+      debugPrint('Polish English error: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('⚠️ AI Correction failed: $e'),
+            content: Text('Could not polish: $e'),
             backgroundColor: Colors.redAccent,
           ),
         );
       }
     } finally {
-      safeSetState(() {
-        _isCorrectingText = false;
-      });
+      safeSetState(() => _isCorrectingText = false);
     }
   }
+
 
   Future<void> _explainOrCorrectMessage(ChatMessage message) async {
     final textToAnalyze = message.messageText;
@@ -783,6 +1392,18 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         PocketFortressDefenseService.recordActivityPoints('group_chat');
       }
 
+      if (widget.groupId.startsWith('p:') && !_isMate) {
+        final otherUserId = widget.groupId.substring(2);
+        await PocketMateService.sendMateRequest(
+          senderId: _currentUserId,
+          receiverId: otherUserId,
+          message: text ?? 'Sent you a message request',
+        );
+        safeSetState(() {
+          _isOutgoingPendingRequest = true;
+        });
+      }
+
       return message?.id;
     } catch (e) {
       debugPrint('SendMessage Error: $e');
@@ -895,16 +1516,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             title: const Text('View Profile', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              final member = _groupMembers.firstWhere(
-                  (m) => m['user_id'] == userId,
-                  orElse: () => {});
-              final url = member['profile']?['profile_image_url'];
-              if (url != null) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ImageViewer(imageUrl: url, title: name)),
-                );
-              }
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => VerfiedSwitchPage(userId: userId),
+                ),
+              );
             },
           ),
           ListTile(
@@ -1276,6 +1893,49 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             ),
           ),
           actions: [
+            if (widget.groupId.startsWith('p:')) ...[
+              InkWell(
+                onTap: () => _showMateFluencyStreakSheet(context),
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  margin: const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFF8A00), Color(0xFFE52E71)],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFF8A00).withValues(alpha: 0.35),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🔥', style: TextStyle(fontSize: 12)),
+                      const SizedBox(width: 3),
+                      Text(
+                        '${_mateStreakDays}d',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+            IconButton(
+              icon: const Icon(Icons.casino_outlined, color: Color(0xFFFFFC00), size: 21),
+              tooltip: 'Daily Topic 🎲',
+              onPressed: _showDailyIcebreakerModal,
+            ),
             if (_isEnglishHubGroup) ...[
               IconButton(
                 icon: const Icon(Icons.hub_outlined, color: Colors.lightBlueAccent),
@@ -1296,7 +1956,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   showModalBottomSheet(
                     context: context,
                     isScrollControlled: true,
-                    backgroundColor: const Color(0xFF121B22),
+                    backgroundColor: const Color(0xFF0B0D13),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
                     ),
@@ -1344,7 +2004,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     value: 'refresh',
                     child: Text('Refresh', style: TextStyle(color: Colors.white)),
                   ),
-                  if (!isPersonalChat)
+                  if (!isPersonalChat && !_isEnglishHub)
                     const PopupMenuItem(
                       value: 'leave',
                       child: Text('Leave Group', style: TextStyle(color: Colors.red)),
@@ -1555,16 +2215,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       _stagedAudioPath != null)
                     _buildStagedPreview(),
                   if (_showMentionSuggestions) _buildMentionSuggestions(),
-                  if (_isEnglishHubGroup || (widget.groupId.startsWith('p:') && PocketRobotService.isRobotId(widget.groupId.substring(2))))
-                    ValueListenableBuilder<TextEditingValue>(
-                      valueListenable: _messageController,
-                      builder: (context, value, child) {
-                        if (value.text.trim().isNotEmpty) {
-                          return _buildAIHelperPill();
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
+                  ValueListenableBuilder<TextEditingValue>(
+                    valueListenable: _messageController,
+                    builder: (context, value, child) {
+                      if (value.text.trim().isNotEmpty) {
+                        return _buildAIHelperPill();
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                   _buildInputArea(),
                   if (_showEmojiPicker) _buildEmojiPicker(),
                 ],
@@ -1772,9 +2431,23 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               if (message.messageType == 'thought' &&
                                   message.thought != null)
                                 _buildThoughtMessage(message.thought!, isMe),
-                              if (message.messageType == 'gallery' &&
-                                  message.gallery != null)
-                                _buildGalleryMessage(message.gallery!, isMe),
+                              if (message.messageType == 'gallery' ||
+                                  message.metadata?['source'] == 'gallery_market' ||
+                                  message.metadata?['gallery_title'] != null) ...[
+                                if (message.gallery != null)
+                                  _buildGalleryMessage(message.gallery!, isMe)
+                                else if (message.metadata != null)
+                                  _buildGalleryMessage({
+                                    'id': message.metadata!['gallery_id'] ?? message.metadata!['id'],
+                                    'title': message.metadata!['gallery_title'] ?? message.metadata!['title'],
+                                    'price': message.metadata!['gallery_price'] ?? message.metadata!['price'],
+                                    'image_url': message.metadata!['gallery_image_url'] ?? message.metadata!['image_url'],
+                                    'description': message.metadata!['gallery_description'] ?? message.metadata!['description'],
+                                    'category': message.metadata!['gallery_category'] ?? message.metadata!['category'] ?? 'MARKET',
+                                    'user_id': message.senderId,
+                                    'name': message.senderName,
+                                  }, isMe),
+                              ],
                               if (message.messageType == 'status_mention')
                                 _buildStatusMentionMessage(message, isMe),
                               if (message.messageType == 'video')
@@ -1816,7 +2489,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                             height: 14,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: isMe ? Colors.black87 : Colors.yellow,
+                                              color: isMe ? Colors.black87 : const Color(0xFFFFFC00),
                                             ),
                                           ),
                                         )
@@ -1826,13 +2499,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                           padding: const EdgeInsets.all(10),
                                           decoration: BoxDecoration(
                                             color: isMe
-                                                ? Colors.black.withValues(alpha: 0.06)
-                                                : Colors.black.withValues(alpha: 0.3),
+                                                ? Colors.black.withValues(alpha: 0.08)
+                                                : const Color(0xFF131722),
                                             borderRadius: BorderRadius.circular(10),
                                             border: Border.all(
                                               color: isMe
-                                                  ? Colors.black.withValues(alpha: 0.1)
-                                                  : Colors.white.withValues(alpha: 0.05),
+                                                  ? Colors.black.withValues(alpha: 0.15)
+                                                  : const Color(0xFFFFFC00).withValues(alpha: 0.25),
                                             ),
                                           ),
                                           child: Column(
@@ -1842,14 +2515,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                                 children: [
                                                   Icon(
                                                     Icons.psychology,
-                                                    color: isMe ? Colors.black87 : Colors.yellow,
+                                                    color: isMe ? Colors.black87 : const Color(0xFFFFFC00),
                                                     size: 16,
                                                   ),
                                                   const SizedBox(width: 6),
                                                   Text(
                                                     'AI Tutor Feedback',
                                                     style: GoogleFonts.outfit(
-                                                      color: isMe ? Colors.black87 : Colors.white70,
+                                                      color: isMe ? Colors.black87 : const Color(0xFFFFFC00),
                                                       fontSize: 12,
                                                       fontWeight: FontWeight.bold,
                                                     ),
@@ -1860,7 +2533,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                               SelectableText(
                                                 _aiAnalyses[message.id]!,
                                                 style: GoogleFonts.outfit(
-                                                  color: isMe ? Colors.black87 : Colors.white70,
+                                                  color: isMe ? Colors.black87 : Colors.white,
                                                   fontSize: 13,
                                                   height: 1.35,
                                                 ),
@@ -2116,8 +2789,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
     final mainTextTheme = isMe ? Colors.black87 : Colors.white;
     final subTextTheme = isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.7);
-    final linkTheme = isMe ? Colors.black : Colors.yellow.withValues(alpha: 0.8);
-    final iconTheme = isMe ? Colors.black87 : Colors.yellow;
+    final linkTheme = isMe ? Colors.black : const Color(0xFFFFFC00).withValues(alpha: 0.9);
+    final iconTheme = isMe ? Colors.black87 : const Color(0xFFFFFC00);
 
     return GestureDetector(
       onTap: () {
@@ -2212,19 +2885,23 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Widget _buildGalleryMessage(Map<String, dynamic> galleryData, bool isMe) {
     final galleryItem = {
-      'gallery_id': galleryData['id'],
-      'gallery_title': galleryData['title'],
-      'gallery_description': galleryData['description'],
-      'gallery_image_url': galleryData['image_url'],
+      'gallery_id': galleryData['id'] ?? galleryData['gallery_id'],
+      'gallery_title': galleryData['title'] ?? galleryData['gallery_title'],
+      'gallery_description': galleryData['description'] ?? galleryData['gallery_description'],
+      'gallery_image_url': galleryData['image_url'] ?? galleryData['gallery_image_url'],
+      'gallery_price': galleryData['price'] ?? galleryData['gallery_price'],
+      'price': galleryData['price'] ?? galleryData['gallery_price'],
       'user_id': galleryData['user_id'],
-      'name': galleryData['user']?['profile'] is List &&
-              (galleryData['user']['profile'] as List).isNotEmpty
-          ? galleryData['user']['profile'][0]['name']
-          : 'User',
-      'profile_image_url': galleryData['user']?['profile'] is List &&
-              (galleryData['user']['profile'] as List).isNotEmpty
-          ? galleryData['user']['profile'][0]['profile_image_url']
-          : null,
+      'name': galleryData['name'] ??
+          (galleryData['user']?['profile'] is List &&
+                  (galleryData['user']['profile'] as List).isNotEmpty
+              ? galleryData['user']['profile'][0]['name']
+              : 'Poket Mate'),
+      'profile_image_url': galleryData['profile_image_url'] ??
+          (galleryData['user']?['profile'] is List &&
+                  (galleryData['user']['profile'] as List).isNotEmpty
+              ? galleryData['user']['profile'][0]['profile_image_url']
+              : null),
     };
 
     return GestureDetector(
@@ -2285,6 +2962,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         radius: 14,
                         backgroundColor: Colors.grey[800],
                         backgroundImage: () {
+                          if (galleryData['profile_image_url'] != null &&
+                              galleryData['profile_image_url'].toString().isNotEmpty) {
+                            return NetworkImage(galleryData['profile_image_url'].toString());
+                          }
                           final profileList = galleryData['user']?['profile'];
                           if (profileList is List && profileList.isNotEmpty) {
                             final url = profileList[0]['profile_image_url'];
@@ -2305,6 +2986,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         children: [
                           Text(
                             () {
+                              if (galleryData['name'] != null &&
+                                  galleryData['name'].toString().isNotEmpty) {
+                                return galleryData['name'].toString();
+                              }
                               final profileList =
                                   galleryData['user']?['profile'];
                               if (profileList is List &&
@@ -2314,7 +2999,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                   return name;
                                 }
                               }
-                              return 'Unknown';
+                              return 'Poket Mate';
                             }(),
                             style: const TextStyle(
                               color: Colors.white,
@@ -2323,9 +3008,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
-                          const Text(
-                            'Shared a gallery',
-                            style: TextStyle(
+                          Text(
+                            galleryData['price'] != null ? 'Marketplace Product' : 'Shared a gallery',
+                            style: const TextStyle(
                               color: Colors.white54,
                               fontSize: 10,
                             ),
@@ -2514,6 +3199,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       onTap: isBurned || url == null
           ? null
           : () {
+              HapticFeedback.lightImpact();
               SnapViewDialog.show(
                 context: context,
                 mediaUrl: url,
@@ -2617,10 +3303,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   Widget _buildDocumentMessage(ChatMessage message, bool isMe) {
     final url = message.fileUrl;
     final localPath = message.metadata?['local_path'];
-    final mainColor = isMe ? Colors.black87 : Colors.yellow;
+    final mainColor = isMe ? Colors.black87 : const Color(0xFFFFFC00);
     final subColor = isMe ? Colors.black54 : Colors.grey;
-    final borderColor = isMe ? Colors.black.withValues(alpha: 0.1) : Colors.yellow.withValues(alpha: 0.2);
-    final iconBgColor = isMe ? Colors.white.withValues(alpha: 0.4) : Colors.yellow.withValues(alpha: 0.2);
+    final borderColor = isMe ? Colors.black.withValues(alpha: 0.1) : const Color(0xFFFFFC00).withValues(alpha: 0.2);
+    final iconBgColor = isMe ? Colors.white.withValues(alpha: 0.4) : const Color(0xFFFFFC00).withValues(alpha: 0.2);
     
     return GestureDetector(
       onTap: () {
@@ -3119,35 +3805,35 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       alignment: Alignment.centerRight,
       padding: const EdgeInsets.only(right: 14, bottom: 4),
       child: Material(
-        color: const Color(0xFF14532D),
+        color: const Color(0xFF0F766E),
         borderRadius: BorderRadius.circular(12),
-        elevation: 2,
+        elevation: 3,
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
-          onTap: _isCorrectingText ? null : _correctTextWithAI,
+          onTap: _isCorrectingText ? null : _polishEnglishDraft,
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 5),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (_isCorrectingText)
                   const SizedBox(
-                    width: 11,
-                    height: 11,
+                    width: 12,
+                    height: 12,
                     child: CircularProgressIndicator(
                       strokeWidth: 1.5,
                       valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
                     ),
                   )
                 else
-                  const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 12),
+                  const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 14),
                 const SizedBox(width: 5),
                 Text(
-                  _isCorrectingText ? 'Checking...' : 'AI Correct ✨',
+                  _isCorrectingText ? 'Polishing...' : '✨ Polish My English',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
-                    fontSize: 11,
+                    fontSize: 11.5,
                   ),
                 ),
               ],
@@ -3183,6 +3869,137 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           style: TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold),
         ),
       );
+    }
+
+    if (widget.groupId.startsWith('p:')) {
+      if (_isOutgoingPendingRequest) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          decoration: const BoxDecoration(
+            color: Color(0xFF111A21),
+            border: Border(top: BorderSide(color: Colors.white12, width: 0.8)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.lock_clock_rounded,
+                        color: Color(0xFFFFFC00), size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Request Sent',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFFC00),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'You can send more messages once ${widget.groupName} accepts your request.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 12.5,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      if (_incomingPendingRequest != null) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+          decoration: const BoxDecoration(
+            color: Color(0xFF111A21),
+            border: Border(top: BorderSide(color: Colors.white12, width: 0.8)),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '${widget.groupName} sent you a message request',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Accept to reply and connect as mutual Poket Mates.',
+                  style: GoogleFonts.inter(
+                    color: Colors.white54,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: _declineIncomingRequest,
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Colors.white24),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                        ),
+                        child: Text(
+                          'Decline',
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _acceptIncomingRequest,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFFC00),
+                          foregroundColor: Colors.black,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                        ),
+                        child: Text(
+                          'Accept',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      }
     }
 
     return Container(
@@ -3244,6 +4061,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               iconSize: 20,
                               constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
                               padding: EdgeInsets.zero,
+                              tooltip: 'Attach file',
                               icon: const Icon(Icons.attach_file, color: Colors.white70),
                               onPressed: () => _showAttachmentBottomSheet(),
                             ),
@@ -3251,6 +4069,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                               iconSize: 20,
                               constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
                               padding: EdgeInsets.zero,
+                              tooltip: 'Send 24h Snap 🔥',
+                              icon: const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFF8A00)),
+                              onPressed: () => _pickAndSendSnap(),
+                            ),
+                            IconButton(
+                              iconSize: 20,
+                              constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
+                              padding: EdgeInsets.zero,
+                              tooltip: 'Take photo',
                               icon: const Icon(Icons.camera_alt, color: Colors.white70),
                               onPressed: () => _handleCameraAction(),
                             ),
@@ -3262,10 +4089,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                            mainAxisSize: MainAxisSize.min,
                            children: [
                              IconButton(
-                               iconSize: 18,
+                               iconSize: 20,
                                constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
                                padding: EdgeInsets.zero,
-                               tooltip: 'AI Correct Grammar ✨',
+                               tooltip: 'Polish My English ✨',
                                icon: _isCorrectingText
                                    ? const SizedBox(
                                        width: 14,
@@ -3275,8 +4102,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                                          color: Color(0xFFFFFC00),
                                        ),
                                      )
-                                   : const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 18),
-                               onPressed: _isCorrectingText ? null : _correctTextWithAI,
+                                   : const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 19),
+                               onPressed: _isCorrectingText ? null : _polishEnglishDraft,
                              ),
                              IconButton(
                                iconSize: 20,
@@ -3938,9 +4765,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     try {
       final image = await _imagePicker.pickImage(
         source: ImageSource.camera,
-        maxWidth: 1600,
-        maxHeight: 1600,
-        imageQuality: 85,
+        maxWidth: 1080,
+        maxHeight: 1920,
+        imageQuality: 80,
       );
       if (image == null) return;
 
@@ -3949,12 +4776,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
       // 1. Immediate optimistic send
       final messageId = await _sendMessage(
-        text: 'View Once Snap 🔥',
+        text: '🔥 24h Disappearing Snap',
         messageType: type,
         metadata: {
           'local_path': path,
           'is_burned': false,
           'view_once': true,
+          'disappearing_24h': true,
+          'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         },
       );
 
@@ -3964,7 +4793,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       safeSetState(() {
         _showEmojiPicker = false;
       });
-      _showSnackBar('Snap sent! 🔥 (Self-destructs after viewing)');
+      _showSnackBar('Snap sent! 🔥 (24h Disappearing)');
     } catch (e) {
       debugPrint('Error capturing snap: $e');
       _showErrorSnackBar('Error capturing snap: $e');
@@ -4444,7 +5273,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     }),
                     const SizedBox(height: 32),
 
-                    if (!widget.groupId.startsWith('p:')) ...[
+                    if (!widget.groupId.startsWith('p:') && !_isEnglishHub) ...[
                       // Exit Group Button
                       ListTile(
                         contentPadding: EdgeInsets.zero,
@@ -4909,7 +5738,7 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
     _scrollToBottom();
 
     try {
-      final systemInstruction = 'You are a friendly, encouraging, and expert English Tutor. The user is learning English. Explain concepts clearly, correct errors in their messages politely, and provide helpful examples. Format grammar explanations with bullet points. Keep answers engaging but clear.';
+      final systemInstruction = 'You are a friendly, encouraging, and expert English Tutor in the PoketMates app. The user is learning English. Note: The app name is PoketMates (or Poket Mates, never spelled with a "c"). Explain concepts clearly, correct errors in their messages politely, and provide helpful examples. Format grammar explanations with bullet points. Keep answers engaging but clear.';
       
       final buffer = StringBuffer();
       buffer.writeln(systemInstruction);
@@ -4948,17 +5777,17 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final accentColor = const Color(0xFFFFD600);
+    const accentColor = Color(0xFFFFFC00);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF121B22),
+      backgroundColor: const Color(0xFF0B0D13),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF121B22),
+        backgroundColor: const Color(0xFF0B0D13),
         elevation: 0,
         automaticallyImplyLeading: false,
         title: Row(
           children: [
-            const Icon(Icons.psychology_alt_rounded, color: Color(0xFFFFD600)),
+            const Icon(Icons.psychology_alt_rounded, color: Color(0xFFFFFC00)),
             const SizedBox(width: 10),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -5009,7 +5838,7 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
               ],
             ),
           ),
-          const Divider(color: Colors.white10, height: 1),
+          const Divider(color: Color(0xFF1E2430), height: 1),
           // Messages list
           Expanded(
             child: ListView.builder(
@@ -5024,15 +5853,16 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.symmetric(vertical: 4),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: const Color(0xFF131722),
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF1E2430)),
                       ),
                       child: const SizedBox(
                         width: 24,
                         height: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: Color(0xFFFFD600),
+                          color: Color(0xFFFFFC00),
                         ),
                       ),
                     ),
@@ -5051,12 +5881,17 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
                       maxWidth: MediaQuery.of(context).size.width * 0.75,
                     ),
                     decoration: BoxDecoration(
-                      color: isMe ? accentColor : Colors.white.withValues(alpha: 0.08),
+                      color: isMe ? accentColor : const Color(0xFF131722),
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(12),
                         topRight: const Radius.circular(12),
                         bottomLeft: isMe ? const Radius.circular(12) : Radius.zero,
                         bottomRight: isMe ? Radius.zero : const Radius.circular(12),
+                      ),
+                      border: Border.all(
+                        color: isMe
+                            ? Colors.transparent
+                            : const Color(0xFF1E2430),
                       ),
                     ),
                     child: Text(
@@ -5075,16 +5910,17 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: const BoxDecoration(
-              color: Color(0xFF070B0D),
-              border: Border(top: BorderSide(color: Colors.white10)),
+              color: Color(0xFF0B0D13),
+              border: Border(top: BorderSide(color: Color(0xFF1E2430))),
             ),
             child: Row(
               children: [
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF121B22),
+                      color: const Color(0xFF131722),
                       borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: const Color(0xFF1E2430)),
                     ),
                     child: TextField(
                       controller: _controller,
@@ -5102,7 +5938,7 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
                 GestureDetector(
                   onTap: () => _sendMessage(_controller.text),
                   child: const CircleAvatar(
-                    backgroundColor: Color(0xFFFFD600),
+                    backgroundColor: Color(0xFFFFFC00),
                     radius: 20,
                     child: Icon(Icons.send, color: Colors.black, size: 18),
                   ),
@@ -5118,8 +5954,11 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
   Widget _buildChip(String text) {
     return ActionChip(
       label: Text(text, style: GoogleFonts.outfit(fontSize: 12, color: Colors.white)),
-      backgroundColor: const Color(0xFF1F2C34),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      backgroundColor: const Color(0xFF131722),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: const BorderSide(color: Color(0xFF1E2430)),
+      ),
       onPressed: () => _sendMessage(text),
     );
   }

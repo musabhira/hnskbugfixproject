@@ -104,7 +104,7 @@ class _MessageListPageState extends State<MessageListPage> {
           'id': 'mock_mussab_conv',
           'user1_id': user.id,
           'user2_id': mussabUserId,
-          'last_message': 'Hi! Welcome to Pocket Mates. Tap here to chat with me instantly!',
+          'last_message': 'Hi! Welcome to Poket Mates. Tap here to chat with me instantly!',
           'last_message_time': DateTime.now().toIso8601String(),
           'unread_count': 0,
           'user1_profile': {

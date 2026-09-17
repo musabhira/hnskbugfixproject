@@ -26,20 +26,28 @@ class ContactsNameService {
         } catch (_) {}
       }
 
-      // Check permission and load contacts
-      final hasPerm = await FlutterContacts.permissions.request(PermissionType.read);
-      if (hasPerm == PermissionStatus.granted) {
-        final contacts = await FlutterContacts.getAll(properties: {ContactProperty.phone});
-        for (final c in contacts) {
-          final String? name = c.displayName;
-          if (name == null || name.isEmpty) continue;
-          for (final p in c.phones) {
-            final String numStr = p.number;
-            if (numStr.isEmpty) continue;
-            final clean = numStr.replaceAll(RegExp(r'[^\d]'), '');
-            if (clean.length >= 7) {
-              final last10 = clean.length > 10 ? clean.substring(clean.length - 10) : clean;
-              _phoneToContactName[last10] = name;
+      // Check permission and load contacts (Android / iOS only)
+      if (!kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS)) {
+        final hasPerm =
+            await FlutterContacts.permissions.request(PermissionType.read);
+        if (hasPerm == PermissionStatus.granted) {
+          final contacts =
+              await FlutterContacts.getAll(properties: {ContactProperty.phone});
+          for (final c in contacts) {
+            final String? name = c.displayName;
+            if (name == null || name.isEmpty) continue;
+            for (final p in c.phones) {
+              final String numStr = p.number;
+              if (numStr.isEmpty) continue;
+              final clean = numStr.replaceAll(RegExp(r'[^\d]'), '');
+              if (clean.length >= 7) {
+                final last10 = clean.length > 10
+                    ? clean.substring(clean.length - 10)
+                    : clean;
+                _phoneToContactName[last10] = name;
+              }
             }
           }
         }
@@ -62,7 +70,8 @@ class ContactsNameService {
     _userIdToContactName[userId] = contactName;
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('cached_contacts_name_map', jsonEncode(_userIdToContactName));
+      await prefs.setString(
+          'cached_contacts_name_map', jsonEncode(_userIdToContactName));
     } catch (_) {}
   }
 
@@ -73,7 +82,8 @@ class ContactsNameService {
       final phone = p['phone_no']?.toString() ?? p['phone']?.toString();
       if (uid != null && phone != null) {
         final clean = phone.replaceAll(RegExp(r'[^\d]'), '');
-        final last10 = clean.length > 10 ? clean.substring(clean.length - 10) : clean;
+        final last10 =
+            clean.length > 10 ? clean.substring(clean.length - 10) : clean;
         if (_phoneToContactName.containsKey(last10)) {
           final savedName = _phoneToContactName[last10]!;
           _userIdToContactName[uid] = savedName;
@@ -83,7 +93,8 @@ class ContactsNameService {
   }
 
   /// Get display name: returns saved phonebook contact name if matched, else fallback
-  String getDisplayName({required String userId, required String fallbackName}) {
+  String getDisplayName(
+      {required String userId, required String fallbackName}) {
     if (_userIdToContactName.containsKey(userId)) {
       final name = _userIdToContactName[userId];
       if (name != null && name.trim().isNotEmpty) {

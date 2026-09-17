@@ -1,4 +1,4 @@
-package com.mycompany.pocketmatesapp
+package com.poketmates.app
 
 import io.flutter.embedding.android.FlutterActivity
 

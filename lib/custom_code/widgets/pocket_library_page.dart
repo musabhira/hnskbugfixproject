@@ -375,7 +375,7 @@ There was nothing so very remarkable in that; nor did Alice think it so very muc
     BookItem(
       id: 'cosmos_curiosity',
       title: 'Voyage to the Stars & Black Holes',
-      author: 'Pocket Mates Science Desk',
+      author: 'Poket Mates Science Desk',
       category: 'Sci-Fi & Cosmos',
       coverColor: '#312E81',
       gradientColors: [const Color(0xFF1E1B4B), const Color(0xFF4338CA)],
@@ -433,7 +433,7 @@ It is impossible to say how first the idea entered my brain; but once conceived,
     BookItem(
       id: 'english_reader_business',
       title: 'English in Action: High-Stakes Pitch',
-      author: 'Pocket Mates Language Desk',
+      author: 'Poket Mates Language Desk',
       category: 'English Graded Readers',
       coverColor: '#0E7490',
       gradientColors: [const Color(0xFF164E63), const Color(0xFF0891B2)],
@@ -453,7 +453,7 @@ Now, let us examine our roadmap for the subsequent fiscal year. We are projectin
     BookItem(
       id: 'english_reader_travel',
       title: 'English in Action: The Global Traveler',
-      author: 'Pocket Mates Language Desk',
+      author: 'Poket Mates Language Desk',
       category: 'English Graded Readers',
       coverColor: '#059669',
       gradientColors: [const Color(0xFF065F46), const Color(0xFF10B981)],

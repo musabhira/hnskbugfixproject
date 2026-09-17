@@ -16,12 +16,12 @@ import 'package:image/image.dart' as img;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'dart:io' as io;
+import 'dart:math' as math;
 import 'package:video_player/video_player.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
@@ -37,7 +37,10 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
+import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
+import 'dart:async';
 
 class StatusDisplayWidget extends StatefulWidget {
   final String currentUserId;
@@ -46,6 +49,7 @@ class StatusDisplayWidget extends StatefulWidget {
   final double? height;
   final bool isVertical;
   final VoidCallback? onStatusUploaded;
+  final VoidCallback? onStatusWatched;
 
   final String searchQuery;
   final ValueNotifier<String>? filterNotifier;
@@ -58,6 +62,7 @@ class StatusDisplayWidget extends StatefulWidget {
     this.height,
     this.isVertical = false,
     this.onStatusUploaded,
+    this.onStatusWatched,
     this.searchQuery = '',
     this.filterNotifier,
   });
@@ -74,6 +79,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   List<Map<String, dynamic>> _publicStatuses = [];
   bool _isLoading = true;
   TabController? _tabController;
+  late final AnimationController _vibeAuraController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 3600),
+  )..repeat();
   String _vibesFilter = 'Public'; // Default to Public
   final Set<String> _seenGroupIds = {};
 
@@ -95,11 +104,21 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   Future<void> _markGroupAsSeen(String groupId) async {
     if (groupId.isEmpty) return;
     _seenGroupIds.add(groupId);
+    VibesSeenService.markSeen(
+      currentUserId: widget.currentUserId,
+      userId: groupId,
+      profileId: groupId,
+      groupId: groupId,
+    );
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList('seen_story_groups_${widget.currentUserId}', _seenGroupIds.toList());
     } catch (_) {}
-    if (mounted) setState(() {});
+    if (mounted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) setState(() {});
+      });
+    }
   }
 
   bool _isUuid(String id) {
@@ -119,7 +138,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('✨ Added robot to your Pocket Mates!'),
+              content: Text('✨ Added robot to your Poket Mates!'),
               backgroundColor: Color(0xFF10B981),
               behavior: SnackBarBehavior.floating,
             ),
@@ -196,6 +215,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
   @override
   void dispose() {
+    _vibeAuraController.dispose();
     _tabController?.dispose();
     widget.filterNotifier?.removeListener(_handleFilterChange);
     super.dispose();
@@ -333,19 +353,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         final bool isFollowing = followingIds.contains(profUserId) ||
             profUserId == widget.currentUserId;
 
-        // 1. Process as Personal Status (for Friends/Following and Public)
-        // Public shows EVERYONE
-        if (!publicGroups.containsKey(profileId)) {
-          publicGroups[profileId] = {
-            'profile': profile,
-            'statuses': [],
-            'is_own': profUserId == widget.currentUserId,
-            'is_group': false,
-          };
-        }
-        publicGroups[profileId]!['statuses'].add(status);
+        final rawMeta = status['metadata'];
+        final metadata = rawMeta is Map ? rawMeta : null;
+        final bool isPrivate = metadata != null && (metadata['is_private'] == true || metadata['is_private'] == 'true');
 
-        // Friends/Following shows only those followed
+        // 1. Friends/Following shows only those followed (and author's own)
         if (isFollowing) {
           if (!followingGroups.containsKey(profileId)) {
             followingGroups[profileId] = {
@@ -356,6 +368,19 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             };
           }
           followingGroups[profileId]!['statuses'].add(status);
+        }
+
+        // 2. Public Explore Vibes shows only public statuses
+        if (!isPrivate) {
+          if (!publicGroups.containsKey(profileId)) {
+            publicGroups[profileId] = {
+              'profile': profile,
+              'statuses': [],
+              'is_own': profUserId == widget.currentUserId,
+              'is_group': false,
+            };
+          }
+          publicGroups[profileId]!['statuses'].add(status);
         }
 
         // 2. Process as Community Mention (if applicable)
@@ -505,54 +530,86 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     }
   }
 
-  void _precacheAllStatuses() async {
+  void _precacheAllStatuses() {
+    // Lightly precache the first visible image thumbnails with bounded dimensions
+    int cachedCount = 0;
     for (var group in _statuses) {
-      final statuses = group['statuses'] as List;
-      // Cache the first few statuses of each user for instant load
-      for (var i = 0; i < statuses.length && i < 3; i++) {
-        final status = statuses[i];
-        final url = status['media_url'];
-        if (url != null &&
-            url is String &&
-            (url.startsWith('http://') || url.startsWith('https://'))) {
+      if (cachedCount >= 8) break;
+      final statuses = group['statuses'] as List?;
+      if (statuses != null && statuses.isNotEmpty) {
+        final firstStatus = statuses.first;
+        final url = firstStatus['media_url'];
+        if (url is String && firstStatus['media_type'] == 'image') {
           try {
-            // Download and cache file specifically
-            await DefaultCacheManager().downloadFile(url);
-
-            // Also standard precache for images
-            if (status['media_type'] == 'image') {
-              if (mounted) {
-                precacheImage(CachedNetworkImageProvider(url), context);
-              }
+            if (mounted) {
+              precacheImage(
+                CachedNetworkImageProvider(url, maxWidth: 300, maxHeight: 300),
+                context,
+              );
+              cachedCount++;
             }
-          } catch (e) {
-            debugPrint('Error caching file $url: $e');
-          }
+          } catch (_) {}
         }
       }
     }
   }
 
   void _openStatusViewer(int initialIndex, List<Map<String, dynamic>> list) {
-    if (initialIndex >= 0 && initialIndex < list.length) {
-      final grp = list[initialIndex];
-      final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
-      _markGroupAsSeen(gId);
-    }
+    if (list.isEmpty) return;
+    final safeIndex = initialIndex.clamp(0, list.length - 1);
+    final grp = list[safeIndex];
+    final statuses = grp['statuses'] as List?;
+    if (statuses == null || statuses.isEmpty) return;
+
+    HapticFeedback.lightImpact();
+
+    final profile = grp['profile'];
+    final pId = profile?['id']?.toString() ?? grp['id']?.toString() ?? '';
+    final uId = profile?['user_id']?.toString();
+    final sIds = statuses
+        .map((s) => s['id']?.toString() ?? '')
+        .where((id) => id.isNotEmpty)
+        .toList();
+
+    _markGroupAsSeen(pId);
+    if (uId != null && uId.isNotEmpty) _markGroupAsSeen(uId);
+
+    VibesSeenService.markSeen(
+      currentUserId: widget.currentUserId,
+      userId: uId,
+      profileId: pId,
+      groupId: grp['is_group'] == true ? pId : null,
+      statusIds: sIds,
+    );
+
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => StatusViewerWrapper(
+      PageRouteBuilder(
+        transitionDuration: const Duration(milliseconds: 220),
+        reverseTransitionDuration: const Duration(milliseconds: 200),
+        pageBuilder: (context, animation, secondaryAnimation) => StatusViewerWrapper(
           allStatusGroups: list,
-          initialGroupIndex: initialIndex,
+          initialGroupIndex: safeIndex,
           currentUserId: widget.currentUserId,
           currentProfileId: widget.currentProfileId,
           onGroupWatched: (groupId) {
-            _markGroupAsSeen(groupId);
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                _markGroupAsSeen(groupId);
+                widget.onStatusWatched?.call();
+              }
+            });
           },
         ),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            child: child,
+          );
+        },
       ),
     ).then((_) {
+      widget.onStatusWatched?.call();
       if (mounted) {
         _loadStatusesOptimized();
       }
@@ -568,15 +625,300 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       if (!isAuth) return;
     }
 
-    await PocketSnapService.launchSnapWorkflow(
-      context,
-      userId: widget.currentUserId,
-      profileId: widget.currentProfileId,
-      onUploaded: () {
-        _loadStatusesOptimized();
-        widget.onStatusUploaded?.call();
+    _showAddVibeBottomSheet();
+  }
+
+  void _showAddVibeBottomSheet() {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: const Color(0xFF10131D),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.1),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.7),
+                blurRadius: 28,
+                offset: const Offset(0, -6),
+              ),
+            ],
+          ),
+          padding: EdgeInsets.only(
+            left: 20,
+            right: 20,
+            top: 14,
+            bottom: MediaQuery.of(ctx).padding.bottom + 22,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Drag Handle
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4.5,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.add_photo_alternate_rounded, color: Color(0xFFFFFC00), size: 20),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Add to Vibes',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Share a photo, video or thought with mates',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white54,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white54),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              // Clean Instagram/Snapchat-style Story Creation Grid
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStoryOptionCard(
+                      icon: Icons.camera_alt_rounded,
+                      label: 'Camera',
+                      sublabel: 'Photo or clip',
+                      color: const Color(0xFFFFFC00),
+                      iconColor: Colors.black,
+                      bgGradient: const [Color(0xFF2A2610), Color(0xFF19170E)],
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        PocketSnapService.launchSnapWorkflow(
+                          context,
+                          userId: widget.currentUserId,
+                          profileId: widget.currentProfileId,
+                          onUploaded: () {
+                            _loadStatusesOptimized();
+                            widget.onStatusUploaded?.call();
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStoryOptionCard(
+                      icon: Icons.photo_library_rounded,
+                      label: 'Gallery',
+                      sublabel: 'From library',
+                      color: const Color(0xFFEC4899),
+                      iconColor: Colors.white,
+                      bgGradient: const [Color(0xFF2E1220), Color(0xFF1B0B13)],
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _pickImageForStory();
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStoryOptionCard(
+                      icon: Icons.text_fields_rounded,
+                      label: 'Text Story',
+                      sublabel: 'Color status',
+                      color: const Color(0xFF38BDF8),
+                      iconColor: Colors.white,
+                      bgGradient: const [Color(0xFF0F2236), Color(0xFF0B1420)],
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _navigateToStatusUpload(initialType: 'thought');
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildStoryOptionCard(
+                      icon: Icons.mic_rounded,
+                      label: 'Voice Vibe',
+                      sublabel: 'English / Audio',
+                      color: const Color(0xFF10B981),
+                      iconColor: Colors.white,
+                      bgGradient: const [Color(0xFF0C271E), Color(0xFF071813)],
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _navigateToStatusUpload(initialType: 'thought');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
       },
     );
+  }
+
+  Widget _buildStoryOptionCard({
+    required IconData icon,
+    required String label,
+    required String sublabel,
+    required Color color,
+    required Color iconColor,
+    required List<Color> bgGradient,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: bgGradient,
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: color.withValues(alpha: 0.35),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: iconColor, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    sublabel,
+                    style: GoogleFonts.inter(
+                      color: Colors.white60,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  Future<void> _pickImageForStory() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? image = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 95,
+      );
+
+      if (image != null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SnapchatStoryCreatorPage(
+              userId: widget.currentUserId,
+              profileId: widget.currentProfileId,
+              initialFile: image,
+              initialMediaType: 'image',
+              onStatusUploaded: () {
+                _loadStatusesOptimized();
+                widget.onStatusUploaded?.call();
+              },
+            ),
+          ),
+        ).then((res) {
+          if (res == true && mounted) {
+            _loadStatusesOptimized();
+            widget.onStatusUploaded?.call();
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking image for story: $e');
+    }
+  }
+
+  void _navigateToStatusUpload({String? initialType}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => StatusUploadWidget(
+          userId: widget.currentUserId,
+          profileId: widget.currentProfileId,
+          initialPicker: initialType,
+        ),
+      ),
+    ).then((res) {
+      if (res == true && mounted) {
+        _loadStatusesOptimized();
+        widget.onStatusUploaded?.call();
+      }
+    });
   }
 
   @override
@@ -641,8 +983,6 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     );
   }
 
-
-
   List<dynamic> _getCombinedHorizontalStatuses() {
     bool isWatched(dynamic item) {
       if (item is! Map<String, dynamic>) return false;
@@ -657,7 +997,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     final seenFollowing = _followingStatuses.where((s) => s['is_own'] != true && isWatched(s)).toList();
     final followingSorted = [...own, ...unseenFollowing, ...seenFollowing];
 
-    // Partition Public (excluding following): Unseen Public first -> Seen Public at the end
+    // Explore Public Vibes: Unseen first -> Seen at the end
     final publicRemaining = _publicStatuses.where((p) => 
       !_followingStatuses.any((f) => f['profile']?['id'] == p['profile']?['id'])
     ).toList();
@@ -665,20 +1005,30 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     final seenPublic = publicRemaining.where((p) => isWatched(p)).toList();
     final publicSorted = [...unseenPublic, ...seenPublic];
 
-    if (followingSorted.isEmpty) return publicSorted;
     if (publicSorted.isEmpty) return followingSorted;
+    if (followingSorted.isEmpty) return publicSorted;
 
     return [...followingSorted, 'DIVIDER', ...publicSorted];
   }
 
   Widget _buildMiniDivider() {
-    return Container(
-      width: 1.0,
-      height: 26,
-      margin: const EdgeInsets.symmetric(horizontal: 6, vertical: 22),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.16),
-        borderRadius: BorderRadius.circular(1),
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
+        width: 2,
+        height: 44,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(2),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withValues(alpha: 0.05),
+              const Color(0xFFFFFC00).withValues(alpha: 0.5),
+              Colors.white.withValues(alpha: 0.05),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -830,7 +1180,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         if (item is String && item == 'DIVIDER') {
            return RepaintBoundary(
              key: const ValueKey('vertical_vibes_divider'),
-             child: _buildVerticalSectionHeader('Explore Vibes'),
+             child: _buildVerticalSectionHeader('Explore Public Vibes 🌐'),
            );
         }
 
@@ -873,6 +1223,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     final thumbnailUrl = lastStatus['thumbnail_url'];
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => _openStatusViewer(index, list),
       child: Container(
         decoration: BoxDecoration(
@@ -1138,30 +1489,27 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         child: Column(
           children: [
             Container(
-              width: 72,
-              height: 72,
+              width: 70,
+              height: 70,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
-                    color: const Color(0xFFFFFC00).withValues(alpha: 0.6), width: 1.8),
-                color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
-                    blurRadius: 8,
-                  )
-                ],
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.85),
+                  width: 1.6,
+                ),
+                color: const Color(0xFF141824),
               ),
-              child:
-                  const Icon(Icons.add_rounded, size: 32, color: Color(0xFFFFFC00)),
+              child: const Center(
+                child: Icon(Icons.add_rounded, size: 30, color: Color(0xFFFFFC00)),
+              ),
             ),
             const SizedBox(height: 5),
             Text(
               'Add Vibe',
               style: GoogleFonts.outfit(
                 color: Colors.white.withValues(alpha: 0.85),
-                fontSize: 12.5,
-                fontWeight: FontWeight.w600,
+                fontSize: 12.0,
+                fontWeight: FontWeight.w500,
               ),
             ),
           ],
@@ -1227,6 +1575,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   vibePreviewUrl: vibePreviewUrl,
                   avatarConfigMap: avatarConfigMap,
                   profile: profile,
+                  onTap: () => _openStatusViewer(index, activeList),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1274,6 +1623,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     }
 
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => _openStatusViewer(index, activeList),
       child: Container(
         width: 80,
@@ -1289,6 +1639,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               vibePreviewUrl: vibePreviewUrl,
               avatarConfigMap: avatarConfigMap,
               profile: profile,
+              onTap: () => _openStatusViewer(index, activeList),
             ),
             const SizedBox(height: 4),
             Text(isOwn ? 'My Vibes' : name,
@@ -1314,23 +1665,41 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     String? vibePreviewUrl,
     Map<String, dynamic>? avatarConfigMap,
     Map<String, dynamic>? profile,
+    VoidCallback? onTap,
   }) {
-    final hasVibePreview = vibePreviewUrl != null && vibePreviewUrl.isNotEmpty;
-    final displayUrl = hasVibePreview ? vibePreviewUrl : url;
+    final profileId = profile != null
+        ? (profile['id']?.toString() ?? profile['user_id']?.toString() ?? '')
+        : '';
 
     VectorAvatarConfig avatarConfig = const VectorAvatarConfig();
-    if (avatarConfigMap != null) {
+
+    // 1. If it's a Pocket Robot, always use their exact dynamic looped level evolution avatar
+    if (PocketRobotService.isRobotId(profileId)) {
+      final robot = PocketRobotService.getRobotById(profileId) ??
+          PocketRobotService.getRobotByLevel(1);
+      final dynLvl = PocketRobotService.getDynamicLevel(robot);
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(dynLvl);
+    } else if (avatarConfigMap != null) {
       try {
-        avatarConfig = VectorAvatarConfig.fromMap(avatarConfigMap);
-      } catch (_) {}
+        final stage = avatarConfigMap['stage'] ??
+            avatarConfigMap['learning_day'] ??
+            avatarConfigMap['day'] ??
+            avatarConfigMap['level'];
+        if (stage != null && stage is num && stage > 0) {
+          avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.toInt());
+        } else {
+          avatarConfig = VectorAvatarConfig.fromMap(avatarConfigMap);
+        }
+      } catch (_) {
+        avatarConfig = const VectorAvatarConfig();
+      }
     } else {
-      final profileId = profile != null ? (profile['id']?.toString() ?? '') : '';
       int stage = 1;
-      if (PocketRobotService.isRobotId(profileId)) {
-        final robot = PocketRobotService.getRobotById(profileId) ?? PocketRobotService.getRobotByLevel(1);
-        stage = PocketRobotService.getDynamicLevel(robot);
-      } else if (profile != null) {
-        final st = profile['learning_day'] ?? profile['learning_stage'] ?? profile['stage'];
+      if (profile != null) {
+        final st = profile['learning_day'] ??
+            profile['learning_stage'] ??
+            profile['stage'] ??
+            profile['level'];
         if (st is num && st > 0) {
           stage = st.toInt();
         } else {
@@ -1342,73 +1711,109 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
     }
 
-    return Container(
-      width: size,
-      height: size,
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        gradient: isWatched
-            ? const LinearGradient(
-                colors: [Color(0xFF475569), Color(0xFF334155)], // Dimmed sleek slate gray for viewed
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : isGroup
-                ? const LinearGradient(
-                    colors: [
-                      Color(0xFF833AB4), // Purple
-                      Color(0xFFF77737), // Orange
-                      Color(0xFFFCAF45), // Yellow
-                    ],
-                    begin: Alignment.topRight,
-                    end: Alignment.bottomLeft,
-                  )
-                : const LinearGradient(
-                    colors: [
-                      Color(0xFFFFFC00), // Vibrant Yellow
-                      Color(0xFFFF8906), // Vivid Orange
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
+    final Widget avatarInner = Container(
+      padding: const EdgeInsets.all(2),
+      decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
+      child: ClipOval(
+        child: isGroup
+            ? Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
                   ),
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(2),
-        decoration:
-            const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
-        child: ClipOval(
-          child: displayUrl != null
-              ? CachedNetworkImage(
-                  imageUrl: displayUrl,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) =>
-                      Container(color: Colors.black),
-                  errorWidget: (context, url, error) =>
-                      VectorAvatarWidget(config: avatarConfig, size: size * 0.8),
-                )
-              : isGroup
-                  ? Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.groups_rounded,
-                          color: Colors.white,
-                          size: size * 0.5,
-                        ),
-                      ),
-                    )
-                  : VectorAvatarWidget(
-                      config: avatarConfig,
-                      size: size * 0.8,
-                    ),
-        ),
+                ),
+                child: Center(
+                  child: Icon(
+                    Icons.groups_rounded,
+                    color: Colors.white,
+                    size: size * 0.5,
+                  ),
+                ),
+              )
+            : IgnorePointer(
+                ignoring: true,
+                child: VectorAvatarWidget(
+                  config: avatarConfig,
+                  size: size * 0.85,
+                  showAura: true,
+                  useFlame: true,
+                ),
+              ),
       ),
     );
+
+    Widget ringWidget;
+    if (isWatched) {
+      ringWidget = Container(
+        width: size,
+        height: size,
+        padding: const EdgeInsets.all(2.5),
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [Color(0xFF475569), Color(0xFF334155)], // Dimmed sleek slate gray for viewed
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
+        child: avatarInner,
+      );
+    } else {
+      ringWidget = AnimatedBuilder(
+        animation: _vibeAuraController,
+        builder: (context, child) {
+          final animVal = _vibeAuraController.value;
+          final pulse = math.sin(animVal * 2 * math.pi);
+          return Container(
+            width: size,
+            height: size,
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: (isGroup ? const Color(0xFF833AB4) : const Color(0xFFFF8906))
+                      .withValues(alpha: (0.28 + 0.18 * pulse).clamp(0.0, 1.0)),
+                  blurRadius: 7 + 4 * pulse,
+                  spreadRadius: 0.8 + 0.8 * pulse,
+                ),
+              ],
+              gradient: isGroup
+                  ? SweepGradient(
+                      colors: const [
+                        Color(0xFF833AB4), // Purple
+                        Color(0xFFF77737), // Orange
+                        Color(0xFFFCAF45), // Yellow
+                        Color(0xFFE1306C), // Magenta
+                        Color(0xFF833AB4), // Purple loop
+                      ],
+                      transform: GradientRotation(animVal * 2 * math.pi),
+                    )
+                  : SweepGradient(
+                      colors: const [
+                        Color(0xFFFFFC00), // Vibrant Yellow
+                        Color(0xFFFF8906), // Vivid Orange
+                        Color(0xFFFF2E93), // Neon Pink/Rose
+                        Color(0xFFFFFC00), // Yellow loop
+                      ],
+                      transform: GradientRotation(animVal * 2 * math.pi),
+                    ),
+            ),
+            child: child,
+          );
+        },
+        child: avatarInner,
+      );
+    }
+
+    if (onTap != null) {
+      return GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onTap,
+        child: ringWidget,
+      );
+    }
+    return ringWidget;
   }
 }
 
@@ -1447,7 +1852,14 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
     if (_currentGroupIndex >= 0 && _currentGroupIndex < widget.allStatusGroups.length) {
       final grp = widget.allStatusGroups[_currentGroupIndex];
       final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
-      widget.onGroupWatched?.call(gId);
+      final uId = grp['profile']?['user_id']?.toString();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        widget.onGroupWatched?.call(gId);
+        if (uId != null && uId.isNotEmpty && uId != gId) {
+          widget.onGroupWatched?.call(uId);
+        }
+      });
     }
     _checkVipStatus();
     _preloadAdjacentGroups();
@@ -1510,7 +1922,11 @@ class _StatusViewerWrapperState extends State<StatusViewerWrapper> {
       });
       final grp = widget.allStatusGroups[_currentGroupIndex];
       final gId = grp['profile']?['id']?.toString() ?? grp['id']?.toString() ?? '';
+      final uId = grp['profile']?['user_id']?.toString();
       widget.onGroupWatched?.call(gId);
+      if (uId != null && uId.isNotEmpty && uId != gId) {
+        widget.onGroupWatched?.call(uId);
+      }
       _preloadAdjacentGroups();
     } else {
       Navigator.pop(context);
@@ -1603,9 +2019,94 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   List<Map<String, dynamic>> _currentViewers = [];
   bool _isLiked = false;
   int _likeCount = 0;
+  bool _isAuthorMate = true;
+  bool _isMateRequestSent = false;
 
   final TextEditingController _replyController = TextEditingController();
   final FocusNode _replyFocusNode = FocusNode();
+
+  final List<_VibeReactionBurst> _reactionBursts = [];
+
+  void _spawnFloatingReaction(String emoji) {
+    HapticFeedback.mediumImpact();
+    final randomX = 0.15 + (math.Random().nextDouble() * 0.7);
+    final burst = _VibeReactionBurst(
+      id: UniqueKey().toString(),
+      emoji: emoji,
+      normalizedX: randomX,
+    );
+    if (mounted) {
+      setState(() {
+        _reactionBursts.add(burst);
+      });
+    }
+    Future.delayed(const Duration(milliseconds: 1400), () {
+      if (mounted) {
+        setState(() {
+          _reactionBursts.removeWhere((b) => b.id == burst.id);
+        });
+      }
+    });
+  }
+
+  void _onTapQuickReaction(String emoji) {
+    _spawnFloatingReaction(emoji);
+    _replyController.text = emoji;
+    _sendReply();
+  }
+
+  Future<void> _checkMateStatus() async {
+    final statuses = widget.statusGroup['statuses'] as List;
+    if (_currentIndex < statuses.length) {
+      final status = statuses[_currentIndex];
+      final authorUserId = status['user_id']?.toString() ?? widget.statusGroup['profile']?['user_id']?.toString() ?? '';
+      if (authorUserId.isNotEmpty && authorUserId != widget.currentUserId) {
+        final isMate = await PocketMateService.isMate(widget.currentUserId, authorUserId);
+        final prefs = await SharedPreferences.getInstance();
+        final sentList = prefs.getStringList('sent_mate_requests_${widget.currentUserId}') ?? [];
+        if (mounted) {
+          setState(() {
+            _isAuthorMate = isMate;
+            _isMateRequestSent = sentList.contains(authorUserId);
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _isAuthorMate = true;
+          });
+        }
+      }
+    }
+  }
+
+  Future<void> _sendAddMateFromStatus() async {
+    final statuses = widget.statusGroup['statuses'] as List;
+    if (_currentIndex >= statuses.length) return;
+    final status = statuses[_currentIndex];
+    final authorUserId = status['user_id']?.toString() ?? widget.statusGroup['profile']?['user_id']?.toString() ?? '';
+    if (authorUserId.isEmpty || authorUserId == widget.currentUserId) return;
+
+    final name = status['profile']?['name'] ?? widget.statusGroup['profile']?['name'] ?? 'Mate';
+    setState(() => _isMateRequestSent = true);
+
+    await PocketMateService.sendMateRequest(
+      senderId: widget.currentUserId,
+      receiverId: authorUserId,
+      contextType: 'vibe_public',
+      message: 'Saw your Vibe and wants to connect as your Pocket Mate!',
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Friend request sent to $name! 🌟'),
+          backgroundColor: const Color(0xFFFFFC00),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   @override
   void initState() {
@@ -1629,7 +2130,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       if (mounted) setState(() {});
     });
 
-    _checkAndDeleteExpiredStatuses();
     _initializeViewer();
   }
 
@@ -1641,7 +2141,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   Future<void> _saveWatchProgress() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final targetProfileId = widget.statusGroup['profile']['id'];
+      final targetProfileId = widget.statusGroup['profile']?['id']?.toString() ??
+          widget.statusGroup['id']?.toString() ??
+          '';
+      if (targetProfileId.isEmpty) return;
       final key = 'status_progress_${widget.currentUserId}_$targetProfileId';
       await prefs.setInt(key, _currentIndex);
     } catch (e) {
@@ -1652,15 +2155,20 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   Future<void> _loadWatchProgress() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final targetProfileId = widget.statusGroup['profile']['id'];
+      final targetProfileId = widget.statusGroup['profile']?['id']?.toString() ??
+          widget.statusGroup['id']?.toString() ??
+          '';
+      if (targetProfileId.isEmpty) return;
       final key = 'status_progress_${widget.currentUserId}_$targetProfileId';
       final savedIndex = prefs.getInt(key);
       if (savedIndex != null) {
-        final statuses = widget.statusGroup['statuses'] as List;
-        if (savedIndex < statuses.length) {
-          setState(() {
-            _currentIndex = savedIndex;
-          });
+        final statuses = widget.statusGroup['statuses'] as List?;
+        if (statuses != null && savedIndex < statuses.length) {
+          if (mounted) {
+            setState(() {
+              _currentIndex = savedIndex;
+            });
+          }
         }
       }
     } catch (e) {
@@ -1789,6 +2297,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       _replyController.clear();
       _replyFocusNode.unfocus();
 
+      final areMates = await PocketMateService.isMate(widget.currentUserId, receiverId);
+
       await supabase.from('messages').insert({
         'sender_id': widget.currentUserId,
         'receiver_id': receiverId,
@@ -1800,8 +2310,19 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           'status_media_type': status['media_type'],
           'reply_type': 'status_reply',
           'status_caption': status['caption'],
+          'is_request': !areMates,
         }
       });
+
+      if (!areMates) {
+        await PocketMateService.sendMateRequest(
+          senderId: widget.currentUserId,
+          receiverId: receiverId,
+          contextType: 'vibe_reply',
+          message: 'Replied to your Vibe: "$originalText"',
+        );
+        setState(() => _isMateRequestSent = true);
+      }
 
       if (mounted) {
         if (_isPaused) _togglePause();
@@ -1809,25 +2330,31 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         final statuses = widget.statusGroup['statuses'] as List;
         final currentStatus = statuses[_currentIndex];
         final profile = currentStatus['profile'] ?? widget.statusGroup;
+        final authorName = profile?['name'] ?? 'User';
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Reply sent!'),
+          SnackBar(
+            content: Text(areMates
+                ? 'Reply sent to $authorName!'
+                : 'Reply & Mate Request sent to $authorName!'),
             backgroundColor: Colors.green,
-            duration: Duration(seconds: 1),
+            duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
           ),
         );
 
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => WhatsAppGroupChat(
-              groupId: 'p:$receiverId',
-              groupName: profile?['name'] ?? 'User',
-              groupImage: profile?['profile_image_url'],
+        if (areMates) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => WhatsAppGroupChat(
+                groupId: 'p:$receiverId',
+                groupName: authorName,
+                groupImage: profile?['profile_image_url'],
+              ),
             ),
-          ),
-        );
+          );
+        }
       }
     } catch (e) {
       debugPrint('Error sending status reply: $e');
@@ -1861,29 +2388,20 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       _isCurrentVideoReady = false;
 
       if (status['media_type'] == 'video') {
-        try {
-          // Play from cache if possible
-          final file =
-              await DefaultCacheManager().getSingleFile(status['media_url']);
-          _currentVideoController = VideoPlayerController.file(file);
-
-          await _currentVideoController!.initialize();
-          if (mounted) {
-            setState(() {
-              _isCurrentVideoReady = true;
-            });
-          }
-        } catch (e) {
-          debugPrint('Video play error: $e');
-          // Fallback to network if cache fails
-          _currentVideoController = VideoPlayerController.networkUrl(
-            Uri.parse(status['media_url']),
-          );
+        final videoUrl = status['media_url']?.toString() ?? '';
+        if (videoUrl.isNotEmpty) {
           try {
+            _currentVideoController = VideoPlayerController.networkUrl(
+              Uri.parse(videoUrl),
+            );
             await _currentVideoController!.initialize();
-            if (mounted) setState(() => _isCurrentVideoReady = true);
-          } catch (e2) {
-            debugPrint('Video fallback error: $e2');
+            if (mounted) {
+              setState(() {
+                _isCurrentVideoReady = true;
+              });
+            }
+          } catch (e) {
+            debugPrint('Video stream error: $e');
           }
         }
       }
@@ -1905,9 +2423,12 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     _progressController.addListener(_onProgressUpdate);
 
-    await _markStatusAsViewed(status['id']);
-    await _loadViewCount(status['id']);
-    await _loadLikeStatus(status['id']);
+    unawaited(Future.wait([
+      _markStatusAsViewed(status['id']),
+      _loadViewCount(status['id']),
+      _loadLikeStatus(status['id']),
+      _checkMateStatus(),
+    ]));
 
     // Preload next status
     _preloadNextStatus();
@@ -1924,24 +2445,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     if (_currentIndex + 1 < statuses.length) {
       final nextStatus = statuses[_currentIndex + 1];
       if (nextStatus['media_type'] == 'video') {
-        try {
-          final file = await DefaultCacheManager()
-              .getSingleFile(nextStatus['media_url']);
-          _preloadedVideoController = VideoPlayerController.file(file);
-
-          await _preloadedVideoController!.initialize();
-          _isPreloadedVideoReady = true;
-          debugPrint('Next video preloaded from cache successfully');
-        } catch (e) {
-          debugPrint('Error preloading next video: $e');
-          // Fallback
-          _preloadedVideoController = VideoPlayerController.networkUrl(
-            Uri.parse(nextStatus['media_url']),
-          );
+        final nextVideoUrl = nextStatus['media_url']?.toString() ?? '';
+        if (nextVideoUrl.isNotEmpty) {
           try {
+            _preloadedVideoController = VideoPlayerController.networkUrl(
+              Uri.parse(nextVideoUrl),
+            );
             await _preloadedVideoController!.initialize();
             _isPreloadedVideoReady = true;
-          } catch (e2) {
+          } catch (e) {
+            debugPrint('Error preloading next video: $e');
             _isPreloadedVideoReady = false;
           }
         }
@@ -1969,38 +2482,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     }
   }
 
-  Future<void> _checkAndDeleteExpiredStatuses() async {
-    try {
-      final now = DateTime.now().toIso8601String();
-
-      final expiredStatuses = await supabase
-          .from('statuses')
-          .select('id, media_url, profile_id')
-          .lt('expires_at', now)
-          .eq('is_active', true);
-
-      for (var status in expiredStatuses) {
-        try {
-          final statusId = status['id'];
-          final mediaUrl = status['media_url'];
-          final profileId = status['profile_id'];
-
-          if (mediaUrl != null && mediaUrl.toString().isNotEmpty) {
-            final fileName = mediaUrl.split('/').last;
-            final filePath = '$profileId/$fileName';
-            await supabase.storage.from('statuses').remove([filePath]);
-          }
-          await supabase.from('statuses').delete().eq('id', statusId);
-
-          debugPrint('Auto-deleted expired status: $statusId');
-        } catch (e) {
-          debugPrint('Error deleting expired status: $e');
-        }
-      }
-    } catch (e) {
-      debugPrint('Error checking expired statuses: $e');
-    }
-  }
 
   void _onVideoProgress() {
     if (_currentVideoController != null &&
@@ -2503,6 +2984,49 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
+                                  if (!isOwnStatus && !_isAuthorMate) ...[
+                                    const SizedBox(width: 8),
+                                    GestureDetector(
+                                      onTap: _isMateRequestSent ? null : _sendAddMateFromStatus,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: _isMateRequestSent
+                                              ? Colors.white.withValues(alpha: 0.18)
+                                              : const Color(0xFFFFFC00),
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              _isMateRequestSent
+                                                  ? Icons.check
+                                                  : Icons.person_add_rounded,
+                                              size: 11,
+                                              color: _isMateRequestSent
+                                                  ? Colors.white70
+                                                  : Colors.black,
+                                            ),
+                                            const SizedBox(width: 3),
+                                            Text(
+                                              _isMateRequestSent
+                                                  ? 'Requested'
+                                                  : 'Add Mate',
+                                              style: TextStyle(
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.bold,
+                                                color: _isMateRequestSent
+                                                  ? Colors.white70
+                                                  : Colors.black,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                   const SizedBox(width: 8),
                                   Text(
                                     _getTimeAgo(currentStatus['created_at']),
@@ -2512,6 +3036,48 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                       fontSize: 14,
                                       fontWeight: FontWeight.w500,
                                     ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Builder(
+                                    builder: (context) {
+                                      final rawMeta = currentStatus['metadata'];
+                                      final meta = rawMeta is Map ? rawMeta : null;
+                                      final bool isPriv = meta != null && (meta['is_private'] == true || meta['is_private'] == 'true');
+                                      return Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: isPriv
+                                              ? const Color(0xFF38BDF8).withValues(alpha: 0.2)
+                                              : const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: isPriv
+                                                ? const Color(0xFF38BDF8).withValues(alpha: 0.5)
+                                                : const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                                            width: 0.8,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(
+                                              isPriv ? Icons.lock_outline_rounded : Icons.public_rounded,
+                                              size: 10,
+                                              color: isPriv ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00),
+                                            ),
+                                            const SizedBox(width: 3),
+                                            Text(
+                                              isPriv ? 'Mates' : 'Public',
+                                              style: TextStyle(
+                                                color: isPriv ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00),
+                                                fontSize: 9.5,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ],
                               ),
@@ -2624,6 +3190,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               ),
             ),
 
+            // Floating Reaction Bursts
+            ..._reactionBursts.map(
+                (b) => _AnimatedFloatingReactionItem(key: ValueKey(b.id), burst: b)),
+
             // Caption
             if (currentStatus['caption'] != null &&
                 currentStatus['caption'].toString().isNotEmpty &&
@@ -2631,22 +3201,79 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 currentStatus['media_type'] != 'thought' &&
                 currentStatus['media_type'] != 'tool')
               Positioned(
-                bottom: 30,
+                bottom: MediaQuery.of(context).padding.bottom +
+                    (!isOwnStatus ? 116 : 72),
                 left: 16,
                 right: 16,
                 child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    borderRadius: BorderRadius.circular(12),
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.22,
                   ),
-                  child: Text(
-                    currentStatus['caption'],
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 15,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.68),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.12),
+                      width: 0.8,
                     ),
-                    textAlign: TextAlign.center,
+                  ),
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Text(
+                      currentStatus['caption'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w500,
+                        height: 1.3,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+
+            // Quick Floating Reaction Bar (Vibes / Stories Quick Emoji Reactions)
+            if (!isOwnStatus)
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 68,
+                left: 14,
+                right: 14,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        width: 0.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: ['🔥', '❤️', '😂', '👏', '😮', '💯'].map((emoji) {
+                        return InkWell(
+                          onTap: () => _onTapQuickReaction(emoji),
+                          borderRadius: BorderRadius.circular(16),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                            child: Text(
+                              emoji,
+                              style: const TextStyle(fontSize: 21),
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
                 ),
               ),
@@ -3843,6 +4470,79 @@ Widget _buildMentionTag(String name, IconData icon, {bool isUnderName = false}) 
   );
 }
 
+class _VibeReactionBurst {
+  final String id;
+  final String emoji;
+  final double normalizedX;
+
+  _VibeReactionBurst({
+    required this.id,
+    required this.emoji,
+    required this.normalizedX,
+  });
+}
+
+class _AnimatedFloatingReactionItem extends StatefulWidget {
+  final _VibeReactionBurst burst;
+  const _AnimatedFloatingReactionItem({super.key, required this.burst});
+
+  @override
+  State<_AnimatedFloatingReactionItem> createState() =>
+      _AnimatedFloatingReactionItemState();
+}
+
+class _AnimatedFloatingReactionItemState
+    extends State<_AnimatedFloatingReactionItem>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _anim;
+
+  @override
+  void initState() {
+    super.initState();
+    _anim = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..forward();
+  }
+
+  @override
+  void dispose() {
+    _anim.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final leftPos = widget.burst.normalizedX * (size.width - 60);
+
+    return AnimatedBuilder(
+      animation: _anim,
+      builder: (context, child) {
+        final progress = _anim.value;
+        final dy = (1.0 - progress) * (size.height * 0.45) + (size.height * 0.35);
+        final opacity = (1.0 - (progress * 1.1)).clamp(0.0, 1.0);
+        final scale = 0.8 + (math.sin(progress * math.pi) * 0.7);
+
+        return Positioned(
+          left: leftPos,
+          top: dy,
+          child: Opacity(
+            opacity: opacity,
+            child: Transform.scale(
+              scale: scale,
+              child: Text(
+                widget.burst.emoji,
+                style: const TextStyle(fontSize: 40),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class StatusUploadWidget extends StatefulWidget {
   final String userId;
   final String profileId;
@@ -3850,6 +4550,7 @@ class StatusUploadWidget extends StatefulWidget {
   final String? sharedContentType; // 'text' or 'gallery' (image url)
   final String? sharedContentId; // gallery_id
   final Map<String, dynamic>? sharedMetadata;
+  final String? initialPicker;
 
   const StatusUploadWidget({
     super.key,
@@ -3859,6 +4560,7 @@ class StatusUploadWidget extends StatefulWidget {
     this.sharedContentType,
     this.sharedContentId,
     this.sharedMetadata,
+    this.initialPicker,
   });
 
   @override
@@ -3888,6 +4590,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   Map<String, dynamic>? _localSharedMetadata;
   XFile? _localPickedFile;
   String? _localPickedMediaType;
+  bool _isPrivateStory = true; // Default to Pocket Mates Only (private)
 
   @override
   void initState() {
@@ -3901,6 +4604,39 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
           widget.sharedContentType == 'course') {
         _captionController.text = widget.sharedContent!;
       }
+    }
+
+    if (widget.initialPicker != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        switch (widget.initialPicker) {
+          case 'thought':
+            _showThoughtPicker();
+            break;
+          case 'gallery':
+            _showGalleryPicker();
+            break;
+          case 'tool':
+            _showToolPicker();
+            break;
+          case 'course':
+            _showCoursePicker();
+            break;
+          case 'video':
+            _pickVideo();
+            break;
+          case 'text':
+            setState(() {
+              _localSharedContent = 'Type something...';
+              _localSharedContentType = 'text';
+              _isSharingMode = true;
+            });
+            break;
+          case 'elearning':
+            _showElearningRequest();
+            break;
+        }
+      });
     }
   }
 
@@ -4756,6 +5492,56 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
           ),
         ),
         Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 4.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isPrivateStory = !_isPrivateStory;
+                  });
+                  HapticFeedback.lightImpact();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: _isPrivateStory
+                        ? const Color(0xFF38BDF8).withValues(alpha: 0.16)
+                        : const Color(0xFFFFFC00).withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: _isPrivateStory
+                          ? const Color(0xFF38BDF8)
+                          : const Color(0xFFFFFC00),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        _isPrivateStory ? Icons.lock_outline_rounded : Icons.public_rounded,
+                        color: _isPrivateStory ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00),
+                        size: 14,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _isPrivateStory ? 'Poket Mates (Private) 🔒' : 'Public Vibe 🌟',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20.0),
           child: InkWell(
             onTap: _showMentionSelection,
@@ -5276,6 +6062,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'caption': _captionController.text.trim().isEmpty
             ? null
             : _captionController.text.trim(),
+        'metadata': {'is_private': _isPrivateStory},
         'duration': duration,
         'expires_at':
             DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
@@ -5359,6 +6146,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
 
       final finalMetadata = <String, dynamic>{
         if (metadata != null) ...metadata,
+        'is_private': _isPrivateStory,
         if (contentId != null &&
             contentId.isNotEmpty &&
             type != 'thought' &&
@@ -5706,18 +6494,19 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 24),
+        padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 40, color: color),
-            const SizedBox(height: 12),
+            Icon(icon, size: 28, color: color),
+            const SizedBox(height: 6),
             Text(label,
-                style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: color, fontWeight: FontWeight.w600, fontSize: 11)),
           ],
         ),
       ),

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 
 part 'whats_app_groups_provider.g.dart';
 
@@ -29,6 +30,7 @@ class ChatConversation {
   final String? sourceId;
   final String? notificationStatus;
   final bool hasStatus;
+  final bool hasUnwatchedStatus;
   final List<Map<String, dynamic>>? statusData;
   final bool isTool;
   final String? toolTitle;
@@ -59,6 +61,7 @@ class ChatConversation {
     this.sourceId,
     this.notificationStatus,
     this.hasStatus = false,
+    this.hasUnwatchedStatus = false,
     this.statusData,
     this.isTool = false,
     this.toolTitle,
@@ -117,6 +120,7 @@ class ChatConversation {
     required String currentUserId,
     required Map<String, dynamic>? otherProfile,
     bool hasStatus = false,
+    bool hasUnwatchedStatus = false,
     List<Map<String, dynamic>>? statusData,
     bool isPinned = false,
   }) {
@@ -144,6 +148,7 @@ class ChatConversation {
       isGroup: false,
       lastSenderId: json['last_sender_id'] as String?,
       hasStatus: hasStatus,
+      hasUnwatchedStatus: hasUnwatchedStatus,
       statusData: statusData,
       isPinned: isPinned,
     );
@@ -184,6 +189,7 @@ class ChatConversation {
       'sourceId': sourceId,
       'notificationStatus': notificationStatus,
       'hasStatus': hasStatus,
+      'hasUnwatchedStatus': hasUnwatchedStatus,
       'statusData': statusData,
       'isTool': isTool,
       'toolTitle': toolTitle,
@@ -215,6 +221,7 @@ class ChatConversation {
       sourceId: json['sourceId'],
       notificationStatus: json['notificationStatus'],
       hasStatus: json['hasStatus'] ?? false,
+      hasUnwatchedStatus: json['hasUnwatchedStatus'] ?? false,
       statusData: json['statusData'] != null
           ? (json['statusData'] as List)
               .map((e) => Map<String, dynamic>.from(e))
@@ -388,6 +395,80 @@ class Conversations extends _$Conversations {
     });
   }
 
+  /// Immediately fetches and updates conversations state without debounce delay
+  Future<void> refreshNow() async {
+    _debounceTimer?.cancel();
+    final userId = ref.read(currentUserIdProvider);
+    if (userId.isEmpty) return;
+
+    try {
+      final profileId = await ref.read(currentProfileIdProvider.future);
+      final fresh = await _fetchConversations(userId, profileId);
+      state = AsyncValue.data(fresh);
+    } catch (e) {
+      debugPrint('Error in refreshNow conversations: $e');
+    }
+  }
+
+  /// Instantly updates the conversation tile in-memory when a message is sent or received
+  void updateLastMessage({
+    required String conversationId,
+    required String message,
+    required DateTime time,
+    required String senderId,
+  }) {
+    state.whenData((conversations) {
+      final updatedList = conversations.map((c) {
+        if (c.id == conversationId) {
+          return ChatConversation(
+            id: c.id,
+            name: c.name,
+            imageUrl: c.imageUrl,
+            lastMessage: message,
+            lastMessageTime: time,
+            unreadCount: (senderId == c.id) ? (c.unreadCount + 1) : 0,
+            otherUnreadCount: (senderId != c.id) ? 1 : 0,
+            isGroup: c.isGroup,
+            lastSenderId: senderId,
+            isOnline: c.isOnline,
+            lastSeen: c.lastSeen,
+            isNotification: c.isNotification,
+            notificationType: c.notificationType,
+            sourceId: c.sourceId,
+            notificationStatus: c.notificationStatus,
+            hasStatus: c.hasStatus,
+            statusData: c.statusData,
+            isTool: c.isTool,
+            toolTitle: c.toolTitle,
+            isPinned: c.isPinned,
+            isActiveTimer: c.isActiveTimer,
+            taskTitle: c.taskTitle,
+            teamName: c.teamName,
+            timerStartTime: c.timerStartTime,
+            teamData: c.teamData,
+            avatarConfig: c.avatarConfig,
+            snapMediaUrl: c.snapMediaUrl,
+            snapCaption: c.snapCaption,
+          );
+        }
+        return c;
+      }).toList();
+
+      updatedList.sort((a, b) {
+        if (a.isPinned && !b.isPinned) return -1;
+        if (!a.isPinned && b.isPinned) return 1;
+        final aTime = a.lastMessageTime;
+        final bTime = b.lastMessageTime;
+        if (aTime == null && bTime == null) return 0;
+        if (aTime == null) return 1;
+        if (bTime == null) return -1;
+        return bTime.compareTo(aTime);
+      });
+
+      state = AsyncValue.data(updatedList);
+    });
+  }
+
   Future<List<ChatConversation>> _fetchConversations(
       String userId, String? profileId) async {
     try {
@@ -467,6 +548,7 @@ class Conversations extends _$Conversations {
           notificationType: c.notificationType,
           sourceId: c.sourceId,
           hasStatus: c.hasStatus,
+          hasUnwatchedStatus: c.hasUnwatchedStatus,
           statusData: c.statusData,
           isTool: c.isTool,
           toolTitle: c.toolTitle,
@@ -490,6 +572,7 @@ class Conversations extends _$Conversations {
           notificationType: c.notificationType,
           sourceId: c.sourceId,
           hasStatus: c.hasStatus,
+          hasUnwatchedStatus: c.hasUnwatchedStatus,
           statusData: c.statusData,
           isTool: c.isTool,
           toolTitle: c.toolTitle,
@@ -537,6 +620,13 @@ class Conversations extends _$Conversations {
 
             final robotVibes = await PocketRobotService.getActiveRobotVibes(robot.id);
             final hasStatus = robotVibes.isNotEmpty;
+            final isSeen = hasStatus && VibesSeenService.isWatched(
+              currentUserId: userId,
+              userId: robot.id,
+              profileId: robot.id,
+              statuses: robotVibes,
+            );
+            final hasUnwatchedStatus = hasStatus && !isSeen;
 
             updatedPersonal.add(ChatConversation(
               id: robot.id,
@@ -552,6 +642,7 @@ class Conversations extends _$Conversations {
               isOnline: true,
               isPinned: pinnedIds.contains(robot.id),
               hasStatus: hasStatus,
+              hasUnwatchedStatus: hasUnwatchedStatus,
               statusData: hasStatus ? robotVibes : null,
             ));
           }
@@ -681,6 +772,13 @@ class Conversations extends _$Conversations {
         final unreadCount =
             await _getGroupUnreadCountOnly(gId, userId, lastReadTime);
         final statusList = statusMap[gId] ?? [];
+        final hasStatus = statusList.isNotEmpty;
+        final isSeen = hasStatus && VibesSeenService.isWatched(
+          currentUserId: userId,
+          groupId: gId,
+          statuses: statusList,
+        );
+        final hasUnwatchedStatus = hasStatus && !isSeen;
 
         return ChatConversation(
           id: gId,
@@ -692,7 +790,8 @@ class Conversations extends _$Conversations {
               : null,
           unreadCount: unreadCount,
           isGroup: true,
-          hasStatus: statusList.isNotEmpty,
+          hasStatus: hasStatus,
+          hasUnwatchedStatus: hasUnwatchedStatus,
           statusData: statusList,
         );
       }).toList();
@@ -701,7 +800,16 @@ class Conversations extends _$Conversations {
           await Future.wait(conversationFutures);
       return conversations
           .whereType<ChatConversation>()
-          .where((c) => c.name.toLowerCase() != 'english learning group' && c.name.toLowerCase() != 'english learning')
+          .where((c) {
+            final n = c.name.toLowerCase();
+            // Completely hide ALL English Hub groups from regular Chat tiles
+            if (n.contains('english hub') ||
+                n.contains('english learning') ||
+                n.contains('english practice')) {
+              return false;
+            }
+            return true;
+          })
           .toList();
     } catch (e) {
       rethrow;
@@ -812,12 +920,21 @@ class Conversations extends _$Conversations {
 
         final userStatusData =
             otherProfileId != null ? statusMap[otherProfileId] : null;
+        final hasStatus = userStatusData?.isNotEmpty ?? false;
+        final isSeen = hasStatus && VibesSeenService.isWatched(
+          currentUserId: userId,
+          userId: otherUserId,
+          profileId: otherProfileId,
+          statuses: userStatusData,
+        );
+        final hasUnwatchedStatus = hasStatus && !isSeen;
 
         chats.add(ChatConversation.fromPersonalJson(
           Map<String, dynamic>.from(item),
           currentUserId: userId,
           otherProfile: otherProfile,
-          hasStatus: userStatusData?.isNotEmpty ?? false,
+          hasStatus: hasStatus,
+          hasUnwatchedStatus: hasUnwatchedStatus,
           statusData: userStatusData,
         ));
       }
@@ -871,7 +988,41 @@ class Conversations extends _$Conversations {
       final userId = ref.read(currentUserIdProvider);
       if (userId.isEmpty) return;
 
-      if (isGroup) {
+      // Optimistically update memory state so unread badge disappears instantly
+      state.whenData((currentList) {
+        final updatedList = currentList.map((c) {
+          if (c.id == conversationId) {
+            return ChatConversation(
+              id: c.id,
+              name: c.name,
+              imageUrl: c.imageUrl,
+              lastMessage: c.lastMessage,
+              lastMessageTime: c.lastMessageTime,
+              unreadCount: 0, // Reset badge immediately
+              isGroup: c.isGroup,
+              lastSenderId: c.lastSenderId,
+              isOnline: c.isOnline,
+              lastSeen: c.lastSeen,
+              isNotification: c.isNotification,
+              notificationType: c.notificationType,
+              sourceId: c.sourceId,
+              hasStatus: c.hasStatus,
+              statusData: c.statusData,
+              isTool: c.isTool,
+              toolTitle: c.toolTitle,
+              isPinned: c.isPinned,
+              snapMediaUrl: c.snapMediaUrl,
+              snapCaption: c.snapCaption,
+            );
+          }
+          return c;
+        }).toList();
+        state = AsyncValue.data(updatedList);
+      });
+
+      if (PocketRobotService.isRobotId(conversationId)) {
+        await PocketRobotService.markRobotChatAsRead(userId, conversationId);
+      } else if (isGroup) {
         await _supabase
             .from('group_members')
             .update({'last_read_at': DateTime.now().toIso8601String()})
@@ -879,7 +1030,6 @@ class Conversations extends _$Conversations {
             .eq('user_id', userId);
       } else {
         // conversationId here is the other user's ID
-        // We need to find the specific conversation between the two users
         await _supabase.from('conversations').update({'unread_count': 0}).or(
             'and(user1_id.eq.$userId,user2_id.eq.$conversationId),and(user1_id.eq.$conversationId,user2_id.eq.$userId)');
       }

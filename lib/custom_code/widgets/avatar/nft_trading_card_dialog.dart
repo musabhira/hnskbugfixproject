@@ -88,6 +88,10 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
   }
 
   Color _getRarityColor() {
+    if (widget.config.species == 'cyber_cat' ||
+        widget.config.rarityTier.toLowerCase().contains('cyber cat')) {
+      return const Color(0xFFEC4899); // Tokyo Neon Cyberpunk Pink
+    }
     final tier = widget.config.rarityTier.toLowerCase();
     if (tier.contains('mythic')) return const Color(0xFF00E5FF);
     if (tier.contains('legendary')) return const Color(0xFFFFD700);
@@ -281,15 +285,21 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
                               const Color(0xFF0D3268),
                               const Color(0xFF020B24)
                             ]
-                          : [
-                              rarityColor.withValues(alpha: 0.25),
-                              const Color(0xFF161F33),
-                            ],
+                          : (widget.config.species == 'cyber_cat'
+                              ? [
+                                  const Color(0xFF1E1B4B),
+                                  const Color(0xFF0F172A),
+                                  const Color(0xFF0B0F19),
+                                ]
+                              : [
+                                  rarityColor.withValues(alpha: 0.25),
+                                  const Color(0xFF161F33),
+                                ]),
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
                     border: Border.all(
-                      color: rarityColor.withValues(alpha: 0.4),
+                      color: rarityColor.withValues(alpha: 0.5),
                       width: 1.4,
                     ),
                   ),
@@ -299,7 +309,7 @@ class _NftTradingCardDialogState extends State<NftTradingCardDialog>
                       child: VectorAvatarWidget(
                         config: widget.config,
                         size: 155,
-                        showAura: false,
+                        showAura: true,
                       ),
                     ),
                   ),

@@ -764,8 +764,8 @@ class _ShareContentScreenState extends State<ShareContentScreen> {
       await file.writeAsBytes(pngBytes);
       
       final text = widget.contentType == 'thought' 
-          ? "Check out this thought on PocketMates!" 
-          : "Check out this tool on PocketMates!";
+          ? "Check out this thought on PoketMates!" 
+          : "Check out this tool on PoketMates!";
       
       await SharePlus.instance.share(
         ShareParams(

@@ -16,25 +16,17 @@ import '/custom_code/widgets/dynamic_web_view_page.dart';
 import '/custom_code/widgets/password_generator_page.dart';
 import '/custom_code/widgets/share_content_screen.dart';
 import '/custom_code/widgets/crazy_games_page.dart';
-import '/custom_code/widgets/test_feature_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:math';
-import '/custom_code/widgets/drawing_academy_home_page.dart';
 import '/custom_code/widgets/ai_prompt_service.dart';
 import '/custom_code/widgets/dual_video_recorder.dart';
-import '/custom_code/widgets/courses_widget.dart';
-import '/custom_code/widgets/english_learning_hub_page.dart';
 import '/custom_code/widgets/learning_60day/english_tasks_master_hub.dart';
 import '/custom_code/widgets/pocket_library_page.dart';
 import '/custom_code/widgets/voice_accent_coach_page.dart';
-import '/custom_code/widgets/business_pos_page.dart';
 import '/custom_code/widgets/subscription_page.dart';
 import '/custom_code/widgets/social_media_downloader_page.dart';
 import '/custom_code/widgets/daily_media_tools_page.dart';
-
-import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_login_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_ai_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_network_explorer_page.dart';
@@ -103,14 +95,17 @@ class DoodleBackgroundPainter extends CustomPainter {
       final angle = (i * 4 * pi / 5) - (pi / 2);
       final x = cx + radius * cos(angle);
       final y = cy + radius * sin(angle);
-      if (i == 0) path.moveTo(x, y);
-      else path.lineTo(x, y);
+      if (i == 0)
+        path.moveTo(x, y);
+      else
+        path.lineTo(x, y);
     }
     path.close();
     canvas.drawPath(path, p);
   }
 
-  void _drawSpeechBubble(Canvas canvas, double cx, double cy, double w, double h, Paint p) {
+  void _drawSpeechBubble(
+      Canvas canvas, double cx, double cy, double w, double h, Paint p) {
     final rect = RRect.fromRectAndRadius(
       Rect.fromCenter(center: Offset(cx, cy), width: w, height: h),
       const Radius.circular(5),
@@ -123,7 +118,8 @@ class DoodleBackgroundPainter extends CustomPainter {
     canvas.drawPath(tail, p);
   }
 
-  void _drawGamepad(Canvas canvas, double cx, double cy, double w, double h, Paint p) {
+  void _drawGamepad(
+      Canvas canvas, double cx, double cy, double w, double h, Paint p) {
     final rect = RRect.fromRectAndRadius(
       Rect.fromCenter(center: Offset(cx, cy), width: w, height: h),
       const Radius.circular(7),
@@ -334,18 +330,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Future<void> _loadFavoritedTools() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = SupaFlow.client.auth.currentUser?.id ?? '';
-    final favoritedToolsJson =
-        prefs.getString('favorited_tools_$userId');
+    final favoritedToolsJson = prefs.getString('favorited_tools_$userId');
     if (favoritedToolsJson != null) {
       final favoritedToolsList = jsonDecode(favoritedToolsJson) as List;
-      final titles = favoritedToolsList.map((e) => e['title'] as String).toList();
+      final titles =
+          favoritedToolsList.map((e) => e['title'] as String).toList();
       if (!titles.contains('English Learning Tasks')) {
         titles.insert(0, 'English Learning Tasks');
         favoritedToolsList.insert(0, {
           'title': 'English Learning Tasks',
           'timeAdded': DateTime.now().toIso8601String(),
         });
-        await prefs.setString('favorited_tools_$userId', jsonEncode(favoritedToolsList));
+        await prefs.setString(
+            'favorited_tools_$userId', jsonEncode(favoritedToolsList));
       }
       setState(() {
         _favoritedTools = titles;
@@ -356,7 +353,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         _favoritedTools = ['English Learning Tasks'];
       });
       final defaultList = [
-        {'title': 'English Learning Tasks', 'timeAdded': DateTime.now().toIso8601String()}
+        {
+          'title': 'English Learning Tasks',
+          'timeAdded': DateTime.now().toIso8601String()
+        }
       ];
       await prefs.setString('favorited_tools_$userId', jsonEncode(defaultList));
     }
@@ -1310,10 +1310,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           auraStyle: 'sunset_orange',
           hairStyle: 'classic_side',
         ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const PocketLibraryPage())),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const PocketLibraryPage())),
       },
       {
         'title': 'AI Voice & Accent Coach',
@@ -1397,7 +1395,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'icon': Icons.download_for_offline_rounded,
         'category': 'Social',
         'color': const Color(0xFFE1306C),
-        'gradient': [const Color(0xFF833AB4), const Color(0xFFFD1D1D), const Color(0xFFFCB045)],
+        'gradient': [
+          const Color(0xFF833AB4),
+          const Color(0xFFFD1D1D),
+          const Color(0xFFFCB045)
+        ],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'tech_hoodie',
           auraStyle: 'cyber_synthwave',
@@ -1634,10 +1636,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           hairStyle: 'undercut',
           faceShape: 'sharp',
         ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const DiagramListScreen())),
+        'onTap': () => Navigator.push(context,
+            MaterialPageRoute(builder: (context) => const DiagramListScreen())),
       },
       {
         'title': 'Teams',
@@ -1658,149 +1658,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 builder: (context) => const TeamsDedicatedPage())),
       },
       {
-        'title': 'Zoyarex POS Admin',
-        'subtitle': 'Admin Control Panel',
-        'icon': Icons.admin_panel_settings_rounded,
-        'category': 'Business',
-        'color': const Color(0xFF2563EB),
-        'gradient': [const Color(0xFF1E40AF), const Color(0xFF3B82F6)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'executive_blazer',
-          auraStyle: 'royal_gold',
-          hairStyle: 'afro_fade',
-          faceShape: 'square',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
-      },
-      {
-        'title': 'Zoyarex AI',
-        'subtitle': 'AI Assistant for Zoyarex',
-        'icon': Icons.smart_toy_rounded,
-        'category': 'AI & Tech',
-        'color': const Color(0xFF6366F1),
-        'gradient': [const Color(0xFF4F46E5), const Color(0xFF818CF8)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'astronaut_suit',
-          auraStyle: 'cyber_synthwave',
-          hairStyle: 'anime_spiky',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ZoyarexAiPage())),
-      },
-      {
-        'title': 'Zoyarex Super Admin',
-        'subtitle': 'Super Admin Console',
-        'icon': Icons.manage_accounts_rounded,
-        'category': 'System',
-        'color': const Color(0xFF9333EA),
-        'gradient': [const Color(0xFF7E22CE), const Color(0xFFA855F7)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'executive_blazer',
-          auraStyle: 'royal_gold',
-          hairStyle: 'buzz_cut',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const ZoyarexLoginPage())),
-      },
-      {
-        'title': 'Dynamic Web App',
-        'subtitle': 'Any URL In-App',
-        'icon': Icons.public_rounded,
-        'category': 'Browser',
-        'color': const Color(0xFF0284C7),
-        'gradient': [const Color(0xFF0369A1), const Color(0xFF38BDF8)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'electric_aqua',
-          hairStyle: 'side_part',
-          faceShape: 'oval',
-        ),
-        'onTap': () => _showDynamicWebAppDialog(),
-      },
-      {
-        'title': 'WhatsApp Web',
-        'subtitle': 'Chat on Desktop',
-        'icon': Icons.chat_rounded,
-        'category': 'Messaging',
-        'color': const Color(0xFF22C55E),
-        'gradient': [const Color(0xFF16A34A), const Color(0xFF4ADE80)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'matrix_green',
-          hairStyle: 'buzz_cut',
-          faceShape: 'round',
-        ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const DynamicWebViewPage(
-                      title: 'WhatsApp Web',
-                      url: 'https://web.whatsapp.com',
-                    ))),
-      },
-      {
-        'title': 'Web Search',
-        'subtitle': 'Search the Internet',
-        'icon': Icons.travel_explore_rounded,
-        'category': 'Explore',
-        'color': const Color(0xFFEAB308),
-        'gradient': [const Color(0xFFCA8A04), const Color(0xFFFACC15)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'detective_trench',
-          auraStyle: 'pocket_gold',
-          hairStyle: 'curly_top',
-          faceShape: 'oval',
-        ),
-        'onTap': () => setState(() => _isWebSearchMode = true),
-      },
-      {
-        'title': 'QR & Barcode',
-        'subtitle': 'Scan & Generate',
-        'icon': Icons.qr_code_scanner_rounded,
-        'category': 'Utility',
-        'color': const Color(0xFF64748B),
-        'gradient': [const Color(0xFF475569), const Color(0xFF94A3B8)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'electric_aqua',
-          hairStyle: 'undercut',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => _showQRCodeSimulation(),
-      },
-      {
         'title': 'World Clock',
-        'subtitle': 'Global Times',
-        'icon': Icons.schedule_rounded,
-        'category': 'Utility',
-        'color': const Color(0xFFF97316),
-        'gradient': [const Color(0xFFEA580C), const Color(0xFFFB923C)],
+        'subtitle': 'Global Timezones & Clocks',
+        'icon': Icons.public_rounded,
+        'category': 'Utilities',
+        'color': const Color(0xFFFFFC00),
+        'gradient': [const Color(0xFFFFFC00), const Color(0xFFFF8906)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'executive_blazer',
           auraStyle: 'royal_gold',
-          hairStyle: 'ponytail',
-          faceShape: 'round',
+          hairStyle: 'side_part',
+          faceShape: 'sharp',
         ),
         'onTap': () => _showWorldClockSimulation(),
-      },
-      {
-        'title': 'Test Feature',
-        'subtitle': 'System Diagnostic',
-        'icon': Icons.bug_report_rounded,
-        'category': 'Developer',
-        'color': const Color(0xFFE11D48),
-        'gradient': [const Color(0xFFBE123C), const Color(0xFFFB7185)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'pixel_arcade',
-          hairStyle: 'anime_spiky',
-          faceShape: 'round',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const TestFeaturePage())),
       },
     ];
 
@@ -1829,7 +1699,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
       // 2. Platform Visibility Check
       final config = _globalToolConfigs[title] ??
-          {'android_active': true, 'ios_active': true, 'windows_active': true, 'web_active': true};
+          {
+            'android_active': true,
+            'ios_active': true,
+            'windows_active': true,
+            'web_active': true
+          };
       final androidActive = config['android_active'] ?? true;
       final iosActive = config['ios_active'] ?? true;
       final windowsActive = config['windows_active'] ?? true;
@@ -1851,11 +1726,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       final isBlocked = _restrictedTools.contains(title);
       final hasPrivateAccess = _allowedPrivateTools.contains(title);
 
-      // Force Admin Panel, Zoyarex POS and Super Admin to require private access
+      // Force Admin Panel to require private access
       if (title == 'Admin Panel') {
-        publicVisible = false;
-      }
-      if (title == 'Zoyarex POS Admin' || title == 'Zoyarex Super Admin') {
         publicVisible = false;
       }
 
@@ -1869,281 +1741,352 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-        backgroundColor: Colors.transparent,
-        resizeToAvoidBottomInset: false,
-        body: Stack(
-          children: [
-            SafeArea(
-              bottom: false,
-              child: RefreshIndicator(
-                onRefresh: () async {
-                  await _loadToolPermissions();
-                  await _loadData();
-                },
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  child: Column(
-                    children: [
-                      const SizedBox(height: 12),
-                      if (filteredTools.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Icon(Icons.search_off_rounded,
-                                    size: 48,
-                                    color: FlutterFlowTheme.of(context).secondaryText.withValues(alpha: 0.5)),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'No tools found for "$effectiveSearchQuery"',
-                                  style: GoogleFonts.outfit(
-                                    color: FlutterFlowTheme.of(context).secondaryText,
-                                    fontSize: 15,
-                                  ),
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: false,
+      body: Stack(
+        children: [
+          SafeArea(
+            bottom: false,
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await _loadToolPermissions();
+                await _loadData();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 12),
+                    if (filteredTools.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 40),
+                        child: Center(
+                          child: Column(
+                            children: [
+                              Icon(Icons.search_off_rounded,
+                                  size: 48,
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText
+                                      .withValues(alpha: 0.5)),
+                              const SizedBox(height: 12),
+                              Text(
+                                'No tools found for "$effectiveSearchQuery"',
+                                style: GoogleFonts.outfit(
+                                  color: FlutterFlowTheme.of(context)
+                                      .secondaryText,
+                                  fontSize: 15,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 32.0),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final width = constraints.maxWidth;
-                            final int cols = width >= 1200
-                                ? 7
-                                : (width >= 960
-                                    ? 6
-                                    : (width >= 750
-                                        ? 5
-                                        : (width >= 540
-                                            ? 3
-                                            : 2)));
-                            final double childAspectRatio = cols >= 5
-                                ? 0.95
-                                : (cols >= 4 ? 0.90 : (cols >= 3 ? 0.86 : 1.05));
-
-                            return GridView.builder(
-                              shrinkWrap: true,
-                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: cols,
-                                crossAxisSpacing: 10,
-                                mainAxisSpacing: 10,
-                                childAspectRatio: childAspectRatio,
-                              ),
-                              itemCount: filteredTools.length,
-                              itemBuilder: (context, index) {
-                                final tool = filteredTools[index];
-                                final isFav = _favoritedTools.contains(tool['title']);
-                                final category = tool['category'] as String? ?? 'Tool';
-                                final isDark = Theme.of(context).brightness == Brightness.dark;
-                                final toolColor = tool['color'] as Color? ?? const Color(0xFFFFFC00);
-                                final title = tool['title'] as String;
-                                final subtitle = tool['subtitle'] as String? ?? category;
-
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF131B26).withValues(alpha: 0.9)
-                                        : Colors.white,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
-                                      color: isFav
-                                          ? const Color(0xFFFFFC00).withValues(alpha: 0.8)
-                                          : (isDark
-                                              ? Colors.white.withValues(alpha: 0.08)
-                                              : Colors.black.withValues(alpha: 0.06)),
-                                      width: isFav ? 1.5 : 0.8,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                                        blurRadius: 6,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: tool['onTap'] as VoidCallback,
-                                      borderRadius: BorderRadius.circular(14),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            // Top Frame / Icon Preview Area
-                                            Container(
-                                              height: cols <= 2 ? 52 : 38,
-                                              decoration: BoxDecoration(
-                                                color: isDark
-                                                    ? toolColor.withValues(alpha: 0.12)
-                                                    : toolColor.withValues(alpha: 0.08),
-                                                borderRadius: BorderRadius.circular(10),
-                                                border: Border.all(
-                                                  color: toolColor.withValues(alpha: 0.22),
-                                                  width: 0.8,
-                                                ),
-                                              ),
-                                              child: Stack(
-                                                children: [
-                                                  Center(
-                                                    child: Icon(
-                                                      tool['icon'] as IconData,
-                                                      color: toolColor,
-                                                      size: cols <= 2 ? 26 : 20,
-                                                    ),
-                                                  ),
-                                                  // Top-right Favorite Button
-                                                  Positioned(
-                                                    top: 2,
-                                                    right: 2,
-                                                    child: GestureDetector(
-                                                      onTap: () => _toggleFavoriteTool(title),
-                                                      behavior: HitTestBehavior.opaque,
-                                                      child: Container(
-                                                        padding: const EdgeInsets.all(4),
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.black.withValues(alpha: 0.35),
-                                                          shape: BoxShape.circle,
-                                                        ),
-                                                        child: Icon(
-                                                          isFav ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                                          size: cols <= 2 ? 12 : 10,
-                                                          color: isFav ? Colors.redAccent : Colors.white70,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                  // Top-left Share Button
-                                                  Positioned(
-                                                    top: 2,
-                                                    left: 2,
-                                                    child: GestureDetector(
-                                                      onTap: () {
-                                                        final userId = SupaFlow.client.auth.currentUser?.id;
-                                                        if (userId != null) {
-                                                          Navigator.push(
-                                                            context,
-                                                            MaterialPageRoute(
-                                                              builder: (context) => ShareContentScreen(
-                                                                contentToShare: "Check out this $title tool on Pocket Mates!",
-                                                                currentUserId: userId,
-                                                                contentType: 'tool',
-                                                                metadata: {
-                                                                  'title': title,
-                                                                  'description': subtitle,
-                                                                  'category': 'Tools',
-                                                                },
-                                                              ),
-                                                            ),
-                                                          );
-                                                        }
-                                                      },
-                                                      behavior: HitTestBehavior.opaque,
-                                                      child: Container(
-                                                        padding: const EdgeInsets.all(4),
-                                                        decoration: BoxDecoration(
-                                                          color: Colors.black.withValues(alpha: 0.35),
-                                                          shape: BoxShape.circle,
-                                                        ),
-                                                        child: Icon(
-                                                          Icons.share_outlined,
-                                                          size: cols <= 2 ? 12 : 10,
-                                                          color: Colors.white70,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-
-                                            // Title & Subtitle
-                                            Padding(
-                                              padding: const EdgeInsets.symmetric(horizontal: 2),
-                                              child: Column(
-                                                crossAxisAlignment: CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    title,
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: GoogleFonts.outfit(
-                                                      color: FlutterFlowTheme.of(context).primaryText,
-                                                      fontSize: cols <= 2 ? 13 : 11,
-                                                      fontWeight: FontWeight.w700,
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    subtitle,
-                                                    maxLines: 1,
-                                                    overflow: TextOverflow.ellipsis,
-                                                    style: GoogleFonts.inter(
-                                                      color: FlutterFlowTheme.of(context).secondaryText,
-                                                      fontSize: cols <= 2 ? 10.5 : 8.5,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-
-                                            // Compact Pill Action Button
-                                            Container(
-                                              height: cols <= 2 ? 26 : 22,
-                                              decoration: BoxDecoration(
-                                                color: isDark
-                                                    ? const Color(0xFF1E2638)
-                                                    : const Color(0xFF2B1B4D),
-                                                borderRadius: BorderRadius.circular(10),
-                                              ),
-                                              alignment: Alignment.center,
-                                              child: Row(
-                                                mainAxisAlignment: MainAxisAlignment.center,
-                                                children: [
-                                                  Text(
-                                                    'OPEN',
-                                                    style: GoogleFonts.outfit(
-                                                      fontSize: cols <= 2 ? 10.5 : 9,
-                                                      fontWeight: FontWeight.w800,
-                                                      letterSpacing: 0.5,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                  const SizedBox(width: 3),
-                                                  Icon(
-                                                    Icons.arrow_forward_rounded,
-                                                    size: cols <= 2 ? 11 : 9,
-                                                    color: Colors.white,
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            );
-                          },
-                        ),
                       ),
-                    ],
-                  ),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 32.0),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final width = constraints.maxWidth;
+                          final int cols = width >= 1200
+                              ? 7
+                              : (width >= 960
+                                  ? 6
+                                  : (width >= 750
+                                      ? 5
+                                      : (width >= 540 ? 3 : 2)));
+                          final double childAspectRatio = cols >= 5
+                              ? 0.95
+                              : (cols >= 4 ? 0.90 : (cols >= 3 ? 0.86 : 1.05));
+
+                          return GridView.builder(
+                            shrinkWrap: true,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            physics: const NeverScrollableScrollPhysics(),
+                            gridDelegate:
+                                SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: cols,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 10,
+                              childAspectRatio: childAspectRatio,
+                            ),
+                            itemCount: filteredTools.length,
+                            itemBuilder: (context, index) {
+                              final tool = filteredTools[index];
+                              final isFav =
+                                  _favoritedTools.contains(tool['title']);
+                              final category =
+                                  tool['category'] as String? ?? 'Tool';
+                              final isDark = Theme.of(context).brightness ==
+                                  Brightness.dark;
+                              final title = tool['title'] as String;
+                              final subtitle =
+                                  tool['subtitle'] as String? ?? category;
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? const Color(0xFF131722)
+                                      : Colors.white,
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isFav
+                                        ? const Color(0xFFFFFC00)
+                                        : (isDark
+                                            ? Colors.white
+                                                .withValues(alpha: 0.08)
+                                            : Colors.black
+                                                .withValues(alpha: 0.06)),
+                                    width: isFav ? 1.4 : 0.8,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: isFav
+                                          ? const Color(0xFFFFFC00)
+                                              .withValues(alpha: 0.12)
+                                          : Colors.black.withValues(
+                                              alpha: isDark ? 0.25 : 0.04),
+                                      blurRadius: isFav ? 10 : 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: tool['onTap'] as VoidCallback,
+                                    borderRadius: BorderRadius.circular(14),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 8),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          // Top Frame / Icon Preview Area with Unified Luxury Gold Styling
+                                          Container(
+                                            height: cols <= 2 ? 52 : 38,
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? const Color(0xFFFFFC00)
+                                                      .withValues(alpha: 0.09)
+                                                  : const Color(0xFFFFFC00)
+                                                      .withValues(alpha: 0.14),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              border: Border.all(
+                                                color: const Color(0xFFFFFC00)
+                                                    .withValues(alpha: 0.22),
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                            child: Stack(
+                                              children: [
+                                                Center(
+                                                  child: Icon(
+                                                    tool['icon'] as IconData,
+                                                    color:
+                                                        const Color(0xFFFFFC00),
+                                                    size: cols <= 2 ? 26 : 20,
+                                                  ),
+                                                ),
+                                                // Top-right Favorite Button
+                                                Positioned(
+                                                  top: 2,
+                                                  right: 2,
+                                                  child: GestureDetector(
+                                                    onTap: () =>
+                                                        _toggleFavoriteTool(
+                                                            title),
+                                                    behavior:
+                                                        HitTestBehavior.opaque,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              4),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black
+                                                            .withValues(
+                                                                alpha: 0.45),
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: Icon(
+                                                        isFav
+                                                            ? Icons
+                                                                .favorite_rounded
+                                                            : Icons
+                                                                .favorite_border_rounded,
+                                                        size:
+                                                            cols <= 2 ? 12 : 10,
+                                                        color: isFav
+                                                            ? const Color(
+                                                                0xFFFFFC00)
+                                                            : Colors.white70,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                // Top-left Share Button
+                                                Positioned(
+                                                  top: 2,
+                                                  left: 2,
+                                                  child: GestureDetector(
+                                                    onTap: () {
+                                                      final userId = SupaFlow
+                                                          .client
+                                                          .auth
+                                                          .currentUser
+                                                          ?.id;
+                                                      if (userId != null) {
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                ShareContentScreen(
+                                                              contentToShare:
+                                                                  "Check out this $title tool on Poket Mates!",
+                                                              currentUserId:
+                                                                  userId,
+                                                              contentType:
+                                                                  'tool',
+                                                              metadata: {
+                                                                'title': title,
+                                                                'description':
+                                                                    subtitle,
+                                                                'category':
+                                                                    'Tools',
+                                                              },
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                    behavior:
+                                                        HitTestBehavior.opaque,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              4),
+                                                      decoration: BoxDecoration(
+                                                        color: Colors.black
+                                                            .withValues(
+                                                                alpha: 0.45),
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: Icon(
+                                                        Icons.share_outlined,
+                                                        size:
+                                                            cols <= 2 ? 12 : 10,
+                                                        color: Colors.white70,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          // Title & Subtitle
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 2),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  title,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: GoogleFonts.outfit(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .primaryText,
+                                                    fontSize:
+                                                        cols <= 2 ? 13 : 11,
+                                                    fontWeight: FontWeight.w700,
+                                                  ),
+                                                ),
+                                                Text(
+                                                  subtitle,
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: GoogleFonts.inter(
+                                                    color: FlutterFlowTheme.of(
+                                                            context)
+                                                        .secondaryText,
+                                                    fontSize:
+                                                        cols <= 2 ? 10.5 : 8.5,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          // Unified Minimal Pill Action Button
+                                          Container(
+                                            height: cols <= 2 ? 26 : 22,
+                                            decoration: BoxDecoration(
+                                              color: isDark
+                                                  ? const Color(0xFF1A2232)
+                                                  : const Color(0xFFF1F5F9),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              border: Border.all(
+                                                color: const Color(0xFFFFFC00)
+                                                    .withValues(alpha: 0.25),
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                            alignment: Alignment.center,
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.center,
+                                              children: [
+                                                Text(
+                                                  'OPEN',
+                                                  style: GoogleFonts.outfit(
+                                                    fontSize:
+                                                        cols <= 2 ? 10.5 : 9,
+                                                    fontWeight: FontWeight.w800,
+                                                    letterSpacing: 0.5,
+                                                    color:
+                                                        const Color(0xFFFFFC00),
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 3),
+                                                Icon(
+                                                  Icons.arrow_forward_rounded,
+                                                  size: cols <= 2 ? 11 : 9,
+                                                  color:
+                                                      const Color(0xFFFFFC00),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
-      );
-    }
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2233,22 +2176,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   }
 
   Widget _buildToolDetailView() {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0B1015) : const Color(0xFFF8FAFC),
+      backgroundColor: const Color(0xFF0B0D13),
       body: SafeArea(
         child: Column(
           children: [
-            // Header
             // Header with Back Button
             Container(
-              padding: const EdgeInsets.fromLTRB(16, 24, 24, 16),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
               child: Row(
                 children: [
                   IconButton(
-                    icon: Icon(Icons.arrow_back_ios_new_rounded,
-                        color: FlutterFlowTheme.of(context).primaryText,
-                        size: 20),
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white, size: 20),
                     onPressed: () {
                       if (widget.initialTab != null) {
                         Navigator.pop(context);
@@ -2262,16 +2202,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     child: Text(
                       _getToolTitle(_selectedTab),
                       style: GoogleFonts.outfit(
-                        fontSize: 24,
+                        fontSize: 22,
                         fontWeight: FontWeight.bold,
-                        color: FlutterFlowTheme.of(context).primaryText,
+                        color: Colors.white,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.share_rounded,
-                        color: Colors.yellow, size: 22),
+                        color: Color(0xFFFFFC00), size: 20),
                     onPressed: () {
                       final userId = SupaFlow.client.auth.currentUser?.id;
                       if (userId != null) {
@@ -2280,7 +2220,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           MaterialPageRoute(
                             builder: (context) => ShareContentScreen(
                               contentToShare:
-                                  "Check out this ${_getToolTitle(_selectedTab)} tool on Pocket Mates!",
+                                  "Check out this ${_getToolTitle(_selectedTab)} tool on Poket Mates!",
                               currentUserId: userId,
                               contentType: 'text',
                               metadata: {
@@ -2295,143 +2235,152 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   ),
                   const SizedBox(width: 4),
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Colors.yellow, Colors.yellowAccent],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
+                      color: const Color(0xFF131722),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
                       ),
-                      shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.yellow.withValues(alpha: 0.4),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    child: Text(
-                      '$completedToday',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.stars_rounded, color: Color(0xFFFFFC00), size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          '$completedToday',
+                          style: GoogleFonts.outfit(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFFFFFC00),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
 
-            // Add Button (FAB-like but inline for safety)
+            // Add Button (FAB-like but inline for safety with consistent margins)
             if (_selectedTab < 3) // Only show add button for first 3 tabs
-              GestureDetector(
-                onTap: () {
-                  setState(() {
-                    if (_selectedTab == 0) {
-                      _showAddSchedule = !_showAddSchedule;
-                      _showAddTask = false;
-                      _showAddChallenge = false;
-                      _useAISchedule = false;
-                      _editingScheduleId = null;
-                    } else if (_selectedTab == 1) {
-                      _showAddTask = !_showAddTask;
-                      _showAddSchedule = false;
-                      _showAddChallenge = false;
-                    } else {
-                      _showAddChallenge = !_showAddChallenge;
-                      _showAddTask = false;
-                      _showAddSchedule = false;
-                    }
-                  });
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  decoration: BoxDecoration(
-                    color: (_selectedTab == 0 && _showAddSchedule) ||
-                            (_selectedTab == 1 && _showAddTask) ||
-                            (_selectedTab == 2 && _showAddChallenge)
-                        ? const Color(0xFF2C2C2C)
-                        : null,
-                    gradient: (_selectedTab == 0 && _showAddSchedule) ||
-                            (_selectedTab == 1 && _showAddTask) ||
-                            (_selectedTab == 2 && _showAddChallenge)
-                        ? null
-                        : LinearGradient(
-                            colors: [
-                              Colors.yellow.shade400,
-                              Colors.yellow.shade700
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: (_selectedTab == 0 && _showAddSchedule) ||
-                            (_selectedTab == 1 && _showAddTask) ||
-                            (_selectedTab == 2 && _showAddChallenge)
-                        ? []
-                        : [
-                            BoxShadow(
-                              color: Colors.yellow.withValues(alpha: 0.3),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            )
-                          ],
-                    border: Border.all(
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (_selectedTab == 0) {
+                        _showAddSchedule = !_showAddSchedule;
+                        _showAddTask = false;
+                        _showAddChallenge = false;
+                        _useAISchedule = false;
+                        _editingScheduleId = null;
+                      } else if (_selectedTab == 1) {
+                        _showAddTask = !_showAddTask;
+                        _showAddSchedule = false;
+                        _showAddChallenge = false;
+                      } else {
+                        _showAddChallenge = !_showAddChallenge;
+                        _showAddTask = false;
+                        _showAddSchedule = false;
+                      }
+                    });
+                  },
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                    decoration: BoxDecoration(
                       color: (_selectedTab == 0 && _showAddSchedule) ||
                               (_selectedTab == 1 && _showAddTask) ||
                               (_selectedTab == 2 && _showAddChallenge)
-                          ? const Color(0xFF424242)
-                          : Colors.transparent,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        (_selectedTab == 0 && _showAddSchedule) ||
-                                (_selectedTab == 1 && _showAddTask) ||
-                                (_selectedTab == 2 && _showAddChallenge)
-                            ? Icons.close
-                            : Icons.add,
+                          ? const Color(0xFF1C2230)
+                          : null,
+                      gradient: (_selectedTab == 0 && _showAddSchedule) ||
+                              (_selectedTab == 1 && _showAddTask) ||
+                              (_selectedTab == 2 && _showAddChallenge)
+                          ? null
+                          : const LinearGradient(
+                              colors: [
+                                Color(0xFFFFFC00),
+                                Color(0xFFE5B800),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: (_selectedTab == 0 && _showAddSchedule) ||
+                              (_selectedTab == 1 && _showAddTask) ||
+                              (_selectedTab == 2 && _showAddChallenge)
+                          ? []
+                          : [
+                              BoxShadow(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                                blurRadius: 14,
+                                offset: const Offset(0, 4),
+                              )
+                            ],
+                      border: Border.all(
                         color: (_selectedTab == 0 && _showAddSchedule) ||
                                 (_selectedTab == 1 && _showAddTask) ||
                                 (_selectedTab == 2 && _showAddChallenge)
-                            ? Colors.white70
-                            : Colors.black87,
-                        size: 22,
+                            ? const Color(0xFF2D3748)
+                            : Colors.transparent,
                       ),
-                      const SizedBox(width: 8),
-                      Text(
-                        (_selectedTab == 0 && _showAddSchedule) ||
-                                (_selectedTab == 1 && _showAddTask) ||
-                                (_selectedTab == 2 && _showAddChallenge)
-                            ? 'Cancel'
-                            : _selectedTab == 0
-                                ? 'Add Schedule Item'
-                                : _selectedTab == 1
-                                    ? 'Add New Task'
-                                    : 'Start New Challenge',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          (_selectedTab == 0 && _showAddSchedule) ||
+                                  (_selectedTab == 1 && _showAddTask) ||
+                                  (_selectedTab == 2 && _showAddChallenge)
+                              ? Icons.close_rounded
+                              : Icons.add_rounded,
                           color: (_selectedTab == 0 && _showAddSchedule) ||
                                   (_selectedTab == 1 && _showAddTask) ||
                                   (_selectedTab == 2 && _showAddChallenge)
                               ? Colors.white70
-                              : Colors.black87,
+                              : const Color(0xFF0B0D13),
+                          size: 20,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Text(
+                          (_selectedTab == 0 && _showAddSchedule) ||
+                                  (_selectedTab == 1 && _showAddTask) ||
+                                  (_selectedTab == 2 && _showAddChallenge)
+                              ? 'Cancel'
+                              : _selectedTab == 0
+                                  ? 'Add Schedule Item'
+                                  : _selectedTab == 1
+                                      ? 'Add New Task'
+                                      : 'Start New Challenge',
+                          style: GoogleFonts.outfit(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            color: (_selectedTab == 0 && _showAddSchedule) ||
+                                    (_selectedTab == 1 && _showAddTask) ||
+                                    (_selectedTab == 2 && _showAddChallenge)
+                                ? Colors.white70
+                                : const Color(0xFF0B0D13),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
 
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
 
             // Add Forms
             if (_showAddSchedule && _selectedTab == 0) _buildAddScheduleForm(),
@@ -2469,19 +2418,59 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Widget _buildAddTaskForm() {
     const accentYellow = Color(0xFFFFFC00);
     final categories = [
-      {'name': 'English', 'color': const Color(0xFF38BDF8), 'icon': Icons.school_rounded},
-      {'name': 'Work', 'color': const Color(0xFF818CF8), 'icon': Icons.work_rounded},
-      {'name': 'Habit', 'color': const Color(0xFF34D399), 'icon': Icons.repeat_rounded},
-      {'name': 'Personal', 'color': const Color(0xFFFBBF24), 'icon': Icons.person_rounded},
-      {'name': 'Fitness', 'color': const Color(0xFFF87171), 'icon': Icons.fitness_center_rounded},
+      {
+        'name': 'English',
+        'color': const Color(0xFF38BDF8),
+        'icon': Icons.school_rounded
+      },
+      {
+        'name': 'Work',
+        'color': const Color(0xFF818CF8),
+        'icon': Icons.work_rounded
+      },
+      {
+        'name': 'Habit',
+        'color': const Color(0xFF34D399),
+        'icon': Icons.repeat_rounded
+      },
+      {
+        'name': 'Personal',
+        'color': const Color(0xFFFBBF24),
+        'icon': Icons.person_rounded
+      },
+      {
+        'name': 'Fitness',
+        'color': const Color(0xFFF87171),
+        'icon': Icons.fitness_center_rounded
+      },
     ];
 
     final presets = [
-      {'title': 'Practice 15m English Speaking', 'cat': 'English', 'p': TaskPriority.high},
-      {'title': 'Read 1 Pocket Library Chapter', 'cat': 'English', 'p': TaskPriority.medium},
-      {'title': 'Send 1 Voice Note to Mate', 'cat': 'English', 'p': TaskPriority.medium},
-      {'title': 'Drink 2L Hydration Goal', 'cat': 'Habit', 'p': TaskPriority.low},
-      {'title': '20m Workout & Stretching', 'cat': 'Fitness', 'p': TaskPriority.medium},
+      {
+        'title': 'Practice 15m English Speaking',
+        'cat': 'English',
+        'p': TaskPriority.high
+      },
+      {
+        'title': 'Read 1 Pocket Library Chapter',
+        'cat': 'English',
+        'p': TaskPriority.medium
+      },
+      {
+        'title': 'Send 1 Voice Note to Mate',
+        'cat': 'English',
+        'p': TaskPriority.medium
+      },
+      {
+        'title': 'Drink 2L Hydration Goal',
+        'cat': 'Habit',
+        'p': TaskPriority.low
+      },
+      {
+        'title': '20m Workout & Stretching',
+        'cat': 'Fitness',
+        'p': TaskPriority.medium
+      },
     ];
 
     return Container(
@@ -2490,7 +2479,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       decoration: BoxDecoration(
         color: const Color(0xFF121B28),
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: accentYellow.withValues(alpha: 0.35), width: 1.2),
+        border:
+            Border.all(color: accentYellow.withValues(alpha: 0.35), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.45),
@@ -2514,12 +2504,16 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       color: accentYellow.withValues(alpha: 0.18),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.add_task_rounded, color: accentYellow, size: 18),
+                    child: const Icon(Icons.add_task_rounded,
+                        color: accentYellow, size: 18),
                   ),
                   const SizedBox(width: 8),
                   Text(
                     'Create New Task',
-                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16),
                   ),
                 ],
               ),
@@ -2527,8 +2521,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 onTap: () => setState(() => _showAddTask = false),
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(color: Colors.white10, shape: BoxShape.circle),
-                  child: const Icon(Icons.close_rounded, color: Colors.white70, size: 16),
+                  decoration: const BoxDecoration(
+                      color: Colors.white10, shape: BoxShape.circle),
+                  child: const Icon(Icons.close_rounded,
+                      color: Colors.white70, size: 16),
                 ),
               ),
             ],
@@ -2539,7 +2535,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           // Quick Presets Row
           Text(
             'QUICK PRESETS',
-            style: GoogleFonts.inter(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8),
+            style: GoogleFonts.inter(
+                color: Colors.white38,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8),
           ),
           const SizedBox(height: 6),
           SizedBox(
@@ -2560,7 +2560,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     });
                   },
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1A2634),
                       borderRadius: BorderRadius.circular(12),
@@ -2569,7 +2570,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     alignment: Alignment.center,
                     child: Text(
                       p['title'] as String,
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500),
+                      style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500),
                     ),
                   ),
                 );
@@ -2585,15 +2589,18 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             style: GoogleFonts.inter(color: Colors.white, fontSize: 14.5),
             decoration: InputDecoration(
               hintText: 'What needs to be done?',
-              hintStyle: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 13.5),
+              hintStyle: GoogleFonts.inter(
+                  color: const Color(0xFF64748B), fontSize: 13.5),
               filled: true,
               fillColor: const Color(0xFF090E14),
-              prefixIcon: const Icon(Icons.edit_note_rounded, color: accentYellow, size: 20),
+              prefixIcon: const Icon(Icons.edit_note_rounded,
+                  color: accentYellow, size: 20),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(14),
                 borderSide: BorderSide.none,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             ),
           ),
 
@@ -2606,7 +2613,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             maxLines: 2,
             decoration: InputDecoration(
               hintText: 'Add description, link, or sub-checklist (optional)...',
-              hintStyle: GoogleFonts.inter(color: const Color(0xFF475569), fontSize: 12),
+              hintStyle: GoogleFonts.inter(
+                  color: const Color(0xFF475569), fontSize: 12),
               filled: true,
               fillColor: const Color(0xFF090E14),
               border: OutlineInputBorder(
@@ -2622,7 +2630,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           // Category Chips
           Text(
             'CATEGORY',
-            style: GoogleFonts.inter(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8),
+            style: GoogleFonts.inter(
+                color: Colors.white38,
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.8),
           ),
           const SizedBox(height: 6),
           Wrap(
@@ -2638,9 +2650,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 },
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isSel ? color.withValues(alpha: 0.25) : const Color(0xFF1E293B),
+                    color: isSel
+                        ? color.withValues(alpha: 0.25)
+                        : const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSel ? color : Colors.transparent,
@@ -2650,7 +2665,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(cat['icon'] as IconData, size: 13, color: isSel ? color : Colors.white54),
+                      Icon(cat['icon'] as IconData,
+                          size: 13, color: isSel ? color : Colors.white54),
                       const SizedBox(width: 5),
                       Text(
                         cat['name'] as String,
@@ -2680,7 +2696,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   children: [
                     Text(
                       'PRIORITY',
-                      style: GoogleFonts.inter(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8),
+                      style: GoogleFonts.inter(
+                          color: Colors.white38,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8),
                     ),
                     const SizedBox(height: 6),
                     Row(
@@ -2694,9 +2714,13 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                               margin: const EdgeInsets.only(right: 4),
                               padding: const EdgeInsets.symmetric(vertical: 7),
                               decoration: BoxDecoration(
-                                color: isSel ? color.withValues(alpha: 0.25) : const Color(0xFF1E293B),
+                                color: isSel
+                                    ? color.withValues(alpha: 0.25)
+                                    : const Color(0xFF1E293B),
                                 borderRadius: BorderRadius.circular(10),
-                                border: Border.all(color: isSel ? color : Colors.transparent, width: 1.2),
+                                border: Border.all(
+                                    color: isSel ? color : Colors.transparent,
+                                    width: 1.2),
                               ),
                               alignment: Alignment.center,
                               child: Text(
@@ -2726,7 +2750,11 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                   children: [
                     Text(
                       'DUE DATE',
-                      style: GoogleFonts.inter(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.w800, letterSpacing: 0.8),
+                      style: GoogleFonts.inter(
+                          color: Colors.white38,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.8),
                     ),
                     const SizedBox(height: 6),
                     GestureDetector(
@@ -2734,8 +2762,10 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         final picked = await showDatePicker(
                           context: context,
                           initialDate: selectedTaskDueDate ?? DateTime.now(),
-                          firstDate: DateTime.now().subtract(const Duration(days: 1)),
-                          lastDate: DateTime.now().add(const Duration(days: 365)),
+                          firstDate:
+                              DateTime.now().subtract(const Duration(days: 1)),
+                          lastDate:
+                              DateTime.now().add(const Duration(days: 365)),
                           builder: (context, child) {
                             return Theme(
                               data: ThemeData.dark().copyWith(
@@ -2754,12 +2784,17 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         }
                       },
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 8),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 7, horizontal: 8),
                         decoration: BoxDecoration(
-                          color: selectedTaskDueDate != null ? accentYellow.withValues(alpha: 0.18) : const Color(0xFF1E293B),
+                          color: selectedTaskDueDate != null
+                              ? accentYellow.withValues(alpha: 0.18)
+                              : const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                            color: selectedTaskDueDate != null ? accentYellow : Colors.transparent,
+                            color: selectedTaskDueDate != null
+                                ? accentYellow
+                                : Colors.transparent,
                             width: 1.2,
                           ),
                         ),
@@ -2767,14 +2802,20 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.calendar_today_rounded, size: 12, color: selectedTaskDueDate != null ? accentYellow : Colors.white54),
+                            Icon(Icons.calendar_today_rounded,
+                                size: 12,
+                                color: selectedTaskDueDate != null
+                                    ? accentYellow
+                                    : Colors.white54),
                             const SizedBox(width: 4),
                             Text(
                               selectedTaskDueDate != null
                                   ? '${selectedTaskDueDate!.day}/${selectedTaskDueDate!.month}'
                                   : 'Pick Date',
                               style: GoogleFonts.inter(
-                                color: selectedTaskDueDate != null ? accentYellow : Colors.white70,
+                                color: selectedTaskDueDate != null
+                                    ? accentYellow
+                                    : Colors.white70,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -2808,7 +2849,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               icon: const Icon(Icons.add_task_rounded, size: 20),
               label: Text(
                 'Add to My Tasks',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
+                style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold, fontSize: 15),
               ),
             ),
           ),
@@ -2819,12 +2861,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Widget _buildAddScheduleForm() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2C),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF424242)),
+        color: const Color(0xFF131722),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF1E2333), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -2839,17 +2888,17 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: !_useAISchedule
-                          ? Colors.yellow
-                          : const Color(0xFF424242),
-                      borderRadius: BorderRadius.circular(8),
+                          ? const Color(0xFFFFFC00)
+                          : const Color(0xFF1C2230),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       'Manual',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: !_useAISchedule ? Colors.black : Colors.white,
+                      style: GoogleFonts.outfit(
+                        color: !_useAISchedule ? Colors.black : Colors.white70,
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -2863,22 +2912,23 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
                       color: _useAISchedule
-                          ? Colors.yellow
-                          : const Color(0xFF424242),
-                      borderRadius: BorderRadius.circular(8),
+                          ? const Color(0xFFFFFC00)
+                          : const Color(0xFF1C2230),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.auto_awesome,
-                            color: Colors.white, size: 16),
+                        Icon(Icons.auto_awesome_rounded,
+                            color: _useAISchedule ? Colors.black : const Color(0xFFFFFC00),
+                            size: 16),
                         const SizedBox(width: 4),
                         Text(
                           'AI Generate',
-                          style: TextStyle(
-                            color: _useAISchedule ? Colors.black : Colors.white,
+                          style: GoogleFonts.outfit(
+                            color: _useAISchedule ? Colors.black : Colors.white70,
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
@@ -2893,15 +2943,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           if (!_useAISchedule) ...[
             TextField(
               controller: scheduleController,
-              style: const TextStyle(color: Colors.white),
+              style: GoogleFonts.inter(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Activity name',
-                hintStyle: const TextStyle(color: Color(0xFF757575)),
+                hintStyle: GoogleFonts.inter(color: Colors.white38),
                 filled: true,
-                fillColor: const Color(0xFF1E1E1E),
+                fillColor: const Color(0xFF1C2230),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderSide: const BorderSide(color: Color(0xFF2D3748)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF2D3748)),
                 ),
               ),
             ),
@@ -2918,8 +2972,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           return Theme(
                             data: ThemeData.dark().copyWith(
                               colorScheme: const ColorScheme.dark(
-                                primary: Color(0xFFFF6B9D),
-                                surface: Color(0xFF2C2C2C),
+                                primary: Color(0xFFFFFC00),
+                                surface: Color(0xFF131722),
                               ),
                             ),
                             child: child!,
@@ -2933,22 +2987,23 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
+                        color: const Color(0xFF1C2230),
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF2D3748)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.access_time,
-                              color: Color(0xFFFF6B9D), size: 20),
+                          const Icon(Icons.access_time_rounded,
+                              color: Color(0xFFFFFC00), size: 20),
                           const SizedBox(width: 8),
                           Text(
                             selectedStartTime != null
                                 ? selectedStartTime!.format(context)
                                 : 'Start time',
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               color: selectedStartTime != null
                                   ? Colors.white
-                                  : const Color(0xFF757575),
+                                  : Colors.white38,
                               fontSize: 14,
                             ),
                           ),
@@ -2968,8 +3023,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                           return Theme(
                             data: ThemeData.dark().copyWith(
                               colorScheme: const ColorScheme.dark(
-                                primary: Color(0xFFFF6B9D),
-                                surface: Color(0xFF2C2C2C),
+                                primary: Color(0xFFFFFC00),
+                                surface: Color(0xFF131722),
                               ),
                             ),
                             child: child!,
@@ -2983,22 +3038,23 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF1E1E1E),
+                        color: const Color(0xFF1C2230),
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF2D3748)),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.access_time,
-                              color: Color(0xFFFF6B9D), size: 20),
+                          const Icon(Icons.access_time_rounded,
+                              color: Color(0xFFFFFC00), size: 20),
                           const SizedBox(width: 8),
                           Text(
                             selectedEndTime != null
                                 ? selectedEndTime!.format(context)
                                 : 'End time',
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               color: selectedEndTime != null
                                   ? Colors.white
-                                  : const Color(0xFF757575),
+                                  : Colors.white38,
                               fontSize: 14,
                             ),
                           ),
@@ -3015,33 +3071,41 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               child: ElevatedButton(
                 onPressed: _addScheduleItem,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF6B9D),
-                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xFFFFFC00),
+                  foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   elevation: 0,
                 ),
-                child: Text(_editingScheduleId != null
-                    ? 'Update Schedule'
-                    : 'Add Schedule'),
+                child: Text(
+                  _editingScheduleId != null ? 'Update Schedule' : 'Add Schedule',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  ),
+                ),
               ),
             ),
           ] else ...[
             TextField(
               controller: aiScheduleController,
-              style: const TextStyle(color: Colors.white),
+              style: GoogleFonts.inter(color: Colors.white),
               maxLines: 4,
               decoration: InputDecoration(
                 hintText:
                     'Describe your day:\ne.g., "Wake at 6am, workout 30min, work 9-5, lunch at 1pm, sleep 11pm"',
-                hintStyle: const TextStyle(color: Color(0xFF757575)),
+                hintStyle: GoogleFonts.inter(color: Colors.white38),
                 filled: true,
-                fillColor: const Color(0xFF1E1E1E),
+                fillColor: const Color(0xFF1C2230),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+                  borderSide: const BorderSide(color: Color(0xFF2D3748)),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Color(0xFF2D3748)),
                 ),
               ),
             ),
@@ -3051,8 +3115,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               child: ElevatedButton(
                 onPressed: _isGeneratingSchedule ? null : _generateAISchedule,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF6B9D),
-                  foregroundColor: Colors.white,
+                  backgroundColor: const Color(0xFFFFFC00),
+                  foregroundColor: Colors.black,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -3068,19 +3132,26 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              color: Colors.white,
+                              color: Colors.black,
                             ),
                           ),
                           SizedBox(width: 12),
                           Text('Generating...'),
                         ],
                       )
-                    : const Row(
+                    : Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.auto_awesome, size: 18),
-                          SizedBox(width: 8),
-                          Text('Generate Schedule'),
+                          const Icon(Icons.auto_awesome_rounded, size: 18, color: Colors.black),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Generate Schedule',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15,
+                              color: Colors.black,
+                            ),
+                          ),
                         ],
                       ),
               ),
@@ -3093,12 +3164,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
 
   Widget _buildAddChallengeForm() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
+      margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2C),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF424242)),
+        color: const Color(0xFF131722),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF1E2333), width: 1.2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -3114,15 +3192,19 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           const SizedBox(height: 12),
           TextField(
             controller: challengeController,
-            style: const TextStyle(color: Colors.white),
+            style: GoogleFonts.inter(color: Colors.white),
             decoration: InputDecoration(
               hintText: 'e.g., Chess Match Practice, Gym, Study',
-              hintStyle: const TextStyle(color: Color(0xFF757575)),
+              hintStyle: GoogleFonts.inter(color: Colors.white38),
               filled: true,
-              fillColor: const Color(0xFF1E1E1E),
+              fillColor: const Color(0xFF1C2230),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+                borderSide: const BorderSide(color: Color(0xFF2D3748)),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Color(0xFF2D3748)),
               ),
             ),
           ),
@@ -3143,17 +3225,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 child: TextField(
                   controller: challengeDurationController,
                   keyboardType: TextInputType.number,
-                  style: const TextStyle(color: Colors.white),
+                  style: GoogleFonts.inter(color: Colors.white),
                   onChanged: (value) =>
                       challengeDuration = int.tryParse(value) ?? 21,
                   decoration: InputDecoration(
                     hintText: '21',
-                    hintStyle: const TextStyle(color: Color(0xFF757575)),
+                    hintStyle: GoogleFonts.inter(color: Colors.white38),
                     filled: true,
-                    fillColor: const Color(0xFF1E1E1E),
+                    fillColor: const Color(0xFF1C2230),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                      borderSide: const BorderSide(color: Color(0xFF2D3748)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF2D3748)),
                     ),
                   ),
                 ),
@@ -3168,17 +3254,17 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
                         color: selectedChallengeType == type
-                            ? const Color(0xFFFFD700)
-                            : const Color(0xFF424242),
+                            ? const Color(0xFFFFFC00)
+                            : const Color(0xFF1C2230),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         _getChallengeTypeText(type),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: GoogleFonts.outfit(
                           color: selectedChallengeType == type
                               ? Colors.black
-                              : Colors.white,
+                              : Colors.white70,
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                         ),
@@ -3214,7 +3300,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             child: ElevatedButton(
               onPressed: _addChallenge,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD700),
+                backgroundColor: const Color(0xFFFFFC00),
                 foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
@@ -3275,6 +3361,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       ),
     );
   }
+
   Color _getCategoryColor(String category) {
     switch (category) {
       case 'English':
@@ -3318,7 +3405,20 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     if (diff == 1) return 'Tomorrow';
     if (diff == -1) return 'Yesterday';
     if (diff < 0) return '${-diff}d Overdue';
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
+    ];
     return '${dt.day} ${months[dt.month - 1]}';
   }
 
@@ -3334,8 +3434,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     final totalTasks = tasks.length;
     final completedCount = tasks.where((t) => t.isCompleted).length;
     final pendingCount = totalTasks - completedCount;
-    final highPriorityCount =
-        tasks.where((t) => t.priority == TaskPriority.high && !t.isCompleted).length;
+    final highPriorityCount = tasks
+        .where((t) => t.priority == TaskPriority.high && !t.isCompleted)
+        .length;
     final progress = totalTasks > 0 ? (completedCount / totalTasks) : 0.0;
 
     final filteredTasks = tasks.where((t) {
@@ -3408,7 +3509,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                         color: const Color(0xFFEF4444).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                            color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                            color:
+                                const Color(0xFFEF4444).withValues(alpha: 0.4)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -3458,7 +3560,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               _buildFilterChip('All', totalTasks),
               _buildFilterChip('Pending', pendingCount),
               _buildFilterChip('Completed', completedCount),
-              _buildFilterChip('High', tasks.where((t) => t.priority == TaskPriority.high).length),
+              _buildFilterChip('High',
+                  tasks.where((t) => t.priority == TaskPriority.high).length),
             ],
           ),
         ),
@@ -3558,7 +3661,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: dailySchedule.length,
       itemBuilder: (context, index) {
         return _buildScheduleCard(dailySchedule[index]);
@@ -3576,7 +3679,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     }
 
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       itemCount: challenges.length,
       itemBuilder: (context, index) {
         final challenge = challenges[index];
@@ -3594,12 +3697,12 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       key: ValueKey(task.id),
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF131D2A),
+        color: const Color(0xFF131722),
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: task.isCompleted
               ? const Color(0xFF10B981).withValues(alpha: 0.5)
-              : const Color(0xFF1E293B),
+              : const Color(0xFF1E2333),
           width: task.isCompleted ? 1.5 : 1,
         ),
         boxShadow: [
@@ -3863,14 +3966,21 @@ class _TaskManagerScreenState extends State<ToolsPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2C),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF131722),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: item.isCompleted
-              ? const Color(0xFF4CAF50)
-              : const Color(0xFF424242),
-          width: item.isCompleted ? 2 : 1,
+              ? const Color(0xFF10B981)
+              : const Color(0xFF1E2333),
+          width: item.isCompleted ? 1.5 : 1.2,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.25),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -3882,9 +3992,9 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               children: [
                 Text(
                   startStr,
-                  style: const TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 12,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: Colors.white,
                   ),
                 ),
@@ -3892,15 +4002,18 @@ class _TaskManagerScreenState extends State<ToolsPage> {
                 Container(
                   width: 2,
                   height: 20,
-                  color: const Color(0xFFFF6B9D),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   endStr,
-                  style: const TextStyle(
+                  style: GoogleFonts.outfit(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF9E9E9E),
+                    color: Colors.white54,
                   ),
                 ),
               ],
@@ -3909,7 +4022,7 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           Container(
             width: 1,
             height: 80,
-            color: const Color(0xFF424242),
+            color: const Color(0xFF1E2333),
           ),
           Expanded(
             child: Padding(
@@ -4041,22 +4154,23 @@ class _TaskManagerScreenState extends State<ToolsPage> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C2C2C),
+        color: const Color(0xFF131722),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
           color:
-              isCompleted ? const Color(0xFFFFD700) : const Color(0xFF424242),
-          width: isCompleted ? 2 : 1,
+              isCompleted ? const Color(0xFFFFFC00) : const Color(0xFF1E2333),
+          width: isCompleted ? 2 : 1.2,
         ),
-        boxShadow: isCompleted
-            ? [
-                BoxShadow(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                  blurRadius: 15,
-                  spreadRadius: 1,
-                )
-              ]
-            : null,
+        boxShadow: [
+          BoxShadow(
+            color: isCompleted
+                ? const Color(0xFFFFFC00).withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.25),
+            blurRadius: 15,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -4620,7 +4734,8 @@ class Task {
           ? DateTime.parse(json['completedDate'])
           : null,
       category: json['category'] ?? 'English',
-      dueDate: json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
+      dueDate:
+          json['dueDate'] != null ? DateTime.tryParse(json['dueDate']) : null,
     );
   }
 }
@@ -4767,14 +4882,23 @@ class ScheduleAIService {
   ) {
     try {
       final List<Color> scheduleColors = [
-        const Color(0xFFFFE082),
-        const Color(0xFFFFB74D),
-        const Color(0xFF81C784),
-        const Color(0xFFE3F2FD),
-        const Color(0xFFF3E5F5),
+        const Color(0xFFFFFC00),
+        const Color(0xFF60A5FA),
+        const Color(0xFF34D399),
+        const Color(0xFFA78BFA),
+        const Color(0xFFF472B6),
       ];
 
-      final jsonList = jsonDecode(response) as List;
+      // Strip reasoning/think blocks and extract JSON array
+      String clean = response.trim();
+      clean = clean.replaceAll(RegExp(r'<think>[\s\S]*?<\/think>', caseSensitive: false), '').trim();
+      final startIdx = clean.indexOf('[');
+      final endIdx = clean.lastIndexOf(']');
+      if (startIdx != -1 && endIdx != -1 && endIdx > startIdx) {
+        clean = clean.substring(startIdx, endIdx + 1);
+      }
+
+      final jsonList = jsonDecode(clean) as List;
       final items = <ScheduleItem>[];
       int colorIndex = 0;
 
@@ -5380,7 +5504,8 @@ class _DiagramListScreenState extends State<DiagramListScreen> {
         elevation: 0,
         leading: const BackButton(color: Colors.white),
         title: Text('Planning & Diagrams Hub',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+            style: GoogleFonts.outfit(
+                fontWeight: FontWeight.bold, color: Colors.white)),
         centerTitle: true,
       ),
       body: diagrams.isEmpty
@@ -5899,7 +6024,8 @@ class _FlowCanvasScreenState extends State<FlowCanvasScreen> {
         elevation: 0,
         leading: const BackButton(color: Colors.white),
         title: Text(diagram.name,
-            style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+            style: const TextStyle(
+                fontWeight: FontWeight.bold, color: Colors.white)),
         actions: [
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),

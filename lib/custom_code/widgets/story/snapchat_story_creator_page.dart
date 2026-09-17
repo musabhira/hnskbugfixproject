@@ -1,5 +1,3 @@
-import 'dart:io' as io;
-import 'dart:typed_data';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image/image.dart' as img;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
@@ -73,7 +70,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
   String _mediaType = 'image';
 
   // Privacy: Public Story vs Pocket Mates Only (Private)
-  bool _isPrivateStory = false;
+  bool _isPrivateStory = true;
 
   // Story Duration (5s, 10s, 15s)
   int _storyDuration = 5;
@@ -660,7 +657,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                 Expanded(
                   child: Text(
                     _isPrivateStory
-                        ? '🔒 Shared to Pocket Mates Story! (+15 FDC)'
+                        ? '🔒 Shared to Poket Mates Story! (+15 FDC)'
                         : '🌟 Shared to Public Vibes! (+15 FDC)',
                     style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
                   ),
@@ -804,7 +801,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                   child: mates.isEmpty
                       ? Center(
                           child: Text(
-                            'No Pocket Mates found yet.\nConnect with learners in English Hub!',
+                            'No Poket Mates found yet.\nConnect with learners in English Hub!',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.outfit(color: Colors.white54),
                           ),
@@ -910,7 +907,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                         const SizedBox(width: 8),
                                         Expanded(
                                           child: Text(
-                                            '⚡ Snap sent to ${selectedIds.length} Pocket Mates! (+15 FDC)',
+                                            '⚡ Snap sent to ${selectedIds.length} Poket Mates! (+15 FDC)',
                                             style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
                                           ),
                                         ),
@@ -1273,7 +1270,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            _isPrivateStory ? 'Pocket Mates' : 'Public Vibe',
+                            _isPrivateStory ? 'Poket Mates' : 'Public Vibe',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontSize: 12,

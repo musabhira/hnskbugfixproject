@@ -19,12 +19,12 @@ import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/jackie_chan_talisman_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/flame_profile_banner_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/nft_trading_card_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
-import 'package:pocket_mates_app/custom_code/widgets/pocket_snap_flame_refresh.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 
@@ -75,6 +75,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   // Follow/Block State
   bool _isFollowing = false;
   bool _isRequested = false;
+  bool _isMate = false;
+  bool _isMateRequested = false;
   int _followersCount = 0;
   int _followingCount = 0;
   int _friendsCount = 0;
@@ -91,6 +93,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   // Avatar & State
   bool _showAvatarMode = true;
   bool _isPublicProfileView = false;
+  bool _isTestingStage = false;
   String? _equippedTalismanId;
   int _localUserStage = 1;
 
@@ -109,15 +112,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     if (isMe && _localUserStage > day) {
       day = _localUserStage;
     }
-    // When in My Account / My Pocket view, show the systematic stage-evolved avatar
-    if (!_isPublicProfileView) {
+    if (_isTestingStage) {
       return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
     }
-    // When in Public Profile view, show custom configured avatar if available
-    if (_profileData != null && _profileData!['avatar_config'] != null) {
+    // 🛡️ Progression Prestige: Only Day 90 Masters who graduated have unlocked the custom Avatar Studio sandbox!
+    // Days 1–89 strictly and proudly wear their earned evolution stage avatar, prestige aura, and colors!
+    if (day >= 90 && _profileData != null && _profileData!['avatar_config'] != null) {
       try {
         final map = Map<String, dynamic>.from(_profileData!['avatar_config']);
-        return VectorAvatarConfig.fromMap(map);
+        final cfg = VectorAvatarConfig.fromMap(map);
+        // If it's a legacy default 'human' with no custom drawing or photo, default to stage evolution:
+        if (cfg.species == 'human' && cfg.customDrawingImage == null && cfg.networkImageUrl == null && cfg.imageUrl == null) {
+          return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
+        }
+        return cfg;
       } catch (_) {}
     }
     return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
@@ -352,7 +360,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _isAnalyzingHub = true;
       });
       
-      final prompt = 'A user in the Pocket Mates English Hub has $points points. '
+      final prompt = 'A user in the Poket Mates English Hub has $points points. '
           'Assume 0-100 points is Beginner, 100-500 is Intermediate, and 500+ is Advanced. '
           'Give a very short, encouraging 2-sentence analysis of their progress and tell them what to focus on next (e.g. Grammar, Interview Prep, Communication). Keep it friendly and concise.';
           
@@ -386,6 +394,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         _profileData!['learning_day'] = stage.day;
         _profileData!['learning_stage'] = stage.stageNumber;
       }
+      _bgColor = stage.bgColor;
+      _textColor = stage.textColor;
+      _btnColor = stage.buttonColor;
+      _btnTextColor = stage.buttonTextColor;
     });
 
     HapticFeedback.lightImpact();
@@ -427,11 +439,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       _pocketScore = fromProfile;
     }
 
-    // Keep user's chosen custom colors configured in "Edit Profile" across both My Account and Public Profile
-    _bgColor = _parseColor(data['bg_color_code']) ?? const Color(0xFF0F111A);
-    _textColor = _parseColor(data['bg_text_color']) ?? Colors.white;
-    _btnColor = _parseColor(data['button_color_code']) ?? const Color(0xFF0095F6);
-    _btnTextColor = _parseColor(data['button_text_color']) ?? Colors.white;
+    // Dynamic Level-Based Theme Colors
+    _bgColor = stage.bgColor;
+    _textColor = stage.textColor;
+    _btnColor = stage.buttonColor;
+    _btnTextColor = stage.buttonTextColor;
+
+    // When viewing another user, default to showing their real profile picture if available
+    if (!isMe) {
+      final pUrl = data['profile_picture_url'] ?? data['photo_url'] ?? data['avatar_url'] ?? data['image_url'];
+      if (pUrl != null && pUrl.toString().trim().isNotEmpty) {
+        _showAvatarMode = false;
+      }
+    }
   }
 
   Future<void> _fetchFreshData() async {
@@ -478,6 +498,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             _isFollowing = isMate;
             _isBlocked = isBlocked;
             _isRequested = false;
+            _isMate = isMate;
+            _isMateRequested = false;
             _followersCount = 100 + (dynamicLevel * 14);
             _followingCount = 15 + (dynamicLevel % 30);
             _friendsCount = dynamicLevel * 3;
@@ -516,6 +538,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 .eq('status', 'pending')
                 .maybeSingle()
             : Future.value(null),
+        (myId != null && myId.isNotEmpty && myId != userId)
+            ? PocketMateService.isMate(myId, userId)
+            : Future.value(false),
+        (myId != null && myId != userId)
+            ? _supabase
+                .from('notifications')
+                .select('id')
+                .eq('sender_id', myId)
+                .eq('user_id', userId)
+                .eq('type', 'mate_request')
+                .eq('status', 'pending')
+                .maybeSingle()
+            : Future.value(null),
       ]);
 
       if (!mounted) return;
@@ -526,8 +561,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       final followStatus = responses[3] as bool;
       final blockStatus = responses[4] as bool;
       final requestRes = responses[5];
+      final mateStatus = responses[6] as bool;
+      final mateReqRes = responses[7];
 
       final isRequested = requestRes != null;
+      final isMateRequested = mateReqRes != null;
 
       if (profileRes.isNotEmpty) {
         final data = profileRes.first as Map<String, dynamic>;
@@ -535,6 +573,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           _isFollowing = followStatus;
           _isBlocked = blockStatus;
           _isRequested = isRequested;
+          _isMate = mateStatus;
+          _isMateRequested = isMateRequested;
           _applyProfileData(data);
           _isLoading = false;
         });
@@ -808,7 +848,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Connected with ${robot.name}! You are now Pocket Mates ✨'),
+              content: Text('Connected with ${robot.name}! You are now Poket Mates ✨'),
               backgroundColor: const Color(0xFF10B981),
               behavior: SnackBarBehavior.floating,
             ),
@@ -822,7 +862,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Removed ${robot.name} from Pocket Mates.'),
+              content: Text('Removed ${robot.name} from Poket Mates.'),
               behavior: SnackBarBehavior.floating,
             ),
           );
@@ -893,6 +933,150 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     }
   }
 
+  void _showSendMateRequestSheet(String targetName) {
+    final messageController = TextEditingController(
+      text: "Hi $targetName, let's connect and practice English together!",
+    );
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF161B26),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.person_add_alt_1_rounded,
+                      color: Color(0xFFFFFC00), size: 22),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Connect with $targetName',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Send a Mate Request to start 1-on-1 chatting',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: messageController,
+              maxLines: 3,
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+              decoration: InputDecoration(
+                hintText: 'Add an intro note...',
+                hintStyle: const TextStyle(color: Colors.white38),
+                filled: true,
+                fillColor: const Color(0xFF0F121A),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                Expanded(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: Text('Cancel',
+                        style: GoogleFonts.outfit(color: Colors.white60)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  flex: 2,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFFC00),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () async {
+                      final myId = _supabase.auth.currentUser?.id;
+                      if (myId == null) return;
+                      Navigator.pop(ctx);
+                      final ok = await PocketMateService.sendMateRequest(
+                        senderId: myId,
+                        receiverId: userId,
+                        message: messageController.text.trim(),
+                        contextType: 'english_hub',
+                      );
+                      if (ok && mounted) {
+                        setState(() => _isMateRequested = true);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Row(
+                              children: [
+                                const Icon(Icons.check_circle_rounded,
+                                    color: Color(0xFF10B981), size: 18),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Mate Request sent! $targetName will see it in their Requests tab.',
+                                    style:
+                                        GoogleFonts.outfit(color: Colors.white),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            backgroundColor: const Color(0xFF1E293B),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                    child: Text(
+                      'Send Request 🤝',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold, fontSize: 14),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   // --- UI Construction ---
 
   @override
@@ -922,17 +1106,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       );
     }
 
-    // Instagram-style Light/Dark mode themes
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final defaultBgColor = isDark ? const Color(0xFF000000) : const Color(0xFFFAFAFA);
-    final defaultTextColor = isDark ? const Color(0xFFF5F5F5) : const Color(0xFF262626);
-    final defaultBtnColor = isDark ? const Color(0xFF363636) : const Color(0xFFEFEFEF);
-    final defaultBtnTextColor = isDark ? const Color(0xFFF5F5F5) : const Color(0xFF262626);
+    int day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    if (isMe && _localUserStage > day) {
+      day = _localUserStage;
+    }
+    final activeStage = LearningMilestoneStage.getStageForDay(day);
 
-    final rawBgColor = _bgColor ?? defaultBgColor;
-    final rawTextColor = _textColor ?? defaultTextColor;
-    final rawBtnColor = _btnColor ?? (isMe ? defaultBtnColor : const Color(0xFF0095F6));
-    final rawBtnTextColor = _btnTextColor ?? (isMe ? defaultBtnTextColor : const Color(0xFFFFFFFF));
+    final rawBgColor = activeStage.bgColor;
+    final rawTextColor = activeStage.textColor;
+    final rawBtnColor = activeStage.buttonColor;
+    final rawBtnTextColor = activeStage.buttonTextColor;
 
     // Contrast check: if background and text colors are same or too close, override text color
     var finalBtnTextColor = rawBtnTextColor;
@@ -986,6 +1169,18 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   : null,
               centerTitle: true,
               actions: [
+                // 🧪 Stage / Level & Color Testing Switcher (Days 1–90)
+                material.IconButton(
+                  icon: const Icon(material.Icons.science_rounded, size: 22),
+                  color: textColor,
+                  tooltip: 'Tap: Next Stage | Long Press: Level Picker (1–90)',
+                  onPressed: () {
+                    final current = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                    final next = current >= 90 ? 1 : current + 1;
+                    _jumpToDay(next);
+                  },
+                  onLongPress: () => _showStageTestingSwitcher(context),
+                ),
                 if (isMe) ...[
                   material.IconButton(
                     icon: const Icon(material.Icons.switch_account, size: 22),
@@ -1004,7 +1199,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       if (value == 'Report') {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Report submitted. Thank you for keeping Pocket Mates safe.'),
+                            content: Text('Report submitted. Thank you for keeping Poket Mates safe.'),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -1096,6 +1291,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   child: Column(
                     children: [
                       FlameEnglishHouseWidget(
+                        key: ValueKey('house_${(_profileData?['learning_day'] as num?)?.toInt() ?? 1}'),
                         currentDay: (_profileData?['learning_day'] as num?)?.toInt() ?? 1,
                         streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
                         isDamaged: _fortressStatus?.isDamaged ?? false,
@@ -1922,9 +2118,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final isVerified = _profileData?['verified'] == true;
     final slug = _profileData?['slug'];
 
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final secondaryTextColor = isDark ? const Color(0xFFA8A8A8) : const Color(0xFF8E8E8E);
-    final dividerColor = isDark ? const Color(0xFF262626) : const Color(0xFFDBDBDB);
+    const isDark = true;
+    const secondaryTextColor = Color(0xFFA8A8A8);
+    const dividerColor = Color(0xFF262626);
 
     // Render one of 4 clean, progressive standard layouts based on learning day
     Widget headerContent;
@@ -2030,7 +2226,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF1B1E2D) : const Color(0xFFE2E8F0),
+          color: btnColor.withValues(alpha: 0.14),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: Colors.white12),
         ),
@@ -2294,17 +2490,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
             decoration: BoxDecoration(
-              color: const Color(0xFF161103).withValues(alpha: 0.8),
+              color: activeStage.bgColor.withValues(alpha: 0.85),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 1.2),
+              border: Border.all(color: activeStage.buttonColor.withValues(alpha: 0.4), width: 1.2),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _buildStatItem("Mates", _followersCount > 0 ? _followersCount : _friendsCount, textColor, activeStage),
-                Container(width: 1, height: 28, color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                Container(width: 1, height: 28, color: activeStage.buttonColor.withValues(alpha: 0.3)),
                 _buildPocketScoreStatItem(_pocketScore, activeStage),
-                Container(width: 1, height: 28, color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                Container(width: 1, height: 28, color: activeStage.buttonColor.withValues(alpha: 0.3)),
                 _buildAchievementsStatItem(textColor, activeStage, activeStage.day),
               ],
             ),
@@ -2331,13 +2527,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     required Color btnTextColor,
   }) {
     final isDay90 = activeStage.day == 90;
-    final accentColor = isDay90 ? const Color(0xFFFFFC00) : const Color(0xFF00F0FF);
+    final accentColor = activeStage.buttonColor;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 8, 14, 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF090D1A),
+        color: activeStage.bgColor.withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: accentColor.withValues(alpha: isDay90 ? 0.85 : 0.6),
@@ -2466,7 +2662,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     );
   }
 
-  /// Helper to build interactive avatar with theme border
+  /// Helper to build interactive avatar matching chat tile presentation (clean, borderless, organic glowing aura)
   Widget _buildAvatarWidget({
     required String? profileUrl,
     required Color dividerColor,
@@ -2474,25 +2670,48 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     required LearningMilestoneStage activeStage,
     required double size,
   }) {
-    Border avatarBorder;
-
-    switch (activeStage.uiThemeVariant) {
-      case ProfileUIThemeVariant.genesis:
-        avatarBorder = Border.all(color: activeStage.buttonColor.withValues(alpha: 0.8), width: 2.0);
-        break;
-      case ProfileUIThemeVariant.silverKnight:
-        avatarBorder = Border.all(color: const Color(0xFFE2E8F0), width: 2.5);
-        break;
-      case ProfileUIThemeVariant.goldSovereign:
-        avatarBorder = Border.all(color: const Color(0xFFFFD700), width: 2.5);
-        break;
-      case ProfileUIThemeVariant.diamondCelestial:
-        avatarBorder = Border.all(color: const Color(0xFF00F0FF), width: 3.0);
-        break;
-    }
-
     return GestureDetector(
       onTap: () {
+        if (isMe) {
+          _showAvatarQuickPicker(context);
+        } else {
+          if (profileUrl != null && profileUrl.isNotEmpty) {
+            showDialog(
+              context: context,
+              builder: (ctx) => Dialog(
+                backgroundColor: Colors.transparent,
+                insetPadding: const EdgeInsets.all(16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: CachedNetworkImage(
+                        imageUrl: profileUrl,
+                        fit: BoxFit.contain,
+                        placeholder: (_, __) => const Center(child: CircularProgressIndicator()),
+                        errorWidget: (_, __, ___) => Container(
+                          padding: const EdgeInsets.all(20),
+                          color: const Color(0xFF1E2235),
+                          child: const Icon(Icons.broken_image, color: Colors.white54, size: 48),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white, size: 28),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          } else {
+            setState(() => _showAvatarMode = !_showAvatarMode);
+          }
+        }
+      },
+      onLongPress: () {
         setState(() => _showAvatarMode = !_showAvatarMode);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -2504,32 +2723,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       },
       child: Stack(
         alignment: Alignment.bottomRight,
+        clipBehavior: Clip.none,
         children: [
-          Container(
+          SizedBox(
             width: size,
             height: size,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              border: avatarBorder,
-              boxShadow: [
-                BoxShadow(
-                  color: activeStage.buttonColor.withValues(alpha: 0.28),
-                  blurRadius: 14,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(20),
-              child: _showAvatarMode
-                  ? VectorAvatarWidget(
-                      config: _getAvatarConfig(),
-                      size: size,
-                      borderRadius: BorderRadius.circular(20),
-                      showAura: false,
-                    )
-                  : (profileUrl != null && profileUrl.isNotEmpty)
-                      ? CachedNetworkImage(
+            child: _showAvatarMode
+                ? VectorAvatarWidget(
+                    config: _getAvatarConfig(),
+                    size: size,
+                    showAura: true,
+                  )
+                : (profileUrl != null && profileUrl.isNotEmpty)
+                    ? ClipOval(
+                        child: CachedNetworkImage(
                           imageUrl: profileUrl,
                           width: size,
                           height: size,
@@ -2539,12 +2746,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             color: dividerColor,
                             child: Icon(Icons.person, size: size * 0.45, color: textColor.withValues(alpha: 0.5)),
                           ),
-                        )
-                      : Container(
+                        ),
+                      )
+                    : ClipOval(
+                        child: Container(
                           color: dividerColor,
                           child: Icon(Icons.person, size: size * 0.45, color: textColor.withValues(alpha: 0.5)),
                         ),
-            ),
+                      ),
           ),
           Positioned(
             left: -2,
@@ -2583,22 +2792,381 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           Positioned(
             right: -2,
             bottom: -2,
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration: BoxDecoration(
-                color: activeStage.buttonColor,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.black, width: 1.5),
-              ),
-              child: const Icon(
-                Icons.swap_horiz_rounded,
-                size: 13,
-                color: Colors.black,
+            child: GestureDetector(
+              onTap: () {
+                if (isMe) {
+                  _showAvatarQuickPicker(context);
+                } else {
+                  setState(() => _showAvatarMode = !_showAvatarMode);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  color: activeStage.buttonColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black, width: 1.5),
+                ),
+                child: const Icon(
+                  Icons.auto_awesome,
+                  size: 13,
+                  color: Colors.black,
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  /// Interactive bottom sheet for switching unlocked companions and checking upcoming unlock levels
+  /// Interactive bottom sheet for switching unlocked companions and checking upcoming unlock levels (Days 1–90)
+  void _showAvatarQuickPicker(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    final int userLevel = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    var currentCfg = _getAvatarConfig();
+    final animals90 = VectorAvatarConfig.get90DayAnimals();
+
+    int unlockedCount = 0;
+    for (int i = 0; i < animals90.length; i++) {
+      if (VectorAvatarConfig.isCompanionUnlocked(i + 1, userLevel)) {
+        unlockedCount++;
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF131522),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(18, 14, 18, 24),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.82,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'PoketMates Progression Prestige',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Level $userLevel Mate • $unlockedCount/90 Unlocked 🌱',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFFFFC00),
+                              fontWeight: FontWeight.w600,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (userLevel >= 90)
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VectorAvatarStudioPage(
+                                  initialConfig: currentCfg,
+                                  onAvatarSaved: (newCfg) {
+                                    setState(() {
+                                      _profileData ??= {};
+                                      _profileData!['avatar_config'] = newCfg.toMap();
+                                      _showAvatarMode = true;
+                                    });
+                                  },
+                                ),
+                              ),
+                            ).then((_) => _loadInitialData());
+                          },
+                          icon: const Icon(Icons.tune_rounded, size: 15, color: Color(0xFFFFFC00)),
+                          label: Text(
+                            'Studio 👑',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        )
+                      else
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.amber.withValues(alpha: 0.5), width: 1),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.lock_rounded, size: 12, color: Colors.amberAccent),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Day 90 Studio',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.amberAccent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+
+                  // 🛡️ Progression Prestige Status Ribbon (Guarantees earned rank pride)
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E2235),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Row(
+                      children: [
+                        const Text('🛡️', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            userLevel >= 90
+                                ? '👑 DAY 90 MASTER UNLOCKED: You have earned unrestricted Avatar Studio styling privileges!'
+                                : 'Level $userLevel progression aura & armor are locked to your earned rank. Reach Day 90 to unlock freeform studio styling!',
+                            style: GoogleFonts.inter(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  Expanded(
+                    child: GridView.builder(
+                      shrinkWrap: true,
+                      physics: const BouncingScrollPhysics(),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        childAspectRatio: 0.78,
+                        crossAxisSpacing: 10,
+                        mainAxisSpacing: 10,
+                      ),
+                      itemCount: animals90.length,
+                      itemBuilder: (context, index) {
+                        final companionDay = index + 1;
+                        final a = animals90[index];
+                        final isUnlocked = VectorAvatarConfig.isCompanionUnlocked(companionDay, userLevel);
+                        final isEquipped = currentCfg.species == a.species;
+
+                        final previewCfg = VectorAvatarConfig.getEvolutionAvatarForStage(
+                          companionDay,
+                          talismanId: _equippedTalismanId,
+                        ).copyWith(
+                          skinColor: isEquipped ? currentCfg.skinColor : null,
+                          hairColor: isEquipped ? currentCfg.hairColor : null,
+                        );
+
+                        return GestureDetector(
+                          onTap: () async {
+                            if (!isUnlocked) {
+                              HapticFeedback.heavyImpact();
+                              // Open 3D Holographic NFT Card Dialog for locked companion
+                              NftTradingCardDialog.show(
+                                context,
+                                day: companionDay,
+                                config: previewCfg,
+                                userId: userId,
+                                isOwner: false,
+                              );
+                              return;
+                            }
+
+                            HapticFeedback.selectionClick();
+                            final newCfg = userLevel >= 90
+                                ? previewCfg
+                                : VectorAvatarConfig.getEvolutionAvatarForStage(
+                                    userLevel,
+                                    talismanId: _equippedTalismanId,
+                                  ).copyWith(species: a.species);
+
+                            setModalState(() {
+                              currentCfg = newCfg;
+                            });
+
+                            setState(() {
+                              _profileData ??= {};
+                              _profileData!['avatar_config'] = newCfg.toMap();
+                              _showAvatarMode = true;
+                            });
+
+                            Navigator.pop(ctx);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('🎉 Equipped ${a.rarityTier}!'),
+                                backgroundColor: const Color(0xFFFFFC00),
+                                behavior: SnackBarBehavior.floating,
+                                duration: const Duration(milliseconds: 900),
+                              ),
+                            );
+
+                            try {
+                              final uid = _supabase.auth.currentUser?.id;
+                              if (uid != null) {
+                                await _supabase
+                                    .from('profile')
+                                    .update({'avatar_config': newCfg.toMap()})
+                                    .eq('user_id', uid);
+                              }
+                            } catch (_) {}
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            decoration: BoxDecoration(
+                              color: isEquipped
+                                  ? const Color(0xFF1E2238)
+                                  : (isUnlocked ? const Color(0xFF151824) : const Color(0xFF0F111A)),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: isEquipped
+                                    ? const Color(0xFFFFFC00)
+                                    : (isUnlocked ? Colors.white12 : Colors.white.withValues(alpha: 0.04)),
+                                width: isEquipped ? 2 : 1,
+                              ),
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    Opacity(
+                                      opacity: isUnlocked ? 1.0 : 0.45,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: VectorAvatarWidget(
+                                          config: previewCfg,
+                                          size: 54,
+                                          showAura: isUnlocked,
+                                        ),
+                                      ),
+                                    ),
+                                    if (!isUnlocked)
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(alpha: 0.82),
+                                          borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(color: Colors.amber, width: 0.8),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(Icons.lock_rounded, size: 9, color: Colors.amber),
+                                            const SizedBox(width: 2),
+                                            Text(
+                                              'DAY $companionDay',
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.amber,
+                                                fontSize: 8.5,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    if (isEquipped)
+                                      Positioned(
+                                        top: 0,
+                                        right: 0,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(2),
+                                          decoration: const BoxDecoration(
+                                            color: Color(0xFFFFFC00),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.check, size: 10, color: Colors.black),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  a.species
+                                      .replaceAll('_', ' ')
+                                      .split(' ')
+                                      .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
+                                      .join(' '),
+                                  style: GoogleFonts.outfit(
+                                    color: isUnlocked ? Colors.white : Colors.white60,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
+                                Text(
+                                  isUnlocked
+                                      ? (isEquipped ? 'EQUIPPED' : (companionDay <= 5 ? 'STARTER' : 'UNLOCKED'))
+                                      : 'DAY $companionDay CARD 💎',
+                                  style: GoogleFonts.outfit(
+                                    color: isEquipped
+                                        ? const Color(0xFFFFFC00)
+                                        : (isUnlocked ? const Color(0xFF10B981) : Colors.amber),
+                                    fontSize: 8,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -2693,7 +3261,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 Widget buildEditProfileBtn() => Container(
                   height: 38,
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
+                    color: const Color(0xFF262626),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: InkWell(
@@ -2770,10 +3338,10 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               const Icon(Icons.auto_awesome, size: 15, color: Colors.black),
                               const SizedBox(width: 5),
                               Text(
-                                "Avatar Studio",
+                                "Master Studio 👑",
                                 style: GoogleFonts.outfit(
                                   color: Colors.black,
-                                  fontSize: 13,
+                                  fontSize: 12.5,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
@@ -2789,12 +3357,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   height: 38,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                      colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
                     ),
                     borderRadius: BorderRadius.circular(10),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.3),
                         blurRadius: 8,
                       ),
                     ],
@@ -2817,14 +3385,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Icon(Icons.workspace_premium_rounded, size: 15, color: Colors.white),
+                              const Icon(Icons.workspace_premium_rounded, size: 15, color: Colors.black),
                               const SizedBox(width: 4),
                               Text(
-                                "Premium ₹199",
+                                "Pocket VIP 👑",
                                 style: GoogleFonts.outfit(
-                                  color: Colors.white,
+                                  color: Colors.black,
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
+                                  fontWeight: FontWeight.w900,
                                 ),
                               ),
                             ],
@@ -2835,21 +3403,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                 );
 
-                Widget buildStickersBtn() => Container(
-                  height: 38,
-                  width: 42,
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: InkWell(
-                    onTap: () => AvatarStickerPackSheet.show(context, _getAvatarConfig()),
-                    borderRadius: BorderRadius.circular(10),
-                    child: const Center(
-                      child: Icon(Icons.auto_awesome_mosaic, size: 18, color: Color(0xFFFFFC00)),
-                    ),
-                  ),
-                );
+                final int currentLearningDay = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                final bool isDay90Master = currentLearningDay >= 90;
+
+                if (isDay90Master) {
+                  return Row(
+                    children: [
+                      Expanded(flex: 3, child: buildEditProfileBtn()),
+                      const SizedBox(width: 8),
+                      Expanded(flex: 3, child: buildAvatarStudioBtn()),
+                      const SizedBox(width: 8),
+                      Expanded(flex: 3, child: buildVipBtn()),
+                    ],
+                  );
+                }
 
                 if (isCompact) {
                   return Row(
@@ -2877,7 +3444,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     height: 38,
                     decoration: BoxDecoration(
                       color: _isFollowing
-                          ? (isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF))
+                          ? const Color(0xFF262626)
                           : btnColor,
                       borderRadius: BorderRadius.circular(8),
                       border: _isFollowing
@@ -2904,40 +3471,107 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
                 if (!(_profileData?['is_private'] == true && !_isFollowing)) ...[
                   const SizedBox(width: 8),
-                  Expanded(
-                    child: Container(
-                      height: 38,
-                      decoration: BoxDecoration(
-                        color: isDark ? const Color(0xFF262626) : const Color(0xFFEFEFEF),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => WhatsAppGroupChat(
-                                groupId: 'p:$userId',
-                                groupName: name,
-                                groupImage: profileUrl,
+                  if (_isMate)
+                    Expanded(
+                      child: Container(
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF262626),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => WhatsAppGroupChat(
+                                  groupId: 'p:$userId',
+                                  groupName: name,
+                                  groupImage: profileUrl,
+                                ),
                               ),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(Icons.chat_bubble_outline_rounded,
+                                    size: 15, color: Color(0xFF10B981)),
+                                const SizedBox(width: 5),
+                                Text(
+                                  "Message",
+                                  style: GoogleFonts.outfit(
+                                    color: textColor,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                          );
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Center(
-                          child: Text(
-                            "Message",
-                            style: GoogleFonts.outfit(
-                              color: textColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Expanded(
+                      child: Container(
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: _isMateRequested
+                              ? Colors.white10
+                              : const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: _isMateRequested
+                                ? Colors.white24
+                                : const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                          ),
+                        ),
+                        child: InkWell(
+                          onTap: _isMateRequested
+                              ? () {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text('Mate request already sent. Waiting for them to accept!'),
+                                      behavior: SnackBarBehavior.floating,
+                                      backgroundColor: Color(0xFF1E293B),
+                                    ),
+                                  );
+                                }
+                              : () => _showSendMateRequestSheet(name),
+                          borderRadius: BorderRadius.circular(8),
+                          child: Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _isMateRequested
+                                      ? Icons.hourglass_top_rounded
+                                      : Icons.person_add_alt_1_rounded,
+                                  size: 15,
+                                  color: _isMateRequested
+                                      ? Colors.white70
+                                      : const Color(0xFFFFFC00),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  _isMateRequested ? "Requested" : "Connect Mate",
+                                  style: GoogleFonts.outfit(
+                                    color: _isMateRequested
+                                        ? Colors.white70
+                                        : const Color(0xFFFFFC00),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
                 ],
                 const SizedBox(width: 8),
                 Expanded(
@@ -2989,112 +3623,90 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Widget _buildProfileStageBadge(LearningMilestoneStage stage) {
-    BoxDecoration decoration;
-    TextStyle style;
-
-    switch (stage.uiThemeVariant) {
-      case ProfileUIThemeVariant.genesis:
-        decoration = BoxDecoration(
-          color: stage.buttonColor.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: stage.buttonColor.withValues(alpha: 0.6), width: 1),
-        );
-        style = GoogleFonts.outfit(
-          color: stage.buttonColor,
-          fontWeight: FontWeight.w900,
-          fontSize: 10,
-        );
-        break;
-
-      case ProfileUIThemeVariant.silverKnight:
-        decoration = BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF3F3F46), Color(0xFF18181B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
-        );
-        style = GoogleFonts.outfit(
-          color: const Color(0xFFFAFAFA),
-          fontWeight: FontWeight.w900,
-          fontSize: 10,
-        );
-        break;
-
-      case ProfileUIThemeVariant.goldSovereign:
-        decoration = BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF854D0E), Color(0xFF422006)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-        );
-        style = GoogleFonts.outfit(
-          color: const Color(0xFFFFD700),
-          fontWeight: FontWeight.w900,
-          fontSize: 10,
-        );
-        break;
-
-      case ProfileUIThemeVariant.diamondCelestial:
-        decoration = BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF0F172A), Color(0xFF020617)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFF00F0FF), width: 1.8),
-        );
-        style = GoogleFonts.outfit(
-          color: const Color(0xFF00F0FF),
-          fontWeight: FontWeight.w900,
-          fontSize: 10.5,
-          letterSpacing: 0.5,
-        );
-        break;
-    }
-
+    final accent = stage.buttonColor;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: decoration,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: accent.withValues(alpha: 0.75),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.25),
+            blurRadius: 6,
+          ),
+        ],
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(stage.emoji, style: const TextStyle(fontSize: 11)),
           const SizedBox(width: 4),
-          Text('STAGE ${stage.stageNumber}/90', style: style),
+          Text(
+            'STAGE ${stage.stageNumber}/90',
+            style: GoogleFonts.outfit(
+              color: accent,
+              fontWeight: FontWeight.w900,
+              fontSize: 10.5,
+              letterSpacing: 0.4,
+            ),
+          ),
         ],
       ),
     );
   }
 
   Widget _buildStatItem(String label, int count, Color textColor, LearningMilestoneStage stage) {
-    Widget content = Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Text(
-          _formatCount(count),
+    final isStreak = label.toLowerCase().contains('streak') || label.contains('🔥');
+    final isLevel = label.toLowerCase().contains('stage') || label.toLowerCase().contains('level');
+
+    Widget numberWidget = TweenAnimationBuilder<int>(
+      tween: IntTween(begin: 0, end: count),
+      duration: const Duration(milliseconds: 900),
+      curve: Curves.easeOutCubic,
+      builder: (context, val, child) {
+        return Text(
+          _formatCount(val),
           style: GoogleFonts.outfit(
-            color: stage.uiThemeVariant == ProfileUIThemeVariant.goldSovereign
-                ? const Color(0xFFFFD700)
-                : stage.uiThemeVariant == ProfileUIThemeVariant.diamondCelestial
-                    ? const Color(0xFF00F0FF)
-                    : textColor,
-            fontSize: 15,
+            color: isStreak
+                ? const Color(0xFFFF8906)
+                : (stage.uiThemeVariant == ProfileUIThemeVariant.goldSovereign
+                    ? const Color(0xFFFFD700)
+                    : stage.uiThemeVariant == ProfileUIThemeVariant.diamondCelestial
+                        ? const Color(0xFF00F0FF)
+                        : textColor),
+            fontSize: 15.5,
             fontWeight: FontWeight.bold,
             letterSpacing: -0.5,
           ),
+        );
+      },
+    );
+
+    Widget content = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (isStreak) ...[
+              const Text('🔥', style: TextStyle(fontSize: 12)),
+              const SizedBox(width: 3),
+            ] else if (isLevel) ...[
+              const Text('⭐', style: TextStyle(fontSize: 12)),
+              const SizedBox(width: 3),
+            ],
+            numberWidget,
+          ],
         ),
         const SizedBox(height: 2),
         Text(
           label,
           style: GoogleFonts.inter(
-            color: textColor.withValues(alpha: 0.6),
+            color: textColor.withValues(alpha: 0.65),
             fontSize: 10.5,
             fontWeight: FontWeight.w500,
           ),
@@ -3138,7 +3750,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       );
     }
 
-    return content;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F131D),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: content,
+    );
   }
 
   /// 🪙 Pocket Score Stat Item (Highest Priority Hero Stat on User Profile)
@@ -3147,21 +3767,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2A1F05), Color(0xFF140F02)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFF0F131D),
+        borderRadius: BorderRadius.circular(10),
         border: Border.all(
-          color: const Color(0xFFFFD700),
-          width: 1.5,
+          color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+          width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.28),
-            blurRadius: 10,
-            spreadRadius: 0.5,
+            color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -3173,14 +3789,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             children: [
               const Text('🪙', style: TextStyle(fontSize: 13)),
               const SizedBox(width: 4),
-              Text(
-                _formatCount(score),
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFD700),
-                  fontSize: 15,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.5,
-                ),
+              TweenAnimationBuilder<int>(
+                tween: IntTween(begin: 0, end: score),
+                duration: const Duration(milliseconds: 1000),
+                curve: Curves.easeOutCubic,
+                builder: (context, val, child) {
+                  return Text(
+                    _formatCount(val),
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -0.5,
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -3463,7 +4086,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF5F5F5),
+        color: const Color(0xFF161B26),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: btnColor.withValues(alpha: 0.1)),
       ),
@@ -3566,18 +4189,29 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
 
 
-  void _jumpToDay(int nextDay) {
-    HapticFeedback.lightImpact();
+  void _jumpToDay(int nextDay) async {
+    final day = nextDay.clamp(1, 90);
+    HapticFeedback.mediumImpact();
+    final stage = LearningMilestoneStage.getStageForDay(day);
+    final avatar = VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
+
     setState(() {
+      _isTestingStage = true;
       final updated = Map<String, dynamic>.from(_profileData ?? {});
-      updated['learning_day'] = nextDay;
-      final stage = LearningMilestoneStage.getStageForDay(nextDay);
+      updated['learning_day'] = day;
+      updated['learning_stage'] = stage.stageNumber;
+      updated['avatar_config'] = avatar.toMap();
       _profileData = updated;
+      _localUserStage = day;
+      _bgColor = stage.bgColor;
+      _textColor = stage.textColor;
+      _btnColor = stage.buttonColor;
+      _btnTextColor = stage.buttonTextColor;
       _testStageIndex = (stage.stageNumber - 1).clamp(0, LearningMilestoneStage.allStages.length - 1);
     });
 
-    final stage = LearningMilestoneStage.getStageForDay(nextDay);
-    final avatar = VectorAvatarConfig.getEvolutionAvatarForStage(nextDay);
+    _loadFortressDefenseData();
+
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -3587,19 +4221,215 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                '⚡ DAY $nextDay/90: ${avatar.species.toUpperCase()} (${stage.fluencyTier})',
+                '⚡ LEVEL $day/90: ${avatar.species.toUpperCase()} (${stage.stageName})',
                 style: GoogleFonts.outfit(
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFFFFFC00),
+                  color: stage.buttonTextColor,
                 ),
               ),
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: stage.buttonColor,
         behavior: SnackBarBehavior.floating,
-        duration: const Duration(milliseconds: 900),
+        duration: const Duration(milliseconds: 1400),
       ),
+    );
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('pocket_learning_user_stage_$userId', day);
+      await prefs.setInt('learning_day_$userId', day);
+    } catch (_) {}
+
+    try {
+      final uid = _supabase.auth.currentUser?.id;
+      if (uid != null) {
+        await _supabase.from('profile').update({
+          'learning_day': day,
+          'learning_stage': stage.stageNumber,
+          'avatar_config': avatar.toMap(),
+        }).eq('user_id', uid);
+      }
+    } catch (_) {}
+  }
+
+  /// ⚡ Interactive 90-Level Testing & Live Preview Switcher
+  void _showStageTestingSwitcher(BuildContext context) {
+    HapticFeedback.selectionClick();
+    int activeDay = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F111A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalCtx, setModalState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.82,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '⚡ 90-Level Live Theme Switcher',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Tap any level (1–90) to preview live colors & companions',
+                            style: GoogleFonts.inter(
+                              color: Colors.white60,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        icon: const Icon(Icons.close, color: Colors.white70, size: 20),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  // Quick Gate Shortcuts (1, 21, 30, 60, 90)
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [1, 21, 30, 60, 90].map((d) {
+                        final s = LearningMilestoneStage.getStageForDay(d);
+                        final isCur = activeDay == d;
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: ChoiceChip(
+                            label: Text('Day $d ${s.emoji}'),
+                            selected: isCur,
+                            onSelected: (_) {
+                              Navigator.pop(ctx);
+                              _jumpToDay(d);
+                            },
+                            selectedColor: s.buttonColor,
+                            backgroundColor: const Color(0xFF1E2235),
+                            labelStyle: GoogleFonts.outfit(
+                              color: isCur ? s.buttonTextColor : Colors.white70,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Divider(color: Colors.white12, height: 1),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: 90,
+                      itemBuilder: (context, i) {
+                        final d = i + 1;
+                        final s = LearningMilestoneStage.getStageForDay(d);
+                        final av = VectorAvatarConfig.getEvolutionAvatarForStage(d);
+                        final isCur = activeDay == d;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 6),
+                          decoration: BoxDecoration(
+                            color: isCur ? s.buttonColor.withValues(alpha: 0.18) : const Color(0xFF151824),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isCur ? s.buttonColor : Colors.white.withValues(alpha: 0.06),
+                              width: isCur ? 1.5 : 1,
+                            ),
+                          ),
+                          child: ListTile(
+                            dense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+                            leading: Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: s.bgColor,
+                                border: Border.all(color: s.buttonColor, width: 1.5),
+                              ),
+                              child: Center(
+                                child: Text(s.emoji, style: const TextStyle(fontSize: 16)),
+                              ),
+                            ),
+                            title: Row(
+                              children: [
+                                Text(
+                                  'Level $d: ${s.stageName}',
+                                  style: GoogleFonts.outfit(
+                                    color: isCur ? s.buttonColor : Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                const Spacer(),
+                                Container(
+                                  width: 14,
+                                  height: 14,
+                                  decoration: BoxDecoration(
+                                    color: s.buttonColor,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 1),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            subtitle: Text(
+                              '🐾 ${av.species.replaceAll('_', ' ')} • ${s.fluencyTier}',
+                              style: GoogleFonts.inter(
+                                color: Colors.white60,
+                                fontSize: 10.5,
+                              ),
+                            ),
+                            trailing: isCur
+                                ? Icon(Icons.check_circle_rounded, color: s.buttonColor, size: 18)
+                                : const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white24, size: 12),
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              _jumpToDay(d);
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

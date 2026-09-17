@@ -5,7 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'main_market_logic.dart';
-import 'gallery_profile_search_page.dart';
+import 'search_page.dart';
 import 'gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
@@ -91,11 +91,10 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                 IconButton(
                   icon: Icon(Icons.search, color: FlutterFlowTheme.of(context).secondaryText, size: 20),
                   onPressed: () {
-                    // Navigate to a search page or show search bar
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const GalleryProfileSearchPage(userid: ''),
+                        builder: (context) => const SearchPage(initialTab: 'market'),
                       ),
                     );
                   },

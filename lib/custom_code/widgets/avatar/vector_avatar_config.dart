@@ -39,26 +39,26 @@ class VectorAvatarConfig {
 
   const VectorAvatarConfig({
     this.artStyle = 'vector',
-    this.species = 'human',
-    this.gender = 'male',
-    this.skinColor = '#FFDFC4',
-    this.faceShape = 'oval',
+    this.species = 'cyber_cat',
+    this.gender = 'neutral',
+    this.skinColor = '#F59E0B',
+    this.faceShape = 'sharp',
     this.eyeStyle = 'chill',
-    this.eyeColor = '#2C1B18',
+    this.eyeColor = '#10B981',
     this.eyebrowStyle = 'confident',
     this.mouthStyle = 'smile',
-    this.hairStyle = 'curly_fade',
-    this.hairColor = '#1A1A1A',
+    this.hairStyle = 'short_crop',
+    this.hairColor = '#F59E0B',
     this.beardStyle = 'none',
-    this.outfitStyle = 'hoodie',
-    this.outfitColor = '#FFFC00',
-    this.outfitAccentColor = '#1E1E24',
+    this.outfitStyle = 'varsity_jacket',
+    this.outfitColor = '#1E293B',
+    this.outfitAccentColor = '#FFFC00',
     this.accessory = 'none',
-    this.accessoryColor = '#1E1E24',
+    this.accessoryColor = '#FFD700',
     this.auraStyle = 'neon_yellow',
     this.mintId,
     this.dnaHash,
-    this.rarityTier = 'Original',
+    this.rarityTier = 'Neon Cyber Cat',
     this.ownerId,
     this.mintedAt,
     this.customDrawingSvg,
@@ -317,7 +317,7 @@ class VectorAvatarConfig {
     String rarityTier,
   })> _k90DayAnimals = [
     // 🐱 1–10: Urban Cyber Predators (Genesis Tier)
-    (species: 'cyber_cat', furColor: '#F59E0B', eyeColor: '#10B981', outfitColor: '#1E293B', outfitAccent: '#FFFC00', accessory: 'none', auraStyle: 'neon_yellow', rarityTier: 'Neon Cyber Cat'),
+    (species: 'cyber_cat', furColor: '#F59E0B', eyeColor: '#10B981', outfitColor: '#1E293B', outfitAccent: '#FFFC00', accessory: 'none', auraStyle: 'cyber_purple', rarityTier: 'Neon Cyber Cat'),
     (species: 'cyber_fox', furColor: '#F97316', eyeColor: '#FFD700', outfitColor: '#7F1D1D', outfitAccent: '#F97316', accessory: 'none', auraStyle: 'sunset_orange', rarityTier: 'Mystic Kitsune Fox'),
     (species: 'shadow_wolf', furColor: '#334155', eyeColor: '#00F0FF', outfitColor: '#0F172A', outfitAccent: '#38BDF8', accessory: 'headphones', auraStyle: 'electric_blue', rarityTier: 'Midnight Shadow Wolf'),
     (species: 'royal_tiger', furColor: '#FB923C', eyeColor: '#FACC15', outfitColor: '#1E1B4B', outfitAccent: '#FFD700', accessory: 'none', auraStyle: 'golden_sparks', rarityTier: 'Royal Bengal Tiger'),
@@ -424,6 +424,25 @@ class VectorAvatarConfig {
     (species: 'astral_titan', furColor: '#4338CA', eyeColor: '#FFD700', outfitColor: '#0F172A', outfitAccent: '#818CF8', accessory: 'crown', auraStyle: 'cyber_purple', rarityTier: 'Eternal Astral Titan'),
     (species: 'cosmic_dragon_sovereign', furColor: '#7C3AED', eyeColor: '#00F0FF', outfitColor: '#050B14', outfitAccent: '#FFD700', accessory: 'crown', auraStyle: 'golden_sparks', rarityTier: 'Supreme Cosmic Dragon God (Day 90 Master)'),
   ];
+
+  /// Expose all 90 day animal records (Days 1 to 90)
+  static List<({
+    String species,
+    String furColor,
+    String eyeColor,
+    String outfitColor,
+    String outfitAccent,
+    String accessory,
+    String auraStyle,
+    String rarityTier,
+  })> get90DayAnimals() => _k90DayAnimals;
+
+  /// Level 1 players unlock the first 5 starter companions (Cyber Cat, Cyber Fox, Shadow Wolf, Royal Tiger, Golden Lion).
+  /// Days 6–90 unlock when the user reaches that learning level/day.
+  static bool isCompanionUnlocked(int companionDay, int userLevel) {
+    if (companionDay <= 5) return true;
+    return userLevel >= companionDay;
+  }
 
   /// Retrieve the active in-game fortress perk for day 1..90
   static AvatarGamePerk getAvatarPerkForDay(int stage) => AvatarGamePerk.forDay(stage);
@@ -599,6 +618,7 @@ class VectorAvatarPalette {
   ];
 
   static const List<Map<String, dynamic>> speciesList = [
+    // 🌟 Level 1 Starter Pack (Unlocked immediately for everyone)
     {
       'id': 'human',
       'name': 'Human Mate',
@@ -606,54 +626,7 @@ class VectorAvatarPalette {
       'rarity': 'Original',
       'desc': 'Classic Streetwear Persona',
       'badgeColor': Color(0xFFFFD700),
-    },
-    {
-      'id': 'cyber_fox',
-      'name': 'Kitsune Cyber Fox',
-      'icon': '🦊',
-      'rarity': 'Mythic 1-of-1',
-      'desc': 'Nine-Tails Cyber Guardian',
-      'badgeColor': Color(0xFFFF007F),
-    },
-    {
-      'id': 'shadow_wolf',
-      'name': 'Shadow Alpha Wolf',
-      'icon': '🐺',
-      'rarity': 'Legendary',
-      'desc': 'Midnight Alpha Pack Leader',
-      'badgeColor': Color(0xFF00E5FF),
-    },
-    {
-      'id': 'mecha_lion',
-      'name': 'Solar Mecha Lion',
-      'icon': '🦁',
-      'rarity': 'Mythic 1-of-1',
-      'desc': 'Solar Charged Apex Beast',
-      'badgeColor': Color(0xFFFFB700),
-    },
-    {
-      'id': 'cosmic_dragon',
-      'name': 'Astral Cosmic Dragon',
-      'icon': '🐲',
-      'rarity': 'Mythic 1-of-1',
-      'desc': 'Celestial Dragon Entity',
-      'badgeColor': Color(0xFF9C27B0),
-    },
-    {
-      'id': 'ninja_panda',
-      'name': 'Shinobi Bamboo Panda',
-      'icon': '🐼',
-      'rarity': 'Legendary',
-      'desc': 'Master of Silent Martial Arts',
-      'badgeColor': Color(0xFF10B981),
-    },
-    {
-      'id': 'arcade_ape',
-      'name': 'Retro Arcade Ape',
-      'icon': '🦍',
-      'rarity': 'Epic',
-      'desc': '80s Synthwave Brawler',
-      'badgeColor': Color(0xFFFF5722),
+      'requiredLevel': 1,
     },
     {
       'id': 'cyber_cat',
@@ -662,22 +635,34 @@ class VectorAvatarPalette {
       'rarity': 'Rare',
       'desc': 'Futuristic Tokyo Cyber Feline',
       'badgeColor': Color(0xFFEC4899),
+      'requiredLevel': 1,
     },
     {
-      'id': 'mystic_phoenix',
-      'name': 'Celestial Flame Phoenix',
-      'icon': '🦅',
+      'id': 'cyber_fox',
+      'name': 'Kitsune Cyber Fox',
+      'icon': '🦊',
       'rarity': 'Mythic 1-of-1',
-      'desc': 'Immortal Astral Firebird',
-      'badgeColor': Color(0xFFEF4444),
+      'desc': 'Nine-Tails Cyber Guardian',
+      'badgeColor': Color(0xFFFF007F),
+      'requiredLevel': 1,
     },
     {
-      'id': 'space_robot',
-      'name': 'Quantum Space AI',
-      'icon': '🤖',
+      'id': 'shadow_wolf',
+      'name': 'Shadow Alpha Wolf',
+      'icon': '🐺',
       'rarity': 'Legendary',
-      'desc': 'Sentient Orbital AI Bot',
-      'badgeColor': Color(0xFF3B82F6),
+      'desc': 'Midnight Alpha Pack Leader',
+      'badgeColor': Color(0xFF00E5FF),
+      'requiredLevel': 1,
+    },
+    {
+      'id': 'mecha_lion',
+      'name': 'Solar Mecha Lion',
+      'icon': '🦁',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Solar Charged Apex Beast',
+      'badgeColor': Color(0xFFFFB700),
+      'requiredLevel': 1,
     },
     {
       'id': 'neon_tiger',
@@ -686,14 +671,18 @@ class VectorAvatarPalette {
       'rarity': 'Epic',
       'desc': 'Electric Striped Hunter',
       'badgeColor': Color(0xFFF59E0B),
+      'requiredLevel': 1,
     },
+
+    // 🐼 Level 2 Unlocks (After completing first milestone tasks)
     {
-      'id': 'celestial_owl',
-      'name': 'Starlight Sage Owl',
-      'icon': '🦉',
-      'rarity': 'Rare',
-      'desc': 'Wise Guardian of Constellations',
-      'badgeColor': Color(0xFF6366F1),
+      'id': 'ninja_panda',
+      'name': 'Shinobi Bamboo Panda',
+      'icon': '🐼',
+      'rarity': 'Legendary',
+      'desc': 'Master of Silent Martial Arts',
+      'badgeColor': Color(0xFF10B981),
+      'requiredLevel': 2,
     },
     {
       'id': 'grizzly_brawler',
@@ -702,6 +691,27 @@ class VectorAvatarPalette {
       'rarity': 'Epic',
       'desc': 'Heavyweight Champion',
       'badgeColor': Color(0xFF795548),
+      'requiredLevel': 2,
+    },
+    {
+      'id': 'celestial_owl',
+      'name': 'Starlight Sage Owl',
+      'icon': '🦉',
+      'rarity': 'Rare',
+      'desc': 'Wise Guardian of Constellations',
+      'badgeColor': Color(0xFF6366F1),
+      'requiredLevel': 2,
+    },
+
+    // 🔥 Level 3 Unlocks
+    {
+      'id': 'arcade_ape',
+      'name': 'Retro Arcade Ape',
+      'icon': '🦍',
+      'rarity': 'Epic',
+      'desc': '80s Synthwave Brawler',
+      'badgeColor': Color(0xFFFF5722),
+      'requiredLevel': 3,
     },
     {
       'id': 'viper_assassin',
@@ -710,31 +720,19 @@ class VectorAvatarPalette {
       'rarity': 'Legendary',
       'desc': 'Stealth Cyber Assassin',
       'badgeColor': Color(0xFF00FF66),
+      'requiredLevel': 3,
     },
     {
-      'id': 'astral_mage',
-      'name': 'Cosmic Arcane Mage',
-      'icon': '🧙‍♂️',
-      'rarity': 'Mythic 1-of-1',
-      'desc': 'Master of Reality & Runes',
-      'badgeColor': Color(0xFF8B5CF6),
-    },
-    {
-      'id': 'golden_monarch',
-      'name': 'Royal Solar Monarch',
-      'icon': '👑',
-      'rarity': 'Mythic 1-of-1',
-      'desc': 'Crowned Celestial Ruler',
-      'badgeColor': Color(0xFFFFD700),
-    },
-    {
-      'id': 'golden_griffin',
-      'name': 'Solar Gold Griffin',
+      'id': 'mystic_phoenix',
+      'name': 'Celestial Flame Phoenix',
       'icon': '🦅',
       'rarity': 'Mythic 1-of-1',
-      'desc': 'Legendary Winged Apex Guardian',
-      'badgeColor': Color(0xFFFFB300),
+      'desc': 'Immortal Astral Firebird',
+      'badgeColor': Color(0xFFEF4444),
+      'requiredLevel': 3,
     },
+
+    // 💎 Level 4 Unlocks
     {
       'id': 'samurai_shiba',
       'name': 'Ronin Samurai Shiba',
@@ -742,6 +740,7 @@ class VectorAvatarPalette {
       'rarity': 'Legendary',
       'desc': 'Honorable Katana Blade Master',
       'badgeColor': Color(0xFFF97316),
+      'requiredLevel': 4,
     },
     {
       'id': 'cyber_bunny',
@@ -750,14 +749,27 @@ class VectorAvatarPalette {
       'rarity': 'Epic',
       'desc': 'High-Frequency Neon Jumper',
       'badgeColor': Color(0xFFE879F9),
+      'requiredLevel': 4,
     },
     {
-      'id': 'galactic_bear',
-      'name': 'Galactic Polar Guardian',
-      'icon': '🐻‍❄️',
-      'rarity': 'Mythic 1-of-1',
-      'desc': 'Cosmic Aurora Heavy Defender',
-      'badgeColor': Color(0xFF38BDF8),
+      'id': 'space_robot',
+      'name': 'Quantum Space AI',
+      'icon': '🤖',
+      'rarity': 'Legendary',
+      'desc': 'Sentient Orbital AI Bot',
+      'badgeColor': Color(0xFF3B82F6),
+      'requiredLevel': 4,
+    },
+
+    // 👑 Level 5 Unlocks
+    {
+      'id': 'techno_shark',
+      'name': 'Deepsea Techno Shark',
+      'icon': '🦈',
+      'rarity': 'Epic',
+      'desc': 'Hydro-Sonic Cyber Predator',
+      'badgeColor': Color(0xFF06B6D4),
+      'requiredLevel': 5,
     },
     {
       'id': 'shadow_panther',
@@ -766,16 +778,94 @@ class VectorAvatarPalette {
       'rarity': 'Legendary',
       'desc': 'Silent Night Phantom Hunter',
       'badgeColor': Color(0xFFA855F7),
+      'requiredLevel': 5,
     },
     {
-      'id': 'techno_shark',
-      'name': 'Deepsea Techno Shark',
-      'icon': '🦈',
-      'rarity': 'Epic',
-      'desc': 'Hydro-Sonic Cyber Predator',
-      'badgeColor': Color(0xFF06B6D4),
+      'id': 'astral_mage',
+      'name': 'Cosmic Arcane Mage',
+      'icon': '🧙‍♂️',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Master of Reality & Runes',
+      'badgeColor': Color(0xFF8B5CF6),
+      'requiredLevel': 5,
+    },
+
+    // 🌌 Level 6+ Unlocks
+    {
+      'id': 'golden_griffin',
+      'name': 'Solar Gold Griffin',
+      'icon': '🦅',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Legendary Winged Apex Guardian',
+      'badgeColor': Color(0xFFFFB300),
+      'requiredLevel': 6,
+    },
+    {
+      'id': 'galactic_bear',
+      'name': 'Galactic Polar Guardian',
+      'icon': '🐻‍❄️',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Cosmic Aurora Heavy Defender',
+      'badgeColor': Color(0xFF38BDF8),
+      'requiredLevel': 6,
+    },
+    {
+      'id': 'golden_monarch',
+      'name': 'Royal Solar Monarch',
+      'icon': '👑',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Crowned Celestial Ruler',
+      'badgeColor': Color(0xFFFFD700),
+      'requiredLevel': 7,
+    },
+    {
+      'id': 'cosmic_dragon',
+      'name': 'Astral Cosmic Dragon',
+      'icon': '🐲',
+      'rarity': 'Mythic 1-of-1',
+      'desc': 'Celestial Dragon Entity',
+      'badgeColor': Color(0xFF9C27B0),
+      'requiredLevel': 8,
     },
   ];
+
+  static int getRequiredLevel(String speciesId) {
+    final s = speciesList.firstWhere(
+      (element) => element['id'] == speciesId,
+      orElse: () => {'requiredLevel': 1},
+    );
+    return (s['requiredLevel'] as int?) ?? 1;
+  }
+
+  static bool isUnlocked(String speciesId, int userLevel) {
+    return userLevel >= getRequiredLevel(speciesId);
+  }
+
+  static int getUnlockedCount(int userLevel) {
+    return speciesList.where((s) => (s['requiredLevel'] as int? ?? 1) <= userLevel).length;
+  }
+
+  static String getLevelCategoryName(int level) {
+    switch (level) {
+      case 1:
+        return '🌱 Level 1 Starters';
+      case 2:
+        return '⚡ Level 2 Challengers';
+      case 3:
+        return '🔥 Level 3 Champions';
+      case 4:
+        return '💎 Level 4 Masters';
+      case 5:
+        return '👑 Level 5 Elites';
+      case 6:
+        return '🌌 Level 6 Titans';
+      case 7:
+        return '✨ Level 7 Sovereigns';
+      case 8:
+      default:
+        return '🐲 Mythic Grandmasters';
+    }
+  }
 
   /// 12 English Chat Sticker Templates for Avatar Sticker Pack
   static const List<AvatarStickerTemplate> stickerTemplates = [
@@ -1556,6 +1646,20 @@ class VectorAvatarPalette {
     '#8D5524',
     '#5C381E',
     '#3B2219',
+  ];
+
+  static const List<String> animalFurColors = [
+    '#F59E0B', // Tokyo Amber (Classic Cat)
+    '#F8FAFC', // Cyber Snow White
+    '#1E293B', // Midnight Obsidian
+    '#00F0FF', // Electric Neon Cyan
+    '#EC4899', // Cyberpunk Pink
+    '#FBBF24', // 24K Solar Gold
+    '#A855F7', // Mystic Lavender
+    '#10B981', // Mint Cyber Emerald
+    '#94A3B8', // Mecha Titanium
+    '#D97706', // Calico Tiger
+    '#FB923C', // Neon Tangerine
   ];
 
   static const List<String> hairColors = [

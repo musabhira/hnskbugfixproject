@@ -525,6 +525,13 @@ class PocketFortressDefenseService {
     return score;
   }
 
+  /// Award training points from interactive drills (e.g. Time Machine, Self-Presentation)
+  static Future<int> recordTrainingPoints(int points, [String? uid]) async {
+    final currentScore = await getUnifiedScore(uid);
+    final newScore = currentScore + points;
+    return await setUnifiedScore(newScore, uid);
+  }
+
   /// 🛡️ Unlocked Defense Gates based on Challenge Stage:
   /// Gate 1: Days 1–10 (Up to 10 questions)
   /// Gate 2: Days 11–20 (Up to 20 questions across 2 gates)

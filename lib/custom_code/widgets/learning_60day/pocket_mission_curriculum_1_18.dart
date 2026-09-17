@@ -773,6 +773,141 @@ class PocketCurriculum1To18 {
             objects: ['this sentence', 'that lesson', 'the pronunciation', 'my practice'],
           ),
         ];
+      case 2:
+        return const [
+          SentencePatternItem(
+            formula: 'Subject + [V1 Base / Verb+s] + [Daily Routine Time]',
+            explanation: 'ഇന്ന്/സാധാരണയായി ചെയ്യുന്ന കാര്യങ്ങൾ (Present Routine) പറയാൻ V1 മാത്രം ഉപയോഗിക്കുക (am/is/are ചേർക്കരുത്!).',
+            masterSentences: [
+              'I wake up early every morning.',
+              'He drinks warm water before practice.',
+              'We practice English for 60 minutes daily.',
+              'She reads English articles every evening.',
+            ],
+            subjects: ['I', 'He', 'She', 'We', 'They'],
+            verbs: ['wake up early', 'drink warm water', 'practice English', 'listen to podcasts', 'exercise daily'],
+            objects: ['every morning', 'before practice', 'with discipline', 'for 60 minutes', 'every night'],
+          ),
+          SentencePatternItem(
+            formula: 'Subject + [V2 Past Verb] + yesterday / last night',
+            explanation: 'ഇന്നലെ കഴിഞ്ഞുപോയ കാര്യങ്ങൾ (Past Memory) വ്യക്തമാക്കാൻ V2 പാസ്റ്റ് ഫോം ഉപയോഗിക്കുക (Yesterday I go തെറ്റാണ്, Yesterday I went ആണ് ശരി!).',
+            masterSentences: [
+              'I went to the library yesterday.',
+              'She completed her speaking mission last night.',
+              'We spoke to a peer for twenty minutes.',
+              'I bought a new English notebook yesterday.',
+            ],
+            subjects: ['I', 'He', 'She', 'We', 'They'],
+            verbs: ['went to the library', 'completed the mission', 'spoke to a peer', 'learned five verbs', 'woke up early'],
+            objects: ['yesterday', 'last night', 'last Sunday', 'without hesitation', 'with great energy'],
+          ),
+          SentencePatternItem(
+            formula: 'Did + Subject + [V1 Base Verb] + ? (The "Did" Trap Buster)',
+            explanation: 'Did ഇതിനകം Past ആയതുകൊണ്ട്, തൊട്ടടുത്ത ക്രിയ നിർബന്ധമായും V1 (Base Form) ആയിരിക്കണം! Did you saw തെറ്റ്, Did you see ശരി!',
+            masterSentences: [
+              'Did you see the new lesson?',
+              'Did you finish your speaking task?',
+              'Did she call you yesterday?',
+              'Did they understand the instructions?',
+            ],
+            subjects: ['Did you', 'Did he', 'Did she', 'Did they'],
+            verbs: ['see the lesson', 'finish the task', 'call yesterday', 'understand the rules', 'practice speaking'],
+            objects: ['on time', 'yesterday', 'clearly', 'with confidence'],
+          ),
+        ];
+      case 3:
+        return const [
+          SentencePatternItem(
+            formula: 'Subject + will / am going to + [V1 Base Verb] + tomorrow',
+            explanation: 'നാളെയും ഭാവിയിലും ചെയ്യാൻ പോകുന്ന കാര്യങ്ങൾ (Future Vision) ആത്മവിശ്വാസത്തോടെ പ്രഖ്യാപിക്കാൻ.',
+            masterSentences: [
+              'I will practice speaking English tomorrow.',
+              'I am going to attend the mock interview next week.',
+              'We will achieve fluent English in 90 days.',
+              'She will give a five-minute presentation tomorrow.',
+            ],
+            subjects: ['I will', 'I am going to', 'We will', 'She will'],
+            verbs: ['practice speaking', 'attend the interview', 'master action verbs', 'deliver a presentation'],
+            objects: ['tomorrow morning', 'next week', 'without fear', 'step by step'],
+          ),
+          SentencePatternItem(
+            formula: 'Yesterday I [V2] + Today I [V1] + Tomorrow I will [V1]',
+            explanation: 'ഇന്നലെ ചെയ്തതും ഇന്ന് ചെയ്യുന്നതും നാളെ ചെയ്യാൻ പോകുന്നതും ഒറ്റ ശ്വാസത്തിൽ കോർത്തിണക്കുന്ന 3-ടെൻസ് ടൈം മെഷീൻ ബ്രിഡ്ജ്.',
+            masterSentences: [
+              'Yesterday I learned phonetics; today I speak sentences; tomorrow I will lead conversations.',
+              'Yesterday I felt hesitant; today I practice boldly; tomorrow I will be unstoppable.',
+            ],
+            subjects: ['Yesterday I learned, today I practice', 'Yesterday we hesitated, today we speak'],
+            verbs: ['build neural connections', 'speak without translating', 'lead global discussions'],
+            objects: ['with total clarity', 'every single day', 'toward complete fluency'],
+          ),
+          SentencePatternItem(
+            formula: 'Let me introduce myself: I am [Name], I [Role], and I will [Goal]',
+            explanation: 'ഇന്റർവ്യൂവിലും മീറ്റിംഗിലും 60 സെക്കൻഡ് കൊണ്ട് ആരുടെയും ശ്രദ്ധ പിടിച്ചുപറ്റുന്ന സെൽഫ് പ്രസന്റേഷൻ മാസ്റ്റർ ഫോർമുല.',
+            masterSentences: [
+              'Hello, I am Arjun; I work in tech, and I will expand my career internationally.',
+              'Good morning, I am Sneha; I graduated recently, and I will become a global communicator.',
+            ],
+            subjects: ['Hello everyone, I am', 'Good morning, my name is', 'Pleased to meet you, I am'],
+            verbs: ['work with passion', 'strive for excellence', 'develop creative solutions'],
+            objects: ['and I will lead impactful projects', 'and I will communicate globally', 'and I aim to inspire'],
+          ),
+        ];
+      case 4:
+        return const [
+          SentencePatternItem(
+            formula: 'Do / Does + Subject + [Base Verb] + [Object]?',
+            explanation: 'മറ്റുള്ളവരുടെ ശീലങ്ങളും വിവരങ്ങളും ആരായാൻ ഉപയോഗിക്കുന്ന പ്രസന്റ് ചോദ്യ ഫോർമുല (He/She ക്ക് Does, I/You/We/They ക്ക് Do).',
+            masterSentences: [
+              'Do you speak English at work?',
+              'Does he practice every morning?',
+              'Do they know about this learning app?',
+              'Does she enjoy reading English books?',
+            ],
+            subjects: ['Do you', 'Does he', 'Does she', 'Do they'],
+            verbs: ['speak English', 'practice daily', 'live in Kerala', 'enjoy reading', 'exercise often'],
+            objects: ['at work', 'every morning', 'regularly', 'without hesitation'],
+          ),
+          SentencePatternItem(
+            formula: 'What do you [V1]? vs What did you [V1]? vs What will you [V1]?',
+            explanation: 'ഇന്ന് എന്ത് ചെയ്യുന്നു, ഇന്നലെ എന്ത് ചെയ്തു, നാളെ എന്ത് ചെയ്യും എന്ന് താരതമ്യം ചെയ്തു ചോദ്യം ചോദിക്കാനുള്ള മാട്രിക്സ്.',
+            masterSentences: [
+              'What do you do on weekends?',
+              'What did you do yesterday evening?',
+              'What will you do tomorrow after class?',
+            ],
+            subjects: ['What do you', 'What did you', 'What will you'],
+            verbs: ['do', 'learn', 'plan', 'discuss', 'practice'],
+            objects: ['today', 'yesterday', 'tomorrow', 'this weekend'],
+          ),
+        ];
+      case 5:
+        return const [
+          SentencePatternItem(
+            formula: 'Would you mind + [Verb+ing] + [Object]?',
+            explanation: 'വളരെ ബഹുമാനത്തോടെ മറ്റൊരാളോട് സഹായം ചോദിക്കാൻ ഉപയോഗിക്കുന്ന അതിമനോഹരമായ ഇംഗ്ലീഷ് ഫോർമുല.',
+            masterSentences: [
+              'Would you mind repeating that sentence?',
+              'Would you mind speaking a bit slower?',
+              'Would you mind sharing the notes with me?',
+            ],
+            subjects: ['Would you mind'],
+            verbs: ['repeating that', 'speaking slower', 'sharing the file', 'explaining this point'],
+            objects: ['for me', 'please', 'once more', 'clearly'],
+          ),
+          SentencePatternItem(
+            formula: 'I was wondering if I could + [Base Verb] + [Object]',
+            explanation: 'ഓഫീസിലും ജോലിസ്ഥലങ്ങളിലും വിനീതമായി കാര്യം ബോധിപ്പിക്കാനുള്ള എക്സിക്യൂട്ടീവ് സോഫ്റ്റ്നർ ഫോർമുല.',
+            masterSentences: [
+              'I was wondering if I could ask a quick question.',
+              'I was wondering if we could schedule a short meeting.',
+              'I was wondering if you could review my draft.',
+            ],
+            subjects: ['I was wondering if I could', 'I was wondering if we could'],
+            verbs: ['ask a question', 'schedule a call', 'review the document', 'discuss the timeline'],
+            objects: ['today', 'at your convenience', 'briefly', 'after lunch'],
+          ),
+        ];
       case 6:
         return const [
           SentencePatternItem(
@@ -1862,6 +1997,53 @@ class PocketCurriculum1To18 {
             'I get it now! (എനിക്കിപ്പോൾ കാര്യം മനസ്സിലായി)',
             'Get ready in five minutes! (5 മിനിറ്റിനുള്ളിൽ റെഡിയാകൂ)',
             'We need to get going! (നമുക്ക് ഉടൻ പുറപ്പെടണം)',
+          ],
+        );
+      case 2:
+        return const FluencyShortcutItem(
+          title: 'The "DID" Trap Buster: Stop Saying "Did you went?"',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 2: മലയാളികൾ വരുത്തുന്ന ഏറ്റവും വലിയ തെറ്റ് തിരുത്താം!',
+          ruleSummary: 'Did ഇതിനകം Past tense ആയതുകൊണ്ട്, അതിനൊപ്പം വരുന്ന അടുത്ത ക്രിയ എപ്പോഴും Present/Base (V1) രൂപത്തിലാവണം.',
+          quickHack: '💡 ഗോൾഡൻ റൂൾ: DID + V1 (Base Form)!\n❌ തെറ്റ്: Did you saw him? / Did you ate food?\n✅ ശരി: Did you see him? / Did you eat food?\nDid വന്നാൽ അടുത്ത വാക്ക് മാറ്റരുത്, നേരെ base വാക്ക് പറയുക!',
+          examples: [
+            'Did you speak to him? (അവനോട് സംസാരിച്ചോ? - NOT Did you spoke?)',
+            'Did she understand the plan? (അവൾക്ക് പ്ലാൻ മനസ്സിലായോ? - NOT Did she understood?)',
+            'I didn\'t know that! (എനിക്കത് അറിയില്ലായിരുന്നു! - NOT I didn\'t knew that!)',
+          ],
+        );
+      case 3:
+        return const FluencyShortcutItem(
+          title: 'The 60-Second "Past-Present-Future" Self-Presentation Code',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 3: "Tell me about yourself" എന്ന് കേട്ടാൽ പതറാതെ പറയാൻ!',
+          ruleSummary: 'സ്വയം പരിചയപ്പെടുത്താൻ (Presenting) വെറും 3 കാര്യങ്ങൾ മാത്രം പറയുക: 1. ആരാണ് (Present) + 2. എന്ത് ചെയ്തു (Past) + 3. എന്ത് ചെയ്യാൻ പോകുന്നു (Future).',
+          quickHack: '💡 3-സ്റ്റെപ്പ് എലിവേറ്റർ പിച്ച്:\n1. PRESENT: "I am [Name], working in [Field]..."\n2. PAST: "Previously, I completed [Degree/Project]..."\n3. FUTURE: "Now, I am aiming to master English and achieve [Goal]!"\nഇങ്ങനെ പറഞ്ഞാൽ ഇന്റർവ്യൂവിൽ 100% കോൺഫിഡൻസ്!',
+          examples: [
+            'I am Rahul, I worked in customer support, and I will lead teams.',
+            'I am a graduate, I completed my degree in 2024, and I will join an MNC.',
+          ],
+        );
+      case 4:
+        return const FluencyShortcutItem(
+          title: 'The Instant Question Matrix: Do vs Did vs Will',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 4: ചോദ്യങ്ങൾ ചോദിക്കാൻ ഒരു ലളിത മാട്രിക്സ്',
+          ruleSummary: 'ചോദ്യം ചോദിക്കാൻ വേറെ ഒന്നും നോക്കേണ്ടതില്ല: ഇന്ന് ചോദിക്കാൻ DO, ഇന്നലെയെക്കുറിച്ച് ചോദിക്കാൻ DID, നാളെയെക്കുറിച്ച് ചോദിക്കാൻ WILL!',
+          quickHack: '💡 മാന്ത്രിക ഫോർമുല:\n• TODAY: Do you know? (നിനക്കറിയാമോ?)\n• YESTERDAY: Did you know? (നിനക്കറിയാമായിരുന്നോ?)\n• TOMORROW: Will you know? (നിനക്കറിയാൻ പറ്റുമോ?)\nഈ 3 വാക്കുകൾ മുന്നിലിട്ടാൽ ഏതൊരു ചോദ്യവും ഈസിയായി ചോദിക്കാം!',
+          examples: [
+            'Do you work today? (ഇന്ന് ജോലിയുണ്ടോ?)',
+            'Did you work yesterday? (ഇന്നലെ ജോലി ചെയ്തോ?)',
+            'Will you work tomorrow? (നാളെ ജോലി ചെയ്യുമോ?)',
+          ],
+        );
+      case 5:
+        return const FluencyShortcutItem(
+          title: 'The Polite English Multiplier: Turning "Want" into Royalty',
+          malyalamHeading: '⚡ കുറുക്കുവഴി 5: സംസാരിക്കുമ്പോൾ സംസ്കാരവും മാന്യതയും തുളുമ്പാൻ',
+          ruleSummary: 'ഓഫീസിലും അപരിചിതരോടും സംസാരിക്കുമ്പോൾ "I want" എന്ന് പറയരുത്; അത് ആജ്ഞാപിക്കുന്നതുപോലെ തോന്നും. പകരം "I would like to" അല്ലെങ്കിൽ "Could you..." ഉപയോഗിക്കുക.',
+          quickHack: '💡 "Give me water" എന്നതിന് പകരം "Could I get a glass of water, please?". ഇത് കേൾക്കുമ്പോൾ എല്ലാവരും നിങ്ങളെ അതീവ ബഹുമാനത്തോടെ കാണും!',
+          examples: [
+            'I would like to share an idea. (ഒരു ആശയം പങ്കുവെക്കാൻ ഞാൻ ആഗ്രഹിക്കുന്നു.)',
+            'Could you please clarify this point? (ഈ കാര്യം ഒന്നുകൂടി വ്യക്തമാക്കാമോ?)',
+            'Would you mind waiting for a moment? (ഒരു നിമിഷം കാത്തുനിൽക്കാൻ ബുദ്ധിമുട്ടുണ്ടോ?)',
           ],
         );
       case 6:

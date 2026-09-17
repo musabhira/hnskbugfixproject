@@ -59,3 +59,9 @@ firebase-auth.json
 
 # Scrapers & temporary scripts
 speaknow_scraper/
+*.jks
+*.keystore
+key.properties
+*.txt
+*.ps1
+store_assets/

@@ -746,6 +746,7 @@ class EnglishHubLevelGroupService {
       await _supabase.from('english_hub_level_groups').delete().eq('id', id);
       if (groupId != null && groupId.isNotEmpty) {
         await _supabase.from('groups').update({'is_active': false}).eq('id', groupId);
+        await _supabase.from('group_members').update({'is_active': false}).eq('group_id', groupId);
       }
       return true;
     } catch (e) {
@@ -884,6 +885,11 @@ class EnglishHubLevelGroupService {
         String groupId;
         if ((existingGroup as List).isNotEmpty) {
           groupId = existingGroup.first['id'].toString();
+          await _supabase.from('groups').update({
+            'name': groupName,
+            'description': '$title (Level $minLvl to $maxLvl English Hub Practice)',
+            'is_active': true,
+          }).eq('id', groupId);
         } else {
           final newGroup = await _supabase.from('groups').insert({
             'name': groupName,
@@ -946,7 +952,9 @@ class EnglishHubLevelGroupService {
 
       // 2. Deactivate any existing level groups that are NOT part of this new plan
       final activeGroupNames = plan.map((p) => p['name'] as String).toList();
-      final allDbGroups = await _supabase.from('english_hub_level_groups').select('id, group_name');
+      final allDbGroups = await _supabase
+          .from('english_hub_level_groups')
+          .select('id, group_name, group_id');
       for (final g in (allDbGroups as List)) {
         final gName = g['group_name'].toString();
         if (!activeGroupNames.contains(gName)) {
@@ -954,6 +962,17 @@ class EnglishHubLevelGroupService {
               .from('english_hub_level_groups')
               .update({'is_active': false})
               .eq('id', g['id']);
+          final obsoleteGroupId = g['group_id']?.toString();
+          if (obsoleteGroupId != null && obsoleteGroupId.isNotEmpty) {
+            await _supabase
+                .from('groups')
+                .update({'is_active': false})
+                .eq('id', obsoleteGroupId);
+            await _supabase
+                .from('group_members')
+                .update({'is_active': false})
+                .eq('group_id', obsoleteGroupId);
+          }
         }
       }
 

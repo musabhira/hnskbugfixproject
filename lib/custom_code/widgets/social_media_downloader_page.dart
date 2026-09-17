@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -83,27 +84,36 @@ class _SocialMediaDownloaderPageState extends State<SocialMediaDownloaderPage>
   }
 
   void _initWebView() {
-    _webViewController = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF0F172A))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (url) {
-            setState(() {
-              _isWebViewLoading = true;
-              _detectedVideoUrl = null;
-            });
-          },
-          onPageFinished: (url) async {
-            setState(() => _isWebViewLoading = false);
-            _injectVideoSniffer();
-          },
-          onWebResourceError: (error) {
-            setState(() => _isWebViewLoading = false);
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse('https://www.instagram.com'));
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
+      return;
+    }
+    try {
+      _webViewController = WebViewController()
+        ..setJavaScriptMode(JavaScriptMode.unrestricted)
+        ..setBackgroundColor(const Color(0xFF0B0D13))
+        ..setNavigationDelegate(
+          NavigationDelegate(
+            onPageStarted: (url) {
+              if (mounted) {
+                setState(() {
+                  _isWebViewLoading = true;
+                  _detectedVideoUrl = null;
+                });
+              }
+            },
+            onPageFinished: (url) async {
+              if (mounted) setState(() => _isWebViewLoading = false);
+              _injectVideoSniffer();
+            },
+            onWebResourceError: (error) {
+              if (mounted) setState(() => _isWebViewLoading = false);
+            },
+          ),
+        )
+        ..loadRequest(Uri.parse('https://www.instagram.com'));
+    } catch (e) {
+      debugPrint('Webview init error: $e');
+    }
   }
 
   void _injectVideoSniffer() async {
@@ -149,7 +159,7 @@ class _SocialMediaDownloaderPageState extends State<SocialMediaDownloaderPage>
     FocusScope.of(context).unfocus();
     setState(() {
       _isLoading = true;
-      _statusMessage = 'Connecting to media resolver...';
+      _statusMessage = 'Connecting to high-speed resolver...';
       _resolvedMedia = null;
       _videoPlayerController?.dispose();
       _videoPlayerController = null;
@@ -157,74 +167,189 @@ class _SocialMediaDownloaderPageState extends State<SocialMediaDownloaderPage>
     });
 
     try {
-      // Attempt 1: Cobalt Tools public high-performance media endpoint
-      final cobaltEndpoints = [
-        'https://api.cobalt.tools',
-        'https://cobalt-api.kwiatekm.pl',
-      ];
-
       Map<String, dynamic>? mediaResult;
 
-      for (final endpoint in cobaltEndpoints) {
+      // --- TIER 1: OpenGraph & Public Instagram Crawler ---
+      if (rawUrl.contains('instagram.com') || rawUrl.contains('instagr.am')) {
+        setState(() => _statusMessage = 'Extracting Instagram media stream...');
         try {
-          final res = await _dio.post(
-            endpoint,
-            data: {
-              'url': rawUrl,
-              'videoQuality': '720',
-              'filenameStyle': 'basic',
-            },
+          final ogRes = await _dio.get(
+            rawUrl,
             options: Options(
               headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
+                'User-Agent':
+                    'facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+                'Accept-Language': 'en-US,en;q=0.9',
               },
-              receiveTimeout: const Duration(seconds: 12),
+              followRedirects: true,
+              validateStatus: (status) => status != null && status < 500,
+              receiveTimeout: const Duration(seconds: 10),
               sendTimeout: const Duration(seconds: 8),
             ),
           );
 
-          if (res.statusCode == 200 && res.data != null) {
-            final data = res.data;
-            if (data['url'] != null) {
+          if (ogRes.data != null) {
+            final html = ogRes.data.toString();
+            final videoMatch = RegExp(
+              r'<meta\s+(?:property|name)=["\x27]og:video(?:[:\w]+)?["\x27]\s+content=["\x27](https:\/\/[^"\x27]+)["\x27]',
+              caseSensitive: false,
+            ).firstMatch(html) ??
+            RegExp(
+              r'<meta\s+content=["\x27](https:\/\/[^"\x27]+)["\x27]\s+(?:property|name)=["\x27]og:video(?:[:\w]+)?["\x27]',
+              caseSensitive: false,
+            ).firstMatch(html);
+
+            final imageMatch = RegExp(
+              r'<meta\s+(?:property|name)=["\x27]og:image["\x27]\s+content=["\x27](https:\/\/[^"\x27]+)["\x27]',
+              caseSensitive: false,
+            ).firstMatch(html) ??
+            RegExp(
+              r'<meta\s+content=["\x27](https:\/\/[^"\x27]+)["\x27]\s+(?:property|name)=["\x27]og:image["\x27]',
+              caseSensitive: false,
+            ).firstMatch(html);
+
+            String? extractedVideo = videoMatch?.group(1);
+            if (extractedVideo == null) {
+              final jsonVideoMatch = RegExp(r'"video_url"\s*:\s*"([^"]+)"').firstMatch(html) ??
+                  RegExp(r'"video_versions"\s*:\s*\[\s*\{\s*"url"\s*:\s*"([^"]+)"').firstMatch(html);
+              if (jsonVideoMatch != null) {
+                extractedVideo = jsonVideoMatch.group(1)!
+                    .replaceAll(r'\u0026', '&')
+                    .replaceAll(r'\/', '/');
+              }
+            }
+
+            if (extractedVideo != null && extractedVideo.isNotEmpty) {
+              extractedVideo = extractedVideo
+                  .replaceAll('&amp;', '&')
+                  .replaceAll(r'\u0026', '&');
               mediaResult = {
-                'url': data['url'] as String,
+                'url': extractedVideo,
                 'type': 'video',
-                'title': 'Instagram Media',
-                'thumbnail': data['thumbnail'] ?? '',
+                'title': 'Instagram Reel / Video',
+                'thumbnail': imageMatch?.group(1)?.replaceAll('&amp;', '&') ?? '',
                 'source': rawUrl,
               };
-              break;
-            } else if (data['picker'] != null && (data['picker'] as List).isNotEmpty) {
-              final first = (data['picker'] as List).first;
+            } else if (imageMatch != null) {
+              final imgUrl = imageMatch.group(1)!.replaceAll('&amp;', '&');
               mediaResult = {
-                'url': first['url'] as String,
-                'type': first['type'] ?? 'video',
-                'title': 'Instagram Media',
-                'thumbnail': first['thumb'] ?? '',
+                'url': imgUrl,
+                'type': 'image',
+                'title': 'Instagram Photo Post',
+                'thumbnail': imgUrl,
                 'source': rawUrl,
               };
-              break;
             }
           }
         } catch (_) {}
       }
 
-      // Attempt 2: If public resolver fails or rate-limits, format direct preview stream
+      // --- TIER 2: Fast Public Cobalt & Mirror Endpoints ---
       if (mediaResult == null) {
-        // Provide stream format or route to in-app Web Inspector
-        mediaResult = {
-          'url': rawUrl,
-          'type': rawUrl.contains('.mp4') ? 'video' : 'web_stream',
-          'title': 'Instagram Post / Story',
-          'thumbnail': '',
-          'source': rawUrl,
-        };
+        final cobaltEndpoints = [
+          'https://api.cobalt.tools',
+          'https://cobalt-api.kwiatekm.pl',
+          'https://co.wuk.sh',
+        ];
+
+        for (final endpoint in cobaltEndpoints) {
+          try {
+            final res = await _dio.post(
+              endpoint,
+              data: {
+                'url': rawUrl,
+                'videoQuality': '720',
+                'filenameStyle': 'basic',
+              },
+              options: Options(
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                },
+                receiveTimeout: const Duration(seconds: 10),
+                sendTimeout: const Duration(seconds: 8),
+              ),
+            );
+
+            if (res.statusCode == 200 && res.data != null) {
+              final data = res.data;
+              if (data['url'] != null) {
+                mediaResult = {
+                  'url': data['url'] as String,
+                  'type': 'video',
+                  'title': 'Instagram Reel / Video',
+                  'thumbnail': data['thumbnail'] ?? '',
+                  'source': rawUrl,
+                };
+                break;
+              } else if (data['picker'] != null && (data['picker'] as List).isNotEmpty) {
+                final first = (data['picker'] as List).first;
+                mediaResult = {
+                  'url': first['url'] as String,
+                  'type': first['type'] ?? 'video',
+                  'title': 'Instagram Media',
+                  'thumbnail': first['thumb'] ?? '',
+                  'source': rawUrl,
+                };
+                break;
+              }
+            }
+          } catch (_) {}
+        }
+      }
+
+      // --- TIER 3: Instagram Shortcode Graph / App Query ---
+      if (mediaResult == null && (rawUrl.contains('instagram.com') || rawUrl.contains('instagr.am'))) {
+        final shortcodeMatch = RegExp(r'(?:reel|reels|p|tv)\/([A-Za-z0-9_-]+)').firstMatch(rawUrl);
+        if (shortcodeMatch != null) {
+          final shortcode = shortcodeMatch.group(1);
+          try {
+            final jsonRes = await _dio.get(
+              'https://www.instagram.com/p/$shortcode/?__a=1&__d=dis',
+              options: Options(
+                headers: {
+                  'User-Agent':
+                      'Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1',
+                  'Accept': '*/*',
+                  'X-Requested-With': 'XMLHttpRequest',
+                },
+                receiveTimeout: const Duration(seconds: 8),
+              ),
+            );
+            if (jsonRes.statusCode == 200 && jsonRes.data != null) {
+              final items = jsonRes.data['items'] as List?;
+              if (items != null && items.isNotEmpty) {
+                final item = items[0];
+                final videoVersions = item['video_versions'] as List?;
+                if (videoVersions != null && videoVersions.isNotEmpty) {
+                  mediaResult = {
+                    'url': videoVersions[0]['url'],
+                    'type': 'video',
+                    'title': 'Instagram Reel',
+                    'thumbnail': item['image_versions2']?['candidates']?[0]?['url'] ?? '',
+                    'source': rawUrl,
+                  };
+                }
+              }
+            }
+          } catch (_) {}
+        }
+      }
+
+      if (mediaResult == null) {
+        setState(() {
+          _isLoading = false;
+          _statusMessage = null;
+        });
+        _showToast('Could not resolve link. If it is private, use the In-App Web Grabber tab.');
+        return;
       }
 
       setState(() {
         _resolvedMedia = mediaResult;
         _isLoading = false;
+        _statusMessage = null;
       });
 
       // If resolved URL is direct video, initialize video player
@@ -272,7 +397,7 @@ class _SocialMediaDownloaderPageState extends State<SocialMediaDownloaderPage>
       final isVideo = type == 'video' || mediaUrl.contains('.mp4');
       final ext = isVideo ? 'mp4' : 'jpg';
       final fileName =
-          'PocketMates_${DateTime.now().millisecondsSinceEpoch}.$ext';
+          'PoketMates_${DateTime.now().millisecondsSinceEpoch}.$ext';
       final savePath = '${tempDir.path}/$fileName';
 
       await _dio.download(
@@ -287,16 +412,22 @@ class _SocialMediaDownloaderPageState extends State<SocialMediaDownloaderPage>
         },
       );
 
-      // Check gallery permission & save with Gal
-      final hasAccess = await Gal.hasAccess(toAlbum: false);
-      if (!hasAccess) {
-        await Gal.requestAccess(toAlbum: false);
-      }
+      // Check gallery permission & save with Gal (Android & iOS only)
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        try {
+          final hasAccess = await Gal.hasAccess(toAlbum: false);
+          if (!hasAccess) {
+            await Gal.requestAccess(toAlbum: false);
+          }
 
-      if (isVideo) {
-        await Gal.putVideo(savePath);
-      } else {
-        await Gal.putImage(savePath);
+          if (isVideo) {
+            await Gal.putVideo(savePath);
+          } else {
+            await Gal.putImage(savePath);
+          }
+        } catch (e) {
+          debugPrint('Gal save exception: $e');
+        }
       }
 
       HapticFeedback.heavyImpact();
@@ -837,10 +968,58 @@ class _SocialMediaDownloaderPageState extends State<SocialMediaDownloaderPage>
 
   // TAB 2: IN-APP WEB GRABBER (Direct Instagram browser with Story detector)
   Widget _buildWebGrabberTab(Gradient instaGradient) {
+    if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS) || _webViewController == null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131722),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF1E2333)),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: instaGradient,
+                  ),
+                  child: const Icon(Icons.smartphone_rounded,
+                      color: Colors.white, size: 36),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  'In-App Web Grabber',
+                  style: GoogleFonts.outfit(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'The embedded browser and live video sniffer are active on Android & iOS mobile devices.\n\nFor desktop, simply paste any public Instagram Reel or Story link into the "Fast Link Downloader" tab to download directly.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(
+                    fontSize: 13,
+                    color: Colors.white70,
+                    height: 1.5,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Stack(
       children: [
-        if (_webViewController != null)
-          WebViewWidget(controller: _webViewController!),
+        WebViewWidget(controller: _webViewController!),
         if (_isWebViewLoading)
           const Positioned(
             top: 0,

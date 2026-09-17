@@ -184,7 +184,7 @@ class _EnglishLearningHubPageState extends State<EnglishLearningHubPage>
       'scenario': 'At a Coffee Shop',
       'partnerName': 'Barista',
       'turns': [
-        {'speaker': 'partner', 'text': 'Welcome to Pocketmates Coffee! What can I get started for you today?'},
+        {'speaker': 'partner', 'text': 'Welcome to Poket Mates Coffee! What can I get started for you today?'},
         {'speaker': 'user', 'text': 'Hi, I would like a medium iced latte with oat milk, please.'},
         {'speaker': 'partner', 'text': 'Sure thing! Do you want any pastry or syrup with that?'},
         {'speaker': 'user', 'text': 'No thank you, just the latte. That is all.'},
@@ -193,15 +193,65 @@ class _EnglishLearningHubPageState extends State<EnglishLearningHubPage>
       ]
     },
     {
-      'scenario': 'Job Interview',
-      'partnerName': 'Interviewer',
+      'scenario': 'Job Interview (STAR Method)',
+      'partnerName': 'Hiring Manager',
       'turns': [
         {'speaker': 'partner', 'text': 'Thank you for coming in today. Can you tell me a bit about yourself?'},
-        {'speaker': 'user', 'text': 'I have three years of experience in app development, and I love building creative solutions.'},
+        {'speaker': 'user', 'text': 'I have three years of professional experience, and I specialize in communication and problem solving.'},
         {'speaker': 'partner', 'text': 'Excellent. What do you consider to be your greatest professional strength?'},
-        {'speaker': 'user', 'text': 'I am highly adaptable, a fast learner, and work extremely well under tight deadlines.'},
-        {'speaker': 'partner', 'text': 'Great. Why do you want to work for our company?'},
-        {'speaker': 'user', 'text': 'Your team is known for top-tier design and quality, and I want to grow alongside experts.'}
+        {'speaker': 'user', 'text': 'I am highly adaptable, a fast learner, and I communicate proactively under pressure.'},
+        {'speaker': 'partner', 'text': 'Great. Why do you want to join our organization?'},
+        {'speaker': 'user', 'text': 'Your company is an industry leader, and I want to contribute my skills to your innovative projects.'}
+      ]
+    },
+    {
+      'scenario': 'Airport Immigration & Customs',
+      'partnerName': 'Immigration Officer',
+      'turns': [
+        {'speaker': 'partner', 'text': 'Good morning. May I see your passport and boarding pass, please?'},
+        {'speaker': 'user', 'text': 'Good morning officer, here is my passport and boarding pass.'},
+        {'speaker': 'partner', 'text': 'What is the primary purpose of your visit today?'},
+        {'speaker': 'user', 'text': 'I am here for a business conference and some personal vacation.'},
+        {'speaker': 'partner', 'text': 'How long do you intend to stay in the country?'},
+        {'speaker': 'user', 'text': 'I will be staying for two weeks at the Grand Continental Hotel.'},
+        {'speaker': 'partner', 'text': 'Everything looks in order. Enjoy your stay!'},
+        {'speaker': 'user', 'text': 'Thank you very much, officer. Have a great day!'}
+      ]
+    },
+    {
+      'scenario': 'Hotel Check-In & Service Request',
+      'partnerName': 'Front Desk Agent',
+      'turns': [
+        {'speaker': 'partner', 'text': 'Welcome to the Grand Horizon Hotel. How may I assist you today?'},
+        {'speaker': 'user', 'text': 'Hello, I have a reservation under my name for a deluxe room.'},
+        {'speaker': 'partner', 'text': 'Found your booking! Would you prefer a high-floor room with a sea view?'},
+        {'speaker': 'user', 'text': 'Yes please, a high floor with a sea view would be wonderful.'},
+        {'speaker': 'partner', 'text': 'Here are your room keys on the twelfth floor. Breakfast starts at seven AM.'},
+        {'speaker': 'user', 'text': 'Thank you! Could I also request a wake-up call at six AM tomorrow?'}
+      ]
+    },
+    {
+      'scenario': 'Office Team Meeting & Ideas',
+      'partnerName': 'Team Lead',
+      'turns': [
+        {'speaker': 'partner', 'text': 'Thanks everyone for joining. Does anyone have feedback on our new product launch plan?'},
+        {'speaker': 'user', 'text': 'If I may jump in, I suggest we prioritize user onboarding tutorials first.'},
+        {'speaker': 'partner', 'text': 'That sounds promising. What data points support that direction?'},
+        {'speaker': 'user', 'text': 'Our survey indicates eighty percent of new users want quick guided video walkthroughs.'},
+        {'speaker': 'partner', 'text': 'Excellent point. Could you draft a brief proposal for our review by Friday?'},
+        {'speaker': 'user', 'text': 'Absolutely, I will have the complete proposal ready by Thursday evening.'}
+      ]
+    },
+    {
+      'scenario': 'Doctor Consultation & Health',
+      'partnerName': 'Doctor',
+      'turns': [
+        {'speaker': 'partner', 'text': 'Hello, please take a seat. What brings you in to see me today?'},
+        {'speaker': 'user', 'text': 'Hello doctor, I have had a sore throat and mild headache for the past two days.'},
+        {'speaker': 'partner', 'text': 'Do you have any fever, chills, or difficulty breathing?'},
+        {'speaker': 'user', 'text': 'No fever or breathing trouble, mostly just fatigue and body pain.'},
+        {'speaker': 'partner', 'text': 'It appears to be a seasonal viral infection. Drink plenty of warm fluids and take this medication.'},
+        {'speaker': 'user', 'text': 'Understood doctor. Thank you for your advice, I will rest well.'}
       ]
     }
   ];

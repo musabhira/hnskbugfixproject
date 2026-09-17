@@ -6,13 +6,15 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_service.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -21,7 +23,8 @@ class AdminDashboardPage extends StatefulWidget {
   State<AdminDashboardPage> createState() => _AdminDashboardPageState();
 }
 
-class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTickerProviderStateMixin {
+class _AdminDashboardPageState extends State<AdminDashboardPage>
+    with SingleTickerProviderStateMixin {
   final supabase = SupaFlow.client;
   late TabController _tabController;
   final String adminPin = '944797';
@@ -82,25 +85,59 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   bool _isLoadingMonetization = false;
   bool _adminHouseAdsEnabled = true;
   final TextEditingController _promoTitleController = TextEditingController();
-  final TextEditingController _promoSubtitleController = TextEditingController();
+  final TextEditingController _promoSubtitleController =
+      TextEditingController();
   final TextEditingController _promoBadgeController = TextEditingController();
   final TextEditingController _promoCtaController = TextEditingController();
   final TextEditingController _promoWebUrlController = TextEditingController();
-  final TextEditingController _promoMonthlyPriceController = TextEditingController();
-  final TextEditingController _promoYearlyPriceController = TextEditingController();
+  final TextEditingController _promoMonthlyPriceController =
+      TextEditingController();
+  final TextEditingController _promoYearlyPriceController =
+      TextEditingController();
   final TextEditingController _promoUpiIdController = TextEditingController();
   String _promoTargetPlatform = 'all';
   bool _promoIsActive = true;
 
+  // English Learning Media Tasks State
+  String _mediaTaskSearchQuery = '';
+  int _mediaTaskTierFilter = 0; // 0: All, 1: 1-30, 2: 31-60, 3: 61-90
+  Map<int, Map<String, dynamic>> _adminMediaOverrides = {};
+  bool _isLoadingAdminMedia = true;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 11, vsync: this);
+    _tabController = TabController(length: 12, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
       _loadMonetizationData();
+      _loadAdminMediaOverrides();
     });
+  }
+
+  Future<void> _loadAdminMediaOverrides() async {
+    setState(() => _isLoadingAdminMedia = true);
+    final prefs = await SharedPreferences.getInstance();
+    final Map<int, Map<String, dynamic>> loaded = {};
+    for (int d = 1; d <= 90; d++) {
+      final yt = prefs.getString('admin_learning_media_${d}_youtube');
+      final movie = prefs.getString('admin_learning_media_${d}_movie');
+      final phrases = prefs.getStringList('admin_learning_media_${d}_phrases');
+      if (yt != null || movie != null || phrases != null) {
+        loaded[d] = {
+          if (yt != null) 'youtubeUrl': yt,
+          if (movie != null) 'movie': movie,
+          if (phrases != null) 'phrases': phrases,
+        };
+      }
+    }
+    if (mounted) {
+      setState(() {
+        _adminMediaOverrides = loaded;
+        _isLoadingAdminMedia = false;
+      });
+    }
   }
 
   Future<void> _loadRobotCycleData() async {
@@ -195,12 +232,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Admin Access Required', style: TextStyle(color: Colors.white)),
+        title: const Text('Admin Access Required',
+            style: TextStyle(color: Colors.white)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text('Please enter the administrative PIN to unlock this section.', 
-              style: TextStyle(color: Colors.white70)),
+            const Text(
+                'Please enter the administrative PIN to unlock this section.',
+                style: TextStyle(color: Colors.white70)),
             const SizedBox(height: 20),
             TextField(
               controller: passwordController,
@@ -228,7 +267,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Color(0xFFFFFC00),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
             ),
             onPressed: () {
               if (passwordController.text == adminPin) {
@@ -238,12 +278,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               } else {
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Invalid PIN Code'), backgroundColor: Colors.red),
+                    const SnackBar(
+                        content: Text('Invalid PIN Code'),
+                        backgroundColor: Colors.red),
                   );
                 }
               }
             },
-            child: const Text('Unlock', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            child: const Text('Unlock',
+                style: TextStyle(
+                    color: Colors.black, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -272,14 +316,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     setState(() => isLoadingStats = true);
     try {
       final usersRes = await supabase.from('profile').select('id, verified');
-      final accessRes = await supabase.from('user_course_access').select('id').eq('has_paid', false);
-      
+      final accessRes = await supabase
+          .from('user_course_access')
+          .select('id')
+          .eq('has_paid', false);
+
       if (mounted) {
         setState(() {
           totalUsers = usersRes.length;
           verifiedUsers = usersRes.where((u) => u['verified'] == true).length;
           pendingCourseAccess = accessRes.length;
-          
+
           isLoadingStats = false;
         });
       }
@@ -339,15 +386,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       }
 
       final requests = List<Map<String, dynamic>>.from(accessRes);
-      final userIds = requests.map((r) => r['user_id'] as String).toSet().toList();
-      final courseIds = requests.map((r) => r['course_id'] as String).toSet().toList();
+      final userIds =
+          requests.map((r) => r['user_id'] as String).toSet().toList();
+      final courseIds =
+          requests.map((r) => r['course_id'] as String).toSet().toList();
 
       // Second, fetch profiles and courses for these IDs
       final profilesRes = await supabase
           .from('profile')
           .select('user_id, name, shop_name, phone_no')
           .inFilter('user_id', userIds);
-      
+
       final coursesRes = await supabase
           .from('courses')
           .select('id, title')
@@ -356,10 +405,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       final profilesMap = {
         for (var p in profilesRes) p['user_id'].toString(): p
       };
-      
-      final coursesMap = {
-        for (var c in coursesRes) c['id'].toString(): c
-      };
+
+      final coursesMap = {for (var c in coursesRes) c['id'].toString(): c};
 
       // Combine them
       final combined = requests.map((r) {
@@ -388,7 +435,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   Future<void> _loadReports() async {
     setState(() => isLoadingReports = true);
     try {
-      final res = await supabase.from('reports').select('*').order('created_at', ascending: false);
+      final res = await supabase
+          .from('reports')
+          .select('*')
+          .order('created_at', ascending: false);
       if (mounted) {
         setState(() {
           reportsList = List<Map<String, dynamic>>.from(res);
@@ -410,11 +460,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           .from('users')
           .select('id, email, password')
           .order('id');
-      
+
       // Fetch profiles (names)
-      final profilesRes = await supabase
-          .from('profile')
-          .select('user_id, name');
+      final profilesRes =
+          await supabase.from('profile').select('user_id, name');
 
       final profileMap = {
         for (var p in profilesRes) p['user_id'].toString(): p['name']
@@ -423,10 +472,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       if (mounted) {
         setState(() {
           allUsers = usersRes.map((u) {
-            return {
-              ...u,
-              'name': profileMap[u['id']] ?? 'Unknown User'
-            };
+            return {...u, 'name': profileMap[u['id']] ?? 'Unknown User'};
           }).toList();
           isLoadingAuth = false;
         });
@@ -439,37 +485,50 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   Future<void> _updateReportStatus(String reportId, String status) async {
     try {
-      await supabase.from('reports').update({'status': status}).eq('id', reportId);
+      await supabase
+          .from('reports')
+          .update({'status': status}).eq('id', reportId);
       _loadReports();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Report marked as $status'), backgroundColor: Colors.blue),
+          SnackBar(
+              content: Text('Report marked as $status'),
+              backgroundColor: Colors.blue),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating report: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Error updating report: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
   }
 
-  Future<void> _toggleUserVerification(String userId, bool currentStatus) async {
+  Future<void> _toggleUserVerification(
+      String userId, bool currentStatus) async {
     try {
-      await supabase.from('profile').update({'verified': !currentStatus}).eq('id', userId);
+      await supabase
+          .from('profile')
+          .update({'verified': !currentStatus}).eq('id', userId);
       _loadProfiles(); // Refresh
       _loadStats(); // Update stats
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('User ${!currentStatus ? "Verified" : "Unverified"} successfully!'), 
-          backgroundColor: !currentStatus ? Colors.green : Colors.orange),
+          SnackBar(
+              content: Text(
+                  'User ${!currentStatus ? "Verified" : "Unverified"} successfully!'),
+              backgroundColor: !currentStatus ? Colors.green : Colors.orange),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating verification: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Error updating verification: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -477,18 +536,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   Future<void> _approveCourseAccess(String accessId) async {
     try {
-      await supabase.from('user_course_access').update({'has_paid': true}).eq('id', accessId);
+      await supabase
+          .from('user_course_access')
+          .update({'has_paid': true}).eq('id', accessId);
       _loadPendingAccess();
       _loadStats();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Course access granted!'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('Course access granted!'),
+              backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error granting access: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Error granting access: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -501,8 +566,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Admin Dashboard', 
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: const Text('Admin Dashboard',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         backgroundColor: Colors.black,
         elevation: 0,
         centerTitle: true,
@@ -521,10 +586,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             Tab(icon: Icon(Icons.security_outlined), text: 'Auth'),
             Tab(icon: Icon(Icons.system_update_outlined), text: 'Update'),
             Tab(icon: Icon(Icons.build_circle_outlined), text: 'Tools'),
-            Tab(icon: Icon(Icons.collections_bookmark_outlined), text: 'E-Learning'),
+            Tab(
+                icon: Icon(Icons.collections_bookmark_outlined),
+                text: 'E-Learning'),
             Tab(icon: Icon(Icons.forum_outlined), text: 'English Hub'),
+            Tab(
+                icon: Icon(Icons.ondemand_video_rounded),
+                text: 'Media Tasks'),
             Tab(icon: Icon(Icons.smart_toy_outlined), text: 'Robots'),
-            Tab(icon: Icon(Icons.monetization_on_outlined), text: 'Monetization'),
+            Tab(
+                icon: Icon(Icons.monetization_on_outlined),
+                text: 'Monetization'),
           ],
         ),
       ),
@@ -540,6 +612,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           _buildToolsTab(),
           _buildELearningTab(),
           _buildEnglishHubTab(),
+          _buildMediaTasksTab(),
           _buildRobotsTab(),
           _buildMonetizationTab(),
         ],
@@ -554,8 +627,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   final List<String> allToolNames = [
     'Admin Panel',
-    'Zoyarex POS Admin',
-    'Zoyarex Super Admin',
     'Drawing Tool',
     'Schedule',
     'Tasks',
@@ -587,13 +658,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     try {
       final res = await supabase.from('app_tool_configs').select('*');
       final elearningConfig = res.firstWhere(
-        (c) => c['tool_name'] == 'elearning_unlocked',
-        orElse: () => {'tool_name': 'elearning_unlocked', 'android_active': false, 'ios_active': false}
-      );
+          (c) => c['tool_name'] == 'elearning_unlocked',
+          orElse: () => {
+                'tool_name': 'elearning_unlocked',
+                'android_active': false,
+                'ios_active': false
+              });
       final printingConfig = res.firstWhere(
-        (c) => c['tool_name'] == 'printing_unlocked',
-        orElse: () => {'tool_name': 'printing_unlocked', 'android_active': false, 'ios_active': false}
-      );
+          (c) => c['tool_name'] == 'printing_unlocked',
+          orElse: () => {
+                'tool_name': 'printing_unlocked',
+                'android_active': false,
+                'ios_active': false
+              });
       if (mounted) {
         setState(() {
           allToolConfigs = List<Map<String, dynamic>>.from(res);
@@ -616,13 +693,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         'android_active': val,
         'ios_active': val,
       }, onConflict: 'tool_name');
-      
+
       _loadGlobalToolConfigs();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(val ? 'E-Learning Academy Unlocked!' : 'E-Learning set to Coming Soon'),
+            content: Text(val
+                ? 'E-Learning Academy Unlocked!'
+                : 'E-Learning set to Coming Soon'),
             backgroundColor: val ? Colors.green : Colors.orange,
           ),
         );
@@ -641,13 +720,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         'android_active': val,
         'ios_active': val,
       }, onConflict: 'tool_name');
-      
+
       _loadGlobalToolConfigs();
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(val ? 'T-Shirt Printing Shop Unlocked!' : 'Printing Shop set to Coming Soon'),
+            content: Text(val
+                ? 'T-Shirt Printing Shop Unlocked!'
+                : 'Printing Shop set to Coming Soon'),
             backgroundColor: val ? Colors.green : Colors.orange,
           ),
         );
@@ -658,7 +739,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     }
   }
 
-  Future<void> _toggleGlobalToolVisibility(String toolName, String column, bool value) async {
+  Future<void> _toggleGlobalToolVisibility(
+      String toolName, String column, bool value) async {
     try {
       await supabase.from('app_tool_configs').upsert({
         'tool_name': toolName,
@@ -706,7 +788,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   List<String> grantedPrivateAccessTools = [];
 
-  Future<void> _toggleToolPermission(String toolName, {bool? block, bool? privateAccess}) async {
+  Future<void> _toggleToolPermission(String toolName,
+      {bool? block, bool? privateAccess}) async {
     if (selectedUserIdForTools == null) return;
 
     final Map<String, dynamic> update = {
@@ -717,20 +800,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     if (privateAccess != null) update['has_private_access'] = privateAccess;
 
     try {
-      await supabase.from('user_tool_permissions').upsert(update, onConflict: 'user_id, tool_name');
+      await supabase
+          .from('user_tool_permissions')
+          .upsert(update, onConflict: 'user_id, tool_name');
 
       if (mounted) {
         setState(() {
           if (block != null) {
             if (block) {
-              if (!restrictedToolsForSelectedUser.contains(toolName)) restrictedToolsForSelectedUser.add(toolName);
+              if (!restrictedToolsForSelectedUser.contains(toolName))
+                restrictedToolsForSelectedUser.add(toolName);
             } else {
               restrictedToolsForSelectedUser.remove(toolName);
             }
           }
           if (privateAccess != null) {
             if (privateAccess) {
-              if (!grantedPrivateAccessTools.contains(toolName)) grantedPrivateAccessTools.add(toolName);
+              if (!grantedPrivateAccessTools.contains(toolName))
+                grantedPrivateAccessTools.add(toolName);
             } else {
               grantedPrivateAccessTools.remove(toolName);
             }
@@ -741,7 +828,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       debugPrint('Error toggling tool permission: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating permission: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Error updating permission: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -775,66 +864,88 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   }
 
   Widget _buildGlobalToolsTab() {
-    return isLoadingToolConfigs 
-      ? const Center(child: CircularProgressIndicator())
-      : ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: allToolNames.length,
-          itemBuilder: (context, index) {
-            final toolName = allToolNames[index];
-            final config = allToolConfigs.firstWhere(
-              (c) => c['tool_name'] == toolName, 
-              orElse: () => {'tool_name': toolName, 'android_active': true, 'ios_active': true}
-            );
-            final androidActive = config['android_active'] ?? true;
-            final iosActive = config['ios_active'] ?? true;
+    return isLoadingToolConfigs
+        ? const Center(child: CircularProgressIndicator())
+        : ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: allToolNames.length,
+            itemBuilder: (context, index) {
+              final toolName = allToolNames[index];
+              final config = allToolConfigs.firstWhere(
+                  (c) => c['tool_name'] == toolName,
+                  orElse: () => {
+                        'tool_name': toolName,
+                        'android_active': true,
+                        'ios_active': true
+                      });
+              final androidActive = config['android_active'] ?? true;
+              final iosActive = config['ios_active'] ?? true;
 
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: ExpansionTile(
-                iconColor: Color(0xFFFFFC00),
-                collapsedIconColor: Colors.white54,
-                title: Text(toolName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                subtitle: Text(
-                  'Android: ${androidActive ? "ON" : "OFF"} | iOS: ${iosActive ? "ON" : "OFF"}',
-                  style: TextStyle(color: (androidActive || iosActive) ? Colors.green : Colors.red, fontSize: 11),
+              return Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[900],
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white10),
                 ),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Column(
-                      children: [
-                        _buildGlobalToggleRow('Public Android', Icons.android, androidActive, (v) => _toggleGlobalToolVisibility(toolName, 'android_active', v)),
-                        const Divider(color: Colors.white10),
-                        _buildGlobalToggleRow('Public iOS', Icons.apple, iosActive, (v) => _toggleGlobalToolVisibility(toolName, 'ios_active', v)),
-                      ],
-                    ),
+                child: ExpansionTile(
+                  iconColor: Color(0xFFFFFC00),
+                  collapsedIconColor: Colors.white54,
+                  title: Text(toolName,
+                      style: const TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold)),
+                  subtitle: Text(
+                    'Android: ${androidActive ? "ON" : "OFF"} | iOS: ${iosActive ? "ON" : "OFF"}',
+                    style: TextStyle(
+                        color: (androidActive || iosActive)
+                            ? Colors.green
+                            : Colors.red,
+                        fontSize: 11),
                   ),
-                ],
-              ),
-            );
-          },
-        );
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      child: Column(
+                        children: [
+                          _buildGlobalToggleRow(
+                              'Public Android',
+                              Icons.android,
+                              androidActive,
+                              (v) => _toggleGlobalToolVisibility(
+                                  toolName, 'android_active', v)),
+                          const Divider(color: Colors.white10),
+                          _buildGlobalToggleRow(
+                              'Public iOS',
+                              Icons.apple,
+                              iosActive,
+                              (v) => _toggleGlobalToolVisibility(
+                                  toolName, 'ios_active', v)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          );
   }
 
-  Widget _buildGlobalToggleRow(String label, IconData icon, bool value, Function(bool) onChanged) {
+  Widget _buildGlobalToggleRow(
+      String label, IconData icon, bool value, Function(bool) onChanged) {
     return Row(
       children: [
         Icon(icon, size: 18, color: value ? Colors.blue : Colors.grey),
         const SizedBox(width: 12),
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        Text(label,
+            style: const TextStyle(color: Colors.white70, fontSize: 13)),
         const Spacer(),
-          Switch(
-            activeThumbColor: Colors.blue,
-            value: value,
-            onChanged: onChanged,
-          ),
+        Switch(
+          activeThumbColor: Colors.blue,
+          value: value,
+          onChanged: onChanged,
+        ),
       ],
     );
   }
@@ -843,69 +954,79 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     String searchQuery = "";
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          final filtered = allProfiles.where((p) {
-            final name = p['name']?.toString().toLowerCase() ?? "";
-            final shop = p['shop_name']?.toString().toLowerCase() ?? "";
-            return name.contains(searchQuery.toLowerCase()) || 
-                   shop.contains(searchQuery.toLowerCase());
-          }).toList();
+      builder: (context) => StatefulBuilder(builder: (context, setDialogState) {
+        final filtered = allProfiles.where((p) {
+          final name = p['name']?.toString().toLowerCase() ?? "";
+          final shop = p['shop_name']?.toString().toLowerCase() ?? "";
+          return name.contains(searchQuery.toLowerCase()) ||
+              shop.contains(searchQuery.toLowerCase());
+        }).toList();
 
-          return AlertDialog(
-            backgroundColor: Colors.grey[900],
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-            title: const Text('Find User', style: TextStyle(color: Colors.white)),
-            content: SizedBox(
-              width: double.maxFinite,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  TextField(
-                    autofocus: true,
-                    onChanged: (v) => setDialogState(() => searchQuery = v),
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
-                      hintText: 'Search by name...',
-                      hintStyle: const TextStyle(color: Colors.grey),
-                      prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                      filled: true,
-                      fillColor: Colors.grey[850],
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                    ),
+        return AlertDialog(
+          backgroundColor: Colors.grey[900],
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: const Text('Find User', style: TextStyle(color: Colors.white)),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  autofocus: true,
+                  onChanged: (v) => setDialogState(() => searchQuery = v),
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Search by name...',
+                    hintStyle: const TextStyle(color: Colors.grey),
+                    prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                    filled: true,
+                    fillColor: Colors.grey[850],
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none),
                   ),
-                  const SizedBox(height: 16),
-                  ConstrainedBox(
-                    constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.4),
-                    child: ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: filtered.length,
-                      itemBuilder: (context, index) {
-                        final p = filtered[index];
-                        return ListTile(
-                          title: Text(p['name'] ?? 'Unknown', style: const TextStyle(color: Colors.white)),
-                          subtitle: Text(p['shop_name'] ?? '', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                          onTap: () {
-                            Navigator.pop(context);
-                            _loadUserPermissions(p['user_id']?.toString() ?? p['id'].toString());
-                          },
-                        );
-                      },
-                    ),
+                ),
+                const SizedBox(height: 16),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.4),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final p = filtered[index];
+                      return ListTile(
+                        title: Text(p['name'] ?? 'Unknown',
+                            style: const TextStyle(color: Colors.white)),
+                        subtitle: Text(p['shop_name'] ?? '',
+                            style: const TextStyle(
+                                color: Colors.grey, fontSize: 12)),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _loadUserPermissions(
+                              p['user_id']?.toString() ?? p['id'].toString());
+                        },
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          );
-        }
-      ),
+          ),
+        );
+      }),
     );
   }
 
   Widget _buildUserToolsTab() {
-    final selectedUser = selectedUserIdForTools == null 
-        ? null 
-        : allProfiles.firstWhere((p) => (p['user_id']?.toString() ?? p['id'].toString()) == selectedUserIdForTools, orElse: () => {});
+    final selectedUser = selectedUserIdForTools == null
+        ? null
+        : allProfiles.firstWhere(
+            (p) =>
+                (p['user_id']?.toString() ?? p['id'].toString()) ==
+                selectedUserIdForTools,
+            orElse: () => {});
 
     return Column(
       children: [
@@ -918,7 +1039,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               decoration: BoxDecoration(
                 color: Colors.grey[900],
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Color(0xFFFFFC00).withValues(alpha: 0.3)),
+                border:
+                    Border.all(color: Color(0xFFFFFC00).withValues(alpha: 0.3)),
               ),
               child: Row(
                 children: [
@@ -930,10 +1052,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       children: [
                         Text(
                           selectedUser?['name'] ?? 'Select User to Manage',
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                         if (selectedUser != null)
-                          Text(selectedUser['shop_name'] ?? 'No shop info', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                          Text(selectedUser['shop_name'] ?? 'No shop info',
+                              style: const TextStyle(
+                                  color: Colors.grey, fontSize: 12)),
                       ],
                     ),
                   ),
@@ -946,91 +1071,116 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         if (selectedUserIdForTools != null)
           Expanded(
             child: isLoadingPermissions
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: allToolNames.length,
-                  itemBuilder: (context, index) {
-                    final toolName = allToolNames[index];
-                    final isBlocked = restrictedToolsForSelectedUser.contains(toolName);
-                    final hasPrivate = grantedPrivateAccessTools.contains(toolName);
-                    
-                    final config = allToolConfigs.firstWhere(
-                      (c) => c['tool_name'] == toolName, 
-                      orElse: () => {'tool_name': toolName, 'android_active': true, 'ios_active': true}
-                    );
-                    final androidActive = config['android_active'] ?? true;
-                    final iosActive = config['ios_active'] ?? true;
-                    final toolIsPublic = androidActive || iosActive;
-                    
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isBlocked ? Colors.red.withValues(alpha: 0.3) : Colors.white10,
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: allToolNames.length,
+                    itemBuilder: (context, index) {
+                      final toolName = allToolNames[index];
+                      final isBlocked =
+                          restrictedToolsForSelectedUser.contains(toolName);
+                      final hasPrivate =
+                          grantedPrivateAccessTools.contains(toolName);
+
+                      final config = allToolConfigs.firstWhere(
+                          (c) => c['tool_name'] == toolName,
+                          orElse: () => {
+                                'tool_name': toolName,
+                                'android_active': true,
+                                'ios_active': true
+                              });
+                      final androidActive = config['android_active'] ?? true;
+                      final iosActive = config['ios_active'] ?? true;
+                      final toolIsPublic = androidActive || iosActive;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isBlocked
+                                ? Colors.red.withValues(alpha: 0.3)
+                                : Colors.white10,
+                          ),
                         ),
-                      ),
-                      child: Column(
-                        children: [
-                          ListTile(
-                            title: Text(toolName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            subtitle: Text(
-                              toolIsPublic 
-                                ? (isBlocked ? 'ACCESS BLOCKED' : 'Public Access')
-                                : (hasPrivate ? 'PRIVATE ACCESS GRANTED' : 'Access Restricted'),
-                              style: TextStyle(
-                                color: (toolIsPublic && !isBlocked) || (!toolIsPublic && hasPrivate) 
-                                  ? Colors.green 
-                                  : Colors.red,
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold
+                        child: Column(
+                          children: [
+                            ListTile(
+                              title: Text(toolName,
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold)),
+                              subtitle: Text(
+                                toolIsPublic
+                                    ? (isBlocked
+                                        ? 'ACCESS BLOCKED'
+                                        : 'Public Access')
+                                    : (hasPrivate
+                                        ? 'PRIVATE ACCESS GRANTED'
+                                        : 'Access Restricted'),
+                                style: TextStyle(
+                                    color: (toolIsPublic && !isBlocked) ||
+                                            (!toolIsPublic && hasPrivate)
+                                        ? Colors.green
+                                        : Colors.red,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                // Block Toggle (only useful if public)
-                                Row(
-                                  children: [
-                                    const Text('Block', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                                    Switch(
-                                      activeThumbColor: Colors.red,
-                                      value: isBlocked,
-                                      onChanged: (val) => _toggleToolPermission(toolName, block: val),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(width: 20),
-                                // Private Access Toggle
-                                Row(
-                                  children: [
-                                    const Text('Private', style: TextStyle(color: Colors.grey, fontSize: 12)),
-                                    Switch(
-                                      activeThumbColor: Colors.blue,
-                                      value: hasPrivate,
-                                      onChanged: (val) => _toggleToolPermission(toolName, privateAccess: val),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  left: 16, right: 16, bottom: 8),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  // Block Toggle (only useful if public)
+                                  Row(
+                                    children: [
+                                      const Text('Block',
+                                          style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 12)),
+                                      Switch(
+                                        activeThumbColor: Colors.red,
+                                        value: isBlocked,
+                                        onChanged: (val) =>
+                                            _toggleToolPermission(toolName,
+                                                block: val),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 20),
+                                  // Private Access Toggle
+                                  Row(
+                                    children: [
+                                      const Text('Private',
+                                          style: TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 12)),
+                                      Switch(
+                                        activeThumbColor: Colors.blue,
+                                        value: hasPrivate,
+                                        onChanged: (val) =>
+                                            _toggleToolPermission(toolName,
+                                                privateAccess: val),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
           )
         else
           const Expanded(
             child: Center(
-              child: Text('Click the search button above to find a user.', 
-                style: TextStyle(color: Colors.grey)),
+              child: Text('Click the search button above to find a user.',
+                  style: TextStyle(color: Colors.grey)),
             ),
           ),
       ],
@@ -1043,33 +1193,53 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       child: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          const Text('Platform Statistics', 
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white70)),
+          const Text('Platform Statistics',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white70)),
           const SizedBox(height: 15),
           Row(
             children: [
-              _buildStatCard('Total Users', totalUsers.toString(), Icons.group, Colors.blue),
+              _buildStatCard('Total Users', totalUsers.toString(), Icons.group,
+                  Colors.blue),
               const SizedBox(width: 15),
-              _buildStatCard('Verified', verifiedUsers.toString(), Icons.verified_user, Colors.green),
+              _buildStatCard('Verified', verifiedUsers.toString(),
+                  Icons.verified_user, Colors.green),
             ],
           ),
           const SizedBox(height: 15),
           Row(
             children: [
-              _buildStatCard('Course Requests', pendingCourseAccess.toString(), Icons.pending_actions, Colors.orange),
+              _buildStatCard('Course Requests', pendingCourseAccess.toString(),
+                  Icons.pending_actions, Colors.orange),
               const SizedBox(width: 15),
-              _buildStatCard('Total Reports', totalReports.toString(), Icons.report, Colors.red),
+              _buildStatCard('Total Reports', totalReports.toString(),
+                  Icons.report, Colors.red),
             ],
           ),
           const SizedBox(height: 30),
-          const Text('Quick Actions', 
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white70)),
+          const Text('Quick Actions',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white70)),
           const SizedBox(height: 15),
-          _buildQuickActionCard('Broadcast Message', 'Send a notification to all users', Icons.campaign_outlined, Colors.blue, () {
+          _buildQuickActionCard(
+              'Broadcast Message',
+              'Send a notification to all users',
+              Icons.campaign_outlined,
+              Colors.blue, () {
             _tabController.animateTo(1); // Go to users
           }),
-          _buildQuickActionCard('Manage Subscriptions', 'View and edit user plans', Icons.subscriptions_outlined, Colors.indigo, () {}),
-          _buildQuickActionCard('Support Tickets', 'Resolve user complaints', Icons.support_agent_outlined, Colors.teal, () {
+          _buildQuickActionCard(
+              'Manage Subscriptions',
+              'View and edit user plans',
+              Icons.subscriptions_outlined,
+              Colors.indigo,
+              () {}),
+          _buildQuickActionCard('Support Tickets', 'Resolve user complaints',
+              Icons.support_agent_outlined, Colors.teal, () {
             _tabController.animateTo(3); // Go to reports
           }),
         ],
@@ -1077,29 +1247,41 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+      String label, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.2), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4))
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Icon(icon, color: color, size: 28),
             const SizedBox(height: 12),
-            Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-            Text(label, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+            Text(value,
+                style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white)),
+            Text(label,
+                style: const TextStyle(color: Colors.grey, fontSize: 13)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildQuickActionCard(String title, String subtitle, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildQuickActionCard(String title, String subtitle, IconData icon,
+      Color color, VoidCallback onTap) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1108,13 +1290,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         decoration: BoxDecoration(
           color: Colors.grey[900],
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2))],
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 2))
+          ],
         ),
         child: Row(
           children: [
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1), shape: BoxShape.circle),
               child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(width: 16),
@@ -1122,8 +1310,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white)),
-                  Text(subtitle, style: TextStyle(color: Colors.grey[400], fontSize: 13)),
+                  Text(title,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                          color: Colors.white)),
+                  Text(subtitle,
+                      style: TextStyle(color: Colors.grey[400], fontSize: 13)),
                 ],
               ),
             ),
@@ -1138,7 +1331,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     final filteredUsers = allProfiles.where((u) {
       final name = u['name']?.toString().toLowerCase() ?? "";
       final shop = u['shop_name']?.toString().toLowerCase() ?? "";
-      return name.contains(userSearchQuery.toLowerCase()) || shop.contains(userSearchQuery.toLowerCase());
+      return name.contains(userSearchQuery.toLowerCase()) ||
+          shop.contains(userSearchQuery.toLowerCase());
     }).toList();
 
     return Column(
@@ -1154,56 +1348,69 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               prefixIcon: const Icon(Icons.search, color: Colors.grey),
               filled: true,
               fillColor: Colors.grey[900],
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none),
             ),
           ),
         ),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _loadProfiles,
-            child: isLoadingUsers 
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                  itemCount: filteredUsers.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemBuilder: (context, index) {
-                    final user = filteredUsers[index];
-                    final isVerified = user['verified'] == true;
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[900],
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.all(12),
-                        leading: CircleAvatar(
-                          radius: 25,
-                          backgroundImage: (user['profile_image_url'] != null)
-                             ? CachedNetworkImageProvider(user['profile_image_url'])
-                             : null,
-                          backgroundColor: Colors.blue[100],
-                          child: (user['profile_image_url'] == null) 
-                            ? Text(user['name']?[0] ?? "?", style: const TextStyle(fontWeight: FontWeight.bold))
-                            : null,
+            child: isLoadingUsers
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    itemCount: filteredUsers.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemBuilder: (context, index) {
+                      final user = filteredUsers[index];
+                      final isVerified = user['verified'] == true;
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        title: Row(
-                          children: [
-                            Text(user['name'] ?? 'Unknown User', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                            if (isVerified) const SizedBox(width: 4),
-                            if (isVerified) const Icon(Icons.verified, color: Color(0xFFFFFC00), size: 16),
-                          ],
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.all(12),
+                          leading: CircleAvatar(
+                            radius: 25,
+                            backgroundImage: (user['profile_image_url'] != null)
+                                ? CachedNetworkImageProvider(
+                                    user['profile_image_url'])
+                                : null,
+                            backgroundColor: Colors.blue[100],
+                            child: (user['profile_image_url'] == null)
+                                ? Text(user['name']?[0] ?? "?",
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold))
+                                : null,
+                          ),
+                          title: Row(
+                            children: [
+                              Text(user['name'] ?? 'Unknown User',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white)),
+                              if (isVerified) const SizedBox(width: 4),
+                              if (isVerified)
+                                const Icon(Icons.verified,
+                                    color: Color(0xFFFFFC00), size: 16),
+                            ],
+                          ),
+                          subtitle: Text(user['shop_name'] ?? 'No shop name',
+                              style: const TextStyle(
+                                  fontSize: 12, color: Colors.grey)),
+                          trailing: Switch(
+                            value: isVerified,
+                            activeThumbColor: Colors.blue,
+                            onChanged: (v) =>
+                                _toggleUserVerification(user['id'], isVerified),
+                          ),
                         ),
-                        subtitle: Text(user['shop_name'] ?? 'No shop name', style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                        trailing: Switch(
-                          value: isVerified,
-                          activeThumbColor: Colors.blue,
-                          onChanged: (v) => _toggleUserVerification(user['id'], isVerified),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                      );
+                    },
+                  ),
           ),
         ),
       ],
@@ -1214,88 +1421,123 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     return RefreshIndicator(
       onRefresh: _loadPendingAccess,
       child: isLoadingAccess
-        ? const Center(child: CircularProgressIndicator())
-        : (pendingAccessList.isEmpty)
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.done_all, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  const Text('All clear!', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                  const Text('No pending requests currently.', style: TextStyle(color: Colors.grey, fontSize: 14)),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: pendingAccessList.length,
-              itemBuilder: (context, index) {
-                final req = pendingAccessList[index];
-                final profile = req['profile'] ?? {};
-                final course = req['courses'] ?? {};
-                final date = DateTime.parse(req['created_at']);
-                
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[900],
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))],
-                  ),
+          ? const Center(child: CircularProgressIndicator())
+          : (pendingAccessList.isEmpty)
+              ? Center(
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(color: Colors.orange.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
-                              child: const Icon(Icons.school, color: Colors.orange, size: 24),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(course['title'] ?? 'Unknown Course', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
-                                  Text('Request by: ${profile['name'] ?? "User"}', style: TextStyle(color: Colors.grey[400], fontSize: 13)),
-                                ],
-                              ),
-                            ),
-                            Text('${date.day}/${date.month}', style: const TextStyle(color: Colors.grey, fontSize: 12)),
-                          ],
-                        ),
-                      ),
-                      Divider(height: 1, color: Colors.white.withValues(alpha: 0.1)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        child: Row(
-                          children: [
-                            Icon(Icons.phone_android, size: 14, color: Colors.grey[400]),
-                            const SizedBox(width: 4),
-                            Text(profile['phone_no'] ?? "No Phone", style: TextStyle(color: Colors.grey[500], fontSize: 12)),
-                            const Spacer(),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                                padding: const EdgeInsets.symmetric(horizontal: 20),
-                              ),
-                              onPressed: () => _approveCourseAccess(req['id']),
-                              child: const Text('Grant Access', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                            ),
-                          ],
-                        ),
-                      ),
+                      Icon(Icons.done_all, size: 64, color: Colors.grey[400]),
+                      const SizedBox(height: 16),
+                      const Text('All clear!',
+                          style: TextStyle(color: Colors.grey, fontSize: 16)),
+                      const Text('No pending requests currently.',
+                          style: TextStyle(color: Colors.grey, fontSize: 14)),
                     ],
                   ),
-                );
-              },
-            ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: pendingAccessList.length,
+                  itemBuilder: (context, index) {
+                    final req = pendingAccessList[index];
+                    final profile = req['profile'] ?? {};
+                    final course = req['courses'] ?? {};
+                    final date = DateTime.parse(req['created_at']);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[900],
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.05)),
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4))
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                      color:
+                                          Colors.orange.withValues(alpha: 0.1),
+                                      borderRadius: BorderRadius.circular(12)),
+                                  child: const Icon(Icons.school,
+                                      color: Colors.orange, size: 24),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(course['title'] ?? 'Unknown Course',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 16,
+                                              color: Colors.white)),
+                                      Text(
+                                          'Request by: ${profile['name'] ?? "User"}',
+                                          style: TextStyle(
+                                              color: Colors.grey[400],
+                                              fontSize: 13)),
+                                    ],
+                                  ),
+                                ),
+                                Text('${date.day}/${date.month}',
+                                    style: const TextStyle(
+                                        color: Colors.grey, fontSize: 12)),
+                              ],
+                            ),
+                          ),
+                          Divider(
+                              height: 1,
+                              color: Colors.white.withValues(alpha: 0.1)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 12),
+                            child: Row(
+                              children: [
+                                Icon(Icons.phone_android,
+                                    size: 14, color: Colors.grey[400]),
+                                const SizedBox(width: 4),
+                                Text(profile['phone_no'] ?? "No Phone",
+                                    style: TextStyle(
+                                        color: Colors.grey[500], fontSize: 12)),
+                                const Spacer(),
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    elevation: 0,
+                                    shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8)),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 20),
+                                  ),
+                                  onPressed: () =>
+                                      _approveCourseAccess(req['id']),
+                                  child: const Text('Grant Access',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
     );
   }
 
@@ -1309,9 +1551,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.check_circle_outline, size: 64, color: Colors.grey[300]),
+                      Icon(Icons.check_circle_outline,
+                          size: 64, color: Colors.grey[300]),
                       const SizedBox(height: 16),
-                      const Text('No reports to review!', style: TextStyle(color: Colors.grey)),
+                      const Text('No reports to review!',
+                          style: TextStyle(color: Colors.grey)),
                     ],
                   ),
                 )
@@ -1329,39 +1573,67 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       decoration: BoxDecoration(
                         color: Colors.grey[900],
                         borderRadius: BorderRadius.circular(16),
-                        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4)],
+                        boxShadow: [
+                          BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 4)
+                        ],
                       ),
                       child: ExpansionTile(
                         leading: Icon(
-                          status == 'resolved' ? Icons.check_circle : Icons.warning_amber_rounded,
-                          color: status == 'resolved' ? Colors.green : Colors.orange,
+                          status == 'resolved'
+                              ? Icons.check_circle
+                              : Icons.warning_amber_rounded,
+                          color: status == 'resolved'
+                              ? Colors.green
+                              : Colors.orange,
                         ),
-                        title: Text('${type.toString().toUpperCase()} - ${report['content_type']}',
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white)),
-                        subtitle: Text('Status: $status • ${date.day}/${date.month}',
-                            style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                        title: Text(
+                            '${type.toString().toUpperCase()} - ${report['content_type']}',
+                            style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Colors.white)),
+                        subtitle: Text(
+                            'Status: $status • ${date.day}/${date.month}',
+                            style: TextStyle(
+                                color: Colors.grey[400], fontSize: 12)),
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Description:', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
-                                Text(report['description'] ?? 'No description provided.', style: const TextStyle(color: Colors.white70)),
+                                const Text('Description:',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white)),
+                                Text(
+                                    report['description'] ??
+                                        'No description provided.',
+                                    style:
+                                        const TextStyle(color: Colors.white70)),
                                 const SizedBox(height: 12),
                                 if (status == 'pending' || status == 'reviewed')
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [
                                       TextButton(
-                                        onPressed: () => _updateReportStatus(report['id'], 'dismissed'),
-                                        child: const Text('Dismiss', style: TextStyle(color: Colors.grey)),
+                                        onPressed: () => _updateReportStatus(
+                                            report['id'], 'dismissed'),
+                                        child: const Text('Dismiss',
+                                            style:
+                                                TextStyle(color: Colors.grey)),
                                       ),
                                       const SizedBox(width: 8),
                                       ElevatedButton(
-                                        onPressed: () => _updateReportStatus(report['id'], 'resolved'),
-                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                                        child: const Text('Mark Resolved', style: TextStyle(color: Colors.white)),
+                                        onPressed: () => _updateReportStatus(
+                                            report['id'], 'resolved'),
+                                        style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.blue),
+                                        child: const Text('Mark Resolved',
+                                            style:
+                                                TextStyle(color: Colors.white)),
                                       ),
                                     ],
                                   ),
@@ -1500,7 +1772,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 ],
                               ),
                               leading: CircleAvatar(
-                                backgroundColor: Color(0xFFFFFC00).withValues(alpha: 0.1),
+                                backgroundColor:
+                                    Color(0xFFFFFC00).withValues(alpha: 0.1),
                                 child: const Icon(Icons.lock_person,
                                     color: Color(0xFFFFFC00)),
                               ),
@@ -1515,7 +1788,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   }
 
   Widget _buildUpdateTab() {
-    if (isLoadingUpdate) return const Center(child: CircularProgressIndicator());
+    if (isLoadingUpdate)
+      return const Center(child: CircularProgressIndicator());
     if (appUpdateData == null) {
       return Center(
         child: Column(
@@ -1523,8 +1797,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           children: [
             const Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
-            const Text('Failed to load update metadata', style: TextStyle(color: Colors.white)),
-            TextButton(onPressed: _loadAppUpdateData, child: const Text('Retry')),
+            const Text('Failed to load update metadata',
+                style: TextStyle(color: Colors.white)),
+            TextButton(
+                onPressed: _loadAppUpdateData, child: const Text('Retry')),
           ],
         ),
       );
@@ -1535,10 +1811,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Platform Versioning', 
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const Text('Platform Versioning',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
           const SizedBox(height: 20),
-          
           _buildUpdateControlCard(
             'Android Deployment',
             Icons.android,
@@ -1547,9 +1825,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             'android_active',
             appUpdateData!['android_link'] ?? '',
           ),
-          
           const SizedBox(height: 20),
-          
           _buildUpdateControlCard(
             'iOS Deployment',
             Icons.apple,
@@ -1558,43 +1834,44 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             'ios_active',
             appUpdateData!['ios_link'] ?? '',
           ),
-          
           const SizedBox(height: 30),
-          
-          const Text('Global Update Details', 
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const Text('Global Update Details',
+              style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white)),
           const SizedBox(height: 15),
-          
           _buildTextField('Update Title', 'title'),
           const SizedBox(height: 15),
           _buildTextField('Description', 'description', maxLines: 3),
           const SizedBox(height: 15),
-          
           Row(
             children: [
-              const Text('Mandatory Update', style: TextStyle(color: Colors.white)),
+              const Text('Mandatory Update',
+                  style: TextStyle(color: Colors.white)),
               const Spacer(),
               Switch(
                 value: appUpdateData!['is_mandatory'] ?? false,
-                onChanged: (v) => setState(() => appUpdateData!['is_mandatory'] = v),
+                onChanged: (v) =>
+                    setState(() => appUpdateData!['is_mandatory'] = v),
                 activeThumbColor: Colors.red,
               ),
             ],
           ),
-          
           const SizedBox(height: 40),
-          
           SizedBox(
             width: double.infinity,
             height: 50,
             child: ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFFFFFC00),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: _updateAppVersion,
-              child: const Text('Push Global Update Configuration', 
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              child: const Text('Push Global Update Configuration',
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ),
           const SizedBox(height: 40),
@@ -1603,7 +1880,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     );
   }
 
-  Widget _buildUpdateControlCard(String title, IconData icon, Color iconColor, String versionKey, String activeKey, String link) {
+  Widget _buildUpdateControlCard(String title, IconData icon, Color iconColor,
+      String versionKey, String activeKey, String link) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -1617,9 +1895,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             children: [
               Icon(icon, color: iconColor, size: 24),
               const SizedBox(width: 12),
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+              Text(title,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold, color: Colors.white)),
               const Spacer(),
-              const Text('Active', style: TextStyle(color: Colors.grey, fontSize: 12)),
+              const Text('Active',
+                  style: TextStyle(color: Colors.grey, fontSize: 12)),
               Switch(
                 value: appUpdateData![activeKey] ?? false,
                 onChanged: (v) => setState(() => appUpdateData![activeKey] = v),
@@ -1632,7 +1913,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             children: [
               Expanded(
                 child: TextField(
-                  controller: TextEditingController(text: appUpdateData![versionKey]?.toString() ?? '1.0.0'),
+                  controller: TextEditingController(
+                      text: appUpdateData![versionKey]?.toString() ?? '1.0.0'),
                   style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
                     labelText: 'Store Version',
@@ -1644,12 +1926,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               ),
               const SizedBox(width: 10),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: Colors.blue.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text('Live', style: TextStyle(color: Colors.blue, fontSize: 10, fontWeight: FontWeight.bold)),
+                child: const Text('Live',
+                    style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold)),
               ),
             ],
           ),
@@ -1660,7 +1947,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   Widget _buildTextField(String label, String key, {int maxLines = 1}) {
     return TextField(
-      controller: TextEditingController(text: appUpdateData![key]?.toString() ?? ''),
+      controller:
+          TextEditingController(text: appUpdateData![key]?.toString() ?? ''),
       maxLines: maxLines,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
@@ -1668,7 +1956,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         labelStyle: const TextStyle(color: Colors.grey),
         filled: true,
         fillColor: Colors.grey[900],
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
       ),
       onChanged: (v) => appUpdateData![key] = v,
     );
@@ -1677,7 +1967,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   Future<void> _loadAppUpdateData() async {
     setState(() => isLoadingUpdate = true);
     try {
-      final res = await supabase.from('app_updates').select('*').eq('id', 1).maybeSingle();
+      final res = await supabase
+          .from('app_updates')
+          .select('*')
+          .eq('id', 1)
+          .maybeSingle();
       if (mounted) {
         setState(() {
           appUpdateData = res;
@@ -1704,17 +1998,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         'description': appUpdateData!['description'],
         'features': appUpdateData!['features'],
       }).eq('id', 1);
-      
+
       _loadAppUpdateData();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('App configuration updated successfully!'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('App configuration updated successfully!'),
+              backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating app config: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Error updating app config: $e'),
+              backgroundColor: Colors.red),
         );
       }
       if (mounted) setState(() => isLoadingUpdate = false);
@@ -1745,20 +2043,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     }
   }
 
-  Future<void> _updateCourseRequestStatus(String requestId, String status) async {
+  Future<void> _updateCourseRequestStatus(
+      String requestId, String status) async {
     try {
       await supabase
           .from('course_publish_requests')
-          .update({'status': status})
-          .eq('id', requestId);
+          .update({'status': status}).eq('id', requestId);
       _loadCourseRequests(); // Refresh
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Request marked as $status')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Request marked as $status')));
       }
     } catch (e) {
       debugPrint('Error updating request status: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -1767,7 +2067,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     if (!mounted) return;
     setState(() => isLoadingCourses = true);
     try {
-      final res = await supabase.from('courses').select().order('created_at', ascending: false);
+      final res = await supabase
+          .from('courses')
+          .select()
+          .order('created_at', ascending: false);
       if (mounted) {
         setState(() {
           allCourses = List<Map<String, dynamic>>.from(res);
@@ -1784,7 +2087,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     if (!mounted) return;
     setState(() => isLoadingLessons = true);
     try {
-      final res = await supabase.from('lessons').select().eq('course_id', courseId).order('created_at', ascending: true);
+      final res = await supabase
+          .from('lessons')
+          .select()
+          .eq('course_id', courseId)
+          .order('created_at', ascending: true);
       if (mounted) {
         setState(() {
           courseLessons = List<Map<String, dynamic>>.from(res);
@@ -1798,17 +2105,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   }
 
   // Upload helper using FilePicker.pickFiles
-  Future<String?> _uploadFile({required String bucketName, required FileType fileType}) async {
+  Future<String?> _uploadFile(
+      {required String bucketName, required FileType fileType}) async {
     try {
       final result = await FilePicker.pickFiles(type: fileType);
-      if (result == null || result.files.isEmpty || result.files.single.path == null) {
+      if (result == null ||
+          result.files.isEmpty ||
+          result.files.single.path == null) {
         return null;
       }
-      
+
       final path = result.files.single.path!;
       final file = File(path);
-      final name = '${DateTime.now().millisecondsSinceEpoch}_${result.files.single.name.replaceAll(RegExp(r'[^a-zA-Z0-9.]'), '_')}';
-      
+      final name =
+          '${DateTime.now().millisecondsSinceEpoch}_${result.files.single.name.replaceAll(RegExp(r'[^a-zA-Z0-9.]'), '_')}';
+
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -1817,7 +2128,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               const SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(color: Color(0xFFFFFC00), strokeWidth: 2),
+                child: CircularProgressIndicator(
+                    color: Color(0xFFFFFC00), strokeWidth: 2),
               ),
               const SizedBox(width: 15),
               Expanded(
@@ -1835,14 +2147,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
       // Perform upload
       await supabase.storage.from(bucketName).upload(name, file);
-      
+
       // Get URL
       final url = supabase.storage.from(bucketName).getPublicUrl(name);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Upload successful!'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('Upload successful!'),
+              backgroundColor: Colors.green),
         );
       }
       return url;
@@ -1851,7 +2165,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       if (mounted) {
         ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Upload failed: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Upload failed: $e'), backgroundColor: Colors.red),
         );
       }
       return null;
@@ -1863,34 +2178,42 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     try {
       // Show confirmation dialog first
       bool confirm = await showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: Colors.grey[900],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Delete Course?', style: TextStyle(color: Colors.white)),
-          content: const Text('This will delete the course permanently. Lessons associated with this course might also fail or remain orphaned. Are you sure?',
-              style: TextStyle(color: Colors.white70)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: Colors.grey[900],
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              title: const Text('Delete Course?',
+                  style: TextStyle(color: Colors.white)),
+              content: const Text(
+                  'This will delete the course permanently. Lessons associated with this course might also fail or remain orphaned. Are you sure?',
+                  style: TextStyle(color: Colors.white70)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel',
+                      style: TextStyle(color: Colors.grey)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child:
+                      const Text('Delete', style: TextStyle(color: Colors.red)),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      ) ?? false;
+          ) ??
+          false;
 
       if (!confirm) return;
 
       setState(() => isLoadingCourses = true);
       await supabase.from('courses').delete().eq('id', courseId);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Course deleted successfully!'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('Course deleted successfully!'),
+              backgroundColor: Colors.green),
         );
       }
       _loadCourses();
@@ -1899,7 +2222,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       if (mounted) {
         setState(() => isLoadingCourses = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete course: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Failed to delete course: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -1909,33 +2234,42 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   Future<void> _deleteLesson(String lessonId, String courseId) async {
     try {
       bool confirm = await showDialog(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          backgroundColor: Colors.grey[900],
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Delete Lesson?', style: TextStyle(color: Colors.white)),
-          content: const Text('This will delete the lesson permanently. Are you sure?', style: TextStyle(color: Colors.white70)),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: Colors.grey[900],
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              title: const Text('Delete Lesson?',
+                  style: TextStyle(color: Colors.white)),
+              content: const Text(
+                  'This will delete the lesson permanently. Are you sure?',
+                  style: TextStyle(color: Colors.white70)),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, false),
+                  child: const Text('Cancel',
+                      style: TextStyle(color: Colors.grey)),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx, true),
+                  child:
+                      const Text('Delete', style: TextStyle(color: Colors.red)),
+                ),
+              ],
             ),
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: const Text('Delete', style: TextStyle(color: Colors.red)),
-            ),
-          ],
-        ),
-      ) ?? false;
+          ) ??
+          false;
 
       if (!confirm) return;
 
       setState(() => isLoadingLessons = true);
       await supabase.from('lessons').delete().eq('id', lessonId);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Lesson deleted successfully!'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('Lesson deleted successfully!'),
+              backgroundColor: Colors.green),
         );
       }
       _loadLessons(courseId);
@@ -1944,7 +2278,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       if (mounted) {
         setState(() => isLoadingLessons = false);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete lesson: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Failed to delete lesson: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -1954,13 +2290,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   void _showCourseDialog({Map<String, dynamic>? course}) {
     final isEdit = course != null;
     final titleController = TextEditingController(text: course?['title'] ?? '');
-    final descController = TextEditingController(text: course?['description'] ?? '');
-    final thumbController = TextEditingController(text: course?['thumbnail'] ?? '');
-    final priceController = TextEditingController(text: course?['price']?.toString() ?? '0');
-    final retailPriceController = TextEditingController(text: course?['retail_price']?.toString() ?? '0');
-    final languageController = TextEditingController(text: course?['language'] ?? 'Malayalam');
-    final androidIdController = TextEditingController(text: course?['product_id_android'] ?? '');
-    final iosIdController = TextEditingController(text: course?['product_id_ios'] ?? '');
+    final descController =
+        TextEditingController(text: course?['description'] ?? '');
+    final thumbController =
+        TextEditingController(text: course?['thumbnail'] ?? '');
+    final priceController =
+        TextEditingController(text: course?['price']?.toString() ?? '0');
+    final retailPriceController =
+        TextEditingController(text: course?['retail_price']?.toString() ?? '0');
+    final languageController =
+        TextEditingController(text: course?['language'] ?? 'Malayalam');
+    final androidIdController =
+        TextEditingController(text: course?['product_id_android'] ?? '');
+    final iosIdController =
+        TextEditingController(text: course?['product_id_ios'] ?? '');
 
     showModalBottomSheet(
       context: context,
@@ -1987,7 +2330,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   children: [
                     Text(
                       isEdit ? 'Edit Course' : 'Create New Course',
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.grey),
@@ -1996,24 +2342,32 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildModalTextField('Course Title', titleController, icon: Icons.title),
+                _buildModalTextField('Course Title', titleController,
+                    icon: Icons.title),
                 const SizedBox(height: 12),
-                _buildModalTextField('Description', descController, maxLines: 3, icon: Icons.description),
+                _buildModalTextField('Description', descController,
+                    maxLines: 3, icon: Icons.description),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
-                      child: _buildModalTextField('Thumbnail URL', thumbController, icon: Icons.image),
+                      child: _buildModalTextField(
+                          'Thumbnail URL', thumbController,
+                          icon: Icons.image),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFFFFC00),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () async {
-                        final url = await _uploadFile(bucketName: 'course-thumbnails', fileType: FileType.image);
+                        final url = await _uploadFile(
+                            bucketName: 'course-thumbnails',
+                            fileType: FileType.image);
                         if (url != null) {
                           setModalState(() {
                             thumbController.text = url;
@@ -2028,25 +2382,36 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 Row(
                   children: [
                     Expanded(
-                      child: _buildModalTextField('Selling Price (INR)', priceController, keyboardType: TextInputType.number, icon: Icons.currency_rupee),
+                      child: _buildModalTextField(
+                          'Selling Price (INR)', priceController,
+                          keyboardType: TextInputType.number,
+                          icon: Icons.currency_rupee),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildModalTextField('Retail Price (INR)', retailPriceController, keyboardType: TextInputType.number, icon: Icons.money_off),
+                      child: _buildModalTextField(
+                          'Retail Price (INR)', retailPriceController,
+                          keyboardType: TextInputType.number,
+                          icon: Icons.money_off),
                     ),
                   ],
                 ),
                 const SizedBox(height: 12),
-                _buildModalTextField('Language', languageController, icon: Icons.language),
+                _buildModalTextField('Language', languageController,
+                    icon: Icons.language),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
-                      child: _buildModalTextField('Android Product ID', androidIdController, icon: Icons.android),
+                      child: _buildModalTextField(
+                          'Android Product ID', androidIdController,
+                          icon: Icons.android),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _buildModalTextField('iOS Product ID', iosIdController, icon: Icons.apple),
+                      child: _buildModalTextField(
+                          'iOS Product ID', iosIdController,
+                          icon: Icons.apple),
                     ),
                   ],
                 ),
@@ -2055,16 +2420,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFFFFC00),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () async {
                     if (titleController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Course title cannot be empty'), backgroundColor: Colors.red),
+                        const SnackBar(
+                            content: Text('Course title cannot be empty'),
+                            backgroundColor: Colors.red),
                       );
                       return;
                     }
-                    
+
                     final data = {
                       'title': titleController.text.trim(),
                       'description': descController.text.trim(),
@@ -2078,7 +2446,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
                     try {
                       if (isEdit) {
-                        await supabase.from('courses').update(data).eq('id', course['id']);
+                        await supabase
+                            .from('courses')
+                            .update(data)
+                            .eq('id', course['id']);
                       } else {
                         await supabase.from('courses').insert(data);
                       }
@@ -2087,20 +2458,27 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       _loadCourses();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(isEdit ? 'Course updated successfully!' : 'Course created successfully!'),
+                          content: Text(isEdit
+                              ? 'Course updated successfully!'
+                              : 'Course created successfully!'),
                           backgroundColor: Colors.green,
                         ),
                       );
                     } catch (e) {
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to save course: $e'), backgroundColor: Colors.red),
+                        SnackBar(
+                            content: Text('Failed to save course: $e'),
+                            backgroundColor: Colors.red),
                       );
                     }
                   },
                   child: Text(
                     isEdit ? 'Save Changes' : 'Create Course',
-                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16),
                   ),
                 ),
               ],
@@ -2115,9 +2493,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
   void _showLessonDialog(String courseId, {Map<String, dynamic>? lesson}) {
     final isEdit = lesson != null;
     final titleController = TextEditingController(text: lesson?['title'] ?? '');
-    final contentController = TextEditingController(text: lesson?['content'] ?? '');
-    final videoUrlController = TextEditingController(text: lesson?['video_url'] ?? '');
-    final thumbUrlController = TextEditingController(text: lesson?['thamnail_url'] ?? ''); // Note spelling thamnail_url
+    final contentController =
+        TextEditingController(text: lesson?['content'] ?? '');
+    final videoUrlController =
+        TextEditingController(text: lesson?['video_url'] ?? '');
+    final thumbUrlController = TextEditingController(
+        text: lesson?['thamnail_url'] ?? ''); // Note spelling thamnail_url
 
     showModalBottomSheet(
       context: context,
@@ -2144,7 +2525,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   children: [
                     Text(
                       isEdit ? 'Edit Lesson' : 'Add New Lesson',
-                      style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, color: Colors.grey),
@@ -2153,25 +2537,33 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   ],
                 ),
                 const SizedBox(height: 16),
-                _buildModalTextField('Lesson Title', titleController, icon: Icons.title),
+                _buildModalTextField('Lesson Title', titleController,
+                    icon: Icons.title),
                 const SizedBox(height: 12),
-                _buildModalTextField('Content / Subtext', contentController, maxLines: 3, icon: Icons.description),
+                _buildModalTextField('Content / Subtext', contentController,
+                    maxLines: 3, icon: Icons.description),
                 const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
-                      child: _buildModalTextField('Video URL (MP4)', videoUrlController, icon: Icons.video_library),
+                      child: _buildModalTextField(
+                          'Video URL (MP4)', videoUrlController,
+                          icon: Icons.video_library),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFFFFC00),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () async {
                         // Upload to lesson_vedios
-                        final url = await _uploadFile(bucketName: 'lesson_vedios', fileType: FileType.video);
+                        final url = await _uploadFile(
+                            bucketName: 'lesson_vedios',
+                            fileType: FileType.video);
                         if (url != null) {
                           setModalState(() {
                             videoUrlController.text = url;
@@ -2186,18 +2578,23 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 Row(
                   children: [
                     Expanded(
-                      child: _buildModalTextField('Lesson Thumbnail URL', thumbUrlController, icon: Icons.image),
+                      child: _buildModalTextField(
+                          'Lesson Thumbnail URL', thumbUrlController,
+                          icon: Icons.image),
                     ),
                     const SizedBox(width: 8),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFFFFC00),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
                       ),
                       onPressed: () async {
                         // Upload to thumbnails or course-thumbnails
-                        final url = await _uploadFile(bucketName: 'thumbnails', fileType: FileType.image);
+                        final url = await _uploadFile(
+                            bucketName: 'thumbnails', fileType: FileType.image);
                         if (url != null) {
                           setModalState(() {
                             thumbUrlController.text = url;
@@ -2213,27 +2610,34 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Color(0xFFFFFC00),
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () async {
                     if (titleController.text.trim().isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Lesson title cannot be empty'), backgroundColor: Colors.red),
+                        const SnackBar(
+                            content: Text('Lesson title cannot be empty'),
+                            backgroundColor: Colors.red),
                       );
                       return;
                     }
-                    
+
                     final data = {
                       'course_id': courseId,
                       'title': titleController.text.trim(),
                       'content': contentController.text.trim(),
                       'video_url': videoUrlController.text.trim(),
-                      'thamnail_url': thumbUrlController.text.trim(), // Note spelling
+                      'thamnail_url':
+                          thumbUrlController.text.trim(), // Note spelling
                     };
 
                     try {
                       if (isEdit) {
-                        await supabase.from('lessons').update(data).eq('id', lesson['id']);
+                        await supabase
+                            .from('lessons')
+                            .update(data)
+                            .eq('id', lesson['id']);
                       } else {
                         await supabase.from('lessons').insert(data);
                       }
@@ -2242,20 +2646,27 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       _loadLessons(courseId);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text(isEdit ? 'Lesson updated successfully!' : 'Lesson added successfully!'),
+                          content: Text(isEdit
+                              ? 'Lesson updated successfully!'
+                              : 'Lesson added successfully!'),
                           backgroundColor: Colors.green,
                         ),
                       );
                     } catch (e) {
                       if (!context.mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('Failed to save lesson: $e'), backgroundColor: Colors.red),
+                        SnackBar(
+                            content: Text('Failed to save lesson: $e'),
+                            backgroundColor: Colors.red),
                       );
                     }
                   },
                   child: Text(
                     isEdit ? 'Save Changes' : 'Add Lesson',
-                    style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 16),
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16),
                   ),
                 ),
               ],
@@ -2266,7 +2677,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     );
   }
 
-  Widget _buildModalTextField(String label, TextEditingController controller, {int maxLines = 1, TextInputType? keyboardType, IconData? icon}) {
+  Widget _buildModalTextField(String label, TextEditingController controller,
+      {int maxLines = 1, TextInputType? keyboardType, IconData? icon}) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
@@ -2275,10 +2687,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.grey),
-        prefixIcon: icon != null ? Icon(icon, color: Color(0xFFFFFC00), size: 20) : null,
+        prefixIcon: icon != null
+            ? Icon(icon, color: Color(0xFFFFFC00), size: 20)
+            : null,
         filled: true,
         fillColor: Colors.grey[900],
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none),
       ),
     );
   }
@@ -2288,13 +2704,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     if (!mounted) return;
     setState(() => _isLoadingHubGroups = true);
     try {
-      final groups = await EnglishHubLevelGroupService.getLevelGroups(activeOnly: false);
+      final groups =
+          await EnglishHubLevelGroupService.getLevelGroups(activeOnly: false);
       final counts = <String, int>{};
       for (final g in groups) {
-        final c = await EnglishHubLevelGroupService.getGroupMemberCount(g.groupId);
+        final c =
+            await EnglishHubLevelGroupService.getGroupMemberCount(g.groupId);
         counts[g.groupId] = c;
       }
-      final learners = await EnglishHubLevelGroupService.getLearnersWithHubGroups(
+      final learners =
+          await EnglishHubLevelGroupService.getLearnersWithHubGroups(
         searchQuery: _hubLearnerSearchQuery,
       );
       if (mounted) {
@@ -2355,12 +2774,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   children: [
                     Text(
                       group.groupName,
-                      style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold),
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       'Admin Moderation • Lvl ${group.minLevel} - ${group.maxLevel} • ${group.stageTitle}',
-                      style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 11),
+                      style: const TextStyle(
+                          color: Color(0xFFFFFC00), fontSize: 11),
                     ),
                   ],
                 ),
@@ -2417,7 +2840,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.35), width: 1.5),
+                border: Border.all(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                    width: 1.5),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.4),
@@ -2434,7 +2859,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       Container(
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFFFFC00).withValues(alpha: 0.15),
                           shape: BoxShape.circle,
                         ),
                         child: const Text('🌐', style: TextStyle(fontSize: 24)),
@@ -2507,13 +2933,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                             backgroundColor: const Color(0xFFFFFC00),
                             foregroundColor: Colors.black,
                             padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12)),
                             elevation: 4,
                           ),
-                          icon: const Icon(Icons.add_circle, size: 18, color: Colors.black),
+                          icon: const Icon(Icons.add_circle,
+                              size: 18, color: Colors.black),
                           label: const Text(
                             'Add Custom Bracket',
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                            style: TextStyle(
+                                fontWeight: FontWeight.bold, fontSize: 13),
                           ),
                           onPressed: _showCreateCustomGroupDialog,
                         ),
@@ -2522,12 +2951,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       OutlinedButton.icon(
                         style: OutlinedButton.styleFrom(
                           foregroundColor: Colors.white,
-                          side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          side: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.2)),
+                          padding: const EdgeInsets.symmetric(
+                              vertical: 12, horizontal: 12),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
                         ),
-                        icon: const Icon(Icons.restore, size: 16, color: Color(0xFFFFFC00)),
-                        label: const Text('Reset Defaults', style: TextStyle(fontSize: 12)),
+                        icon: const Icon(Icons.restore,
+                            size: 16, color: Color(0xFFFFFC00)),
+                        label: const Text('Reset Defaults',
+                            style: TextStyle(fontSize: 12)),
                         onPressed: _confirmSeedDefaults,
                       ),
                     ],
@@ -2539,16 +2973,26 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   // User Voice Directive: Instant Re-Partition Presets
                   Row(
                     children: [
-                      const Text('⚡ Quick Partitioning:', style: TextStyle(color: Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold)),
+                      const Text('⚡ Quick Partitioning:',
+                          style: TextStyle(
+                              color: Color(0xFFFFFC00),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold)),
                       const Spacer(),
                       TextButton.icon(
                         style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),
-                        icon: const Icon(Icons.tune, color: Color(0xFFFFFC00), size: 14),
-                        label: const Text('Custom Builder...', style: TextStyle(color: Color(0xFFFFFC00), fontSize: 11, fontWeight: FontWeight.bold)),
+                        icon: const Icon(Icons.tune,
+                            color: Color(0xFFFFFC00), size: 14),
+                        label: const Text('Custom Builder...',
+                            style: TextStyle(
+                                color: Color(0xFFFFFC00),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold)),
                         onPressed: _showCustomPartitionBuilderDialog,
                       ),
                     ],
@@ -2565,8 +3009,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           subtitle: 'All in 1 Group',
                           onTap: () => _confirmApplyPartitionPlan(
                             name: 'Single Unified Hub (1 - 90)',
-                            plan: EnglishHubLevelGroupService.kPresetSingleUnifiedHub,
-                            description: 'Merges all levels 1 to 90 into a single English Hub group. All learners will be moved here and leave old groups.',
+                            plan: EnglishHubLevelGroupService
+                                .kPresetSingleUnifiedHub,
+                            description:
+                                'Merges all levels 1 to 90 into a single English Hub group. All learners will be moved here and leave old groups.',
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -2576,8 +3022,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           subtitle: 'Rookie + Master',
                           onTap: () => _confirmApplyPartitionPlan(
                             name: '2 Mega Cohorts (Lvl 1 - 35 & 36 - 90)',
-                            plan: EnglishHubLevelGroupService.kPresetTwoMegaCohorts,
-                            description: 'Splits app into 2 groups: Level 1-35 (Foundations) and Level 36-90 (Mastery). Learners auto-migrate to their respective half.',
+                            plan: EnglishHubLevelGroupService
+                                .kPresetTwoMegaCohorts,
+                            description:
+                                'Splits app into 2 groups: Level 1-35 (Foundations) and Level 36-90 (Mastery). Learners auto-migrate to their respective half.',
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -2587,8 +3035,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           subtitle: 'Tri-Stage Slices',
                           onTap: () => _confirmApplyPartitionPlan(
                             name: '3 Cohorts (1-30, 31-60, 61-90)',
-                            plan: EnglishHubLevelGroupService.kPresetThreeCohorts,
-                            description: 'Divides learners into Beginner (1-30), Intermediate (31-60), and Master (61-90) groups.',
+                            plan:
+                                EnglishHubLevelGroupService.kPresetThreeCohorts,
+                            description:
+                                'Divides learners into Beginner (1-30), Intermediate (31-60), and Master (61-90) groups.',
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -2599,7 +3049,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           onTap: () => _confirmApplyPartitionPlan(
                             name: 'Standard 16 Level Cohorts',
                             plan: EnglishHubLevelGroupService.kDefaultBrackets,
-                            description: 'Restores the 16 standard cohorts in 5-level increments with 71-80 and 81-90 summits.',
+                            description:
+                                'Restores the 16 standard cohorts in 5-level increments with 71-80 and 81-90 summits.',
                           ),
                         ),
                       ],
@@ -2635,7 +3086,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           child: Text(
                             '🌐 Level Brackets (${_englishHubLevelGroups.length})',
                             style: TextStyle(
-                              color: _hubStudioSubTab == 0 ? Colors.black : Colors.white70,
+                              color: _hubStudioSubTab == 0
+                                  ? Colors.black
+                                  : Colors.white70,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -2663,7 +3116,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           child: Text(
                             '👥 Learner Allocation (${_hubLearners.length})',
                             style: TextStyle(
-                              color: _hubStudioSubTab == 1 ? Colors.black : Colors.white70,
+                              color: _hubStudioSubTab == 1
+                                  ? Colors.black
+                                  : Colors.white70,
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
                             ),
@@ -2687,27 +3142,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     child: TextField(
                       style: const TextStyle(color: Colors.white, fontSize: 13),
                       decoration: InputDecoration(
-                        hintText: 'Search bracket or level (e.g. 1, 6, Rookie)...',
-                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-                        prefixIcon: const Icon(Icons.search, color: Color(0xFFFFFC00), size: 18),
+                        hintText:
+                            'Search bracket or level (e.g. 1, 6, Rookie)...',
+                        hintStyle: const TextStyle(
+                            color: Colors.white38, fontSize: 13),
+                        prefixIcon: const Icon(Icons.search,
+                            color: Color(0xFFFFFC00), size: 18),
                         filled: true,
                         fillColor: const Color(0xFF1E242B),
                         isDense: true,
-                        contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                        contentPadding: const EdgeInsets.symmetric(
+                            vertical: 10, horizontal: 12),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
                         ),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                          borderSide: BorderSide(
+                              color: Colors.white.withValues(alpha: 0.1)),
                         ),
                         focusedBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Color(0xFFFFFC00), width: 1.5),
+                          borderSide: const BorderSide(
+                              color: Color(0xFFFFFC00), width: 1.5),
                         ),
                       ),
-                      onChanged: (val) => setState(() => _hubGroupSearchQuery = val),
+                      onChanged: (val) =>
+                          setState(() => _hubGroupSearchQuery = val),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -2793,7 +3256,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             children: [
               Text(
                 value,
-                style: TextStyle(color: color, fontSize: 14, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    color: color, fontSize: 14, fontWeight: FontWeight.bold),
               ),
               Text(
                 label,
@@ -2820,7 +3284,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         decoration: BoxDecoration(
           color: const Color(0xFF11171D),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -2831,8 +3296,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(label, style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                Text(subtitle, style: const TextStyle(color: Colors.white60, fontSize: 10)),
+                Text(label,
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold)),
+                Text(subtitle,
+                    style:
+                        const TextStyle(color: Colors.white60, fontSize: 10)),
               ],
             ),
           ],
@@ -2859,7 +3330,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             Expanded(
               child: Text(
                 'Apply $name?',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -2868,7 +3342,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(description, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            Text(description,
+                style: const TextStyle(color: Colors.white70, fontSize: 12)),
             const SizedBox(height: 14),
             Container(
               padding: const EdgeInsets.all(10),
@@ -2882,19 +3357,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 children: [
                   Text(
                     'Resulting Active Groups (${plan.length}):',
-                    style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 11, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Color(0xFFFFFC00),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 6),
                   ...plan.map((p) => Padding(
                         padding: const EdgeInsets.only(bottom: 4),
                         child: Row(
                           children: [
-                            Text(p['emoji']?.toString() ?? '💬', style: const TextStyle(fontSize: 12)),
+                            Text(p['emoji']?.toString() ?? '💬',
+                                style: const TextStyle(fontSize: 12)),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 '${p['name']} (Lvl ${p['min']} - ${p['max']})',
-                                style: const TextStyle(color: Colors.white, fontSize: 11),
+                                style: const TextStyle(
+                                    color: Colors.white, fontSize: 11),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -2919,20 +3399,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             onPressed: () async {
               final scaffoldMessenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
-              final ok = await EnglishHubLevelGroupService.applyCohortPartitionPlan(plan);
+              final ok =
+                  await EnglishHubLevelGroupService.applyCohortPartitionPlan(
+                      plan);
               if (ok) {
                 _loadEnglishHubLevelGroups();
                 if (mounted) {
                   scaffoldMessenger.showSnackBar(
                     SnackBar(
-                      content: Text('Successfully re-partitioned learners into ${plan.length} cohorts!'),
+                      content: Text(
+                          'Successfully re-partitioned learners into ${plan.length} cohorts!'),
                       backgroundColor: Colors.green,
                     ),
                   );
                 }
               }
             },
-            child: const Text('Apply & Migrate All', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Apply & Migrate All',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -2973,7 +3457,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF1E242B),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
             children: [
               const Text('🛠️', style: TextStyle(fontSize: 22)),
@@ -2984,7 +3469,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   children: [
                     Text(
                       'Custom Partition Builder',
-                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold),
                     ),
                     const Text(
                       'Slice Levels 1 to 90 into custom groups',
@@ -3022,19 +3510,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         children: [
                           Row(
                             children: [
-                              Text(s['emoji'] as String, style: const TextStyle(fontSize: 16)),
+                              Text(s['emoji'] as String,
+                                  style: const TextStyle(fontSize: 16)),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   s['name'] as String,
-                                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                               if (customSlices.length > 1)
                                 IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.redAccent, size: 16),
+                                  icon: const Icon(Icons.close,
+                                      color: Colors.redAccent, size: 16),
                                   onPressed: () {
-                                    setDialogState(() => customSlices.removeAt(idx));
+                                    setDialogState(
+                                        () => customSlices.removeAt(idx));
                                   },
                                 ),
                             ],
@@ -3046,21 +3540,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 child: TextFormField(
                                   initialValue: '${s['min']}',
                                   keyboardType: TextInputType.number,
-                                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 12),
                                   decoration: InputDecoration(
                                     labelText: 'Min Lvl',
-                                    labelStyle: const TextStyle(color: Colors.white60, fontSize: 10),
+                                    labelStyle: const TextStyle(
+                                        color: Colors.white60, fontSize: 10),
                                     isDense: true,
                                     contentPadding: const EdgeInsets.all(8),
                                     filled: true,
                                     fillColor: const Color(0xFF1E242B),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
                                   ),
                                   onChanged: (val) {
                                     final n = int.tryParse(val);
                                     if (n != null) {
                                       s['min'] = n;
-                                      s['name'] = 'English Hub (Lvl ${s['min']} - ${s['max']})';
+                                      s['name'] =
+                                          'English Hub (Lvl ${s['min']} - ${s['max']})';
                                     }
                                   },
                                 ),
@@ -3070,21 +3568,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 child: TextFormField(
                                   initialValue: '${s['max']}',
                                   keyboardType: TextInputType.number,
-                                  style: const TextStyle(color: Colors.white, fontSize: 12),
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 12),
                                   decoration: InputDecoration(
                                     labelText: 'Max Lvl',
-                                    labelStyle: const TextStyle(color: Colors.white60, fontSize: 10),
+                                    labelStyle: const TextStyle(
+                                        color: Colors.white60, fontSize: 10),
                                     isDense: true,
                                     contentPadding: const EdgeInsets.all(8),
                                     filled: true,
                                     fillColor: const Color(0xFF1E242B),
-                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8)),
                                   ),
                                   onChanged: (val) {
                                     final n = int.tryParse(val);
                                     if (n != null) {
                                       s['max'] = n;
-                                      s['name'] = 'English Hub (Lvl ${s['min']} - ${s['max']})';
+                                      s['name'] =
+                                          'English Hub (Lvl ${s['min']} - ${s['max']})';
                                     }
                                   },
                                 ),
@@ -3100,14 +3602,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     style: OutlinedButton.styleFrom(
                       foregroundColor: const Color(0xFFFFFC00),
                       side: const BorderSide(color: Color(0xFFFFFC00)),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
                     ),
                     icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Add Next Level Slice', style: TextStyle(fontSize: 12)),
+                    label: const Text('Add Next Level Slice',
+                        style: TextStyle(fontSize: 12)),
                     onPressed: () {
-                      final lastMax = customSlices.isNotEmpty ? (customSlices.last['max'] as int) : 0;
+                      final lastMax = customSlices.isNotEmpty
+                          ? (customSlices.last['max'] as int)
+                          : 0;
                       final nextMin = lastMax + 1;
-                      final nextMax = (nextMin + 10) <= 90 ? (nextMin + 10) : 90;
+                      final nextMax =
+                          (nextMin + 10) <= 90 ? (nextMin + 10) : 90;
                       setDialogState(() {
                         customSlices.add({
                           'min': nextMin,
@@ -3139,20 +3646,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 if (customSlices.isEmpty) return;
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
                 Navigator.pop(context);
-                final ok = await EnglishHubLevelGroupService.applyCohortPartitionPlan(customSlices);
+                final ok =
+                    await EnglishHubLevelGroupService.applyCohortPartitionPlan(
+                        customSlices);
                 if (ok) {
                   _loadEnglishHubLevelGroups();
                   if (mounted) {
                     scaffoldMessenger.showSnackBar(
                       SnackBar(
-                        content: Text('Applied custom plan with ${customSlices.length} cohorts!'),
+                        content: Text(
+                            'Applied custom plan with ${customSlices.length} cohorts!'),
                         backgroundColor: Colors.green,
                       ),
                     );
                   }
                 }
               },
-              child: const Text('Save & Apply Plan', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Save & Apply Plan',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -3162,7 +3673,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   /// 👥 Learner Allocation Management View
   Widget _buildLearnerAllocationsView() {
-    final manualOverridesCount = _hubLearners.where((l) => l['is_manual'] == true).length;
+    final manualOverridesCount =
+        _hubLearners.where((l) => l['is_manual'] == true).length;
     final autoAllocatedCount = _hubLearners.length - manualOverridesCount;
 
     return Column(
@@ -3181,14 +3693,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.flash_on, color: Color(0xFF10B981), size: 18),
+                    const Icon(Icons.flash_on,
+                        color: Color(0xFF10B981), size: 18),
                     const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('$autoAllocatedCount',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                        const Text('Auto-Routed', style: TextStyle(color: Colors.white60, fontSize: 10)),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15)),
+                        const Text('Auto-Routed',
+                            style:
+                                TextStyle(color: Colors.white60, fontSize: 10)),
                       ],
                     ),
                   ],
@@ -3206,14 +3724,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.admin_panel_settings, color: Color(0xFFFFFC00), size: 18),
+                    const Icon(Icons.admin_panel_settings,
+                        color: Color(0xFFFFFC00), size: 18),
                     const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text('$manualOverridesCount',
-                            style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                        const Text('Manual Overrides', style: TextStyle(color: Colors.white60, fontSize: 10)),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15)),
+                        const Text('Manual Overrides',
+                            style:
+                                TextStyle(color: Colors.white60, fontSize: 10)),
                       ],
                     ),
                   ],
@@ -3232,23 +3756,29 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: InputDecoration(
                   hintText: 'Search learner by name...',
-                  hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFFFFFC00), size: 18),
+                  hintStyle:
+                      const TextStyle(color: Colors.white38, fontSize: 13),
+                  prefixIcon: const Icon(Icons.search,
+                      color: Color(0xFFFFFC00), size: 18),
                   filled: true,
                   fillColor: const Color(0xFF1E242B),
                   isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                  contentPadding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                    borderSide:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                    borderSide:
+                        BorderSide(color: Colors.white.withValues(alpha: 0.1)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFFFFC00), width: 1.5),
+                    borderSide:
+                        const BorderSide(color: Color(0xFFFFFC00), width: 1.5),
                   ),
                 ),
                 onSubmitted: (val) {
@@ -3285,7 +3815,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 children: [
                   const Text('👤', style: TextStyle(fontSize: 40)),
                   const SizedBox(height: 12),
-                  const Text('No learners found.', style: TextStyle(color: Colors.white70)),
+                  const Text('No learners found.',
+                      style: TextStyle(color: Colors.white70)),
                 ],
               ),
             ),
@@ -3303,8 +3834,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               final photo = profile?['profile_image_url']?.toString();
               final day = profile?['learning_day']?.toString() ?? '1';
               final isManual = item['is_manual'] == true;
-              final assignedGroup = item['assigned_group'] as EnglishHubLevelGroup?;
-              final currentGroup = item['current_group'] as EnglishHubLevelGroup?;
+              final assignedGroup =
+                  item['assigned_group'] as EnglishHubLevelGroup?;
+              final currentGroup =
+                  item['current_group'] as EnglishHubLevelGroup?;
               final activeGroup = assignedGroup ?? currentGroup;
               final userId = item['user_id']?.toString() ?? '';
 
@@ -3326,13 +3859,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                          backgroundColor:
+                              const Color(0xFFFFFC00).withValues(alpha: 0.2),
                           backgroundImage: (photo != null && photo.isNotEmpty)
                               ? CachedNetworkImageProvider(photo)
                               : null,
                           child: (photo == null || photo.isEmpty)
-                              ? Text(name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                                  style: const TextStyle(color: Color(0xFFFFFC00)))
+                              ? Text(
+                                  name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                                  style:
+                                      const TextStyle(color: Color(0xFFFFFC00)))
                               : null,
                         ),
                         const SizedBox(width: 10),
@@ -3342,32 +3878,42 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                             children: [
                               Text(
                                 name,
-                                style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold),
                               ),
                               Text(
                                 'Learning Level $day',
-                                style: const TextStyle(color: Colors.white60, fontSize: 11),
+                                style: const TextStyle(
+                                    color: Colors.white60, fontSize: 11),
                               ),
                             ],
                           ),
                         ),
                         // Badge: Manual vs Auto
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: isManual
                                 ? const Color(0xFFFFFC00).withValues(alpha: 0.2)
-                                : const Color(0xFF10B981).withValues(alpha: 0.2),
+                                : const Color(0xFF10B981)
+                                    .withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
-                              color: isManual ? const Color(0xFFFFFC00) : const Color(0xFF10B981),
+                              color: isManual
+                                  ? const Color(0xFFFFFC00)
+                                  : const Color(0xFF10B981),
                               width: 1,
                             ),
                           ),
                           child: Text(
                             isManual ? '👑 Manual Override' : '⚡ Auto-Assigned',
                             style: TextStyle(
-                              color: isManual ? const Color(0xFFFFFC00) : const Color(0xFF10B981),
+                              color: isManual
+                                  ? const Color(0xFFFFFC00)
+                                  : const Color(0xFF10B981),
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -3377,21 +3923,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     ),
                     const SizedBox(height: 10),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 8),
                       decoration: BoxDecoration(
                         color: const Color(0xFF121B22),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Row(
                         children: [
-                          Text(activeGroup?.iconEmoji ?? '💬', style: const TextStyle(fontSize: 16)),
+                          Text(activeGroup?.iconEmoji ?? '💬',
+                              style: const TextStyle(fontSize: 16)),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               activeGroup != null
                                   ? '${activeGroup.groupName} (Lvl ${activeGroup.minLevel}-${activeGroup.maxLevel})'
                                   : 'Not yet joined any group',
-                              style: const TextStyle(color: Colors.white, fontSize: 12),
+                              style: const TextStyle(
+                                  color: Colors.white, fontSize: 12),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
@@ -3407,12 +3956,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                               backgroundColor: const Color(0xFFFFFC00),
                               foregroundColor: Colors.black,
                               padding: const EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8)),
                             ),
-                            icon: const Icon(Icons.swap_horiz, size: 16, color: Colors.black),
+                            icon: const Icon(Icons.swap_horiz,
+                                size: 16, color: Colors.black),
                             label: const Text(
                               'Move to Another Group',
-                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold, fontSize: 12),
                             ),
                             onPressed: () => _showMoveUserDialog(
                               userId: userId,
@@ -3425,17 +3977,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         if (isManual) ...[
                           const SizedBox(width: 8),
                           IconButton(
-                            icon: const Icon(Icons.restore, color: Colors.orangeAccent, size: 20),
+                            icon: const Icon(Icons.restore,
+                                color: Colors.orangeAccent, size: 20),
                             tooltip: 'Reset to Auto Level Routing',
                             onPressed: () async {
-                              final scaffoldMessenger = ScaffoldMessenger.of(context);
-                              final ok = await EnglishHubLevelGroupService.resetUserToAutoLevelRouting(userId);
+                              final scaffoldMessenger =
+                                  ScaffoldMessenger.of(context);
+                              final ok = await EnglishHubLevelGroupService
+                                  .resetUserToAutoLevelRouting(userId);
                               if (ok) {
                                 _loadEnglishHubLevelGroups();
                                 if (mounted) {
                                   scaffoldMessenger.showSnackBar(
                                     SnackBar(
-                                      content: Text('Reset $name to automatic level routing'),
+                                      content: Text(
+                                          'Reset $name to automatic level routing'),
                                       backgroundColor: Colors.orange,
                                     ),
                                   );
@@ -3475,7 +4031,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF1E242B),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
             children: [
               const Text('👑', style: TextStyle(fontSize: 22)),
@@ -3486,11 +4043,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   children: [
                     Text(
                       'Move Learner',
-                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold),
                     ),
                     Text(
                       userName,
-                      style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 12),
+                      style: const TextStyle(
+                          color: Color(0xFFFFFC00), fontSize: 12),
                     ),
                   ],
                 ),
@@ -3512,12 +4073,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.info_outline, color: Colors.white60, size: 16),
+                        const Icon(Icons.info_outline,
+                            color: Colors.white60, size: 16),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             'Current: $currentGroupName',
-                            style: const TextStyle(color: Colors.white70, fontSize: 12),
+                            style: const TextStyle(
+                                color: Colors.white70, fontSize: 12),
                           ),
                         ),
                       ],
@@ -3533,7 +4096,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   decoration: BoxDecoration(
                     color: const Color(0xFF11171D),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
+                    border: Border.all(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<EnglishHubLevelGroup>(
@@ -3545,24 +4109,29 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           value: g,
                           child: Row(
                             children: [
-                              Text(g.iconEmoji, style: const TextStyle(fontSize: 16)),
+                              Text(g.iconEmoji,
+                                  style: const TextStyle(fontSize: 16)),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
                                   g.groupName,
-                                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                                  style: const TextStyle(
+                                      color: Colors.white, fontSize: 13),
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                  color: const Color(0xFFFFFC00)
+                                      .withValues(alpha: 0.15),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   'Lvl ${g.minLevel}-${g.maxLevel}',
-                                  style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 10),
+                                  style: const TextStyle(
+                                      color: Color(0xFFFFFC00), fontSize: 10),
                                 ),
                               ),
                             ],
@@ -3570,7 +4139,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         );
                       }).toList(),
                       onChanged: (val) {
-                        if (val != null) setDialogState(() => selectedGroup = val);
+                        if (val != null)
+                          setDialogState(() => selectedGroup = val);
                       },
                     ),
                   ),
@@ -3591,17 +4161,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               onPressed: () async {
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
                 Navigator.pop(context);
-                final ok = await EnglishHubLevelGroupService.resetUserToAutoLevelRouting(userId);
+                final ok = await EnglishHubLevelGroupService
+                    .resetUserToAutoLevelRouting(userId);
                 if (ok) {
                   _loadEnglishHubLevelGroups();
                   if (mounted) {
                     scaffoldMessenger.showSnackBar(
-                      SnackBar(content: Text('Reset $userName to automatic level routing'), backgroundColor: Colors.orange),
+                      SnackBar(
+                          content: Text(
+                              'Reset $userName to automatic level routing'),
+                          backgroundColor: Colors.orange),
                     );
                   }
                 }
               },
-              child: const Text('Reset to Auto', style: TextStyle(fontSize: 11)),
+              child:
+                  const Text('Reset to Auto', style: TextStyle(fontSize: 11)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
@@ -3622,14 +4197,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   if (mounted) {
                     scaffoldMessenger.showSnackBar(
                       SnackBar(
-                        content: Text('Transferred $userName to ${selectedGroup!.groupName}'),
+                        content: Text(
+                            'Transferred $userName to ${selectedGroup!.groupName}'),
                         backgroundColor: Colors.green,
                       ),
                     );
                   }
                 }
               },
-              child: const Text('Confirm Move', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Confirm Move',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -3664,7 +4241,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                   shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
+                  border: Border.all(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
                 ),
                 alignment: Alignment.center,
                 child: Text(g.iconEmoji, style: const TextStyle(fontSize: 20)),
@@ -3688,7 +4266,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         ),
                         // Level Range Pill
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 3),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFFC00),
                             borderRadius: BorderRadius.circular(20),
@@ -3709,18 +4288,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       children: [
                         Text(
                           g.stageTitle,
-                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 12),
                         ),
                         const SizedBox(width: 6),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 1),
                           decoration: BoxDecoration(
                             color: Colors.blueAccent.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             g.tagBadge,
-                            style: const TextStyle(color: Colors.lightBlueAccent, fontSize: 10),
+                            style: const TextStyle(
+                                color: Colors.lightBlueAccent, fontSize: 10),
                           ),
                         ),
                       ],
@@ -3745,11 +4327,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.people, size: 13, color: Color(0xFFFFFC00)),
+                    const Icon(Icons.people,
+                        size: 13, color: Color(0xFFFFFC00)),
                     const SizedBox(width: 4),
                     Text(
                       '$memberCount active learners',
-                      style: const TextStyle(color: Colors.white70, fontSize: 11),
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
@@ -3803,12 +4387,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     backgroundColor: const Color(0xFFFFFC00),
                     foregroundColor: Colors.black,
                     padding: const EdgeInsets.symmetric(vertical: 9),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10)),
                   ),
-                  icon: const Icon(Icons.chat_bubble_outline, size: 15, color: Colors.black),
+                  icon: const Icon(Icons.chat_bubble_outline,
+                      size: 15, color: Colors.black),
                   label: const Text(
                     'Open Chat (Admin)',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
+                    style:
+                        TextStyle(fontWeight: FontWeight.bold, fontSize: 11.5),
                   ),
                   onPressed: () {
                     setState(() => _selectedHubGroupForAdminChat = g);
@@ -3820,21 +4407,26 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
-                  padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 9, horizontal: 10),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
                 ),
-                icon: const Icon(Icons.tune, size: 14, color: Color(0xFFFFFC00)),
+                icon:
+                    const Icon(Icons.tune, size: 14, color: Color(0xFFFFFC00)),
                 label: const Text('Edit Range', style: TextStyle(fontSize: 11)),
                 onPressed: () => _showEditGroupDialog(g),
               ),
               const SizedBox(width: 6),
               IconButton(
-                icon: const Icon(Icons.people_outline, color: Colors.white70, size: 18),
+                icon: const Icon(Icons.people_outline,
+                    color: Colors.white70, size: 18),
                 tooltip: 'View Members',
                 onPressed: () => _showGroupMembersSheet(g),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 18),
+                icon: const Icon(Icons.delete_outline,
+                    color: Colors.redAccent, size: 18),
                 tooltip: 'Delete Group',
                 onPressed: () => _confirmDeleteGroup(g),
               ),
@@ -3865,7 +4457,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             const SizedBox(width: 8),
             Text(
               'Add Custom Level Bracket',
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+              style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 17,
+                  fontWeight: FontWeight.bold),
             ),
           ],
         ),
@@ -3983,29 +4578,37 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               final scaffoldMessenger = ScaffoldMessenger.of(context);
               if (name.isEmpty || min > max) {
                 scaffoldMessenger.showSnackBar(
-                  const SnackBar(content: Text('Invalid level range or empty name'), backgroundColor: Colors.red),
+                  const SnackBar(
+                      content: Text('Invalid level range or empty name'),
+                      backgroundColor: Colors.red),
                 );
                 return;
               }
               Navigator.pop(context);
-              final res = await EnglishHubLevelGroupService.createCustomLevelGroup(
+              final res =
+                  await EnglishHubLevelGroupService.createCustomLevelGroup(
                 groupName: name,
                 minLevel: min,
                 maxLevel: max,
                 stageTitle: titleCtrl.text.trim(),
                 tagBadge: tagCtrl.text.trim(),
-                iconEmoji: emojiCtrl.text.trim().isNotEmpty ? emojiCtrl.text.trim() : '💬',
+                iconEmoji: emojiCtrl.text.trim().isNotEmpty
+                    ? emojiCtrl.text.trim()
+                    : '💬',
               );
               if (res != null) {
                 _loadEnglishHubLevelGroups();
                 if (mounted) {
                   scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text('Created: ${res.groupName}'), backgroundColor: Colors.green),
+                    SnackBar(
+                        content: Text('Created: ${res.groupName}'),
+                        backgroundColor: Colors.green),
                   );
                 }
               }
             },
-            child: const Text('Create Bracket', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Create Bracket',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -4027,7 +4630,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF1E242B),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
             children: [
               Text(g.iconEmoji, style: const TextStyle(fontSize: 20)),
@@ -4035,7 +4639,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               Expanded(
                 child: Text(
                   'Edit Level Bracket',
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold),
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -4131,7 +4738,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
-                  title: const Text('Active Bracket', style: TextStyle(color: Colors.white, fontSize: 13)),
+                  title: const Text('Active Bracket',
+                      style: TextStyle(color: Colors.white, fontSize: 13)),
                   value: isActive,
                   activeThumbColor: const Color(0xFFFFFC00),
                   onChanged: (val) => setDialogState(() => isActive = val),
@@ -4156,7 +4764,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 final scaffoldMessenger = ScaffoldMessenger.of(context);
                 if (name.isEmpty || min > max) {
                   scaffoldMessenger.showSnackBar(
-                    const SnackBar(content: Text('Invalid range'), backgroundColor: Colors.red),
+                    const SnackBar(
+                        content: Text('Invalid range'),
+                        backgroundColor: Colors.red),
                   );
                   return;
                 }
@@ -4169,19 +4779,24 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   maxLevel: max,
                   stageTitle: titleCtrl.text.trim(),
                   tagBadge: tagCtrl.text.trim(),
-                  iconEmoji: emojiCtrl.text.trim().isNotEmpty ? emojiCtrl.text.trim() : g.iconEmoji,
+                  iconEmoji: emojiCtrl.text.trim().isNotEmpty
+                      ? emojiCtrl.text.trim()
+                      : g.iconEmoji,
                   isActive: isActive,
                 );
                 if (ok) {
                   _loadEnglishHubLevelGroups();
                   if (mounted) {
                     scaffoldMessenger.showSnackBar(
-                      const SnackBar(content: Text('Bracket updated successfully!'), backgroundColor: Colors.green),
+                      const SnackBar(
+                          content: Text('Bracket updated successfully!'),
+                          backgroundColor: Colors.green),
                     );
                   }
                 }
               },
-              child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
+              child: const Text('Save Changes',
+                  style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -4206,7 +4821,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           expand: false,
           builder: (context, scrollCtrl) {
             return FutureBuilder<List<Map<String, dynamic>>>(
-              future: EnglishHubLevelGroupService.getGroupMembersWithLevel(g.groupId),
+              future: EnglishHubLevelGroupService.getGroupMembersWithLevel(
+                  g.groupId),
               builder: (context, snapshot) {
                 return Column(
                   children: [
@@ -4223,7 +4839,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       padding: const EdgeInsets.all(16),
                       child: Row(
                         children: [
-                          Text(g.iconEmoji, style: const TextStyle(fontSize: 22)),
+                          Text(g.iconEmoji,
+                              style: const TextStyle(fontSize: 22)),
                           const SizedBox(width: 10),
                           Expanded(
                             child: Column(
@@ -4239,7 +4856,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 ),
                                 Text(
                                   'Level ${g.minLevel} - ${g.maxLevel} Active Cohort Members',
-                                  style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 11),
+                                  style: const TextStyle(
+                                      color: Color(0xFFFFFC00), fontSize: 11),
                                 ),
                               ],
                             ),
@@ -4250,48 +4868,72 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                     const Divider(color: Colors.white12, height: 1),
                     Expanded(
                       child: snapshot.connectionState == ConnectionState.waiting
-                          ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                  color: Color(0xFFFFFC00)))
                           : (snapshot.data == null || snapshot.data!.isEmpty)
                               ? const Center(
-                                  child: Text('No active members currently in this level bracket.',
+                                  child: Text(
+                                      'No active members currently in this level bracket.',
                                       style: TextStyle(color: Colors.white60)),
                                 )
                               : ListView.separated(
                                   controller: scrollCtrl,
                                   itemCount: snapshot.data!.length,
-                                  separatorBuilder: (_, __) => const Divider(color: Colors.white10, height: 1),
+                                  separatorBuilder: (_, __) => const Divider(
+                                      color: Colors.white10, height: 1),
                                   itemBuilder: (context, index) {
                                     final m = snapshot.data![index];
-                                    final profile = m['profile'] as Map<String, dynamic>?;
-                                    final name = profile?['name']?.toString() ?? 'Learner';
-                                    final photo = profile?['profile_image_url']?.toString();
-                                    final learningDay = profile?['learning_day']?.toString() ?? '1';
-                                    final role = m['role']?.toString() ?? 'member';
+                                    final profile =
+                                        m['profile'] as Map<String, dynamic>?;
+                                    final name = profile?['name']?.toString() ??
+                                        'Learner';
+                                    final photo = profile?['profile_image_url']
+                                        ?.toString();
+                                    final learningDay =
+                                        profile?['learning_day']?.toString() ??
+                                            '1';
+                                    final role =
+                                        m['role']?.toString() ?? 'member';
 
                                     return ListTile(
                                       leading: CircleAvatar(
-                                        backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
-                                        backgroundImage: (photo != null && photo.isNotEmpty)
+                                        backgroundColor: const Color(0xFFFFFC00)
+                                            .withValues(alpha: 0.2),
+                                        backgroundImage: (photo != null &&
+                                                photo.isNotEmpty)
                                             ? CachedNetworkImageProvider(photo)
                                             : null,
                                         child: (photo == null || photo.isEmpty)
-                                            ? Text(name.isNotEmpty ? name[0].toUpperCase() : 'U',
-                                                style: const TextStyle(color: Color(0xFFFFFC00)))
+                                            ? Text(
+                                                name.isNotEmpty
+                                                    ? name[0].toUpperCase()
+                                                    : 'U',
+                                                style: const TextStyle(
+                                                    color: Color(0xFFFFFC00)))
                                             : null,
                                       ),
-                                      title: Text(name, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                                      title: Text(name,
+                                          style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14)),
                                       subtitle: Text(
                                         'Day $learningDay • Role: $role',
-                                        style: const TextStyle(color: Colors.white60, fontSize: 11),
+                                        style: const TextStyle(
+                                            color: Colors.white60,
+                                            fontSize: 11),
                                       ),
                                       trailing: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8, vertical: 4),
                                             decoration: BoxDecoration(
-                                              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                                              borderRadius: BorderRadius.circular(12),
+                                              color: const Color(0xFFFFFC00)
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
                                             ),
                                             child: Text(
                                               'Lvl $learningDay',
@@ -4304,10 +4946,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                           ),
                                           const SizedBox(width: 4),
                                           IconButton(
-                                            icon: const Icon(Icons.swap_horiz, color: Color(0xFFFFFC00), size: 18),
+                                            icon: const Icon(Icons.swap_horiz,
+                                                color: Color(0xFFFFFC00),
+                                                size: 18),
                                             tooltip: 'Move to another group',
                                             onPressed: () {
-                                              final userId = m['user_id']?.toString() ?? '';
+                                              final userId =
+                                                  m['user_id']?.toString() ??
+                                                      '';
                                               _showMoveUserDialog(
                                                 userId: userId,
                                                 userName: name,
@@ -4338,7 +4984,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E242B),
-        title: const Text('Delete Level Bracket?', style: TextStyle(color: Colors.white)),
+        title: const Text('Delete Level Bracket?',
+            style: TextStyle(color: Colors.white)),
         content: Text(
           'Are you sure you want to delete "${g.groupName}" (Lvl ${g.minLevel} - ${g.maxLevel})? '
           'Existing messages in the group will be archived.',
@@ -4362,7 +5009,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 _loadEnglishHubLevelGroups();
                 if (mounted) {
                   scaffoldMessenger.showSnackBar(
-                    SnackBar(content: Text('Deleted ${g.groupName}'), backgroundColor: Colors.orange),
+                    SnackBar(
+                        content: Text('Deleted ${g.groupName}'),
+                        backgroundColor: Colors.orange),
                   );
                 }
               }
@@ -4380,7 +5029,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1E242B),
-        title: const Text('Provision Default Brackets?', style: TextStyle(color: Colors.white)),
+        title: const Text('Provision Default Brackets?',
+            style: TextStyle(color: Colors.white)),
         content: const Text(
           'This will ensure all standard cohorts (Level 1-6, Level 6-11, and 5-level increments up to Day 90) '
           'exist in the system. Custom groups will not be overwritten.',
@@ -4392,7 +5042,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFFC00), foregroundColor: Colors.black),
+            style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black),
             onPressed: () async {
               final scaffoldMessenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
@@ -4400,11 +5052,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               _loadEnglishHubLevelGroups();
               if (mounted) {
                 scaffoldMessenger.showSnackBar(
-                  const SnackBar(content: Text('Default level brackets provisioned!'), backgroundColor: Colors.green),
+                  const SnackBar(
+                      content: Text('Default level brackets provisioned!'),
+                      backgroundColor: Colors.green),
                 );
               }
             },
-            child: const Text('Provision', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: const Text('Provision',
+                style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -4433,10 +5088,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF2B2B2B),
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
             ),
             icon: const Icon(Icons.inbox, color: Colors.blue),
-            label: const Text('View Publisher Requests', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            label: const Text('View Publisher Requests',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.bold)),
             onPressed: () {
               setState(() => _showCourseRequests = true);
               _loadCourseRequests();
@@ -4462,13 +5120,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   children: [
                     const Text(
                       'Unlock E-Learning Academy',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _elearningUnlocked 
-                        ? 'Unlocked (Academy is publicly available)' 
-                        : 'Locked (Shows "Coming Soon" alert to users)',
+                      _elearningUnlocked
+                          ? 'Unlocked (Academy is publicly available)'
+                          : 'Locked (Shows "Coming Soon" alert to users)',
                       style: const TextStyle(color: Colors.grey, fontSize: 11),
                     ),
                   ],
@@ -4502,13 +5161,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   children: [
                     const Text(
                       'Unlock T-Shirt Printing Shop',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                          color: Colors.white, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      _printingUnlocked 
-                        ? 'Unlocked (Print Shop is publicly available)' 
-                        : 'Locked (Shows "Coming Soon" alert to users)',
+                      _printingUnlocked
+                          ? 'Unlocked (Print Shop is publicly available)'
+                          : 'Locked (Shows "Coming Soon" alert to users)',
                       style: const TextStyle(color: Colors.grey, fontSize: 11),
                     ),
                   ],
@@ -4533,7 +5193,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 children: [
                   const Text(
                     'Course Catalog',
-                    style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -4545,13 +5208,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFFFFC00),
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
                 ),
                 icon: const Icon(Icons.add, color: Colors.black, size: 20),
                 label: const Text(
                   'Add Course',
-                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
                 ),
                 onPressed: () => _showCourseDialog(),
               ),
@@ -4560,12 +5226,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         ),
         Expanded(
           child: isLoadingCourses
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
               : allCourses.isEmpty
                   ? _buildEmptyState(
                       icon: Icons.school_outlined,
                       title: 'No Courses Found',
-                      subtitle: 'Get started by creating your very first e-learning course.',
+                      subtitle:
+                          'Get started by creating your very first e-learning course.',
                       actionText: 'Create Course',
                       onAction: () => _showCourseDialog(),
                     )
@@ -4598,20 +5266,27 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                         width: 90,
                                         height: 90,
                                         fit: BoxFit.cover,
-                                        placeholder: (context, url) => Container(
+                                        placeholder: (context, url) =>
+                                            Container(
                                           color: Colors.grey[800],
-                                          child: const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00))),
+                                          child: const Center(
+                                              child: CircularProgressIndicator(
+                                                  color: Color(0xFFFFFC00))),
                                         ),
-                                        errorWidget: (context, url, error) => Container(
+                                        errorWidget: (context, url, error) =>
+                                            Container(
                                           color: Colors.grey[800],
-                                          child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                                          child: const Icon(
+                                              Icons.image_not_supported,
+                                              color: Colors.grey),
                                         ),
                                       )
                                     : Container(
                                         color: Colors.grey[800],
                                         width: 90,
                                         height: 90,
-                                        child: const Icon(Icons.image, color: Colors.grey),
+                                        child: const Icon(Icons.image,
+                                            color: Colors.grey),
                                       ),
                               ),
                               const SizedBox(width: 14),
@@ -4621,14 +5296,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                   children: [
                                     Text(
                                       course['title'] ?? 'Untitled Course',
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      course['description'] ?? 'No description provided.',
-                                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                      course['description'] ??
+                                          'No description provided.',
+                                      style: const TextStyle(
+                                          color: Colors.white70, fontSize: 12),
                                       maxLines: 2,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -4638,14 +5318,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                       runSpacing: 4,
                                       children: [
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
-                                            color: Color(0xFFFFFC00).withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(8),
+                                            color: Color(0xFFFFFC00)
+                                                .withOpacity(0.1),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                           child: Text(
                                             '₹$price',
-                                            style: const TextStyle(color: Color(0xFFFFFC00), fontSize: 11, fontWeight: FontWeight.bold),
+                                            style: const TextStyle(
+                                                color: Color(0xFFFFFC00),
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ),
                                         if (retail != '0' && retail != price)
@@ -4654,18 +5340,23 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                             style: const TextStyle(
                                               color: Colors.grey,
                                               fontSize: 11,
-                                              decoration: TextDecoration.lineThrough,
+                                              decoration:
+                                                  TextDecoration.lineThrough,
                                             ),
                                           ),
                                         Container(
-                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 8, vertical: 4),
                                           decoration: BoxDecoration(
                                             color: Colors.blue.withOpacity(0.1),
-                                            borderRadius: BorderRadius.circular(8),
+                                            borderRadius:
+                                                BorderRadius.circular(8),
                                           ),
                                           child: Text(
                                             language,
-                                            style: const TextStyle(color: Colors.blue, fontSize: 11),
+                                            style: const TextStyle(
+                                                color: Colors.blue,
+                                                fontSize: 11),
                                           ),
                                         ),
                                       ],
@@ -4675,24 +5366,40 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         TextButton.icon(
-                                          icon: const Icon(Icons.list_alt, size: 16, color: Color(0xFFFFFC00)),
-                                          label: const Text('Curriculum', style: TextStyle(color: Color(0xFFFFFC00), fontSize: 12)),
+                                          icon: const Icon(Icons.list_alt,
+                                              size: 16,
+                                              color: Color(0xFFFFFC00)),
+                                          label: const Text('Curriculum',
+                                              style: TextStyle(
+                                                  color: Color(0xFFFFFC00),
+                                                  fontSize: 12)),
                                           onPressed: () {
                                             setState(() {
-                                              selectedCourseForCurriculum = course;
+                                              selectedCourseForCurriculum =
+                                                  course;
                                             });
                                             _loadLessons(course['id']);
                                           },
                                         ),
                                         TextButton.icon(
-                                          icon: const Icon(Icons.edit, size: 16, color: Colors.blue),
-                                          label: const Text('Edit', style: TextStyle(color: Colors.blue, fontSize: 12)),
-                                          onPressed: () => _showCourseDialog(course: course),
+                                          icon: const Icon(Icons.edit,
+                                              size: 16, color: Colors.blue),
+                                          label: const Text('Edit',
+                                              style: TextStyle(
+                                                  color: Colors.blue,
+                                                  fontSize: 12)),
+                                          onPressed: () =>
+                                              _showCourseDialog(course: course),
                                         ),
                                         TextButton.icon(
-                                          icon: const Icon(Icons.delete_outline, size: 16, color: Colors.red),
-                                          label: const Text('Delete', style: TextStyle(color: Colors.red, fontSize: 12)),
-                                          onPressed: () => _deleteCourse(course['id']),
+                                          icon: const Icon(Icons.delete_outline,
+                                              size: 16, color: Colors.red),
+                                          label: const Text('Delete',
+                                              style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 12)),
+                                          onPressed: () =>
+                                              _deleteCourse(course['id']),
                                         ),
                                       ],
                                     ),
@@ -4725,7 +5432,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             children: [
               TextButton.icon(
                 icon: const Icon(Icons.arrow_back, color: Color(0xFFFFFC00)),
-                label: const Text('Back to Courses', style: TextStyle(color: Color(0xFFFFFC00))),
+                label: const Text('Back to Courses',
+                    style: TextStyle(color: Color(0xFFFFFC00))),
                 onPressed: () {
                   setState(() {
                     selectedCourseForCurriculum = null;
@@ -4742,7 +5450,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       children: [
                         Text(
                           course['title'] ?? 'Course Curriculum',
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -4757,11 +5468,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   ElevatedButton.icon(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Color(0xFFFFFC00),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 10),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
                     icon: const Icon(Icons.add, color: Colors.black, size: 18),
-                    label: const Text('Add Lesson', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13)),
+                    label: const Text('Add Lesson',
+                        style: TextStyle(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13)),
                     onPressed: () => _showLessonDialog(courseId),
                   ),
                 ],
@@ -4771,12 +5488,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
         ),
         Expanded(
           child: isLoadingLessons
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
               : courseLessons.isEmpty
                   ? _buildEmptyState(
                       icon: Icons.video_library_outlined,
                       title: 'No Lessons Added',
-                      subtitle: 'Add educational video lessons to complete your curriculum.',
+                      subtitle:
+                          'Add educational video lessons to complete your curriculum.',
                       actionText: 'Add Lesson',
                       onAction: () => _showLessonDialog(courseId),
                     )
@@ -4785,7 +5504,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       itemCount: courseLessons.length,
                       itemBuilder: (context, index) {
                         final lesson = courseLessons[index];
-                        final thumb = lesson['thamnail_url'] ?? ''; // Note database spelling
+                        final thumb = lesson['thamnail_url'] ??
+                            ''; // Note database spelling
                         final video = lesson['video_url'] ?? '';
 
                         return Container(
@@ -4809,7 +5529,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 alignment: Alignment.center,
                                 child: Text(
                                   '${index + 1}',
-                                  style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                      color: Color(0xFFFFFC00),
+                                      fontWeight: FontWeight.bold),
                                 ),
                               ),
                               const SizedBox(width: 12),
@@ -4819,24 +5541,39 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                   children: [
                                     Text(
                                       lesson['title'] ?? 'Untitled Lesson',
-                                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14),
                                     ),
-                                    if (lesson['content'] != null && lesson['content'].toString().isNotEmpty) ...[
+                                    if (lesson['content'] != null &&
+                                        lesson['content']
+                                            .toString()
+                                            .isNotEmpty) ...[
                                       const SizedBox(height: 4),
                                       Text(
                                         lesson['content'],
-                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                        style: const TextStyle(
+                                            color: Colors.white70,
+                                            fontSize: 12),
                                       ),
                                     ],
                                     const SizedBox(height: 8),
                                     Row(
                                       children: [
-                                        const Icon(Icons.videocam, color: Colors.grey, size: 14),
+                                        const Icon(Icons.videocam,
+                                            color: Colors.grey, size: 14),
                                         const SizedBox(width: 6),
                                         Expanded(
                                           child: Text(
-                                            video.isNotEmpty ? 'Video linked' : 'No video link',
-                                            style: TextStyle(color: video.isNotEmpty ? Colors.green : Colors.red, fontSize: 11),
+                                            video.isNotEmpty
+                                                ? 'Video linked'
+                                                : 'No video link',
+                                            style: TextStyle(
+                                                color: video.isNotEmpty
+                                                    ? Colors.green
+                                                    : Colors.red,
+                                                fontSize: 11),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -4848,14 +5585,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         TextButton.icon(
-                                          icon: const Icon(Icons.edit, size: 14, color: Colors.blue),
-                                          label: const Text('Edit', style: TextStyle(color: Colors.blue, fontSize: 11)),
-                                          onPressed: () => _showLessonDialog(courseId, lesson: lesson),
+                                          icon: const Icon(Icons.edit,
+                                              size: 14, color: Colors.blue),
+                                          label: const Text('Edit',
+                                              style: TextStyle(
+                                                  color: Colors.blue,
+                                                  fontSize: 11)),
+                                          onPressed: () => _showLessonDialog(
+                                              courseId,
+                                              lesson: lesson),
                                         ),
                                         TextButton.icon(
-                                          icon: const Icon(Icons.delete_outline, size: 14, color: Colors.red),
-                                          label: const Text('Delete', style: TextStyle(color: Colors.red, fontSize: 11)),
-                                          onPressed: () => _deleteLesson(lesson['id'], courseId),
+                                          icon: const Icon(Icons.delete_outline,
+                                              size: 14, color: Colors.red),
+                                          label: const Text('Delete',
+                                              style: TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 11)),
+                                          onPressed: () => _deleteLesson(
+                                              lesson['id'], courseId),
                                         ),
                                       ],
                                     ),
@@ -4895,19 +5643,27 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             children: [
               TextButton.icon(
                 icon: const Icon(Icons.arrow_back, color: Color(0xFFFFFC00)),
-                label: const Text('Back', style: TextStyle(color: Color(0xFFFFFC00))),
+                label: const Text('Back',
+                    style: TextStyle(color: Color(0xFFFFFC00))),
                 onPressed: () => setState(() => _showCourseRequests = false),
               ),
               const SizedBox(width: 16),
-              const Text('Publisher Requests', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+              const Text('Publisher Requests',
+                  style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold)),
             ],
           ),
         ),
         Expanded(
           child: isLoadingCourseRequests
-              ? const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
+              ? const Center(
+                  child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
               : courseRequests.isEmpty
-                  ? const Center(child: Text('No publish requests yet.', style: TextStyle(color: Colors.grey)))
+                  ? const Center(
+                      child: Text('No publish requests yet.',
+                          style: TextStyle(color: Colors.grey)))
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
                       itemCount: courseRequests.length,
@@ -4925,21 +5681,35 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(req['creator_name'] ?? 'Unknown', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                                  Text(req['creator_name'] ?? 'Unknown',
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16)),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: req['status'] == 'pending' ? Colors.orange.withOpacity(0.2) :
-                                             req['status'] == 'approved' ? Colors.green.withOpacity(0.2) : Colors.red.withOpacity(0.2),
+                                      color: req['status'] == 'pending'
+                                          ? Colors.orange.withOpacity(0.2)
+                                          : req['status'] == 'approved'
+                                              ? Colors.green.withOpacity(0.2)
+                                              : Colors.red.withOpacity(0.2),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Text(
-                                      (req['status'] ?? 'pending').toString().toUpperCase(),
+                                      (req['status'] ?? 'pending')
+                                          .toString()
+                                          .toUpperCase(),
                                       style: TextStyle(
-                                        color: req['status'] == 'pending' ? Colors.orange :
-                                               req['status'] == 'approved' ? Colors.green : Colors.red,
+                                        color: req['status'] == 'pending'
+                                            ? Colors.orange
+                                            : req['status'] == 'approved'
+                                                ? Colors.green
+                                                : Colors.red,
                                         fontSize: 10,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -4948,25 +5718,40 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 ],
                               ),
                               const SizedBox(height: 8),
-                              Text('Course Title: ${req['course_title']}', style: const TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold)),
+                              Text('Course Title: ${req['course_title']}',
+                                  style: const TextStyle(
+                                      color: Color(0xFFFFFC00),
+                                      fontWeight: FontWeight.bold)),
                               const SizedBox(height: 8),
-                              Text(req['course_description'] ?? '', style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                              Text(req['course_description'] ?? '',
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 13)),
                               const SizedBox(height: 16),
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   if (req['status'] == 'pending') ...[
                                     TextButton.icon(
-                                      icon: const Icon(Icons.close, color: Colors.red, size: 16),
-                                      label: const Text('Reject', style: TextStyle(color: Colors.red)),
-                                      onPressed: () => _updateCourseRequestStatus(req['id'], 'rejected'),
+                                      icon: const Icon(Icons.close,
+                                          color: Colors.red, size: 16),
+                                      label: const Text('Reject',
+                                          style: TextStyle(color: Colors.red)),
+                                      onPressed: () =>
+                                          _updateCourseRequestStatus(
+                                              req['id'], 'rejected'),
                                     ),
                                     const SizedBox(width: 8),
                                     ElevatedButton.icon(
-                                      style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-                                      icon: const Icon(Icons.check, color: Colors.white, size: 16),
-                                      label: const Text('Approve', style: TextStyle(color: Colors.white)),
-                                      onPressed: () => _updateCourseRequestStatus(req['id'], 'approved'),
+                                      style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.green),
+                                      icon: const Icon(Icons.check,
+                                          color: Colors.white, size: 16),
+                                      label: const Text('Approve',
+                                          style:
+                                              TextStyle(color: Colors.white)),
+                                      onPressed: () =>
+                                          _updateCourseRequestStatus(
+                                              req['id'], 'approved'),
                                     ),
                                   ]
                                 ],
@@ -4998,7 +5783,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             const SizedBox(height: 16),
             Text(
               title,
-              style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 8),
             Text(
@@ -5010,11 +5798,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFFFFFC00),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               onPressed: onAction,
-              child: Text(actionText, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+              child: Text(actionText,
+                  style: const TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -5030,7 +5822,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     final q = _robotSearchQuery.trim().toLowerCase();
     final filtered = allRobots.where((r) {
       if (q.isEmpty) return true;
-      final dynLvl = PocketRobotService.getDynamicLevel(r, daysElapsed: _robotDaysElapsed);
+      final dynLvl =
+          PocketRobotService.getDynamicLevel(r, daysElapsed: _robotDaysElapsed);
       if (r.name.toLowerCase().contains(q)) return true;
       if (r.archetype.label.toLowerCase().contains(q)) return true;
       if (r.cefrRank.toLowerCase().contains(q)) return true;
@@ -5071,7 +5864,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.smart_toy_rounded, color: Color(0xFFFFFC00), size: 28),
+                      child: const Icon(Icons.smart_toy_rounded,
+                          color: Color(0xFFFFFC00), size: 28),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -5080,11 +5874,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         children: [
                           Text(
                             'Pocket Robots Simulation Engine',
-                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                            style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold),
                           ),
                           Text(
                             'Dynamic 1–90 Day looping system • Real-time Level updates',
-                            style: GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
+                            style: GoogleFonts.outfit(
+                                color: Colors.white60, fontSize: 12),
                           ),
                         ],
                       ),
@@ -5094,7 +5892,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 const SizedBox(height: 16),
                 Text(
                   'Every day at UTC midnight, all 90 robots progress by +1 level. When any robot reaches Level 90, it seamlessly loops back to Level 1, continuously generating simulated active peer community learning.',
-                  style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
+                  style:
+                      GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
                 ),
                 const SizedBox(height: 16),
                 // Stats Badges
@@ -5102,11 +5901,22 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   spacing: 12,
                   runSpacing: 10,
                   children: [
-                    _buildRoboBadge('Total Robots', '90 Bots', Icons.group_work_rounded, const Color(0xFF38BDF8)),
-                    _buildRoboBadge('Active Cycle', 'Cycle $currentCycle', Icons.loop_rounded, const Color(0xFFF43F5E)),
-                    _buildRoboBadge('Current Day', 'Day $currentCycleDay / 90 🔁', Icons.calendar_month_rounded, const Color(0xFF10B981)),
-                    _buildRoboBadge('Days Elapsed', '+$_robotDaysElapsed Days', Icons.history_rounded, const Color(0xFFF59E0B)),
-                    _buildRoboBadge('Active Vibes', '$_activeVibesCount Stories', Icons.auto_awesome_rounded, const Color(0xFFA855F7)),
+                    _buildRoboBadge('Total Robots', '90 Bots',
+                        Icons.group_work_rounded, const Color(0xFF38BDF8)),
+                    _buildRoboBadge('Active Cycle', 'Cycle $currentCycle',
+                        Icons.loop_rounded, const Color(0xFFF43F5E)),
+                    _buildRoboBadge(
+                        'Current Day',
+                        'Day $currentCycleDay / 90 🔁',
+                        Icons.calendar_month_rounded,
+                        const Color(0xFF10B981)),
+                    _buildRoboBadge('Days Elapsed', '+$_robotDaysElapsed Days',
+                        Icons.history_rounded, const Color(0xFFF59E0B)),
+                    _buildRoboBadge(
+                        'Active Vibes',
+                        '$_activeVibesCount Stories',
+                        Icons.auto_awesome_rounded,
+                        const Color(0xFFA855F7)),
                   ],
                 ),
                 const SizedBox(height: 18),
@@ -5117,12 +5927,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   children: [
                     ElevatedButton.icon(
                       onPressed: () async {
-                        final newDays = await PocketRobotService.advanceProgressionByDays(1);
+                        final newDays =
+                            await PocketRobotService.advanceProgressionByDays(
+                                1);
                         if (!mounted) return;
                         setState(() => _robotDaysElapsed = newDays);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('⏩ Advanced progression by +1 Day! (Total: $newDays Days)'),
+                            content: Text(
+                                '⏩ Advanced progression by +1 Day! (Total: $newDays Days)'),
                             backgroundColor: const Color(0xFF10B981),
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -5131,19 +5944,23 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF0284C7),
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       icon: const Icon(Icons.fast_forward_rounded, size: 16),
                       label: const Text('+1 Day Loop'),
                     ),
                     ElevatedButton.icon(
                       onPressed: () async {
-                        final newDays = await PocketRobotService.advanceProgressionByDays(10);
+                        final newDays =
+                            await PocketRobotService.advanceProgressionByDays(
+                                10);
                         if (!mounted) return;
                         setState(() => _robotDaysElapsed = newDays);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('⏩ Advanced progression by +10 Days! (Total: $newDays Days)'),
+                            content: Text(
+                                '⏩ Advanced progression by +10 Days! (Total: $newDays Days)'),
                             backgroundColor: const Color(0xFF0284C7),
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -5152,7 +5969,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF6366F1),
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       icon: const Icon(Icons.skip_next_rounded, size: 16),
                       label: const Text('+10 Days'),
@@ -5164,7 +5982,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         setState(() => _robotDaysElapsed = 0);
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('🔄 Robot progression cycle reset to Day 0.'),
+                            content: Text(
+                                '🔄 Robot progression cycle reset to Day 0.'),
                             behavior: SnackBarBehavior.floating,
                           ),
                         );
@@ -5172,7 +5991,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Colors.white70,
                         side: const BorderSide(color: Colors.white30),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       icon: const Icon(Icons.restart_alt_rounded, size: 16),
                       label: const Text('Reset Cycle'),
@@ -5181,11 +6001,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       onPressed: () async {
                         final myId = supabase.auth.currentUser?.id;
                         if (myId != null) {
-                          await PocketRobotService.ensureIncomingRobotRequests(myId, 1);
+                          await PocketRobotService.ensureIncomingRobotRequests(
+                              myId, 1);
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('💌 Robot Mate Request triggered for current user!'),
+                              content: Text(
+                                  '💌 Robot Mate Request triggered for current user!'),
                               backgroundColor: Color(0xFF10B981),
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -5194,7 +6016,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('Please log in first to receive a robot request.'),
+                              content: Text(
+                                  'Please log in first to receive a robot request.'),
                               behavior: SnackBarBehavior.floating,
                             ),
                           );
@@ -5203,21 +6026,26 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFFFFC00),
                         foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
-                      icon: const Icon(Icons.mark_email_unread_rounded, size: 16),
-                      label: const Text('Trigger Mate Request', style: TextStyle(fontWeight: FontWeight.bold)),
+                      icon:
+                          const Icon(Icons.mark_email_unread_rounded, size: 16),
+                      label: const Text('Trigger Mate Request',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                     ElevatedButton.icon(
                       onPressed: () async {
                         final all = PocketRobotService.getAll90Robots();
                         final r = all[math.Random().nextInt(all.length)];
-                        await PocketRobotService.generateRobotVibe(robotId: r.id);
+                        await PocketRobotService.generateRobotVibe(
+                            robotId: r.id);
                         await _loadRobotCycleData();
                         if (!mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('✨ Generated authentic Vibe story for ${r.name}!'),
+                            content: Text(
+                                '✨ Generated authentic Vibe story for ${r.name}!'),
                             backgroundColor: const Color(0xFFA855F7),
                             behavior: SnackBarBehavior.floating,
                           ),
@@ -5226,7 +6054,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFA855F7),
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       icon: const Icon(Icons.auto_awesome_rounded, size: 16),
                       label: const Text('Post Robot Vibe'),
@@ -5235,11 +6064,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       onPressed: () async {
                         final myId = supabase.auth.currentUser?.id;
                         if (myId != null) {
-                          await PocketRobotService.checkAndTriggerProactiveMatesMessages(myId);
+                          await PocketRobotService
+                              .checkAndTriggerProactiveMatesMessages(myId);
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('💬 Dispatched proactive conversational message!'),
+                              content: Text(
+                                  '💬 Dispatched proactive conversational message!'),
                               backgroundColor: Color(0xFF059669),
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -5249,21 +6080,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF059669),
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
-                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                      icon: const Icon(Icons.chat_bubble_outline_rounded,
+                          size: 16),
                       label: const Text('Proactive Chat'),
                     ),
                     ElevatedButton.icon(
                       onPressed: () async {
                         final myId = supabase.auth.currentUser?.id;
                         if (myId != null) {
-                          await PocketRobotService.runAutonomousHumanEngine(myId);
+                          await PocketRobotService.runAutonomousHumanEngine(
+                              myId);
                           await _loadRobotCycleData();
                           if (!mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text('🧠 Full Autonomous Human Engine cycle executed!'),
+                              content: Text(
+                                  '🧠 Full Autonomous Human Engine cycle executed!'),
                               backgroundColor: Color(0xFFFFFC00),
                               behavior: SnackBarBehavior.floating,
                             ),
@@ -5273,10 +6108,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE11D48),
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
                       ),
                       icon: const Icon(Icons.psychology_rounded, size: 16),
-                      label: const Text('Run Human Engine', style: TextStyle(fontWeight: FontWeight.bold)),
+                      label: const Text('Run Human Engine',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
                     ),
                   ],
                 ),
@@ -5293,7 +6130,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               prefixIcon: const Icon(Icons.search, color: Color(0xFFFFFC00)),
               filled: true,
               fillColor: const Color(0xFF1E293B),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide.none,
@@ -5310,7 +6148,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           const SizedBox(height: 10),
           // Robot Cards List
           ...filtered.map((r) {
-            final dynLvl = PocketRobotService.getDynamicLevel(r, daysElapsed: _robotDaysElapsed);
+            final dynLvl = PocketRobotService.getDynamicLevel(r,
+                daysElapsed: _robotDaysElapsed);
             final cefr = PocketRobotService.getCefrForLevel(dynLvl);
             final isLooped = dynLvl != r.level;
 
@@ -5343,11 +6182,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           child: SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFFFFC00)),
+                            child: CircularProgressIndicator(
+                                strokeWidth: 2, color: Color(0xFFFFFC00)),
                           ),
                         ),
                         errorWidget: (ctx, url, err) => const Center(
-                          child: Icon(Icons.smart_toy_rounded, color: Color(0xFFFFFC00)),
+                          child: Icon(Icons.smart_toy_rounded,
+                              color: Color(0xFFFFFC00)),
                         ),
                       ),
                     ),
@@ -5371,11 +6212,14 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                color: const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.15),
                                 borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: const Color(0xFFFFFC00)),
+                                border:
+                                    Border.all(color: const Color(0xFFFFFC00)),
                               ),
                               child: Text(
                                 'Lvl $dynLvl / 90 🔁',
@@ -5394,37 +6238,46 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           runSpacing: 4,
                           children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
                                 color: r.archetype.color.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 '${r.archetype.icon} ${r.archetype.label}',
-                                style: TextStyle(color: r.archetype.color, fontSize: 11, fontWeight: FontWeight.w600),
+                                style: TextStyle(
+                                    color: r.archetype.color,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600),
                               ),
                             ),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
                                 color: Colors.white10,
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
                                 cefr,
-                                style: const TextStyle(color: Colors.white70, fontSize: 11),
+                                style: const TextStyle(
+                                    color: Colors.white70, fontSize: 11),
                               ),
                             ),
                             if (isLooped)
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: Text(
                                   'Base: Lvl ${r.level}',
-                                  style: const TextStyle(color: Color(0xFF10B981), fontSize: 10),
+                                  style: const TextStyle(
+                                      color: Color(0xFF10B981), fontSize: 10),
                                 ),
                               ),
                           ],
@@ -5434,7 +6287,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           r.bio,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.outfit(color: Colors.white60, fontSize: 12),
+                          style: GoogleFonts.outfit(
+                              color: Colors.white60, fontSize: 12),
                         ),
                         const SizedBox(height: 10),
                         // Actions
@@ -5445,41 +6299,56 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                                 Navigator.push(
                                   context,
                                   MaterialPageRoute(
-                                    builder: (context) => VerfiedSwitchPage(userId: r.id),
+                                    builder: (context) =>
+                                        VerfiedSwitchPage(userId: r.id),
                                   ),
                                 );
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF0284C7),
                                 foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
                               ),
                               icon: const Icon(Icons.person_outline, size: 14),
-                              label: const Text('View Profile', style: TextStyle(fontSize: 12)),
+                              label: const Text('View Profile',
+                                  style: TextStyle(fontSize: 12)),
                             ),
                             const SizedBox(width: 8),
                             OutlinedButton.icon(
                               onPressed: () async {
-                                final myId = supabase.auth.currentUser?.id ?? '';
+                                final myId =
+                                    supabase.auth.currentUser?.id ?? '';
                                 if (myId.isNotEmpty) {
-                                  final isM = await PocketMateService.isMate(myId, r.id);
+                                  final isM = await PocketMateService.isMate(
+                                      myId, r.id);
                                   if (isM) {
-                                    final prefs = await SharedPreferences.getInstance();
-                                    final list = prefs.getStringList('pocket_mates_$myId') ?? [];
+                                    final prefs =
+                                        await SharedPreferences.getInstance();
+                                    final list = prefs.getStringList(
+                                            'pocket_mates_$myId') ??
+                                        [];
                                     list.remove(r.id);
-                                    await prefs.setStringList('pocket_mates_$myId', list);
-                                    if (!mounted) return;
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text('Removed ${r.name} from Mates.')),
-                                    );
-                                  } else {
-                                    await PocketRobotService.acceptRobotRequest(myId: myId, robotId: r.id);
+                                    await prefs.setStringList(
+                                        'pocket_mates_$myId', list);
                                     if (!mounted) return;
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
-                                        content: Text('Connected with ${r.name} as Pocket Mate! ✨'),
-                                        backgroundColor: const Color(0xFF10B981),
+                                          content: Text(
+                                              'Removed ${r.name} from Mates.')),
+                                    );
+                                  } else {
+                                    await PocketRobotService.acceptRobotRequest(
+                                        myId: myId, robotId: r.id);
+                                    if (!mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                            'Connected with ${r.name} as Pocket Mate! ✨'),
+                                        backgroundColor:
+                                            const Color(0xFF10B981),
                                       ),
                                     );
                                   }
@@ -5489,33 +6358,43 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: Colors.white70,
                                 side: const BorderSide(color: Colors.white24),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
                               ),
-                              icon: const Icon(Icons.handshake_outlined, size: 14),
-                              label: const Text('Toggle Mate', style: TextStyle(fontSize: 12)),
+                              icon: const Icon(Icons.handshake_outlined,
+                                  size: 14),
+                              label: const Text('Toggle Mate',
+                                  style: TextStyle(fontSize: 12)),
                             ),
                             const SizedBox(width: 8),
                             OutlinedButton.icon(
                               onPressed: () async {
-                                await PocketRobotService.generateRobotVibe(robotId: r.id);
+                                await PocketRobotService.generateRobotVibe(
+                                    robotId: r.id);
                                 await _loadRobotCycleData();
                                 if (!mounted) return;
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('📸 Posted vibe story for ${r.name}!'),
+                                    content: Text(
+                                        '📸 Posted vibe story for ${r.name}!'),
                                     backgroundColor: const Color(0xFFA855F7),
                                   ),
                                 );
                               },
                               style: OutlinedButton.styleFrom(
                                 foregroundColor: const Color(0xFFA855F7),
-                                side: const BorderSide(color: Color(0xFFA855F7)),
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                side:
+                                    const BorderSide(color: Color(0xFFA855F7)),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 8),
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8)),
                               ),
                               icon: const Icon(Icons.auto_awesome, size: 14),
-                              label: const Text('Post Vibe', style: TextStyle(fontSize: 12)),
+                              label: const Text('Post Vibe',
+                                  style: TextStyle(fontSize: 12)),
                             ),
                           ],
                         ),
@@ -5547,8 +6426,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: TextStyle(color: color.withValues(alpha: 0.8), fontSize: 10)),
-              Text(val, style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+              Text(title,
+                  style: TextStyle(
+                      color: color.withValues(alpha: 0.8), fontSize: 10)),
+              Text(val,
+                  style: TextStyle(
+                      color: color, fontSize: 12, fontWeight: FontWeight.bold)),
             ],
           ),
         ],
@@ -5558,7 +6441,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
 
   Widget _buildMonetizationTab() {
     if (_isLoadingMonetization) {
-      return const Center(child: CircularProgressIndicator(color: Color(0xFFFFFC00)));
+      return const Center(
+          child: CircularProgressIndicator(color: Color(0xFFFFFC00)));
     }
 
     return RefreshIndicator(
@@ -5578,7 +6462,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+              border: Border.all(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -5591,7 +6476,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         color: const Color(0xFFFFFC00),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.monetization_on_rounded, color: Colors.black, size: 24),
+                      child: const Icon(Icons.monetization_on_rounded,
+                          color: Colors.black, size: 24),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
@@ -5608,7 +6494,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                           ),
                           Text(
                             'Platform-Smart House Ads & Subscription Strategy',
-                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                            style: GoogleFonts.inter(
+                                color: Colors.white60, fontSize: 11),
                           ),
                         ],
                       ),
@@ -5622,7 +6509,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 // Global House Ads Toggle
                 Row(
                   children: [
-                    const Icon(Icons.campaign_rounded, color: Color(0xFFFF8906), size: 20),
+                    const Icon(Icons.campaign_rounded,
+                        color: Color(0xFFFF8906), size: 20),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -5630,11 +6518,20 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                         children: [
                           const Text(
                             'Global In-App House Ads',
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13),
                           ),
                           Text(
-                            _adminHouseAdsEnabled ? 'Active (Displaying across app)' : 'Muted (Hidden from all users)',
-                            style: TextStyle(color: _adminHouseAdsEnabled ? Colors.green : Colors.grey, fontSize: 11),
+                            _adminHouseAdsEnabled
+                                ? 'Active (Displaying across app)'
+                                : 'Muted (Hidden from all users)',
+                            style: TextStyle(
+                                color: _adminHouseAdsEnabled
+                                    ? Colors.green
+                                    : Colors.grey,
+                                fontSize: 11),
                           ),
                         ],
                       ),
@@ -5668,11 +6565,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.security_rounded, color: Colors.blueAccent, size: 18),
+                    const Icon(Icons.security_rounded,
+                        color: Colors.blueAccent, size: 18),
                     const SizedBox(width: 8),
                     Text(
                       'Apple & Android Payment Compliance',
-                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                      style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14),
                     ),
                   ],
                 ),
@@ -5680,7 +6581,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 Text(
                   '• 🍏 iOS Anti-Steering: On Apple devices, users who tap Pro promo banners are redirected to the official external Web Checkout URL. This complies 100% with Apple guidelines and bypasses the 30% App Store cut.\n'
                   '• 🤖 Android Flow: On Android, users receive instant UPI intent (GPay/PhonePe/Paytm) with web portal fallback.',
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, height: 1.45),
+                  style: GoogleFonts.inter(
+                      color: Colors.white70, fontSize: 11.5, height: 1.45),
                 ),
               ],
             ),
@@ -5691,11 +6593,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           // Live Preview Header
           Row(
             children: [
-              const Icon(Icons.visibility_rounded, color: Color(0xFFFFFC00), size: 18),
+              const Icon(Icons.visibility_rounded,
+                  color: Color(0xFFFFFC00), size: 18),
               const SizedBox(width: 8),
               Text(
                 'Live In-App Banner Preview',
-                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16),
               ),
             ],
           ),
@@ -5706,12 +6612,17 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF1E1B4B), Color(0xFF312E81), Color(0xFF4338CA)],
+                colors: [
+                  Color(0xFF1E1B4B),
+                  Color(0xFF312E81),
+                  Color(0xFF4338CA)
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
+              border: Border.all(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -5719,38 +6630,55 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFC00),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         'POCKET PRO',
-                        style: GoogleFonts.outfit(color: Colors.black, fontSize: 9.5, fontWeight: FontWeight.w900),
+                        style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w900),
                       ),
                     ),
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: Colors.white12,
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        _promoBadgeController.text.isNotEmpty ? _promoBadgeController.text : 'OFFER',
-                        style: GoogleFonts.inter(color: const Color(0xFFFF8906), fontSize: 9.5, fontWeight: FontWeight.bold),
+                        _promoBadgeController.text.isNotEmpty
+                            ? _promoBadgeController.text
+                            : 'OFFER',
+                        style: GoogleFonts.inter(
+                            color: const Color(0xFFFF8906),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold),
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  _promoTitleController.text.isNotEmpty ? _promoTitleController.text : 'Upgrade to Pocket Mates Pro',
-                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                  _promoTitleController.text.isNotEmpty
+                      ? _promoTitleController.text
+                      : 'Upgrade to Pocket Mates Pro',
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  _promoSubtitleController.text.isNotEmpty ? _promoSubtitleController.text : 'Unlimited perks & features',
+                  _promoSubtitleController.text.isNotEmpty
+                      ? _promoSubtitleController.text
+                      : 'Unlimited perks & features',
                   style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
                 ),
                 const SizedBox(height: 12),
@@ -5759,17 +6687,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
                   children: [
                     Text(
                       '₹${_promoMonthlyPriceController.text}/mo',
-                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                      style: GoogleFonts.inter(
+                          color: Colors.white54, fontSize: 11),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(colors: [Color(0xFFFFFC00), Color(0xFFFF8906)]),
+                        gradient: const LinearGradient(
+                            colors: [Color(0xFFFFFC00), Color(0xFFFF8906)]),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Text(
-                        _promoCtaController.text.isNotEmpty ? _promoCtaController.text : 'Claim Offer',
-                        style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 11),
+                        _promoCtaController.text.isNotEmpty
+                            ? _promoCtaController.text
+                            : 'Claim Offer',
+                        style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11),
                       ),
                     ),
                   ],
@@ -5783,11 +6719,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           // Campaign Studio Title
           Row(
             children: [
-              const Icon(Icons.edit_note_rounded, color: Color(0xFFFFFC00), size: 20),
+              const Icon(Icons.edit_note_rounded,
+                  color: Color(0xFFFFFC00), size: 20),
               const SizedBox(width: 8),
               Text(
                 'Campaign Studio & Strategy Controls',
-                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16),
               ),
             ],
           ),
@@ -5796,9 +6736,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           // Active Status Toggle
           SwitchListTile(
             contentPadding: EdgeInsets.zero,
-            title: const Text('Campaign Active Status', style: TextStyle(color: Colors.white, fontSize: 13)),
-            subtitle: Text(_promoIsActive ? 'Campaign is LIVE' : 'Campaign is PAUSED',
-                style: TextStyle(color: _promoIsActive ? Colors.green : Colors.red, fontSize: 11)),
+            title: const Text('Campaign Active Status',
+                style: TextStyle(color: Colors.white, fontSize: 13)),
+            subtitle: Text(
+                _promoIsActive ? 'Campaign is LIVE' : 'Campaign is PAUSED',
+                style: TextStyle(
+                    color: _promoIsActive ? Colors.green : Colors.red,
+                    fontSize: 11)),
             value: _promoIsActive,
             activeThumbColor: const Color(0xFFFFFC00),
             onChanged: (v) => setState(() => _promoIsActive = v),
@@ -5807,17 +6751,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           const SizedBox(height: 12),
 
           // Target Platform Chips
-          const Text('Target Platform', style: TextStyle(color: Colors.white70, fontSize: 12)),
+          const Text('Target Platform',
+              style: TextStyle(color: Colors.white70, fontSize: 12)),
           const SizedBox(height: 8),
           Row(
             children: [
               ChoiceChip(
                 label: const Text('All Platforms'),
                 selected: _promoTargetPlatform == 'all',
-                onSelected: (sel) => setState(() => _promoTargetPlatform = 'all'),
+                onSelected: (sel) =>
+                    setState(() => _promoTargetPlatform = 'all'),
                 selectedColor: const Color(0xFFFFFC00),
                 labelStyle: TextStyle(
-                  color: _promoTargetPlatform == 'all' ? Colors.black : Colors.white,
+                  color: _promoTargetPlatform == 'all'
+                      ? Colors.black
+                      : Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 11,
                 ),
@@ -5826,10 +6774,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               ChoiceChip(
                 label: const Text('🍏 iOS Only'),
                 selected: _promoTargetPlatform == 'ios',
-                onSelected: (sel) => setState(() => _promoTargetPlatform = 'ios'),
+                onSelected: (sel) =>
+                    setState(() => _promoTargetPlatform = 'ios'),
                 selectedColor: const Color(0xFFFFFC00),
                 labelStyle: TextStyle(
-                  color: _promoTargetPlatform == 'ios' ? Colors.black : Colors.white,
+                  color: _promoTargetPlatform == 'ios'
+                      ? Colors.black
+                      : Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 11,
                 ),
@@ -5838,10 +6789,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               ChoiceChip(
                 label: const Text('🤖 Android Only'),
                 selected: _promoTargetPlatform == 'android',
-                onSelected: (sel) => setState(() => _promoTargetPlatform = 'android'),
+                onSelected: (sel) =>
+                    setState(() => _promoTargetPlatform = 'android'),
                 selectedColor: const Color(0xFFFFFC00),
                 labelStyle: TextStyle(
-                  color: _promoTargetPlatform == 'android' ? Colors.black : Colors.white,
+                  color: _promoTargetPlatform == 'android'
+                      ? Colors.black
+                      : Colors.white,
                   fontWeight: FontWeight.bold,
                   fontSize: 11,
                 ),
@@ -5852,30 +6806,39 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
           const SizedBox(height: 16),
 
           // Text fields
-          _buildMonetizationInput('Campaign Headline', _promoTitleController, Icons.title_rounded),
+          _buildMonetizationInput(
+              'Campaign Headline', _promoTitleController, Icons.title_rounded),
           const SizedBox(height: 12),
-          _buildMonetizationInput('Perks / Subtitle (comma separated)', _promoSubtitleController, Icons.subtitles_rounded, maxLines: 2),
+          _buildMonetizationInput('Perks / Subtitle (comma separated)',
+              _promoSubtitleController, Icons.subtitles_rounded,
+              maxLines: 2),
           const SizedBox(height: 12),
-          _buildMonetizationInput('Discount Pill Badge (e.g. 50% OFF)', _promoBadgeController, Icons.discount_rounded),
+          _buildMonetizationInput('Discount Pill Badge (e.g. 50% OFF)',
+              _promoBadgeController, Icons.discount_rounded),
           const SizedBox(height: 12),
-          _buildMonetizationInput('Call-To-Action Text', _promoCtaController, Icons.touch_app_rounded),
+          _buildMonetizationInput('Call-To-Action Text', _promoCtaController,
+              Icons.touch_app_rounded),
           const SizedBox(height: 12),
-          _buildMonetizationInput('Official Web Checkout URL (for iOS & Web)', _promoWebUrlController, Icons.link_rounded),
+          _buildMonetizationInput('Official Web Checkout URL (for iOS & Web)',
+              _promoWebUrlController, Icons.link_rounded),
           const SizedBox(height: 12),
 
           Row(
             children: [
               Expanded(
-                child: _buildMonetizationInput('Monthly (₹)', _promoMonthlyPriceController, Icons.currency_rupee_rounded),
+                child: _buildMonetizationInput('Monthly (₹)',
+                    _promoMonthlyPriceController, Icons.currency_rupee_rounded),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildMonetizationInput('Yearly (₹)', _promoYearlyPriceController, Icons.calendar_today_rounded),
+                child: _buildMonetizationInput('Yearly (₹)',
+                    _promoYearlyPriceController, Icons.calendar_today_rounded),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          _buildMonetizationInput('Direct UPI ID (for Android Intent)', _promoUpiIdController, Icons.account_balance_rounded),
+          _buildMonetizationInput('Direct UPI ID (for Android Intent)',
+              _promoUpiIdController, Icons.account_balance_rounded),
 
           const SizedBox(height: 26),
 
@@ -5885,12 +6848,16 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
             icon: const Icon(Icons.save_rounded, color: Colors.black),
             label: Text(
               'Save & Deploy Campaign',
-              style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
+              style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15),
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFFFFC00),
               padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14)),
             ),
           ),
           const SizedBox(height: 40),
@@ -5908,7 +6875,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+        Text(label,
+            style: const TextStyle(color: Colors.white70, fontSize: 12)),
         const SizedBox(height: 6),
         TextField(
           controller: controller,
@@ -5923,10 +6891,471 @@ class _AdminDashboardPageState extends State<AdminDashboardPage> with SingleTick
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none,
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
           ),
         ),
       ],
+    );
+  }
+
+  Map<String, dynamic> _getAdminEffectiveMedia(int day) {
+    final base = Learning60DayService.getCuratedMediaForDay(day);
+    if (_adminMediaOverrides.containsKey(day)) {
+      final override = _adminMediaOverrides[day]!;
+      return {
+        'title': base['title'],
+        'youtubeUrl': override['youtubeUrl'] ?? base['youtubeUrl'],
+        'movie': override['movie'] ?? base['movie'],
+        'phrases': override['phrases'] ?? base['phrases'],
+      };
+    }
+    return base;
+  }
+
+  void _openMediaTaskEditDialog(int day) {
+    final current = _getAdminEffectiveMedia(day);
+    final ytController =
+        TextEditingController(text: current['youtubeUrl']?.toString() ?? '');
+    final movieController =
+        TextEditingController(text: current['movie']?.toString() ?? '');
+    final phrasesController = TextEditingController(
+      text: (current['phrases'] as List?)?.join(', ') ?? '',
+    );
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1B2232),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Color(0xFFFFFC00), width: 1.2),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(Icons.edit_rounded,
+                    color: Color(0xFFFFFC00), size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'Edit Stage $day Media',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'YOUTUBE / PODCAST URL',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFFC00),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: ytController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'https://www.youtube.com/watch?v=...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 13),
+                    filled: true,
+                    fillColor: const Color(0xFF131722),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                    suffixIcon: IconButton(
+                      icon: const Icon(Icons.open_in_new_rounded,
+                          color: Color(0xFFFF0000), size: 18),
+                      tooltip: 'Test URL in browser',
+                      onPressed: () async {
+                        final u = ytController.text.trim();
+                        if (u.isNotEmpty) {
+                          final uri = Uri.parse(u);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          }
+                        }
+                      },
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'RECOMMENDED CINEMA / SHOW',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFFC00),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: movieController,
+                  maxLines: 2,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Movie Name (Year) — Key learning takeaways',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 13),
+                    filled: true,
+                    fillColor: const Color(0xFF131722),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'KEY PHRASES (COMMA SEPARATED)',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFFC00),
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: phrasesController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Catch up, Hang out, In essence',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 13),
+                    filled: true,
+                    fillColor: const Color(0xFF131722),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Colors.white12),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child:
+                  const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () async {
+                final yt = ytController.text.trim();
+                final movie = movieController.text.trim();
+                final phrases = phrasesController.text
+                    .split(',')
+                    .map((s) => s.trim())
+                    .where((s) => s.isNotEmpty)
+                    .toList();
+
+                final messenger = ScaffoldMessenger.of(context);
+                await Learning60DayService.saveMediaOverride(
+                  day: day,
+                  youtubeUrl: yt,
+                  recommendedMovie: movie,
+                  keyPhrases: phrases,
+                );
+
+                if (ctx.mounted) {
+                  Navigator.pop(ctx);
+                }
+                if (mounted) {
+                  await _loadAdminMediaOverrides();
+                  messenger.showSnackBar(
+                    SnackBar(
+                      content: Text(
+                          'Updated Day $day learning media successfully! ✨'),
+                      backgroundColor: const Color(0xFF10B981),
+                    ),
+                  );
+                }
+              },
+              child: Text(
+                'Save Changes',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildMediaTasksTab() {
+    final stages = List.generate(90, (i) => i + 1).where((day) {
+      if (_mediaTaskTierFilter == 1 && day > 30) return false;
+      if (_mediaTaskTierFilter == 2 && (day <= 30 || day > 60)) return false;
+      if (_mediaTaskTierFilter == 3 && day <= 60) return false;
+
+      if (_mediaTaskSearchQuery.isNotEmpty) {
+        final media = _getAdminEffectiveMedia(day);
+        final title = media['title']?.toString().toLowerCase() ?? '';
+        final movie = media['movie']?.toString().toLowerCase() ?? '';
+        final q = _mediaTaskSearchQuery.toLowerCase();
+        return title.contains(q) ||
+            movie.contains(q) ||
+            'day $day'.contains(q) ||
+            'stage $day'.contains(q);
+      }
+      return true;
+    }).toList();
+
+    return _isLoadingAdminMedia
+        ? const Center(
+            child: CircularProgressIndicator(color: Color(0xFFFFFC00)))
+        : Column(
+            children: [
+              // Search and Tier Filter Bar
+              Container(
+                padding: const EdgeInsets.all(14),
+                color: const Color(0xFF11141E),
+                child: Column(
+                  children: [
+                    TextField(
+                      onChanged: (v) =>
+                          setState(() => _mediaTaskSearchQuery = v),
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        hintText: 'Search stages, movies, topics...',
+                        hintStyle: const TextStyle(
+                            color: Colors.white38, fontSize: 13),
+                        prefixIcon: const Icon(Icons.search_rounded,
+                            color: Color(0xFFFFFC00), size: 20),
+                        filled: true,
+                        fillColor: const Color(0xFF1D2230),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 10),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(14),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        _buildAdminTierChip('All 90 Stages', 0),
+                        const SizedBox(width: 6),
+                        _buildAdminTierChip('Genesis (1–30)', 1),
+                        const SizedBox(width: 6),
+                        _buildAdminTierChip('Knight (31–60)', 2),
+                        const SizedBox(width: 6),
+                        _buildAdminTierChip('Mastery (61–90)', 3),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Stages List
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.all(14),
+                  itemCount: stages.length,
+                  itemBuilder: (context, index) {
+                    final day = stages[index];
+                    final media = _getAdminEffectiveMedia(day);
+                    final isCustom = _adminMediaOverrides.containsKey(day);
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF161A26),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isCustom
+                              ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
+                              : Colors.white10,
+                          width: isCustom ? 1.2 : 0.8,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFC00),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'Stage $day',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  media['title'] ?? 'Daily Listening Practice',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (isCustom)
+                                Container(
+                                  margin: const EdgeInsets.only(right: 6),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981)
+                                        .withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                        color: const Color(0xFF10B981)
+                                            .withValues(alpha: 0.5)),
+                                  ),
+                                  child: const Text(
+                                    'CUSTOM',
+                                    style: TextStyle(
+                                        color: Color(0xFF10B981),
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              IconButton(
+                                icon: const Icon(Icons.edit_note_rounded,
+                                    color: Color(0xFFFFFC00)),
+                                onPressed: () =>
+                                    _openMediaTaskEditDialog(day),
+                                tooltip: 'Edit Media',
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          // YouTube URL
+                          InkWell(
+                            onTap: () async {
+                              final u = media['youtubeUrl']?.toString() ?? '';
+                              if (u.isNotEmpty) {
+                                final uri = Uri.parse(u);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri,
+                                      mode: LaunchMode.externalApplication);
+                                }
+                              }
+                            },
+                            child: Row(
+                              children: [
+                                const Icon(Icons.play_circle_fill_rounded,
+                                    color: Color(0xFFFF0000), size: 16),
+                                const SizedBox(width: 6),
+                                Expanded(
+                                  child: Text(
+                                    media['youtubeUrl'] ?? 'No YouTube URL',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                      decoration: TextDecoration.underline,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          // Recommended Movie
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Icon(Icons.movie_rounded,
+                                  color: Color(0xFFFFFC00), size: 16),
+                              const SizedBox(width: 6),
+                              Expanded(
+                                child: Text(
+                                  media['movie'] ??
+                                      'No movie recommendation',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white54,
+                                    fontSize: 11.5,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+  }
+
+  Widget _buildAdminTierChip(String label, int index) {
+    final isSelected = _mediaTaskTierFilter == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _mediaTaskTierFilter = index),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? const Color(0xFFFFFC00)
+                : const Color(0xFF1D2230),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: GoogleFonts.outfit(
+                color: isSelected ? Colors.black : Colors.white70,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -5938,4 +7367,3 @@ keyPassword=pocket123
 keyAlias=upload
 storeFile=upload-keystore.jks
 */
-

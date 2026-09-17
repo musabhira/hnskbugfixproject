@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'learning_models.dart';
 import 'learning_service.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_daily_mission_page.dart';
 import 'day90_master_certificate_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 /// Interactive Sheet & Dashboard for the 90-Day English Transformation & Profile Palette System
 class Learning60DayDashboardSheet extends StatefulWidget {
@@ -112,6 +114,193 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
         }
       });
     }
+  }
+
+  Future<void> _showMediaTaskModal(DailyEnglishTask task) async {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          decoration: const BoxDecoration(
+            color: Color(0xFF141724),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(top: BorderSide(color: Color(0xFFFFFC00), width: 1.5)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  margin: const EdgeInsets.only(bottom: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF0000).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.play_circle_fill_rounded, color: Color(0xFFFF0000), size: 26),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          task.title,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Curated Listening & Native Pronunciation',
+                          style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (task.keyListeningPhrases.isNotEmpty) ...[
+                Text(
+                  '🎯 KEY PHRASES TO CATCH:',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFFC00),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: task.keyListeningPhrases.map((phrase) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.07),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        '✨ $phrase',
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+              ],
+              if (task.recommendedMovie != null && task.recommendedMovie!.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E2435),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white10),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.movie_filter_rounded, color: Color(0xFFFFFC00), size: 22),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '🍿 Recommended Cinema for Fluency:',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFFC00),
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              task.recommendedMovie!,
+                              style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () async {
+                        if (task.mediaUrl != null && task.mediaUrl!.isNotEmpty) {
+                          final uri = Uri.parse(task.mediaUrl!);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri, mode: LaunchMode.externalApplication);
+                          }
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFF0000),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: const Icon(Icons.play_arrow_rounded, size: 20),
+                      label: Text(
+                        'Watch Video',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _handleTaskTap(task);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: task.isCompleted ? const Color(0xFF10B981) : const Color(0xFFFFFC00),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: Icon(task.isCompleted ? Icons.check_circle_rounded : Icons.star_rounded, size: 20),
+                      label: Text(
+                        task.isCompleted ? 'Completed' : 'Claim +${task.points} XP',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -513,7 +702,36 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
                     ],
                   ),
                 ),
-                const SizedBox(width: 10),
+                if (task.mediaUrl != null && task.mediaUrl!.isNotEmpty) ...[
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: () => _showMediaTaskModal(task),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF0000).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFF0000).withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.play_arrow_rounded, color: Color(0xFFFF0000), size: 15),
+                          const SizedBox(width: 2),
+                          Text(
+                            'Watch',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+                const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () => _handleTaskTap(task),
                   child: Container(
@@ -539,8 +757,313 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
           );
         }),
 
+        if (prog.todayTasks.isNotEmpty && prog.todayTasks.every((t) => t.isCompleted)) ...[
+          Container(
+            margin: const EdgeInsets.only(top: 8, bottom: 20),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFFFFC00), width: 1.2),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.celebration_rounded, color: Color(0xFFFFFC00), size: 24),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Day ${prog.currentDay} Missions Completed! 🎉',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Day ${prog.currentDay + 1} unlocks tomorrow at midnight. Skip the wait and keep practicing right now!',
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFFC00),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                        ),
+                        icon: const Icon(Icons.play_circle_fill_rounded, size: 18),
+                        label: Text(
+                          'Watch Ad to Unlock',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                        onPressed: () => _playRewardedAdToUnlock(prog.currentDay + 1),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFFFD700),
+                        side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                      ),
+                      child: Text(
+                        '👑 VIP Pass',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                      ),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+
         const SizedBox(height: 20),
       ],
+    );
+  }
+
+  void _showInstantUnlockModal(int targetDay) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF131722),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(Icons.bolt_rounded, color: Color(0xFFFFFC00), size: 28),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Skip Midnight Wait! ⚡',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
+                        Text(
+                          'Day $targetDay is scheduled for tomorrow midnight. Ready to keep your fluency momentum going?',
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Option 1: Rewarded Video Ad (Free for Indian Learners)
+              InkWell(
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _playRewardedAdToUnlock(targetDay);
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.5), width: 1.2),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFF0000).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.play_circle_fill_rounded, color: Color(0xFFFF0000), size: 26),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Watch Video Ad (Free)',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              'Watch a 20-sec sponsor clip to immediately unlock Day $targetDay',
+                              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFFC00),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'FREE 🎬',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              // Option 2: VIP Gold Pass (₹199 / mo)
+              InkWell(
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.workspace_premium_rounded, color: Colors.black, size: 26),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Poket VIP Gold Pass (₹199)',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text(
+                              'Zero wait limits • 100% Ad-Free • Verified Diploma',
+                              style: GoogleFonts.inter(color: Colors.black87, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.black, size: 16),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _playRewardedAdToUnlock(int targetDay) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        return _RewardedAdPlayerDialog(
+          targetDay: targetDay,
+          onAdFinished: () async {
+            await Learning60DayService().jumpToDay(widget.userId, targetDay);
+            await _loadProgress();
+            widget.onProgressUpdated?.call();
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Row(
+                    children: [
+                      const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          '🎉 Day $targetDay Unlocked! Keep shining!',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                  backgroundColor: const Color(0xFF10B981),
+                ),
+              );
+            }
+          },
+        );
+      },
     );
   }
 
@@ -609,18 +1132,18 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
               );
             } else {
               HapticFeedback.lightImpact();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    stage.day == currentDay + 1
-                        ? (isCompletedToday
-                            ? '⏳ Day ${stage.day} unlocks tomorrow at midnight! Great job completing Day $currentDay today.'
-                            : '🔒 Day ${stage.day} unlocks tomorrow! Complete today\'s 60-min practice & subtasks first.')
-                        : '🔒 Day ${stage.day} is locked. Complete Day ${stage.day - 1} to proceed.',
+              if (stage.day == currentDay + 1) {
+                _showInstantUnlockModal(stage.day);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      '🔒 Day ${stage.day} is locked. Complete Day ${stage.day - 1} to proceed.',
+                    ),
+                    backgroundColor: const Color(0xFF1E293B),
                   ),
-                  backgroundColor: const Color(0xFF1E293B),
-                ),
-              );
+                );
+              }
             }
           },
           borderRadius: BorderRadius.circular(18),
@@ -705,7 +1228,7 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
                             : (isUnlocked
                                 ? 'Day ${stage.day} of 90 • ${stage.fluencyTier}'
                                 : (stage.day == currentDay + 1
-                                    ? '🔒 UNLOCKS TOMORROW • Day ${stage.day}'
+                                    ? '⚡ TAP TO UNLOCK NOW (Ad / VIP) • Day ${stage.day}'
                                     : '🔒 Locked • Complete Day ${stage.day - 1}')),
                         style: GoogleFonts.inter(
                           color: isCompletedToday
@@ -1171,6 +1694,139 @@ class _Learning60DayProfileCardState extends State<Learning60DayProfileCard> {
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RewardedAdPlayerDialog extends StatefulWidget {
+  final int targetDay;
+  final VoidCallback onAdFinished;
+
+  const _RewardedAdPlayerDialog({
+    required this.targetDay,
+    required this.onAdFinished,
+  });
+
+  @override
+  State<_RewardedAdPlayerDialog> createState() => _RewardedAdPlayerDialogState();
+}
+
+class _RewardedAdPlayerDialogState extends State<_RewardedAdPlayerDialog> {
+  int _secondsLeft = 5;
+  bool _rewardGranted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted) return false;
+      setState(() {
+        _secondsLeft--;
+      });
+      if (_secondsLeft <= 0) {
+        setState(() {
+          _rewardGranted = true;
+        });
+        await Future.delayed(const Duration(milliseconds: 700));
+        if (mounted) {
+          Navigator.pop(context);
+          widget.onAdFinished();
+        }
+        return false;
+      }
+      return true;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: const Color(0xFF131722),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: const BorderSide(color: Color(0xFFFFFC00), width: 1.2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF0000),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Text(
+                    'SPONSORED AD',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  _rewardGranted ? '🎉 REWARD GRANTED' : 'Reward in ${_secondsLeft}s',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFFC00),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            Container(
+              height: 140,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E2436),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.ondemand_video_rounded, color: Color(0xFFFFFC00), size: 48),
+                  const SizedBox(height: 10),
+                  Text(
+                    'PoketMates Fluency Sponsor',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Unlocking Day ${widget.targetDay} for Free...',
+                    style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: LinearProgressIndicator(
+                value: (5 - _secondsLeft) / 5.0,
+                minHeight: 6,
+                backgroundColor: Colors.white10,
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
+              ),
+            ),
           ],
         ),
       ),

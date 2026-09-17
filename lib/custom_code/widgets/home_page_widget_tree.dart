@@ -17,8 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart'
     as groups_provider;
 import 'package:pocket_mates_app/custom_code/widgets/active_users_provider.dart';
-import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_login_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/zoyarex_admin/zoyarex_ai_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/new_user_onboarding_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'dart:io' as io;
@@ -36,6 +35,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -107,6 +107,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     }
     return _personSearchResults;
   }
+
   List<Map<String, dynamic>> _personSearchResults = [];
   List<Map<String, dynamic>> _productSearchResults = [];
   bool _isSearchingPeople = false;
@@ -115,8 +116,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   final ValueNotifier<String> _vibesFilterNotifier =
       ValueNotifier<String>('Public');
 
-  int _chatCategoryFilterIndex = 0; // 0: All, 1: Unread, 2: Requests, 3: Mates, 4: Groups
+  int _chatCategoryFilterIndex =
+      0; // 0: All, 1: Unread, 2: Requests, 3: Mates, 4: Groups
   List<Map<String, dynamic>> _pendingRequests = [];
+  List<Map<String, dynamic>> _sentRequests = [];
+  int _requestsSubTab = 0; // 0: Received, 1: Sent
   bool _isLoadingRequests = false;
 
   Future<void> _loadPendingRequests() async {
@@ -126,9 +130,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     try {
       await PocketRobotService.runAutonomousHumanEngine(uid);
       final reqs = await PocketMateService.getPendingRequests(uid);
+      final sentReqs = await PocketMateService.getSentRequests(uid);
       if (mounted) {
         setState(() {
           _pendingRequests = reqs;
+          _sentRequests = sentReqs;
           _isLoadingRequests = false;
         });
       }
@@ -144,6 +150,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     super.initState();
     _pageController = PageController(initialPage: _chatTabIndex);
     ContactsNameService().initialize();
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+    if (uid.isNotEmpty) {
+      VibesSeenService.init(uid);
+    }
+    VibesSeenService.seenEpochNotifier.addListener(_onVibesSeenSync);
     _loadCachedData();
     _loadAllUserData();
     _loadPendingRequests();
@@ -154,7 +165,21 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       _checkAppUpdate();
       _checkEulaAndRedirect();
       _loadVibesFilterInitial();
+      _checkOnboarding();
     });
+  }
+
+  Future<void> _checkOnboarding() async {
+    final user = supabase.auth.currentUser;
+    if (mounted) {
+      await NewUserOnboardingDialog.checkAndShow(
+        context,
+        userId: user?.id,
+        onStartCall: () {
+          _showMatchmakingModal(context, profileId ?? '');
+        },
+      );
+    }
   }
 
   Future<void> _loadVibesFilterInitial() async {
@@ -286,7 +311,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Future<void> _loadMoreSearchPeople() async {
-    if (_isLoadingMorePeopleSearch || !_hasMorePeopleSearch || _searchQuery.trim().isEmpty) return;
+    if (_isLoadingMorePeopleSearch ||
+        !_hasMorePeopleSearch ||
+        _searchQuery.trim().isEmpty) return;
     setState(() => _isLoadingMorePeopleSearch = true);
     try {
       final nextOffset = _searchPeopleOffset + 15;
@@ -312,7 +339,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Future<void> _loadMoreSearchProducts() async {
-    if (_isLoadingMoreProductsSearch || !_hasMoreProductsSearch || _searchQuery.trim().isEmpty) return;
+    if (_isLoadingMoreProductsSearch ||
+        !_hasMoreProductsSearch ||
+        _searchQuery.trim().isEmpty) return;
     setState(() => _isLoadingMoreProductsSearch = true);
     try {
       final nextOffset = _searchProductsOffset + 15;
@@ -343,11 +372,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   bool _onSearchScrollNotification(ScrollNotification notification) {
-    if (notification.metrics.pixels >= notification.metrics.maxScrollExtent - 250) {
+    if (notification.metrics.pixels >=
+        notification.metrics.maxScrollExtent - 250) {
       if (_searchQuery.trim().isNotEmpty) {
-        if (_searchTabIndex == 0 && !_isLoadingMorePeopleSearch && _hasMorePeopleSearch) {
+        if (_searchTabIndex == 0 &&
+            !_isLoadingMorePeopleSearch &&
+            _hasMorePeopleSearch) {
           _loadMoreSearchPeople();
-        } else if (_searchTabIndex == 1 && !_isLoadingMoreProductsSearch && _hasMoreProductsSearch) {
+        } else if (_searchTabIndex == 1 &&
+            !_isLoadingMoreProductsSearch &&
+            _hasMoreProductsSearch) {
           _loadMoreSearchProducts();
         }
       }
@@ -357,11 +391,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   @override
   void dispose() {
+    VibesSeenService.seenEpochNotifier.removeListener(_onVibesSeenSync);
     _pageController.dispose();
     _searchController.dispose();
     _vibesFilterNotifier.dispose();
     if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
     super.dispose();
+  }
+
+  void _onVibesSeenSync() {
+    if (mounted) {
+      ref.read(conversationsProvider.notifier).refreshNow();
+      safeSetState(() {});
+    }
   }
 
   void safeSetState(VoidCallback fn) {
@@ -656,8 +698,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text("•",
-                                style:
-                                    TextStyle(color: Color(0xFFFFFC00))),
+                                style: TextStyle(color: Color(0xFFFFFC00))),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
@@ -752,14 +793,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       case 'Admin Dashboard':
         AdminAuthService.authenticateAndOpen(context);
         return;
-      case 'Zoyrax POS Admin': // Legacy spelling fallback
-      case 'Zoyarex POS Admin':
-      case 'Zoyarex Super Admin':
-        page = const ZoyarexLoginPage();
-        break;
-      case 'Zoyarex AI':
-        page = const ZoyarexAiPage();
-        break;
       case 'Drawing Tool':
         page = const DrawingPage();
         break;
@@ -807,7 +840,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         page = const PasswordGeneratorPage();
         break;
       case 'WhatsApp Web':
-        page = const DynamicWebViewPage(title: 'WhatsApp Web', url: 'https://web.whatsapp.com');
+        page = const DynamicWebViewPage(
+            title: 'WhatsApp Web', url: 'https://web.whatsapp.com');
         break;
       case 'English Hub':
       case 'Voice Speaking Sprint':
@@ -882,11 +916,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         child: Stack(
           children: [
             Positioned.fill(
-              child: CustomPaint(
-                painter: PocketDoodleBackgroundPainter(
-                  color: const Color(0xFFFFFC00),
-                  isDark: isDark,
-                  opacityMultiplier: 0.5,
+              child: RepaintBoundary(
+                child: CustomPaint(
+                  painter: PocketDoodleBackgroundPainter(
+                    color: const Color(0xFFFFFC00),
+                    isDark: isDark,
+                    opacityMultiplier: 0.5,
+                  ),
                 ),
               ),
             ),
@@ -899,15 +935,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       margin: const EdgeInsets.only(bottom: 6),
                       child: material.FloatingActionButton.extended(
                         onPressed: () async {
-                          final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                          final isAuth =
+                              await AuthAlertBox.checkAuthAndShowAlert(
                             context: context,
-                            customMessage: "Please login to start Anonymous English Chat",
+                            customMessage:
+                                "Please login to start Anonymous English Chat",
                           );
                           if (isAuth && mounted) {
                             material.Navigator.push(
                               context,
                               material.MaterialPageRoute(
-                                builder: (context) => const AnonymousEnglishChatPage(),
+                                builder: (context) =>
+                                    const AnonymousEnglishChatPage(),
                               ),
                             );
                           }
@@ -948,135 +987,151 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               body: material.ColoredBox(
                 color: material.Colors.transparent,
                 child: _isLoading
-                ? Center(
-                    child: material.CircularProgressIndicator(
-                      color: isDark
-                          ? const Color(0xFFFFFC00)
-                          : const Color(0xFFFFFC00),
-                    ),
-                  )
-                : _currentIndex == 0
-                    ? const MainMarketPage()
-                    : _currentIndex == 2
-                        ? EnglishLearningGroupChatWidget(
-                            onCancel: () => setState(() => _currentIndex = 1),
-                          )
-                        : _currentIndex == 3
-                            ? EnglishTasksMasterHubPage(userId: _currentUserId)
-                            : PocketSnapFlameRefresh(
-                                onRefresh: _handleRefresh,
-                                triggerDistance: 85.0,
-                                maxPullDistance: 210.0,
-                                restingHeight: 150.0,
-                                child: material.NestedScrollView(
-                                  physics: const BouncingScrollPhysics(
-                                      parent: AlwaysScrollableScrollPhysics()),
-                              headerSliverBuilder:
-                                  (context, innerBoxIsScrolled) {
-                                return [
-                                  // Unified Coordinated Header
-                                  SliverPersistentHeader(
-                                    pinned: true,
-                                    delegate: _HomeMainHeaderDelegate(
-                                      topPadding: MediaQuery.of(context).padding.top,
-                                      currentUserId:
-                                          supabase.auth.currentUser?.id ?? '',
-                                      currentProfileId: profileId ?? '',
-                                      statusRefreshKey: _refreshKeyCount,
-                                      activeUsersRef: ref.watch(
-                                          activeUsersProvider(profileId ?? '')),
-                                      onTapVideo: () => _handleStrangerMatch(
-                                        context,
-                                        ref,
-                                        'Video',
-                                        profileId ?? '',
-                                      ),
-                                      onTapFriends: () {
-                                        material.ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          material.SnackBar(
-                                            content: const Text(
-                                                'Founder Match feature is calibrating for your region.'),
-                                            backgroundColor: isDark
-                                                ? const Color(0xFFFFFC00)
-                                                : const Color(0xFFFFFC00),
+                    ? Center(
+                        child: material.CircularProgressIndicator(
+                          color: isDark
+                              ? const Color(0xFFFFFC00)
+                              : const Color(0xFFFFFC00),
+                        ),
+                      )
+                    : _currentIndex == 0
+                        ? const MainMarketPage()
+                        : _currentIndex == 2
+                            ? EnglishLearningGroupChatWidget(
+                                onCancel: () =>
+                                    setState(() => _currentIndex = 1),
+                              )
+                            : _currentIndex == 3
+                                ? EnglishTasksMasterHubPage(
+                                    userId: _currentUserId)
+                                : PocketSnapFlameRefresh(
+                                    onRefresh: _handleRefresh,
+                                    triggerDistance: 85.0,
+                                    maxPullDistance: 210.0,
+                                    restingHeight: 150.0,
+                                    child: material.NestedScrollView(
+                                      physics: const BouncingScrollPhysics(
+                                          parent:
+                                              AlwaysScrollableScrollPhysics()),
+                                      headerSliverBuilder:
+                                          (context, innerBoxIsScrolled) {
+                                        return [
+                                          // Unified Coordinated Header
+                                          SliverPersistentHeader(
+                                            pinned: true,
+                                            delegate: _HomeMainHeaderDelegate(
+                                              topPadding: MediaQuery.of(context)
+                                                  .padding
+                                                  .top,
+                                              currentUserId: supabase
+                                                      .auth.currentUser?.id ??
+                                                  '',
+                                              currentProfileId: profileId ?? '',
+                                              statusRefreshKey:
+                                                  _refreshKeyCount,
+                                              activeUsersRef: ref.watch(
+                                                  activeUsersProvider(
+                                                      profileId ?? '')),
+                                              onTapVideo: () =>
+                                                  _handleStrangerMatch(
+                                                context,
+                                                ref,
+                                                'Video',
+                                                profileId ?? '',
+                                              ),
+                                              onTapFriends: () {
+                                                _showMatchmakingModal(
+                                                    context, profileId ?? '');
+                                              },
+                                              onTapCall: () =>
+                                                  _handleStrangerMatch(
+                                                context,
+                                                ref,
+                                                'Voice',
+                                                profileId ?? '',
+                                              ),
+                                              onTapText: () =>
+                                                  _handleStrangerMatch(
+                                                context,
+                                                ref,
+                                                'Text',
+                                                profileId ?? '',
+                                              ),
+                                              onTapSettings: _handleSettings,
+                                              onTapAdd: () =>
+                                                  _showAddBottomSheet(context),
+                                              onRefresh: _handleRefresh,
+                                              // Tab Bar params
+                                              selectedIndex: _chatTabIndex,
+                                              onTabTap: _onTabTapped,
+                                              // Search params
+                                              searchController:
+                                                  _searchController,
+                                              searchQuery: _searchQuery,
+                                              isSearching: _isSearchingPeople,
+                                              vibesFilterNotifier:
+                                                  _vibesFilterNotifier,
+                                              pendingRequestsCount:
+                                                  _pendingRequests.length,
+                                            ),
                                           ),
-                                        );
+                                        ];
                                       },
-                                      onTapCall: () => _handleStrangerMatch(
-                                        context,
-                                        ref,
-                                        'Voice',
-                                        profileId ?? '',
-                                      ),
-                                      onTapText: () => _handleStrangerMatch(
-                                        context,
-                                        ref,
-                                        'Text',
-                                        profileId ?? '',
-                                      ),
-                                      onTapSettings: _handleSettings,
-                                      onTapAdd: () =>
-                                          _showAddBottomSheet(context),
-                                      onRefresh: _handleRefresh,
-                                      // Tab Bar params
-                                      selectedIndex: _chatTabIndex,
-                                      onTabTap: _onTabTapped,
-                                      // Search params
-                                      searchController: _searchController,
-                                      searchQuery: _searchQuery,
-                                      isSearching: _isSearchingPeople,
-                                      vibesFilterNotifier: _vibesFilterNotifier,
-                                      pendingRequestsCount: _pendingRequests.length,
-                                    ),
-                                  ),
-                                ];
-                              },
-                              body: material.Builder(
-                                builder: (context) => material.Material(
-                                  color: material.Colors.transparent,
-                                  child: PageView(
-                                    controller: _pageController,
-                                    onPageChanged: _onPageChanged,
-                                    children: [
-                                      material.NotificationListener<ScrollNotification>(
-                                        onNotification: _onSearchScrollNotification,
-                                        child: material.CustomScrollView(
-                                          cacheExtent: 400,
-                                          physics: const BouncingScrollPhysics(
-                                              parent:
-                                                  AlwaysScrollableScrollPhysics()),
-                                          slivers: [
-                                            _buildChatListSliver(
-                                                conversationsAsync),
-                                          ],
+                                      body: material.Builder(
+                                        builder: (context) => material.Material(
+                                          color: material.Colors.transparent,
+                                          child: PageView(
+                                            controller: _pageController,
+                                            onPageChanged: _onPageChanged,
+                                            children: [
+                                              material.NotificationListener<
+                                                  ScrollNotification>(
+                                                onNotification:
+                                                    _onSearchScrollNotification,
+                                                child:
+                                                    material.CustomScrollView(
+                                                  cacheExtent: 400,
+                                                  physics:
+                                                      const BouncingScrollPhysics(
+                                                          parent:
+                                                              AlwaysScrollableScrollPhysics()),
+                                                  slivers: [
+                                                    _buildChatListSliver(
+                                                        conversationsAsync),
+                                                  ],
+                                                ),
+                                              ),
+                                              _buildVibesSection(),
+                                              ThoughtsFeedSection(
+                                                currentUserId:
+                                                    _currentUserId ?? '',
+                                                currentProfileId:
+                                                    profileId ?? '',
+                                                onStatusShared: _handleRefresh,
+                                                searchQuery: _chatTabIndex == 2
+                                                    ? _searchQuery
+                                                    : '',
+                                              ),
+                                              ToolsPage(
+                                                onFavoriteToggled:
+                                                    _handleRefresh,
+                                                externalSearchQuery:
+                                                    _chatTabIndex == 3
+                                                        ? _searchQuery
+                                                        : null,
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
-                                      _buildVibesSection(),
-                                      ThoughtsFeedSection(
-                                        currentUserId: _currentUserId ?? '',
-                                        currentProfileId: profileId ?? '',
-                                        onStatusShared: _handleRefresh,
-                                        searchQuery: _chatTabIndex == 2
-                                            ? _searchQuery
-                                            : '',
-                                      ),
-                                      ToolsPage(
-                                        onFavoriteToggled: _handleRefresh,
-                                        externalSearchQuery: _chatTabIndex == 3 ? _searchQuery : null,
-                                      ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
-                          ),
-          ),
+              ),
+            ),
+          ],
         ),
-      ],
-    ),
-  ),
-);
+      ),
+    );
   }
 
   Future<void> _handleRefresh() async {
@@ -1104,13 +1159,22 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       searchQuery: _chatTabIndex == 1 ? _searchQuery : '',
       filterNotifier: _vibesFilterNotifier,
       isVertical: true,
+      onStatusWatched: () {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ref.read(conversationsProvider.notifier).refreshNow();
+            safeSetState(() {});
+          }
+        });
+      },
     );
   }
 
   Future<void> _acceptMateRequest(Map<String, dynamic> req) async {
     HapticFeedback.mediumImpact();
     final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
-    final senderId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
+    final senderId =
+        req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
     final notifId = req['id']?.toString() ?? '';
 
     final success = await PocketMateService.acceptMateRequest(
@@ -1129,12 +1193,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           SnackBar(
             content: Row(
               children: [
-                const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     '✨ ${req['sender_name'] ?? 'User'} is now your Pocket Mate! Added to active chats.',
-                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+                    style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
               ],
@@ -1151,7 +1217,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     HapticFeedback.lightImpact();
     final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
     final notifId = req['id']?.toString() ?? '';
-    final senderId = req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
+    final senderId =
+        req['sender_id']?.toString() ?? req['source_id']?.toString() ?? '';
 
     await PocketMateService.declineMateRequest(
       notificationId: notifId,
@@ -1210,7 +1277,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               children: [
                 CircleAvatar(
                   radius: 20,
-                  backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                  backgroundColor:
+                      const Color(0xFFFFFC00).withValues(alpha: 0.2),
                   backgroundImage: conversation.imageUrl != null
                       ? NetworkImage(conversation.imageUrl!)
                       : null,
@@ -1242,7 +1310,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        conversation.isPinned ? 'Pinned Chat 📌' : 'Pocket Mate Chat',
+                        conversation.isPinned
+                            ? 'Pinned Chat 📌'
+                            : 'Pocket Mate Chat',
                         style: GoogleFonts.outfit(
                           color: isDark ? Colors.white54 : Colors.black54,
                           fontSize: 12,
@@ -1263,7 +1333,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  conversation.isPinned ? Icons.push_pin_outlined : Icons.push_pin_rounded,
+                  conversation.isPinned
+                      ? Icons.push_pin_outlined
+                      : Icons.push_pin_rounded,
                   color: const Color(0xFFFFFC00),
                   size: 20,
                 ),
@@ -1286,9 +1358,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               ),
               onTap: () async {
                 Navigator.pop(context);
-                final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
-                final isNowPinned = await PocketMateService.togglePinConversation(uid, conversation.id);
-                ref.read(conversationsProvider.notifier).togglePin(conversation.id);
+                final uid =
+                    _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+                final isNowPinned =
+                    await PocketMateService.togglePinConversation(
+                        uid, conversation.id);
+                ref
+                    .read(conversationsProvider.notifier)
+                    .togglePin(conversation.id);
                 _handleRefresh();
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -1306,7 +1383,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               },
             ),
             // Send Snap
-            if (!conversation.isGroup && !conversation.isTool && !conversation.isNotification)
+            if (!conversation.isGroup &&
+                !conversation.isTool &&
+                !conversation.isNotification)
               ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
@@ -1354,13 +1433,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  conversation.unreadCount > 0 ? Icons.mark_chat_read_rounded : Icons.mark_chat_unread_rounded,
+                  conversation.unreadCount > 0
+                      ? Icons.mark_chat_read_rounded
+                      : Icons.mark_chat_unread_rounded,
                   color: Colors.blueAccent,
                   size: 20,
                 ),
               ),
               title: Text(
-                conversation.unreadCount > 0 ? 'Mark as Read' : 'Mark as Unread',
+                conversation.unreadCount > 0
+                    ? 'Mark as Read'
+                    : 'Mark as Unread',
                 style: GoogleFonts.outfit(
                   color: isDark ? Colors.white : Colors.black87,
                   fontWeight: FontWeight.w600,
@@ -1368,7 +1451,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               ),
               onTap: () {
                 Navigator.pop(context);
-                ref.read(conversationsProvider.notifier).markAsRead(conversation.id, conversation.isGroup);
+                ref
+                    .read(conversationsProvider.notifier)
+                    .markAsRead(conversation.id, conversation.isGroup);
                 _handleRefresh();
               },
             ),
@@ -1380,9 +1465,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildChatCategoryFilterChips(List<ChatConversation> conversations) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final robotsCount = conversations.where((c) => PocketRobotService.isRobotId(c.id)).length;
+    final robotsCount =
+        conversations.where((c) => PocketRobotService.isRobotId(c.id)).length;
     final humansCount = conversations
-        .where((c) => !PocketRobotService.isRobotId(c.id) && !c.isGroup && !c.isTool && !c.isNotification && !c.isActiveTimer)
+        .where((c) =>
+            !PocketRobotService.isRobotId(c.id) &&
+            !c.isGroup &&
+            !c.isTool &&
+            !c.isNotification &&
+            !c.isActiveTimer)
         .length;
     final unreadCount = conversations.where((c) => c.unreadCount > 0).length;
     final groupsCount = conversations.where((c) => c.isGroup).length;
@@ -1613,7 +1704,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFC00),
                   borderRadius: BorderRadius.circular(10),
@@ -1621,7 +1713,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.flash_on_rounded, size: 12, color: Colors.black),
+                    const Icon(Icons.flash_on_rounded,
+                        size: 12, color: Colors.black),
                     const SizedBox(width: 2),
                     Text(
                       'Connect',
@@ -1632,6 +1725,111 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       ),
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRequestsSubTabToggle(bool isDark) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+            borderRadius: BorderRadius.circular(24),
+          ),
+          child: Row(
+            children: [
+              // Received Tab
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _requestsSubTab = 0);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _requestsSubTab == 0
+                          ? const Color(0xFFFFFC00)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.arrow_downward_rounded,
+                            size: 15,
+                            color: _requestsSubTab == 0
+                                ? Colors.black
+                                : (isDark ? Colors.white70 : Colors.black87),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Received (${_pendingRequests.length})',
+                            style: GoogleFonts.outfit(
+                              color: _requestsSubTab == 0
+                                  ? Colors.black
+                                  : (isDark ? Colors.white70 : Colors.black87),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Sent Tab
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _requestsSubTab = 1);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _requestsSubTab == 1
+                          ? const Color(0xFFFFFC00)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Center(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.arrow_upward_rounded,
+                            size: 15,
+                            color: _requestsSubTab == 1
+                                ? Colors.black
+                                : (isDark ? Colors.white70 : Colors.black87),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Sent (${_sentRequests.length})',
+                            style: GoogleFonts.outfit(
+                              color: _requestsSubTab == 1
+                                  ? Colors.black
+                                  : (isDark ? Colors.white70 : Colors.black87),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -1655,6 +1853,174 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       );
     }
 
+    if (_requestsSubTab == 1) {
+      if (_sentRequests.isEmpty) {
+        return SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 48),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 64,
+                  height: 64,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Icon(Icons.outbox_rounded,
+                        size: 32, color: Color(0xFFFFFC00)),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'No Sent Requests',
+                  style: GoogleFonts.outfit(
+                    color: isDark ? Colors.white : Colors.black87,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Inquiries you send on Marketplace products or connection requests to other users will appear here.',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                    color: isDark ? Colors.white54 : Colors.black54,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      }
+
+      return SliverList(
+        delegate: SliverChildBuilderDelegate(
+          (context, index) {
+            final req = _sentRequests[index];
+            final reqId = req['id']?.toString() ?? '$index';
+            final receiverId = req['user_id']?.toString() ?? '';
+            final isPending = req['status'] == 'pending';
+
+            return RepaintBoundary(
+              key: ValueKey('sent_$reqId'),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => WhatsAppGroupChat(
+                        groupId: 'p:$receiverId',
+                        groupName: req['receiver_name'] ?? 'Poket Mate',
+                        groupImage: req['receiver_profile_image'],
+                      ),
+                    ),
+                  );
+                  _loadPendingRequests();
+                  ref.read(conversationsProvider.notifier).refreshNow();
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isDark ? Colors.white10 : Colors.black12,
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor:
+                            const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                        backgroundImage: req['receiver_profile_image'] != null
+                            ? NetworkImage(req['receiver_profile_image'])
+                            : null,
+                        child: req['receiver_profile_image'] == null
+                            ? Text(
+                                (req['receiver_name'] ?? 'M')[0].toUpperCase(),
+                                style: const TextStyle(
+                                  color: Color(0xFFFFFC00),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              req['receiver_name'] ?? 'Poket Mate',
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              req['message'] ?? 'Connection request sent',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                color: isDark ? Colors.white54 : Colors.black54,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isPending
+                              ? const Color(0xFFFFFC00).withValues(alpha: 0.15)
+                              : Colors.green.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: isPending
+                                ? const Color(0xFFFFFC00).withValues(alpha: 0.4)
+                                : Colors.green.withValues(alpha: 0.4),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Text(
+                          isPending ? 'Pending ⏳' : 'Accepted ✨',
+                          style: GoogleFonts.outfit(
+                            color: isPending
+                                ? const Color(0xFFFFFC00)
+                                : Colors.greenAccent,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          childCount: _sentRequests.length,
+          addAutomaticKeepAlives: true,
+          addRepaintBoundaries: true,
+        ),
+      );
+    }
+
     if (_pendingRequests.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(
@@ -1670,7 +2036,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   shape: BoxShape.circle,
                 ),
                 child: const Center(
-                  child: Icon(Icons.person_search_rounded, size: 32, color: Color(0xFFFFFC00)),
+                  child: Icon(Icons.person_search_rounded,
+                      size: 32, color: Color(0xFFFFFC00)),
                 ),
               ),
               const SizedBox(height: 16),
@@ -1705,8 +2072,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           final reqId = req['id']?.toString() ?? '$index';
           return RepaintBoundary(
             key: ValueKey(reqId),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  material.MaterialPageRoute(
+                    builder: (context) => WhatsAppGroupChat(
+                      groupId: 'p:${req['sender_id']}',
+                      groupName: req['sender_name'] ?? 'Poket Mate',
+                      groupImage: req['sender_profile_image'],
+                    ),
+                  ),
+                );
+                _loadPendingRequests();
+                ref.read(conversationsProvider.notifier).refreshNow();
+              },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -1720,7 +2103,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                    backgroundColor:
+                        const Color(0xFFFFFC00).withValues(alpha: 0.2),
                     backgroundImage: req['sender_profile_image'] != null
                         ? NetworkImage(req['sender_profile_image'])
                         : null,
@@ -1741,7 +2125,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          req['sender_name'] ?? 'Pocket Mate',
+                          req['sender_name'] ?? 'Poket Mate',
                           style: GoogleFonts.outfit(
                             fontWeight: FontWeight.bold,
                             fontSize: 15,
@@ -1770,7 +2154,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFFC00),
                           foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
                           minimumSize: const Size(60, 32),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -1789,8 +2174,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       const SizedBox(width: 6),
                       // Decline button
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, size: 18, color: Colors.grey),
-                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        icon: const Icon(Icons.close_rounded,
+                            size: 18, color: Colors.grey),
+                        constraints:
+                            const BoxConstraints(minWidth: 32, minHeight: 32),
                         padding: EdgeInsets.zero,
                         onPressed: () => _declineMateRequest(req),
                         tooltip: 'Decline',
@@ -1800,7 +2187,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ],
               ),
             ),
-          );
+          ),
+        );
         },
         childCount: _pendingRequests.length,
         addAutomaticKeepAlives: true,
@@ -1816,8 +2204,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       data: (conversations) {
         final allNotifications =
             conversations.where((c) => c.isNotification).toList();
-        final chatConversations =
-            conversations.where((c) => !c.isNotification).toList();
+        final chatConversations = conversations.where((c) {
+          if (c.isNotification) return false;
+          final lowerName = c.name.toLowerCase();
+          if (lowerName.contains('english hub') ||
+              lowerName.contains('english learning') ||
+              lowerName.contains('english practice')) {
+            return false;
+          }
+          return true;
+        }).toList();
 
         List<ChatConversation> combined = [...chatConversations];
         if (allNotifications.isNotEmpty && _searchQuery.isEmpty) {
@@ -1849,10 +2245,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         });
 
         final filteredConversations = combined.where((conversation) {
+          final lowerName = conversation.name.toLowerCase();
+          if (lowerName.contains('english hub') ||
+              lowerName.contains('english learning') ||
+              lowerName.contains('english practice')) {
+            return false;
+          }
           if (_searchQuery.isNotEmpty &&
-              !conversation.name
-                  .toLowerCase()
-                  .contains(_searchQuery.toLowerCase())) {
+              !lowerName.contains(_searchQuery.toLowerCase())) {
             return false;
           }
           return true;
@@ -1886,13 +2286,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: _isCongestedSearch
-                                ? const Color(0xFFFFFC00).withValues(alpha: 0.18)
+                                ? const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.18)
                                 : material.Colors.white.withValues(alpha: 0.06),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: _isCongestedSearch
-                                  ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
-                                  : material.Colors.white.withValues(alpha: 0.1),
+                                  ? const Color(0xFFFFFC00)
+                                      .withValues(alpha: 0.6)
+                                  : material.Colors.white
+                                      .withValues(alpha: 0.1),
                               width: 1,
                             ),
                           ),
@@ -1932,7 +2335,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 // Sub-filter chips for People (All, Humans, Robots)
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
                     child: SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -1940,21 +2344,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           _buildSearchFilterChip(
                             label: 'All',
                             isSelected: _searchPeopleFilterIndex == 0,
-                            onTap: () => safeSetState(() => _searchPeopleFilterIndex = 0),
+                            onTap: () => safeSetState(
+                                () => _searchPeopleFilterIndex = 0),
                           ),
                           const SizedBox(width: 8),
                           _buildSearchFilterChip(
                             label: 'Humans',
                             icon: material.Icons.person_rounded,
                             isSelected: _searchPeopleFilterIndex == 1,
-                            onTap: () => safeSetState(() => _searchPeopleFilterIndex = 1),
+                            onTap: () => safeSetState(
+                                () => _searchPeopleFilterIndex = 1),
                           ),
                           const SizedBox(width: 8),
                           _buildSearchFilterChip(
                             label: 'Robots',
                             icon: material.Icons.smart_toy_rounded,
                             isSelected: _searchPeopleFilterIndex == 2,
-                            onTap: () => safeSetState(() => _searchPeopleFilterIndex = 2),
+                            onTap: () => safeSetState(
+                                () => _searchPeopleFilterIndex = 2),
                           ),
                         ],
                       ),
@@ -1965,7 +2372,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 // People: Filtered Active Conversations first
                 Builder(
                   builder: (context) {
-                    final displayActiveConversations = filteredConversations.where((c) {
+                    final displayActiveConversations =
+                        filteredConversations.where((c) {
                       if (_searchPeopleFilterIndex == 1) {
                         return !PocketRobotService.isRobotId(c.id);
                       } else if (_searchPeopleFilterIndex == 2) {
@@ -1975,20 +2383,105 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     }).toList();
 
                     if (displayActiveConversations.isEmpty) {
-                      return const SliverToBoxAdapter(child: SizedBox.shrink());
+                      return SliverToBoxAdapter(
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF11141D),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFFFFC00)
+                                  .withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFC00)
+                                      .withValues(alpha: 0.15),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  material.Icons.people_outline_rounded,
+                                  color: Color(0xFFFFFC00),
+                                  size: 24,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'No Active Mates Yet',
+                                      style: GoogleFonts.outfit(
+                                        color: material.Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Find mates or practice with AI!',
+                                      style: GoogleFonts.inter(
+                                        color: material.Colors.white60,
+                                        fontSize: 11.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              material.TextButton(
+                                style: material.TextButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFFC00),
+                                  foregroundColor: material.Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10)),
+                                ),
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    material.MaterialPageRoute(
+                                      builder: (context) => const SearchPage(),
+                                    ),
+                                  );
+                                },
+                                child: const Text(
+                                  '+ Find Mates',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 12),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
                     }
 
                     return SliverMainAxisGroup(
                       slivers: [
                         SliverToBoxAdapter(
+                          child: _buildDailyEnglishChallengeBanner(),
+                        ),
+                        SliverToBoxAdapter(
                           child: Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                            padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
                             child: Text(
                               'Active Chats',
                               style: GoogleFonts.outfit(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
-                                color: material.Colors.white.withValues(alpha: 0.4),
+                                color: material.Colors.white
+                                    .withValues(alpha: 0.4),
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -1997,144 +2490,214 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         SliverList(
                           delegate: SliverChildBuilderDelegate(
                             (context, index) {
-                              final conversation = displayActiveConversations[index];
-                              if (conversation.id == 'notifications_aggregator') {
+                              final conversation =
+                                  displayActiveConversations[index];
+                              if (conversation.id ==
+                                  'notifications_aggregator') {
                                 return _buildNotificationsTile(
                                     allNotifications.length);
                               }
                               return RepaintBoundary(
                                 key: ValueKey(conversation.id),
                                 child: ConversationTile(
-                                key: ValueKey(conversation.id),
-                                conversation: conversation,
-                                currentUserId: _currentUserId ?? '',
-                                onTap: () async {
-                                  if (conversation.isTool) {
-                                    _navigateToTool(conversation.toolTitle ?? '');
-                                    return;
-                                  }
-
-                                  if (conversation.isNotification) {
-                                    _showNotificationDetails(context, conversation);
-                                    return;
-                                  }
-
-                                  if (_currentUserId == null || _currentUserId!.isEmpty) {
-                                    final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
-                                      context: context,
-                                      customMessage: conversation.isGroup
-                                          ? "Please login to access this Group Chat"
-                                          : "Please login to chat with ${conversation.name}",
-                                    );
-                                    if (!isAuth) return;
-                                  }
-
-                                  if (conversation.isActiveTimer) {
-                                    if (conversation.teamData != null) {
-                                      try {
-                                        final team =
-                                            Team.fromJson(conversation.teamData!);
-                                        Navigator.push(
-                                          context,
-                                          material.MaterialPageRoute(
-                                            builder: (context) =>
-                                                TeamDetailPage(team: team),
-                                          ),
-                                        );
-                                      } catch (e) {
-                                        debugPrint('Team error: $e');
-                                      }
+                                  key: ValueKey(conversation.id),
+                                  conversation: conversation,
+                                  currentUserId: _currentUserId ?? '',
+                                  onTap: () async {
+                                    if (conversation.isTool) {
+                                      _navigateToTool(
+                                          conversation.toolTitle ?? '');
+                                      return;
                                     }
-                                  } else if (conversation.isGroup) {
-                                    Navigator.push(
-                                      context,
-                                      material.MaterialPageRoute(
-                                        builder: (context) => WhatsAppGroupChat(
-                                          groupId: conversation.id,
-                                          groupName: conversation.name,
-                                          groupImage: conversation.imageUrl,
-                                        ),
-                                      ),
-                                    );
-                                  } else {
-                                    ref
-                                        .read(conversationsProvider.notifier)
-                                        .markAsRead(conversation.id, false);
 
-                                    Navigator.push(
-                                      context,
-                                      material.MaterialPageRoute(
-                                        builder: (context) => WhatsAppGroupChat(
-                                          groupId: 'p:${conversation.id}',
-                                          groupName: conversation.name,
-                                          groupImage: conversation.imageUrl,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                },
-                                onLongPress: () => _showConversationActionSheet(conversation),
-                                onSnapCameraTap: () async {
-                                  if (_currentUserId == null || _currentUserId!.isEmpty) {
-                                    final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
-                                      context: context,
-                                      customMessage: "Please login to send snaps",
-                                    );
-                                    if (!isAuth) return;
-                                  }
-                                  PocketSnapService.launchSnapWorkflow(
-                                    context,
-                                    userId: _currentUserId ?? '',
-                                    profileId: _currentUserId ?? '',
-                                    preselectedRecipientId: conversation.id,
-                                    onUploaded: _handleRefresh,
-                                  );
-                                },
-                                onSnapViewTap: () {
-                                  SnapViewDialog.show(
-                                    context: context,
-                                    mediaUrl: conversation.snapMediaUrl ?? conversation.imageUrl ?? '',
-                                    caption: conversation.snapCaption,
-                                    senderName: conversation.name,
-                                    isMe: false,
-                                    onBurned: () {
-                                      ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
-                                      if (PocketRobotService.isRobotId(conversation.id)) {
-                                        PocketRobotService.markRobotSnapAsRead(_currentUserId ?? '', conversation.id);
+                                    if (conversation.isNotification) {
+                                      _showNotificationDetails(
+                                          context, conversation);
+                                      return;
+                                    }
+
+                                    if (_currentUserId == null ||
+                                        _currentUserId!.isEmpty) {
+                                      final isAuth = await AuthAlertBox
+                                          .checkAuthAndShowAlert(
+                                        context: context,
+                                        customMessage: conversation.isGroup
+                                            ? "Please login to access this Group Chat"
+                                            : "Please login to chat with ${conversation.name}",
+                                      );
+                                      if (!isAuth) return;
+                                    }
+
+                                    if (conversation.isActiveTimer) {
+                                      if (conversation.teamData != null) {
+                                        try {
+                                          final team = Team.fromJson(
+                                              conversation.teamData!);
+                                          Navigator.push(
+                                            context,
+                                            material.MaterialPageRoute(
+                                              builder: (context) =>
+                                                  TeamDetailPage(team: team),
+                                            ),
+                                          );
+                                        } catch (e) {
+                                          debugPrint('Team error: $e');
+                                        }
                                       }
-                                      _handleRefresh();
-                                    },
-                                  );
-                                },
-                                onStatusTap: () {
-                                  if (conversation.hasStatus &&
-                                      conversation.statusData != null) {
-                                    Navigator.push(
-                                      context,
-                                      material.MaterialPageRoute(
-                                        builder: (context) => StatusViewerWrapper(
-                                          allStatusGroups: [
-                                            {
-                                              'profile': {
-                                                'id': conversation.id,
-                                                'name': conversation.name,
-                                                'profile_image_url':
-                                                    conversation.imageUrl,
-                                              },
-                                              'statuses': conversation.statusData,
-                                              'is_own': false,
-                                            }
-                                          ],
-                                          initialGroupIndex: 0,
-                                          currentUserId: _currentUserId ?? '',
-                                          currentProfileId: profileId ?? '',
-                                          isFromGroup: true,
+                                    } else if (conversation.isGroup) {
+                                      await Navigator.push(
+                                        context,
+                                        material.MaterialPageRoute(
+                                          builder: (context) =>
+                                              WhatsAppGroupChat(
+                                            groupId: conversation.id,
+                                            groupName: conversation.name,
+                                            groupImage: conversation.imageUrl,
+                                          ),
                                         ),
-                                      ),
+                                      );
+                                      ref
+                                          .read(conversationsProvider.notifier)
+                                          .refreshNow();
+                                      if (mounted) setState(() {});
+                                    } else {
+                                      ref
+                                          .read(conversationsProvider.notifier)
+                                          .markAsRead(conversation.id, false);
+
+                                      await Navigator.push(
+                                        context,
+                                        material.MaterialPageRoute(
+                                          builder: (context) =>
+                                              WhatsAppGroupChat(
+                                            groupId: 'p:${conversation.id}',
+                                            groupName: conversation.name,
+                                            groupImage: conversation.imageUrl,
+                                          ),
+                                        ),
+                                      );
+                                      ref
+                                          .read(conversationsProvider.notifier)
+                                          .refreshNow();
+                                      if (mounted) setState(() {});
+                                    }
+                                  },
+                                  onLongPress: () =>
+                                      _showConversationActionSheet(
+                                          conversation),
+                                  onSnapCameraTap: () async {
+                                    if (_currentUserId == null ||
+                                        _currentUserId!.isEmpty) {
+                                      final isAuth = await AuthAlertBox
+                                          .checkAuthAndShowAlert(
+                                        context: context,
+                                        customMessage:
+                                            "Please login to send snaps",
+                                      );
+                                      if (!isAuth) return;
+                                    }
+                                    PocketSnapService.launchSnapWorkflow(
+                                      context,
+                                      userId: _currentUserId ?? '',
+                                      profileId: _currentUserId ?? '',
+                                      preselectedRecipientId: conversation.id,
+                                      onUploaded: _handleRefresh,
                                     );
-                                  }
-                                },
-                              ),
+                                  },
+                                  onSnapViewTap: () {
+                                    SnapViewDialog.show(
+                                      context: context,
+                                      mediaUrl: conversation.snapMediaUrl ??
+                                          conversation.imageUrl ??
+                                          '',
+                                      caption: conversation.snapCaption,
+                                      senderName: conversation.name,
+                                      isMe: false,
+                                      onBurned: () {
+                                        ref
+                                            .read(
+                                                conversationsProvider.notifier)
+                                            .markAsRead(conversation.id, false);
+                                        if (PocketRobotService.isRobotId(
+                                            conversation.id)) {
+                                          PocketRobotService
+                                              .markRobotSnapAsRead(
+                                                  _currentUserId ?? '',
+                                                  conversation.id);
+                                        }
+                                        _handleRefresh();
+                                      },
+                                    );
+                                  },
+                                  onStatusTap: () {
+                                    if (conversation.hasStatus &&
+                                        conversation.statusData != null) {
+                                      VibesSeenService.markSeen(
+                                        currentUserId: _currentUserId ?? '',
+                                        userId: conversation.id,
+                                        profileId: conversation.id,
+                                        groupId: conversation.isGroup
+                                            ? conversation.id
+                                            : null,
+                                        statusIds: conversation.statusData!
+                                            .map((s) => s['id']?.toString() ?? '')
+                                            .where((id) => id.isNotEmpty)
+                                            .toList(),
+                                      );
+                                      Navigator.push(
+                                        context,
+                                        material.MaterialPageRoute(
+                                          builder: (context) =>
+                                              StatusViewerWrapper(
+                                            allStatusGroups: [
+                                              {
+                                                'profile': {
+                                                  'id': conversation.id,
+                                                  'user_id': conversation.id,
+                                                  'name': conversation.name,
+                                                  'profile_image_url':
+                                                      conversation.imageUrl,
+                                                },
+                                                'statuses':
+                                                    conversation.statusData,
+                                                'is_own': false,
+                                              }
+                                            ],
+                                            initialGroupIndex: 0,
+                                            currentUserId: _currentUserId ?? '',
+                                            currentProfileId: profileId ?? '',
+                                            isFromGroup: true,
+                                            onGroupWatched: (gId) {
+                                              VibesSeenService.markSeen(
+                                                currentUserId:
+                                                    _currentUserId ?? '',
+                                                userId: conversation.id,
+                                                profileId: gId,
+                                                groupId: conversation.isGroup
+                                                    ? conversation.id
+                                                    : null,
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                      ).then((_) {
+                                        VibesSeenService.markSeen(
+                                          currentUserId: _currentUserId ?? '',
+                                          userId: conversation.id,
+                                          profileId: conversation.id,
+                                          groupId: conversation.isGroup
+                                              ? conversation.id
+                                              : null,
+                                        );
+                                        ref
+                                            .read(
+                                                conversationsProvider.notifier)
+                                            .refreshNow();
+                                        safeSetState(() {});
+                                      });
+                                    }
+                                  },
+                                ),
                               );
                             },
                             childCount: displayActiveConversations.length,
@@ -2233,137 +2796,144 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   final person = peopleResults[index];
                                   final name = person['name'] ?? 'Unknown';
                                   final avatarUrl = person['profile_image_url'];
-                                  final userId = person['user_id']?.toString() ??
-                                      person['id']?.toString() ??
-                                      '';
+                                  final userId =
+                                      person['user_id']?.toString() ??
+                                          person['id']?.toString() ??
+                                          '';
                                   final isRobot =
                                       PocketRobotService.isRobotId(userId);
 
                                   return RepaintBoundary(
-                                    key: ValueKey('person_grid_${userId}_$index'),
+                                    key: ValueKey(
+                                        'person_grid_${userId}_$index'),
                                     child: GestureDetector(
-                                    onTap: () {
-                                      Navigator.push(
-                                        context,
-                                        material.MaterialPageRoute(
-                                          builder: (context) =>
-                                              WhatsAppGroupChat(
-                                            groupId: 'p:$userId',
-                                            groupName: name,
-                                            groupImage: avatarUrl,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          material.MaterialPageRoute(
+                                            builder: (context) =>
+                                                WhatsAppGroupChat(
+                                              groupId: 'p:$userId',
+                                              groupName: name,
+                                              groupImage: avatarUrl,
+                                            ),
+                                          ),
+                                        ).then((_) {
+                                          ref.invalidate(conversationsProvider);
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? const Color(0xFF131B26)
+                                              : material.Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(14),
+                                          border: Border.all(
+                                            color: isRobot
+                                                ? const Color(0xFFFFFC00)
+                                                    .withValues(alpha: 0.35)
+                                                : (isDark
+                                                    ? material.Colors.white
+                                                        .withValues(alpha: 0.08)
+                                                    : material.Colors.black
+                                                        .withValues(
+                                                            alpha: 0.06)),
+                                            width: 1,
                                           ),
                                         ),
-                                      ).then((_) {
-                                        ref.invalidate(conversationsProvider);
-                                      });
-                                    },
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 6, vertical: 8),
-                                      decoration: BoxDecoration(
-                                        color: isDark
-                                            ? const Color(0xFF131B26)
-                                            : material.Colors.white,
-                                        borderRadius:
-                                            BorderRadius.circular(14),
-                                        border: Border.all(
-                                          color: isRobot
-                                              ? const Color(0xFFFFFC00)
-                                                  .withValues(alpha: 0.35)
-                                              : (isDark
-                                                  ? material.Colors.white
-                                                      .withValues(alpha: 0.08)
-                                                  : material.Colors.black
-                                                      .withValues(alpha: 0.06)),
-                                          width: 1,
-                                        ),
-                                      ),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Stack(
-                                            alignment: Alignment.bottomRight,
-                                            children: [
-                                              CircleAvatar(
-                                                radius: 20,
-                                                backgroundColor: const Color(
-                                                        0xFFFFFC00)
-                                                    .withValues(alpha: 0.15),
-                                                backgroundImage: (avatarUrl !=
-                                                            null &&
-                                                        avatarUrl.isNotEmpty)
-                                                    ? CachedNetworkImageProvider(
-                                                        avatarUrl)
-                                                    : null,
-                                                child: (avatarUrl == null ||
-                                                        avatarUrl.isEmpty)
-                                                    ? Text(
-                                                        name.isNotEmpty
-                                                            ? name[0]
-                                                                .toUpperCase()
-                                                            : '?',
-                                                        style:
-                                                            GoogleFonts.outfit(
-                                                          color: const Color(
-                                                              0xFFFFFC00),
-                                                          fontSize: 14,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                        ),
-                                                      )
-                                                    : null,
-                                              ),
-                                              if (isRobot)
-                                                Positioned(
-                                                  right: -2,
-                                                  bottom: -2,
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.all(2),
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                      color: Color(0xFFFFFC00),
-                                                      shape: BoxShape.circle,
-                                                    ),
-                                                    child: const Icon(
-                                                        material.Icons
-                                                            .smart_toy_rounded,
-                                                        size: 10,
-                                                        color: material
-                                                            .Colors.black),
-                                                  ),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Stack(
+                                              alignment: Alignment.bottomRight,
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 20,
+                                                  backgroundColor:
+                                                      const Color(0xFFFFFC00)
+                                                          .withValues(
+                                                              alpha: 0.15),
+                                                  backgroundImage: (avatarUrl !=
+                                                              null &&
+                                                          avatarUrl.isNotEmpty)
+                                                      ? CachedNetworkImageProvider(
+                                                          avatarUrl)
+                                                      : null,
+                                                  child: (avatarUrl == null ||
+                                                          avatarUrl.isEmpty)
+                                                      ? Text(
+                                                          name.isNotEmpty
+                                                              ? name[0]
+                                                                  .toUpperCase()
+                                                              : '?',
+                                                          style: GoogleFonts
+                                                              .outfit(
+                                                            color: const Color(
+                                                                0xFFFFFC00),
+                                                            fontSize: 14,
+                                                            fontWeight:
+                                                                FontWeight.bold,
+                                                          ),
+                                                        )
+                                                      : null,
                                                 ),
-                                            ],
-                                          ),
-                                          const SizedBox(height: 6),
-                                          Text(
-                                            name,
-                                            style: GoogleFonts.outfit(
-                                              color: isDark
-                                                  ? material.Colors.white
-                                                      .withValues(alpha: 0.9)
-                                                  : material.Colors.black87,
-                                              fontSize: 11,
-                                              fontWeight: FontWeight.w600,
+                                                if (isRobot)
+                                                  Positioned(
+                                                    right: -2,
+                                                    bottom: -2,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(
+                                                              2),
+                                                      decoration:
+                                                          const BoxDecoration(
+                                                        color:
+                                                            Color(0xFFFFFC00),
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: const Icon(
+                                                          material.Icons
+                                                              .smart_toy_rounded,
+                                                          size: 10,
+                                                          color: material
+                                                              .Colors.black),
+                                                    ),
+                                                  ),
+                                              ],
                                             ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                            textAlign: TextAlign.center,
-                                          ),
-                                          if (isRobot)
+                                            const SizedBox(height: 6),
                                             Text(
-                                              'AI Bot',
+                                              name,
                                               style: GoogleFonts.outfit(
-                                                color: const Color(0xFFFFFC00),
-                                                fontSize: 9,
-                                                fontWeight: FontWeight.w500,
+                                                color: isDark
+                                                    ? material.Colors.white
+                                                        .withValues(alpha: 0.9)
+                                                    : material.Colors.black87,
+                                                fontSize: 11,
+                                                fontWeight: FontWeight.w600,
                                               ),
+                                              maxLines: 1,
+                                              overflow: TextOverflow.ellipsis,
+                                              textAlign: TextAlign.center,
                                             ),
-                                        ],
+                                            if (isRobot)
+                                              Text(
+                                                'AI Bot',
+                                                style: GoogleFonts.outfit(
+                                                  color:
+                                                      const Color(0xFFFFFC00),
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.w500,
+                                                ),
+                                              ),
+                                          ],
+                                        ),
                                       ),
                                     ),
-                                  ),
                                   );
                                 },
                                 childCount: peopleResults.length,
@@ -2390,208 +2960,209 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 return RepaintBoundary(
                                   key: ValueKey('person_list_${userId}_$index'),
                                   child: Container(
-                                  margin: const EdgeInsets.symmetric(
-                                      horizontal: 14, vertical: 3.5),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: isDark
-                                        ? const Color(0xFF131B26)
-                                        : material.Colors.white,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(
+                                    margin: const EdgeInsets.symmetric(
+                                        horizontal: 14, vertical: 3.5),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 10),
+                                    decoration: BoxDecoration(
                                       color: isDark
-                                          ? material.Colors.white
-                                              .withValues(alpha: 0.08)
-                                          : material.Colors.black
-                                              .withValues(alpha: 0.06),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Stack(
-                                        clipBehavior: Clip.none,
-                                        children: [
-                                          CircleAvatar(
-                                            radius: 22,
-                                            backgroundImage: (avatarUrl !=
-                                                        null &&
-                                                    avatarUrl.isNotEmpty)
-                                                ? CachedNetworkImageProvider(
-                                                    avatarUrl)
-                                                : null,
-                                            backgroundColor:
-                                                const Color(0xFFFFFC00),
-                                            child: (avatarUrl == null ||
-                                                    avatarUrl.isEmpty)
-                                                ? Text(
-                                                    name.isNotEmpty
-                                                        ? name[0]
-                                                            .toUpperCase()
-                                                        : '?',
-                                                    style: const TextStyle(
-                                                      color: material
-                                                          .Colors.black,
-                                                      fontSize: 13,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  )
-                                                : null,
-                                          ),
-                                          if (isRobot)
-                                            Positioned(
-                                              bottom: -2,
-                                              right: -2,
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.all(2),
-                                                decoration: const BoxDecoration(
-                                                  color: Color(0xFFFFFC00),
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: const Icon(
-                                                    material.Icons
-                                                        .smart_toy_rounded,
-                                                    size: 10,
-                                                    color: material
-                                                        .Colors.black),
-                                              ),
-                                            ),
-                                        ],
+                                          ? const Color(0xFF131B26)
+                                          : material.Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? material.Colors.white
+                                                .withValues(alpha: 0.08)
+                                            : material.Colors.black
+                                                .withValues(alpha: 0.06),
+                                        width: 1,
                                       ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Stack(
+                                          clipBehavior: Clip.none,
                                           children: [
-                                            Row(
-                                              children: [
-                                                Flexible(
-                                                  child: Text(
-                                                    name,
-                                                    style: GoogleFonts.outfit(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.w600,
-                                                      color: isDark
-                                                          ? material
-                                                              .Colors.white
-                                                          : material
-                                                              .Colors.black87,
-                                                    ),
-                                                    maxLines: 1,
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                                if (isRobot) ...[
-                                                  const SizedBox(width: 6),
-                                                  Container(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        horizontal: 5,
-                                                        vertical: 1.5),
-                                                    decoration: BoxDecoration(
-                                                      color: const Color(
-                                                              0xFFFFFC00)
-                                                          .withValues(
-                                                              alpha: 0.2),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              6),
-                                                    ),
-                                                    child: Text(
-                                                      'AI BOT',
-                                                      style: GoogleFonts.outfit(
-                                                        fontSize: 9,
+                                            CircleAvatar(
+                                              radius: 22,
+                                              backgroundImage: (avatarUrl !=
+                                                          null &&
+                                                      avatarUrl.isNotEmpty)
+                                                  ? CachedNetworkImageProvider(
+                                                      avatarUrl)
+                                                  : null,
+                                              backgroundColor:
+                                                  const Color(0xFFFFFC00),
+                                              child: (avatarUrl == null ||
+                                                      avatarUrl.isEmpty)
+                                                  ? Text(
+                                                      name.isNotEmpty
+                                                          ? name[0]
+                                                              .toUpperCase()
+                                                          : '?',
+                                                      style: const TextStyle(
+                                                        color: material
+                                                            .Colors.black,
+                                                        fontSize: 13,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        color: const Color(
-                                                            0xFFFFFC00),
                                                       ),
-                                                    ),
-                                                  ),
-                                                ],
-                                              ],
+                                                    )
+                                                  : null,
                                             ),
-                                            if (bio.isNotEmpty) ...[
-                                              const SizedBox(height: 2),
-                                              Text(
-                                                bio,
-                                                style: GoogleFonts.inter(
-                                                  fontSize: 12,
-                                                  color: isDark
-                                                      ? material.Colors.white
-                                                          .withValues(
-                                                              alpha: 0.5)
-                                                      : material
-                                                          .Colors.black54,
+                                            if (isRobot)
+                                              Positioned(
+                                                bottom: -2,
+                                                right: -2,
+                                                child: Container(
+                                                  padding:
+                                                      const EdgeInsets.all(2),
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                    color: Color(0xFFFFFC00),
+                                                    shape: BoxShape.circle,
+                                                  ),
+                                                  child: const Icon(
+                                                      material.Icons
+                                                          .smart_toy_rounded,
+                                                      size: 10,
+                                                      color: material
+                                                          .Colors.black),
                                                 ),
-                                                maxLines: 1,
-                                                overflow: TextOverflow.ellipsis,
                                               ),
-                                            ],
                                           ],
                                         ),
-                                      ),
-                                      material.InkWell(
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            material.MaterialPageRoute(
-                                              builder: (context) =>
-                                                  WhatsAppGroupChat(
-                                                groupId: 'p:$userId',
-                                                groupName: name,
-                                                groupImage: avatarUrl,
-                                              ),
-                                            ),
-                                          ).then((_) {
-                                            ref.invalidate(
-                                                conversationsProvider);
-                                          });
-                                        },
-                                        borderRadius:
-                                            BorderRadius.circular(10),
-                                        child: Container(
-                                          padding:
-                                              const EdgeInsets.symmetric(
-                                                  horizontal: 14,
-                                                  vertical: 7),
-                                          decoration: BoxDecoration(
-                                            color: const Color(0xFFFFFC00),
-                                            borderRadius:
-                                                BorderRadius.circular(10),
-                                          ),
-                                          child: Row(
-                                            mainAxisSize:
-                                                MainAxisSize.min,
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              const Icon(
-                                                material.Icons
-                                                    .chat_bubble_outline_rounded,
-                                                size: 13,
-                                                color: material.Colors.black,
+                                              Row(
+                                                children: [
+                                                  Flexible(
+                                                    child: Text(
+                                                      name,
+                                                      style: GoogleFonts.outfit(
+                                                        fontSize: 15,
+                                                        fontWeight:
+                                                            FontWeight.w600,
+                                                        color: isDark
+                                                            ? material
+                                                                .Colors.white
+                                                            : material
+                                                                .Colors.black87,
+                                                      ),
+                                                      maxLines: 1,
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+                                                  if (isRobot) ...[
+                                                    const SizedBox(width: 6),
+                                                    Container(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 5,
+                                                          vertical: 1.5),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(
+                                                                0xFFFFFC00)
+                                                            .withValues(
+                                                                alpha: 0.2),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(6),
+                                                      ),
+                                                      child: Text(
+                                                        'AI BOT',
+                                                        style:
+                                                            GoogleFonts.outfit(
+                                                          fontSize: 9,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: const Color(
+                                                              0xFFFFFC00),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ],
                                               ),
-                                              const SizedBox(width: 4),
-                                              Text(
-                                                'Chat',
-                                                style: GoogleFonts.outfit(
-                                                  fontSize: 12,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: material.Colors.black,
+                                              if (bio.isNotEmpty) ...[
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  bio,
+                                                  style: GoogleFonts.inter(
+                                                    fontSize: 12,
+                                                    color: isDark
+                                                        ? material.Colors.white
+                                                            .withValues(
+                                                                alpha: 0.5)
+                                                        : material
+                                                            .Colors.black54,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
                                                 ),
-                                              ),
+                                              ],
                                             ],
                                           ),
                                         ),
-                                      ),
-                                    ],
+                                        material.InkWell(
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              material.MaterialPageRoute(
+                                                builder: (context) =>
+                                                    WhatsAppGroupChat(
+                                                  groupId: 'p:$userId',
+                                                  groupName: name,
+                                                  groupImage: avatarUrl,
+                                                ),
+                                              ),
+                                            ).then((_) {
+                                              ref.invalidate(
+                                                  conversationsProvider);
+                                            });
+                                          },
+                                          borderRadius:
+                                              BorderRadius.circular(10),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 14, vertical: 7),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFFFFC00),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                const Icon(
+                                                  material.Icons
+                                                      .chat_bubble_outline_rounded,
+                                                  size: 13,
+                                                  color: material.Colors.black,
+                                                ),
+                                                const SizedBox(width: 4),
+                                                Text(
+                                                  'Chat',
+                                                  style: GoogleFonts.outfit(
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:
+                                                        material.Colors.black,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
                                 );
                               },
                               childCount: peopleResults.length,
@@ -2615,8 +3186,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           height: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFFFFFC00)),
                           ),
                         ),
                       ),
@@ -2689,8 +3260,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           height: 22,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor:
-                                AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFFFFFC00)),
                           ),
                         ),
                       ),
@@ -2711,23 +3282,44 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
               if (_chatCategoryFilterIndex == 3) ...[
                 // Requests View (Strangers, Marketplace inquiries, Anonymous chat requests)
+                _buildRequestsSubTabToggle(isDark),
                 _buildPendingRequestsSliver(),
               ] else ...[
-                if (_pendingRequests.isNotEmpty && _chatCategoryFilterIndex == 0)
+                if (_pendingRequests.isNotEmpty &&
+                    _chatCategoryFilterIndex == 0)
                   _buildPendingRequestsSliver(),
                 // Active Conversations List
                 Builder(
                   builder: (context) {
-                    List<ChatConversation> activeFiltered = filteredConversations;
+                    List<ChatConversation> activeFiltered =
+                        filteredConversations;
                     if (_chatCategoryFilterIndex == 1) {
-                      activeFiltered = filteredConversations.where((c) => PocketRobotService.isRobotId(c.id)).toList();
+                      activeFiltered = filteredConversations
+                          .where((c) => PocketRobotService.isRobotId(c.id))
+                          .toList();
                     } else if (_chatCategoryFilterIndex == 2) {
-                      activeFiltered = filteredConversations.where((c) =>
-                          !PocketRobotService.isRobotId(c.id) && !c.isGroup && !c.isTool && !c.isNotification && !c.isActiveTimer).toList();
+                      activeFiltered = filteredConversations
+                          .where((c) =>
+                              !PocketRobotService.isRobotId(c.id) &&
+                              !c.isGroup &&
+                              !c.isTool &&
+                              !c.isNotification &&
+                              !c.isActiveTimer)
+                          .toList();
                     } else if (_chatCategoryFilterIndex == 4) {
-                      activeFiltered = filteredConversations.where((c) => c.unreadCount > 0).toList();
+                      activeFiltered = filteredConversations
+                          .where((c) => c.unreadCount > 0)
+                          .toList();
                     } else if (_chatCategoryFilterIndex == 5) {
-                      activeFiltered = filteredConversations.where((c) => c.isGroup).toList();
+                      activeFiltered = filteredConversations
+                          .where((c) {
+                            if (!c.isGroup) return false;
+                            final lowerName = c.name.toLowerCase();
+                            return !lowerName.contains('english hub') &&
+                                !lowerName.contains('english learning') &&
+                                !lowerName.contains('english practice');
+                          })
+                          .toList();
                     }
 
                     if (activeFiltered.isNotEmpty) {
@@ -2736,7 +3328,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           (context, index) {
                             final conversation = activeFiltered[index];
                             if (conversation.id == 'notifications_aggregator') {
-                              return _buildNotificationsTile(allNotifications.length);
+                              return _buildNotificationsTile(
+                                  allNotifications.length);
                             }
                             return RepaintBoundary(
                               key: ValueKey(conversation.id),
@@ -2746,17 +3339,21 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 currentUserId: _currentUserId ?? '',
                                 onTap: () async {
                                   if (conversation.isTool) {
-                                    _navigateToTool(conversation.toolTitle ?? '');
+                                    _navigateToTool(
+                                        conversation.toolTitle ?? '');
                                     return;
                                   }
 
                                   if (conversation.isNotification) {
-                                    _showNotificationDetails(context, conversation);
+                                    _showNotificationDetails(
+                                        context, conversation);
                                     return;
                                   }
 
-                                  if (_currentUserId == null || _currentUserId!.isEmpty) {
-                                    final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                                  if (_currentUserId == null ||
+                                      _currentUserId!.isEmpty) {
+                                    final isAuth = await AuthAlertBox
+                                        .checkAuthAndShowAlert(
                                       context: context,
                                       customMessage: conversation.isGroup
                                           ? "Please login to access this Group Chat"
@@ -2768,11 +3365,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   if (conversation.isActiveTimer) {
                                     if (conversation.teamData != null) {
                                       try {
-                                        final team = Team.fromJson(conversation.teamData!);
+                                        final team = Team.fromJson(
+                                            conversation.teamData!);
                                         Navigator.push(
                                           context,
                                           material.MaterialPageRoute(
-                                            builder: (context) => TeamDetailPage(team: team),
+                                            builder: (context) =>
+                                                TeamDetailPage(team: team),
                                           ),
                                         );
                                       } catch (e) {
@@ -2780,7 +3379,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       }
                                     }
                                   } else if (conversation.isGroup) {
-                                    Navigator.push(
+                                    await Navigator.push(
                                       context,
                                       material.MaterialPageRoute(
                                         builder: (context) => WhatsAppGroupChat(
@@ -2790,11 +3389,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                         ),
                                       ),
                                     );
+                                    ref
+                                        .read(conversationsProvider.notifier)
+                                        .refreshNow();
+                                    if (mounted) setState(() {});
                                   } else {
                                     // Mark as read
-                                    ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
+                                    ref
+                                        .read(conversationsProvider.notifier)
+                                        .markAsRead(conversation.id, false);
 
-                                    Navigator.push(
+                                    await Navigator.push(
                                       context,
                                       material.MaterialPageRoute(
                                         builder: (context) => WhatsAppGroupChat(
@@ -2804,14 +3409,22 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                         ),
                                       ),
                                     );
+                                    ref
+                                        .read(conversationsProvider.notifier)
+                                        .refreshNow();
+                                    if (mounted) setState(() {});
                                   }
                                 },
-                                onLongPress: () => _showConversationActionSheet(conversation),
+                                onLongPress: () =>
+                                    _showConversationActionSheet(conversation),
                                 onSnapCameraTap: () async {
-                                  if (_currentUserId == null || _currentUserId!.isEmpty) {
-                                    final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                                  if (_currentUserId == null ||
+                                      _currentUserId!.isEmpty) {
+                                    final isAuth = await AuthAlertBox
+                                        .checkAuthAndShowAlert(
                                       context: context,
-                                      customMessage: "Please login to send snaps",
+                                      customMessage:
+                                          "Please login to send snaps",
                                     );
                                     if (!isAuth) return;
                                   }
@@ -2826,14 +3439,21 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 onSnapViewTap: () {
                                   SnapViewDialog.show(
                                     context: context,
-                                    mediaUrl: conversation.snapMediaUrl ?? conversation.imageUrl ?? '',
+                                    mediaUrl: conversation.snapMediaUrl ??
+                                        conversation.imageUrl ??
+                                        '',
                                     caption: conversation.snapCaption,
                                     senderName: conversation.name,
                                     isMe: false,
                                     onBurned: () {
-                                      ref.read(conversationsProvider.notifier).markAsRead(conversation.id, false);
-                                      if (PocketRobotService.isRobotId(conversation.id)) {
-                                        PocketRobotService.markRobotSnapAsRead(_currentUserId ?? '', conversation.id);
+                                      ref
+                                          .read(conversationsProvider.notifier)
+                                          .markAsRead(conversation.id, false);
+                                      if (PocketRobotService.isRobotId(
+                                          conversation.id)) {
+                                        PocketRobotService.markRobotSnapAsRead(
+                                            _currentUserId ?? '',
+                                            conversation.id);
                                       }
                                       _handleRefresh();
                                     },
@@ -2845,15 +3465,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                     Navigator.push(
                                       context,
                                       material.MaterialPageRoute(
-                                        builder: (context) => StatusViewerWrapper(
+                                        builder: (context) =>
+                                            StatusViewerWrapper(
                                           allStatusGroups: [
                                             {
                                               'profile': {
                                                 'id': conversation.id,
                                                 'name': conversation.name,
-                                                'profile_image_url': conversation.imageUrl,
+                                                'profile_image_url':
+                                                    conversation.imageUrl,
                                               },
-                                              'statuses': conversation.statusData,
+                                              'statuses':
+                                                  conversation.statusData,
                                               'is_own': false,
                                             }
                                           ],
@@ -2885,7 +3508,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             Icon(
                               material.Icons.chat_bubble_rounded,
                               size: 64,
-                              color: material.Colors.white.withValues(alpha: 0.1),
+                              color:
+                                  material.Colors.white.withValues(alpha: 0.1),
                             ),
                             const SizedBox(height: 16),
                             Text(
@@ -2900,7 +3524,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               : 'No conversations yet'))),
                               style: GoogleFonts.outfit(
                                 fontSize: 16,
-                                color: material.Colors.white.withValues(alpha: 0.3),
+                                color: material.Colors.white
+                                    .withValues(alpha: 0.3),
                               ),
                             ),
                           ],
@@ -2937,7 +3562,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final bottomPadding = material.MediaQuery.of(context).padding.bottom;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final navBgColor =
-        isDark ? const Color(0xFF111B21) : const Color(0xFFFFFFFF);
+        isDark ? const Color(0xFF0B0D13) : const Color(0xFFFFFFFF);
     final borderColor = isDark
         ? material.Colors.white.withValues(alpha: 0.08)
         : material.Colors.black.withValues(alpha: 0.08);
@@ -2990,7 +3615,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     if (_currentUserId == null || _currentUserId!.isEmpty) {
                       final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
                         context: context,
-                        customMessage: "Please login to join Group Chats and English Hub",
+                        customMessage:
+                            "Please login to join Group Chats and English Hub",
                       );
                       if (isAuth && mounted) {
                         setState(() => _currentIndex = 2);
@@ -3007,7 +3633,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     if (_currentUserId == null || _currentUserId!.isEmpty) {
                       final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
                         context: context,
-                        customMessage: "Please login to access your Daily Missions and Progress",
+                        customMessage:
+                            "Please login to access your Daily Missions and Progress",
                       );
                       if (isAuth && mounted) {
                         setState(() => _currentIndex = 3);
@@ -3112,12 +3739,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       ),
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1.5),
                         decoration: BoxDecoration(
                           color: isRunning
                               ? Colors.green.withValues(alpha: 0.25)
                               : (isTargetMet
-                                  ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                                  ? const Color(0xFF10B981)
+                                      .withValues(alpha: 0.25)
                                   : Colors.white10),
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -3128,7 +3757,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           style: TextStyle(
                             color: isRunning
                                 ? Colors.greenAccent
-                                : (isTargetMet ? const Color(0xFF10B981) : Colors.white60),
+                                : (isTargetMet
+                                    ? const Color(0xFF10B981)
+                                    : Colors.white60),
                             fontSize: 8.5,
                             fontWeight: FontWeight.w800,
                           ),
@@ -3139,7 +3770,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
                 IconButton(
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  constraints:
+                      const BoxConstraints(minWidth: 28, minHeight: 28),
                   icon: Icon(
                     isRunning
                         ? Icons.pause_circle_filled_rounded
@@ -3157,7 +3789,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       Navigator.push(
                         context,
                         material.MaterialPageRoute(
-                          builder: (_) => PocketDailyMissionPage(day: timer.day),
+                          builder: (_) =>
+                              PocketDailyMissionPage(day: timer.day),
                         ),
                       );
                     } else {
@@ -3167,7 +3800,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
                 const SizedBox(width: 4),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFFC00),
                     borderRadius: BorderRadius.circular(6),
@@ -3195,7 +3829,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         1;
     final talismanId = _preloadedProfile?['equipped_talisman']?.toString() ??
         _preloadedProfile?['talisman_id']?.toString();
-    return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: talismanId);
+    return VectorAvatarConfig.getEvolutionAvatarForStage(day,
+        talismanId: talismanId);
   }
 
   Widget _buildProfileNavItem() {
@@ -3204,6 +3839,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         1;
     return GestureDetector(
       onTap: () async {
+        HapticFeedback.selectionClick();
         final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
           context: context,
           customMessage: "Please login to view your profile",
@@ -3260,64 +3896,101 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         }
       },
       child: material.SizedBox(
-        height: 70,
-        child: material.Center(
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.center,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LinearGradient(
-                    colors: day >= 80
-                        ? const [Color(0xFFFFD700), Color(0xFFEF4444), Color(0xFFA855F7)]
-                        : (day >= 40
-                            ? const [Color(0xFFFF8906), Color(0xFFFFD700)]
-                            : const [Color(0xFFFFFC00), Color(0xFFFFD700)]),
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFF8906).withValues(alpha: 0.35),
-                      blurRadius: 8,
-                      spreadRadius: 1,
+        height: 58,
+        width: 62,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedScale(
+              scale: _currentIndex == 4 ? 1.15 : 1.0,
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutBack,
+              child: Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: day >= 80
+                            ? const [
+                                Color(0xFFFFD700),
+                                Color(0xFFEF4444),
+                                Color(0xFFA855F7)
+                              ]
+                            : (day >= 40
+                                ? const [Color(0xFFFF8906), Color(0xFFFFD700)]
+                                : const [Color(0xFFFFFC00), Color(0xFFFFD700)]),
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color:
+                              const Color(0xFFFF8906).withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: ClipOval(
-                  child: VectorAvatarWidget(
-                    config: _getNavAvatarConfig(),
-                    size: 34.0,
-                    showAura: false,
+                    child: ClipOval(
+                      child: VectorAvatarWidget(
+                        config: _getNavAvatarConfig(),
+                        size: 30.0,
+                        showAura: false,
+                      ),
+                    ),
                   ),
-                ),
+                  Positioned(
+                    bottom: -4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 4, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        'D$day',
+                        style: const TextStyle(
+                          color: Color(0xFFFFFC00),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-              Positioned(
-                bottom: -4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A),
-                    borderRadius: BorderRadius.circular(6),
-                    border: Border.all(
-                      color: const Color(0xFFFFD700),
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    'D$day',
-                    style: const TextStyle(
-                      color: Color(0xFFFFFC00),
-                      fontSize: 8,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.2,
-                    ),
-                  ),
-                ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              margin: const EdgeInsets.only(top: 3),
+              width: _currentIndex == 4 ? 16 : 0,
+              height: 3,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFC00),
+                borderRadius: BorderRadius.circular(2),
+                boxShadow: _currentIndex == 4
+                    ? [
+                        BoxShadow(
+                          color:
+                              const Color(0xFFFFFC00).withValues(alpha: 0.75),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        )
+                      ]
+                    : null,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -3329,35 +4002,70 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     required VoidCallback onTap,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final themeYellow =
-        isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00);
+    const themeYellow = Color(0xFFFFFC00);
     return material.InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(20),
       child: SizedBox(
-        height: 55,
-        width: 60,
+        height: 58,
+        width: 62,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? themeYellow.withValues(alpha: 0.15)
-                    : material.Colors.transparent,
-                borderRadius: BorderRadius.circular(16),
+            AnimatedScale(
+              scale: isSelected ? 1.15 : 1.0,
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOutBack,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? themeYellow.withValues(alpha: 0.16)
+                      : material.Colors.transparent,
+                  borderRadius: BorderRadius.circular(18),
+                  border: isSelected
+                      ? Border.all(
+                          color: themeYellow.withValues(alpha: 0.35),
+                          width: 1,
+                        )
+                      : null,
+                ),
+                child: Icon(
+                  icon,
+                  color: isSelected
+                      ? themeYellow
+                      : (isDark
+                          ? material.Colors.white.withValues(alpha: 0.45)
+                          : material.Colors.black.withValues(alpha: 0.45)),
+                  size: 23,
+                ),
               ),
-              child: Icon(
-                icon,
-                color: isSelected
-                    ? themeYellow
-                    : (isDark
-                        ? material.Colors.white.withValues(alpha: 0.5)
-                        : material.Colors.black.withValues(alpha: 0.45)),
-                size: 24,
+            ),
+            // Glowing pill dot indicator
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              margin: const EdgeInsets.only(top: 3),
+              width: isSelected ? 16 : 0,
+              height: 3,
+              decoration: BoxDecoration(
+                color: themeYellow,
+                borderRadius: BorderRadius.circular(2),
+                boxShadow: isSelected
+                    ? [
+                        BoxShadow(
+                          color: themeYellow.withValues(alpha: 0.75),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        )
+                      ]
+                    : null,
               ),
             ),
           ],
@@ -3591,6 +4299,163 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
+  void _showMatchmakingModal(BuildContext context, String currentProfileId) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    material.showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF0B0D13) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(material.Icons.flash_on_rounded,
+                        color: Color(0xFFFFFC00), size: 24),
+                  ),
+                  const SizedBox(width: 12),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Instant Mate Match',
+                        style: GoogleFonts.outfit(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        'Connect with real practice partners online',
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: isDark ? Colors.white60 : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              _buildQuickMatchTile(
+                icon: material.Icons.phone_in_talk_rounded,
+                title: '1-on-1 Voice Call Match',
+                subtitle: 'Instant spoken English audio call with live peers',
+                color: const Color(0xFFFFFC00),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _handleStrangerMatch(context, ref, 'Voice', currentProfileId);
+                },
+              ),
+              const SizedBox(height: 10),
+              _buildQuickMatchTile(
+                icon: material.Icons.smart_toy_rounded,
+                title: 'Pocket Robot AI Partner',
+                subtitle: 'Practice English 24/7 without waiting',
+                color: const Color(0xFFFFFC00),
+                textColor: isDark ? Colors.white : Colors.black,
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    material.MaterialPageRoute(
+                      builder: (context) => const WhatsAppGroupChat(
+                        groupName: 'Pocket Robot AI',
+                        groupId: 'pocket_robot_ai',
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickMatchTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required Color color,
+    Color? textColor,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return material.InkWell(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF161B26) : const Color(0xFFF1F5F9),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: color.withValues(alpha: 0.3),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 22),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          textColor ?? (isDark ? Colors.white : Colors.black87),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      color: isDark ? Colors.white60 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              material.Icons.chevron_right_rounded,
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _handleStrangerMatch(
     BuildContext context,
     WidgetRef ref,
@@ -3661,7 +4526,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       material.ScaffoldMessenger.of(context).showSnackBar(
         const material.SnackBar(
             duration: Duration(seconds: 1),
-            content: Text('Finding a founder...')),
+            content: Text('Connecting with an English speaking partner...')),
       );
     }
 
@@ -3675,6 +4540,132 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         ),
       );
     }
+  }
+
+  Widget _buildDailyEnglishChallengeBanner() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF161C2C), Color(0xFF0F1420)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+          width: 1.1,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFFC00).withValues(alpha: 0.06),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+              ),
+            ),
+            child: const Text('🇬🇧', style: TextStyle(fontSize: 18)),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'DAILY ENGLISH WORD',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFFC00),
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '+10 🪙',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '"Resilient" — Recover quickly from difficulties',
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Use in any chat today to earn Pocket Score',
+                  style: GoogleFonts.inter(
+                    color: Colors.white54,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          material.InkWell(
+            borderRadius: BorderRadius.circular(10),
+            onTap: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('💡 Tip: Type "I am feeling resilient today!" to a friend in chat for +10 score.'),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: Color(0xFF1E2435),
+                ),
+              );
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFC00),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Try Word',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 11.5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildNotificationsTile(int count) {
@@ -3801,7 +4792,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               ? const Color(0xFFFFFC00).withValues(alpha: 0.85)
                               : secondaryTextColor,
                           fontSize: 12.5,
-                          fontWeight: count > 0 ? FontWeight.w500 : FontWeight.normal,
+                          fontWeight:
+                              count > 0 ? FontWeight.w500 : FontWeight.normal,
                         ),
                       ),
                     ],
@@ -4035,7 +5027,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               Icon(
                 icon,
                 size: 13,
-                color: isSelected ? material.Colors.black : material.Colors.white70,
+                color: isSelected
+                    ? material.Colors.black
+                    : material.Colors.white70,
               ),
               const SizedBox(width: 4),
             ],
@@ -4102,18 +5096,25 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               imageUrl: imageUrl,
                               fit: BoxFit.cover,
                               placeholder: (context, url) => Container(
-                                color: material.Colors.grey.withValues(alpha: 0.1),
+                                color:
+                                    material.Colors.grey.withValues(alpha: 0.1),
                               ),
                               errorWidget: (context, url, error) => Container(
-                                color: material.Colors.grey.withValues(alpha: 0.1),
-                                child: const Icon(material.Icons.image_not_supported_rounded,
-                                    size: 20, color: material.Colors.grey),
+                                color:
+                                    material.Colors.grey.withValues(alpha: 0.1),
+                                child: const Icon(
+                                    material.Icons.image_not_supported_rounded,
+                                    size: 20,
+                                    color: material.Colors.grey),
                               ),
                             )
                           : Container(
-                              color: material.Colors.grey.withValues(alpha: 0.1),
-                              child: const Icon(material.Icons.inventory_2_rounded,
-                                  size: 24, color: material.Colors.grey),
+                              color:
+                                  material.Colors.grey.withValues(alpha: 0.1),
+                              child: const Icon(
+                                  material.Icons.inventory_2_rounded,
+                                  size: 24,
+                                  color: material.Colors.grey),
                             ),
                       Positioned(
                         top: 4,
@@ -4152,7 +5153,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       style: GoogleFonts.outfit(
                         fontSize: 11,
                         fontWeight: FontWeight.w600,
-                        color: isDark ? material.Colors.white : material.Colors.black87,
+                        color: isDark
+                            ? material.Colors.white
+                            : material.Colors.black87,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -4320,7 +5323,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   static const double topBarHeight = 44.0;
   static const double statusWidgetHeight = 126.0;
-  static const double tabBarHeight = 38.0;
+  static const double tabBarHeight = 42.0;
   static const double searchBarHeight = 48.0;
 
   double get scrollableHeight => topBarHeight + statusWidgetHeight;
@@ -4335,8 +5338,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   @override
   Widget build(
       BuildContext context, double shrinkOffset, bool overlapsContent) {
-    final double scrollProgress = (shrinkOffset / scrollableHeight).clamp(0.0, 1.0);
-    const headerColor = Color(0xFF111B21);
+    final double scrollProgress =
+        (shrinkOffset / scrollableHeight).clamp(0.0, 1.0);
+    const headerColor = Color(0xFF0B0D13);
 
     return material.Material(
       color: headerColor,
@@ -4362,19 +5366,42 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         children: [
-                          Text(
-                            'PoketMates',
-                            style: GoogleFonts.outfit(
-                              color: material.Colors.white,
-                              fontSize: 20.0,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.2,
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: material.Image.asset(
+                                  'assets/images/pocket_mates_logo.png',
+                                  width: 28,
+                                  height: 28,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'PoketMates',
+                                style: GoogleFonts.outfit(
+                                  color: material.Colors.white,
+                                  fontSize: 20.0,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: -0.2,
+                                ),
+                              ),
+                            ],
                           ),
                           const Spacer(),
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              // Live Call / Matchmaking Quick Action
+                              _buildHeaderIconButton(
+                                context,
+                                icon: material.Icons.phone_in_talk_rounded,
+                                iconColor: const Color(0xFFFFFC00),
+                                onTap: onTapFriends,
+                              ),
+                              const SizedBox(width: 6),
                               // Search
                               _buildHeaderIconButton(
                                 context,
@@ -4398,7 +5425,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                   Navigator.push(
                                     context,
                                     material.MaterialPageRoute(
-                                      builder: (context) => const NotificationsPage(),
+                                      builder: (context) =>
+                                          const NotificationsPage(),
                                     ),
                                   );
                                 },
@@ -4440,6 +5468,11 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                         currentUserId: currentUserId,
                         currentProfileId: currentProfileId,
                         onStatusUploaded: onRefresh,
+                        onStatusWatched: () {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            onRefresh();
+                          });
+                        },
                         filterNotifier: vibesFilterNotifier,
                       ),
                     ),
@@ -4458,17 +5491,29 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Tab Bar (Chats, Vibes, Thoughts, Tools)
+                // Tab Bar (Chats, Vibes, Thoughts, Tools) - Modern Segmented Capsule
                 Container(
                   height: tabBarHeight,
                   color: headerColor,
-                  child: Row(
-                    children: [
-                      _buildTabItem(context, 'Chats', 0),
-                      _buildTabItem(context, 'Vibes', 1),
-                      _buildTabItem(context, 'Thoughts', 2),
-                      _buildTabItem(context, 'Tools', 3),
-                    ],
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF131722),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: material.Colors.white.withValues(alpha: 0.07),
+                        width: 1,
+                      ),
+                    ),
+                    padding: const EdgeInsets.all(2.5),
+                    child: Row(
+                      children: [
+                        _buildTabItem(context, 'Chats', 0),
+                        _buildTabItem(context, 'Vibes', 1),
+                        _buildTabItem(context, 'Thoughts', 2),
+                        _buildTabItem(context, 'Tools', 3),
+                      ],
+                    ),
                   ),
                 ),
                 // Search Bar (Compact & Sleek)
@@ -4478,10 +5523,10 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                   padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF202C33),
-                      borderRadius: BorderRadius.circular(18),
+                      color: const Color(0xFF131722),
+                      borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: material.Colors.white.withValues(alpha: 0.08),
+                        color: material.Colors.white.withValues(alpha: 0.07),
                         width: 1,
                       ),
                     ),
@@ -4506,10 +5551,12 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           fontSize: 13,
                         ),
                         prefixIcon: Padding(
-                          padding: const EdgeInsets.only(left: 10.0, right: 8.0),
+                          padding:
+                              const EdgeInsets.only(left: 10.0, right: 8.0),
                           child: Icon(
                             material.Icons.search_rounded,
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.7),
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.7),
                             size: 17,
                           ),
                         ),
@@ -4523,7 +5570,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                           children: [
                             if (isSearching)
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8.0),
                                 child: SizedBox(
                                   width: 14,
                                   height: 14,
@@ -4538,7 +5586,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 color: material.Colors.transparent,
                                 child: material.IconButton(
                                   padding: EdgeInsets.zero,
-                                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                                  constraints: const BoxConstraints(
+                                      minWidth: 28, minHeight: 28),
                                   icon: const Icon(
                                     material.Icons.clear_rounded,
                                     color: material.Colors.white38,
@@ -4566,32 +5615,28 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   Widget _buildTabItem(BuildContext context, String label, int index) {
     final isSelected = selectedIndex == index;
     const themeYellow = Color(0xFFFFFC00);
-    final textUnselected = material.Colors.white.withValues(alpha: 0.5);
+    final textUnselected = material.Colors.white.withValues(alpha: 0.55);
 
     return Expanded(
       child: material.Material(
         color: material.Colors.transparent,
         child: material.InkWell(
+          borderRadius: BorderRadius.circular(9),
           onTap: () => onTabTap(index),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
+            curve: Curves.easeInOutCubic,
             decoration: BoxDecoration(
-              border: isSelected
-                  ? const Border(
-                      bottom: BorderSide(
-                        color: themeYellow,
-                        width: 2.0,
-                      ),
-                    )
-                  : null,
+              color: isSelected ? const Color(0xFF22283A) : material.Colors.transparent,
+              borderRadius: BorderRadius.circular(9),
             ),
             alignment: Alignment.center,
             child: Text(
               label,
               style: GoogleFonts.outfit(
                 color: isSelected ? themeYellow : textUnselected,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                fontSize: 13.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                fontSize: 13.0,
                 letterSpacing: 0.1,
               ),
             ),
@@ -4602,10 +5647,13 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   }
 
   Widget _buildHeaderIconButton(BuildContext context,
-      {required IconData icon, required VoidCallback onTap, int badgeCount = 0}) {
+      {required IconData icon,
+      required VoidCallback onTap,
+      int badgeCount = 0,
+      Color? iconColor}) {
     final bgColor = material.Colors.white.withValues(alpha: 0.08);
     final borderColor = material.Colors.white.withValues(alpha: 0.05);
-    const iconColor = material.Colors.white;
+    final effectiveIconColor = iconColor ?? material.Colors.white;
 
     return material.Material(
       color: material.Colors.transparent,
@@ -4625,7 +5673,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              Icon(icon, color: iconColor, size: 20),
+              Icon(icon, color: effectiveIconColor, size: 20),
               if (badgeCount > 0)
                 Positioned(
                   top: -4,

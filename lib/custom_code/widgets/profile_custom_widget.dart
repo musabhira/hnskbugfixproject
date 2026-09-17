@@ -1,4 +1,3 @@
-import 'package:pocket_mates_app/custom_code/widgets/color_picker_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_text_field.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
@@ -21,9 +20,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:math' as math;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_network_explorer_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_60day_dashboard.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
 
 // Begin custom action code
 
@@ -82,164 +81,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   String? _selectedTemplateId = 'default';
   String? _loadedProfileId;
   VectorAvatarConfig _avatarConfig = const VectorAvatarConfig();
-
-  final List<Map<String, String>> _avatarBannerPresets = [
-    {
-      'name': 'Pocket Gold Glow ✨',
-      'url': 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'pocket_gold',
-    },
-    {
-      'name': 'Cyberpunk Matrix ⚡',
-      'url': 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'matrix_green',
-    },
-    {
-      'name': 'Comic Action Boom 💥',
-      'url': 'https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'comic_boom',
-    },
-    {
-      'name': 'Neon Synthwave 🌌',
-      'url': 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'cyber_synthwave',
-    },
-    {
-      'name': 'Electric Aqua Grid 🌊',
-      'url': 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'electric_aqua',
-    },
-    {
-      'name': 'Sakura Blossom 🌸',
-      'url': 'https://images.unsplash.com/photo-1522383225653-ed111181a951?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'sakura_blossom',
-    },
-    {
-      'name': 'Royal Monarch Gold 👑',
-      'url': 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'royal_gold',
-    },
-    {
-      'name': '8-Bit Pixel Arcade 👾',
-      'url': 'https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'pixel_arcade',
-    },
-    {
-      'name': 'Obsidian Stealth 🖤',
-      'url': 'https://images.unsplash.com/photo-1618005198919-d3d4b5a92ead?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'obsidian_stealth',
-    },
-    {
-      'name': 'Sunset Horizon Glow 🌅',
-      'url': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      'aura': 'sunset_glow',
-    },
-  ];
-
-  void _applyAvatarTheme(VectorAvatarConfig cfg) {
-    final auraId = cfg.auraStyle;
-    Map<String, String> themeMap;
-    switch (auraId) {
-      case 'matrix_green':
-        themeMap = {
-          'bgColor': '#050D0A',
-          'textColor': '#E8F5E9',
-          'btnColor': '#00FF66',
-          'btnTextColor': '#000000',
-        };
-        break;
-      case 'comic_boom':
-        themeMap = {
-          'bgColor': '#0E0D14',
-          'textColor': '#FFF9E6',
-          'btnColor': '#FF8906',
-          'btnTextColor': '#000000',
-        };
-        break;
-      case 'cyber_synthwave':
-        themeMap = {
-          'bgColor': '#0D0818',
-          'textColor': '#F3E5F5',
-          'btnColor': '#E056FD',
-          'btnTextColor': '#FFFFFF',
-        };
-        break;
-      case 'electric_aqua':
-        themeMap = {
-          'bgColor': '#041018',
-          'textColor': '#E0F7FA',
-          'btnColor': '#00E5FF',
-          'btnTextColor': '#000000',
-        };
-        break;
-      case 'sakura_blossom':
-        themeMap = {
-          'bgColor': '#170A17',
-          'textColor': '#FCE4EC',
-          'btnColor': '#FF69B4',
-          'btnTextColor': '#000000',
-        };
-        break;
-      case 'royal_gold':
-        themeMap = {
-          'bgColor': '#0E0E12',
-          'textColor': '#FFFDF0',
-          'btnColor': '#FFD700',
-          'btnTextColor': '#000000',
-        };
-        break;
-      case 'pixel_arcade':
-        themeMap = {
-          'bgColor': '#100020',
-          'textColor': '#EDE7F6',
-          'btnColor': '#FF007F',
-          'btnTextColor': '#FFFFFF',
-        };
-        break;
-      case 'obsidian_stealth':
-        themeMap = {
-          'bgColor': '#121212',
-          'textColor': '#E0E0E0',
-          'btnColor': '#2C3E50',
-          'btnTextColor': '#FFFFFF',
-        };
-        break;
-      case 'sunset_glow':
-        themeMap = {
-          'bgColor': '#170914',
-          'textColor': '#FFF3E0',
-          'btnColor': '#FF5722',
-          'btnTextColor': '#FFFFFF',
-        };
-        break;
-      default:
-        themeMap = {
-          'bgColor': '#0D0E15',
-          'textColor': '#FFFFFF',
-          'btnColor': '#FFFC00',
-          'btnTextColor': '#000000',
-        };
-    }
-
-    safeSetState(() {
-      _colorCode = themeMap['bgColor'];
-      _colorCode1 = themeMap['textColor'];
-      _colorCode2 = themeMap['btnColor'];
-      _colorCode3 = themeMap['btnTextColor'];
-      _selectedColor = _convertStringToColor(_colorCode!);
-      _selectedColor1 = _convertStringToColor(_colorCode1!);
-      _selectedColor2 = _convertStringToColor(_colorCode2!);
-      _selectedColor3 = _convertStringToColor(_colorCode3!);
-    });
-
-    _scaffoldMessengerKey.currentState?.showSnackBar(
-      const SnackBar(
-        content: Text('✨ Applied theme colors matching your Avatar aura!'),
-        duration: Duration(milliseconds: 900),
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
-  }
+  int _learningDay = 1;
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _shopNameController = TextEditingController();
@@ -261,78 +103,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       ? int.tryParse(_yearController.text)
       : null;
 
-  final List<Map<String, String>> _colorPresets = [
-    {
-      'name': 'Luxury Gold',
-      'bgColor': '#000000',
-      'textColor': '#FFFFFF',
-      'btnColor': '#FFD700',
-      'btnTextColor': '#000000',
-    },
-    {
-      'name': 'Royal Navy',
-      'bgColor': '#0D1B2A',
-      'textColor': '#E0E1DD',
-      'btnColor': '#415A77',
-      'btnTextColor': '#FFFFFF',
-    },
-    {
-      'name': 'Rose Gold',
-      'bgColor': '#FAF3F3',
-      'textColor': '#3D3D3D',
-      'btnColor': '#E0A899',
-      'btnTextColor': '#FFFFFF',
-    },
-    {
-      'name': 'Emerald',
-      'bgColor': '#0A2E24',
-      'textColor': '#F4F9F4',
-      'btnColor': '#D4AF37',
-      'btnTextColor': '#0A2E24',
-    },
-    {
-      'name': 'Midnight',
-      'bgColor': '#121212',
-      'textColor': '#E0E0E0',
-      'btnColor': '#2B2B2B',
-      'btnTextColor': '#FFFFFF',
-    },
-    {
-      'name': 'Coral Sunset',
-      'bgColor': '#FFF5F0',
-      'textColor': '#2D2D2D',
-      'btnColor': '#FF6F59',
-      'btnTextColor': '#FFFFFF',
-    },
-    {
-      'name': 'Ocean Mint',
-      'bgColor': '#F0F9F8',
-      'textColor': '#1E3535',
-      'btnColor': '#2EC4B6',
-      'btnTextColor': '#FFFFFF',
-    },
-    {
-      'name': 'Lavender',
-      'bgColor': '#F8F7FF',
-      'textColor': '#2A2A3A',
-      'btnColor': '#B8B8FF',
-      'btnTextColor': '#FFFFFF',
-    },
-    {
-      'name': 'Cyberpunk',
-      'bgColor': '#1A0B2E',
-      'textColor': '#00FFFF',
-      'btnColor': '#FF007F',
-      'btnTextColor': '#FFFFFF',
-    },
-    {
-      'name': 'Ruby Red',
-      'bgColor': '#1C0A10',
-      'textColor': '#FADAE2',
-      'btnColor': '#C1272D',
-      'btnTextColor': '#FFFFFF',
-    },
-  ];
+
 
   final List<String> imageAssets = [
     'assets/images/image1.png', // Replace with your actual asset paths
@@ -361,6 +132,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       }
 
       // Fetch profile data
+      int userDay = 1;
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        userDay = prefs.getInt('pocket_learning_user_stage_$_currentUserId') ?? prefs.getInt('learning_day_$_currentUserId') ?? 1;
+      } catch (_) {}
+
       final profileResponse = await _supabase
           .from('profile')
           .select()
@@ -379,15 +156,22 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           selectedState = profileResponse['state'] ?? '';
           selectedCity = profileResponse['city'] ?? '';
           
-          _colorCode = (profileResponse['bg_color_code'] != null && profileResponse['bg_color_code'].toString().isNotEmpty) ? profileResponse['bg_color_code'] : '#000000';
-          _colorCode1 = (profileResponse['bg_text_color'] != null && profileResponse['bg_text_color'].toString().isNotEmpty) ? profileResponse['bg_text_color'] : '#FFFFFF';
-          _colorCode2 = (profileResponse['button_color_code'] != null && profileResponse['button_color_code'].toString().isNotEmpty) ? profileResponse['button_color_code'] : '#FFD700';
-          _colorCode3 = (profileResponse['button_text_color'] != null && profileResponse['button_text_color'].toString().isNotEmpty) ? profileResponse['button_text_color'] : '#000000';
+          final rawDay = (profileResponse['learning_day'] as num?)?.toInt();
+          if (rawDay != null && rawDay > userDay) {
+            userDay = rawDay;
+          }
+          _learningDay = userDay;
+          final stage = LearningMilestoneStage.getStageForDay(_learningDay);
           
-          _selectedColor = _convertStringToColor(_colorCode!);
-          _selectedColor1 = _convertStringToColor(_colorCode1!);
-          _selectedColor2 = _convertStringToColor(_colorCode2!);
-          _selectedColor3 = _convertStringToColor(_colorCode3!);
+          _colorCode = stage.bgHex;
+          _colorCode1 = stage.textHex;
+          _colorCode2 = stage.buttonHex;
+          _colorCode3 = stage.buttonTextHex;
+          
+          _selectedColor = stage.bgColor;
+          _selectedColor1 = stage.textColor;
+          _selectedColor2 = stage.buttonColor;
+          _selectedColor3 = stage.buttonTextColor;
 
           _imageUrlBanner = (profileResponse['banner_image_url']?.toString().isEmpty ?? true) ? null : profileResponse['banner_image_url'];
           _dayController.text = profileResponse['day']?.toString() ?? '';
@@ -1478,6 +1262,42 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                                         ],
                                       ),
                                     ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 8),
+                                      child: TextButton.icon(
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AvatarNetworkExplorerPage(
+                                                onAvatarSelected: (selectedAvatarUrl) {
+                                                  safeSetState(() {
+                                                    _imageUrl = selectedAvatarUrl;
+                                                    _selectedImageBytes = null;
+                                                  });
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    const SnackBar(
+                                                      content: Text('✨ Profile avatar selected! Tap Save to apply.'),
+                                                      backgroundColor: Color(0xFFFFFC00),
+                                                      behavior: SnackBarBehavior.floating,
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        icon: const Icon(Icons.travel_explore_rounded, size: 16, color: Color(0xFFFFFC00)),
+                                        label: Text(
+                                          'Explore Avatars 🌐',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFFFC00),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               ),
@@ -1949,501 +1769,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     ),
                   ),
 
-                  // --- Pocket Mates Avatar & Comic Styling Section ---
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: theme.secondaryBackground,
-                        borderRadius: BorderRadius.circular(18),
-                        border: Border.all(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
-                          width: 1.5,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
-                            blurRadius: 14,
-                            spreadRadius: 1,
-                          ),
-                        ],
-                      ),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 20),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Pocket Mates Avatar & Styling 🎭',
-                                      style: GoogleFonts.outfit(
-                                        color: theme.primaryText,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    Text(
-                                      '50+ Roles, Hairstyles, Comic Banners & Theme Sync',
-                                      style: GoogleFonts.inter(
-                                        color: theme.secondaryText,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Avatar Preview & Action Row
-                          Row(
-                            children: [
-                              // Live Avatar
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: const Color(0xFFFFFC00), width: 2),
-                                ),
-                                child: VectorAvatarWidget(
-                                  config: _avatarConfig,
-                                  size: 76,
-                                  showAura: true,
-                                ),
-                              ),
-                              const SizedBox(width: 14),
-
-                              // Edit Avatar & Match Theme Buttons
-                              Expanded(
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 38,
-                                      child: ElevatedButton.icon(
-                                        onPressed: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) => VectorAvatarStudioPage(
-                                                initialConfig: _avatarConfig,
-                                                onAvatarSaved: (newCfg) {
-                                                  safeSetState(() {
-                                                    _avatarConfig = newCfg;
-                                                  });
-                                                  _applyAvatarTheme(newCfg);
-                                                },
-                                              ),
-                                            ),
-                                          ).then((res) {
-                                            if (res is VectorAvatarConfig) {
-                                              safeSetState(() => _avatarConfig = res);
-                                              _applyAvatarTheme(res);
-                                            }
-                                          });
-                                        },
-                                        icon: const Icon(Icons.palette, size: 16, color: Colors.black),
-                                        label: Text(
-                                          'Open Avatar Studio',
-                                          style: GoogleFonts.outfit(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFFFFC00),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                          elevation: 2,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    SizedBox(
-                                      width: double.infinity,
-                                      height: 36,
-                                      child: OutlinedButton.icon(
-                                        onPressed: () => _applyAvatarTheme(_avatarConfig),
-                                        icon: const Icon(Icons.sync_alt, size: 15, color: Color(0xFFFFFC00)),
-                                        label: Text(
-                                          'Sync Theme to Avatar',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFFFFC00),
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 12,
-                                          ),
-                                        ),
-                                        style: OutlinedButton.styleFrom(
-                                          side: const BorderSide(color: Color(0xFFFFFC00)),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF161822),
-                                        borderRadius: BorderRadius.circular(10),
-                                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 14),
-                                          const SizedBox(width: 6),
-                                          Expanded(
-                                            child: Text(
-                                              '1-of-1 NFT: ${_avatarConfig.mintId ?? "#MATE-ORIGINAL"} • ${_avatarConfig.rarityTier.toUpperCase()}',
-                                              style: GoogleFonts.outfit(
-                                                color: const Color(0xFFFFD700),
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 18),
-                          const Divider(color: Colors.white12),
-                          const SizedBox(height: 12),
-
-                          // Avatar Themed Banners
-                          Text(
-                            'Avatar-Themed Banners (10 Presets)',
-                            style: GoogleFonts.outfit(
-                              color: theme.primaryText,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          SizedBox(
-                            height: 70,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: _avatarBannerPresets.length,
-                              separatorBuilder: (_, __) => const SizedBox(width: 10),
-                              itemBuilder: (context, index) {
-                                final preset = _avatarBannerPresets[index];
-                                final isSelected = _imageUrlBanner == preset['url'];
-
-                                return GestureDetector(
-                                  onTap: () {
-                                    safeSetState(() {
-                                      _imageUrlBanner = preset['url'];
-                                      _selectedImageBytesBanner = null;
-                                    });
-                                    _scaffoldMessengerKey.currentState?.showSnackBar(
-                                      SnackBar(
-                                        content: Text('🖼️ Applied ${preset['name']} banner!'),
-                                        duration: const Duration(milliseconds: 700),
-                                        behavior: SnackBarBehavior.floating,
-                                      ),
-                                    );
-                                  },
-                                  child: Container(
-                                    width: 120,
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(
-                                        color: isSelected ? const Color(0xFFFFFC00) : Colors.white24,
-                                        width: isSelected ? 2.5 : 1,
-                                      ),
-                                      image: DecorationImage(
-                                        image: CachedNetworkImageProvider(preset['url']!),
-                                        fit: BoxFit.cover,
-                                      ),
-                                      boxShadow: isSelected
-                                          ? [
-                                              BoxShadow(
-                                                color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
-                                                blurRadius: 8,
-                                              ),
-                                            ]
-                                          : [],
-                                    ),
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(10),
-                                        gradient: const LinearGradient(
-                                          begin: Alignment.bottomCenter,
-                                          end: Alignment.topCenter,
-                                          colors: [Colors.black87, Colors.transparent],
-                                        ),
-                                      ),
-                                      alignment: Alignment.bottomLeft,
-                                      padding: const EdgeInsets.all(6),
-                                      child: Text(
-                                        preset['name']!,
-                                        style: GoogleFonts.outfit(
-                                          color: Colors.white,
-                                          fontSize: 10,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-
-                  // 🎯 90-Day Sovereign English Journey Theme Banner
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.5), width: 1.2),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Text('🎯', style: TextStyle(fontSize: 18)),
-                            const SizedBox(width: 8),
-                            Text(
-                              '90-Day Sovereign English Palette Evolution',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFFC00),
-                                fontWeight: FontWeight.bold,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'Your profile theme unlocks automatically through 20 progressive color milestones as you practice English daily.',
-                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
-                        ),
-                        const SizedBox(height: 10),
-                        SizedBox(
-                          width: double.infinity,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              if (_currentUserId != null) {
-                                Learning60DayDashboardSheet.show(context, userId: _currentUserId!);
-                              }
-                            },
-                            icon: const Icon(Icons.auto_awesome, size: 14, color: Color(0xFFFFFC00)),
-                            label: Text(
-                              'View 90-Day Dashboard & 20 Palettes',
-                              style: GoogleFonts.outfit(color: const Color(0xFFFFFC00), fontSize: 12, fontWeight: FontWeight.bold),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              side: const BorderSide(color: Color(0xFFFFFC00)),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  // Preset Selection Section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Select Color Theme Preset',
-                          style: theme.bodyMedium.override(
-                            fontFamily: 'Montserrat',
-                            color: theme.primaryText,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Row(
-                      children: _colorPresets.map((preset) {
-                        final bg = _convertStringToColor(preset['bgColor']!);
-                        final text = _convertStringToColor(preset['textColor']!);
-                        final btn = _convertStringToColor(preset['btnColor']!);
-                        final btnText = _convertStringToColor(preset['btnTextColor']!);
-                        
-                        // Check if current values match this preset
-                        final isSelected = _colorCode?.toUpperCase() == preset['bgColor']?.toUpperCase() &&
-                            _colorCode1?.toUpperCase() == preset['textColor']?.toUpperCase() &&
-                            _colorCode2?.toUpperCase() == preset['btnColor']?.toUpperCase() &&
-                            _colorCode3?.toUpperCase() == preset['btnTextColor']?.toUpperCase();
-
-                        return GestureDetector(
-                          onTap: () {
-                            safeSetState(() {
-                              _colorCode = preset['bgColor'];
-                              _colorCode1 = preset['textColor'];
-                              _colorCode2 = preset['btnColor'];
-                              _colorCode3 = preset['btnTextColor'];
-                              
-                              _selectedColor = bg;
-                              _selectedColor1 = text;
-                              _selectedColor2 = btn;
-                              _selectedColor3 = btnText;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 12, bottom: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: isSelected ? theme.primary : theme.secondaryBackground,
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(
-                                color: isSelected ? theme.primary : theme.alternate,
-                                width: 2,
-                              ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: theme.primary.withValues(alpha: 0.3),
-                                        blurRadius: 6,
-                                        spreadRadius: 1,
-                                      )
-                                    ]
-                                  : null,
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                // Mini Swatch Preview
-                                Container(
-                                  width: 22,
-                                  height: 22,
-                                  decoration: BoxDecoration(
-                                    color: bg,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white24, width: 1),
-                                  ),
-                                  child: Center(
-                                    child: Container(
-                                      width: 10,
-                                      height: 10,
-                                      decoration: BoxDecoration(
-                                        color: btn,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  preset['name']!,
-                                  style: TextStyle(
-                                    color: isSelected ? Colors.white : theme.primaryText,
-                                    fontSize: 13,
-                                    fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Color Pickers
-                  ColorPickerWidget(
-                    key: ValueKey('bg_$_colorCode'),
-                    width: double.infinity,
-                    height: 56.0,
-                    label: 'Website Background color',
-                    initialColor: _selectedColor,
-                    initialColorCode: _colorCode ?? '#FFFFFF',
-                    onColorSelected: (color, code) {
-                      safeSetState(() {
-                        _selectedColor = color;
-                        _colorCode = code;
-                      });
-                    },
-                  ),
-                  ColorPickerWidget(
-                    key: ValueKey('text_$_colorCode1'),
-                    width: double.infinity,
-                    height: 56.0,
-                    label: 'Website Text color',
-                    initialColor: _selectedColor1,
-                    initialColorCode: _colorCode1 ?? '#212121',
-                    onColorSelected: (color, code) {
-                      safeSetState(() {
-                        _selectedColor1 = color;
-                        _colorCode1 = code;
-                      });
-                    },
-                  ),
-                  ColorPickerWidget(
-                    key: ValueKey('btn_$_colorCode2'),
-                    width: double.infinity,
-                    height: 56.0,
-                    label: 'Website Button color',
-                    initialColor: _selectedColor2,
-                    initialColorCode: _colorCode2 ?? '#2196F3',
-                    onColorSelected: (color, code) {
-                      safeSetState(() {
-                        _selectedColor2 = color;
-                        _colorCode2 = code;
-                      });
-                    },
-                  ),
-                  ColorPickerWidget(
-                    key: ValueKey('btntext_$_colorCode3'),
-                    width: double.infinity,
-                    height: 56.0,
-                    label: 'Website Button Text color',
-                    initialColor: _selectedColor3,
-                    initialColorCode: _colorCode3 ?? '#FFFFFF',
-                    onColorSelected: (color, code) {
-                      safeSetState(() {
-                        _selectedColor3 = color;
-                        _colorCode3 = code;
-                      });
-                    },
-                  ),
+                  // 🎯 Gamified 90-Day Level Theme Card
+                  _buildLevelThemeCard(),
 
                   buildBeautifulLocationPicker(),
 
@@ -2529,6 +1856,307 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     ),
   );
 }
+
+  Widget _buildLevelThemeCard() {
+    final stage = LearningMilestoneStage.getStageForDay(_learningDay);
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            stage.bgColor.withValues(alpha: 0.9),
+            const Color(0xFF0F172A),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: stage.buttonColor.withValues(alpha: 0.6),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: stage.buttonColor.withValues(alpha: 0.15),
+            blurRadius: 16,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: stage.buttonColor.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: stage.buttonColor, width: 1.2),
+                ),
+                child: Text(
+                  stage.emoji,
+                  style: const TextStyle(fontSize: 22),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: stage.buttonColor,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'DAY $_learningDay OF 90',
+                            style: GoogleFonts.outfit(
+                              color: stage.buttonTextColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          stage.fluencyTier,
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      stage.stageName,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'Your profile theme is earned through your English learning journey. As you progress through the 90 days, your profile colors, buttons, and companion avatar transform dynamically.',
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.75),
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Swatches Grid
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'ACTIVE PALETTE SWATCHES',
+                      style: GoogleFonts.outfit(
+                        color: stage.buttonColor,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.0,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        const Icon(Icons.lock_outline, size: 11, color: Colors.white38),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Level Locked',
+                          style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  children: [
+                    _buildThemeSwatch('Background', stage.bgColor, stage.bgHex),
+                    const SizedBox(width: 8),
+                    _buildThemeSwatch('Text', stage.textColor, stage.textHex),
+                    const SizedBox(width: 8),
+                    _buildThemeSwatch('Button', stage.buttonColor, stage.buttonHex),
+                    const SizedBox(width: 8),
+                    _buildThemeSwatch('Btn Text', stage.buttonTextColor, stage.buttonTextHex),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // Milestone Gates Row
+          Text(
+            'MAJOR MILESTONE THEMES',
+            style: GoogleFonts.outfit(
+              color: Colors.white54,
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              letterSpacing: 1.0,
+            ),
+          ),
+          const SizedBox(height: 8),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildMilestoneBadge(1, 'Genesis', '🌱', _learningDay >= 1),
+                _buildMilestoneBadge(21, 'Habit Gate', '🎯', _learningDay >= 21),
+                _buildMilestoneBadge(30, 'Silver Knight', '⚔️', _learningDay >= 30),
+                _buildMilestoneBadge(60, 'Gold Sovereign', '👑', _learningDay >= 60),
+                _buildMilestoneBadge(90, 'Celestial Void', '🌌', _learningDay >= 90),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          // Dashboard Button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: () {
+                if (_currentUserId != null) {
+                  Learning60DayDashboardSheet.show(context, userId: _currentUserId!);
+                }
+              },
+              icon: const Icon(Icons.insights_rounded, size: 15, color: Color(0xFFFFFC00)),
+              label: Text(
+                'Open 90-Day Learning Dashboard',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFFC00),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                side: const BorderSide(color: Color(0xFFFFFC00)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeSwatch(String label, Color color, String hex) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.white12),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: color,
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white30, width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.3),
+                    blurRadius: 4,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.white70,
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 2),
+            Text(
+              hex,
+              style: GoogleFonts.inter(
+                color: Colors.white38,
+                fontSize: 8,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMilestoneBadge(int day, String title, String emoji, bool isUnlocked) {
+    return Container(
+      margin: const EdgeInsets.only(right: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isUnlocked
+            ? const Color(0xFFFFFC00).withValues(alpha: 0.12)
+            : Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isUnlocked
+              ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+              : Colors.white12,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 13)),
+          const SizedBox(width: 5),
+          Text(
+            'Day $day',
+            style: GoogleFonts.outfit(
+              color: isUnlocked ? const Color(0xFFFFFC00) : Colors.white60,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(width: 4),
+          Icon(
+            isUnlocked ? Icons.check_circle_rounded : Icons.lock_rounded,
+            size: 11,
+            color: isUnlocked ? const Color(0xFFFFFC00) : Colors.white38,
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildColorInfo(String label, String colorCode) {
     final theme = DarkModeTheme();

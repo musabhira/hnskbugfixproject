@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_ambient_flame_background.dart';
 
@@ -12,38 +15,48 @@ class CrazyGamesPage extends StatefulWidget {
 }
 
 class _CrazyGamesPageState extends State<CrazyGamesPage> {
-  late final WebViewController _controller;
+  WebViewController? _controller;
   bool _isLoading = true;
+  bool _isSupported = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0xFF0F172A))
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageStarted: (String url) {
-            if (mounted) setState(() => _isLoading = true);
-          },
-          onPageFinished: (String url) {
-            if (mounted) setState(() => _isLoading = false);
-          },
-          onWebResourceError: (WebResourceError error) {
-            debugPrint('Webview Error: ${error.description}');
-          },
-          onNavigationRequest: (NavigationRequest request) {
-            return NavigationDecision.navigate;
-          },
-        ),
-      )
-      ..loadRequest(Uri.parse('https://www.crazygames.com/'));
+    _isSupported = !kIsWeb && (Platform.isAndroid || Platform.isIOS);
+    if (_isSupported) {
+      try {
+        _controller = WebViewController()
+          ..setJavaScriptMode(JavaScriptMode.unrestricted)
+          ..setBackgroundColor(const Color(0xFF0B0D13))
+          ..setNavigationDelegate(
+            NavigationDelegate(
+              onPageStarted: (String url) {
+                if (mounted) setState(() => _isLoading = true);
+              },
+              onPageFinished: (String url) {
+                if (mounted) setState(() => _isLoading = false);
+              },
+              onWebResourceError: (WebResourceError error) {
+                debugPrint('Webview Error: ${error.description}');
+              },
+              onNavigationRequest: (NavigationRequest request) {
+                return NavigationDecision.navigate;
+              },
+            ),
+          )
+          ..loadRequest(Uri.parse('https://www.crazygames.com/'));
+      } catch (e) {
+        debugPrint('Webview init error: $e');
+      }
+    } else {
+      _isLoading = false;
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0B0F17),
+      backgroundColor: const Color(0xFF0B0D13),
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
@@ -59,7 +72,7 @@ class _CrazyGamesPageState extends State<CrazyGamesPage> {
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF0F172A),
+        backgroundColor: const Color(0xFF131722),
         elevation: 0,
         bottom: PreferredSize(
           preferredSize: const Size.fromHeight(2),
@@ -77,10 +90,11 @@ class _CrazyGamesPageState extends State<CrazyGamesPage> {
           onPressed: () => Navigator.of(context).pop(),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Color(0xFFFFFC00)),
-            onPressed: () => _controller.reload(),
-          ),
+          if (_isSupported && _controller != null)
+            IconButton(
+              icon: const Icon(Icons.refresh_rounded, color: Color(0xFFFFFC00)),
+              onPressed: () => _controller?.reload(),
+            ),
         ],
       ),
       body: Stack(
@@ -91,7 +105,68 @@ class _CrazyGamesPageState extends State<CrazyGamesPage> {
               emberDensity: 0.75,
             ),
           ),
-          WebViewWidget(controller: _controller),
+          if (_isSupported && _controller != null)
+            WebViewWidget(controller: _controller!)
+          else
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131722),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFF1E2333)),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.sports_esports_rounded,
+                          color: Color(0xFFFFFC00), size: 48),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Crazy Games Arena',
+                        style: GoogleFonts.outfit(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'High-speed multiplayer games are optimized for mobile touchscreens. Tap below to launch Crazy Games in your browser.',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: Colors.white70,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: () => launchUrl(
+                          Uri.parse('https://www.crazygames.com/'),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFFC00),
+                          foregroundColor: Colors.black,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 24, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        icon: const Icon(Icons.open_in_browser_rounded),
+                        label: Text('Open Crazy Games',
+                            style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold)),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           if (_isLoading)
             Positioned.fill(
               child: Container(
