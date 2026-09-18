@@ -19,6 +19,8 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -1299,6 +1301,49 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    final robotLvl = (robotData['robot_level'] as num?)?.toInt() ?? 1;
+                    final robotNeighbor = PocketNeighbor(
+                      id: robotData['user_id'] ?? 'robot_1',
+                      name: robotData['name'] ?? 'Pocket Robot',
+                      day: robotLvl,
+                      streak: 7,
+                      rank: 'AI Robot Citadel',
+                      paletteId: 'cyber_neon',
+                      isMe: false,
+                      hasActiveShield: true,
+                      statusMessage: '🤖 Autonomous English Fortress Sentinel',
+                      hp: 100,
+                      maxHp: 100,
+                    );
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PocketCitadelAttackPage(
+                          neighbor: robotNeighbor,
+                          attackerDay: 1,
+                        ),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 18),
+                  label: Text(
+                    'Attack Citadel ⚔️',
+                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFDC2626),
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
             ],

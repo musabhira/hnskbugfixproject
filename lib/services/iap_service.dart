@@ -107,6 +107,16 @@ class IAPService {
     return await _iap.buyNonConsumable(purchaseParam: purchaseParam);
   }
 
+  /// Initiates purchase for a specific ProductDetails object
+  Future<bool> buyProduct(ProductDetails product) async {
+    if (!_available) {
+      debugPrint('IAPService: Store billing not available');
+      return false;
+    }
+    final PurchaseParam purchaseParam = PurchaseParam(productDetails: product);
+    return await _iap.buyNonConsumable(purchaseParam: purchaseParam);
+  }
+
   /// Restores previous purchases (Mandatory for Apple App Store guidelines)
   Future<void> restorePurchases() async {
     if (!_available) return;

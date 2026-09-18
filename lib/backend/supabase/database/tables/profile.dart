@@ -86,4 +86,19 @@ class ProfileRow extends SupabaseDataRow {
 
   bool? get isPremium => getField<bool>('is_premium');
   set isPremium(bool? value) => setField<bool>('is_premium', value);
+
+  String? get gender => getField<String>('gender');
+  set gender(String? value) => setField<String>('gender', value);
+
+  String? get nativeLanguage => getField<String>('native_language');
+  set nativeLanguage(String? value) => setField<String>('native_language', value);
+
+  String? get englishLevel => getField<String>('english_level');
+  set englishLevel(String? value) => setField<String>('english_level', value);
+
+  String? get learningGoal => getField<String>('learning_goal');
+  set learningGoal(String? value) => setField<String>('learning_goal', value);
+
+  String? get voiceBioUrl => getField<String>('voice_bio_url');
+  set voiceBioUrl(String? value) => setField<String>('voice_bio_url', value);
 }

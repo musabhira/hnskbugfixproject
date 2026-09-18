@@ -24,6 +24,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_englis
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
@@ -2215,7 +2217,205 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
         ],
         _buildActionButtons(textColor, btnColor, btnTextColor, isMe, isDark, name, profileUrl),
+        if (!isMe) ...[
+          _buildOtherUserCitadelSection(day, textColor, btnColor),
+        ],
       ],
+    );
+  }
+
+  Widget _buildOtherUserCitadelSection(int day, Color textColor, Color btnColor) {
+    final gateCount = PocketScoreLevelEngine.getGatesCountForLevel(day);
+    final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF1E1B4B),
+                  const Color(0xFF311042),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Text('🛡️', style: TextStyle(fontSize: 20)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'LEVEL $day CITADEL DEFENSE',
+                            style: const TextStyle(
+                              color: Color(0xFFFFD700),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          Text(
+                            '$gateCount Armed Gate${gateCount > 1 ? "s" : ""} Active',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.7),
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                      ),
+                      child: Text(
+                        '$gateCount / 9 GATES',
+                        style: const TextStyle(
+                          color: Color(0xFFFFD700),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Gate Tier Progress Badges
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: List.generate(gateCount, (idx) {
+                    final gateNum = idx + 1;
+                    final gateInfo = PocketScoreLevelEngine.getGateInfo(gateNum);
+                    final gateName = gateInfo['title'] ?? 'Gate $gateNum';
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Text(
+                        'Gate $gateNum: $gateName',
+                        style: const TextStyle(color: Colors.white70, fontSize: 10.5, fontWeight: FontWeight.w500),
+                      ),
+                    );
+                  }),
+                ),
+                const SizedBox(height: 14),
+                // Attack Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFDC2626),
+                      foregroundColor: Colors.white,
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () async {
+                      final targetId = widget.userId ?? '';
+                      final isProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(targetId);
+                      if (isProtected) {
+                        final remainingMinutes = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(targetId);
+                        final hours = (remainingMinutes / 60.0).toStringAsFixed(1);
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: [
+                                  const Text('👮‍♂️', style: TextStyle(fontSize: 18)),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Target Citadel is under 48h Presidential Police Protection ($hours hrs left). Raids blocked!',
+                                      style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: const Color(0xFF1E3A8A),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                        return;
+                      }
+
+                      final targetName = _profileData?['display_name'] ?? _profileData?['full_name'] ?? 'Target Raider';
+                      final targetNeighbor = PocketNeighbor(
+                        id: targetId,
+                        name: targetName,
+                        day: day,
+                        streak: streak,
+                        rank: 'Citadel (Lvl $day)',
+                        paletteId: 'royal_gold',
+                        isMe: false,
+                        hasActiveShield: true,
+                        statusMessage: '⚔️ Defend the Citadel with English prowess!',
+                        hp: 100,
+                        maxHp: 100,
+                      );
+
+                      if (context.mounted) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PocketCitadelAttackPage(
+                              neighbor: targetNeighbor,
+                              attackerDay: (_profileData?['learning_day'] as num?)?.toInt() ?? 1,
+                            ),
+                          ),
+                        ).then((_) => _loadFortressDefenseData());
+                      }
+                    },
+                    icon: const Icon(Icons.flash_on_rounded, size: 20),
+                    label: Text(
+                      'ATTACK CITADEL ⚔️',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5, letterSpacing: 0.5),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -3236,6 +3436,101 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
             ),
           ],
+          // English Learning & Language Badges
+          () {
+            final nativeLang = _profileData?['native_language']?.toString();
+            final englishLvl = _profileData?['english_level']?.toString();
+            final learningGoal = _profileData?['learning_goal']?.toString();
+
+            if ((nativeLang == null || nativeLang.isEmpty) &&
+                (englishLvl == null || englishLvl.isEmpty) &&
+                (learningGoal == null || learningGoal.isEmpty)) {
+              return const SizedBox.shrink();
+            }
+
+            return Padding(
+              padding: const EdgeInsets.only(top: 10),
+              child: Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                alignment: alignment == CrossAxisAlignment.center ? WrapAlignment.center : WrapAlignment.start,
+                children: [
+                  if (nativeLang != null && nativeLang.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.language_rounded, size: 12, color: Color(0xFFFFD700)),
+                          const SizedBox(width: 4),
+                          Text(
+                            nativeLang,
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (englishLvl != null && englishLvl.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF6366F1).withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.school_rounded, size: 12, color: Color(0xFF818CF8)),
+                          const SizedBox(width: 4),
+                          Text(
+                            englishLvl,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFC7D2FE),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (learningGoal != null && learningGoal.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.flag_rounded, size: 12, color: Color(0xFF34D399)),
+                          const SizedBox(width: 4),
+                          Text(
+                            learningGoal,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFA7F3D0),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            );
+          }(),
           // Hand Skill 3D Web link hidden per user request
         ],
       ),
@@ -3583,18 +3878,65 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       border: Border.all(color: const Color(0xFFDC2626).withValues(alpha: 0.5)),
                     ),
                     child: InkWell(
-                      onTap: () {
+                      onTap: () async {
+                        final isProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(userId);
+                        if (isProtected) {
+                          final remainingMinutes = await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(userId);
+                          final hours = (remainingMinutes / 60.0).toStringAsFixed(1);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Row(
+                                  children: [
+                                    const Text('👮‍♂️', style: TextStyle(fontSize: 18)),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        'Citadel is under 48h Presidential Police Protection ($hours hrs left). Raids temporarily blocked!',
+                                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                backgroundColor: const Color(0xFF1E3A8A),
+                                behavior: SnackBarBehavior.floating,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                            );
+                          }
+                          return;
+                        }
+
                         final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
                         final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => PocketWorldStreetPage(
-                              currentDay: day,
-                              streak: streak,
-                            ),
-                          ),
+                        final targetName = _profileData?['display_name'] ?? _profileData?['full_name'] ?? name;
+
+                        final targetNeighbor = PocketNeighbor(
+                          id: userId,
+                          name: targetName,
+                          day: day,
+                          streak: streak,
+                          rank: 'Citadel (Lvl $day)',
+                          paletteId: 'royal_gold',
+                          isMe: false,
+                          hasActiveShield: true,
+                          statusMessage: '⚔️ Defend the Citadel with English prowess!',
+                          hp: 100,
+                          maxHp: 100,
                         );
+
+                        if (context.mounted) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PocketCitadelAttackPage(
+                                neighbor: targetNeighbor,
+                                attackerDay: _localUserStage,
+                                attackerStreak: 1,
+                              ),
+                            ),
+                          );
+                        }
                       },
                       borderRadius: BorderRadius.circular(8),
                       child: Center(
@@ -3604,7 +3946,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                             const Text('⚔️', style: TextStyle(fontSize: 12)),
                             const SizedBox(width: 4),
                             Text(
-                              "Raid",
+                              "Attack",
                               style: GoogleFonts.outfit(
                                 color: const Color(0xFFF87171),
                                 fontSize: 13,
@@ -3764,60 +4106,88 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   /// 🪙 Pocket Score Stat Item (Highest Priority Hero Stat on User Profile)
   /// User audio directive: "പോക്കറ്റ് സ്കോർ വെച്ചിട്ടാണ് നമ്മുടെ അക്കൗണ്ടിൽ പോക്കറ്റ് സ്കോർ മേലെ തന്നെ വരണം... പോക്കറ്റ് സ്കോറിനാണ് ഇവിടെ ഹൈ പ്രയോറിറ്റി വരുന്നത്!"
   Widget _buildPocketScoreStatItem(int score, LearningMilestoneStage stage) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F131D),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: const Color(0xFFFFD700).withValues(alpha: 0.45),
-          width: 1.2,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.12),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🪙', style: TextStyle(fontSize: 13)),
-              const SizedBox(width: 4),
-              TweenAnimationBuilder<int>(
-                tween: IntTween(begin: 0, end: score),
-                duration: const Duration(milliseconds: 1000),
-                curve: Curves.easeOutCubic,
-                builder: (context, val, child) {
-                  return Text(
-                    _formatCount(val),
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFD700),
-                      fontSize: 15.5,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.5,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-          const SizedBox(height: 2),
-          Text(
-            'Pocket Score',
-            style: GoogleFonts.outfit(
-              color: const Color(0xFFFFFC00),
-              fontSize: 10.5,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 0.3,
+    final currentLvl = PocketScoreLevelEngine.getLevelFromScore(score);
+    final remainingForNext = PocketScoreLevelEngine.getRemainingScoreForNextLevel(score);
+    final progressLabel = PocketScoreLevelEngine.getProgressLabel(score);
+
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Text('🪙', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    progressLabel,
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
+            backgroundColor: const Color(0xFF0F172A),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-        ],
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F131D),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🪙', style: TextStyle(fontSize: 13)),
+                const SizedBox(width: 4),
+                TweenAnimationBuilder<int>(
+                  tween: IntTween(begin: 0, end: score),
+                  duration: const Duration(milliseconds: 1000),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, val, child) {
+                    return Text(
+                      _formatCount(val),
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 15.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.5,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 2),
+            Text(
+              remainingForNext > 0 ? 'Lvl $currentLvl • $remainingForNext to next' : 'Lvl $currentLvl • MAX',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFFC00),
+                fontSize: 9.5,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 0.2,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

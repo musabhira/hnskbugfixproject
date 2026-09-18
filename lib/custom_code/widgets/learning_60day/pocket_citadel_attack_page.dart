@@ -3,10 +3,13 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
+import '../main_profile_widget.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'pocket_score_level_engine.dart';
 import 'pocket_world_street_page.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
@@ -25,7 +28,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
     super.key,
     required this.neighbor,
     required this.attackerDay,
-    required this.attackerStreak,
+    this.attackerStreak = 0,
   });
 
   @override
@@ -54,8 +57,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   bool _isTargetProtected = false;
   double _protectionHoursLeft = 0;
   bool _inCooldown = false;
+  double _cooldownHoursLeft = 0;
+  int _retriesRemaining = 1; // User Audio Directive: Exactly 1 retry chance before 6h cooldown
   bool _isDailyLimitReached = false;
   int _attacksUsed = 0;
+
+  // 🔍 Interactive Estate Zoom & Pan Controls
+  late TransformationController _zoomController;
+  double _currentZoom = 1.0;
+  int _defenderScore = 0;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -70,6 +80,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     WidgetsBinding.instance.addObserver(this);
     _defenderHp = widget.neighbor.hp;
     _isDefenderDamaged = widget.neighbor.isDamaged;
+    _zoomController = TransformationController();
 
     _pulseController = AnimationController(
       vsync: this,
@@ -103,6 +114,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _combatTimer?.cancel();
+    _zoomController.dispose();
     _pulseController.dispose();
     _shakeController.dispose();
     _beamController.dispose();
@@ -111,12 +123,62 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     super.dispose();
   }
 
+  void _zoomIn() {
+    final newZoom = (_currentZoom + 0.25).clamp(0.6, 2.5);
+    setState(() {
+      _currentZoom = newZoom;
+      _zoomController.value = Matrix4.diagonal3Values(newZoom, newZoom, 1.0);
+    });
+    HapticFeedback.selectionClick();
+  }
+
+  void _zoomOut() {
+    final newZoom = (_currentZoom - 0.25).clamp(0.6, 2.5);
+    setState(() {
+      _currentZoom = newZoom;
+      _zoomController.value = Matrix4.diagonal3Values(newZoom, newZoom, 1.0);
+    });
+    HapticFeedback.selectionClick();
+  }
+
+  void _resetZoom() {
+    setState(() {
+      _currentZoom = 1.0;
+      _zoomController.value = Matrix4.identity();
+    });
+    HapticFeedback.selectionClick();
+  }
+
+  void _openDefenderProfile() {
+    HapticFeedback.selectionClick();
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MainProfileWidget(
+          userId: isUuid ? widget.neighbor.id : null,
+          preloadedProfile: {
+            'user_id': widget.neighbor.id,
+            'first_name': widget.neighbor.name,
+            'bio': widget.neighbor.statusMessage,
+            'learning_day': widget.neighbor.day,
+            'streak': widget.neighbor.streak,
+            'rank': widget.neighbor.rank,
+            'palette_id': widget.neighbor.paletteId,
+            'is_pocket_robo': widget.neighbor.isPocketRobo,
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Anti-Cheat: If user minimizes the app, switches to AI/Google Lens, or leaves screen during battle
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       if (_raidStep == 1 && mounted) {
         _combatTimer?.cancel();
+        PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, hours: 6);
         setState(() {
           _isAntiCheatTriggered = true;
           _raidStep = -1; // Raid Failed!
@@ -155,16 +217,35 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   void _handleCombatTimeout() {
     if (!mounted) return;
     HapticFeedback.heavyImpact();
-    setState(() {
-      _secondsLeft = 0;
-      _isTimeoutTriggered = true;
-      _raidStep = -1; // Time expired -> Defeat!
-    });
+    if (_retriesRemaining > 0) {
+      setState(() {
+        _retriesRemaining--;
+        _selectedOption = -1;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚠️ Blitz timer expired! 1 Second Chance remaining. Hurry!'),
+          backgroundColor: Colors.amber,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      _startCombatTimer();
+    } else {
+      PocketFortressDefenseService.recordFailedAttackCooldown(widget.neighbor.id, hours: 6);
+      setState(() {
+        _secondsLeft = 0;
+        _isTimeoutTriggered = true;
+        _raidStep = -1; // Time expired -> Defeat!
+      });
+    }
   }
 
   Future<void> _loadBattleState() async {
     final targetId = widget.neighbor.id;
     final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(targetId);
+    final cooldownMinutes = inCooldown
+        ? await PocketFortressDefenseService.getCooldownMinutesRemaining(targetId)
+        : 0;
     final isProtected = await PocketFortressDefenseService.isUnderPresidentialProtection(targetId);
     final protectionMinutes = isProtected
         ? await PocketFortressDefenseService.getPresidentialProtectionMinutesRemaining(targetId)
@@ -172,7 +253,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final attacksUsed = await PocketFortressDefenseService.getDailyAttacksUsedToday();
     final isDailyLimitReached = attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
 
-    final questions = await PocketFortressDefenseService.loadShieldQuestions(
+    final questions = await PocketFortressDefenseService.loadGauntletQuestionsForStage(
       widget.neighbor.day,
       isNeighbor: true,
     );
@@ -196,14 +277,29 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       );
     }).toList();
 
+    int defenderScore = PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day) + (widget.neighbor.streak * 15);
+    try {
+      if (!widget.neighbor.id.startsWith('pocket_robo') && !widget.neighbor.id.startsWith('rival_citadel')) {
+        final res = await SupaFlow.client.from('pocket_homes').select('points, hp, stage').eq('user_id', widget.neighbor.id).maybeSingle();
+        if (res != null && res['points'] != null) {
+          defenderScore = (res['points'] as num).toInt();
+        }
+      } else {
+        final roboScore = await PocketFortressDefenseService.getRobotScore(widget.neighbor.id, widget.neighbor.day);
+        defenderScore = roboScore;
+      }
+    } catch (_) {}
+
     if (mounted) {
       setState(() {
         _inCooldown = inCooldown;
+        _cooldownHoursLeft = cooldownMinutes / 60.0;
         _isTargetProtected = isProtected;
         _protectionHoursLeft = protectionMinutes / 60.0;
         _attacksUsed = attacksUsed;
         _isDailyLimitReached = isDailyLimitReached;
         _defenseQuestions = randomizedQuestions;
+        _defenderScore = defenderScore;
       });
     }
   }
@@ -243,13 +339,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);
     await PocketFortressDefenseService.recordAttackLaunchedToday();
 
-    final looted = (result['lootedCoins'] as num? ?? 0).toInt();
+    // ⚔️ Audio Directive: Raider earns 10 to 15 Pocket Score (PS) points globally
+    final looted = (result['lootedCoins'] as num? ?? 15).toInt();
     if (looted > 0) {
       await PocketFortressDefenseService.awardRaidLoot(looted);
     }
 
-    // Award +150 BONUS POINTS for successful breach!
-    final pRes = await PocketFortressDefenseService.awardPoints(150);
+    final pRes = await PocketFortressDefenseService.awardPoints(looted > 0 ? looted : 15);
 
     await Future.delayed(const Duration(milliseconds: 450));
 
@@ -258,12 +354,109 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       setState(() {
         _isStriking = false;
         _defenderHp = math.max(0, _defenderHp - 60);
+        _defenderScore = math.max(0, _defenderScore - (looted > 0 ? looted : 15));
         _isDefenderDamaged = true;
         _breachResult = result;
         _pointsResult = pRes;
         _raidStep = 3; // Victory!
       });
     }
+  }
+
+  void _showReportDialog(HouseShieldQuestion currentQ) {
+    String selectedReason = 'fake_english';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Colors.redAccent),
+          ),
+          title: Row(
+            children: const [
+              Text('🚨', style: TextStyle(fontSize: 22)),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Report Fake Defense',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'The President\'s Court and Admin investigate fraudulent defense shields. False questions result in Citadel Penalties.',
+                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: selectedReason,
+                  dropdownColor: const Color(0xFF1E293B),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    labelText: 'Violation Type',
+                    labelStyle: const TextStyle(color: Colors.white70),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'fake_english', child: Text('Fake / Gibberish English')),
+                    DropdownMenuItem(value: 'impossible_puzzle', child: Text('Unfair / Impossible Puzzle')),
+                    DropdownMenuItem(value: 'abusive_language', child: Text('Inappropriate Language')),
+                    DropdownMenuItem(value: 'unrelated_content', child: Text('Not English Learning')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setDialogState(() => selectedReason = val);
+                  },
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+              onPressed: () {
+                Navigator.pop(ctx);
+                _showPresidentialDispatchOverlay(
+                  currentQ: currentQ,
+                  reason: selectedReason,
+                );
+              },
+              child: const Text('Submit Report', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPresidentialDispatchOverlay({
+    required HouseShieldQuestion currentQ,
+    required String reason,
+  }) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _PresidentialDispatchDialog(
+        targetName: widget.neighbor.name,
+        targetId: widget.neighbor.id,
+        currentQ: currentQ,
+        reason: reason,
+      ),
+    );
   }
 
   @override
@@ -356,8 +549,28 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ],
                       ),
                     ),
+                    const SizedBox(width: 8),
+                    // 👤 View Profile Button (Audio Directive)
+                    TextButton.icon(
+                      style: TextButton.styleFrom(
+                        backgroundColor: const Color(0xFF0284C7).withValues(alpha: 0.22),
+                        foregroundColor: const Color(0xFF38BDF8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          side: const BorderSide(color: Color(0xFF38BDF8), width: 0.9),
+                        ),
+                      ),
+                      onPressed: _openDefenderProfile,
+                      icon: const Icon(Icons.person_rounded, size: 14),
+                      label: Text(
+                        'View Profile',
+                        style: GoogleFonts.outfit(fontSize: 10.5, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                       decoration: BoxDecoration(
                         color: _isDailyLimitReached
                             ? Colors.red.withValues(alpha: 0.2)
@@ -368,10 +581,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         ),
                       ),
                       child: Text(
-                        '⚔️ $_attacksUsed / ${PocketFortressDefenseService.kDailyMaxAttacks} Today',
+                        '⚔️ $_attacksUsed / ${PocketFortressDefenseService.kDailyMaxAttacks}',
                         style: TextStyle(
                           color: _isDailyLimitReached ? Colors.redAccent : const Color(0xFF38BDF8),
-                          fontSize: 10.5,
+                          fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -428,8 +641,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
               const SizedBox(height: 8),
 
-              // --- 🏡 FULL SCREEN HOUSE CANVAS AT CENTER/BOTTOM ---
-              // Audio Directive: "ആപ്പിന്റെ ഫുൾ സ്ക്രീൻ ആയിട്ട് പോവുക, അടിയിൽ വീടായിട്ട് നിൽക്കുക."
+              // --- 🏡 2D OPEN WORLD HILL CLIMB SCENIC BATTLEGROUND ---
+              // Audio Directive: Blue sky, rolling green hills, trees, street lamps, and house in center.
+              // Strictly NO car controls (GAS/GO, JUMP, BRAKE/REV). Includes Zoom in/out controls.
               Expanded(
                 flex: 5,
                 child: AnimatedBuilder(
@@ -447,19 +661,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A),
+                      color: const Color(0xFF0284C7),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
                         color: _isDefenderDamaged
-                            ? Colors.redAccent.withValues(alpha: 0.6)
-                            : const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                        width: 1.5,
+                            ? Colors.redAccent.withValues(alpha: 0.8)
+                            : const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                        width: 1.8,
                       ),
                       boxShadow: [
                         BoxShadow(
                           color: _isDefenderDamaged
-                              ? Colors.redAccent.withValues(alpha: 0.2)
-                              : Colors.black54,
+                              ? Colors.redAccent.withValues(alpha: 0.25)
+                              : Colors.black45,
                           blurRadius: 18,
                           offset: const Offset(0, 6),
                         ),
@@ -469,18 +683,240 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       borderRadius: BorderRadius.circular(20),
                       child: Stack(
                         children: [
-                          // The animated 2D Flame English House
+                          // 1. 2D Open World Scenery: Sky, Radiant Sun, Clouds, Rolling Green Hills & Trees
                           Positioned.fill(
-                            child: FlameEnglishHouseWidget(
-                              currentDay: widget.neighbor.day,
-                              streak: widget.neighbor.streak,
-                              isDamaged: _isDefenderDamaged,
-                              houseId: widget.neighbor.id,
-                              paletteId: widget.neighbor.paletteId,
+                            child: CustomPaint(
+                              painter: CitadelScenicLandscapePainter(
+                                isDamaged: _isDefenderDamaged,
+                              ),
                             ),
                           ),
 
-                          // High-powered laser cannon & explosive particle strike layer
+                          // 2. Interactive Pinch & Drag Zoom Viewport for House Inspection
+                          Positioned.fill(
+                            child: InteractiveViewer(
+                              transformationController: _zoomController,
+                              minScale: 0.6,
+                              maxScale: 2.5,
+                              boundaryMargin: const EdgeInsets.all(120),
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  // The 2D Flame English House placed on the hillside
+                                  Positioned(
+                                    bottom: 12,
+                                    child: SizedBox(
+                                      width: 400,
+                                      height: 380,
+                                      child: FlameEnglishHouseWidget(
+                                        currentDay: widget.neighbor.day,
+                                        streak: widget.neighbor.streak,
+                                        isDamaged: _isDefenderDamaged,
+                                        houseId: widget.neighbor.id,
+                                        paletteId: widget.neighbor.paletteId,
+                                      ),
+                                    ),
+                                  ),
+
+                                  // 🏷️ Prominent Defender Identity & Pocket Score Badges (Matching Screenshot)
+                                  Positioned(
+                                    top: 10,
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        // 👑 Yellow Banner: DEFENDER CITADEL
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFFFFFC00),
+                                            borderRadius: BorderRadius.circular(8),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: Colors.black.withValues(alpha: 0.35),
+                                                blurRadius: 8,
+                                                offset: const Offset(0, 2),
+                                              ),
+                                            ],
+                                          ),
+                                          child: Text(
+                                            '👑 DEFENDER CITADEL • ${widget.neighbor.name.toUpperCase()}',
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.black,
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 0.6,
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 5),
+
+                                        // 🪙 Pocket Score (PS) Badge: Highlighted above the House
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+                                          decoration: BoxDecoration(
+                                            gradient: const LinearGradient(
+                                              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                                            ),
+                                            borderRadius: BorderRadius.circular(20),
+                                            border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                                                blurRadius: 8,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Text('🪙', style: TextStyle(fontSize: 13)),
+                                              const SizedBox(width: 5),
+                                              Text(
+                                                'PS ${_defenderScore > 0 ? _defenderScore : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day)} PTS',
+                                                style: GoogleFonts.outfit(
+                                                  color: const Color(0xFFFFD700),
+                                                  fontSize: 12.5,
+                                                  fontWeight: FontWeight.w900,
+                                                  letterSpacing: 0.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+
+                                        // Defender Avatar Bubble with Halo
+                                        Container(
+                                          width: 44,
+                                          height: 44,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            border: Border.all(
+                                              color: widget.neighbor.hasActiveShield
+                                                  ? const Color(0xFF00F0FF)
+                                                  : const Color(0xFFFFD700),
+                                              width: 2.2,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: (widget.neighbor.hasActiveShield
+                                                        ? const Color(0xFF00F0FF)
+                                                        : const Color(0xFFFFD700))
+                                                    .withValues(alpha: 0.45),
+                                                blurRadius: 10,
+                                              ),
+                                            ],
+                                          ),
+                                          child: ClipOval(
+                                            child: VectorAvatarWidget(
+                                              config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
+                                              size: 44,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+
+                                  // 🏡 Roadside Street Signpost Plaque (matching screenshot)
+                                  Positioned(
+                                    bottom: 24,
+                                    right: 24,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: const Color(0xFFFFFC00), width: 1.2),
+                                      ),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            '🏡 Street ${widget.neighbor.day}',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFFFFC00),
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w900,
+                                            ),
+                                          ),
+                                          Text(
+                                            widget.neighbor.name,
+                                            style: GoogleFonts.outfit(
+                                              color: Colors.white,
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // 3. Floating Zoom Controls (+, -, Reset) on Top-Right Corner
+                          Positioned(
+                            top: 12,
+                            right: 12,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.75),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(color: Colors.white24, width: 1),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.4),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  InkWell(
+                                    onTap: _zoomIn,
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(5),
+                                      child: Icon(Icons.add_rounded, color: Colors.white, size: 20),
+                                    ),
+                                  ),
+                                  const Divider(color: Colors.white24, height: 4),
+                                  InkWell(
+                                    onTap: _zoomOut,
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(5),
+                                      child: Icon(Icons.remove_rounded, color: Colors.white, size: 20),
+                                    ),
+                                  ),
+                                  const Divider(color: Colors.white24, height: 4),
+                                  InkWell(
+                                    onTap: _resetZoom,
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                      child: Text(
+                                        '${(_currentZoom * 100).toInt()}%',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFFFFD700),
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          // 4. High-powered laser cannon & explosive particle strike layer
                           AnimatedBuilder(
                             animation: Listenable.merge([_beamController, _particleController]),
                             builder: (context, _) {
@@ -497,7 +933,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             },
                           ),
 
-                          // Victory Coin Shower Layer
+                          // 5. Victory Coin Shower Layer
                           AnimatedBuilder(
                             animation: _coinController,
                             builder: (context, _) {
@@ -516,7 +952,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             },
                           ),
 
-                          // Attacker weapon discharge banner
+                          // 6. Attacker weapon discharge banner
                           if (_isStriking)
                             Positioned(
                               top: 14,
@@ -558,7 +994,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               ),
                             ),
 
-                          // Attack strike visual impact overlay
+                          // 7. Attack strike visual impact overlay
                           if (_isStriking)
                             Positioned.fill(
                               child: Container(
@@ -590,37 +1026,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 ),
                               ),
                             ),
-
-                          // Citadel Status Badge
-                          Positioned(
-                            top: 10,
-                            left: 12,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.8),
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(
-                                  color: _isDefenderDamaged ? Colors.redAccent : Colors.white24,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text(
-                                    _isDefenderDamaged
-                                        ? '💥 Breached Defense'
-                                        : '🛡️ Level ${widget.neighbor.day} Architecture',
-                                    style: GoogleFonts.outfit(
-                                      color: _isDefenderDamaged ? const Color(0xFFF87171) : Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
                         ],
                       ),
                     ),
@@ -644,12 +1049,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         if (_raidStep == 0) ...[
                           if (_isTargetProtected)
                             _buildNoticeCard(
-                              '👮‍♂️ 48-Hour Presidential Police Protection Active!\nGuards stationed to allow resident recovery (${_protectionHoursLeft.toStringAsFixed(1)}h remaining). Raids blocked.',
+                              '👮‍♂️ 26-Hour Presidential Police Protection Active!\nGuards stationed to allow resident recovery (${_protectionHoursLeft.toStringAsFixed(1)}h remaining). Attacks blocked.',
                             )
                           else if (_inCooldown)
-                            _buildNoticeCard('⏳ 24h Peace Treaty active! You attacked this citadel recently.')
+                            _buildNoticeCard(
+                              '⏳ Citadel Security Alert Active!\nThis citadel is on high alert after recent combat. Re-attack available in ${_cooldownHoursLeft.toStringAsFixed(1)} hours.',
+                            )
                           else if (_isDailyLimitReached)
-                            _buildNoticeCard('🔒 Daily limit reached! You have used 2/2 raids today.')
+                            _buildNoticeCard('🔒 Daily limit reached! You have used 2/2 attacks today.')
                           else
                             Container(
                               padding: const EdgeInsets.all(14),
@@ -676,7 +1083,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                         ),
                                         const SizedBox(height: 2),
                                         Text(
-                                          'Crack ${widget.neighbor.name}\'s Home Defense question to breach the front gate, loot +45 study coins & earn +150 bonus combat points!',
+                                          'Crack ${widget.neighbor.name}\'s Home Defense question to breach the front gate, loot +15 Pocket Score (PS) points & level up!',
                                           style: const TextStyle(color: Colors.white70, fontSize: 11.5),
                                         ),
                                       ],
@@ -702,7 +1109,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       if (widget.attackerDay < 4) {
                                         ScaffoldMessenger.of(context).showSnackBar(
                                           const SnackBar(
-                                            content: Text('🔒 Raid warfare unlocks at Level 4!'),
+                                            content: Text('🔒 Citadel attack warfare unlocks at Level 4!'),
                                             backgroundColor: Color(0xFFDC2626),
                                           ),
                                         );
@@ -720,8 +1127,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 cannotAttack
                                     ? (_isDailyLimitReached
                                         ? 'DAILY LIMIT REACHED 🔒'
-                                        : (_inCooldown ? 'PEACE TREATY IN EFFECT ⏳' : 'RAID LOCKED 🔒'))
-                                    : 'ENGAGE DEFENSE GATE ⚔️',
+                                        : (_inCooldown ? 'CITADEL IN COOLDOWN ⏳' : 'ATTACK LOCKED 🔒'))
+                                    : 'ATTACK CITADEL ⚔️',
                                 style: GoogleFonts.outfit(
                                   fontWeight: FontWeight.w900,
                                   fontSize: 15,
@@ -758,7 +1165,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                         borderRadius: BorderRadius.circular(6),
                                       ),
                                       child: Text(
-                                        '🛡️ DEFENSE GATE: ${currentQ.trapType.toUpperCase()}',
+                                        '🛡️ GATE ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}',
                                         style: const TextStyle(
                                           color: Color(0xFF38BDF8),
                                           fontSize: 10.5,
@@ -767,6 +1174,48 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       ),
                                     ),
                                     const Spacer(),
+                                    IconButton(
+                                      icon: const Icon(Icons.flag_outlined, color: Colors.redAccent, size: 18),
+                                      tooltip: 'Report Fake Shield',
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      onPressed: () => _showReportDialog(currentQ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    // ❤️ Second Chance Lifeline Indicator
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: _retriesRemaining > 0
+                                            ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                                            : Colors.red.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: _retriesRemaining > 0 ? const Color(0xFF34D399) : Colors.redAccent,
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.favorite_rounded,
+                                            size: 12,
+                                            color: _retriesRemaining > 0 ? const Color(0xFF34D399) : Colors.redAccent,
+                                          ),
+                                          const SizedBox(width: 3),
+                                          Text(
+                                            _retriesRemaining > 0 ? '1 Retry' : '0 Retries',
+                                            style: GoogleFonts.outfit(
+                                              color: _retriesRemaining > 0 ? const Color(0xFF34D399) : Colors.redAccent,
+                                              fontSize: 10.5,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
                                     // ⏱️ 25s Blitz Countdown Combat Timer Pill
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -801,11 +1250,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                           ),
                                         ],
                                       ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Question ${_currentQIdx + 1} of ${_defenseQuestions.length}',
-                                      style: const TextStyle(color: Colors.white54, fontSize: 10),
                                     ),
                                   ],
                                 ),
@@ -894,19 +1338,65 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               ),
                               onPressed: _selectedOption == -1
                                   ? null
-                                  : () {
+                                  : () async {
                                       HapticFeedback.mediumImpact();
                                       _combatTimer?.cancel();
                                       if (_selectedOption == currentQ.correctIndex) {
-                                        // Answer is correct -> Move to Step 2 to give the "ATTACK" button!
-                                        setState(() => _raidStep = 2);
+                                        if (_currentQIdx + 1 < _defenseQuestions.length) {
+                                          // Intermediate Gate cleared! Move to next gate
+                                          final nextGate = _currentQIdx + 2;
+                                          final totalGates = _defenseQuestions.length;
+                                          setState(() {
+                                            _currentQIdx++;
+                                            _selectedOption = -1;
+                                          });
+                                          HapticFeedback.heavyImpact();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(
+                                              content: Text('🛡️ Gate $_currentQIdx Cleared! Engaging Gate $nextGate of $totalGates...'),
+                                              backgroundColor: const Color(0xFF10B981),
+                                              duration: const Duration(seconds: 2),
+                                              behavior: SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                          _startCombatTimer();
+                                        } else {
+                                          // All Gates Breached -> Ready to strike!
+                                          setState(() => _raidStep = 2);
+                                        }
                                       } else {
-                                        // Trap triggered -> Defense held!
-                                        setState(() => _raidStep = -1);
+                                        // Mistake made: Check if 1 second chance remains
+                                        if (_retriesRemaining > 0) {
+                                          setState(() {
+                                            _retriesRemaining--;
+                                            _selectedOption = -1;
+                                          });
+                                          HapticFeedback.heavyImpact();
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('⚠️ Incorrect! You have 1 Second Chance remaining. Think carefully!'),
+                                              backgroundColor: Colors.amber,
+                                              duration: Duration(seconds: 3),
+                                            ),
+                                          );
+                                          _startCombatTimer();
+                                        } else {
+                                          // Trap triggered & exhausted retries -> Defense held!
+                                          // Audio Directive: 6-hour failed attack cooldown enforced
+                                          await PocketFortressDefenseService.recordFailedAttackCooldown(
+                                            widget.neighbor.id,
+                                            hours: 6,
+                                          );
+                                          if (mounted) {
+                                            setState(() => _raidStep = -1);
+                                          }
+                                        }
                                       }
                                     },
                               child: Text(
-                                'CONFIRM DEFENSE ANSWER ✓',
+                                _currentQIdx + 1 < _defenseQuestions.length
+                                    ? 'PASS GATE ${_currentQIdx + 1} ✓'
+                                    : 'BREACH FINAL GATE ✓',
                                 style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
                               ),
                             ),
@@ -1049,8 +1539,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 const SizedBox(height: 4),
                                 Text(
                                   _breachResult?['ironDomeBlocked'] == true
-                                      ? '🛡️ Iron Dome Absorbed Breach (0 Coins Looted)'
-                                      : '🪙 +${_breachResult?['lootedCoins'] ?? 45} Coins Looted from Vault!',
+                                      ? '🛡️ Iron Dome Absorbed Breach (0 PS Looted)'
+                                      : '🪙 +${_breachResult?['lootedCoins'] ?? 15} PS Points Looted from Vault!',
                                   style: TextStyle(
                                     color: _breachResult?['ironDomeBlocked'] == true
                                         ? Colors.amber
@@ -1059,6 +1549,33 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     fontSize: 12,
                                   ),
                                 ),
+                                if (_breachResult?['isLevelDowngraded'] == true) ...[
+                                  const SizedBox(height: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.red.withValues(alpha: 0.25),
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(color: Colors.redAccent),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Text('📉', style: TextStyle(fontSize: 18)),
+                                        const SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'CITADEL DEMOTED! Defender lost critical Pocket Score and dropped from Level ${_breachResult?['previousLevel']} to Level ${_breachResult?['newLevel']}!',
+                                            style: const TextStyle(
+                                              color: Color(0xFFF87171),
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                                 const SizedBox(height: 8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -1072,7 +1589,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       Text('🌟', style: TextStyle(fontSize: 16)),
                                       SizedBox(width: 8),
                                       Text(
-                                        '+150 BONUS POINTS EARNED! (100 pts/level)',
+                                        '+15 PS POINTS EARNED & ADDED TO POCKET SCORE! (200 pts/level)',
                                         style: TextStyle(
                                           color: Color(0xFFFFD700),
                                           fontSize: 12,
@@ -1121,7 +1638,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          '48h Presidential Police Guard Dispatched: Target is under protective peace treaty while recovering.',
+                                          '26h Presidential Police Guard Dispatched: Target is under protective peace treaty for 26 hours while recovering.',
                                           style: TextStyle(color: Colors.white70, fontSize: 11),
                                         ),
                                       ),
@@ -1209,40 +1726,46 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             ),
                           ),
                           const SizedBox(height: 14),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: Colors.white70,
-                                    side: const BorderSide(color: Colors.white24),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: Colors.amber.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(color: Colors.amber.withValues(alpha: 0.6)),
+                            ),
+                            child: Row(
+                              children: const [
+                                Text('⏳', style: TextStyle(fontSize: 18)),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    '6-Hour Citadel Lockdown Enforced!\nYou exhausted your second chance on this defense. Security has tightened. Return after 6 hours to attack again.',
+                                    style: TextStyle(
+                                      color: Color(0xFFFCD34D),
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                   ),
-                                  onPressed: () => Navigator.pop(context, false),
-                                  child: const Text('RETREAT 🛡️', style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF334155),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                               ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF0284C7),
-                                    foregroundColor: Colors.white,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      _raidStep = 1;
-                                      _selectedOption = -1;
-                                      _currentQIdx++;
-                                    });
-                                  },
-                                  child: const Text('TRY AGAIN 🔄', style: TextStyle(fontWeight: FontWeight.bold)),
-                                ),
-                              ),
-                            ],
+                              onPressed: () {
+                                HapticFeedback.selectionClick();
+                                Navigator.pop(context, false);
+                              },
+                              child: const Text('ACKNOWLEDGE & RETREAT 🛡️', style: TextStyle(fontWeight: FontWeight.bold)),
+                            ),
                           ),
                         ],
                         const SizedBox(height: 20),
@@ -1337,4 +1860,346 @@ class CitadelCoinShowerPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CitadelCoinShowerPainter oldDelegate) => oldDelegate.progress != progress;
 }
+
+/// 🏛️ Animated Presidential Court Case Filing Dialog
+class _PresidentialDispatchDialog extends StatefulWidget {
+  final String targetName;
+  final String targetId;
+  final HouseShieldQuestion currentQ;
+  final String reason;
+
+  const _PresidentialDispatchDialog({
+    required this.targetName,
+    required this.targetId,
+    required this.currentQ,
+    required this.reason,
+  });
+
+  @override
+  State<_PresidentialDispatchDialog> createState() => _PresidentialDispatchDialogState();
+}
+
+class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog> {
+  bool _isDispatched = false;
+  String _caseNumber = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _caseNumber = 'DEC-${(DateTime.now().millisecondsSinceEpoch % 90000) + 10000}';
+    _performDispatch();
+  }
+
+  Future<void> _performDispatch() async {
+    HapticFeedback.heavyImpact();
+    // 1. File to Presidential Service and Supabase
+    await PocketFortressDefenseService.fileDefenseReport(
+      houseId: widget.targetId,
+      houseOwnerName: widget.targetName,
+      questionId: widget.currentQ.id,
+      questionText: widget.currentQ.question,
+      options: widget.currentQ.options,
+      correctIndex: widget.currentQ.correctIndex,
+      reporterId: 'attacker_me',
+      reporterName: 'Citadel Raider',
+      reason: widget.reason,
+      details: 'Reported during live raid blitz combat.',
+    );
+
+    await Future.delayed(const Duration(milliseconds: 1400));
+    if (mounted) {
+      HapticFeedback.lightImpact();
+      setState(() => _isDispatched = true);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Container(
+        padding: const EdgeInsets.all(22),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _isDispatched ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: (_isDispatched ? const Color(0xFF10B981) : const Color(0xFFFFD700)).withValues(alpha: 0.25),
+              blurRadius: 20,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: (_isDispatched ? const Color(0xFF10B981) : const Color(0xFFFFD700)).withValues(alpha: 0.15),
+                border: Border.all(
+                  color: _isDispatched ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                  width: 2,
+                ),
+              ),
+              child: Center(
+                child: Text(
+                  _isDispatched ? '⚖️' : '🏛️',
+                  style: const TextStyle(fontSize: 32),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              _isDispatched
+                  ? 'CASE FILED WITH PRESIDENT & ADMIN!'
+                  : 'DISPATCHING TO PRESIDENTIAL COURT...',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: 16,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.white10,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Dossier #$_caseNumber • Target: ${widget.targetName}',
+                style: const TextStyle(color: Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 14),
+            if (!_isDispatched) ...[
+              const SizedBox(
+                width: 180,
+                child: LinearProgressIndicator(
+                  backgroundColor: Colors.white12,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Submitting encrypted fraud evidence to the Presidency...\nTarget citadel faces Pocket Score wipeout if confirmed guilty.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(color: Colors.white60, fontSize: 11.5),
+              ),
+            ] else ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF064E3B).withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF059669)),
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      '✓ Formal Investigation Opened',
+                      style: TextStyle(color: Color(0xFF34D399), fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'The Supreme Presidential Court & Admin inspect all fraudulent defense questions. Confirmed violations result in immediate Pocket Score deduction & citadel demotion to Level 1.',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 44,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () => Navigator.pop(context),
+                  child: Text(
+                    'RETURN TO COMBAT ⚔️',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 🌄 2D Open World Hill Climb Scenery Painter (Screenshot Aesthetics)
+/// Features vibrant sky blue gradient, glowing sun, drifting fluffy clouds, distant mountain ridges,
+/// lush rolling green hills, foliage trees with red berries/apples, and glowing street lamps.
+class CitadelScenicLandscapePainter extends CustomPainter {
+  final bool isDamaged;
+
+  CitadelScenicLandscapePainter({
+    this.isDamaged = false,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // 1. Sky Gradient (Vibrant blue matching user screenshot)
+    final skyPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFBAE6FD)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, 0, w, h));
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), skyPaint);
+
+    // 2. Radiant Golden Sun with glowing aura rings
+    final sunCenter = Offset(w * 0.82, h * 0.16);
+    canvas.drawCircle(
+      sunCenter,
+      52,
+      Paint()
+        ..color = const Color(0xFFFDE047).withValues(alpha: 0.22)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
+    );
+    canvas.drawCircle(
+      sunCenter,
+      38,
+      Paint()
+        ..color = const Color(0xFFFDE047).withValues(alpha: 0.45)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+    );
+    canvas.drawCircle(sunCenter, 24, Paint()..color = const Color(0xFFFDE047));
+
+    // 3. Drifting Fluffy Clouds
+    _drawFluffyCloud(canvas, w * 0.16, h * 0.14, 16);
+    _drawFluffyCloud(canvas, w * 0.50, h * 0.22, 13);
+    _drawFluffyCloud(canvas, w * 0.88, h * 0.26, 12);
+
+    // 4. Distant Mountain Silhouettes (Teal/Emerald haze)
+    final mountainPath = Path();
+    mountainPath.moveTo(0, h * 0.65);
+    mountainPath.lineTo(w * 0.22, h * 0.55);
+    mountainPath.lineTo(w * 0.52, h * 0.61);
+    mountainPath.lineTo(w * 0.78, h * 0.53);
+    mountainPath.lineTo(w, h * 0.59);
+    mountainPath.lineTo(w, h);
+    mountainPath.lineTo(0, h);
+    mountainPath.close();
+
+    final mountainPaint = Paint()
+      ..color = const Color(0xFF0D9488).withValues(alpha: 0.38);
+    canvas.drawPath(mountainPath, mountainPaint);
+
+    // 5. Rolling Green Hills (The ground slope where house rests)
+    final groundBaseY = h * 0.72;
+    final hillPath = Path();
+    hillPath.moveTo(0, groundBaseY - 26);
+    hillPath.quadraticBezierTo(
+      w * 0.46, groundBaseY - 42,
+      w, groundBaseY - 14,
+    );
+    hillPath.lineTo(w, h);
+    hillPath.lineTo(0, h);
+    hillPath.close();
+
+    final hillPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFF15803D), Color(0xFF166534), Color(0xFF14532D)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, groundBaseY - 45, w, h - groundBaseY + 45));
+    canvas.drawPath(hillPath, hillPaint);
+
+    // 6. Vibrant Grass Ridge Edge
+    final ridgePaint = Paint()
+      ..color = const Color(0xFF4ADE80)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 6.0;
+    canvas.drawPath(hillPath, ridgePaint);
+
+    // Subtle golden road line along hill
+    final roadLinePaint = Paint()
+      ..color = const Color(0xFFFDE047).withValues(alpha: 0.25)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10.0;
+    canvas.drawPath(hillPath, roadLinePaint);
+
+    // 7. Trees with Foliage & Little Red Apples (from screenshot)
+    _drawTree(canvas, w * 0.12, groundBaseY - 24);
+    _drawTree(canvas, w * 0.88, groundBaseY - 12);
+
+    // 8. Street Lamps with Warm Golden Glowing Lanterns
+    _drawStreetLamp(canvas, w * 0.05, groundBaseY - 28);
+    _drawStreetLamp(canvas, w * 0.95, groundBaseY - 10);
+  }
+
+  void _drawFluffyCloud(Canvas canvas, double cx, double cy, double r) {
+    final cloudPaint = Paint()..color = Colors.white.withValues(alpha: 0.80);
+    canvas.drawCircle(Offset(cx, cy), r, cloudPaint);
+    canvas.drawCircle(Offset(cx + r * 0.9, cy - r * 0.35), r * 1.25, cloudPaint);
+    canvas.drawCircle(Offset(cx + r * 1.9, cy - r * 0.15), r, cloudPaint);
+    canvas.drawCircle(Offset(cx + r * 2.6, cy + r * 0.1), r * 0.75, cloudPaint);
+  }
+
+  void _drawTree(Canvas canvas, double x, double y) {
+    // Tree Trunk
+    canvas.drawLine(
+      Offset(x, y),
+      Offset(x, y - 28),
+      Paint()..color = const Color(0xFF78350F)..strokeWidth = 5.0,
+    );
+    // Overlapping lush foliage balls
+    final leafPaint1 = Paint()..color = const Color(0xFF15803D);
+    final leafPaint2 = Paint()..color = const Color(0xFF22C55E);
+    canvas.drawCircle(Offset(x, y - 38), 16, leafPaint1);
+    canvas.drawCircle(Offset(x - 8, y - 32), 12, leafPaint2);
+    canvas.drawCircle(Offset(x + 8, y - 32), 12, leafPaint2);
+    canvas.drawCircle(Offset(x, y - 44), 11, leafPaint2);
+
+    // Little red apples on branches
+    final applePaint = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawCircle(Offset(x - 4, y - 36), 2.2, applePaint);
+    canvas.drawCircle(Offset(x + 5, y - 40), 2.2, applePaint);
+    canvas.drawCircle(Offset(x + 3, y - 30), 2.2, applePaint);
+  }
+
+  void _drawStreetLamp(Canvas canvas, double x, double y) {
+    // Post
+    canvas.drawLine(
+      Offset(x, y),
+      Offset(x, y - 46),
+      Paint()..color = const Color(0xFF475569)..strokeWidth = 3.2,
+    );
+    // Glowing warm lantern orb
+    canvas.drawCircle(
+      Offset(x, y - 46),
+      20,
+      Paint()
+        ..color = const Color(0xFFFFFC00).withValues(alpha: 0.32)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+    canvas.drawCircle(Offset(x, y - 46), 5.5, Paint()..color = const Color(0xFFFFFC00));
+  }
+
+  @override
+  bool shouldRepaint(covariant CitadelScenicLandscapePainter oldDelegate) =>
+      oldDelegate.isDamaged != isDamaged;
+}
+
 

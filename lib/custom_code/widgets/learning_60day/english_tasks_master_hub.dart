@@ -18,6 +18,7 @@ import 'pocket_arsenal_store_modal.dart';
 import 'pocket_time_machine_trainer_modal.dart';
 import 'day90_vip_master_card_dialog.dart';
 import 'pocket_daily_mission_page.dart';
+import 'pocket_score_level_engine.dart';
 import 'pocket_world_game_rules_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -652,6 +653,25 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                      ),
+                      child: Text(
+                        'PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(day)}',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 11.5,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    const Text('•', style: TextStyle(color: Colors.white30, fontSize: 11)),
+                    const SizedBox(width: 8),
                     Text(
                       '+${lesson.xpReward} XP',
                       style: GoogleFonts.outfit(
@@ -664,7 +684,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     const Text('•', style: TextStyle(color: Colors.white30, fontSize: 11)),
                     const SizedBox(width: 8),
                     Text(
-                      '${lesson.targetMinutes} Mins Practice',
+                      '${lesson.targetMinutes}m Practice',
                       style: GoogleFonts.inter(
                         color: const Color(0xFF38BDF8),
                         fontWeight: FontWeight.w600,
@@ -1212,7 +1232,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 _buildHudCapsule(
                   icon: Icons.monetization_on_rounded,
                   color: const Color(0xFFFFD700),
-                  label: 'Pocket Score: 🪙 $_unifiedPocketScore PTS',
+                  label: PocketScoreLevelEngine.getProgressLabel(_unifiedPocketScore),
                 ),
 
                 const Spacer(),
@@ -1402,7 +1422,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   Text(item.houseEmoji, style: const TextStyle(fontSize: 12)),
                   const SizedBox(width: 4),
                   Text(
-                    item.title,
+                    isRule
+                        ? item.title
+                        : '${item.title} (PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)})',
                     style: GoogleFonts.outfit(
                       color: isCurrentTarget
                           ? item.themeColor
@@ -1498,6 +1520,33 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    margin: const EdgeInsets.only(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                    ),
+                    child: Row(
+                      children: [
+                        const Text('🪙', style: TextStyle(fontSize: 15)),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(
+                            isUnlocked
+                                ? 'Pocket Score Target: PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)} (Achieved ✓)'
+                                : 'Pocket Score Target: PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)} (${math.max(0, PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay) - _unifiedPocketScore)} PS needed)',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   Text('🏡 House Stage: ${item.houseStage}', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 4),
                   Text('🛡️ Defense Unlock: ${item.defenseSummary}', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5)),
@@ -1851,7 +1900,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         },
         child: SizedBox(
           width: nodeSize,
-          height: nodeSize + (isCompleted || isWaitingForMidnight ? 22 : 0),
+          height: nodeSize + (isWaitingForMidnight ? 24 : 20),
           child: Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,
@@ -2005,6 +2054,51 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                         ))))),
                 ),
               ),
+
+              // 🪙 Pocket Score (PS) Badge Under Each Level Node
+              if (!isWaitingForMidnight)
+                Positioned(
+                  top: nodeSize - 2,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                    decoration: BoxDecoration(
+                      color: isCurrent
+                          ? const Color(0xFFFFFC00)
+                          : (isCompleted
+                              ? const Color(0xFF0F172A)
+                              : const Color(0xFF1E293B)),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: isCurrent
+                            ? Colors.black26
+                            : (isCompleted
+                                ? const Color(0xFF10B981)
+                                : Colors.white24),
+                        width: 0.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      'PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(day)}',
+                      style: GoogleFonts.outfit(
+                        color: isCurrent
+                            ? Colors.black
+                            : (isCompleted
+                                ? const Color(0xFF34D399)
+                                : const Color(0xFFFFD700)),
+                        fontWeight: FontWeight.w900,
+                        fontSize: 8,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                ),
 
               // ⏳ Live Midnight Countdown Pill under waiting node
               if (isWaitingForMidnight)

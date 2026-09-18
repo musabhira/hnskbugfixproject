@@ -17,8 +17,8 @@ class PocketWorldMasterRules {
         'No ringing doorbell required. Direct raid warfare in Pocket Battle against rival houses (+1 to +3 levels higher for combat growth).',
     '4. Pocket Robo Fallback 🤖':
         'If no active peer exists in the player\'s level bracket, Pocket Robo steps in automatically so attacks and rewards are always available.',
-    '5. 48-Hour Presidential Police Protection':
-        'When a house is breached, it immediately receives 48 hours of immunity with stationed police guards so the homeowner can recover and rebuild.',
+    '5. 26-Hour Presidential Police Protection':
+        'When a house is breached, it immediately receives 26 hours of immunity with stationed police guards so the homeowner can recover and rebuild.',
     '6. President Call & Anti-Cheat Decrees':
         'Offensive or invalid user questions can be reported via President Call, leading to inspection, warning, suspension, or house condemnation.',
     '7. Activity-Powered Reinforcements (FDC)':

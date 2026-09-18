@@ -22,6 +22,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_time_machine_trainer_modal.dart';
+import 'pocket_score_level_engine.dart';
 
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
@@ -5421,13 +5422,34 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ],
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  'Stage ${widget.day}/90 • Reward: +${100 + (widget.day - 1) * 50} XP',
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFF6EE7B7),
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(5),
+                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                      ),
+                      child: Text(
+                        'PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(widget.day)}',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Stage ${widget.day}/90 • Pass: 100 PTS',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF6EE7B7),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -5443,10 +5465,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('⚡', style: TextStyle(fontSize: 13)),
+                const Text('🪙', style: TextStyle(fontSize: 13)),
                 const SizedBox(width: 4),
                 Text(
-                  '+${100 + (widget.day - 1) * 50} XP',
+                  '+200 PS',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontSize: 12,
@@ -5799,7 +5821,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     Row(
                       children: [
                         Text(
-                          'Day ${widget.day} Learning Score',
+                          'Day ${widget.day} Mission Score',
                           style: GoogleFonts.outfit(
                             color: Colors.white,
                             fontSize: 14,
@@ -5830,8 +5852,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     const SizedBox(height: 3),
                     Text(
                       passed
-                          ? 'Passed ($points/200 PTS)! Claim rewards below to unlock Day ${widget.day + 1}!'
-                          : 'Earn at least 100 points to pass and unlock Day ${widget.day + 1} (${100 - points} pts needed).',
+                          ? 'Passed ($points/200 PTS)! Level ${widget.day} Target: PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(widget.day)}.'
+                          : 'Earn at least 100 points to pass and unlock Day ${widget.day + 1}. Level ${widget.day} requires PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(widget.day)}.',
                       style: GoogleFonts.inter(
                         color: Colors.white60,
                         fontSize: 11,

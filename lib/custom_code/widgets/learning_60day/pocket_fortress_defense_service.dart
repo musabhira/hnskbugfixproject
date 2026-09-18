@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '../avatar/avatar_game_perk.dart';
 import 'pocket_world_street_page.dart';
+import 'pocket_score_level_engine.dart';
 
 /// 🎩 President of Pocket World's Official Decree & Anti-Cheat Verdict
 class PresidentVerdict {
@@ -438,7 +439,7 @@ class HouseDefenseStatus {
 
 /// 🛡️ Central Pocket Fortress & Defense Management Service
 class PocketFortressDefenseService {
-  static const int kRaidBreachLootCoins = 45; // ⚔️ Breaching citadel loots exactly 45 coins (Audio Directive)
+  static const int kRaidBreachLootCoins = 15; // ⚔️ Breaching citadel loots 10-15 PS points (Audio Directive: 15 PS)
   static const String _trapsKey = 'user_custom_defense_traps_v2';
   static const String _activeTrapsKey = 'user_house_active_shield_traps_v2';
   static const String _hpKey = 'user_house_hp';
@@ -747,6 +748,39 @@ class PocketFortressDefenseService {
       ));
     }
     return bots;
+  }
+
+  /// 🤖 Autonomous Robot Defender Score Management & Daily Auto-Recharge (Audio Directive)
+  /// "റോബോട്ട്സിനെ അറ്റാക്ക് ചെയ്യാം. അവരുടെ പോക്കറ്റ് സ്കോർ കമ്മി ആവും.
+  /// റോബോട്ടുകൾ ഓരോ ദിവസം കൂടുമ്പോഴും അപ്ഡേറ്റ് ആയിക്കൊണ്ടേ ഇരിക്കും. അവര് പിന്നെയും റെഡിയാക്കിയിട്ട് തിരിച്ചു വരും."
+  static Future<int> getRobotScore(String robotId, int defaultStage) async {
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'robot_score_$robotId';
+    final lastRechargeKey = 'robot_recharge_date_$robotId';
+
+    final now = DateTime.now();
+    final todayStr = '${now.year}-${now.month}-${now.day}';
+    final lastRecharge = prefs.getString(lastRechargeKey);
+
+    // Default baseline score for robot at its stage
+    final baseScore = PocketScoreLevelEngine.getRequiredScoreForLevel(defaultStage) + (defaultStage * 20);
+
+    // If day changed, robot automatically recharges / restores its score and strength!
+    if (lastRecharge != todayStr) {
+      await prefs.setString(lastRechargeKey, todayStr);
+      await prefs.setInt(key, baseScore);
+      return baseScore;
+    }
+
+    return prefs.getInt(key) ?? baseScore;
+  }
+
+  static Future<int> deductRobotScore(String robotId, int stage, int damagePoints) async {
+    final prefs = await SharedPreferences.getInstance();
+    final currentScore = await getRobotScore(robotId, stage);
+    final newScore = math.max(0, currentScore - damagePoints);
+    await prefs.setInt('robot_score_$robotId', newScore);
+    return newScore;
   }
 
   /// 🚨 Inactivity / Consistency Check (Daily Focus Protection)
@@ -1579,15 +1613,59 @@ class PocketFortressDefenseService {
   }
 
   /// ⏳ Target Attack Cooldown / Peace Treaty (Audio Directive):
-  /// "Oraale attack cheythu kazhinjal pinne aa userine thanne pinne attack cheyyaan pattilla."
+  /// - 24h Peace Treaty after successful raid
+  /// - 6h Cooldown after failed raid attempt (User Audio Directive: "തെറ്റി കഴിഞ്ഞാൽ ഒരു ചാൻസ് കൂടി കൊടുക്കാം. വീണ്ടും തെറ്റിയാൽ 5-6 മണിക്കൂർ കഴിഞ്ഞിട്ടേ പിന്നെ അറ്റാക്ക് ചെയ്യാൻ പറ്റൂ")
   static Future<bool> isTargetInCooldown(String targetId) async {
     final prefs = await SharedPreferences.getInstance();
+
+    // Check failed raid 6-hour cooldown
+    final failedExpiry = prefs.getInt('failed_attack_cooldown_$targetId');
+    if (failedExpiry != null) {
+      if (DateTime.now().millisecondsSinceEpoch < failedExpiry) {
+        return true;
+      }
+    }
+
+    // Check peace treaty after successful raid
     final timeStr = prefs.getString('$_targetCooldownKey$targetId');
     if (timeStr == null) return false;
     final last = DateTime.tryParse(timeStr);
     if (last == null) return false;
     final diff = DateTime.now().difference(last);
     return diff.inHours < 24; // 24h peace treaty
+  }
+
+  static Future<int> getCooldownMinutesRemaining(String targetId) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // Check failed raid 6h cooldown
+    final failedExpiry = prefs.getInt('failed_attack_cooldown_$targetId');
+    if (failedExpiry != null) {
+      final diffMs = failedExpiry - DateTime.now().millisecondsSinceEpoch;
+      if (diffMs > 0) {
+        return (diffMs / (1000 * 60)).ceil();
+      }
+    }
+
+    // Check 24h peace treaty
+    final timeStr = prefs.getString('$_targetCooldownKey$targetId');
+    if (timeStr != null) {
+      final last = DateTime.tryParse(timeStr);
+      if (last != null) {
+        final elapsed = DateTime.now().difference(last);
+        final remaining = const Duration(hours: 24) - elapsed;
+        if (!remaining.isNegative) {
+          return remaining.inMinutes;
+        }
+      }
+    }
+    return 0;
+  }
+
+  static Future<void> recordFailedAttackCooldown(String targetId, {int hours = 6}) async {
+    final prefs = await SharedPreferences.getInstance();
+    final expiry = DateTime.now().add(Duration(hours: hours)).millisecondsSinceEpoch;
+    await prefs.setInt('failed_attack_cooldown_$targetId', expiry);
   }
 
   static Future<void> recordTargetAttacked(String targetId) async {
@@ -1750,38 +1828,91 @@ class PocketFortressDefenseService {
       };
     }
 
-    // Breached: Loot exactly 45 coins
+    // Breached: Loot exactly 45 coins (or more depending on stage)
     const lootedCoins = kRaidBreachLootCoins;
     final newHp = math.max(0, currentHp - damageHp);
     final remainingCoins = math.max(0, currentCoins - lootedCoins);
 
+    bool isLevelDowngraded = false;
+    int defenderPreviousLevel = 1;
+    int defenderNewLevel = 1;
+
     if (isSelfDefender) {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      defenderPreviousLevel = prefs.getInt('learning_day_$myId') ?? 1;
       await prefs.setInt(_hpKey, newHp);
       await prefs.setBool(_isDamagedKey, true);
       await setUnifiedScore(remainingCoins);
+
+      // Check if defender score drops below level threshold
+      defenderNewLevel = PocketScoreLevelEngine.getLevelFromScore(remainingCoins);
+      if (defenderNewLevel < defenderPreviousLevel) {
+        isLevelDowngraded = true;
+        await prefs.setInt('learning_day_$myId', defenderNewLevel);
+        await prefs.setInt('pocket_learning_user_stage_$myId', defenderNewLevel);
+        try {
+          await SupaFlow.client.from('profile').update({
+            'learning_day': defenderNewLevel,
+            'learning_stage': defenderNewLevel,
+            'learning_points': remainingCoins,
+            'xp': remainingCoins,
+          }).eq('user_id', myId!);
+          await SupaFlow.client.from('pocket_homes').update({
+            'stage': defenderNewLevel,
+            'points': remainingCoins,
+          }).eq('user_id', myId);
+        } catch (_) {}
+      }
     } else {
-      // Attacking another user's house - update defender in Supabase pocket_homes!
+      // Attacking another user's house - update defender in Supabase pocket_homes & profile!
       if (defenderHouseId.isNotEmpty &&
           !defenderHouseId.startsWith('pocket_robo') &&
           !defenderHouseId.startsWith('rival_citadel')) {
         try {
           final target = await SupaFlow.client
               .from('pocket_homes')
-              .select('hp')
+              .select('hp, points, stage')
               .eq('user_id', defenderHouseId)
               .maybeSingle();
           final targetHp = (target?['hp'] as num?)?.toInt() ?? 100;
+          final targetPoints = (target?['points'] as num?)?.toInt() ?? 0;
+          defenderPreviousLevel = (target?['stage'] as num?)?.toInt() ?? 1;
+
           final updatedHp = math.max(0, targetHp - damageHp);
+          final updatedPoints = math.max(0, targetPoints - lootedCoins);
+
+          defenderNewLevel = PocketScoreLevelEngine.getLevelFromScore(updatedPoints);
+          if (defenderNewLevel < defenderPreviousLevel) {
+            isLevelDowngraded = true;
+          }
 
           await SupaFlow.client.from('pocket_homes').update({
             'hp': updatedHp,
+            'points': updatedPoints,
+            'stage': isLevelDowngraded ? defenderNewLevel : defenderPreviousLevel,
             'is_damaged': true,
             'last_attacked_at': DateTime.now().toIso8601String(),
             'last_attacker_name': attackerName,
             'updated_at': DateTime.now().toIso8601String(),
           }).eq('user_id', defenderHouseId);
+
+          await SupaFlow.client.from('profile').update({
+            'learning_points': updatedPoints,
+            'xp': updatedPoints,
+            if (isLevelDowngraded) 'learning_day': defenderNewLevel,
+            if (isLevelDowngraded) 'learning_stage': defenderNewLevel,
+          }).eq('user_id', defenderHouseId);
         } catch (e) {
           debugPrint('Error syncing defender damage to Supabase: $e');
+        }
+      } else if (defenderHouseId.startsWith('pocket_robo') || defenderHouseId.startsWith('robot_')) {
+        // Robot Defender: Deduct robot score & check downgrade
+        final robotBaseStage = int.tryParse(defenderHouseId.replaceAll(RegExp(r'[^0-9]'), '')) ?? 5;
+        defenderPreviousLevel = robotBaseStage;
+        final newRobotScore = await deductRobotScore(defenderHouseId, robotBaseStage, lootedCoins);
+        defenderNewLevel = PocketScoreLevelEngine.getLevelFromScore(newRobotScore);
+        if (defenderNewLevel < defenderPreviousLevel) {
+          isLevelDowngraded = true;
         }
       }
     }
@@ -1811,19 +1942,22 @@ class PocketFortressDefenseService {
       'isRubbled': newHp <= 0,
       'underPresidentialProtection': true,
       'protectionHours': kPresidentialProtectionHours,
+      'isLevelDowngraded': isLevelDowngraded,
+      'previousLevel': defenderPreviousLevel,
+      'newLevel': defenderNewLevel,
     };
   }
 
   // ============================================================
-  // 👮‍♂️ 48-HOUR PRESIDENTIAL POLICE PROTECTION SYSTEM (Audio 16)
+  // 👮‍♂️ 26-HOUR PRESIDENTIAL POLICE PROTECTION SYSTEM (Audio Directive)
   // "പിന്നെ ഒരു രണ്ടു ദിവസം സമയം കൊടുക്കണം. അതിനുള്ളിൽ ഇവര് റിക്കവർ ചെയ്യാൻ വേണ്ടിയിട്ട്
   // 'പ്രസിഡൻഷ്യൽ പ്രൊട്ടക്ഷൻ' കൊടുക്കും. കാവൽക്കാർ പ്രസിഡൻസിന്റെ പോലീസ് കാവലുകള്
-  // വന്നിട്ട് നിൽക്കും എന്നിട്ട് പ്രൊട്ടക്ട് ചെയ്യും. രണ്ടു ദിവസം പ്രൊട്ടക്ട് ചെയ്യും."
+  // വന്നിട്ട് നിൽക്കും എന്നിട്ട് പ്രൊട്ടക്ട് ചെയ്യും. 26 മണിക്കൂർ പ്രൊട്ടക്ട് ചെയ്യും."
   // ============================================================
   static const String _presidentialProtectionPrefix = 'pocket_pres_protection_';
-  static const int kPresidentialProtectionHours = 48;
+  static const int kPresidentialProtectionHours = 26;
 
-  /// Place a breached house under 48-hour Presidential Police Protection
+  /// Place a breached house under 26-hour Presidential Police Protection
   static Future<void> placeUnderPresidentialProtection(
     String houseId, {
     int hours = kPresidentialProtectionHours,
@@ -2021,6 +2155,55 @@ class PocketFortressDefenseService {
     return result;
   }
 
+  /// 🛡️ Load sequential defense gauntlet questions for raiding a citadel of a given stage/level.
+  /// Audio Directive:
+  /// "30-ാമത്തെ ലെവലിൽ ഉള്ള ഒരു വീടിനെ അറ്റാക്ക് ചെയ്യുമ്പോൾ 3 ഡിഫെൻസ് ഗെയിമുകൾ ഉണ്ടാവും.
+  /// ഒന്നാമത്തെ ഗെയിം തോൽപ്പിക്കണം, രണ്ടാമത്തെ ഷീൽഡ് തോൽപ്പിക്കണം, മൂന്നാമത്തെ ഷീൽഡ് തോൽപ്പിച്ചാൽ മാത്രമേ അറ്റാക്ക് ചെയ്യാൻ പറ്റൂ."
+  static Future<List<HouseShieldQuestion>> loadGauntletQuestionsForStage(int stage, {bool isNeighbor = true}) async {
+    final gatesCount = PocketScoreLevelEngine.getGatesCountForLevel(stage);
+    final trapTypes = [
+      'vocab_gate',        // Gate 1: Levels 1-10 (Vocab MCQ)
+      'collocation_ram',   // Gate 2: Levels 11-20 (Collocations & Words)
+      'syntax_wall',       // Gate 3: Levels 21-30 (Sentence Jigsaw & Inverted Syntax)
+      'grammar_sentry',    // Gate 4: Levels 31-40 (Grammar Sentry & Spot Error)
+      'whisper_phantom',   // Gate 5: Levels 41-50 (Audio Whisper & Listening)
+      'idiom_maze',        // Gate 6: Levels 51-60 (Idiom & Slang Labyrinth)
+      'tense_fortress',    // Gate 7: Levels 61-70 (Tense & Conditional Fortress)
+      'phonetic_thunder',  // Gate 8: Levels 71-80 (Phonetics & Speed Sentry)
+      'riddle_sphinx',     // Gate 9: Levels 81-90 (Grandmaster Riddle & Rhetoric)
+    ];
+
+    final List<HouseShieldQuestion> gauntletQuestions = [];
+    final random = math.Random();
+
+    for (int g = 0; g < gatesCount; g++) {
+      final trapType = trapTypes[g % trapTypes.length];
+      final curated = getCuratedQuestionsForTrap(trapType);
+      final gateInfo = PocketScoreLevelEngine.getGateInfo(g + 1);
+
+      if (curated.isNotEmpty) {
+        final base = curated[random.nextInt(curated.length)];
+        gauntletQuestions.add(
+          HouseShieldQuestion(
+            id: 'gate_${g + 1}_${base.id}',
+            question: '[GATE ${g + 1}: ${gateInfo['title']}]\n${base.question}',
+            options: base.options,
+            correctIndex: base.correctIndex,
+            explanation: base.explanation,
+            category: base.category,
+            trapType: trapType,
+            gameFormat: gateInfo['formatId'] ?? 'mcq',
+          ),
+        );
+      }
+    }
+
+    if (gauntletQuestions.isEmpty) {
+      return loadShieldQuestions(stage, isNeighbor: isNeighbor);
+    }
+    return gauntletQuestions;
+  }
+
   // ============================================================
   // 🚩 FAIR PLAY & ANTI-CHEAT REPORTING & ADMIN BAN SYSTEM
   // ============================================================
@@ -2061,6 +2244,21 @@ class PocketFortressDefenseService {
     final rawList = prefs.getStringList(_reportsKey) ?? [];
     rawList.insert(0, jsonEncode(report.toJson()));
     await prefs.setStringList(_reportsKey, rawList);
+
+    // Sync to Supabase reports table for Admin Panel
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(houseId);
+    try {
+      await SupaFlow.client.from('reports').insert({
+        'reporter_id': reporterId == 'attacker_me' ? (SupaFlow.client.auth.currentUser?.id ?? 'anonymous') : reporterId,
+        'report_type': 'fake_citadel_defense',
+        'content_type': 'defense_question',
+        'reported_user_id': isUuid ? houseId : null,
+        'description': 'Target: $houseOwnerName ($houseId) | Violation: $reason | Q: $questionText | Key: ${correctIndex < options.length ? options[correctIndex] : correctIndex} | $details',
+        'status': 'pending',
+      });
+    } catch (e) {
+      debugPrint('Optional Supabase report sync error: $e');
+    }
 
     // Auto-ban if house receives 3+ pending reports
     final allReports = await getDefenseReports();
@@ -2278,6 +2476,133 @@ class PocketFortressDefenseService {
     }
   }
 
+  /// ⚖️ Admin / Presidential Court Sanction:
+  /// Deduct Pocket Score or reset score to 0.
+  /// Automatically recalculates new level via [PocketScoreLevelEngine.getLevelFromScore],
+  /// demotes house stage and points in Supabase & local prefs, and records Presidential Judgment.
+  static Future<Map<String, dynamic>> executePresidentialSanction({
+    required String reportId,
+    required String houseId,
+    int? scoreDeduction,
+    bool resetToZero = false,
+    String? verdictNote,
+  }) async {
+    final prefs = await SharedPreferences.getInstance();
+
+    // 1. Determine current score & level
+    int currentScore = 0;
+    int currentLevel = 1;
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(houseId);
+
+    if (houseId == 'me') {
+      currentScore = await getUnifiedScore();
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      currentLevel = prefs.getInt('learning_last_completed_day') ??
+          (myId != null ? prefs.getInt('learning_day_$myId') : null) ??
+          1;
+    } else if (isUuid) {
+      try {
+        final profileRes = await SupaFlow.client
+            .from('profile')
+            .select('pocket_score, learning_day, xp')
+            .eq('user_id', houseId)
+            .maybeSingle();
+        if (profileRes != null) {
+          currentScore = (profileRes['pocket_score'] as num?)?.toInt() ??
+              (profileRes['xp'] as num?)?.toInt() ??
+              0;
+          currentLevel = (profileRes['learning_day'] as num?)?.toInt() ?? 1;
+        }
+      } catch (e) {
+        debugPrint('Error fetching player score for sanction: $e');
+      }
+    } else if (houseId.startsWith('robot_')) {
+      currentScore = await getRobotScore(houseId, currentLevel);
+    }
+
+    // 2. Compute new score & level
+    int newScore = 0;
+    if (!resetToZero && scoreDeduction != null) {
+      newScore = math.max(0, currentScore - scoreDeduction);
+    }
+    final newLevel = PocketScoreLevelEngine.getLevelFromScore(newScore);
+    final bool wasDemoted = newLevel < currentLevel;
+
+    // 3. Persist new score and level
+    if (houseId == 'me') {
+      await setUnifiedScore(newScore);
+      await prefs.setInt('learning_last_completed_day', newLevel);
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null) {
+        await prefs.setInt('learning_day_$myId', newLevel);
+        await prefs.setInt('pocket_learning_user_stage_$myId', newLevel);
+      }
+      await issuePresidentNotice(
+        'me',
+        reason: verdictNote ??
+            '⚖️ Presidential Court Decree: Penalized $scoreDeduction score for defense violation. Demoted to Level $newLevel.',
+      );
+    } else if (isUuid) {
+      try {
+        await SupaFlow.client.from('profile').update({
+          'pocket_score': newScore,
+          'learning_points': newScore,
+          'xp': newScore,
+          'learning_day': newLevel,
+          'learning_stage': newLevel,
+        }).eq('user_id', houseId);
+
+        await SupaFlow.client.from('pocket_homes').update({
+          'points': newScore,
+          'day': newLevel,
+          'hp': 100,
+          'updated_at': DateTime.now().toIso8601String(),
+        }).eq('user_id', houseId);
+      } catch (e) {
+        debugPrint('Error updating Supabase on sanction: $e');
+      }
+      await issuePresidentNotice(
+        houseId,
+        reason: verdictNote ??
+            '⚖️ Presidential Court Decree: Defense violation penalized. Pocket Score set to $newScore (Level $newLevel).',
+      );
+    } else if (houseId.startsWith('robot_')) {
+      await prefs.setInt('robot_score_$houseId', newScore);
+    }
+
+    // 4. Update defense report status
+    final reports = await getDefenseReports();
+    final updated = reports.map((r) {
+      if (r.reportId == reportId) {
+        return DefenseQuestionReport(
+          reportId: r.reportId,
+          houseId: r.houseId,
+          houseOwnerName: r.houseOwnerName,
+          questionId: r.questionId,
+          questionText: r.questionText,
+          options: r.options,
+          correctIndex: r.correctIndex,
+          reporterId: r.reporterId,
+          reporterName: r.reporterName,
+          reason: r.reason,
+          details: '${r.details} | Verdict: ${resetToZero ? "Wiped to 0 (Level 1 Demotion)" : "Deducted -$scoreDeduction PTS (Level $newLevel)"}',
+          reportedAt: r.reportedAt,
+          status: 'penalized',
+        );
+      }
+      return r;
+    }).toList();
+    await prefs.setStringList(_reportsKey, updated.map((r) => jsonEncode(r.toJson())).toList());
+
+    return {
+      'previousScore': currentScore,
+      'newScore': newScore,
+      'previousLevel': currentLevel,
+      'newLevel': newLevel,
+      'wasDemoted': wasDemoted,
+    };
+  }
+
   /// ⛓️ Sentence House to Jail (Audio directive: "ജയിൽ ആണെങ്കിൽ ആ വീടിനെ മൊത്തം ജയിൽ പോലെ ഒരു സെറ്റപ്പ് ഡെവലപ്പ് ചെയ്യണം... ഇത്ര ദിവസം ജയിലിൽ കിടക്കേണ്ടി വരും")
   static Future<void> sentenceToJail(String houseId, {int days = 3, required String reason}) async {
     final prefs = await SharedPreferences.getInstance();
@@ -2487,15 +2812,17 @@ class PocketFortressDefenseService {
     final newPoints = currentPoints + pointsToAdd;
     await setUnifiedScore(newPoints);
 
-    bool didLevelUp = false;
-    int currentDay = prefs.getInt('learning_last_completed_day') ?? 1;
-    int newDay = currentDay;
-
-    // Check if points threshold for level up is reached (100 points per level)
-    if (pointsToAdd >= 100 || (newPoints ~/ 100 > currentPoints ~/ 100)) {
-      didLevelUp = true;
-      newDay = math.min(90, currentDay + math.max(1, pointsToAdd ~/ 100));
+    final oldLevel = PocketScoreLevelEngine.getLevelFromScore(currentPoints);
+    final calculatedLevel = PocketScoreLevelEngine.getLevelFromScore(newPoints);
+    final didLevelUp = calculatedLevel > oldLevel;
+    final newDay = calculatedLevel;
+    if (didLevelUp) {
       await prefs.setInt('learning_last_completed_day', newDay);
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null) {
+        await prefs.setInt('learning_day_$myId', newDay);
+        await prefs.setInt('pocket_learning_user_stage_$myId', newDay);
+      }
     }
 
     try {

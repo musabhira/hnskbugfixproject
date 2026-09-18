@@ -15,6 +15,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -35,6 +36,10 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   int verifiedUsers = 0;
   int pendingCourseAccess = 0;
   int totalReports = 0;
+  int pendingDefenseReports = 0;
+  int _selectedReportsSubTab = 0; // 0: Standard, 1: 🏛️ Presidential Court
+  List<DefenseQuestionReport> _defenseReportsList = [];
+  bool _isLoadingDefenseReports = false;
   bool isLoadingStats = true;
 
   // Filter and Search
@@ -433,22 +438,34 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   bool isLoadingReports = false;
 
   Future<void> _loadReports() async {
-    setState(() => isLoadingReports = true);
+    setState(() {
+      isLoadingReports = true;
+      _isLoadingDefenseReports = true;
+    });
     try {
       final res = await supabase
           .from('reports')
           .select('*')
           .order('created_at', ascending: false);
+      final dReports = await PocketFortressDefenseService.getDefenseReports();
       if (mounted) {
         setState(() {
           reportsList = List<Map<String, dynamic>>.from(res);
+          _defenseReportsList = dReports;
+          pendingDefenseReports = dReports.where((r) => r.status == 'pending').length;
           isLoadingReports = false;
+          _isLoadingDefenseReports = false;
         });
       }
       _fetchCounts();
     } catch (e) {
       debugPrint('Error loading reports: $e');
-      if (mounted) setState(() => isLoadingReports = false);
+      if (mounted) {
+        setState(() {
+          isLoadingReports = false;
+          _isLoadingDefenseReports = false;
+        });
+      }
     }
   }
 
@@ -1542,6 +1559,75 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   }
 
   Widget _buildReportsTab() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          color: const Color(0xFF0F172A),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedReportsSubTab = 0),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _selectedReportsSubTab == 0 ? const Color(0xFFFFFC00) : Colors.white10,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'General Reports (${reportsList.length})',
+                        style: GoogleFonts.outfit(
+                          color: _selectedReportsSubTab == 0 ? Colors.black : Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _selectedReportsSubTab = 1),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      color: _selectedReportsSubTab == 1 ? const Color(0xFFDC2626) : Colors.white10,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: pendingDefenseReports > 0 ? Colors.redAccent : Colors.transparent,
+                        width: 1,
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        '🏛️ Presidential Court ($pendingDefenseReports)',
+                        style: GoogleFonts.outfit(
+                          color: _selectedReportsSubTab == 1 ? Colors.white : Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: _selectedReportsSubTab == 0
+              ? _buildGeneralReportsList()
+              : _buildPresidentialCourtSubTab(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGeneralReportsList() {
     return RefreshIndicator(
       onRefresh: _loadReports,
       child: isLoadingReports
@@ -1566,7 +1652,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     final report = reportsList[index];
                     final status = report['status'] ?? 'pending';
                     final type = report['report_type'] ?? 'other';
-                    final date = DateTime.parse(report['created_at']);
+                    final date = DateTime.tryParse(report['created_at']?.toString() ?? '') ?? DateTime.now();
 
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
@@ -1645,6 +1731,371 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     );
                   },
                 ),
+    );
+  }
+
+  Widget _buildPresidentialCourtSubTab() {
+    return RefreshIndicator(
+      onRefresh: _loadReports,
+      child: _isLoadingDefenseReports
+          ? const Center(child: CircularProgressIndicator())
+          : _defenseReportsList.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('⚖️', style: TextStyle(fontSize: 48)),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Presidential Supreme Court is in recess',
+                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'No defense trap violations reported by citadel raiders.',
+                        style: TextStyle(color: Colors.white54, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _defenseReportsList.length,
+                  itemBuilder: (context, index) {
+                    final report = _defenseReportsList[index];
+                    final isPending = report.status == 'pending';
+                    final isPenalized = report.status == 'penalized';
+                    final isBanned = report.status == 'banned';
+
+                    Color statusColor = Colors.orange;
+                    if (isPenalized) statusColor = Colors.redAccent;
+                    if (isBanned) statusColor = Colors.purpleAccent;
+                    if (report.status == 'dismissed') statusColor = Colors.grey;
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isPending ? Colors.redAccent.withValues(alpha: 0.6) : Colors.white12,
+                          width: isPending ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(14),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: statusColor.withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(color: statusColor),
+                                  ),
+                                  child: Text(
+                                    '${report.status.toUpperCase()} ⚖️',
+                                    style: TextStyle(color: statusColor, fontSize: 10.5, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  '${report.reportedAt.day}/${report.reportedAt.month} ${report.reportedAt.hour}:${report.reportedAt.minute.toString().padLeft(2, '0')}',
+                                  style: const TextStyle(color: Colors.white38, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Target Citadel: ${report.houseOwnerName}',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              'House ID: ${report.houseId} • Reported by: ${report.reporterName}',
+                              style: const TextStyle(color: Colors.white54, fontSize: 11),
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF0F172A),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: Colors.white12),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.shield_outlined, size: 14, color: Color(0xFF38BDF8)),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        'Violation: ${report.reason.toUpperCase()}',
+                                        style: const TextStyle(color: Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'Q: ${report.questionText}',
+                                    style: const TextStyle(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  ...List.generate(report.options.length, (optIdx) {
+                                    final isKey = optIdx == report.correctIndex;
+                                    return Padding(
+                                      padding: const EdgeInsets.only(bottom: 2),
+                                      child: Text(
+                                        '${String.fromCharCode(65 + optIdx)}. ${report.options[optIdx]} ${isKey ? "👈 (Marked Key)" : ""}',
+                                        style: TextStyle(
+                                          color: isKey ? const Color(0xFFF87171) : Colors.white60,
+                                          fontSize: 11,
+                                          fontWeight: isKey ? FontWeight.bold : FontWeight.normal,
+                                        ),
+                                      ),
+                                    );
+                                  }),
+                                ],
+                              ),
+                            ),
+                            if (report.details.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Text(
+                                'Note: ${report.details}',
+                                style: const TextStyle(color: Colors.white70, fontSize: 11.5, fontStyle: FontStyle.italic),
+                              ),
+                            ],
+                            if (isPending) ...[
+                              const SizedBox(height: 12),
+                              const Divider(color: Colors.white12, height: 1),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: [
+                                  ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFDC2626),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    icon: const Icon(Icons.gavel_rounded, size: 16),
+                                    label: const Text('Deduct Score 📉', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                    onPressed: () => _showSanctionScoreDialog(report),
+                                  ),
+                                  ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFF7F1D1D),
+                                      foregroundColor: Colors.white,
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    icon: const Icon(Icons.restart_alt_rounded, size: 16),
+                                    label: const Text('Wipe to Level 1 ⚡', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                    onPressed: () => _confirmResetToLevelOne(report),
+                                  ),
+                                  OutlinedButton(
+                                    style: OutlinedButton.styleFrom(
+                                      foregroundColor: Colors.white60,
+                                      side: const BorderSide(color: Colors.white24),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                    ),
+                                    onPressed: () async {
+                                      await PocketFortressDefenseService.dismissReport(report.reportId);
+                                      _loadReports();
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          const SnackBar(content: Text('Report dismissed.')),
+                                        );
+                                      }
+                                    },
+                                    child: const Text('Dismiss', style: TextStyle(fontSize: 12)),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+    );
+  }
+
+  void _showSanctionScoreDialog(DefenseQuestionReport report) {
+    int selectedDeduction = 200;
+    final textCtrl = TextEditingController(text: '200');
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDlgState) => AlertDialog(
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: Colors.redAccent),
+          ),
+          title: Row(
+            children: const [
+              Text('⚖️', style: TextStyle(fontSize: 22)),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Presidential Score Sanction',
+                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Defender: ${report.houseOwnerName}\nDeducting Pocket Score automatically recalibrates their level and demotes their citadel appearance.',
+                style: const TextStyle(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 14),
+              Wrap(
+                spacing: 8,
+                children: [100, 200, 500].map((val) {
+                  final isSel = selectedDeduction == val;
+                  return ChoiceChip(
+                    label: Text('-$val PTS'),
+                    selected: isSel,
+                    selectedColor: const Color(0xFFDC2626),
+                    backgroundColor: Colors.white10,
+                    labelStyle: TextStyle(
+                      color: isSel ? Colors.white : Colors.white70,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                    onSelected: (selected) {
+                      if (selected) {
+                        setDlgState(() {
+                          selectedDeduction = val;
+                          textCtrl.text = val.toString();
+                        });
+                      }
+                    },
+                  );
+                }).toList(),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: textCtrl,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'Custom Score Deduction',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  filled: true,
+                  fillColor: const Color(0xFF1E293B),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+                onChanged: (val) {
+                  final parsed = int.tryParse(val);
+                  if (parsed != null) {
+                    setDlgState(() => selectedDeduction = parsed);
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626)),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final res = await PocketFortressDefenseService.executePresidentialSanction(
+                  reportId: report.reportId,
+                  houseId: report.houseId,
+                  scoreDeduction: selectedDeduction,
+                  verdictNote: 'Penalized -$selectedDeduction Pocket Score by Presidential Court.',
+                );
+                _loadReports();
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        '⚖️ Decreed! Demoted defender from Level ${res['previousLevel']} to Level ${res['newLevel']} (Score: ${res['newScore']}).',
+                      ),
+                      backgroundColor: const Color(0xFFDC2626),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Execute Sanction ⚖️', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmResetToLevelOne(DefenseQuestionReport report) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: Colors.redAccent),
+        ),
+        title: Row(
+          children: const [
+            Text('🚨', style: TextStyle(fontSize: 22)),
+            SizedBox(width: 8),
+            Text('Level 1 Demotion Decree', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        content: Text(
+          'Are you sure you want to reset ${report.houseOwnerName}\'s Pocket Score to 0 and completely demote their citadel to Level 1?\n\nThis wipes all defensive progression.',
+          style: const TextStyle(color: Colors.white70, fontSize: 12.5),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF7F1D1D)),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await PocketFortressDefenseService.executePresidentialSanction(
+                reportId: report.reportId,
+                houseId: report.houseId,
+                resetToZero: true,
+                verdictNote: 'Supreme Presidential Wipeout: Reset to 0 score and demoted to Level 1.',
+              );
+              _loadReports();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('⚡ Decreed! ${report.houseOwnerName} was wiped to 0 score and demoted to Level 1.'),
+                    backgroundColor: const Color(0xFF7F1D1D),
+                  ),
+                );
+              }
+            },
+            child: const Text('Wipe to Level 1 ⚡', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
     );
   }
 

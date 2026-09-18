@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:pocket_mates_app/custom_code/widgets/legal_policy_widget.dart';
@@ -112,7 +111,31 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
       );
 
       if (user != null && mounted) {
-        context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+        // Automatically initialize default profile record to guarantee instant profile hydration
+        try {
+          final emailPrefix = _emailController.text.trim().split('@').first;
+          final displayName = emailPrefix.isNotEmpty ? emailPrefix : 'Pocket Mate';
+          final cleanSlug = displayName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+          await SupaFlow.client.from('profile').upsert({
+            'user_id': user.uid,
+            'name': displayName,
+            'shop_name': displayName.toLowerCase().replaceAll(' ', '-'),
+            'slug': cleanSlug.isNotEmpty ? cleanSlug : 'mate${DateTime.now().millisecondsSinceEpoch % 10000}',
+            'learning_day': 1,
+            'learning_stage': 1,
+            'learning_points': 0,
+            'xp': 0,
+            'native_language': 'Malayalam',
+            'english_level': 'Beginner (A1-A2)',
+            'learning_goal': 'Daily Fluency & Speaking',
+          }, onConflict: 'user_id');
+        } catch (profileInitError) {
+          debugPrint('Profile initialization error (non-fatal): $profileInitError');
+        }
+
+        if (mounted) {
+          context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+        }
       }
     } on AuthException catch (e) {
       if (mounted) {
