@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -32,7 +33,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
 }
 
 class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
-    with TickerProviderStateMixin {
+    with TickerProviderStateMixin, WidgetsBindingObserver {
   int _raidStep = 0; // 0: Overview, 1: Defense Question, 2: Gate Breached (Attack button ready), 3: Victory, -1: Failed
   int _selectedOption = -1;
   bool _isStriking = false;
@@ -42,6 +43,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   int _currentQIdx = 0;
   Map<String, dynamic>? _breachResult;
   Map<String, dynamic>? _pointsResult;
+
+  // ⏱️ 25s Blitz Combat & Anti-Cheat System
+  Timer? _combatTimer;
+  int _secondsLeft = 25;
+  static const int kMaxCombatSeconds = 25;
+  bool _isAntiCheatTriggered = false;
+  bool _isTimeoutTriggered = false;
 
   bool _isTargetProtected = false;
   double _protectionHoursLeft = 0;
@@ -59,6 +67,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _defenderHp = widget.neighbor.hp;
     _isDefenderDamaged = widget.neighbor.isDamaged;
 
@@ -92,12 +101,65 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _combatTimer?.cancel();
     _pulseController.dispose();
     _shakeController.dispose();
     _beamController.dispose();
     _particleController.dispose();
     _coinController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Anti-Cheat: If user minimizes the app, switches to AI/Google Lens, or leaves screen during battle
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      if (_raidStep == 1 && mounted) {
+        _combatTimer?.cancel();
+        setState(() {
+          _isAntiCheatTriggered = true;
+          _raidStep = -1; // Raid Failed!
+        });
+      }
+    }
+  }
+
+  void _startCombatTimer() {
+    _combatTimer?.cancel();
+    setState(() {
+      _secondsLeft = kMaxCombatSeconds;
+      _isTimeoutTriggered = false;
+      _isAntiCheatTriggered = false;
+    });
+
+    _combatTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
+      }
+      if (_secondsLeft > 1) {
+        setState(() {
+          _secondsLeft--;
+        });
+        if (_secondsLeft <= 5) {
+          HapticFeedback.lightImpact(); // Audible ticking warning
+        }
+      } else {
+        timer.cancel();
+        _handleCombatTimeout();
+      }
+    });
+  }
+
+  void _handleCombatTimeout() {
+    if (!mounted) return;
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _secondsLeft = 0;
+      _isTimeoutTriggered = true;
+      _raidStep = -1; // Time expired -> Defeat!
+    });
   }
 
   Future<void> _loadBattleState() async {
@@ -632,6 +694,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                         _raidStep = 1; // Move to defense question
                                         _selectedOption = -1;
                                       });
+                                      _startCombatTimer();
                                     },
                               icon: const Icon(Icons.flash_on_rounded, size: 20),
                               label: Text(
@@ -658,7 +721,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             decoration: BoxDecoration(
                               color: const Color(0xFF1E293B),
                               borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.6)),
+                              border: Border.all(
+                                color: _secondsLeft <= 5
+                                    ? Colors.redAccent
+                                    : const Color(0xFF38BDF8).withValues(alpha: 0.6),
+                              ),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -681,6 +748,42 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       ),
                                     ),
                                     const Spacer(),
+                                    // ⏱️ 25s Blitz Countdown Combat Timer Pill
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                      decoration: BoxDecoration(
+                                        color: _secondsLeft <= 5
+                                            ? Colors.red.withValues(alpha: 0.3)
+                                            : const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(
+                                          color: _secondsLeft <= 5
+                                              ? Colors.redAccent
+                                              : const Color(0xFFFFD700),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.timer_rounded,
+                                            size: 13,
+                                            color: _secondsLeft <= 5 ? Colors.redAccent : const Color(0xFFFFD700),
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${_secondsLeft}s',
+                                            style: GoogleFonts.outfit(
+                                              color: _secondsLeft <= 5 ? Colors.redAccent : const Color(0xFFFFD700),
+                                              fontSize: 11,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
                                     Text(
                                       'Question ${_currentQIdx + 1} of ${_defenseQuestions.length}',
                                       style: const TextStyle(color: Colors.white54, fontSize: 10),
@@ -774,6 +877,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   ? null
                                   : () {
                                       HapticFeedback.mediumImpact();
+                                      _combatTimer?.cancel();
                                       if (_selectedOption == currentQ.correctIndex) {
                                         // Answer is correct -> Move to Step 2 to give the "ATTACK" button!
                                         setState(() => _raidStep = 2);
@@ -1048,7 +1152,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     const SizedBox(width: 8),
                                     Expanded(
                                       child: Text(
-                                        'TRAP TRIGGERED! ATTACK REPELLED!',
+                                        _isAntiCheatTriggered
+                                            ? '🚨 ANTI-CHEAT TRIGGERED! RAID FAILED!'
+                                            : (_isTimeoutTriggered
+                                                ? '⌛ TIME EXPIRED! RAID DEFEATED!'
+                                                : 'TRAP TRIGGERED! ATTACK REPELLED!'),
                                         style: GoogleFonts.outfit(
                                           color: const Color(0xFFF87171),
                                           fontWeight: FontWeight.bold,
@@ -1059,9 +1167,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   ],
                                 ),
                                 const SizedBox(height: 6),
-                                const Text(
-                                  'You failed to crack the defender\'s English shield. Their house defense holds firm!',
-                                  style: TextStyle(color: Colors.white70, fontSize: 11.5),
+                                Text(
+                                  _isAntiCheatTriggered
+                                      ? 'You switched apps or minimized during combat! AI assistance / Cheating is strictly prohibited during Citadel Raids.'
+                                      : (_isTimeoutTriggered
+                                          ? 'The 25-second rapid combat blitz timer ran out! The defender\'s automated shock traps were triggered.'
+                                          : 'You failed to crack the defender\'s English shield. Their house defense holds firm!'),
+                                  style: const TextStyle(color: Colors.white70, fontSize: 11.5),
                                 ),
                                 if (currentQ != null && currentQ.explanation.isNotEmpty) ...[
                                   const SizedBox(height: 6),
