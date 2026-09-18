@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:pocket_mates_app/services/iap_service.dart';
 
 class SubscriptionPage extends StatefulWidget {
   final double? width;
@@ -90,6 +92,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     },
   ];
 
+  StreamSubscription<PurchaseDetails>? _iapSubscription;
+
   @override
   void initState() {
     super.initState();
@@ -98,11 +102,28 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       duration: const Duration(seconds: 2),
     )..repeat();
     _loadCurrentPlan();
+
+    IAPService().initialize();
+    _iapSubscription = IAPService().purchaseStream.listen((purchase) {
+      if (purchase.status == PurchaseStatus.purchased ||
+          purchase.status == PurchaseStatus.restored) {
+        _loadCurrentPlan();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('🎉 Poket VIP Successfully Activated via Google Play!'),
+              backgroundColor: Color(0xFF10B981),
+            ),
+          );
+        }
+      }
+    });
   }
 
   @override
   void dispose() {
     _shimmerController.dispose();
+    _iapSubscription?.cancel();
     super.dispose();
   }
 
@@ -123,6 +144,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       // Downgrade to free
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString('handskill_plan', 'free');
+      await prefs.setBool('is_vip', false);
       setState(() => _currentPlan = 'free');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -132,16 +154,173 @@ class _SubscriptionPageState extends State<SubscriptionPage>
       return;
     }
 
-    // Show Flipkart / Railway style Direct UPI Payment Sheet
     if (!mounted) return;
+
+    // Duolingo-style Payment Selector (Google Play / Apple In-App Purchase + Direct UPI)
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
       backgroundColor: const Color(0xFF131722),
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
       ),
-      builder: (_) => _buildDirectUpiPaymentSheet(plan, price),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Choose Payment Method',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Upgrade to ${plan['name']} (₹$price/${_isYearly ? 'year' : 'month'})',
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+              ),
+              const SizedBox(height: 20),
+
+              // Option 1: Official Store Billing (Google Play / Apple In-App Purchase)
+              InkWell(
+                onTap: () async {
+                  final messenger = ScaffoldMessenger.of(context);
+                  Navigator.pop(ctx);
+                  HapticFeedback.mediumImpact();
+                  final initiated = await IAPService().buyVipSubscription(isYearly: _isYearly);
+                  if (!initiated && mounted) {
+                    messenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Store billing loading... You can also use Direct UPI below.'),
+                        backgroundColor: Color(0xFF1E293B),
+                      ),
+                    );
+                  }
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                    ),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.shop_two_rounded, color: Color(0xFFFFD700), size: 26),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Google Play Billing ⚡',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              '1-Tap Secure Payment • Official Store Checkout',
+                              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 14),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Option 2: Direct Indian UPI (GPay / PhonePe / Paytm)
+              InkWell(
+                onTap: () {
+                  Navigator.pop(ctx);
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    backgroundColor: const Color(0xFF131722),
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                    ),
+                    builder: (_) => _buildDirectUpiPaymentSheet(plan, price),
+                  );
+                },
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1A1D2B),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F9D58).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF0F9D58), size: 26),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Direct Indian UPI (GPay / PhonePe)',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              'Pay via any UPI App • Instant activation',
+                              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 14),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -580,6 +759,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           countdownTimer?.cancel();
                           Navigator.pop(dialogContext);
 
+                          final messenger = ScaffoldMessenger.of(context);
                           // Instant Activation & Upgrade
                           final prefs = await SharedPreferences.getInstance();
                           await prefs.setString('handskill_plan', plan['id'] as String);
@@ -588,7 +768,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           HapticFeedback.heavyImpact();
 
                           if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            messenger.showSnackBar(
                               SnackBar(
                                 content: Text(
                                   '🎉 Payment Successful! ${plan['name']} VIP Activated!',
@@ -827,6 +1007,69 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     '🔒 Real-time AI encryption • 100% Secure calls\n⚡ Low latency WebRTC voice & video\n🌏 Connect with spoken English learners worldwide',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.outfit(color: Colors.white38, fontSize: 13, height: 1.8),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Duolingo & Apple-compliant Restore Purchases Button
+                  TextButton.icon(
+                    onPressed: () async {
+                      HapticFeedback.lightImpact();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Checking store for previous purchases...'),
+                          backgroundColor: Color(0xFF1E293B),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      await IAPService().restorePurchases();
+                      await _loadCurrentPlan();
+                    },
+                    icon: const Icon(Icons.restore_rounded, color: Color(0xFFFFD700), size: 18),
+                    label: Text(
+                      'Restore Purchases',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Apple StoreKit Guideline 3.1.1 Mandatory Legal Links
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        onTap: () => launchUrl(
+                          Uri.parse('https://pocketmates.app/terms'),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                        child: Text(
+                          'Terms of Use',
+                          style: GoogleFonts.inter(
+                            color: Colors.white38,
+                            fontSize: 11,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                      const Text('  •  ', style: TextStyle(color: Colors.white24, fontSize: 11)),
+                      InkWell(
+                        onTap: () => launchUrl(
+                          Uri.parse('https://pocketmates.app/privacy'),
+                          mode: LaunchMode.externalApplication,
+                        ),
+                        child: Text(
+                          'Privacy Policy',
+                          style: GoogleFonts.inter(
+                            color: Colors.white38,
+                            fontSize: 11,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 32),
                 ],
