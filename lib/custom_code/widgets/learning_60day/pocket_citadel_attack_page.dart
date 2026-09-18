@@ -177,6 +177,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       isNeighbor: true,
     );
 
+    // Randomize option order dynamically across A, B, C, D
+    final randomizedQuestions = questions.map((q) {
+      if (q.options.length <= 1) return q;
+      final indexedOptions = q.options.asMap().entries.toList();
+      indexedOptions.shuffle();
+      final newOptions = indexedOptions.map((e) => e.value).toList();
+      final newCorrectIndex = indexedOptions.indexWhere((e) => e.key == q.correctIndex);
+      return HouseShieldQuestion(
+        id: q.id,
+        question: q.question,
+        options: newOptions,
+        correctIndex: newCorrectIndex >= 0 ? newCorrectIndex : 0,
+        explanation: q.explanation,
+        category: q.category,
+        trapType: q.trapType,
+        gameFormat: q.gameFormat,
+      );
+    }).toList();
+
     if (mounted) {
       setState(() {
         _inCooldown = inCooldown;
@@ -184,7 +203,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         _protectionHoursLeft = protectionMinutes / 60.0;
         _attacksUsed = attacksUsed;
         _isDailyLimitReached = isDailyLimitReached;
-        _defenseQuestions = questions;
+        _defenseQuestions = randomizedQuestions;
       });
     }
   }

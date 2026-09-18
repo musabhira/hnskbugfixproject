@@ -8,6 +8,7 @@ import '../avatar/vector_avatar_widget.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'pocket_defense_admin_modal.dart';
+import 'pocket_defense_trap_modal.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_open_world_game_page.dart';
 import 'pocket_world_game_rules_modal.dart';
@@ -597,6 +598,35 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                             'Rules',
                             style: GoogleFonts.outfit(
                               color: const Color(0xFF38BDF8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () async {
+                      await PocketDefenseTrapModal.show(context, widget.currentDay);
+                      _loadBannedAndProtectedHouses();
+                    },
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF10B981), width: 1),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('🛡️', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'My Defense',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF34D399),
                               fontSize: 11,
                               fontWeight: FontWeight.bold,
                             ),
