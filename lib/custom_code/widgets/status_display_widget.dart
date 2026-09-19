@@ -87,6 +87,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
   )..repeat();
   String _vibesFilter = 'Public'; // Default to Public
   final Set<String> _seenGroupIds = {};
+  int _currentUserLevel = 1;
 
   Future<void> _loadSeenStatuses() async {
     try {
@@ -178,6 +179,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       }
     });
     _loadSeenStatuses();
+    SharedPreferences.getInstance().then((prefs) {
+      final lvl = prefs.getInt('pocket_learning_user_stage_${widget.currentUserId}') ??
+          prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
+      if (mounted) setState(() => _currentUserLevel = lvl);
+    });
     _loadVibesFilter().then((_) {
       _loadCachedStatuses();
       _loadStatusesOptimized();
@@ -312,13 +318,16 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final followingIds = List<String>.from(
           followingRes.map((e) => e['followed_id'].toString()));
       final prefs = await SharedPreferences.getInstance();
+      final lvl = prefs.getInt('pocket_learning_user_stage_${widget.currentUserId}') ??
+          prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
+      _currentUserLevel = lvl;
       final robotMates = prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? [];
       final Set<String> allFollowingIds = {...followingIds, ...robotMates};
 
       final response = await supabase
           .from('statuses')
           .select(
-              '*, profile:profile_id(id, name, profile_image_url, user_id), thought:thought_id(*, user:users!user_id(profile:profile!user_id(name, profile_image_url)))')
+              '*, profile:profile_id(id, name, profile_image_url, user_id, learning_day, avatar_config, pocket_score), thought:thought_id(*, user:users!user_id(profile:profile!user_id(name, profile_image_url, learning_day, avatar_config)))')
           .eq('is_active', true)
           .gt('expires_at', DateTime.now().toIso8601String())
           .order('created_at', ascending: false) // Latest active statuses first
@@ -352,6 +361,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
         if (profile == null) continue;
 
+        final bool isOwn = profUserId == widget.currentUserId || profileId == widget.currentProfileId;
+        if (isOwn) {
+          profile['learning_day'] = _currentUserLevel;
+        }
+
         final bool isFollowing = followingIds.contains(profUserId) ||
             profUserId == widget.currentUserId;
 
@@ -365,7 +379,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             followingGroups[profileId] = {
               'profile': profile,
               'statuses': [],
-              'is_own': profUserId == widget.currentUserId,
+              'is_own': isOwn,
               'is_group': false,
             };
           }
@@ -378,7 +392,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             publicGroups[profileId] = {
               'profile': profile,
               'statuses': [],
-              'is_own': profUserId == widget.currentUserId,
+              'is_own': isOwn,
               'is_group': false,
             };
           }
@@ -1753,12 +1767,17 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
     VectorAvatarConfig avatarConfig = const VectorAvatarConfig();
 
+    int displayDay = 1;
     // 1. If it's a Pocket Robot, always use their exact dynamic looped level evolution avatar
     if (PocketRobotService.isRobotId(profileId)) {
       final robot = PocketRobotService.getRobotById(profileId) ??
           PocketRobotService.getRobotByLevel(1);
-      final dynLvl = PocketRobotService.getDynamicLevel(robot);
-      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(dynLvl);
+      displayDay = PocketRobotService.getDynamicLevel(robot);
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
+    } else if (profileId == widget.currentProfileId ||
+        (profile != null && profile['user_id']?.toString() == widget.currentUserId)) {
+      displayDay = _currentUserLevel;
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
     } else if (avatarConfigMap != null) {
       try {
         final stage = avatarConfigMap['stage'] ??
@@ -1766,7 +1785,8 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             avatarConfigMap['day'] ??
             avatarConfigMap['level'];
         if (stage != null && stage is num && stage > 0) {
-          avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.toInt());
+          displayDay = stage.toInt();
+          avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
         } else {
           avatarConfig = VectorAvatarConfig.fromMap(avatarConfigMap);
         }
@@ -1788,6 +1808,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       } else {
         stage = (name.hashCode.abs() % 90) + 1;
       }
+      displayDay = stage;
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
     }
 
@@ -1922,14 +1943,54 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       );
     }
 
+    final Widget fullAvatarWidget = (!isGroup && !isPresAvatar && size >= 50)
+        ? Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              ringWidget,
+              Positioned(
+                bottom: -2,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F141C),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: const Color(0xFFFF8906),
+                      width: 0.9,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        blurRadius: 3,
+                        offset: const Offset(0, 1),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    'D$displayDay',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFFC00),
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          )
+        : ringWidget;
+
     if (onTap != null) {
       return GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: ringWidget,
+        child: fullAvatarWidget,
       );
     }
-    return ringWidget;
+    return fullAvatarWidget;
   }
 }
 

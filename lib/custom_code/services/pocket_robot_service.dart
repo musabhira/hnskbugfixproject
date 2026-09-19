@@ -2367,4 +2367,64 @@ class PocketRobotService {
 
     return list;
   }
+
+  /// Handles a user's reply or quick emoji reaction to a robot's vibe story
+  static Future<void> handleUserStatusReply({
+    required String userId,
+    required String robotId,
+    required String userReply,
+    required String statusId,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+
+      // Store user reply in local chat thread with robot
+      final chatKey = 'robot_chat_${robotId}_$userId';
+      final existingChat = prefs.getStringList(chatKey) ?? [];
+
+      final userMsg = jsonEncode({
+        'id': 'user_${DateTime.now().millisecondsSinceEpoch}',
+        'sender_id': userId,
+        'receiver_id': robotId,
+        'content': userReply,
+        'timestamp': DateTime.now().toIso8601String(),
+        'context': 'vibe_reply',
+      });
+      existingChat.add(userMsg);
+      await prefs.setStringList(chatKey, existingChat);
+
+      // Auto accept robot mate if not already mates
+      await acceptRobotRequest(myId: userId, robotId: robotId);
+
+      // Simulate human-like encouraging robot reply after brief delay
+      Timer(const Duration(seconds: 2), () async {
+        try {
+          final replies = [
+            "Thanks for the love! Let's keep practicing English together! 🚀",
+            "Awesome reaction! Did you catch the idiom in today's vibe? 🌟",
+            "Appreciate that mate! You're making tremendous progress every day! 💪",
+            "Super! How's your English practice going today? 😊",
+            "Thank you! You have an amazing eye for detail! 🎯",
+          ];
+          final replyText = replies[math.Random().nextInt(replies.length)];
+
+          final roboMsg = jsonEncode({
+            'id': 'robo_${DateTime.now().millisecondsSinceEpoch}',
+            'sender_id': robotId,
+            'receiver_id': userId,
+            'content': replyText,
+            'timestamp': DateTime.now().toIso8601String(),
+            'context': 'vibe_reply',
+          });
+
+          final updatedChat = prefs.getStringList(chatKey) ?? [];
+          updatedChat.add(roboMsg);
+          await prefs.setStringList(chatKey, updatedChat);
+        } catch (_) {}
+      });
+    } catch (e) {
+      debugPrint('Error handling user status reply to robot: $e');
+    }
+  }
 }
+
