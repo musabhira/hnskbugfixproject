@@ -3838,6 +3838,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         (_preloadedProfile?['learning_stage'] as num?)?.toInt() ??
         1;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () async {
         HapticFeedback.selectionClick();
         final isAuthenticated = await AuthAlertBox.checkAuthAndShowAlert(
@@ -3898,111 +3899,114 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       child: material.SizedBox(
         height: 58,
         width: 62,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedScale(
-              scale: _currentIndex == 4 ? 1.15 : 1.0,
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOutBack,
-              child: Stack(
-                clipBehavior: Clip.none,
-                alignment: Alignment.center,
-                children: [
-                  Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const SweepGradient(
-                        colors: [
-                          Color(0xFFFFFC00), // Vibrant Yellow
-                          Color(0xFFFF8906), // Vivid Orange
-                          Color(0xFFFF2E93), // Rose Pink
-                          Color(0xFF833AB4), // Deep Purple
-                          Color(0xFFFFFC00), // Loop
-                        ],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFF8906).withValues(alpha: 0.45),
-                          blurRadius: 8,
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(2.2),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFF0F172A),
-                      ),
-                      child: ClipOval(
-                        child: VectorAvatarWidget(
-                          config: _getNavAvatarConfig(),
-                          size: 35.0,
-                          useFlame: true,
-                          showAura: true,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: -3,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 4.5, vertical: 1),
+        child: IgnorePointer(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AnimatedScale(
+                scale: _currentIndex == 4 ? 1.15 : 1.0,
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutBack,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: const Color(0xFFFFD700),
-                          width: 1,
+                        shape: BoxShape.circle,
+                        gradient: const SweepGradient(
+                          colors: [
+                            Color(0xFFFFFC00), // Vibrant Yellow
+                            Color(0xFFFF8906), // Vivid Orange
+                            Color(0xFFFF2E93), // Rose Pink
+                            Color(0xFF833AB4), // Deep Purple
+                            Color(0xFFFFFC00), // Loop
+                          ],
                         ),
-                        boxShadow: const [
+                        boxShadow: [
                           BoxShadow(
-                            color: Colors.black45,
-                            blurRadius: 4,
+                            color: const Color(0xFFFF8906).withValues(alpha: 0.45),
+                            blurRadius: 8,
+                            spreadRadius: 1,
                           ),
                         ],
                       ),
-                      child: Text(
-                        'D$day',
-                        style: const TextStyle(
-                          color: Color(0xFFFFFC00),
-                          fontSize: 8,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.2,
+                      padding: const EdgeInsets.all(2.2),
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Color(0xFF0F172A),
+                        ),
+                        child: ClipOval(
+                          child: VectorAvatarWidget(
+                            config: _getNavAvatarConfig(),
+                            size: 35.0,
+                            useFlame: true,
+                            showAura: true,
+                            isInteractive: false,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                    Positioned(
+                      bottom: -3,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 4.5, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F172A),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700),
+                            width: 1,
+                          ),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black45,
+                              blurRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Text(
+                          'D$day',
+                          style: const TextStyle(
+                            color: Color(0xFFFFFC00),
+                            fontSize: 8,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 220),
-              curve: Curves.easeOut,
-              margin: const EdgeInsets.only(top: 3),
-              width: _currentIndex == 4 ? 16 : 0,
-              height: 3,
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFC00),
-                borderRadius: BorderRadius.circular(2),
-                boxShadow: _currentIndex == 4
-                    ? [
-                        BoxShadow(
-                          color:
-                              const Color(0xFFFFFC00).withValues(alpha: 0.75),
-                          blurRadius: 6,
-                          spreadRadius: 1,
-                        )
-                      ]
-                    : null,
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOut,
+                margin: const EdgeInsets.only(top: 3),
+                width: _currentIndex == 4 ? 16 : 0,
+                height: 3,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00),
+                  borderRadius: BorderRadius.circular(2),
+                  boxShadow: _currentIndex == 4
+                      ? [
+                          BoxShadow(
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.75),
+                            blurRadius: 6,
+                            spreadRadius: 1,
+                          )
+                        ]
+                      : null,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

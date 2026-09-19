@@ -12,6 +12,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provi
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -1764,42 +1765,44 @@ Draft: "$draft"''';
                 child: Hero(
                   tag: 'group_avatar_${widget.groupId}',
                   child: widget.groupId.startsWith('p:')
-                      ? Stack(
-                          clipBehavior: Clip.none,
-                          children: [
-                            Container(
-                              width: 34,
-                              height: 34,
-                              decoration: const BoxDecoration(
-                                shape: BoxShape.circle,
-                              ),
-                              child: ClipOval(
-                                child: VectorAvatarWidget(
-                                  config: _getPersonalAvatarConfig(
-                                    widget.groupId.substring(2),
+                      ? (PocketPresidentService.isPresidentId(widget.groupId.substring(2))
+                          ? const PresidentAvatarWidget(size: 34)
+                          : Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
                                   ),
-                                  size: 34,
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                width: 9,
-                                height: 9,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF22C55E),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: const Color(0xFF121B22),
-                                    width: 1.5,
+                                  child: ClipOval(
+                                    child: VectorAvatarWidget(
+                                      config: _getPersonalAvatarConfig(
+                                        widget.groupId.substring(2),
+                                      ),
+                                      size: 34,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ),
-                          ],
-                        )
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    width: 9,
+                                    height: 9,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF22C55E),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xFF121B22),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ))
                       : (widget.groupImage != null
                           ? CircleAvatar(
                               radius: 17,
@@ -1839,9 +1842,7 @@ Draft: "$draft"''';
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: Colors.white,
-                          letterSpacing: 0.2,
                         ),
-                        maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -1854,37 +1855,11 @@ Draft: "$draft"''';
                             PocketPresidentService.isPresidentId(targetId);
                         if (isPresident) {
                           return Container(
-                            margin: const EdgeInsets.only(left: 6),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
-                              ),
-                              borderRadius: BorderRadius.circular(4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFFD700)
-                                      .withValues(alpha: 0.4),
-                                  blurRadius: 4,
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: const [
-                                Icon(Icons.verified_rounded,
-                                    color: Colors.black, size: 10),
-                                SizedBox(width: 2.5),
-                                Text(
-                                  'Pocket Mates',
-                                  style: TextStyle(
-                                    color: Colors.black,
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                              ],
+                            margin: const EdgeInsets.only(left: 5),
+                            child: const Icon(
+                              Icons.verified_rounded,
+                              color: Color(0xFFFFD700),
+                              size: 14.5,
                             ),
                           );
                         } else if (widget.groupId.startsWith('p:')) {
@@ -1913,7 +1888,7 @@ Draft: "$draft"''';
                       return const Padding(
                         padding: EdgeInsets.only(top: 1.5),
                         child: Text(
-                          'President of Pocket World • Help & Support',
+                          'President of Pocket Mates • Help & Support',
                           style: TextStyle(
                             fontSize: 10.5,
                             color: Color(0xFFFFD700),

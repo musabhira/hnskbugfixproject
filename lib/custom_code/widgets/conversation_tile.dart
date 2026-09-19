@@ -14,6 +14,7 @@ import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -515,11 +516,14 @@ class _ConversationTileState extends State<ConversationTile> {
                                           !widget.conversation.isTool &&
                                           !widget.conversation.isNotification &&
                                           !widget.conversation.isActiveTimer)
-                                      ? VectorAvatarWidget(
-                                          config: _cachedAvatarConfig,
-                                          size: 48,
-                                          showAura: true,
-                                        )
+                                      ? (PocketPresidentService.isPresidentId(
+                                              widget.conversation.id)
+                                          ? const PresidentAvatarWidget(size: 48)
+                                          : VectorAvatarWidget(
+                                              config: _cachedAvatarConfig,
+                                              size: 48,
+                                              showAura: true,
+                                            ))
                                       : (widget.conversation.imageUrl == null
                                           ? Center(
                                               child: Icon(
@@ -587,44 +591,24 @@ class _ConversationTileState extends State<ConversationTile> {
                                         PocketPresidentService.isPresidentId(
                                             widget.conversation.id);
                                     if (isPresident) {
-                                      return Container(
-                                        margin: const EdgeInsets.only(left: 6),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 6, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
-                                            colors: [
-                                              Color(0xFFFFD700),
-                                              Color(0xFFFF9100)
-                                            ],
-                                            begin: Alignment.topLeft,
-                                            end: Alignment.bottomRight,
-                                          ),
-                                          borderRadius:
-                                              BorderRadius.circular(5),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: const Color(0xFFFFD700)
-                                                  .withValues(alpha: 0.4),
-                                              blurRadius: 6,
-                                              offset: const Offset(0, 1),
-                                            ),
-                                          ],
-                                        ),
+                                      return Padding(
+                                        padding: const EdgeInsets.only(left: 5),
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
-                                          children: const [
-                                            Icon(material.Icons.verified_rounded,
-                                                color: Colors.black,
-                                                size: 11),
-                                            SizedBox(width: 3),
+                                          children: [
+                                            const Icon(
+                                              material.Icons.verified_rounded,
+                                              color: Color(0xFFFFD700),
+                                              size: 14.5,
+                                            ),
+                                            const SizedBox(width: 3),
                                             Text(
-                                              'Pocket Mates',
-                                              style: TextStyle(
-                                                color: Colors.black,
-                                                fontWeight: FontWeight.w900,
+                                              'President of Pocket Mates',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFFD700),
                                                 fontSize: 9.5,
-                                                letterSpacing: 0.3,
+                                                fontWeight: FontWeight.w700,
+                                                letterSpacing: 0.2,
                                               ),
                                             ),
                                           ],

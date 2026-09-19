@@ -5,64 +5,28 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_panel_page.dart';
 
 /// 🔐 Master Admin Authentication & Access Gate Service
 class AdminAuthService {
-  /// Master PIN (as requested by user, locked and secure)
+  /// Master Admin Email (Only this specific user can ever see or access the Admin Panel)
+  static const String masterAdminEmail = 'musabthonippadam@gmail.com';
+
+  /// Master PIN (as fallback)
   static const String masterPin = '7788';
   static const List<String> fallbackPins = ['1234', '2026', 'admin'];
 
-  /// Checks if the current logged in user has access to the Admin Panel.
-  /// Access is automatically granted to "artist mus'ab hira" / "Mus'ab hira",
-  /// or any user granted private access in `user_tool_permissions`.
+  /// Checks if the provided email is the Master Admin
+  static bool isMasterAdminEmail(String? email) {
+    if (email == null || email.trim().isEmpty) return false;
+    return email.toLowerCase().trim() == masterAdminEmail;
+  }
+
+  /// Strictly checks if the current logged in user is musabthonippadam@gmail.com.
+  /// No other user in the world can see or access the Admin Panel.
   static Future<bool> canAccessAdmin() async {
     try {
       final user = SupaFlow.client.auth.currentUser;
       if (user == null) return false;
 
-      // 1. Check user email
       final email = (user.email ?? '').toLowerCase().trim();
-      if (email.contains('musab') || email.contains('musabhira')) return true;
-
-      // 2. Check profile name, shop_name, slug
-      final profileRes = await SupaFlow.client
-          .from('profile')
-          .select('name, shop_name, slug')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-      if (profileRes != null) {
-        final name = (profileRes['name'] ?? '').toString();
-        final shopName = (profileRes['shop_name'] ?? '').toString();
-        final slug = (profileRes['slug'] ?? '').toString();
-
-        bool isMusab(String s) {
-          if (s.isEmpty) return false;
-          final clean = s
-              .replaceAll("'", "")
-              .replaceAll("’", "")
-              .replaceAll(" ", "")
-              .toLowerCase();
-          return clean.contains('musabhira') ||
-              clean.contains('artistmusabhira') ||
-              clean.contains('musab');
-        }
-
-        if (isMusab(name) || isMusab(shopName) || isMusab(slug)) return true;
-      }
-
-      // 3. Check `user_tool_permissions` for 'Admin Panel' has_private_access
-      final permRes = await SupaFlow.client
-          .from('user_tool_permissions')
-          .select('has_private_access, is_blocked')
-          .eq('user_id', user.id)
-          .eq('tool_name', 'Admin Panel')
-          .maybeSingle();
-
-      if (permRes != null &&
-          permRes['is_blocked'] != true &&
-          permRes['has_private_access'] == true) {
-        return true;
-      }
-
-      return false;
+      return email == masterAdminEmail;
     } catch (e) {
       debugPrint('Error checking admin access: $e');
       return false;
@@ -72,14 +36,17 @@ class AdminAuthService {
   /// Synchronous fallback helper for fast UI checks
   static bool isMusabName(String? name) {
     if (name == null || name.isEmpty) return false;
-    final clean = name
-        .replaceAll("'", "")
-        .replaceAll("’", "")
-        .replaceAll(" ", "")
-        .toLowerCase();
-    return clean.contains('musabhira') ||
-        clean.contains('artistmusabhira') ||
-        clean.contains('musab');
+    final user = SupaFlow.client.auth.currentUser;
+    if (user != null && isMasterAdminEmail(user.email)) return true;
+    return false;
+  }
+
+  /// Direct entry for Master Admin without PIN prompt
+  static void openAdminPanelDirectly(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AdminDashboardPage()),
+    );
   }
 
   /// Prompt for Master Admin PIN dialog and navigate to AdminDashboardPage on success
