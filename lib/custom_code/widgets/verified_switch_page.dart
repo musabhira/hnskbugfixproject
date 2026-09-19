@@ -1,5 +1,7 @@
 import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 
 import '/backend/supabase/supabase.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +34,7 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
   bool _isLoading = false;
   int? selectedContainer;
   bool _isVerified = false;
+  Map<String, dynamic>? _rawProfileData;
 
   // Premium features variables
   int? _selectedHomeDesign;
@@ -107,12 +110,13 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
       final profileResponse = await _supabase
           .from('profile')
           .select(
-              'profile_image_url, shop_name, verified, user_id, name, bg_color_code, bg_text_color, button_color_code, button_text_color')
+              'profile_image_url, shop_name, verified, user_id, name, first_name, learning_day, streak, rank, palette_id, bio, is_pocket_robo, bg_color_code, bg_text_color, button_color_code, button_text_color')
           .eq('user_id', widget.userId)
           .maybeSingle();
 
       if (profileResponse != null && mounted) {
         setState(() {
+          _rawProfileData = profileResponse;
           _shopNameController.text = profileResponse['shop_name'] ?? '';
           _isVerified = profileResponse['verified'] ?? false;
         });
@@ -137,6 +141,52 @@ class _VerfiedSwitchPageState extends State<VerfiedSwitchPage> {
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
+      );
+    }
+
+    final myId = _supabase.auth.currentUser?.id ?? '';
+    final isMe = widget.userId.isNotEmpty && widget.userId == myId;
+
+    // 🏰 When viewing ANY other user's profile: Show their Citadel / Estate with draggable bottom profile drawer!
+    if (!isMe) {
+      final neighbor = _isRobot
+          ? () {
+              final robot = PocketRobotService.getRobotById(widget.userId) ??
+                  PocketRobotService.getRobotByLevel(1);
+              final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
+              return PocketNeighbor(
+                id: robot.id,
+                name: robot.name,
+                day: dynamicLevel,
+                streak: dynamicLevel,
+                rank: robot.cefrRank,
+                paletteId: robot.housePalette,
+                isMe: false,
+                hasActiveShield: true,
+                statusMessage: robot.bio,
+                isPocketRobo: true,
+                hp: 100,
+                maxHp: 100,
+              );
+            }()
+          : PocketNeighbor(
+              id: widget.userId,
+              name: _rawProfileData?['first_name'] ?? _rawProfileData?['name'] ?? 'Citadel Defender',
+              day: (_rawProfileData?['learning_day'] as num?)?.toInt() ?? 1,
+              streak: (_rawProfileData?['streak'] as num?)?.toInt() ?? 1,
+              rank: _rawProfileData?['rank']?.toString() ?? 'Citizen',
+              paletteId: _rawProfileData?['palette_id']?.toString() ?? 'warm_cottage',
+              isMe: false,
+              hasActiveShield: true,
+              statusMessage: _rawProfileData?['bio']?.toString() ?? 'Learning English everyday!',
+              isPocketRobo: _rawProfileData?['is_pocket_robo'] == true,
+              hp: 100,
+              maxHp: 100,
+            );
+
+      return PocketCitadelAttackPage(
+        neighbor: neighbor,
+        attackerDay: 1,
       );
     }
 

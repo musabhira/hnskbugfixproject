@@ -10,6 +10,7 @@ import 'voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart' hide supabaseClientProvider;
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -1516,12 +1517,7 @@ Draft: "$draft"''';
             title: const Text('View Profile', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => VerfiedSwitchPage(userId: userId),
-                ),
-              );
+              PocketCitadelAttackPage.openForUser(context, userId: userId);
             },
           ),
           ListTile(
@@ -5101,12 +5097,7 @@ Draft: "$draft"''';
       final targetId = parts.firstWhere((id) => id != _currentUserId, orElse: () => '');
       
       if (targetId.isNotEmpty) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => VerfiedSwitchPage(userId: targetId),
-          ),
-        );
+        PocketCitadelAttackPage.openForUser(context, userId: targetId);
       }
       return;
     }

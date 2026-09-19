@@ -15,10 +15,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
-import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 
@@ -929,13 +925,10 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
               _showPocketRobotProfileSheet(context, profile);
               return;
             }
-            Navigator.push(
+            PocketCitadelAttackPage.openForUser(
               context,
-              MaterialPageRoute(
-                builder: (context) => isVerified
-                    ? VerfiedSwitchPage(userId: profile['user_id'])
-                    : MainProfileWidget(userId: profile['user_id']),
-              ),
+              userId: profile['user_id'] ?? '',
+              preloadedProfile: profile,
             );
           },
           child: Container(
@@ -1333,13 +1326,13 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                       ),
                     );
                   },
-                  icon: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 18),
+                  icon: const Icon(Icons.person_outline_rounded, color: Colors.white, size: 18),
                   label: Text(
-                    'Attack',
+                    'View Profile',
                     style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFDC2626),
+                    backgroundColor: const Color(0xFF7C3AED),
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),

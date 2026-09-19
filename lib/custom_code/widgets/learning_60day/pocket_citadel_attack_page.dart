@@ -13,6 +13,8 @@ import 'pocket_fortress_defense_service.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_world_street_page.dart';
 
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
 /// Audio Directive:
 /// "അറ്റാക്ക് ചെയ്യുന്നത് അതിൽ ടാപ്പ് ചെയ്യുമ്പോൾ തന്നെ ഫുൾ സ്ക്രീൻ ആയിട്ട് പോണം...
@@ -28,9 +30,105 @@ class PocketCitadelAttackPage extends StatefulWidget {
   const PocketCitadelAttackPage({
     super.key,
     required this.neighbor,
-    required this.attackerDay,
+    this.attackerDay = 1,
     this.attackerStreak = 0,
   });
+
+  /// 🏰 Open Citadel / House Page for any user or robot from anywhere in the app
+  static Future<void> openForUser(
+    BuildContext context, {
+    required String userId,
+    PocketNeighbor? neighbor,
+    Map<String, dynamic>? preloadedProfile,
+    int attackerDay = 1,
+  }) async {
+    if (neighbor != null) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PocketCitadelAttackPage(
+            neighbor: neighbor,
+            attackerDay: attackerDay,
+          ),
+        ),
+      );
+      return;
+    }
+
+    final isRobot = PocketRobotService.isRobotId(userId) ||
+        !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+
+    if (isRobot) {
+      final robot = PocketRobotService.getRobotById(userId) ??
+          PocketRobotService.getRobotByLevel(1);
+      final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
+      final robotNeighbor = PocketNeighbor(
+        id: robot.id,
+        name: robot.name,
+        day: dynamicLevel,
+        streak: dynamicLevel,
+        rank: robot.cefrRank,
+        paletteId: robot.housePalette,
+        isMe: false,
+        hasActiveShield: true,
+        statusMessage: robot.bio,
+        isPocketRobo: true,
+        hp: 100,
+        maxHp: 100,
+      );
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PocketCitadelAttackPage(
+            neighbor: robotNeighbor,
+            attackerDay: attackerDay,
+          ),
+        ),
+      );
+      return;
+    }
+
+    Map<String, dynamic>? data = preloadedProfile;
+    if (data == null || (data['first_name'] == null && data['name'] == null)) {
+      try {
+        final res = await SupaFlow.client
+            .from('profile')
+            .select('user_id, first_name, name, bio, learning_day, streak, rank, palette_id, is_pocket_robo')
+            .eq('user_id', userId)
+            .maybeSingle();
+        if (res != null) data = res;
+      } catch (e) {
+        debugPrint('PocketCitadelAttackPage.openForUser error: $e');
+      }
+    }
+
+    final p = data ?? {};
+    final userNeighbor = PocketNeighbor(
+      id: userId,
+      name: p['first_name'] ?? p['name'] ?? 'Citadel Defender',
+      day: (p['learning_day'] as num?)?.toInt() ?? 1,
+      streak: (p['streak'] as num?)?.toInt() ?? 1,
+      rank: p['rank']?.toString() ?? 'Citizen',
+      paletteId: p['palette_id']?.toString() ?? 'warm_cottage',
+      isMe: false,
+      hasActiveShield: true,
+      statusMessage: p['bio']?.toString() ?? 'Learning English everyday!',
+      isPocketRobo: p['is_pocket_robo'] == true,
+      hp: 100,
+      maxHp: 100,
+    );
+
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PocketCitadelAttackPage(
+          neighbor: userNeighbor,
+          attackerDay: attackerDay,
+        ),
+      ),
+    );
+  }
 
   @override
   State<PocketCitadelAttackPage> createState() => _PocketCitadelAttackPageState();
@@ -502,7 +600,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final w = constraints.maxWidth;
             final h = constraints.maxHeight;
             final bottomPad = MediaQuery.of(context).padding.bottom;
-            final collapsedH = 54.0 + bottomPad;
+            final collapsedH = 64.0 + bottomPad;
             final drawerMaxH = h * 0.92;
             final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
@@ -1060,157 +1158,128 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  /// ⚔️ Bottom Attack Section: Attacker vs Defender Pill right above small red Attack Button
+  /// ⚔️ Minimal Unified Rectangular Attack Pod: Level + PS header row directly joined with red Attack button
   Widget _buildBottomAttackSection() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // 🎖️ Versus Pill: [Your Avatar Lvl X] ⚔️ VS 🛡️ [Defender Lvl Y • PS Z]
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          margin: const EdgeInsets.only(bottom: 8),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.94),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.50),
-                blurRadius: 10,
-                offset: const Offset(0, 3),
-              ),
-            ],
+    final psValue = _defenderScore > 0
+        ? _defenderScore
+        : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day);
+
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFEF4444).withValues(alpha: 0.8),
+            width: 1.4,
           ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Attacker Avatar Bubble
-              Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
-                  color: const Color(0xFF1E293B),
-                ),
-                child: ClipOval(
-                  child: VectorAvatarWidget(
-                    config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.attackerDay),
-                    size: 22,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                'You Lvl ${widget.attackerDay}',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF38BDF8),
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-
-              const SizedBox(width: 8),
-              const Text('⚔️', style: TextStyle(fontSize: 11)),
-              const SizedBox(width: 8),
-
-              // Defender Avatar Bubble
-              Container(
-                width: 22,
-                height: 22,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
-                  color: const Color(0xFF1E293B),
-                ),
-                child: ClipOval(
-                  child: VectorAvatarWidget(
-                    config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
-                    size: 22,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 5),
-              Text(
-                'Lvl ${widget.neighbor.day}',
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Container(width: 3, height: 3, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white38)),
-              const SizedBox(width: 6),
-              // PS (Pocket Score)
-              Row(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.65),
+              blurRadius: 14,
+              offset: const Offset(0, 4),
+            ),
+            BoxShadow(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+              blurRadius: 10,
+              spreadRadius: 1,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Level & PS Minimal Row (User Directive: No "You Level 7" or "VS", just Level & PS)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 3),
+              child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('🪙', style: TextStyle(fontSize: 11)),
-                  const SizedBox(width: 3),
                   Text(
-                    'PS ${_defenderScore > 0 ? _defenderScore : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day)}',
+                    'Level ${widget.neighbor.day}',
                     style: GoogleFonts.outfit(
-                      color: const Color(0xFFFFD700),
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.2,
                     ),
+                  ),
+                  const SizedBox(width: 8),
+                  Container(
+                    width: 3.5,
+                    height: 3.5,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white38,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🪙', style: TextStyle(fontSize: 12)),
+                      const SizedBox(width: 4),
+                      Text(
+                        '$psValue PS',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
-        ),
-
-        // Red Attack Button
-        _buildBottomAttackButton(),
-      ],
-    );
-  }
-
-  /// ⚔️ Small Stacked Red Button at Bottom (User Directive: "ഈ Attack എന്നുള്ളത് ചെറിയ ബട്ടൺ ആക്കിയാൽ മതി")
-  Widget _buildBottomAttackButton() {
-    return Center(
-      child: ScaleTransition(
-        scale: _pulseAnimation,
-        child: GestureDetector(
-          onTap: _onTapBottomAttack,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 9),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-              borderRadius: BorderRadius.circular(22),
-              border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.45),
-                  blurRadius: 10,
-                  spreadRadius: 1,
-                  offset: const Offset(0, 3),
-                ),
-              ],
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('⚔️', style: TextStyle(fontSize: 15)),
-                const SizedBox(width: 6),
-                Text(
-                  'Attack',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
+            const SizedBox(height: 3),
+            // Minimal Red Attack Button
+            ScaleTransition(
+              scale: _pulseAnimation,
+              child: GestureDetector(
+                onTap: _onTapBottomAttack,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(11),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.9),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.5),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('⚔️', style: TextStyle(fontSize: 13)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'ATTACK',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
     );
@@ -1279,7 +1348,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 }
               },
               child: Container(
-                padding: EdgeInsets.fromLTRB(16, 6, 16, prog < 0.1 ? (6 + bottomPad) : 8),
+                padding: EdgeInsets.fromLTRB(16, 8, 16, prog < 0.1 ? (10 + bottomPad) : 10),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B).withValues(alpha: 0.95),
                   border: Border(
@@ -1292,95 +1361,121 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Pull Handle Pill
+                    // Pull Handle Pill (User Directive: Slightly larger and easier to grab)
                     Container(
-                      width: 38,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 6),
+                      width: 44,
+                      height: 4.5,
+                      margin: const EdgeInsets.only(bottom: 7),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.45),
-                        borderRadius: BorderRadius.circular(2),
+                        color: Colors.white.withValues(alpha: 0.5),
+                        borderRadius: BorderRadius.circular(3),
                       ),
                     ),
                     Row(
                       children: [
-                        // Defender Avatar Mini Bubble
+                        // Defender Avatar Bubble
                         Container(
-                          width: 26,
-                          height: 26,
+                          width: 32,
+                          height: 32,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFA78BFA), width: 1.2),
+                            border: Border.all(color: const Color(0xFFA78BFA), width: 1.4),
                             color: const Color(0xFF0F172A),
                           ),
                           child: ClipOval(
                             child: VectorAvatarWidget(
                               config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
-                              size: 26,
+                              size: 32,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child: Row(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Flexible(
-                                child: Text(
-                                  '${widget.neighbor.name}\'s Profile',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
+                              Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      '${widget.neighbor.name}\'s Profile',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13.5,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: const Color(0xFFA78BFA).withValues(alpha: 0.5),
+                                        width: 0.8,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Lvl ${widget.neighbor.day}',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFDDD6FE),
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 9.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: const Color(0xFFA78BFA).withValues(alpha: 0.5),
-                                    width: 0.8,
-                                  ),
-                                ),
-                                child: Text(
-                                  'Lvl ${widget.neighbor.day}',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFDDD6FE),
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 9.5,
-                                  ),
+                              const SizedBox(height: 1),
+                              Text(
+                                prog > 0.5 ? 'Citadel Defender Profile' : 'Swipe up or tap to explore profile',
+                                style: GoogleFonts.outfit(
+                                  color: prog > 0.5 ? const Color(0xFFA78BFA) : Colors.white60,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        // Expand / Collapse Indicator
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            if (!isExpanded)
-                              Padding(
-                                padding: const EdgeInsets.only(right: 2),
-                                child: Text(
-                                  'Pull up',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white54,
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.w500,
+                        // Expand / Collapse Capsule Indicator
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF8B5CF6).withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(
+                              color: const Color(0xFFA78BFA).withValues(alpha: 0.4),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (!isExpanded)
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 3),
+                                  child: Text(
+                                    'Profile',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFDDD6FE),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
+                              Icon(
+                                isExpanded ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_up_rounded,
+                                color: const Color(0xFFA78BFA),
+                                size: 18,
                               ),
-                            Icon(
-                              isExpanded ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_up_rounded,
-                              color: const Color(0xFFA78BFA),
-                              size: 22,
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ],
                     ),
