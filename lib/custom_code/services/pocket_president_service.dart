@@ -34,6 +34,7 @@ class PocketPresidentService {
       final key = '$_kPresidentChatPrefix$userId';
       final raw = prefs.getString(key);
 
+      List<Map<String, dynamic>> historyList = [];
       if (raw == null || raw.isEmpty) {
         // Initialize default welcome message if user has no history yet
         final welcomeMsg = {
@@ -50,13 +51,45 @@ class PocketPresidentService {
             'golden_tick': true,
           }
         };
-        final initialList = [welcomeMsg];
-        await prefs.setString(key, jsonEncode(initialList));
-        return initialList;
+        historyList = [welcomeMsg];
+      } else {
+        final List<dynamic> decoded = jsonDecode(raw);
+        historyList = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
       }
 
-      final List<dynamic> decoded = jsonDecode(raw);
-      return decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+      // Merge any broadcast announcements into user's chat history so all citizens receive presidential broadcasts
+      final rawAnn = prefs.getString(_kPresidentAnnouncementsKey);
+      if (rawAnn != null && rawAnn.isNotEmpty) {
+        final List<dynamic> annList = jsonDecode(rawAnn);
+        bool addedNew = false;
+        for (var ann in annList) {
+          final annId = ann['id']?.toString() ?? '';
+          final alreadyInChat = historyList.any((m) => m['id'] == 'pres_broadcast_$annId');
+          if (!alreadyInChat) {
+            historyList.insert(0, {
+              'id': 'pres_broadcast_$annId',
+              'sender_id': presidentId,
+              'receiver_id': userId,
+              'message_text': '🏛️ [PRESIDENTIAL BROADCAST: ${ann['title']}]\n\n${ann['content']}',
+              'message_type': 'text',
+              'created_at': ann['created_at'] ?? DateTime.now().toIso8601String(),
+              'is_read': false,
+              'metadata': {
+                'is_official': true,
+                'is_president': true,
+                'golden_tick': true,
+                'is_broadcast': true,
+              }
+            });
+            addedNew = true;
+          }
+        }
+        if (addedNew) {
+          await prefs.setString(key, jsonEncode(historyList));
+        }
+      }
+
+      return historyList;
     } catch (e) {
       debugPrint('Error getting President chat history: $e');
       return [];
@@ -393,13 +426,12 @@ class PocketPresidentService {
   static Future<List<Map<String, dynamic>>> getAdminInquiriesList() async {
     final List<Map<String, dynamic>> inquiries = [];
 
-    // 1. Fetch from Supabase reports table
+    // 1. Fetch from Supabase reports table (both direct inquiries and all citizen reports)
     try {
       final supabase = SupaFlow.client;
       final res = await supabase
           .from('reports')
           .select('*')
-          .eq('content_type', 'president_inquiry')
           .order('created_at', ascending: false)
           .limit(100);
 
@@ -411,18 +443,25 @@ class PocketPresidentService {
           } catch (_) {}
         }
 
+        final isGeneralReport = row['content_type'] != 'president_inquiry';
+        final desc = row['description'] ?? row['reason'] ?? '';
+        final reporterId = (row['reporter_id'] ?? '').toString();
+        final displayUid = reporterId.length > 5 ? reporterId.substring(0, 5) : reporterId;
+
         inquiries.add({
-          'user_id': row['reporter_id'],
-          'user_name': extra['user_name'] ?? 'Citizen (${row['reporter_id'].toString().substring(0, 5)})',
+          'id': row['id']?.toString(),
+          'user_id': reporterId,
+          'user_name': extra['user_name'] ?? 'Citizen ($displayUid)',
           'user_avatar': extra['user_avatar'],
-          'last_message': row['description'] ?? '',
-          'report_type': row['report_type'] ?? 'doubt',
+          'last_message': isGeneralReport ? '⚠️ [REPORT: ${row['report_type'] ?? 'Citizen Report'}] $desc' : desc,
+          'report_type': row['report_type'] ?? (isGeneralReport ? 'citizen_report' : 'doubt'),
           'status': row['status'] ?? 'pending',
           'created_at': row['created_at'],
+          'is_general_report': isGeneralReport,
         });
       }
     } catch (e) {
-      debugPrint('Error fetching President inquiries from Supabase: $e');
+      debugPrint('Error fetching President inquiries/reports from Supabase: $e');
     }
 
     // 2. Fetch local inquiries from SharedPreferences as fallback/merge

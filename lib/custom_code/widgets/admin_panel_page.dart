@@ -632,6 +632,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.ondemand_video_rounded),
                 text: 'Media Tasks'),
+            Tab(icon: Icon(Icons.smart_toy_outlined), text: 'Robots'),
             Tab(
                 icon: Icon(Icons.monetization_on_outlined),
                 text: 'Monetization'),

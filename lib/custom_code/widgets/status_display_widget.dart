@@ -40,6 +40,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'dart:async';
 
 class StatusDisplayWidget extends StatefulWidget {
@@ -444,6 +446,34 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         debugPrint('Error loading robot vibes: $e');
       }
 
+      // 4.3 Include President Vibes (Top priority with Golden Aura & Golden Tick)
+      try {
+        final presVibes = await PocketPresidentService.getActivePresidentVibes();
+        if (presVibes.isNotEmpty) {
+          final presId = PocketPresidentService.presidentId;
+          final presProfile = {
+            'id': presId,
+            'user_id': presId,
+            'name': 'President',
+            'profile_image_url': PocketPresidentService.presidentAvatarUrl,
+            'is_president': true,
+            'golden_tick': true,
+          };
+          final presGroup = {
+            'profile': presProfile,
+            'statuses': presVibes,
+            'is_own': false,
+            'is_group': false,
+            'is_president': true,
+            'golden_tick': true,
+          };
+          publicGroups[presId] = presGroup;
+          followingGroups[presId] = presGroup;
+        }
+      } catch (e) {
+        debugPrint('Error loading president vibes: $e');
+      }
+
       // 4.5 Compute is_fully_watched for each group
       void computeWatched(Map<String, Map<String, dynamic>> groups) {
         for (var group in groups.values) {
@@ -483,6 +513,12 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         if (a['is_own'] == true && b['is_own'] != true) return -1;
         if (a['is_own'] != true && b['is_own'] == true) return 1;
 
+        // 🏛️ President Vibes always at the top!
+        final aIsPres = a['is_president'] == true || a['profile']?['is_president'] == true;
+        final bIsPres = b['is_president'] == true || b['profile']?['is_president'] == true;
+        if (aIsPres && !bIsPres) return -1;
+        if (!aIsPres && bIsPres) return 1;
+
         final bool aWatched = isGroupWatched(a);
         final bool bWatched = isGroupWatched(b);
         // Unseen always comes before seen!
@@ -503,10 +539,12 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
 
       followingList.sort(sortingFunc);
 
-      // For public list: unseen mates are shuffled so fresh mates appear front and center!
-      final unseenPublic = publicList.where((p) => !isGroupWatched(p)).toList()..shuffle();
-      final seenPublic = publicList.where((p) => isGroupWatched(p)).toList()..sort(sortingFunc);
-      final sortedPublicList = [...unseenPublic, ...seenPublic];
+      // For public list: President stays at the very top (right after own vibes if any), then unseen, then seen
+      final presPublic = publicList.where((p) => p['is_president'] == true || p['profile']?['is_president'] == true).toList();
+      final otherPublic = publicList.where((p) => p['is_president'] != true && p['profile']?['is_president'] != true).toList();
+      final unseenPublic = otherPublic.where((p) => !isGroupWatched(p)).toList()..shuffle();
+      final seenPublic = otherPublic.where((p) => isGroupWatched(p)).toList()..sort(sortingFunc);
+      final sortedPublicList = [...presPublic, ...unseenPublic, ...seenPublic];
 
       // Cache the following list (primary view)
       _saveStatusesToCache(followingList);
@@ -1548,6 +1586,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         ? Map<String, dynamic>.from(profile['avatar_config'])
         : null;
 
+    final isPresident = statusGroup['is_president'] == true || profile?['is_president'] == true || PocketPresidentService.isPresidentId(groupId);
+    final isRobot = statusGroup['is_robot'] == true || profile?['is_robot'] == true || PocketRobotService.isRobotId(groupId);
+
     if (!isHorizontal) {
       return Container(
         margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
@@ -1568,7 +1609,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               children: [
                 _buildAvatarWithRing(
                   profileImageUrl,
-                  name,
+                  isPresident ? 'President' : name,
                   52,
                   isGroup: isGroup,
                   isWatched: isFullyWatched,
@@ -1582,11 +1623,36 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(isOwn ? 'My Vibes' : name,
-                          style: GoogleFonts.outfit(
-                              color: isFullyWatched ? Colors.white70 : Colors.white,
-                              fontSize: 15.5,
-                              fontWeight: FontWeight.w600)),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              isOwn ? 'My Vibes' : (isPresident ? 'President' : name),
+                              style: GoogleFonts.outfit(
+                                color: isFullyWatched ? Colors.white70 : Colors.white,
+                                fontSize: 15.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isPresident) ...[
+                            const SizedBox(width: 4.5),
+                            const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 16),
+                          ] else if (isRobot) ...[
+                            const SizedBox(width: 4.5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF06B6D4).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(4),
+                                border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.4), width: 0.8),
+                              ),
+                              child: Text('🤖 Robot', style: GoogleFonts.outfit(color: const Color(0xFF06B6D4), fontSize: 9.5, fontWeight: FontWeight.bold)),
+                            ),
+                          ],
+                        ],
+                      ),
                       const SizedBox(height: 2),
                       Text(
                           isGroup
@@ -1632,7 +1698,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           children: [
             _buildAvatarWithRing(
               profileImageUrl,
-              name,
+              isPresident ? 'President' : name,
               72,
               isGroup: isGroup,
               isWatched: isFullyWatched,
@@ -1642,14 +1708,28 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               onTap: () => _openStatusViewer(index, activeList),
             ),
             const SizedBox(height: 4),
-            Text(isOwn ? 'My Vibes' : name,
-                style: GoogleFonts.outfit(
-                  color: isFullyWatched ? Colors.white60 : Colors.white,
-                  fontSize: 12.5,
-                  fontWeight: isFullyWatched ? FontWeight.w400 : FontWeight.w600,
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    isOwn ? 'My Vibes' : (isPresident ? 'President' : name),
+                    style: GoogleFonts.outfit(
+                      color: isFullyWatched ? Colors.white60 : Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: isFullyWatched ? FontWeight.w400 : FontWeight.w600,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
                 ),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1),
+                if (isPresident) ...[
+                  const SizedBox(width: 3),
+                  const Icon(Icons.verified_rounded, color: Color(0xFFFFD700), size: 12),
+                ],
+              ],
+            ),
           ],
         ),
       ),
@@ -1711,6 +1791,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
     }
 
+    final isPresAvatar = PocketPresidentService.isPresidentId(profileId) ||
+        profile?['is_president'] == true;
+
     final Widget avatarInner = Container(
       padding: const EdgeInsets.all(2),
       decoration: const BoxDecoration(color: Colors.black, shape: BoxShape.circle),
@@ -1730,20 +1813,53 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   ),
                 ),
               )
-            : IgnorePointer(
-                ignoring: true,
-                child: VectorAvatarWidget(
-                  config: avatarConfig,
-                  size: size * 0.85,
-                  showAura: true,
-                  useFlame: true,
-                ),
-              ),
+            : (isPresAvatar
+                ? IgnorePointer(
+                    ignoring: true,
+                    child: PresidentAvatarWidget(
+                      size: size * 0.85,
+                      showGlow: false,
+                    ),
+                  )
+                : IgnorePointer(
+                    ignoring: true,
+                    child: VectorAvatarWidget(
+                      config: avatarConfig,
+                      size: size * 0.85,
+                      showAura: true,
+                      useFlame: true,
+                    ),
+                  )),
       ),
     );
 
     Widget ringWidget;
-    if (isWatched) {
+    if (isPresAvatar) {
+      ringWidget = Container(
+        width: size,
+        height: size,
+        padding: const EdgeInsets.all(2.5),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: const SweepGradient(
+            colors: [
+              Color(0xFFFFD700), // Gold
+              Color(0xFFFFA500), // Amber
+              Color(0xFFFFE082), // Light Gold
+              Color(0xFFFFD700),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: isWatched ? 0.25 : 0.65),
+              blurRadius: isWatched ? 5 : 10,
+              spreadRadius: isWatched ? 0 : 2,
+            ),
+          ],
+        ),
+        child: avatarInner,
+      );
+    } else if (isWatched) {
       ringWidget = Container(
         width: size,
         height: size,
@@ -3570,7 +3686,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFF000000), Color(0xFF000000)],
+            colors: [Color(0xFF000000), Color(0xFF000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -3907,7 +4023,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFF000000), Color(0xFF000000)],
+            colors: [Color(0xFF000000), Color(0xFF000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -5124,7 +5240,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFF000000), Color(0xFF000000)],
+            colors: [Color(0xFF000000), Color(0xFF000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),
@@ -5431,7 +5547,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         height: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [const Color(0xFF000000), Color(0xFF000000)],
+            colors: [Color(0xFF000000), Color(0xFF000000)],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
           ),

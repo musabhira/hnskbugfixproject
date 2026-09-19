@@ -360,12 +360,10 @@ class _ConversationTileState extends State<ConversationTile> {
         child: material.InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: () {
-            final isSnap = widget.conversation.lastMessage?.contains('Snap') ==
-                    true ||
-                widget.conversation.lastMessage?.contains('🔥 Pocket Snap') ==
-                    true ||
-                widget.conversation.lastMessage?.contains('⚡ Pocket Snap') ==
-                    true;
+            final isSnap = !PocketPresidentService.isPresidentId(widget.conversation.id) &&
+                (widget.conversation.lastMessage?.contains('Snap') == true ||
+                    widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
+                    widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true);
             if (isSnap &&
                 widget.conversation.unreadCount > 0 &&
                 widget.onSnapViewTap != null) {
@@ -666,7 +664,8 @@ class _ConversationTileState extends State<ConversationTile> {
                                     if (widget.conversation.isGroup ||
                                         widget.conversation.isTool ||
                                         widget.conversation.isNotification ||
-                                        PocketRobotService.isRobotId(widget.conversation.id)) {
+                                        PocketRobotService.isRobotId(widget.conversation.id) ||
+                                        PocketPresidentService.isPresidentId(widget.conversation.id)) {
                                       return const SizedBox.shrink();
                                     }
                                     final lastTime = widget.conversation.lastMessageTime;
@@ -761,15 +760,10 @@ class _ConversationTileState extends State<ConversationTile> {
                           Expanded(
                             child: Builder(
                               builder: (context) {
-                                final isSnap = widget.conversation.lastMessage
-                                            ?.contains('Snap') ==
-                                        true ||
-                                    widget.conversation.lastMessage
-                                            ?.contains('🔥 Pocket Snap') ==
-                                        true ||
-                                    widget.conversation.lastMessage
-                                            ?.contains('⚡ Pocket Snap') ==
-                                        true;
+                                final isSnap = !PocketPresidentService.isPresidentId(widget.conversation.id) &&
+                                    (widget.conversation.lastMessage?.contains('Snap') == true ||
+                                        widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
+                                        widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true);
 
                                 if (isSnap) {
                                   if (widget.conversation.unreadCount > 0) {
@@ -959,7 +953,8 @@ class _ConversationTileState extends State<ConversationTile> {
                 if (!widget.conversation.isGroup &&
                     !widget.conversation.isTool &&
                     !widget.conversation.isNotification &&
-                    !widget.conversation.isActiveTimer) ...[
+                    !widget.conversation.isActiveTimer &&
+                    !PocketPresidentService.isPresidentId(widget.conversation.id)) ...[
                   const SizedBox(width: 6),
                   material.IconButton(
                     icon: const Icon(

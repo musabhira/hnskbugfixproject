@@ -262,34 +262,21 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       }
     }
 
-    // Determine strict active currentDay based on consecutive completions
-    int calculatedCurrentDay = 1;
-    for (int d = 1; d <= _totalDays; d++) {
-      final isComp = completed.contains(d) || (d <= lastCompDay && d < 10);
-      if (isComp) {
-        calculatedCurrentDay = d + 1;
-      } else {
-        break;
-      }
-    }
-    // Respect Supabase profile learning_day if it represents legitimate authenticated progress
-    if (progRaw.currentDay > calculatedCurrentDay) {
-      calculatedCurrentDay = progRaw.currentDay;
-      for (int d = 1; d < calculatedCurrentDay; d++) {
-        completed.add(d);
-      }
-    }
-    calculatedCurrentDay = calculatedCurrentDay.clamp(1, _totalDays);
+    // 🪙 Audio Directive: Player's standing and active roadmap level is strictly governed by Pocket Score!
+    // E.g. 1000 PS => Level 6. If Pocket Score decreases, target level decreases along with it!
+    final scoreLevel = PocketScoreLevelEngine.getLevelFromScore(score);
+    int calculatedCurrentDay = scoreLevel.clamp(1, _totalDays);
 
-    // Prune any stray test flags above calculatedCurrentDay for this user
-    if ((prefs.getInt('pocket_learning_user_stage_$uid') ?? 1) > calculatedCurrentDay) {
-      await prefs.setInt('pocket_learning_user_stage_$uid', calculatedCurrentDay);
-      await prefs.setInt('learning_day_$uid', calculatedCurrentDay);
-      for (int d = calculatedCurrentDay + 1; d <= _totalDays; d++) {
-        await prefs.remove('pocket_day_${uid}_${d}_unlocked');
-        await prefs.remove('pocket_day_${uid}_${d}_completed');
-      }
+    // Synchronize completed days up to current standing
+    for (int d = 1; d < calculatedCurrentDay; d++) {
+      completed.add(d);
     }
+    // Remove any completion flags above calculatedCurrentDay if score was deducted
+    completed.removeWhere((d) => d >= calculatedCurrentDay);
+
+    // Sync persisted state with current score level
+    await prefs.setInt('pocket_learning_user_stage_$uid', calculatedCurrentDay);
+    await prefs.setInt('learning_day_$uid', calculatedCurrentDay);
 
     final effectiveDay = calculatedCurrentDay;
     final prog = progRaw.copyWith(currentDay: effectiveDay);
@@ -1228,11 +1215,47 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
                 const SizedBox(width: 8),
 
-                // Pocket Score Capsule (Unified Score)
-                _buildHudCapsule(
-                  icon: Icons.monetization_on_rounded,
-                  color: const Color(0xFFFFD700),
-                  label: PocketScoreLevelEngine.getProgressLabel(_unifiedPocketScore),
+                // 🪙 Pocket Score (PS) Capsule (Audio Directive: No dollar sign, use "PS", show coins, no level text at top)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700),
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        child: Text(
+                          'PS',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '🪙 $_unifiedPocketScore',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
 
                 const Spacer(),
@@ -1664,35 +1687,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  Widget _buildHudCapsule({
-    required IconData icon,
-    required Color color,
-    required String label,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.35)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 15),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
   Widget _buildRuleLevelNode(double screenWidth) {
@@ -2055,32 +2049,34 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ),
 
-              // 🪙 Pocket Score (PS) Badge Under Each Level Node
+              // 🪙 Pocket Score (PS) Target Badge Under Each Level Node (Audio Directive: Significantly larger & prominent!)
               if (!isWaitingForMidnight)
                 Positioned(
-                  top: nodeSize - 2,
+                  top: nodeSize - 4,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: isCurrent
                           ? const Color(0xFFFFFC00)
                           : (isCompleted
                               ? const Color(0xFF0F172A)
                               : const Color(0xFF1E293B)),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: isCurrent
-                            ? Colors.black26
+                            ? Colors.black38
                             : (isCompleted
                                 ? const Color(0xFF10B981)
-                                : Colors.white24),
-                        width: 0.8,
+                                : const Color(0xFFFFD700).withValues(alpha: 0.6)),
+                        width: 1.2,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
+                          color: isCurrent
+                              ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+                              : Colors.black.withValues(alpha: 0.6),
+                          blurRadius: isCurrent ? 8 : 4,
+                          offset: const Offset(0, 2),
                         ),
                       ],
                     ),
@@ -2093,8 +2089,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 ? const Color(0xFF34D399)
                                 : const Color(0xFFFFD700)),
                         fontWeight: FontWeight.w900,
-                        fontSize: 8,
-                        letterSpacing: 0.2,
+                        fontSize: 11.5,
+                        letterSpacing: 0.3,
                       ),
                     ),
                   ),
