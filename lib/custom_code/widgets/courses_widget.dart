@@ -8,7 +8,6 @@ import 'package:flutter/material.dart';
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
 import 'dart:ui';
-import 'package:google_fonts/google_fonts.dart';
 
 // Set your widget name, define your parameter, and then add the
 // boilerplate code using the green button on the right!

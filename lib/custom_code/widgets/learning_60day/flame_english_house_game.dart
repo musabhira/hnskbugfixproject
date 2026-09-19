@@ -3935,6 +3935,7 @@ class FlameEnglishHouseWidget extends StatefulWidget {
   final bool? isDamaged;
   final String? houseId;
   final String? paletteId;
+  final bool showTestingControls;
 
   const FlameEnglishHouseWidget({
     super.key,
@@ -3943,6 +3944,7 @@ class FlameEnglishHouseWidget extends StatefulWidget {
     this.isDamaged,
     this.houseId,
     this.paletteId,
+    this.showTestingControls = true,
   });
 
   @override
@@ -4655,8 +4657,9 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
             child: GameWidget(game: _game),
           ),
 
-          // 🚫 Condemned by Presidential Decree Banner
-          if (_defenseStatus.isBanned)
+          if (widget.showTestingControls) ...[
+            // 🚫 Condemned by Presidential Decree Banner
+            if (_defenseStatus.isBanned)
             Positioned(
               top: 38,
               left: 14,
@@ -5261,6 +5264,7 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
             ),
           ),
         ],
+      ],
       ),
     );
   }

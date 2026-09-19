@@ -61,8 +61,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   bool _isDailyLimitReached = false;
   int _attacksUsed = 0;
 
-  // 🔍 Interactive Estate Zoom & Pan Controls
+  // 🔍 Interactive Estate Zoom & Pan Controls: Spherical World / Rolling Hills
   int _defenderScore = 0;
+  late final TransformationController _transformationController;
+  final ValueNotifier<double> _zoomScaleNotifier = ValueNotifier<double>(1.0);
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -77,6 +79,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     WidgetsBinding.instance.addObserver(this);
     _defenderHp = widget.neighbor.hp;
     _isDefenderDamaged = widget.neighbor.isDamaged;
+
+    _transformationController = TransformationController();
+    _transformationController.addListener(() {
+      final scale = _transformationController.value.getMaxScaleOnAxis();
+      if ((scale - _zoomScaleNotifier.value).abs() > 0.005) {
+        _zoomScaleNotifier.value = scale;
+      }
+    });
 
     _pulseController = AnimationController(
       vsync: this,
@@ -110,6 +120,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _combatTimer?.cancel();
+    _transformationController.dispose();
+    _zoomScaleNotifier.dispose();
     _pulseController.dispose();
     _shakeController.dispose();
     _beamController.dispose();
