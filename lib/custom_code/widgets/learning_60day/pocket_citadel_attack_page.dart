@@ -76,6 +76,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   late AnimationController _coinController;
   late AnimationController _heroChargeController;
   late AnimationController _ambientController;
+  late AnimationController _profileDrawerController;
 
   @override
   void initState() {
@@ -123,6 +124,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       vsync: this,
       duration: const Duration(seconds: 8),
     )..repeat();
+    _profileDrawerController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 320),
+    )..addListener(() {
+        if (mounted) setState(() {});
+      });
 
     _loadBattleState();
   }
@@ -140,31 +147,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     _coinController.dispose();
     _heroChargeController.dispose();
     _ambientController.dispose();
+    _profileDrawerController.dispose();
     super.dispose();
   }
 
 
   void _openDefenderProfile() {
     HapticFeedback.selectionClick();
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => MainProfileWidget(
-          userId: isUuid ? widget.neighbor.id : null,
-          preloadedProfile: {
-            'user_id': widget.neighbor.id,
-            'first_name': widget.neighbor.name,
-            'bio': widget.neighbor.statusMessage,
-            'learning_day': widget.neighbor.day,
-            'streak': widget.neighbor.streak,
-            'rank': widget.neighbor.rank,
-            'palette_id': widget.neighbor.paletteId,
-            'is_pocket_robo': widget.neighbor.isPocketRobo,
-          },
-        ),
-      ),
-    );
+    if (_profileDrawerController.value > 0.5) {
+      _profileDrawerController.reverse();
+    } else {
+      _profileDrawerController.forward();
+    }
   }
 
   @override
@@ -488,14 +482,29 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     const double houseTop = groundY - 14.0 - houseH; // 526.0
 
     return PopScope(
-      canPop: true,
-      onPopInvokedWithResult: (didPop, result) {},
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        if (_profileDrawerController.value > 0.1) {
+          _profileDrawerController.reverse();
+          return;
+        }
+        if (_isQuestionSheetOpen) {
+          setState(() => _isQuestionSheetOpen = false);
+          return;
+        }
+        Navigator.of(context).pop(_raidStep == 3);
+      },
       child: Scaffold(
         backgroundColor: isNight ? const Color(0xFF030712) : const Color(0xFF0284C7),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final w = constraints.maxWidth;
             final h = constraints.maxHeight;
+            final bottomPad = MediaQuery.of(context).padding.bottom;
+            final collapsedH = 54.0 + bottomPad;
+            final drawerMaxH = h * 0.92;
+            final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
             // 🛡️ Mathematically guaranteed to cover 100% of the screen (Zero blue borders / letterbox):
             final minScale = math.max(w / worldW, h / worldH);
@@ -783,16 +792,43 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   child: _buildTopHeaderCapsule(isNight: isNight, cycleLabel: cycleLabel),
                 ),
 
-                // 9. Bottom Stacked Small Red "Attack" Button with Level & PS Pill
-                if (!_isQuestionSheetOpen)
-                  Positioned(
-                    bottom: 24,
-                    left: 0,
-                    right: 0,
-                    child: _buildBottomAttackSection(),
+                // 9. Dimmed backdrop behind Profile Drawer
+                if (!_isQuestionSheetOpen && _profileDrawerController.value > 0.02)
+                  Positioned.fill(
+                    child: GestureDetector(
+                      onTap: () => _profileDrawerController.reverse(),
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.65 * _profileDrawerController.value),
+                      ),
+                    ),
                   ),
 
-                // 10. Stacked Expanded Question / Challenge Sheet (when opened)
+                // 10. Bottom Stacked Small Red "Attack" Button with Level & PS Pill (sitting right above peek bar)
+                if (!_isQuestionSheetOpen)
+                  Positioned(
+                    bottom: collapsedH + 10.0,
+                    left: 0,
+                    right: 0,
+                    child: Opacity(
+                      opacity: (1.0 - _profileDrawerController.value * 2.5).clamp(0.0, 1.0),
+                      child: IgnorePointer(
+                        ignoring: _profileDrawerController.value > 0.1,
+                        child: _buildBottomAttackSection(),
+                      ),
+                    ),
+                  ),
+
+                // 11. Draggable & Tappable Profile Bottom Sheet Drawer
+                if (!_isQuestionSheetOpen)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: drawerCurrentH,
+                    child: _buildProfileDrawer(drawerMaxH, collapsedH, bottomPad),
+                  ),
+
+                // 12. Stacked Expanded Question / Challenge Sheet (when opened)
                 if (_isQuestionSheetOpen)
                   Positioned(
                     bottom: 0,
@@ -1175,6 +1211,205 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// 📇 Draggable & Tappable Bottom Sheet Drawer for Citadel Defender Profile
+  Widget _buildProfileDrawer(double maxHeight, double collapsedH, double bottomPad) {
+    final prog = _profileDrawerController.value;
+    final isExpanded = prog > 0.5;
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+        border: Border.all(
+          color: const Color(0xFF8B5CF6).withValues(alpha: 0.45 + (prog * 0.35)),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.55),
+            blurRadius: 16,
+            spreadRadius: 2,
+            offset: const Offset(0, -4),
+          ),
+          if (prog > 0.15)
+            BoxShadow(
+              color: const Color(0xFF8B5CF6).withValues(alpha: 0.22 * prog),
+              blurRadius: 24,
+              offset: const Offset(0, -2),
+            ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        child: Column(
+          children: [
+            // Grab Header Bar (handles dragging and tapping)
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onVerticalDragUpdate: (details) {
+                final delta = details.primaryDelta ?? 0;
+                final range = maxHeight - collapsedH;
+                if (range > 0) {
+                  _profileDrawerController.value -= delta / range;
+                }
+              },
+              onVerticalDragEnd: (details) {
+                final velocity = details.primaryVelocity ?? 0;
+                if (velocity < -250) {
+                  _profileDrawerController.forward();
+                } else if (velocity > 250) {
+                  _profileDrawerController.reverse();
+                } else if (_profileDrawerController.value > 0.35) {
+                  _profileDrawerController.forward();
+                } else {
+                  _profileDrawerController.reverse();
+                }
+              },
+              onTap: () {
+                if (_profileDrawerController.value > 0.5) {
+                  _profileDrawerController.reverse();
+                } else {
+                  _profileDrawerController.forward();
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.fromLTRB(16, 6, 16, prog < 0.1 ? (6 + bottomPad) : 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B).withValues(alpha: 0.95),
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.white.withValues(alpha: prog * 0.12),
+                      width: 1,
+                    ),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Pull Handle Pill
+                    Container(
+                      width: 38,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.45),
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        // Defender Avatar Mini Bubble
+                        Container(
+                          width: 26,
+                          height: 26,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFFA78BFA), width: 1.2),
+                            color: const Color(0xFF0F172A),
+                          ),
+                          child: ClipOval(
+                            child: VectorAvatarWidget(
+                              config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
+                              size: 26,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  '${widget.neighbor.name}\'s Profile',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFFA78BFA).withValues(alpha: 0.5),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  'Lvl ${widget.neighbor.day}',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFDDD6FE),
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 9.5,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Expand / Collapse Indicator
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (!isExpanded)
+                              Padding(
+                                padding: const EdgeInsets.only(right: 2),
+                                child: Text(
+                                  'Pull up',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white54,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            Icon(
+                              isExpanded ? Icons.keyboard_arrow_down_rounded : Icons.keyboard_arrow_up_rounded,
+                              color: const Color(0xFFA78BFA),
+                              size: 22,
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Profile View Body (Mounted only when drawer opens)
+            if (prog > 0.05)
+              Expanded(
+                child: Container(
+                  color: const Color(0xFF0F172A),
+                  child: MainProfileWidget(
+                    userId: isUuid ? widget.neighbor.id : null,
+                    preloadedProfile: {
+                      'user_id': widget.neighbor.id,
+                      'first_name': widget.neighbor.name,
+                      'bio': widget.neighbor.statusMessage,
+                      'learning_day': widget.neighbor.day,
+                      'streak': widget.neighbor.streak,
+                      'rank': widget.neighbor.rank,
+                      'palette_id': widget.neighbor.paletteId,
+                      'is_pocket_robo': widget.neighbor.isPocketRobo,
+                    },
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
