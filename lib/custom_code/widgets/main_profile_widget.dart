@@ -29,6 +29,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -172,10 +173,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   @override
   void initState() {
     super.initState();
-    // Default to Public Profile view when opening another user's profile
-    if (!isMe) {
-      _isPublicProfileView = true;
-    }
+    // Default to Account view for both own and searched profiles
+    _isPublicProfileView = false;
     // Independent tab controllers: My Account (1 tab) and Public Profile.
     // Show Posters only in Main Profile (isMe: 3 tabs: Gallery, Thoughts, Posters).
     // In Search / Other Profile (!isMe: 2 tabs: Gallery, Thoughts).
@@ -1190,6 +1189,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     onPressed: () => AutoLoginBottomSheet.show(context),
                     tooltip: 'Switch Account',
                   ),
+                  material.IconButton(
+                    icon: const Icon(material.Icons.settings_rounded, size: 22),
+                    color: textColor,
+                    onPressed: () {
+                      material.Navigator.push(
+                        context,
+                        material.MaterialPageRoute(
+                          builder: (context) => const SettingsPage(),
+                        ),
+                      );
+                    },
+                    tooltip: 'Settings',
+                  ),
                 ],
                 if (!isMe)
                   PopupMenuButton<String>(
@@ -2065,8 +2077,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final avatar = _getAvatarConfig();
     final bannerUrl = _profileData?['banner_image_url'] ?? _profileData?['banner_url'];
 
-    // If viewing Public Profile or another user's profile and custom banner exists, display it:
-    if ((_isPublicProfileView || !isMe) && bannerUrl != null && bannerUrl.toString().isNotEmpty) {
+    // If viewing Public Profile and custom banner exists, display it:
+    if (_isPublicProfileView && bannerUrl != null && bannerUrl.toString().isNotEmpty) {
       return CachedNetworkImage(
         imageUrl: bannerUrl.toString(),
         fit: BoxFit.cover,
@@ -2117,7 +2129,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final shopName = _profileData?['shop_name'];
     final bio = _profileData?['bio'] ?? '';
     final profileUrl = _profileData?['profile_image_url'];
-    final isVerified = _profileData?['verified'] == true;
+    final isVerified = _profileData?['verified'] == true ||
+        _profileData?['is_vip'] == true ||
+        _profileData?['is_subscribed'] == true;
     final slug = _profileData?['slug'];
 
     const isDark = true;
@@ -3405,11 +3419,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ),
               if (isVerified)
-                Icon(
-                  Icons.verified,
-                  color: activeStage.tickColor,
-                  size: 18,
-                ),
+                _buildVerifiedGoldenTick(),
               if (!hideStageBadge) _buildProfileStageBadge(activeStage),
             ],
           ),
@@ -3533,6 +3543,27 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           }(),
           // Hand Skill 3D Web link hidden per user request
         ],
+      ),
+    );
+  }
+
+  Widget _buildVerifiedGoldenTick({double size = 18}) {
+    return ShaderMask(
+      shaderCallback: (Rect bounds) {
+        return const LinearGradient(
+          colors: [
+            Color(0xFFFFF176),
+            Color(0xFFFFD700),
+            Color(0xFFFFA000),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ).createShader(bounds);
+      },
+      child: Icon(
+        Icons.verified_rounded,
+        color: Colors.white,
+        size: size,
       ),
     );
   }

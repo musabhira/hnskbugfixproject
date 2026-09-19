@@ -5448,13 +5448,6 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                   }
                                 },
                               ),
-                              const SizedBox(width: 6),
-                              // Settings
-                              _buildHeaderIconButton(
-                                context,
-                                icon: material.Icons.settings_rounded,
-                                onTap: onTapSettings,
-                              ),
                             ],
                           ),
                         ],

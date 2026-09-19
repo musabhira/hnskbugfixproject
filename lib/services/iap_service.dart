@@ -172,6 +172,7 @@ class IAPService {
             'subscription_tier': 'vip_gold',
             'subscription_status': 'active',
             'vip_product_id': purchase.productID,
+            'verified': true,
             'updated_at': DateTime.now().toIso8601String(),
           }).eq('user_id', userId);
 

@@ -914,7 +914,9 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         final profile = _searchResults[index];
         final name = profile['name'] ?? 'Partner';
         final shopName = profile['shop_name'];
-        final isVerified = profile['verified'] == true;
+        final isVerified = profile['verified'] == true ||
+            profile['is_vip'] == true ||
+            profile['is_subscribed'] == true;
         final isRobot = profile['is_robot'] == true;
         final userDay = (profile['learning_day'] as num?)?.toInt() ?? 1;
         final userStage = isRobot ? null : LearningMilestoneStage.getStageForDay(userDay);
@@ -1051,9 +1053,24 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                           ),
                           if (isVerified) ...[
                             const SizedBox(width: 4),
-                            Icon(Icons.verified_rounded,
-                                color: userStage?.tickColor ?? const Color(0xFF38BDF8),
-                                size: 15),
+                            ShaderMask(
+                              shaderCallback: (Rect bounds) {
+                                return const LinearGradient(
+                                  colors: [
+                                    Color(0xFFFFF176),
+                                    Color(0xFFFFD700),
+                                    Color(0xFFFFA000),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ).createShader(bounds);
+                              },
+                              child: const Icon(
+                                Icons.verified_rounded,
+                                color: Colors.white,
+                                size: 15,
+                              ),
+                            ),
                           ],
                         ],
                       ),
