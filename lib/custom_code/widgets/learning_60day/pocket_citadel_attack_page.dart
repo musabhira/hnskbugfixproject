@@ -166,8 +166,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   bool _hasInitializedTransform = false;
   bool? _manualNightOverride;
 
-  late AnimationController _pulseController;
-  late Animation<double> _pulseAnimation;
   late AnimationController _shakeController;
   late AnimationController _beamController;
   late AnimationController _particleController;
@@ -189,14 +187,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         _zoomScaleNotifier.value = scale;
       }
     });
-
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
-    _pulseAnimation = Tween<double>(begin: 1.0, end: 1.06).animate(
-      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
-    );
 
     _shakeController = AnimationController(
       vsync: this,
@@ -238,7 +228,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     _combatTimer?.cancel();
     _transformationController.dispose();
     _zoomScaleNotifier.dispose();
-    _pulseController.dispose();
     _shakeController.dispose();
     _beamController.dispose();
     _particleController.dispose();
@@ -383,6 +372,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         _cooldownHoursLeft = cooldownMinutes / 60.0;
         _isTargetProtected = isProtected;
         _protectionHoursLeft = protectionMinutes / 60.0;
+        if (isProtected) {
+          _isDefenderDamaged = true;
+        }
         _attacksUsed = attacksUsed;
         _isDailyLimitReached = isDailyLimitReached;
         _defenseQuestions = randomizedQuestions;
@@ -434,6 +426,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
     await PocketFortressDefenseService.recordTargetAttacked(widget.neighbor.id);
     await PocketFortressDefenseService.recordAttackLaunchedToday();
+    // 🛡️ User Audio Directive: 24-Hour Presidential Protection activated after raid
+    await PocketFortressDefenseService.placeUnderPresidentialProtection(widget.neighbor.id, hours: 24);
 
     // ⚔️ Audio Directive: Raider earns 10 to 15 Pocket Score (PS) points globally
     final looted = (result['lootedCoins'] as num? ?? 15).toInt();
@@ -447,6 +441,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     setState(() {
       _defenderScore = math.max(0, _defenderScore - (looted > 0 ? looted : 15));
       _isDefenderDamaged = true;
+      _isTargetProtected = true;
+      _protectionHoursLeft = 24.0;
     });
 
     await Future.delayed(const Duration(milliseconds: 1400));
@@ -692,6 +688,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             left: 900.0 + 88 - 18,
                             child: _buildChimneySmoke(),
                           ),
+
+                          // 3. Post-Attack Battle Damage (Billowing dark smoke columns & fiery embers)
+                          if (_isDefenderDamaged || _isTargetProtected)
+                            _buildPostAttackDamageEffects(houseLeft, houseTop, houseW, houseH),
+
+                          // 3B. Presidential Police & Military Guard Cordon with Barricade & Notice Board
+                          if (_isDefenderDamaged || _isTargetProtected)
+                            _buildPresidentialSecurityLayer(houseLeft, houseTop, houseW, houseH, groundY),
 
                           // 4. Avatar-Specific Weapon Discharge & Particle Strike Layer
                           Positioned.fill(
@@ -944,6 +948,573 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
 
 
+  /// 💣 Battle Aftermath: Billowing dark combat smoke columns & fiery embers rising from damaged citadel
+  Widget _buildPostAttackDamageEffects(double houseLeft, double houseTop, double houseW, double houseH) {
+    return AnimatedBuilder(
+      animation: _ambientController,
+      builder: (context, _) {
+        final prog = _ambientController.value;
+        return Positioned(
+          left: houseLeft - 40,
+          top: houseTop - 90,
+          width: houseW + 80,
+          height: houseH + 90,
+          child: IgnorePointer(
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Smoke plume 1: Left roof breach
+                Positioned(
+                  left: 70,
+                  top: 30,
+                  child: _buildBillowingSmokeColumn(prog, phase: 0.0, width: 62),
+                ),
+                // Smoke plume 2: Center gate blast point
+                Positioned(
+                  left: (houseW + 80) / 2 - 25,
+                  top: 110,
+                  child: _buildBillowingSmokeColumn(prog, phase: 0.35, width: 78),
+                ),
+                // Smoke plume 3: Right tower / roof breach
+                Positioned(
+                  right: 70,
+                  top: 40,
+                  child: _buildBillowingSmokeColumn(prog, phase: 0.70, width: 58),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildBillowingSmokeColumn(double prog, {double phase = 0.0, double width = 60}) {
+    final t = (prog + phase) % 1.0;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: List.generate(4, (index) {
+        final puffProg = (t + (index * 0.25)) % 1.0;
+        final size = 16.0 + (puffProg * width * 0.55);
+        final opacity = (1.0 - puffProg) * 0.65;
+        final driftX = math.sin((puffProg + phase) * 2 * math.pi) * 14.0;
+        return Transform.translate(
+          offset: Offset(driftX, -puffProg * 45.0),
+          child: Container(
+            width: size,
+            height: size,
+            margin: const EdgeInsets.only(bottom: 3),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF1E293B).withValues(alpha: opacity),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0F172A).withValues(alpha: opacity * 0.5),
+                  blurRadius: 10,
+                ),
+                if (index == 3)
+                  BoxShadow(
+                    color: const Color(0xFFFF9800).withValues(alpha: opacity * 0.5),
+                    blurRadius: 14,
+                  ),
+              ],
+            ),
+            child: (index == 3)
+                ? Center(
+                    child: Container(
+                      width: 5,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFFFFB74D).withValues(alpha: opacity),
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+        );
+      }),
+    );
+  }
+
+  /// 🛡️ Presidential Protection Layer: Police Officers, Army Guards, Emergency Strobes, Hazard Barricade & Warning Sign
+  Widget _buildPresidentialSecurityLayer(double houseLeft, double houseTop, double houseW, double houseH, double groundY) {
+    return AnimatedBuilder(
+      animation: _ambientController,
+      builder: (context, _) {
+        final prog = _ambientController.value;
+        final isRedFlash = math.sin(prog * 10 * math.pi) > 0;
+
+        return Positioned(
+          left: 900.0 - 240.0,
+          top: houseTop + houseH - 95.0,
+          width: 480.0,
+          height: 190.0,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // 1. Flashing Red and Blue Police Emergency Beacon Halos on Ground
+              Positioned(
+                left: 35,
+                top: 30,
+                child: Container(
+                  width: 90,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.45),
+                        blurRadius: 28,
+                        spreadRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 35,
+                top: 30,
+                child: Container(
+                  width: 90,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (isRedFlash ? const Color(0xFF3B82F6) : const Color(0xFFEF4444)).withValues(alpha: 0.30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isRedFlash ? const Color(0xFF3B82F6) : const Color(0xFFEF4444)).withValues(alpha: 0.45),
+                        blurRadius: 28,
+                        spreadRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 2. Police Officers Standing Guard
+              Positioned(
+                left: 36,
+                top: 12,
+                child: _buildPoliceOfficerSprite(isLeft: true),
+              ),
+              Positioned(
+                right: 36,
+                top: 12,
+                child: _buildPoliceOfficerSprite(isLeft: false),
+              ),
+
+              // 3. Presidential Military Defense Soldiers
+              Positioned(
+                left: 114,
+                top: 24,
+                child: _buildMilitarySoldierSprite(hasShield: true),
+              ),
+              Positioned(
+                right: 114,
+                top: 24,
+                child: _buildMilitarySoldierSprite(hasShield: false),
+              ),
+
+              // 4. Yellow & Black Hazard Barricade with Official Presidential Protection Notice Board
+              Positioned(
+                left: 80,
+                right: 80,
+                bottom: 6,
+                child: GestureDetector(
+                  onTap: _showPresidentialProtectionInfoDialog,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.96),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700),
+                        width: 1.6,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.7),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                        BoxShadow(
+                          color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.35),
+                          blurRadius: 12,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Striped Hazard Caution Bar
+                        Container(
+                          height: 7,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFFFACC15),
+                                Colors.black,
+                                Color(0xFFFACC15),
+                                Colors.black,
+                                Color(0xFFFACC15),
+                                Colors.black,
+                                Color(0xFFFACC15),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🏛️', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'PRESIDENTIAL PROTECTION',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 12.5,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'RESTRICTED SECURITY ZONE • ⏱️ ${_protectionHoursLeft.toStringAsFixed(1)}h COOLDOWN',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          'Guarded by Police & Army • Tap for Details',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white70,
+                            fontSize: 9,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// 👮‍♂️ Detailed Police Officer Sprite
+  Widget _buildPoliceOfficerSprite({required bool isLeft}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Peaked Police Cap with Gold Badge
+        Container(
+          width: 22,
+          height: 8,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E3A8A),
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+          ),
+          child: Center(
+            child: Container(
+              width: 4,
+              height: 4,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFD700),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        ),
+        // Head / Face
+        Container(
+          width: 14,
+          height: 14,
+          decoration: const BoxDecoration(
+            color: Color(0xFFFFDFBA),
+            shape: BoxShape.circle,
+          ),
+        ),
+        // Torso with High-Vis Safety Vest & Radio
+        Container(
+          width: 26,
+          height: 24,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E3A8A),
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: Stack(
+            children: [
+              // High-vis yellow safety vest
+              Center(
+                child: Container(
+                  width: 16,
+                  height: 22,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFACC15),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'POLICE',
+                      style: TextStyle(
+                        fontSize: 4.5,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Shoulder Radio / Badge
+              Positioned(
+                right: isLeft ? 1 : null,
+                left: isLeft ? null : 1,
+                top: 2,
+                child: Container(
+                  width: 4,
+                  height: 6,
+                  decoration: BoxDecoration(
+                    color: Colors.black87,
+                    borderRadius: BorderRadius.circular(1),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Dark Pants
+        Container(
+          width: 18,
+          height: 20,
+          color: const Color(0xFF0F172A),
+        ),
+        // Polished Black Boots
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 8, height: 6, color: Colors.black),
+            const SizedBox(width: 2),
+            Container(width: 8, height: 6, color: Colors.black),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// 🪖 Detailed Presidential Defense Soldier Sprite
+  Widget _buildMilitarySoldierSprite({required bool hasShield}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        if (hasShield)
+          Container(
+            width: 18,
+            height: 48,
+            margin: const EdgeInsets.only(right: 3),
+            decoration: BoxDecoration(
+              color: const Color(0xFF334155),
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                  blurRadius: 4,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Text('🛡️', style: TextStyle(fontSize: 10)),
+                Text(
+                  'GUARD',
+                  style: TextStyle(
+                    fontSize: 4,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFFFFD700),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Black Tactical Beret with Gold Badge
+            Container(
+              width: 20,
+              height: 8,
+              decoration: BoxDecoration(
+                color: const Color(0xFF022C22),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Container(
+                  width: 5,
+                  height: 5,
+                  margin: const EdgeInsets.only(left: 3),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFFFD700),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+            ),
+            // Head
+            Container(
+              width: 14,
+              height: 13,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFDFBA),
+                shape: BoxShape.circle,
+              ),
+            ),
+            // Tactical Camo Armor Torso
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: const Color(0xFF064E3B),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Center(
+                child: Icon(Icons.shield, size: 12, color: Colors.white70),
+              ),
+            ),
+            // Camo Combat Trousers
+            Container(
+              width: 18,
+              height: 20,
+              color: const Color(0xFF022C22),
+            ),
+            // Combat Boots
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 8, height: 6, color: const Color(0xFF1E293B)),
+                const SizedBox(width: 2),
+                Container(width: 8, height: 6, color: const Color(0xFF1E293B)),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  void _showPresidentialProtectionInfoDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+        ),
+        title: Row(
+          children: [
+            const Text('🏛️', style: TextStyle(fontSize: 26)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'PRESIDENTIAL PROTECTION',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Text('🚨', style: TextStyle(fontSize: 20)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'PERIMETER SECURED BY FEDERAL POLICE & DEFENSE GUARDS',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF38BDF8),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11.5,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Following a recent combat raid, this citadel has been placed under Federal & Presidential Protection to secure the resident and allow structural rebuilding.',
+              style: GoogleFonts.outfit(color: const Color(0xFFCBD5E1), fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                const Icon(Icons.timer_outlined, color: Color(0xFFFFD700), size: 16),
+                const SizedBox(width: 6),
+                Text(
+                  'Active Protection: ${_protectionHoursLeft.toStringAsFixed(1)} hours remaining',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12.5,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Raids are strictly prohibited during the 24-hour protection period. Armed guards remain on duty until the decree concludes.',
+              style: TextStyle(color: Colors.white60, fontSize: 11.5),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Acknowledge Decree 📜'),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// ☁️ Soft translucent smoke puffs floating from chimneys
   Widget _buildChimneySmoke() {
     return Column(
@@ -1164,6 +1735,118 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         ? _defenderScore
         : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day);
 
+    if (_isTargetProtected) {
+      return Center(
+        child: GestureDetector(
+          onTap: () {
+            HapticFeedback.mediumImpact();
+            _showPresidentialProtectionInfoDialog();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.85),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.65),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Level ${widget.neighbor.day}',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        width: 3.5,
+                        height: 3.5,
+                        decoration: const BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white38,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🪙', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Text(
+                            '$psValue PS',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0369A1), Color(0xFF0C4A6E)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(11),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+                      width: 1.2,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🏛️', style: TextStyle(fontSize: 13)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'PRESIDENTIAL PROTECTION (${_protectionHoursLeft.toStringAsFixed(1)}h)',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFBAE6FD),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     return Center(
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -1234,48 +1917,45 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ),
             ),
             const SizedBox(height: 3),
-            // Minimal Red Attack Button
-            ScaleTransition(
-              scale: _pulseAnimation,
-              child: GestureDetector(
-                onTap: _onTapBottomAttack,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 7),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.9),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFEF4444).withValues(alpha: 0.5),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+            // Minimal Red Attack Button (Solid & Stable: scale animation removed per user request)
+            GestureDetector(
+              onTap: _onTapBottomAttack,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 7),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('⚔️', style: TextStyle(fontSize: 13)),
-                      const SizedBox(width: 6),
-                      Text(
-                        'ATTACK',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ],
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.9),
+                    width: 1.2,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFEF4444).withValues(alpha: 0.5),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('⚔️', style: TextStyle(fontSize: 13)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'ATTACK',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -1745,10 +2425,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   void _onTapBottomAttack() {
     HapticFeedback.heavyImpact();
     if (_isTargetProtected) {
-      _showNoticeDialog(
-        '👮‍♂️ 26-Hour Presidential Protection Active!',
-        'Guards stationed to allow resident recovery (${_protectionHoursLeft.toStringAsFixed(1)}h remaining). Attacks blocked.',
-      );
+      _showPresidentialProtectionInfoDialog();
       return;
     }
     if (_inCooldown) {
@@ -2945,11 +3622,12 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       _drawFluffyCloud(canvas, w * 0.62 + cloudFloat, gy * 0.22, 20);
       _drawFluffyCloud(canvas, w * 0.88 - cloudFloat, gy * 0.38, 16);
 
-      // 🕊️ Flying Birds Soaring Across the Sky
-      _drawFlyingBird(canvas, w * 0.24, gy * 0.16, 15);
-      _drawFlyingBird(canvas, w * 0.30, gy * 0.12, 11);
-      _drawFlyingBird(canvas, w * 0.54, gy * 0.14, 13);
-      _drawFlyingBird(canvas, w * 0.70, gy * 0.10, 10);
+      // 🕊️ Flying Birds Soaring Across the Sky with Flapping Wings & Migrating Flock
+      _drawFlyingBird(canvas, w * 0.24, gy * 0.16, 15, ambientProg: ambientProg, phase: 0.0);
+      _drawFlyingBird(canvas, w * 0.30, gy * 0.12, 11, ambientProg: ambientProg, phase: 0.25);
+      _drawFlyingBird(canvas, w * 0.54, gy * 0.14, 13, ambientProg: ambientProg, phase: 0.5);
+      _drawFlyingBird(canvas, w * 0.70, gy * 0.10, 10, ambientProg: ambientProg, phase: 0.75);
+      _drawFlyingBirdsFlock(canvas, w, gy, ambientProg);
     }
 
     // 🏔️ 2. Distant Majestic Mountain Ranges
@@ -2981,6 +3659,16 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawLine(Offset(w * 0.24, gy - 160), Offset(w * 0.28, gy - 120), peakHighlight);
     canvas.drawLine(Offset(w * 0.52, gy - 145), Offset(w * 0.56, gy - 110), peakHighlight);
     canvas.drawLine(Offset(w * 0.82, gy - 175), Offset(w * 0.86, gy - 130), peakHighlight);
+
+    // 🌊 Cascading Mountain Waterfall on High Peak
+    _drawMountainWaterfall(
+      canvas,
+      w * 0.24,
+      gy - 160,
+      gy - 20,
+      ambientProg: ambientProg,
+      isNight: isNight,
+    );
 
     // 🌲 3. Midground Rolling Green Foothills
     final foothillPath = Path();
@@ -3183,8 +3871,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     _drawTree(canvas, w * 0.68, ry + 200, scale: 1.2);
     _drawTree(canvas, w * 0.84, ry + 240, scale: 1.05);
 
-    // 👑 Day 90 Sovereign Citadel Special: Majestic Floating Crown
+    // 👑 Day 90 Sovereign Citadel Special: Majestic Celestial Grandeur & Floating Crown
     if (isDay90) {
+      _drawDay90CelestialGrandeur(canvas, w, gy, ambientProg);
+
       final crownCenter = Offset(w * 0.5, gy - 430);
       canvas.drawCircle(
         crownCenter,
@@ -3589,18 +4279,280 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawCircle(Offset(cx + r * 2.6, cy + r * 0.1), r * 0.75, cloudPaint);
   }
 
-  void _drawFlyingBird(Canvas canvas, double x, double y, double span) {
+  /// 🕊️ Flying Bird with Organic Wing Flapping
+  void _drawFlyingBird(
+    Canvas canvas,
+    double x,
+    double y,
+    double span, {
+    double ambientProg = 0.0,
+    double phase = 0.0,
+    Color color = const Color(0xFF0369A1),
+  }) {
+    final wingFlap = math.sin((ambientProg + phase) * 12 * math.pi) * (span * 0.42);
     final birdPaint = Paint()
-      ..color = const Color(0xFF0369A1).withValues(alpha: 0.70)
+      ..color = color.withValues(alpha: 0.75)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 2.0
       ..strokeCap = StrokeCap.round;
 
     final birdPath = Path();
-    birdPath.moveTo(x - span, y + (span * 0.28));
-    birdPath.quadraticBezierTo(x - (span * 0.45), y - (span * 0.45), x, y);
-    birdPath.quadraticBezierTo(x + (span * 0.45), y - (span * 0.45), x + span, y + (span * 0.28));
+    birdPath.moveTo(x - span, y + wingFlap);
+    birdPath.quadraticBezierTo(x - (span * 0.45), y - (span * 0.35) - wingFlap * 0.35, x, y);
+    birdPath.quadraticBezierTo(x + (span * 0.45), y - (span * 0.35) - wingFlap * 0.35, x + span, y + wingFlap);
     canvas.drawPath(birdPath, birdPaint);
+  }
+
+  /// 🕊️ Flock of Birds soaring gracefully in formation across the sky
+  void _drawFlyingBirdsFlock(Canvas canvas, double w, double gy, double ambientProg) {
+    // Flock travels horizontally across screen
+    final baseOffset = (ambientProg * (w + 200)) - 100.0;
+    final flockY = gy * 0.14 + math.sin(ambientProg * 4 * math.pi) * 8.0;
+
+    final birdPositions = [
+      Offset(baseOffset, flockY),
+      Offset(baseOffset - 20, flockY + 11),
+      Offset(baseOffset - 40, flockY + 22),
+      Offset(baseOffset - 60, flockY + 33),
+      Offset(baseOffset - 24, flockY - 11),
+      Offset(baseOffset - 48, flockY - 20),
+    ];
+
+    for (int i = 0; i < birdPositions.length; i++) {
+      final pos = birdPositions[i];
+      if (pos.dx >= -40 && pos.dx <= w + 40) {
+        _drawFlyingBird(
+          canvas,
+          pos.dx,
+          pos.dy,
+          9.0 + (i == 0 ? 3.5 : 0.0),
+          ambientProg: ambientProg,
+          phase: i * 0.16,
+          color: const Color(0xFF0284C7),
+        );
+      }
+    }
+  }
+
+  /// 🌊 Cascading Mountain Waterfall with Shimmering Rapids and White Foam
+  void _drawMountainWaterfall(
+    Canvas canvas,
+    double x,
+    double topY,
+    double btmY, {
+    double ambientProg = 0.0,
+    bool isNight = false,
+  }) {
+    final waterHeight = btmY - topY;
+    if (waterHeight <= 0) return;
+
+    // Waterfall stream path
+    final fallPath = Path();
+    fallPath.moveTo(x - 3, topY);
+    fallPath.cubicTo(x - 5, topY + waterHeight * 0.35, x - 7, topY + waterHeight * 0.7, x - 10, btmY);
+    fallPath.lineTo(x + 10, btmY);
+    fallPath.cubicTo(x + 7, topY + waterHeight * 0.7, x + 5, topY + waterHeight * 0.35, x + 3, topY);
+    fallPath.close();
+
+    final fallShader = LinearGradient(
+      colors: isNight
+          ? [
+              const Color(0xFF38BDF8).withValues(alpha: 0.35),
+              const Color(0xFF67E8F9).withValues(alpha: 0.65),
+              Colors.white.withValues(alpha: 0.8),
+            ]
+          : [
+              const Color(0xFF0284C7).withValues(alpha: 0.50),
+              const Color(0xFF38BDF8).withValues(alpha: 0.80),
+              Colors.white.withValues(alpha: 0.95),
+            ],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).createShader(Rect.fromLTWH(x - 12, topY, 24, waterHeight));
+
+    canvas.drawPath(fallPath, Paint()..shader = fallShader);
+
+    // Animated shimmering water streaks flowing down
+    for (int i = 0; i < 4; i++) {
+      final t = (ambientProg * 2.2 + (i * 0.25)) % 1.0;
+      final streakY = topY + (t * waterHeight);
+      final streakW = 2.0 + (t * 4.0);
+      final streakX = x + math.sin(t * math.pi) * 3;
+      canvas.drawLine(
+        Offset(streakX - streakW / 2, streakY),
+        Offset(streakX + streakW / 2, streakY + 8),
+        Paint()
+          ..color = Colors.white.withValues(alpha: 0.85)
+          ..strokeWidth = 1.4
+          ..strokeCap = StrokeCap.round,
+      );
+    }
+
+    // Splash mist & foam pool at bottom
+    final splashPulse = 0.85 + math.sin(ambientProg * 8 * math.pi) * 0.15;
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(x, btmY), width: 28 * splashPulse, height: 9 * splashPulse),
+      Paint()
+        ..color = Colors.white.withValues(alpha: isNight ? 0.45 : 0.75)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(x, btmY + 2), width: 34 * splashPulse, height: 6),
+      Paint()..color = (isNight ? const Color(0xFF38BDF8) : const Color(0xFFBAE6FD)).withValues(alpha: 0.55),
+    );
+  }
+
+  /// 👑 Day 90 Celestial Sovereign Grandeur: Golden Aura, Ascending Light Pillars & Soaring Golden Eagle
+  void _drawDay90CelestialGrandeur(
+    Canvas canvas,
+    double w,
+    double gy,
+    double ambientProg,
+  ) {
+    final centerX = w * 0.5;
+    final crownCenter = Offset(centerX, gy - 430);
+
+    // 1. Divine Radiant Sunburst Rays rotating slowly behind crown
+    const rayCount = 16;
+    const rayRadius = 140.0;
+    final rotAngle = ambientProg * 2 * math.pi;
+    for (int i = 0; i < rayCount; i++) {
+      final angle = rotAngle + (i * (2 * math.pi / rayCount));
+      final rayPaint = Paint()
+        ..shader = RadialGradient(
+          colors: [
+            const Color(0xFFFFD700).withValues(alpha: 0.28),
+            const Color(0xFFF59E0B).withValues(alpha: 0.12),
+            Colors.transparent,
+          ],
+        ).createShader(Rect.fromCircle(center: crownCenter, radius: rayRadius))
+        ..strokeWidth = 3.5
+        ..strokeCap = StrokeCap.round;
+
+      final startPt = Offset(
+        crownCenter.dx + math.cos(angle) * 35,
+        crownCenter.dy + math.sin(angle) * 35,
+      );
+      final endPt = Offset(
+        crownCenter.dx + math.cos(angle) * rayRadius,
+        crownCenter.dy + math.sin(angle) * rayRadius,
+      );
+      canvas.drawLine(startPt, endPt, rayPaint);
+    }
+
+    // 2. Twin Ascending Divine Light Pillars flanking the citadel
+    final pillarLeftX = w * 0.22;
+    final pillarRightX = w * 0.78;
+    final pillarTopY = gy - 480;
+    final pillarBtmY = gy + 20;
+    const pillarWidth = 22.0;
+
+    final pillarShader = LinearGradient(
+      colors: [
+        Colors.transparent,
+        const Color(0xFFFFD700).withValues(alpha: 0.22),
+        const Color(0xFFFDE047).withValues(alpha: 0.35),
+        const Color(0xFFFFD700).withValues(alpha: 0.10),
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.25, 0.5, 0.85, 1.0],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    );
+
+    canvas.drawRect(
+      Rect.fromLTWH(pillarLeftX - pillarWidth / 2, pillarTopY, pillarWidth, pillarBtmY - pillarTopY),
+      Paint()
+        ..shader = pillarShader.createShader(Rect.fromLTWH(pillarLeftX - pillarWidth / 2, pillarTopY, pillarWidth, pillarBtmY - pillarTopY))
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+    canvas.drawRect(
+      Rect.fromLTWH(pillarRightX - pillarWidth / 2, pillarTopY, pillarWidth, pillarBtmY - pillarTopY),
+      Paint()
+        ..shader = pillarShader.createShader(Rect.fromLTWH(pillarRightX - pillarWidth / 2, pillarTopY, pillarWidth, pillarBtmY - pillarTopY))
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+    );
+
+    // 3. Soaring Majestic Golden Eagle circling above citadel
+    final eagleOrbitX = centerX + math.cos(ambientProg * 2 * math.pi) * (w * 0.32);
+    final eagleOrbitY = gy - 360 + math.sin(ambientProg * 4 * math.pi) * 25;
+    _drawGoldenEagle(canvas, eagleOrbitX, eagleOrbitY, ambientProg);
+
+    // 4. Shimmering Golden Dust particles ascending
+    for (int i = 0; i < 14; i++) {
+      final t = (ambientProg + (i * 0.071)) % 1.0;
+      final px = centerX - (w * 0.35) + ((i * 47) % (w * 0.70));
+      final py = gy + 10 - (t * 460);
+      final sparkleAlpha = math.sin(t * math.pi);
+      canvas.drawCircle(
+        Offset(px, py),
+        2.2 * sparkleAlpha,
+        Paint()
+          ..color = const Color(0xFFFFE066).withValues(alpha: 0.75 * sparkleAlpha)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2),
+      );
+      canvas.drawCircle(
+        Offset(px, py),
+        1.2 * sparkleAlpha,
+        Paint()..color = Colors.white.withValues(alpha: 0.9 * sparkleAlpha),
+      );
+    }
+  }
+
+  /// 🦅 Majestic Golden Eagle with broad outstretched wings soaring
+  void _drawGoldenEagle(Canvas canvas, double x, double y, double ambientProg) {
+    canvas.save();
+    canvas.translate(x, y);
+
+    final wingFlap = math.sin(ambientProg * 8 * math.pi) * 7.0;
+
+    // Outer Golden Glow
+    canvas.drawCircle(
+      Offset.zero,
+      28,
+      Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+    );
+
+    // Left Wing
+    final leftWing = Path();
+    leftWing.moveTo(0, 0);
+    leftWing.cubicTo(-14, -8 + wingFlap, -30, -18 + wingFlap, -44, -12 + wingFlap);
+    leftWing.cubicTo(-34, -2 + wingFlap, -18, 2, 0, 4);
+    leftWing.close();
+    canvas.drawPath(leftWing, Paint()..color = const Color(0xFFD97706));
+
+    // Right Wing
+    final rightWing = Path();
+    rightWing.moveTo(0, 0);
+    rightWing.cubicTo(14, -8 + wingFlap, 30, -18 + wingFlap, 44, -12 + wingFlap);
+    rightWing.cubicTo(34, -2 + wingFlap, 18, 2, 0, 4);
+    rightWing.close();
+    canvas.drawPath(rightWing, Paint()..color = const Color(0xFFD97706));
+
+    // Feather Highlights
+    final featherPaint = Paint()..color = const Color(0xFFFFD700)..strokeWidth = 1.4..style = PaintingStyle.stroke;
+    canvas.drawLine(const Offset(0, 0), Offset(-40, -10 + wingFlap), featherPaint);
+    canvas.drawLine(const Offset(0, 0), Offset(40, -10 + wingFlap), featherPaint);
+
+    // Eagle Body & Tail
+    final body = Path();
+    body.moveTo(-4, -6);
+    body.lineTo(4, -6);
+    body.lineTo(3, 10);
+    body.lineTo(6, 18);
+    body.lineTo(-6, 18);
+    body.lineTo(-3, 10);
+    body.close();
+    canvas.drawPath(body, Paint()..color = const Color(0xFF92400E));
+
+    // Golden Head & Beak
+    canvas.drawCircle(const Offset(0, -9), 4.5, Paint()..color = Colors.white);
+    final beak = Path()..moveTo(-2, -9)..lineTo(2, -9)..lineTo(0, -14)..close();
+    canvas.drawPath(beak, Paint()..color = const Color(0xFFFBBF24));
+
+    canvas.restore();
   }
 
   void _drawPicketFence(Canvas canvas, double startX, double groundY, int pickets) {
