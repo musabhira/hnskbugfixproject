@@ -1971,7 +1971,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   Widget _buildProfileDrawer(double maxHeight, double collapsedH, double bottomPad) {
     final prog = _profileDrawerController.value;
     final isExpanded = prog > 0.5;
-    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(widget.neighbor.id);
 
     return Container(
       decoration: BoxDecoration(
@@ -2172,7 +2171,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 child: Container(
                   color: const Color(0xFF0F172A),
                   child: MainProfileWidget(
-                    userId: isUuid ? widget.neighbor.id : null,
+                    userId: widget.neighbor.id,
                     preloadedProfile: {
                       'user_id': widget.neighbor.id,
                       'first_name': widget.neighbor.name,

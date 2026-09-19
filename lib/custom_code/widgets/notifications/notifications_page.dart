@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:timeago/timeago.dart' as timeago;
 
 /// Notifications & Mutual Pocket Mate Connection Requests Screen
 class NotificationsPage extends StatefulWidget {
@@ -73,30 +74,66 @@ class _NotificationsPageState extends State<NotificationsPage> {
         } catch (_) {}
       }
 
-      // Default activity alerts
-      final alerts = [
-        {
-          'id': 'alert_1',
-          'icon': '🎯',
-          'title': 'Daily English Practice Reminder',
-          'body': 'Complete your 90-minute English speaking & chat drill to protect your streak!',
-          'time': '1 hour ago',
-        },
-        {
-          'id': 'alert_2',
-          'icon': '🔥',
-          'title': 'Streak Milestone Active',
-          'body': 'You are currently on a learning streak! Keep practicing to unlock Day 15 Royalty Badge.',
-          'time': 'Yesterday',
-        },
-        {
-          'id': 'alert_3',
-          'icon': '🛡️',
-          'title': 'Inactivity Decay Shield',
-          'body': 'Your Pocket Score is safe today. Missing a day reduces 20 XP and resets active streaks.',
-          'time': '2 days ago',
-        },
-      ];
+      // Fetch activity notifications from database
+      final List<Map<String, dynamic>> alerts = [];
+      try {
+        final notifsRes = await _supabase
+            .from('notifications')
+            .select('*')
+            .eq('user_id', myId)
+            .neq('type', 'mate_request')
+            .order('created_at', ascending: false)
+            .limit(25);
+
+        for (final n in (notifsRes as List)) {
+          final type = n['type']?.toString() ?? 'alert';
+          String icon = '🔔';
+          if (type.contains('vibe') || type.contains('status')) {
+            icon = '💬';
+          } else if (type.contains('fortress') || type.contains('raid') || type.contains('attack')) {
+            icon = '⚔️';
+          } else if (type.contains('score') || type.contains('streak') || type.contains('level')) {
+            icon = '🔥';
+          }
+
+          alerts.add({
+            'id': n['id']?.toString() ?? '',
+            'icon': icon,
+            'title': n['title'] ?? (type == 'vibe_reply' ? 'Vibe Reply' : 'Notification'),
+            'body': n['message'] ?? n['body'] ?? n['content'] ?? 'New notification received.',
+            'time': n['created_at'] != null ? timeago.format(DateTime.tryParse(n['created_at'].toString()) ?? DateTime.now()) : 'Recently',
+          });
+        }
+      } catch (e) {
+        debugPrint('Error fetching DB notifications: $e');
+      }
+
+      if (alerts.isEmpty) {
+        // Fallback default activity alerts if database has no records
+        alerts.addAll([
+          {
+            'id': 'alert_1',
+            'icon': '🎯',
+            'title': 'Daily English Practice Reminder',
+            'body': 'Complete your 90-minute English speaking & chat drill to protect your streak!',
+            'time': '1 hour ago',
+          },
+          {
+            'id': 'alert_2',
+            'icon': '🔥',
+            'title': 'Streak Milestone Active',
+            'body': 'You are currently on a learning streak! Keep practicing to unlock Day 15 Royalty Badge.',
+            'time': 'Yesterday',
+          },
+          {
+            'id': 'alert_3',
+            'icon': '🛡️',
+            'title': 'Inactivity Decay Shield',
+            'body': 'Your Pocket Score is safe today. Missing a day reduces 20 XP and resets active streaks.',
+            'time': '2 days ago',
+          },
+        ]);
+      }
 
       if (mounted) {
         setState(() {

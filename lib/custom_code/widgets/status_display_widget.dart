@@ -2729,6 +2729,39 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         }
       });
 
+      // Update or create conversation record so it shows up in conversation lists / requests
+      try {
+        final existingConv = await supabase
+            .from('conversations')
+            .select('id, unread_count')
+            .or('and(user1_id.eq.${widget.currentUserId},user2_id.eq.$receiverId),and(user1_id.eq.$receiverId,user2_id.eq.${widget.currentUserId})')
+            .maybeSingle();
+
+        final nowIso = DateTime.now().toIso8601String();
+        if (existingConv != null) {
+          await supabase.from('conversations').update({
+            'last_message': originalText,
+            'last_message_time': nowIso,
+            'last_sender_id': widget.currentUserId,
+            'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+            'updated_at': nowIso,
+          }).eq('id', existingConv['id']);
+        } else {
+          await supabase.from('conversations').insert({
+            'user1_id': widget.currentUserId,
+            'user2_id': receiverId,
+            'last_message': originalText,
+            'last_message_time': nowIso,
+            'last_sender_id': widget.currentUserId,
+            'unread_count': 1,
+            'updated_at': nowIso,
+            'is_group': false,
+          });
+        }
+      } catch (convErr) {
+        debugPrint('Error updating conversation for vibe reply: $convErr');
+      }
+
       if (!areMates) {
         await PocketMateService.sendMateRequest(
           senderId: widget.currentUserId,

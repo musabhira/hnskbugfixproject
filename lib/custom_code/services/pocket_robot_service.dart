@@ -170,12 +170,24 @@ class PocketRobotService {
     );
   }
 
-  /// Find robot by ID
+  /// Find robot by ID or Name
   static PocketRobot? getRobotById(String id) {
+    if (id.isEmpty) return null;
     try {
-      return _allRobots.firstWhere((r) => r.id == id);
+      final lower = id.toLowerCase().trim();
+      return _allRobots.firstWhere(
+        (r) => r.id.toLowerCase() == lower || r.name.toLowerCase() == lower,
+      );
     } catch (_) {
-      // Check if it's in the format pocket_robo_18 or pocket_robot_lvl_18
+      final lower = id.toLowerCase().trim();
+      // Try matching by prefix of name (e.g. 'Maya' matching 'Maya 🤖')
+      final byName = _allRobots.where((r) {
+        final rName = r.name.toLowerCase();
+        return rName.startsWith(lower) || lower.startsWith(rName.split(' ').first);
+      }).firstOrNull;
+      if (byName != null) return byName;
+
+      // Check if it's in the format pocket_robo_18 or pocket_robot_lvl_18 or robo_18
       final match = RegExp(r'(\d+)').firstMatch(id);
       if (match != null) {
         final lvl = int.tryParse(match.group(1) ?? '1') ?? 1;

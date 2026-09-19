@@ -5231,8 +5231,26 @@ Draft: "$draft"''';
   // ... (Keep existing helper methods like _showGroupInfo, _pickAndSendImage)
   void _showGroupInfo() {
     if (widget.groupId.startsWith('p:')) {
-      final parts = widget.groupId.substring(2).split('_');
-      final targetId = parts.firstWhere((id) => id != _currentUserId, orElse: () => '');
+      final rawTarget = widget.groupId.substring(2);
+      String targetId = rawTarget;
+      
+      // Only split if it's a composite 2-UUID string (e.g. uuid1_uuid2)
+      if (rawTarget.contains('_') && !PocketRobotService.isRobotId(rawTarget)) {
+        final parts = rawTarget.split('_');
+        if (parts.length == 2 && parts[0].length >= 32 && parts[1].length >= 32) {
+          targetId = parts.firstWhere((id) => id != _currentUserId, orElse: () => rawTarget);
+        }
+      }
+
+      // If this is a robot or matches robot name, ensure exact robot ID resolution
+      if (PocketRobotService.isRobotId(targetId) || PocketRobotService.isRobotId(rawTarget)) {
+        final robot = PocketRobotService.getRobotById(targetId) ??
+            PocketRobotService.getRobotById(rawTarget) ??
+            PocketRobotService.getAllRobots().where((r) => widget.groupName.contains(r.name)).firstOrNull;
+        if (robot != null) {
+          targetId = robot.id;
+        }
+      }
       
       if (targetId.isNotEmpty) {
         PocketCitadelAttackPage.openForUser(context, userId: targetId);

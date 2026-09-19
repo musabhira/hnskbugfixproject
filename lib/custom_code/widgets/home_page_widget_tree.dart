@@ -2202,8 +2202,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return conversationsAsync.when(
       data: (conversations) {
-        final allNotifications =
-            conversations.where((c) => c.isNotification).toList();
         final chatConversations = conversations.where((c) {
           if (c.isNotification) return false;
           final lowerName = c.name.toLowerCase();
@@ -2214,25 +2212,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           }
           return true;
         }).toList();
-
         List<ChatConversation> combined = [...chatConversations];
-        if (allNotifications.isNotEmpty && _searchQuery.isEmpty) {
-          final latestNotif = allNotifications.reduce((a, b) =>
-              (a.lastMessageTime?.isAfter(b.lastMessageTime ?? DateTime(0)) ??
-                      false)
-                  ? a
-                  : b);
-          combined.add(ChatConversation(
-            id: 'notifications_aggregator',
-            name: 'Notifications',
-            lastMessage:
-                'You have ${allNotifications.length} new notification${allNotifications.length > 1 ? 's' : ''}',
-            lastMessageTime: latestNotif.lastMessageTime,
-            unreadCount: allNotifications.length,
-            isGroup: false,
-            isNotification: true,
-          ));
-        }
 
         // Sort by pinned status then last message time
         combined.sort((a, b) {
@@ -2492,11 +2472,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             (context, index) {
                               final conversation =
                                   displayActiveConversations[index];
-                              if (conversation.id ==
-                                  'notifications_aggregator') {
-                                return _buildNotificationsTile(
-                                    allNotifications.length);
-                              }
                               return RepaintBoundary(
                                 key: ValueKey(conversation.id),
                                 child: ConversationTile(
@@ -3327,10 +3302,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         delegate: SliverChildBuilderDelegate(
                           (context, index) {
                             final conversation = activeFiltered[index];
-                            if (conversation.id == 'notifications_aggregator') {
-                              return _buildNotificationsTile(
-                                  allNotifications.length);
-                            }
                             return RepaintBoundary(
                               key: ValueKey(conversation.id),
                               child: ConversationTile(
