@@ -6716,6 +6716,32 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                     color: Colors.white70, fontSize: 11),
                               ),
                             ),
+                            if (dynLvl == 90)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFFFB300), Color(0xFFFF5252)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.emoji_events_rounded,
+                                        color: Colors.white, size: 12),
+                                    SizedBox(width: 3),
+                                    Text(
+                                      'Trophy 🏆',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             if (isLooped)
                               Container(
                                 padding: const EdgeInsets.symmetric(
