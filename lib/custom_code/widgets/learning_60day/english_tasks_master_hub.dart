@@ -16,7 +16,6 @@ import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
 import 'pocket_time_machine_trainer_modal.dart';
-import 'day90_vip_master_card_dialog.dart';
 import 'pocket_daily_mission_page.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_world_game_rules_modal.dart';
@@ -24,6 +23,9 @@ import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'pocket_citadel_attack_page.dart';
+import 'day90_master_certificate_dialog.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -128,10 +130,21 @@ final List<TargetMilestoneItem> kTargetMilestones = [
     defenseSummary: 'Max 25 Q Shield + Citadel',
     themeColor: Color(0xFFFFD700),
   ),
+  const TargetMilestoneItem(
+    stageNumber: 7,
+    title: 'Target 7 (LEVEL 91 ⚔️)',
+    rangeText: 'Presidential Citadel',
+    targetDay: 91,
+    houseStage: 'Sovereign Citadel Raid',
+    houseEmoji: '⚔️',
+    rewardSummary: 'Official Fluency Diploma + Presidential Honors',
+    defenseSummary: '250 Boss Trials • Sovereign Citadel Raid',
+    themeColor: Color(0xFFFFD700),
+  ),
 ];
 
-/// 🎮 90-Day Full English Transformation Gamified Adventure Map
-/// Super Mario World / Candy Crush / Duolingo style snaking level progression trail (Days 1–90)
+/// 🎮 91-Day Full English Transformation Gamified Adventure Map
+/// Super Mario World / Candy Crush / Duolingo style snaking level progression trail (Days 1–91)
 class EnglishTasksMasterHubPage extends StatefulWidget {
   final String? userId;
 
@@ -154,7 +167,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   UserLearningProgress? _progress;
   String? _equippedTalismanId;
   bool _hasAcceptedRules = false;
-  final int _totalDays = 90;
+  final int _totalDays = 91;
+  bool _hasConqueredCitadel = false;
   bool _isSubscribed = false;
 
   // ⏱️ Midnight Daily Unlock Ticker
@@ -292,10 +306,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
          prefs.getBool('pocket_world_rules_accepted_v1') ?? false);
 
     final isVip = await PocketAdService().isUserSubscribed();
+    final isCitadelConquered = await PocketPresidentService.hasConqueredPresidentialCitadel(uid);
 
     if (mounted) {
       setState(() {
         _isSubscribed = isVip;
+        _hasConqueredCitadel = isCitadelConquered;
         _progress = prog;
         _unifiedPocketScore = score;
         _completedDays
@@ -1413,12 +1429,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     setState(() => _hasAcceptedRules = true);
                   },
                 );
-              } else if (item.stageNumber == 6) {
-                Day90VipMasterCardDialog.show(
-                  context,
-                  userDay: prog.currentDay,
-                  isPreview: prog.currentDay < 90,
-                );
+              } else if (item.stageNumber == 6 || item.stageNumber == 7) {
+                if (!_hasConqueredCitadel) {
+                  _showCitadelRequiredForCertificateDialog();
+                } else {
+                  Day90MasterCertificateDialog.show(
+                    context,
+                    userName: 'Sovereign Grandmaster',
+                    userDay: 91,
+                  );
+                }
               } else {
                 _showTargetStagePreviewDialog(item, prog.currentDay);
               }
@@ -1823,6 +1843,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   Widget _buildLevelNode(int day, double screenWidth, int currentDay) {
+    if (day == 91) {
+      return _buildLevel91ApexNode(screenWidth, currentDay);
+    }
     final x = _getNodeX(day, screenWidth);
     final y = _getNodeY(day);
     // User audio requirement: Before Get Started rules are accepted, Day 1 must stay LOCKED!
@@ -2186,6 +2209,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// 🐾 Minimal Animal Card in the Open Space Beside Level Nodes (Audio Requirement!)
   /// Shows the animal avatar, species title, day, and minimal status badge.
   Widget _buildMapMiniAnimalCard(int day, double screenWidth, int currentDay) {
+    if (day == 91) {
+      return _buildLevel91MiniCard(screenWidth, currentDay);
+    }
     final nodeX = _getNodeX(day, screenWidth);
     final nodeY = _getNodeY(day);
     final isRightSide = nodeX >= screenWidth / 2;
@@ -2546,10 +2572,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         ),
       ),
 
-      // Day 90 Grand Master Trophy Castle at the very end
+      // Level 91 Sovereign Citadel Grand Master Trophy Pinnacle
       Positioned(
         left: (screenWidth / 2) - 85,
-        top: _getNodeY(90) + 65,
+        top: _getNodeY(91) + 95,
         child: Container(
           width: 170,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -2628,6 +2654,459 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           Text(
             subtitle,
             style: GoogleFonts.inter(color: Colors.white70, fontSize: 10.5),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 🏛️ LEVEL 91: Grand Presidential Sovereign Citadel Apex Node
+  /// Audio Requirement:
+  /// "പ്രസിഡന്റിന്റെ കൊട്ടാരത്തെ അറ്റാക്ക് ചെയ്യാൻ 90 ലെവൽ കംപ്ലീറ്റ് ആയിട്ട് 91-ാമത്തെ ലെവലിലാണ് വരുക.
+  /// അപ്പൊ ടാർഗറ്റ് പേജിൽ 91-ാമത്തെ ലെവൽ എഴുതണം. അത് അറ്റാക്ക് പ്രത്യേകം ഗോൾഡൻ കളറിലോ കൊടുക്കണം.
+  /// ആ അറ്റാക്കും കൂടി കഴിഞ്ഞിട്ടായിരിക്കണം ഇതിന് സർട്ടിഫിക്കറ്റ് കൊടുക്കുകയുള്ളൂ."
+  Widget _buildLevel91ApexNode(double screenWidth, int currentDay) {
+    final x = _getNodeX(91, screenWidth);
+    final y = _getNodeY(91);
+    final isUnlocked = (currentDay >= 91) || (_completedDays.contains(90));
+    final isConquered = _hasConqueredCitadel;
+    const nodeSize = 88.0;
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: GestureDetector(
+        onTap: () async {
+          HapticFeedback.heavyImpact();
+          if (!isUnlocked) {
+            _showPresidentialLevelLockDialog();
+            return;
+          }
+          await PocketCitadelAttackPage.openForUser(
+            context,
+            userId: PocketPresidentService.presidentId,
+            attackerDay: 91,
+          );
+          _loadData();
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              alignment: Alignment.center,
+              children: [
+                // 1. Radiant Golden / Fiery Aura Ring
+                if (isUnlocked)
+                  AnimatedBuilder(
+                    animation: _bobController,
+                    builder: (context, _) {
+                      final pulse = _bobController.value;
+                      return Container(
+                        width: nodeSize + 16 + (pulse * 8),
+                        height: nodeSize + 16 + (pulse * 8),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.55 + (pulse * 0.25)),
+                              blurRadius: 30,
+                              spreadRadius: 6,
+                            ),
+                            BoxShadow(
+                              color: const Color(0xFFFF8906).withValues(alpha: 0.40),
+                              blurRadius: 38,
+                              spreadRadius: 8,
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+
+                // 2. Main 3D Stepping Sphere (Imperial Gold)
+                Container(
+                  width: nodeSize,
+                  height: nodeSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: isConquered
+                          ? [const Color(0xFFFFD700), const Color(0xFF10B981), const Color(0xFF047857)]
+                          : (isUnlocked
+                              ? [const Color(0xFFFFFC00), const Color(0xFFFFD700), const Color(0xFFFF8906)]
+                              : [const Color(0xFF334155), const Color(0xFF1E293B), const Color(0xFF0F172A)]),
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    border: Border.all(
+                      color: isConquered
+                          ? const Color(0xFF6EE7B7)
+                          : (isUnlocked ? Colors.white : const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                      width: isUnlocked ? 3.5 : 2.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isUnlocked
+                            ? const Color(0xFFFFD700).withValues(alpha: 0.6)
+                            : Colors.black.withValues(alpha: 0.5),
+                        blurRadius: isUnlocked ? 22 : 10,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          isConquered ? '👑' : (isUnlocked ? '⚔️' : '🔒'),
+                          style: const TextStyle(fontSize: 22),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '91: ATTACK',
+                          style: GoogleFonts.outfit(
+                            color: isUnlocked ? Colors.black : Colors.white70,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // 3. Floating Bottom Pill
+                Positioned(
+                  bottom: -10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: isConquered
+                          ? const Color(0xFF10B981)
+                          : (isUnlocked ? const Color(0xFFDC2626) : const Color(0xFF0F172A)),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isConquered ? Colors.white : const Color(0xFFFFD700),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      isConquered
+                          ? '✓ CONQUERED'
+                          : (isUnlocked ? 'RAID PALACE ⚔️' : 'LEVEL 91 🔒'),
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+            // Sovereign Citadel Label
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFFFFD700),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    '🏛️ LEVEL 91: PRESIDENTIAL RAID',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontWeight: FontWeight.w900,
+                      fontSize: 10,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  Text(
+                    'Conquer to Claim Fluency Certificate 📜',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 8.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🏛️ Mini card beside Level 91 Apex Node
+  Widget _buildLevel91MiniCard(double screenWidth, int currentDay) {
+    final nodeX = _getNodeX(91, screenWidth);
+    final nodeY = _getNodeY(91);
+    final isRightSide = nodeX >= screenWidth / 2;
+    final double cardWidth = ((screenWidth / 2) - 42.0).clamp(100.0, 140.0);
+    final double cardLeft = isRightSide ? 12.0 : (screenWidth - cardWidth - 12.0);
+    final double cardTop = nodeY - 21.0;
+    final isUnlocked = (currentDay >= 91) || (_completedDays.contains(90));
+
+    return Positioned(
+      left: cardLeft,
+      top: cardTop,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          if (!isUnlocked) {
+            _showPresidentialLevelLockDialog();
+          } else {
+            PocketCitadelAttackPage.openForUser(
+              context,
+              userId: PocketPresidentService.presidentId,
+              attackerDay: 91,
+            );
+          }
+        },
+        child: Container(
+          width: cardWidth,
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: const Color(0xFFFFD700),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                blurRadius: 8,
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              const Text('🏛️', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _hasConqueredCitadel ? 'CITADEL CONQUERED' : 'PALACE RAID',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      _hasConqueredCitadel ? '✓ C2 Master' : 'Level 91 Boss',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 8,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showPresidentialLevelLockDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+        ),
+        title: Row(
+          children: [
+            const Text('🏛️', style: TextStyle(fontSize: 26)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'LEVEL 91: PRESIDENTIAL RAID',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  const Text('🔒', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'SOVEREIGN CITADEL RESTRICTED ACCESS\nComplete all 90 Days of English Transformation first to unlock Level 91!',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFF87171),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Once you complete Day 90, you will face The President of Pocket World in a 250-question boss battle. Conquering the citadel awards the Official Day 90 Fluency Certificate!',
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12.5, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            height: 42,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'UNDERSTOOD 🫡',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showCitadelRequiredForCertificateDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
+        ),
+        title: Row(
+          children: [
+            const Text('👑', style: TextStyle(fontSize: 28)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'LEVEL 91 ATTACK REQUIRED',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Text('⚔️', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'CONQUER LEVEL 91 TO GRADUATE!\nThe Sovereign Fluency Certificate is strictly awarded after conquering The President\'s Citadel in Level 91.',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Face 250 sequential boss trial questions and breach the Presidential Palace to prove complete C2 English Fluency!',
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12.5, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('LATER', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              PocketCitadelAttackPage.openForUser(
+                context,
+                userId: PocketPresidentService.presidentId,
+                attackerDay: 91,
+              );
+            },
+            child: Text(
+              'START ATTACK ⚔️',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+            ),
           ),
         ],
       ),

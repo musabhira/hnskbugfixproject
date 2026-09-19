@@ -553,4 +553,28 @@ class PocketPresidentService {
     }
     return 'general';
   }
+
+  static const String _kPresidentCitadelConqueredPrefix = 'presidential_citadel_conquered_';
+
+  /// Check if the user has conquered the Level 91 Presidential Palace Citadel
+  static Future<bool> hasConqueredPresidentialCitadel([String? userId]) async {
+    try {
+      final uid = userId ?? (SupaFlow.client.auth.currentUser?.id ?? '');
+      if (uid.isEmpty) return false;
+      final prefs = await SharedPreferences.getInstance();
+      return prefs.getBool('$_kPresidentCitadelConqueredPrefix$uid') ?? false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Mark Level 91 Presidential Citadel conquered after surviving the gauntlet
+  static Future<void> markPresidentialCitadelConquered([String? userId]) async {
+    try {
+      final uid = userId ?? (SupaFlow.client.auth.currentUser?.id ?? '');
+      if (uid.isEmpty) return;
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('$_kPresidentCitadelConqueredPrefix$uid', true);
+    } catch (_) {}
+  }
 }

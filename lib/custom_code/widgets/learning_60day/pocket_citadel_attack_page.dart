@@ -19,6 +19,8 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_palace_castle_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_security_forces.dart';
+import 'package:pocket_mates_app/custom_code/widgets/president/presidential_citadel_world_props.dart';
+import 'day90_master_certificate_dialog.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
 /// Audio Directive:
@@ -786,6 +788,57 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           // 3B. Presidential Security Layer: Limousine, Armed Guards, Black Cat Commandos & Cordon
                           if (isPresident || _isDefenderDamaged || _isTargetProtected)
                             _buildPresidentialSecurityLayer(houseLeft, houseTop, houseW, houseH, groundY),
+
+                          // 3C. 🚁 ✈️ 🚀 🚢 Grand Sovereign Living Airspace & Naval Defense Props
+                          if (isPresident) ...[
+                            // ✈️ Air Force One Supersonic VIP Jet soaring across high sky with contrails
+                            Positioned(
+                              left: 260,
+                              top: 105,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialSupersonicJetWidget(
+                                  animProg: _ambientController.value,
+                                ),
+                              ),
+                            ),
+
+                            // 🚁 Marine One Presidential Security Helicopter hovering with searchlight
+                            Positioned(
+                              right: 250,
+                              top: 185,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialHelicopterWidget(
+                                  animProg: _ambientController.value,
+                                ),
+                              ),
+                            ),
+
+                            // 🚀 Aerospace Defense Interceptor Rocket & Gantry Launcher
+                            Positioned(
+                              left: 1360,
+                              top: groundY - 170,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialDefenseRocketWidget(
+                                  animProg: _ambientController.value,
+                                ),
+                              ),
+                            ),
+
+                            // 🚢 Armed Naval Patrol Gunboat Cruising on River with rotating radar & wake
+                            Positioned(
+                              left: 420,
+                              top: groundY + 190.0 + 15.0, // 1125.0
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialNavalPatrolShipWidget(
+                                  animProg: _ambientController.value,
+                                ),
+                              ),
+                            ),
+                          ],
 
 
                           // 4. Avatar-Specific Weapon Discharge & Particle Strike Layer
@@ -3961,6 +4014,104 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   void _showVictoryDialog() {
+    if (widget.neighbor.isPresident) {
+      PocketPresidentService.markPresidentialCitadelConquered();
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+            side: const BorderSide(color: Color(0xFFFFD700), width: 2.0),
+          ),
+          title: Row(
+            children: [
+              const Text('👑', style: TextStyle(fontSize: 28)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  'SOVEREIGN CITADEL CONQUERED!',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 17,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  children: [
+                    const Text('⚔️', style: TextStyle(fontSize: 24)),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'LEVEL 91 PRESIDENTIAL RAID COMPLETED!\nYou defeated the Sovereign Palace Citadel and proved C2 Mastery across all 250 Boss Trials.',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '🎓 Your Official Day 90 Fluency Certificate of Sovereign Mastery is now unlocked and ready for download!',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, height: 1.4),
+              ),
+            ],
+          ),
+          actions: [
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFD700),
+                  foregroundColor: Colors.black,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  elevation: 4,
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.pop(context, true);
+                  Day90MasterCertificateDialog.show(
+                    context,
+                    userName: 'Sovereign Grandmaster',
+                    userDay: 91,
+                  );
+                },
+                icon: const Text('🎓', style: TextStyle(fontSize: 18)),
+                label: Text(
+                  'CLAIM OFFICIAL CERTIFICATE 📜',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,

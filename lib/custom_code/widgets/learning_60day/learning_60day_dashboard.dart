@@ -10,6 +10,8 @@ import 'pocket_defense_trap_modal.dart';
 import 'pocket_daily_mission_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'pocket_citadel_attack_page.dart';
 
 /// Interactive Sheet & Dashboard for the 90-Day English Transformation & Profile Palette System
 class Learning60DayDashboardSheet extends StatefulWidget {
@@ -1675,7 +1677,99 @@ class _Learning60DayProfileCardState extends State<Learning60DayProfileCard> {
                     elevation: 4,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  onPressed: () {
+                  onPressed: () async {
+                    final hasConquered = await PocketPresidentService.hasConqueredPresidentialCitadel();
+                    if (!context.mounted) return;
+                    if (!hasConquered) {
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: const Color(0xFF0F172A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                            side: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
+                          ),
+                          title: Row(
+                            children: [
+                              const Text('👑', style: TextStyle(fontSize: 28)),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  'LEVEL 91 ATTACK REQUIRED',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFD700),
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Text('⚔️', style: TextStyle(fontSize: 22)),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        'CONQUER LEVEL 91 TO CLAIM DIPLOMA!\nThe Official Sovereign Fluency Certificate is issued only after conquering The President\'s Palace in Level 91.',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFFFFD700),
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Defeat the 250 boss trial questions and breach the Sovereign Palace Citadel to prove complete C2 Fluency!',
+                                style: GoogleFonts.outfit(color: Colors.white, fontSize: 12.5, height: 1.4),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(ctx),
+                              child: const Text('LATER', style: TextStyle(color: Colors.white60)),
+                            ),
+                            ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFFFFD700),
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                              ),
+                              onPressed: () {
+                                Navigator.pop(ctx);
+                                Navigator.pop(context);
+                                PocketCitadelAttackPage.openForUser(
+                                  context,
+                                  userId: PocketPresidentService.presidentId,
+                                  attackerDay: 91,
+                                );
+                              },
+                              child: Text(
+                                'START ATTACK ⚔️',
+                                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                      return;
+                    }
                     Day90MasterCertificateDialog.show(
                       context,
                       userName: widget.userName ?? 'Sovereign Grandmaster',

@@ -5,14 +5,15 @@ import 'dart:math' as math;
 class PocketScoreLevelEngine {
   /// Base points required per level jump (Audio Directive: 200 PTS per level)
   static const int kPointsPerLevel = 200;
-  static const int kMaxLevel = 90;
+  static const int kMaxLevel = 91;
 
-  /// Returns minimum Pocket Score required to reach a specific level (1 to 90).
+  /// Returns minimum Pocket Score required to reach a specific level (1 to 91).
   /// Level 1: 0 PTS
   /// Level 2: 200 PTS
   /// Level 3: 400 PTS
   /// Level 10: 1,800 PTS
   /// Level 90: 17,800 PTS
+  /// Level 91 (Presidential Citadel Raid): 18,000 PTS
   static int getRequiredScoreForLevel(int level) {
     final clampedLevel = level.clamp(1, kMaxLevel);
     return (clampedLevel - 1) * kPointsPerLevel;

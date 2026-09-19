@@ -2219,16 +2219,16 @@ class PocketFortressDefenseService {
       pool.addAll(_getDefaultQuestions(200));
     }
 
-    final List<HouseShieldQuestion> presidential200 = [];
-    for (int i = 0; i < 200; i++) {
+    final List<HouseShieldQuestion> presidential250 = [];
+    for (int i = 0; i < 250; i++) {
       final base = pool[i % pool.length];
       final gateNum = (i % 9) + 1;
       final gateInfo = PocketScoreLevelEngine.getGateInfo(gateNum);
 
-      presidential200.add(
+      presidential250.add(
         HouseShieldQuestion(
           id: 'pres_trial_${i + 1}_${base.id}',
-          question: '🏛️ [PRESIDENTIAL TRIAL ${i + 1}/200 • ${gateInfo['title']}]\n${base.question}',
+          question: '🏛️ [PRESIDENTIAL TRIAL ${i + 1}/250 • ${gateInfo['title']}]\n${base.question}',
           options: List<String>.from(base.options),
           correctIndex: base.correctIndex,
           explanation: base.explanation,
@@ -2238,7 +2238,7 @@ class PocketFortressDefenseService {
         ),
       );
     }
-    return presidential200;
+    return presidential250;
   }
 
   // ============================================================
