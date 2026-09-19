@@ -62,8 +62,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   int _attacksUsed = 0;
 
   // 🔍 Interactive Estate Zoom & Pan Controls
-  late TransformationController _zoomController;
-  double _currentZoom = 1.0;
   int _defenderScore = 0;
 
   late AnimationController _pulseController;
@@ -79,7 +77,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     WidgetsBinding.instance.addObserver(this);
     _defenderHp = widget.neighbor.hp;
     _isDefenderDamaged = widget.neighbor.isDamaged;
-    _zoomController = TransformationController();
 
     _pulseController = AnimationController(
       vsync: this,
@@ -113,7 +110,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _combatTimer?.cancel();
-    _zoomController.dispose();
     _pulseController.dispose();
     _shakeController.dispose();
     _beamController.dispose();
@@ -122,31 +118,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     super.dispose();
   }
 
-  void _zoomIn() {
-    final newZoom = (_currentZoom + 0.25).clamp(0.6, 2.5);
-    setState(() {
-      _currentZoom = newZoom;
-      _zoomController.value = Matrix4.diagonal3Values(newZoom, newZoom, 1.0);
-    });
-    HapticFeedback.selectionClick();
-  }
-
-  void _zoomOut() {
-    final newZoom = (_currentZoom - 0.25).clamp(0.6, 2.5);
-    setState(() {
-      _currentZoom = newZoom;
-      _zoomController.value = Matrix4.diagonal3Values(newZoom, newZoom, 1.0);
-    });
-    HapticFeedback.selectionClick();
-  }
-
-  void _resetZoom() {
-    setState(() {
-      _currentZoom = 1.0;
-      _zoomController.value = Matrix4.identity();
-    });
-    HapticFeedback.selectionClick();
-  }
 
   void _openDefenderProfile() {
     HapticFeedback.selectionClick();
@@ -464,246 +435,313 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       onPopInvokedWithResult: (didPop, result) {},
       child: Scaffold(
         backgroundColor: const Color(0xFF0284C7),
-        body: Stack(
-          children: [
-            // 1. 2D Open World Full-Screen Scenery: Sky, Radiant Sun, Fluffy Clouds, Distant Mountain Silhouettes, Rolling Green Hillside & Trees
-            Positioned.fill(
-              child: CustomPaint(
-                painter: CitadelScenicLandscapePainter(
-                  isDamaged: _isDefenderDamaged,
-                ),
-              ),
-            ),
+        body: LayoutBuilder(
+          builder: (context, constraints) {
+            final w = constraints.maxWidth;
+            final h = constraints.maxHeight;
 
-            // 2. Interactive Pinch & Pan Viewport: House, Defender Badges, Roadside Signpost, Little Car
-            Positioned.fill(
-              child: InteractiveViewer(
-                transformationController: _zoomController,
-                minScale: 0.6,
-                maxScale: 2.5,
-                boundaryMargin: const EdgeInsets.all(160),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // The 2D Flame English House resting on the grassy slope
-                    Positioned(
-                      bottom: 74,
-                      child: SizedBox(
-                        width: 390,
-                        height: 380,
-                        child: FlameEnglishHouseWidget(
-                          currentDay: widget.neighbor.day,
-                          streak: widget.neighbor.streak,
-                          isDamaged: _isDefenderDamaged,
-                          houseId: widget.neighbor.id,
-                          paletteId: widget.neighbor.paletteId,
+            // 🏡 Ground level where the green estate lawn and house foundation meet
+            final groundY = h * 0.54;
+            final houseW = math.min(w * 0.94, 390.0);
+            const houseH = 370.0;
+            // House foundation rests naturally on the courtyard grass slope
+            final houseBottom = h - groundY - 28.0;
+
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // 1. Full-Screen 2D Open World Scenery: Sky, Radiant Sun, Clouds, Mountain Silhouettes, Rolling Hills, Courtyard Lawn, Trees, Street Lamps
+                Positioned.fill(
+                  child: CustomPaint(
+                    painter: CitadelScenicLandscapePainter(
+                      isDamaged: _isDefenderDamaged,
+                      groundBaseY: groundY,
+                    ),
+                  ),
+                ),
+
+                // 2. The 2D Flame English House seated firmly on the courtyard lawn
+                Positioned(
+                  bottom: houseBottom,
+                  left: (w - houseW) / 2,
+                  width: houseW,
+                  height: houseH,
+                  child: FlameEnglishHouseWidget(
+                    currentDay: widget.neighbor.day,
+                    streak: widget.neighbor.streak,
+                    isDamaged: _isDefenderDamaged,
+                    houseId: widget.neighbor.id,
+                    paletteId: widget.neighbor.paletteId,
+                  ),
+                ),
+
+                // Chimney Smoke Puffs floating above the roof
+                Positioned(
+                  bottom: houseBottom + houseH - 24,
+                  left: (w / 2) - 86,
+                  child: _buildChimneySmoke(),
+                ),
+                Positioned(
+                  bottom: houseBottom + houseH - 24,
+                  right: (w / 2) - 86,
+                  child: _buildChimneySmoke(),
+                ),
+
+                // 3. Badges directly above the house roof
+                Positioned(
+                  bottom: houseBottom + houseH - 24,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // 👑 Yellow Banner: DEFENDER CITADEL
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00),
+                            borderRadius: BorderRadius.circular(8),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                blurRadius: 8,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            '👑 DEFENDER CITADEL • ${widget.neighbor.name.toUpperCase()}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
+                        const SizedBox(height: 5),
 
-                    // Cute little red car parked in front of house on street curb (matching screenshot)
-                    Positioned(
-                      bottom: 68,
-                      child: _buildDefenderLittleCar(),
-                    ),
-
-                    // Chimney Smoke Puffs floating above the roof
-                    Positioned(
-                      bottom: 430,
-                      left: (MediaQuery.of(context).size.width / 2) - 86,
-                      child: _buildChimneySmoke(),
-                    ),
-                    Positioned(
-                      bottom: 430,
-                      right: (MediaQuery.of(context).size.width / 2) - 86,
-                      child: _buildChimneySmoke(),
-                    ),
-
-                    // Badges directly above the house (matching user screenshot)
-                    Positioned(
-                      bottom: 460,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // 👑 Yellow Banner: DEFENDER CITADEL
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFFFFC00),
-                              borderRadius: BorderRadius.circular(8),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                        // 🪙 Pocket Score (PS) Badge
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
                             ),
-                            child: Text(
-                              '👑 DEFENDER CITADEL • ${widget.neighbor.name.toUpperCase()}',
-                              style: GoogleFonts.outfit(
-                                color: Colors.black,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 0.6,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                                blurRadius: 8,
                               ),
-                            ),
+                            ],
                           ),
-                          const SizedBox(height: 6),
-
-                          // 🪙 Pocket Score (PS) Badge: Highlighted above the House
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🪙', style: TextStyle(fontSize: 13)),
+                              const SizedBox(width: 5),
+                              Text(
+                                'PS ${_defenderScore > 0 ? _defenderScore : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day)} PTS',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
+                                ),
                               ),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                                  blurRadius: 8,
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text('🪙', style: TextStyle(fontSize: 13)),
-                                const SizedBox(width: 5),
-                                Text(
-                                  'PS ${_defenderScore > 0 ? _defenderScore : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day)} PTS',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFFFFD700),
-                                    fontSize: 12.5,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 0.5,
-                                  ),
-                                ),
-                              ],
-                            ),
+                            ],
                           ),
-                          const SizedBox(height: 6),
-
-                          // Defender Avatar Bubble with glowing halo
-                          Container(
-                            width: 50,
-                            height: 50,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: widget.neighbor.hasActiveShield
-                                    ? const Color(0xFF00F0FF)
-                                    : const Color(0xFFFFD700),
-                                width: 2.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: (widget.neighbor.hasActiveShield
-                                          ? const Color(0xFF00F0FF)
-                                          : const Color(0xFFFFD700))
-                                      .withValues(alpha: 0.5),
-                                  blurRadius: 12,
-                                ),
-                              ],
-                            ),
-                            child: ClipOval(
-                              child: VectorAvatarWidget(
-                                config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
-                                size: 50,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-
-                    // 🏡 Roadside Street Signpost Plaque (matching screenshot)
-                    Positioned(
-                      bottom: 84,
-                      right: 26,
-                      child: _buildRoadsideSignpost(),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
 
-            // 3. Floating Top Capsule Header (matching user's screenshot)
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: _buildTopHeaderCapsule(),
-            ),
+                // 4. Defender in Courtyard Lawn (speech bubble & avatar)
+                Positioned(
+                  bottom: houseBottom - 8,
+                  left: (w / 2) - 135,
+                  child: _buildDefenderInCourtyard(),
+                ),
 
-            // 4. Floating Zoom Controls (+, -, Reset) on Top-Right Corner
-            Positioned(
-              top: 64,
-              right: 14,
-              child: _buildZoomControls(),
-            ),
+                // 5. Cute little red car parked on the driveway curb in front of the house
+                Positioned(
+                  bottom: houseBottom - 6,
+                  right: (w / 2) - 140,
+                  child: _buildDefenderLittleCar(),
+                ),
 
-            // 5. Weapon Discharge & Particle Strike Layer
-            AnimatedBuilder(
-              animation: Listenable.merge([_beamController, _particleController]),
-              builder: (context, _) {
-                return Positioned.fill(
-                  child: IgnorePointer(
-                    child: CustomPaint(
-                      painter: CitadelLaserStrikePainter(
-                        beamProg: _beamController.value,
-                        particleProg: _particleController.value,
-                      ),
-                    ),
+                // 6. Roadside Street Signpost
+                Positioned(
+                  bottom: houseBottom - 42,
+                  right: 18,
+                  child: _buildRoadsideSignpost(),
+                ),
+
+                // 7. Weapon Discharge & Particle Strike Layer
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: Listenable.merge([_beamController, _particleController]),
+                    builder: (context, _) {
+                      if (_beamController.value <= 0 && _particleController.value <= 0) {
+                        return const SizedBox.shrink();
+                      }
+                      return IgnorePointer(
+                        child: CustomPaint(
+                          painter: CitadelLaserStrikePainter(
+                            beamProg: _beamController.value,
+                            particleProg: _particleController.value,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+                ),
 
-            // 6. Victory Coin Shower Layer
-            AnimatedBuilder(
-              animation: _coinController,
-              builder: (context, _) {
-                if (_coinController.value <= 0.0 || _coinController.value >= 1.0) {
-                  return const SizedBox.shrink();
-                }
-                return Positioned.fill(
-                  child: IgnorePointer(
-                    child: CustomPaint(
-                      painter: CitadelCoinShowerPainter(
-                        progress: _coinController.value,
-                      ),
-                    ),
+                // 8. Victory Coin Shower Layer
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _coinController,
+                    builder: (context, _) {
+                      if (_coinController.value <= 0.0 || _coinController.value >= 1.0) {
+                        return const SizedBox.shrink();
+                      }
+                      return IgnorePointer(
+                        child: CustomPaint(
+                          painter: CitadelCoinShowerPainter(
+                            progress: _coinController.value,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                );
-              },
-            ),
+                ),
 
-            // 7. Attack strike visual impact overlay
-            if (_isStriking) _buildStrikeOverlay(),
+                // 9. Attack strike visual impact overlay
+                if (_isStriking) _buildStrikeOverlay(),
 
-            // 8. Bottom Stacked "Attack" Button (when challenge sheet is closed)
-            if (!_isQuestionSheetOpen)
-              Positioned(
-                bottom: 26,
-                left: 0,
-                right: 0,
-                child: _buildBottomAttackButton(),
-              ),
+                // 10. Floating Top Capsule Header
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: _buildTopHeaderCapsule(),
+                ),
 
-            // 9. Stacked Expanded Question / Challenge Sheet (when opened)
-            if (_isQuestionSheetOpen)
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: _buildQuestionSheet(),
-              ),
-          ],
+                // 11. Bottom Stacked Red "Attack" Button (when challenge sheet is closed)
+                if (!_isQuestionSheetOpen)
+                  Positioned(
+                    bottom: 26,
+                    left: 0,
+                    right: 0,
+                    child: _buildBottomAttackButton(),
+                  ),
+
+                // 12. Stacked Expanded Question / Challenge Sheet (when opened)
+                if (_isQuestionSheetOpen)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: _buildQuestionSheet(),
+                  ),
+              ],
+            );
+          },
         ),
       ),
+    );
+  }
+
+  /// 👤 Defender Character standing / present in the Courtyard (User Directive: "അവരവിടെ ഇങ്ങനെ ഇരിക്കുന്നത്... അവന്റെ വീട്ടിൽ നടക്കുന്നത്, ആ ഒരു ഫീൽ കിട്ടാൻ")
+  Widget _buildDefenderInCourtyard() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Speech Bubble
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: widget.neighbor.hasActiveShield ? const Color(0xFF00F0FF) : const Color(0xFFFFD700),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🏰', style: TextStyle(fontSize: 11)),
+              const SizedBox(width: 4),
+              Text(
+                'Defending my Citadel!',
+                style: GoogleFonts.outfit(
+                  color: widget.neighbor.hasActiveShield ? const Color(0xFF38BDF8) : const Color(0xFFFFD700),
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 5),
+
+        // Glowing Avatar Orb & Platform
+        Container(
+          width: 54,
+          height: 54,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: const Color(0xFF0F172A),
+            border: Border.all(
+              color: widget.neighbor.hasActiveShield ? const Color(0xFF00F0FF) : const Color(0xFFFFD700),
+              width: 2.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (widget.neighbor.hasActiveShield ? const Color(0xFF00F0FF) : const Color(0xFFFFD700))
+                    .withValues(alpha: 0.45),
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          child: ClipOval(
+            child: VectorAvatarWidget(
+              config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
+              size: 54,
+            ),
+          ),
+        ),
+        const SizedBox(height: 3),
+
+        // Name & Level Pill
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Colors.white24, width: 0.8),
+          ),
+          child: Text(
+            '${widget.neighbor.name} (Lvl ${widget.neighbor.day})',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 9.5,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -1014,61 +1052,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  /// 🔍 Floating Zoom Controls (+, -, %) on Top-Right Corner
-  Widget _buildZoomControls() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.75),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white24, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.4),
-            blurRadius: 8,
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          InkWell(
-            onTap: _zoomIn,
-            borderRadius: BorderRadius.circular(12),
-            child: const Padding(
-              padding: EdgeInsets.all(5),
-              child: Icon(Icons.add_rounded, color: Colors.white, size: 20),
-            ),
-          ),
-          const Divider(color: Colors.white24, height: 4),
-          InkWell(
-            onTap: _zoomOut,
-            borderRadius: BorderRadius.circular(12),
-            child: const Padding(
-              padding: EdgeInsets.all(5),
-              child: Icon(Icons.remove_rounded, color: Colors.white, size: 20),
-            ),
-          ),
-          const Divider(color: Colors.white24, height: 4),
-          InkWell(
-            onTap: _resetZoom,
-            borderRadius: BorderRadius.circular(12),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-              child: Text(
-                '${(_currentZoom * 100).toInt()}%',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFD700),
-                  fontSize: 9.5,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   /// 💥 Attack Strike Visual Impact Overlay
   Widget _buildStrikeOverlay() {
@@ -2168,15 +2151,18 @@ class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog
 /// lush rolling green hills, foliage trees with red berries/apples, and glowing street lamps.
 class CitadelScenicLandscapePainter extends CustomPainter {
   final bool isDamaged;
+  final double groundBaseY;
 
   CitadelScenicLandscapePainter({
     this.isDamaged = false,
+    this.groundBaseY = 0.0,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
+    final gy = groundBaseY > 0 ? groundBaseY : h * 0.54;
 
     // 1. Sky Gradient (Vibrant blue matching user screenshot)
     final skyPaint = Paint()
@@ -2188,84 +2174,117 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, w, h), skyPaint);
 
     // 2. Radiant Golden Sun with glowing aura rings
-    final sunCenter = Offset(w * 0.82, h * 0.16);
+    final sunCenter = Offset(w * 0.82, gy * 0.28);
     canvas.drawCircle(
       sunCenter,
-      52,
+      50,
       Paint()
         ..color = const Color(0xFFFDE047).withValues(alpha: 0.22)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
     );
     canvas.drawCircle(
       sunCenter,
-      38,
+      36,
       Paint()
         ..color = const Color(0xFFFDE047).withValues(alpha: 0.45)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
     );
-    canvas.drawCircle(sunCenter, 24, Paint()..color = const Color(0xFFFDE047));
+    canvas.drawCircle(sunCenter, 22, Paint()..color = const Color(0xFFFDE047));
 
     // 3. Drifting Fluffy Clouds
-    _drawFluffyCloud(canvas, w * 0.16, h * 0.14, 16);
-    _drawFluffyCloud(canvas, w * 0.50, h * 0.22, 13);
-    _drawFluffyCloud(canvas, w * 0.88, h * 0.26, 12);
+    _drawFluffyCloud(canvas, w * 0.16, gy * 0.22, 16);
+    _drawFluffyCloud(canvas, w * 0.50, gy * 0.35, 13);
+    _drawFluffyCloud(canvas, w * 0.86, gy * 0.44, 12);
 
     // 4. Distant Mountain Silhouettes (Teal/Emerald haze)
     final mountainPath = Path();
-    mountainPath.moveTo(0, h * 0.65);
-    mountainPath.lineTo(w * 0.22, h * 0.55);
-    mountainPath.lineTo(w * 0.52, h * 0.61);
-    mountainPath.lineTo(w * 0.78, h * 0.53);
-    mountainPath.lineTo(w, h * 0.59);
+    mountainPath.moveTo(0, gy - 16);
+    mountainPath.lineTo(w * 0.22, gy - 70);
+    mountainPath.lineTo(w * 0.50, gy - 38);
+    mountainPath.lineTo(w * 0.76, gy - 75);
+    mountainPath.lineTo(w, gy - 26);
     mountainPath.lineTo(w, h);
     mountainPath.lineTo(0, h);
     mountainPath.close();
 
     final mountainPaint = Paint()
-      ..color = const Color(0xFF0D9488).withValues(alpha: 0.38);
+      ..color = const Color(0xFF0D9488).withValues(alpha: 0.35);
     canvas.drawPath(mountainPath, mountainPaint);
 
-    // 5. Rolling Green Hills (The ground slope where house rests)
-    final groundBaseY = h * 0.72;
+    // 5. Rolling Green Estate Courtyard / Hills (where the house and yard sit)
     final hillPath = Path();
-    hillPath.moveTo(0, groundBaseY - 26);
+    hillPath.moveTo(0, gy - 16);
     hillPath.quadraticBezierTo(
-      w * 0.46, groundBaseY - 42,
-      w, groundBaseY - 14,
+      w * 0.48, gy - 26,
+      w, gy - 8,
     );
     hillPath.lineTo(w, h);
     hillPath.lineTo(0, h);
     hillPath.close();
 
     final hillPaint = Paint()
-      ..shader = const LinearGradient(
-        colors: [Color(0xFF15803D), Color(0xFF166534), Color(0xFF14532D)],
+      ..shader = LinearGradient(
+        colors: [
+          const Color(0xFF22C55E),
+          const Color(0xFF16A34A),
+          const Color(0xFF15803D),
+          const Color(0xFF14532D),
+        ],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, groundBaseY - 45, w, h - groundBaseY + 45));
+      ).createShader(Rect.fromLTWH(0, gy - 32, w, h - gy + 32));
     canvas.drawPath(hillPath, hillPaint);
 
-    // 6. Vibrant Grass Ridge Edge
+    // 6. Vibrant Grass Ridge Edge (Highlight on the crest)
     final ridgePaint = Paint()
-      ..color = const Color(0xFF4ADE80)
+      ..color = const Color(0xFF86EFAC)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 6.0;
+      ..strokeWidth = 5.0;
     canvas.drawPath(hillPath, ridgePaint);
 
-    // Subtle golden road line along hill
-    final roadLinePaint = Paint()
-      ..color = const Color(0xFFFDE047).withValues(alpha: 0.25)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 10.0;
-    canvas.drawPath(hillPath, roadLinePaint);
+    // 7. Cobblestone Garden Walkway from the house steps towards street
+    final walkPath = Path();
+    walkPath.moveTo(w * 0.44, gy + 10);
+    walkPath.quadraticBezierTo(w * 0.45, gy + 70, w * 0.40, h);
+    walkPath.lineTo(w * 0.58, h);
+    walkPath.quadraticBezierTo(w * 0.55, gy + 70, w * 0.56, gy + 10);
+    walkPath.close();
 
-    // 7. Trees with Foliage & Little Red Apples (from screenshot)
-    _drawTree(canvas, w * 0.12, groundBaseY - 24);
-    _drawTree(canvas, w * 0.88, groundBaseY - 12);
+    final walkPaint = Paint()
+      ..color = const Color(0xFFCBD5E1).withValues(alpha: 0.35);
+    canvas.drawPath(walkPath, walkPaint);
 
-    // 8. Street Lamps with Warm Golden Glowing Lanterns
-    _drawStreetLamp(canvas, w * 0.05, groundBaseY - 28);
-    _drawStreetLamp(canvas, w * 0.95, groundBaseY - 10);
+    // Stepping stones along the path
+    final stonePaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: 0.4);
+    for (int i = 0; i < 6; i++) {
+      final stoneY = gy + 20 + (i * 24);
+      final stoneX = w * 0.49 + math.sin(i * 1.5) * 6;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: Offset(stoneX, stoneY), width: 34 - (i * 2.0), height: 10),
+          const Radius.circular(5),
+        ),
+        stonePaint,
+      );
+    }
+
+    // 8. White Picket Fences along the property line
+    _drawPicketFence(canvas, w * 0.04, gy - 6, 4);
+    _drawPicketFence(canvas, w * 0.78, gy + 2, 4);
+
+    // 9. Colorful Flowerbeds (Yellow, Pink, Red blossoms)
+    _drawFlowerbed(canvas, w * 0.22, gy - 2);
+    _drawFlowerbed(canvas, w * 0.72, gy + 4);
+
+    // 10. Lush Apple Trees on Left and Right flanks
+    _drawTree(canvas, w * 0.08, gy - 6, scale: 1.15);
+    _drawTree(canvas, w * 0.22, gy - 14, scale: 0.9);
+    _drawTree(canvas, w * 0.82, gy - 4, scale: 0.95);
+    _drawTree(canvas, w * 0.93, gy + 6, scale: 1.1);
+
+    // 11. Street Lamps with Warm Golden Glowing Lanterns
+    _drawStreetLamp(canvas, w * 0.04, gy + 12);
+    _drawStreetLamp(canvas, w * 0.95, gy + 20);
   }
 
   void _drawFluffyCloud(Canvas canvas, double cx, double cy, double r) {
@@ -2276,26 +2295,67 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawCircle(Offset(cx + r * 2.6, cy + r * 0.1), r * 0.75, cloudPaint);
   }
 
-  void _drawTree(Canvas canvas, double x, double y) {
+  void _drawPicketFence(Canvas canvas, double startX, double groundY, int pickets) {
+    final fencePaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+    final shadowPaint = Paint()..color = Colors.black26;
+
+    // Cross rails
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(startX, groundY - 18, pickets * 12.0 + 4, 3), const Radius.circular(1.5)),
+      fencePaint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(startX, groundY - 8, pickets * 12.0 + 4, 3), const Radius.circular(1.5)),
+      fencePaint,
+    );
+
+    // Vertical pickets with pointed tops
+    for (int i = 0; i < pickets; i++) {
+      final px = startX + (i * 12.0) + 2;
+      final path = Path();
+      path.moveTo(px, groundY);
+      path.lineTo(px, groundY - 22);
+      path.lineTo(px + 3, groundY - 26);
+      path.lineTo(px + 6, groundY - 22);
+      path.lineTo(px + 6, groundY);
+      path.close();
+      canvas.drawPath(path, shadowPaint);
+      canvas.drawPath(path, fencePaint);
+    }
+  }
+
+  void _drawFlowerbed(Canvas canvas, double x, double y) {
+    final colors = [const Color(0xFFEF4444), const Color(0xFFFBBF24), const Color(0xFFEC4899), const Color(0xFF38BDF8)];
+    for (int i = 0; i < 5; i++) {
+      final fx = x + (i * 7) - 14;
+      final fy = y + math.sin(i * 1.8) * 3;
+      final stemPaint = Paint()..color = const Color(0xFF15803D)..strokeWidth = 1.5;
+      canvas.drawLine(Offset(fx, fy), Offset(fx, fy - 6), stemPaint);
+      final petalPaint = Paint()..color = colors[i % colors.length];
+      canvas.drawCircle(Offset(fx, fy - 7), 3, petalPaint);
+    }
+  }
+
+  void _drawTree(Canvas canvas, double x, double y, {double scale = 1.0}) {
     // Tree Trunk
     canvas.drawLine(
       Offset(x, y),
-      Offset(x, y - 28),
-      Paint()..color = const Color(0xFF78350F)..strokeWidth = 5.0,
+      Offset(x, y - (28 * scale)),
+      Paint()..color = const Color(0xFF78350F)..strokeWidth = 5.0 * scale,
     );
     // Overlapping lush foliage balls
     final leafPaint1 = Paint()..color = const Color(0xFF15803D);
     final leafPaint2 = Paint()..color = const Color(0xFF22C55E);
-    canvas.drawCircle(Offset(x, y - 38), 16, leafPaint1);
-    canvas.drawCircle(Offset(x - 8, y - 32), 12, leafPaint2);
-    canvas.drawCircle(Offset(x + 8, y - 32), 12, leafPaint2);
-    canvas.drawCircle(Offset(x, y - 44), 11, leafPaint2);
+    canvas.drawCircle(Offset(x, y - (38 * scale)), 16 * scale, leafPaint1);
+    canvas.drawCircle(Offset(x - (8 * scale), y - (32 * scale)), 12 * scale, leafPaint2);
+    canvas.drawCircle(Offset(x + (8 * scale), y - (32 * scale)), 12 * scale, leafPaint2);
+    canvas.drawCircle(Offset(x, y - (44 * scale)), 11 * scale, leafPaint2);
 
     // Little red apples on branches
     final applePaint = Paint()..color = const Color(0xFFEF4444);
-    canvas.drawCircle(Offset(x - 4, y - 36), 2.2, applePaint);
-    canvas.drawCircle(Offset(x + 5, y - 40), 2.2, applePaint);
-    canvas.drawCircle(Offset(x + 3, y - 30), 2.2, applePaint);
+    canvas.drawCircle(Offset(x - (4 * scale), y - (36 * scale)), 2.4 * scale, applePaint);
+    canvas.drawCircle(Offset(x + (5 * scale), y - (40 * scale)), 2.4 * scale, applePaint);
+    canvas.drawCircle(Offset(x + (3 * scale), y - (30 * scale)), 2.4 * scale, applePaint);
   }
 
   void _drawStreetLamp(Canvas canvas, double x, double y) {
@@ -2318,7 +2378,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CitadelScenicLandscapePainter oldDelegate) =>
-      oldDelegate.isDamaged != isDamaged;
+      oldDelegate.isDamaged != isDamaged || oldDelegate.groundBaseY != groundBaseY;
 }
 
 
