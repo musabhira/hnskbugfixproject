@@ -2637,13 +2637,40 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     final statuses = widget.statusGroup['statuses'] as List;
     final status = statuses[_currentIndex];
     final profile = status['profile'] ?? widget.statusGroup['profile'] ?? widget.statusGroup;
-    final receiverId = status['user_id']?.toString() ??
-        profile?['user_id']?.toString() ??
-        profile?['id']?.toString() ??
-        status['profile_id']?.toString() ??
-        '';
 
-    if (receiverId.isEmpty || receiverId == widget.currentUserId) return;
+    // Robustly determine the real receiver auth user_id
+    String receiverUserId = '';
+    if (status['user_id'] != null && status['user_id'].toString().isNotEmpty) {
+      receiverUserId = status['user_id'].toString();
+    }
+    if (receiverUserId.isEmpty && status['profile'] is Map && status['profile']['user_id'] != null) {
+      receiverUserId = status['profile']['user_id'].toString();
+    }
+    if (receiverUserId.isEmpty && widget.statusGroup['profile'] is Map && widget.statusGroup['profile']['user_id'] != null) {
+      receiverUserId = widget.statusGroup['profile']['user_id'].toString();
+    }
+    if (receiverUserId.isEmpty && status['thought'] is Map && status['thought']['user_id'] != null) {
+      receiverUserId = status['thought']['user_id'].toString();
+    }
+    if (receiverUserId.isEmpty) {
+      final pid = status['profile_id']?.toString() ??
+          (status['profile'] is Map ? status['profile']['id']?.toString() : null) ??
+          (widget.statusGroup['profile'] is Map ? widget.statusGroup['profile']['id']?.toString() : null);
+      if (pid != null && pid.isNotEmpty) {
+        if (PocketRobotService.isRobotId(pid) || PocketPresidentService.isPresidentId(pid)) {
+          receiverUserId = pid;
+        } else {
+          try {
+            final pRow = await supabase.from('profile').select('user_id').eq('id', pid).maybeSingle();
+            if (pRow != null && pRow['user_id'] != null) {
+              receiverUserId = pRow['user_id'].toString();
+            }
+          } catch (_) {}
+        }
+      }
+    }
+
+    if (receiverUserId.isEmpty || receiverUserId == widget.currentUserId) return;
 
     try {
       final originalText = text;
@@ -2654,10 +2681,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       final authorName = profile?['name'] ?? 'User';
 
       // 1. Robot reply simulation
-      if (PocketRobotService.isRobotId(receiverId)) {
+      if (PocketRobotService.isRobotId(receiverUserId)) {
         await PocketRobotService.handleUserStatusReply(
           userId: widget.currentUserId,
-          robotId: receiverId,
+          robotId: receiverUserId,
           userReply: originalText,
           statusId: status['id']?.toString() ?? '',
         );
@@ -2684,7 +2711,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       }
 
       // 2. President reply
-      if (PocketPresidentService.isPresidentId(receiverId)) {
+      if (PocketPresidentService.isPresidentId(receiverUserId)) {
         await PocketPresidentService.sendUserMessageToPresident(
           userId: widget.currentUserId,
           messageText: 'Replied to Vibe: "$originalText"',
@@ -2712,11 +2739,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       }
 
       // 3. Real user: check if mates
-      final areMates = await PocketMateService.isMate(widget.currentUserId, receiverId);
+      final areMates = await PocketMateService.isMate(widget.currentUserId, receiverUserId);
 
       await supabase.from('messages').insert({
         'sender_id': widget.currentUserId,
-        'receiver_id': receiverId,
+        'receiver_id': receiverUserId,
         'message_text': originalText,
         'message_type': 'text',
         'metadata': {
@@ -2729,48 +2756,54 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         }
       });
 
-      // Update or create conversation record so it shows up in conversation lists / requests
-      try {
-        final existingConv = await supabase
-            .from('conversations')
-            .select('id, unread_count')
-            .or('and(user1_id.eq.${widget.currentUserId},user2_id.eq.$receiverId),and(user1_id.eq.$receiverId,user2_id.eq.${widget.currentUserId})')
-            .maybeSingle();
+      if (areMates) {
+        // Mates: update or create conversation record so it shows up in normal 1-on-1 chat
+        try {
+          final existingConv = await supabase
+              .from('conversations')
+              .select('id, unread_count')
+              .or('and(user1_id.eq.${widget.currentUserId},user2_id.eq.$receiverUserId),and(user1_id.eq.$receiverUserId,user2_id.eq.${widget.currentUserId})')
+              .maybeSingle();
 
-        final nowIso = DateTime.now().toIso8601String();
-        if (existingConv != null) {
-          await supabase.from('conversations').update({
-            'last_message': originalText,
-            'last_message_time': nowIso,
-            'last_sender_id': widget.currentUserId,
-            'unread_count': (existingConv['unread_count'] ?? 0) + 1,
-            'updated_at': nowIso,
-          }).eq('id', existingConv['id']);
-        } else {
-          await supabase.from('conversations').insert({
-            'user1_id': widget.currentUserId,
-            'user2_id': receiverId,
-            'last_message': originalText,
-            'last_message_time': nowIso,
-            'last_sender_id': widget.currentUserId,
-            'unread_count': 1,
-            'updated_at': nowIso,
-            'is_group': false,
-          });
+          final nowIso = DateTime.now().toIso8601String();
+          if (existingConv != null) {
+            await supabase.from('conversations').update({
+              'last_message': originalText,
+              'last_message_time': nowIso,
+              'last_sender_id': widget.currentUserId,
+              'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+              'updated_at': nowIso,
+            }).eq('id', existingConv['id']);
+          } else {
+            await supabase.from('conversations').insert({
+              'user1_id': widget.currentUserId,
+              'user2_id': receiverUserId,
+              'last_message': originalText,
+              'last_message_time': nowIso,
+              'last_sender_id': widget.currentUserId,
+              'unread_count': 1,
+              'updated_at': nowIso,
+              'is_group': false,
+            });
+          }
+        } catch (convErr) {
+          debugPrint('Error updating conversation for vibe reply: $convErr');
         }
-      } catch (convErr) {
-        debugPrint('Error updating conversation for vibe reply: $convErr');
-      }
-
-      if (!areMates) {
+      } else {
+        // Non-Mates: send mate request so it safely routes into Requests tab
         await PocketMateService.sendMateRequest(
           senderId: widget.currentUserId,
-          receiverId: receiverId,
+          receiverId: receiverUserId,
           contextType: 'vibe_reply',
           message: 'Replied to your Vibe: "$originalText"',
         );
         setState(() => _isMateRequestSent = true);
       }
+
+      // Award interactive activity score
+      try {
+        await PocketFortressDefenseService.recordActivityPoints('group_chat');
+      } catch (_) {}
 
       if (mounted) {
         if (_isPaused) _togglePause();

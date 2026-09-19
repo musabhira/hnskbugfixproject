@@ -36,6 +36,8 @@ import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -122,6 +124,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   List<Map<String, dynamic>> _sentRequests = [];
   int _requestsSubTab = 0; // 0: Received, 1: Sent
   bool _isLoadingRequests = false;
+  int _userPocketScore = 0;
+  int _userPocketStage = 1;
+
+  Future<void> _loadUserPocketScore() async {
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id;
+    if (uid == null || uid.isEmpty) return;
+    try {
+      final score = await PocketFortressDefenseService.getUnifiedScore(uid);
+      final stage = PocketScoreLevelEngine.getLevelFromScore(score);
+      if (mounted) {
+        safeSetState(() {
+          _userPocketScore = score;
+          _userPocketStage = stage;
+        });
+      }
+    } catch (_) {}
+  }
 
   Future<void> _loadPendingRequests() async {
     final uid = _currentUserId ?? supabase.auth.currentUser?.id;
@@ -445,6 +464,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         });
       }
 
+      final cachedScore = prefs.getInt('user_pocket_score_$userId') ??
+          prefs.getInt('learning_points_$userId');
+      if (cachedScore != null && cachedScore > 0) {
+        safeSetState(() {
+          _userPocketScore = cachedScore;
+          _userPocketStage = PocketScoreLevelEngine.getLevelFromScore(cachedScore);
+        });
+      }
+
       if (cachedStats != null) {
         final statsMap = jsonDecode(cachedStats);
         safeSetState(() {
@@ -518,6 +546,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         'following': _followingCount
       };
       await prefs.setString('cached_stats_$userId', jsonEncode(statsMap));
+      await _loadUserPocketScore();
     } catch (e) {
       debugPrint('User data load error: $e');
       safeSetState(() => _isLoading = false);
@@ -1833,6 +1862,104 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPendingRequestsBanner(bool isDark) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: InkWell(
+          onTap: () {
+            HapticFeedback.selectionClick();
+            setState(() {
+              _chatCategoryFilterIndex = 3;
+            });
+          },
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: isDark
+                    ? [const Color(0xFF1E1B4B).withValues(alpha: 0.6), const Color(0xFF1E293B)]
+                    : [const Color(0xFFEEF2FF), Colors.white],
+              ),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.mark_email_unread_rounded,
+                    color: Color(0xFF818CF8),
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${_pendingRequests.length} Message ${_pendingRequests.length == 1 ? 'Request' : 'Requests'}',
+                        style: GoogleFonts.outfit(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Vibe replies and requests from people you don\'t know yet',
+                        style: GoogleFonts.inter(
+                          color: isDark ? Colors.white60 : Colors.black54,
+                          fontSize: 11.5,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF6366F1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'Review',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -3262,18 +3389,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               ] else ...[
                 if (_pendingRequests.isNotEmpty &&
                     _chatCategoryFilterIndex == 0)
-                  _buildPendingRequestsSliver(),
+                  _buildPendingRequestsBanner(isDark),
                 // Active Conversations List
                 Builder(
                   builder: (context) {
+                    final pendingSenderIds = _pendingRequests
+                        .map((r) => r['sender_id']?.toString())
+                        .whereType<String>()
+                        .toSet();
                     List<ChatConversation> activeFiltered =
-                        filteredConversations;
+                        filteredConversations
+                            .where((c) => !pendingSenderIds.contains(c.id))
+                            .toList();
                     if (_chatCategoryFilterIndex == 1) {
-                      activeFiltered = filteredConversations
+                      activeFiltered = activeFiltered
                           .where((c) => PocketRobotService.isRobotId(c.id))
                           .toList();
                     } else if (_chatCategoryFilterIndex == 2) {
-                      activeFiltered = filteredConversations
+                      activeFiltered = activeFiltered
                           .where((c) =>
                               !PocketRobotService.isRobotId(c.id) &&
                               !c.isGroup &&
@@ -3282,11 +3415,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               !c.isActiveTimer)
                           .toList();
                     } else if (_chatCategoryFilterIndex == 4) {
-                      activeFiltered = filteredConversations
+                      activeFiltered = activeFiltered
                           .where((c) => c.unreadCount > 0)
                           .toList();
                     } else if (_chatCategoryFilterIndex == 5) {
-                      activeFiltered = filteredConversations
+                      activeFiltered = activeFiltered
                           .where((c) {
                             if (!c.isGroup) return false;
                             final lowerName = c.name.toLowerCase();
@@ -3794,10 +3927,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
-  VectorAvatarConfig _getNavAvatarConfig() {
-    final day = (_preloadedProfile?['learning_day'] as num?)?.toInt() ??
+  int _getEffectiveNavDay() {
+    if (_userPocketStage > 0) return _userPocketStage;
+    if (_userPocketScore > 0) {
+      return PocketScoreLevelEngine.getLevelFromScore(_userPocketScore);
+    }
+    final profScore = (_preloadedProfile?['pocket_score'] as num?)?.toInt() ??
+        (_preloadedProfile?['learning_points'] as num?)?.toInt() ??
+        (_preloadedProfile?['xp'] as num?)?.toInt();
+    if (profScore != null && profScore > 0) {
+      return PocketScoreLevelEngine.getLevelFromScore(profScore);
+    }
+    return (_preloadedProfile?['learning_day'] as num?)?.toInt() ??
         (_preloadedProfile?['learning_stage'] as num?)?.toInt() ??
         1;
+  }
+
+  VectorAvatarConfig _getNavAvatarConfig() {
+    final day = _getEffectiveNavDay();
     final talismanId = _preloadedProfile?['equipped_talisman']?.toString() ??
         _preloadedProfile?['talisman_id']?.toString();
     return VectorAvatarConfig.getEvolutionAvatarForStage(day,
@@ -3805,9 +3952,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildProfileNavItem() {
-    final day = (_preloadedProfile?['learning_day'] as num?)?.toInt() ??
-        (_preloadedProfile?['learning_stage'] as num?)?.toInt() ??
-        1;
+    final day = _getEffectiveNavDay();
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () async {
