@@ -1042,12 +1042,27 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                           const SizedBox(height: 16),
                           Wrap(
                             spacing: 10,
+                            runSpacing: 10,
+                            alignment: WrapAlignment.center,
                             children: [
+                              OutlinedButton.icon(
+                                onPressed: () => _pickMedia(ImageSource.camera),
+                                icon: const Icon(Icons.camera_alt_outlined, size: 16, color: Colors.white),
+                                label: Text(
+                                  'Camera',
+                                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                ),
+                              ),
                               OutlinedButton.icon(
                                 onPressed: () => _pickMedia(ImageSource.gallery),
                                 icon: const Icon(Icons.photo_library_outlined, size: 16, color: Colors.white),
                                 label: Text(
-                                  'Choose Photo',
+                                  'Gallery',
                                   style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
                                 ),
                                 style: OutlinedButton.styleFrom(
@@ -1326,6 +1341,14 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                           });
                           HapticFeedback.lightImpact();
                         },
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Camera
+                      _buildToolIcon(
+                        icon: Icons.camera_alt_outlined,
+                        label: 'Camera',
+                        onTap: () => _pickMedia(ImageSource.camera),
                       ),
                       const SizedBox(height: 14),
 

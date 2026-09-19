@@ -100,21 +100,38 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   String? _equippedTalismanId;
   int _localUserStage = 1;
 
+  int _getEffectiveDay() {
+    if (_pocketScore > 0) {
+      return PocketScoreLevelEngine.getLevelFromScore(_pocketScore);
+    }
+    if (isMe) {
+      return _localUserStage;
+    }
+    final profScore = (_profileData?['pocket_score'] as num?)?.toInt() ??
+        (_profileData?['learning_points'] as num?)?.toInt();
+    if (profScore != null && profScore > 0) {
+      return PocketScoreLevelEngine.getLevelFromScore(profScore);
+    }
+    return (_profileData?['learning_day'] as num?)?.toInt() ?? _localUserStage;
+  }
+
   Future<void> _loadLocalUserStage() async {
     try {
+      final score = await PocketFortressDefenseService.getUnifiedScore(userId);
       final prefs = await SharedPreferences.getInstance();
       final stage = prefs.getInt('pocket_learning_user_stage_$userId') ?? prefs.getInt('learning_day_$userId') ?? 1;
-      if (mounted && stage != _localUserStage) {
-        setState(() => _localUserStage = stage);
+      final calculatedStage = score > 0 ? PocketScoreLevelEngine.getLevelFromScore(score) : stage;
+      if (mounted) {
+        setState(() {
+          if (score > 0) _pocketScore = score;
+          _localUserStage = calculatedStage;
+        });
       }
     } catch (_) {}
   }
 
   VectorAvatarConfig _getAvatarConfig() {
-    int day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
-    if (isMe && _localUserStage > day) {
-      day = _localUserStage;
-    }
+    int day = _getEffectiveDay();
     if (_isTestingStage) {
       return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
     }
@@ -222,11 +239,23 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             PocketRobotService.getRobotByLevel(1);
         final dynLvl = PocketRobotService.getDynamicLevel(robot);
         final robotScore = dynLvl * 100;
-        if (mounted) setState(() => _pocketScore = robotScore);
+        if (mounted) {
+          setState(() {
+            _pocketScore = robotScore;
+            _localUserStage = PocketScoreLevelEngine.getLevelFromScore(robotScore);
+          });
+        }
         return;
       }
       final score = await PocketFortressDefenseService.getUnifiedScore(userId);
-      if (mounted) setState(() => _pocketScore = score);
+      if (mounted) {
+        setState(() {
+          _pocketScore = score;
+          if (score > 0) {
+            _localUserStage = PocketScoreLevelEngine.getLevelFromScore(score);
+          }
+        });
+      }
     } catch (_) {}
   }
 
@@ -237,7 +266,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   bool _isLoadingDefense = false;
 
   Future<void> _loadFortressDefenseData() async {
-    final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    final day = _getEffectiveDay();
     try {
       HouseDefenseStatus status = await PocketFortressDefenseService.getHouseStatus(day);
       if (!isMe && widget.userId != null) {
@@ -1128,10 +1157,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       );
     }
 
-    int day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
-    if (isMe && _localUserStage > day) {
-      day = _localUserStage;
-    }
+    int day = _getEffectiveDay();
     final activeStage = LearningMilestoneStage.getStageForDay(day);
 
     final rawBgColor = activeStage.bgColor;
@@ -1193,18 +1219,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   : null,
               centerTitle: true,
               actions: [
-                // 🧪 Stage / Level & Color Testing Switcher (Days 1–90)
-                material.IconButton(
-                  icon: const Icon(material.Icons.science_rounded, size: 22),
-                  color: textColor,
-                  tooltip: 'Tap: Next Stage | Long Press: Level Picker (1–90)',
-                  onPressed: () {
-                    final current = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
-                    final next = current >= 90 ? 1 : current + 1;
-                    _jumpToDay(next);
-                  },
-                  onLongPress: () => _showStageTestingSwitcher(context),
-                ),
                 if (isMe) ...[
                   material.IconButton(
                     icon: const Icon(material.Icons.switch_account, size: 22),
@@ -1328,11 +1342,12 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   child: Column(
                     children: [
                       FlameEnglishHouseWidget(
-                        key: ValueKey('house_${(_profileData?['learning_day'] as num?)?.toInt() ?? 1}'),
-                        currentDay: (_profileData?['learning_day'] as num?)?.toInt() ?? 1,
+                        key: ValueKey('house_${_getEffectiveDay()}'),
+                        currentDay: _getEffectiveDay(),
                         streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
                         isDamaged: _fortressStatus?.isDamaged ?? false,
                         houseId: isMe ? 'me' : (widget.userId ?? ''),
+                        showTestingControls: false,
                       ),
                       if (_recentRaids.isNotEmpty) ...[
                         Container(
@@ -2095,10 +2110,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Widget _buildBanner() {
-    int day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
-    if (isMe && _localUserStage > day) {
-      day = _localUserStage;
-    }
+    int day = _getEffectiveDay();
     final stage = LearningMilestoneStage.getStageForDay(day);
     final avatar = _getAvatarConfig();
     final bannerUrl = _profileData?['banner_image_url'] ?? _profileData?['banner_url'];
@@ -2145,10 +2157,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       return _buildShimmerHeader();
     }
 
-    int day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
-    if (isMe && _localUserStage > day) {
-      day = _localUserStage;
-    }
+    int day = _getEffectiveDay();
     final activeStage = LearningMilestoneStage.getStageForDay(day);
 
     final name = _profileData?['name'] ?? 'User';

@@ -3944,7 +3944,7 @@ class FlameEnglishHouseWidget extends StatefulWidget {
     this.isDamaged,
     this.houseId,
     this.paletteId,
-    this.showTestingControls = true,
+    this.showTestingControls = false,
   });
 
   @override

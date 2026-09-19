@@ -29,7 +29,6 @@ import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
@@ -42,6 +41,8 @@ import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'dart:async';
 
 class StatusDisplayWidget extends StatefulWidget {
@@ -183,6 +184,11 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final lvl = prefs.getInt('pocket_learning_user_stage_${widget.currentUserId}') ??
           prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
       if (mounted) setState(() => _currentUserLevel = lvl);
+      PocketFortressDefenseService.getUnifiedScore(widget.currentUserId).then((score) {
+        if (score > 0 && mounted) {
+          setState(() => _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(score));
+        }
+      });
     });
     _loadVibesFilter().then((_) {
       _loadCachedStatuses();
@@ -318,9 +324,14 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       final followingIds = List<String>.from(
           followingRes.map((e) => e['followed_id'].toString()));
       final prefs = await SharedPreferences.getInstance();
-      final lvl = prefs.getInt('pocket_learning_user_stage_${widget.currentUserId}') ??
-          prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
-      _currentUserLevel = lvl;
+      final myScore = await PocketFortressDefenseService.getUnifiedScore(widget.currentUserId);
+      if (myScore > 0) {
+        _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(myScore);
+      } else {
+        final lvl = prefs.getInt('pocket_learning_user_stage_${widget.currentUserId}') ??
+            prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
+        _currentUserLevel = lvl;
+      }
       final robotMates = prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? [];
       final Set<String> allFollowingIds = {...followingIds, ...robotMates};
 
@@ -677,7 +688,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       if (!isAuth) return;
     }
 
-    _showAddVibeBottomSheet();
+    _pickImageForStory();
   }
 
   void _showAddVibeBottomSheet() {
@@ -949,9 +960,43 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
             widget.onStatusUploaded?.call();
           }
         });
+      } else if (image == null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SnapchatStoryCreatorPage(
+              userId: widget.currentUserId,
+              profileId: widget.currentProfileId,
+              onStatusUploaded: () {
+                _loadStatusesOptimized();
+                widget.onStatusUploaded?.call();
+              },
+            ),
+          ),
+        ).then((res) {
+          if (res == true && mounted) {
+            _loadStatusesOptimized();
+            widget.onStatusUploaded?.call();
+          }
+        });
       }
     } catch (e) {
       debugPrint('Error picking image for story: $e');
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SnapchatStoryCreatorPage(
+              userId: widget.currentUserId,
+              profileId: widget.currentProfileId,
+              onStatusUploaded: () {
+                _loadStatusesOptimized();
+                widget.onStatusUploaded?.call();
+              },
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -2198,6 +2243,121 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   int _likeCount = 0;
   bool _isAuthorMate = true;
   bool _isMateRequestSent = false;
+  int _currentUserLevel = 1;
+
+  Widget _buildViewerAvatar(Map<String, dynamic>? profile, {double size = 36.0}) {
+    final profileId = profile != null
+        ? (profile['id']?.toString() ?? profile['user_id']?.toString() ?? '')
+        : '';
+    final name = profile?['name']?.toString() ?? 'User';
+
+    final isPresAvatar = PocketPresidentService.isPresidentId(profileId) ||
+        profile?['is_president'] == true;
+
+    if (isPresAvatar) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+        ),
+        child: ClipOval(
+          child: PresidentAvatarWidget(size: size * 0.85, showGlow: false),
+        ),
+      );
+    }
+
+    if (widget.statusGroup['is_group'] == true) {
+      return Container(
+        width: size,
+        height: size,
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)]),
+        ),
+        child: Center(
+          child: Icon(Icons.groups_rounded, color: Colors.white, size: size * 0.5),
+        ),
+      );
+    }
+
+    VectorAvatarConfig avatarConfig = const VectorAvatarConfig();
+    int displayDay = 1;
+
+    if (PocketRobotService.isRobotId(profileId)) {
+      final robot = PocketRobotService.getRobotById(profileId) ??
+          PocketRobotService.getRobotByLevel(1);
+      displayDay = PocketRobotService.getDynamicLevel(robot);
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
+    } else if (profileId == widget.currentProfileId ||
+        (profile != null && profile['user_id']?.toString() == widget.currentUserId)) {
+      displayDay = _currentUserLevel;
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
+    } else if (profile?['avatar_config'] != null) {
+      try {
+        final avatarConfigMap = Map<String, dynamic>.from(profile!['avatar_config']);
+        final stage = avatarConfigMap['stage'] ??
+            avatarConfigMap['learning_day'] ??
+            avatarConfigMap['day'] ??
+            avatarConfigMap['level'];
+        if (stage != null && stage is num && stage > 0) {
+          displayDay = stage.toInt();
+          avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(displayDay);
+        } else {
+          avatarConfig = VectorAvatarConfig.fromMap(avatarConfigMap);
+        }
+      } catch (_) {
+        avatarConfig = const VectorAvatarConfig();
+      }
+    } else {
+      int stage = 1;
+      if (profile != null) {
+        final ps = (profile['pocket_score'] as num?)?.toInt() ??
+            (profile['learning_points'] as num?)?.toInt();
+        if (ps != null && ps > 0) {
+          stage = PocketScoreLevelEngine.getLevelFromScore(ps);
+        } else {
+          final st = profile['learning_day'] ??
+              profile['learning_stage'] ??
+              profile['stage'] ??
+              profile['level'];
+          if (st is num && st > 0) {
+            stage = st.toInt();
+          } else {
+            stage = (name.hashCode.abs() % 90) + 1;
+          }
+        }
+      } else {
+        stage = (name.hashCode.abs() % 90) + 1;
+      }
+      displayDay = stage;
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
+    }
+
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFFFFFC00), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFF8906).withValues(alpha: 0.35),
+            blurRadius: 6,
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: VectorAvatarWidget(
+          config: avatarConfig,
+          size: size * 0.85,
+          showAura: true,
+          useFlame: true,
+        ),
+      ),
+    );
+  }
 
   final TextEditingController _replyController = TextEditingController();
   final FocusNode _replyFocusNode = FocusNode();
@@ -2305,6 +2465,17 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     _replyController.addListener(() {
       if (mounted) setState(() {});
+    });
+
+    SharedPreferences.getInstance().then((prefs) {
+      final lvl = prefs.getInt('pocket_learning_user_stage_${widget.currentUserId}') ??
+          prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
+      if (mounted) setState(() => _currentUserLevel = lvl);
+      PocketFortressDefenseService.getUnifiedScore(widget.currentUserId).then((score) {
+        if (score > 0 && mounted) {
+          setState(() => _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(score));
+        }
+      });
     });
 
     _initializeViewer();
@@ -2465,15 +2636,82 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     final statuses = widget.statusGroup['statuses'] as List;
     final status = statuses[_currentIndex];
-    final receiverId = status['user_id'];
+    final profile = status['profile'] ?? widget.statusGroup['profile'] ?? widget.statusGroup;
+    final receiverId = status['user_id']?.toString() ??
+        profile?['user_id']?.toString() ??
+        profile?['id']?.toString() ??
+        status['profile_id']?.toString() ??
+        '';
 
-    if (receiverId == widget.currentUserId) return;
+    if (receiverId.isEmpty || receiverId == widget.currentUserId) return;
 
     try {
       final originalText = text;
       _replyController.clear();
       _replyFocusNode.unfocus();
+      HapticFeedback.lightImpact();
 
+      final authorName = profile?['name'] ?? 'User';
+
+      // 1. Robot reply simulation
+      if (PocketRobotService.isRobotId(receiverId)) {
+        await PocketRobotService.handleUserStatusReply(
+          userId: widget.currentUserId,
+          robotId: receiverId,
+          userReply: originalText,
+          statusId: status['id']?.toString() ?? '',
+        );
+
+        if (mounted) {
+          if (_isPaused) _togglePause();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.send_rounded, color: Colors.black, size: 16),
+                  const SizedBox(width: 8),
+                  Text('Replied to $authorName! 🤖',
+                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              backgroundColor: const Color(0xFFFFFC00),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 2. President reply
+      if (PocketPresidentService.isPresidentId(receiverId)) {
+        await PocketPresidentService.sendUserMessageToPresident(
+          userId: widget.currentUserId,
+          messageText: 'Replied to Vibe: "$originalText"',
+          messageType: 'text',
+        );
+        if (mounted) {
+          if (_isPaused) _togglePause();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.send_rounded, color: Colors.black, size: 16),
+                  const SizedBox(width: 8),
+                  Text('Dispatched to The President 🏛️',
+                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              backgroundColor: const Color(0xFFFFD700),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 3. Real user: check if mates
       final areMates = await PocketMateService.isMate(widget.currentUserId, receiverId);
 
       await supabase.from('messages').insert({
@@ -2504,34 +2742,27 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       if (mounted) {
         if (_isPaused) _togglePause();
 
-        final statuses = widget.statusGroup['statuses'] as List;
-        final currentStatus = statuses[_currentIndex];
-        final profile = currentStatus['profile'] ?? widget.statusGroup;
-        final authorName = profile?['name'] ?? 'User';
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(areMates
-                ? 'Reply sent to $authorName!'
-                : 'Reply & Mate Request sent to $authorName!'),
-            backgroundColor: Colors.green,
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.white, size: 16),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    areMates
+                        ? 'Reply sent to $authorName!'
+                        : 'Reply sent as Message Request to $authorName! 📩',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: areMates ? const Color(0xFF10B981) : const Color(0xFF6366F1),
             duration: const Duration(seconds: 2),
             behavior: SnackBarBehavior.floating,
           ),
         );
-
-        if (areMates) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => WhatsAppGroupChat(
-                groupId: 'p:$receiverId',
-                groupName: authorName,
-                groupImage: profile?['profile_image_url'],
-              ),
-            ),
-          );
-        }
       }
     } catch (e) {
       debugPrint('Error sending status reply: $e');
@@ -3169,21 +3400,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     // Profile Info with View Count
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 18,
-                          backgroundColor: Colors.grey[800],
-                          backgroundImage: profile['profile_image_url'] != null
-                              ? CachedNetworkImageProvider(
-                                  profile['profile_image_url'])
-                              : null,
-                          child: profile['profile_image_url'] == null
-                              ? Text(
-                                  (profile['name'] ?? 'U')[0].toUpperCase(),
-                                  style: const TextStyle(
-                                      color: Colors.white, fontSize: 16),
-                                )
-                              : null,
-                        ),
+                        _buildViewerAvatar(currentStatus['profile'] ?? profile, size: 36),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
@@ -3280,35 +3497,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                       final meta = rawMeta is Map ? rawMeta : null;
                                       final bool isPriv = meta != null && (meta['is_private'] == true || meta['is_private'] == 'true');
                                       return Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        width: 7.5,
+                                        height: 7.5,
                                         decoration: BoxDecoration(
-                                          color: isPriv
-                                              ? const Color(0xFF38BDF8).withValues(alpha: 0.2)
-                                              : const Color(0xFFFFFC00).withValues(alpha: 0.18),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: isPriv
-                                                ? const Color(0xFF38BDF8).withValues(alpha: 0.5)
-                                                : const Color(0xFFFFFC00).withValues(alpha: 0.5),
-                                            width: 0.8,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              isPriv ? Icons.lock_outline_rounded : Icons.public_rounded,
-                                              size: 10,
-                                              color: isPriv ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00),
-                                            ),
-                                            const SizedBox(width: 3),
-                                            Text(
-                                              isPriv ? 'Mates' : 'Public',
-                                              style: TextStyle(
-                                                color: isPriv ? const Color(0xFF38BDF8) : const Color(0xFFFFFC00),
-                                                fontSize: 9.5,
-                                                fontWeight: FontWeight.bold,
-                                              ),
+                                          color: isPriv ? const Color(0xFF38BDF8) : const Color(0xFF10B981),
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: (isPriv ? const Color(0xFF38BDF8) : const Color(0xFF10B981)).withValues(alpha: 0.85),
+                                              blurRadius: 5,
+                                              spreadRadius: 1,
                                             ),
                                           ],
                                         ),
