@@ -1335,7 +1335,7 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                   },
                   icon: const Icon(Icons.flash_on_rounded, color: Colors.white, size: 18),
                   label: Text(
-                    'Attack Citadel ⚔️',
+                    'Attack',
                     style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
                   ),
                   style: ElevatedButton.styleFrom(

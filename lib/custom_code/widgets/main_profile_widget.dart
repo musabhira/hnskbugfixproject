@@ -2406,7 +2406,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     },
                     icon: const Icon(Icons.flash_on_rounded, size: 20),
                     label: Text(
-                      'ATTACK CITADEL ⚔️',
+                      'Attack',
                       style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5, letterSpacing: 0.5),
                     ),
                   ),
