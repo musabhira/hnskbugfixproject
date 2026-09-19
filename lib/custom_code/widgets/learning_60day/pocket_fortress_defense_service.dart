@@ -2193,6 +2193,54 @@ class PocketFortressDefenseService {
     return gauntletQuestions;
   }
 
+  /// 🏛️ Supreme Presidential Challenge: 200 Gauntlet Trials of English Mastery
+  /// Audio Directive:
+  /// "പ്രസിഡന്റിന് 200 ക്വസ്റ്റ്യൻസ് ഉണ്ടാകും. 200 ക്വസ്റ്റ്യൻസ് ആൻസർ ചെയ്യണം.
+  /// 90 ആമത്തെ ലെവൽ കഴിഞ്ഞതിനു ശേഷമേ അവർക്ക് അറ്റാക്ക് ചെയ്യാൻ പറ്റുള്ളൂ പ്രസിഡന്റിനെ."
+  static Future<List<HouseShieldQuestion>> loadPresidentialGauntletQuestions() async {
+    const trapTypes = [
+      'vocab_gate',
+      'collocation_ram',
+      'syntax_wall',
+      'grammar_sentry',
+      'whisper_phantom',
+      'idiom_maze',
+      'tense_fortress',
+      'phonetic_thunder',
+      'riddle_sphinx',
+    ];
+
+    final List<HouseShieldQuestion> pool = [];
+    for (final t in trapTypes) {
+      pool.addAll(getCuratedQuestionsForTrap(t));
+    }
+
+    if (pool.isEmpty) {
+      pool.addAll(_getDefaultQuestions(200));
+    }
+
+    final List<HouseShieldQuestion> presidential200 = [];
+    for (int i = 0; i < 200; i++) {
+      final base = pool[i % pool.length];
+      final gateNum = (i % 9) + 1;
+      final gateInfo = PocketScoreLevelEngine.getGateInfo(gateNum);
+
+      presidential200.add(
+        HouseShieldQuestion(
+          id: 'pres_trial_${i + 1}_${base.id}',
+          question: '🏛️ [PRESIDENTIAL TRIAL ${i + 1}/200 • ${gateInfo['title']}]\n${base.question}',
+          options: List<String>.from(base.options),
+          correctIndex: base.correctIndex,
+          explanation: base.explanation,
+          category: base.category,
+          trapType: base.trapType,
+          gameFormat: base.gameFormat,
+        ),
+      );
+    }
+    return presidential200;
+  }
+
   // ============================================================
   // 🚩 FAIR PLAY & ANTI-CHEAT REPORTING & ADMIN BAN SYSTEM
   // ============================================================

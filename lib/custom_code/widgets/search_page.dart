@@ -967,11 +967,9 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         return GestureDetector(
           onTap: () {
             if (isPresident) {
-              Navigator.push(
+              PocketCitadelAttackPage.openForUser(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => const PresidentPalacePage(),
-                ),
+                userId: PocketPresidentService.presidentId,
               );
               return;
             }

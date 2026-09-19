@@ -13,7 +13,6 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/president/president_palace_page.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -2385,11 +2384,9 @@ Draft: "$draft"''';
                         PocketPresidentService.isPresidentId(
                             widget.groupId.substring(2)));
                 if (isPres) {
-                  Navigator.push(
+                  PocketCitadelAttackPage.openForUser(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) => const PresidentPalacePage(),
-                    ),
+                    userId: PocketPresidentService.presidentId,
                   );
                   return;
                 }
@@ -5267,9 +5264,9 @@ Draft: "$draft"''';
           PocketPresidentService.isPresidentId(rawTarget) ||
           targetId == 'pocket_president' ||
           rawTarget == 'pocket_president') {
-        Navigator.push(
+        PocketCitadelAttackPage.openForUser(
           context,
-          MaterialPageRoute(builder: (context) => const PresidentPalacePage()),
+          userId: PocketPresidentService.presidentId,
         );
         return;
       }

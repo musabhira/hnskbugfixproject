@@ -13,6 +13,8 @@ import 'pocket_fortress_defense_service.dart';
 import 'pocket_open_world_game_page.dart';
 import 'pocket_world_game_rules_modal.dart';
 
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+
 /// 🌍 Pocket World Street Model: A resident on the neighborhood street
 class PocketNeighbor {
   final String id;
@@ -48,6 +50,31 @@ class PocketNeighbor {
     this.hp = 100,
     this.maxHp = 100,
   });
+
+  /// 🏛️ Official Sovereign Citadel Neighbor representation for The President
+  static PocketNeighbor createPresident() {
+    return const PocketNeighbor(
+      id: PocketPresidentService.presidentId,
+      name: PocketPresidentService.presidentName,
+      day: 90,
+      streak: 90,
+      rank: 'Supreme Sovereign',
+      paletteId: 'royal_palace',
+      isMe: false,
+      hasActiveShield: true,
+      statusMessage: 'Official Sovereign Citadel of The President of Pocket World.',
+      isPocketRobo: false,
+      isDamaged: false,
+      hp: 10000,
+      maxHp: 10000,
+    );
+  }
+
+  /// 👑 Whether this citadel belongs to The President of Pocket World
+  bool get isPresident =>
+      PocketPresidentService.isPresidentId(id) ||
+      id == 'pocket_president' ||
+      name.toLowerCase().contains('president');
 }
 
 /// 🌍 Pocket World: Interactive 2D Parallax Neighborhood Street

@@ -15,7 +15,10 @@ import 'pocket_world_street_page.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
-import '../president/president_palace_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/president/presidential_palace_castle_painter.dart';
+import 'package:pocket_mates_app/custom_code/widgets/president/presidential_security_forces.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
 /// Audio Directive:
@@ -44,12 +47,33 @@ class PocketCitadelAttackPage extends StatefulWidget {
     Map<String, dynamic>? preloadedProfile,
     int attackerDay = 1,
   }) async {
-    // 🏛️ If target is The President of Pocket World, open the Royal Palace!
+    // 🏛️ If target is The President of Pocket World, open the Sovereign Citadel living world!
     if (PocketPresidentService.isPresidentId(userId) || userId == 'pocket_president') {
+      int effectiveAttackerDay = attackerDay;
+      if (effectiveAttackerDay <= 1) {
+        try {
+          final myId = SupaFlow.client.auth.currentUser?.id;
+          if (myId != null) {
+            final myProf = await SupaFlow.client
+                .from('profile')
+                .select('learning_day')
+                .eq('user_id', myId)
+                .maybeSingle();
+            if (myProf != null && myProf['learning_day'] != null) {
+              effectiveAttackerDay = (myProf['learning_day'] as num).toInt();
+            }
+          }
+        } catch (_) {}
+      }
+
+      if (!context.mounted) return;
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => const PresidentPalacePage(),
+          builder: (context) => PocketCitadelAttackPage(
+            neighbor: PocketNeighbor.createPresident(),
+            attackerDay: effectiveAttackerDay,
+          ),
         ),
       );
       return;
@@ -171,6 +195,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   int _retriesRemaining = 1; // User Audio Directive: Exactly 1 retry chance before 6h cooldown
   bool _isDailyLimitReached = false;
   int _attacksUsed = 0;
+  late int _attackerDay;
 
   // 🔍 Interactive Estate Zoom & Pan Controls: Spherical World / Rolling Hills
   int _defenderScore = 0;
@@ -191,6 +216,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _attackerDay = widget.attackerDay;
     _isDefenderDamaged = widget.neighbor.isDamaged;
 
     _transformationController = TransformationController();
@@ -330,6 +356,23 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   Future<void> _loadBattleState() async {
+    if (_attackerDay <= 1) {
+      try {
+        final myId = SupaFlow.client.auth.currentUser?.id;
+        if (myId != null) {
+          final myProf = await SupaFlow.client
+              .from('profile')
+              .select('learning_day')
+              .eq('user_id', myId)
+              .maybeSingle();
+          if (myProf != null && myProf['learning_day'] != null) {
+            final ld = (myProf['learning_day'] as num).toInt();
+            if (mounted) setState(() => _attackerDay = ld);
+          }
+        }
+      } catch (_) {}
+    }
+
     final targetId = widget.neighbor.id;
     final inCooldown = await PocketFortressDefenseService.isTargetInCooldown(targetId);
     final cooldownMinutes = inCooldown
@@ -342,10 +385,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final attacksUsed = await PocketFortressDefenseService.getDailyAttacksUsedToday();
     final isDailyLimitReached = attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
 
-    final questions = await PocketFortressDefenseService.loadGauntletQuestionsForStage(
-      widget.neighbor.day,
-      isNeighbor: true,
-    );
+    final questions = widget.neighbor.isPresident
+        ? await PocketFortressDefenseService.loadPresidentialGauntletQuestions()
+        : await PocketFortressDefenseService.loadGauntletQuestionsForStage(
+            widget.neighbor.day,
+            isNeighbor: true,
+          );
 
     // Randomize option order dynamically across A, B, C, D
     final randomizedQuestions = questions.map((q) {
@@ -366,9 +411,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       );
     }).toList();
 
-    int defenderScore = PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day) + (widget.neighbor.streak * 15);
+    int defenderScore = widget.neighbor.isPresident
+        ? 99999
+        : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day) + (widget.neighbor.streak * 15);
     try {
-      if (!widget.neighbor.id.startsWith('pocket_robo') && !widget.neighbor.id.startsWith('rival_citadel')) {
+      if (widget.neighbor.isPresident) {
+        defenderScore = 99999;
+      } else if (!widget.neighbor.id.startsWith('pocket_robo') && !widget.neighbor.id.startsWith('rival_citadel')) {
         final res = await SupaFlow.client.from('pocket_homes').select('points, hp, stage').eq('user_id', widget.neighbor.id).maybeSingle();
         if (res != null && res['points'] != null) {
           defenderScore = (res['points'] as num).toInt();
@@ -589,6 +638,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     const double houseLeft = (worldW - houseW) / 2; // 690.0
     const double houseTop = groundY - 14.0 - houseH; // 526.0
 
+    // 🏛️ Sovereign Presidential Palace Castle Dimensions (Magnificent Central Citadel)
+    const double palaceW = 640.0;
+    const double palaceH = 500.0;
+    const double palaceLeft = (worldW - palaceW) / 2; // 580.0
+    const double palaceTop = groundY - 14.0 - palaceH; // 406.0
+
+    final bool isPresident = widget.neighbor.isPresident;
+    final effectiveHouseW = isPresident ? palaceW : houseW;
+    final effectiveHouseH = isPresident ? palaceH : houseH;
+    final effectiveHouseTop = isPresident ? palaceTop : houseTop;
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
@@ -618,12 +678,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final minScale = math.max(w / worldW, h / worldH);
             const maxScale = 2.5;
 
-            // 🏠 Default View: Camera smoothly focuses on the House and its front courtyard
+            // 🏠 Default View: Camera smoothly focuses on the House/Palace and its front courtyard
             if (!_hasInitializedTransform && w > 0 && h > 0) {
               _hasInitializedTransform = true;
-              final defaultScale = math.min(maxScale, math.max(minScale, w / (houseW * 1.05)));
+              final defaultScale = math.min(maxScale, math.max(minScale, w / (effectiveHouseW * 1.05)));
               final houseCenterX = worldW / 2;
-              final houseCenterY = houseTop + (houseH * 0.52);
+              final houseCenterY = effectiveHouseTop + (effectiveHouseH * 0.52);
               final tx = ((w / 2) - (houseCenterX * defaultScale)).clamp(-(worldW * defaultScale - w), 0.0);
               final ty = ((h * 0.40) - (houseCenterY * defaultScale)).clamp(-(worldH * defaultScale - h), 0.0);
 
@@ -675,41 +735,58 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             ),
                           ),
 
-                          // 2. The 2D Flame English House seated firmly on the courtyard lawn
-                          Positioned(
-                            left: houseLeft,
-                            top: houseTop,
-                            width: houseW,
-                            height: houseH,
-                            child: FlameEnglishHouseWidget(
-                              currentDay: widget.neighbor.day,
-                              streak: widget.neighbor.streak,
-                              isDamaged: _isDefenderDamaged,
-                              houseId: widget.neighbor.id,
-                              paletteId: widget.neighbor.paletteId,
-                              showTestingControls: false,
+                          // 2. Central Estate: Grand Presidential Palace or 2D Flame English House
+                          if (isPresident)
+                            Positioned(
+                              left: palaceLeft,
+                              top: palaceTop,
+                              width: palaceW,
+                              height: palaceH,
+                              child: _buildPresidentialPalaceCastle(
+                                palaceLeft,
+                                palaceTop,
+                                palaceW,
+                                palaceH,
+                                groundY,
+                              ),
+                            )
+                          else ...[
+                            Positioned(
+                              left: houseLeft,
+                              top: houseTop,
+                              width: houseW,
+                              height: houseH,
+                              child: FlameEnglishHouseWidget(
+                                currentDay: widget.neighbor.day,
+                                streak: widget.neighbor.streak,
+                                isDamaged: _isDefenderDamaged,
+                                houseId: widget.neighbor.id,
+                                paletteId: widget.neighbor.paletteId,
+                                showTestingControls: false,
+                              ),
                             ),
-                          ),
 
-                          // Chimney Smoke Puffs floating above the roof
-                          Positioned(
-                            top: houseTop - 28,
-                            left: 900.0 - 88,
-                            child: _buildChimneySmoke(),
-                          ),
-                          Positioned(
-                            top: houseTop - 28,
-                            left: 900.0 + 88 - 18,
-                            child: _buildChimneySmoke(),
-                          ),
+                            // Chimney Smoke Puffs floating above the roof
+                            Positioned(
+                              top: houseTop - 28,
+                              left: 900.0 - 88,
+                              child: _buildChimneySmoke(),
+                            ),
+                            Positioned(
+                              top: houseTop - 28,
+                              left: 900.0 + 88 - 18,
+                              child: _buildChimneySmoke(),
+                            ),
+                          ],
 
                           // 3. Post-Attack Battle Damage (Billowing dark smoke columns & fiery embers)
-                          if (_isDefenderDamaged || _isTargetProtected)
+                          if (!isPresident && (_isDefenderDamaged || _isTargetProtected))
                             _buildPostAttackDamageEffects(houseLeft, houseTop, houseW, houseH),
 
-                          // 3B. Presidential Police & Military Guard Cordon with Barricade & Notice Board
-                          if (_isDefenderDamaged || _isTargetProtected)
+                          // 3B. Presidential Security Layer: Limousine, Armed Guards, Black Cat Commandos & Cordon
+                          if (isPresident || _isDefenderDamaged || _isTargetProtected)
                             _buildPresidentialSecurityLayer(houseLeft, houseTop, houseW, houseH, groundY),
+
 
                           // 4. Avatar-Specific Weapon Discharge & Particle Strike Layer
                           Positioned.fill(
@@ -1051,8 +1128,105 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+  /// 🏛️ Grand Sovereign Presidential Palace Castle (Flame Living Estate Component)
+  Widget _buildPresidentialPalaceCastle(
+    double left,
+    double top,
+    double width,
+    double height,
+    double groundY,
+  ) {
+    return AnimatedBuilder(
+      animation: _ambientController,
+      builder: (context, _) {
+        final prog = _ambientController.value;
+        final flamePulse = math.sin(prog * 10 * math.pi);
+
+        return Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // 1. Majestic Imperial Golden Glow Halo
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.30 + (flamePulse * 0.08)),
+                      blurRadius: 55,
+                      spreadRadius: 8,
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFF0284C7).withValues(alpha: 0.20),
+                      blurRadius: 75,
+                      spreadRadius: 12,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 2. Procedural 2D Vector Presidential Palace Castle (Flame Living Canvas Component)
+            Positioned.fill(
+              child: PresidentialPalaceCastleWidget(
+                width: width,
+                height: height,
+                animProg: prog,
+              ),
+            ),
+
+            // 3. Sovereign Citadel Title Crest Plaque
+            Positioned(
+              left: width * 0.28,
+              right: width * 0.28,
+              bottom: 24,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: const Color(0xFFFFD700),
+                    width: 1.4,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+                      blurRadius: 10,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('👑', style: TextStyle(fontSize: 10)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'SOVEREIGN CITADEL',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   /// 🛡️ Presidential Protection Layer: Police Officers, Army Guards, Emergency Strobes, Hazard Barricade & Warning Sign
   Widget _buildPresidentialSecurityLayer(double houseLeft, double houseTop, double houseW, double houseH, double groundY) {
+    if (widget.neighbor.isPresident) {
+      return _buildPresidentialSupremeSecurityPerimeter(groundY);
+    }
     return AnimatedBuilder(
       animation: _ambientController,
       builder: (context, _) {
@@ -1529,6 +1703,1401 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+  /// 🛡️ Supreme Presidential Security Perimeter: Limousine, Honor Guards, Black Cat Commandos & Warning Cordon
+  Widget _buildPresidentialSupremeSecurityPerimeter(double groundY) {
+    return AnimatedBuilder(
+      animation: _ambientController,
+      builder: (context, _) {
+        final prog = _ambientController.value;
+        final isRedFlash = math.sin(prog * 10 * math.pi) > 0;
+        final vocalStep = (prog * 4).floor() % 4;
+
+        return Positioned(
+          left: 400.0,
+          top: groundY - 145.0,
+          width: 1000.0,
+          height: 290.0,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // 1. Alternating Red & Blue Strobe Light Halos on Estate Courtyard
+              Positioned(
+                left: 120,
+                top: 75,
+                child: Container(
+                  width: 90,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6)).withValues(alpha: 0.40),
+                        blurRadius: 30,
+                        spreadRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 120,
+                top: 75,
+                child: Container(
+                  width: 90,
+                  height: 45,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (isRedFlash ? const Color(0xFF3B82F6) : const Color(0xFFEF4444)).withValues(alpha: 0.28),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isRedFlash ? const Color(0xFF3B82F6) : const Color(0xFFEF4444)).withValues(alpha: 0.40),
+                        blurRadius: 30,
+                        spreadRadius: 8,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 2A. Official Police Interceptor Patrol Car with Flashing Blue/Red Lightbar
+              Positioned(
+                left: 80,
+                top: 78,
+                child: PoliceInterceptorCarWidget(animProg: prog),
+              ),
+
+              // 2B. The President's Official State Car (Armored Limousine) Parked in Driveway
+              Positioned(
+                right: 90,
+                top: 78,
+                child: _buildPresidentialOfficialLimousine(prog: prog, isRedFlash: isRedFlash),
+              ),
+
+              // 3. Military Army Soldiers ("പട്ടാളക്കാർ") on Watch
+              Positioned(
+                left: 210,
+                top: 48,
+                child: ArmySoldierGuardWidget(
+                  isLeft: false,
+                  vocalText: vocalStep == 0 ? "ARMY UNIT 1: BARRICADE SECURE 🪖" : null,
+                ),
+              ),
+              Positioned(
+                right: 220,
+                top: 48,
+                child: ArmySoldierGuardWidget(
+                  isLeft: true,
+                  vocalText: vocalStep == 2 ? "DEFCON 1 MILITARY PROTOCOL 🛑" : null,
+                ),
+              ),
+
+              // 4. Official Police Officers ("പോലീസുകാർ") Stationed at Courtyard
+              Positioned(
+                left: 310,
+                top: 54,
+                child: PoliceOfficerGuardWidget(
+                  isLeft: false,
+                  vocalText: vocalStep == 1 ? "POCKET POLICE: VIP CORRIDOR SEALED 🚔" : null,
+                ),
+              ),
+              Positioned(
+                right: 320,
+                top: 54,
+                child: PoliceOfficerGuardWidget(
+                  isLeft: true,
+                  vocalText: vocalStep == 3 ? "POLICE INSPECTOR: CITIZENS STAY BACK 🛑" : null,
+                ),
+              ),
+
+              // 5. Ceremonial Armed Honor Guards Flanking Entrance
+              Positioned(
+                left: 410,
+                top: 46,
+                child: _buildArmedRifleHonorGuard(
+                  isLeft: true,
+                  vocalText: vocalStep == 1 ? "SOVEREIGN CITADEL ON WATCH! 🫡" : null,
+                ),
+              ),
+              Positioned(
+                right: 410,
+                top: 46,
+                child: _buildArmedRifleHonorGuard(
+                  isLeft: false,
+                  vocalText: vocalStep == 3 ? "HONOR GUARD POST SECURE! 🏛️" : null,
+                ),
+              ),
+
+              // 6. Black Cat Commandos in Stealth Black Gear with Radio Chatter
+              Positioned(
+                left: 20,
+                top: 92,
+                child: _buildBlackCatCommando(
+                  codeName: "CAT-1",
+                  vocalText: vocalStep == 0 ? "CAT-1: PERIMETER GREEN 📻" : null,
+                ),
+              ),
+              Positioned(
+                right: 20,
+                top: 92,
+                child: _buildBlackCatCommando(
+                  codeName: "CAT-2",
+                  vocalText: vocalStep == 2 ? "RADAR: AIRSPACE CLEAR 🎯" : null,
+                ),
+              ),
+
+              // 7. Imperial Security Barricade with Warning Plaque
+              Positioned(
+                left: 240,
+                right: 240,
+                bottom: 12,
+                child: GestureDetector(
+                  onTap: _showPresidentialSecurityDecreeDialog,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.96),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700),
+                        width: 1.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                          blurRadius: 16,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Caution hazard stripe
+                        Container(
+                          height: 5,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(2.5),
+                            gradient: const LinearGradient(
+                              colors: [
+                                Color(0xFFFACC15),
+                                Colors.black,
+                                Color(0xFFFACC15),
+                                Colors.black,
+                                Color(0xFFFACC15),
+                                Colors.black,
+                                Color(0xFFFACC15),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🏛️', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'SOVEREIGN PRESIDENTIAL CITADEL',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 12,
+                                letterSpacing: 0.8,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          '🔒 PASS LEVEL 90 TO CHALLENGE • 200 GAUNTLET TRIALS',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          'Guarded by Army Forces, Pocket Police & Black Cat Commandos • Tap for Decrees',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white70,
+                            fontSize: 8.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// 🚗 Official Presidential Armored Limousine with Fluttering Flags
+  Widget _buildPresidentialOfficialLimousine({required double prog, required bool isRedFlash}) {
+    final flagFlutter = math.sin(prog * 8 * math.pi) * 2.0;
+
+    return SizedBox(
+      width: 154,
+      height: 52,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Headlight beam reflection on ground
+          Positioned(
+            left: -30,
+            top: 28,
+            child: Container(
+              width: 40,
+              height: 16,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFFEF08A).withValues(alpha: 0.4),
+                    Colors.transparent,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Ground shadow
+          Positioned(
+            left: 8,
+            right: 8,
+            bottom: 0,
+            child: Container(
+              height: 8,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.65),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+
+          // Main Armored Car Body
+          Positioned(
+            left: 0,
+            top: 14,
+            width: 154,
+            height: 32,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E293B), Color(0xFF090D16), Color(0xFF020617)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  topRight: Radius.circular(7),
+                  bottomLeft: Radius.circular(4),
+                  bottomRight: Radius.circular(4),
+                ),
+                border: Border.all(color: const Color(0xFF64748B), width: 0.8),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Chrome side molding
+                  Positioned(
+                    left: 6,
+                    right: 6,
+                    bottom: 9,
+                    child: Container(
+                      height: 1.5,
+                      color: const Color(0xFFCBD5E1),
+                    ),
+                  ),
+
+                  // Presidential Gold Crest on Rear Door Panel
+                  Positioned(
+                    right: 38,
+                    top: 12,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFFD700),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          '👑',
+                          style: TextStyle(fontSize: 4),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Concealed Red/Blue Emergency Grille Strobes
+                  Positioned(
+                    left: 2,
+                    top: 11,
+                    child: Container(
+                      width: 5,
+                      height: 6,
+                      decoration: BoxDecoration(
+                        color: isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6),
+                        borderRadius: BorderRadius.circular(1),
+                        boxShadow: [
+                          BoxShadow(
+                            color: isRedFlash ? const Color(0xFFEF4444) : const Color(0xFF3B82F6),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  // License plate
+                  Positioned(
+                    left: 1,
+                    bottom: 2,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 0.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700),
+                        borderRadius: BorderRadius.circular(1),
+                      ),
+                      child: const Text(
+                        'PRES 1',
+                        style: TextStyle(fontSize: 3.5, fontWeight: FontWeight.w900, color: Colors.black),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Tinted Bulletproof Windows Cabin Roof
+          Positioned(
+            left: 28,
+            top: 2,
+            width: 96,
+            height: 15,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Color(0xFF0A0F1D),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  topRight: Radius.circular(8),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 4),
+                  // Windshield
+                  Container(
+                    width: 18,
+                    height: 11,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E3A8A).withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  // Front passenger window
+                  Container(
+                    width: 20,
+                    height: 11,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 3),
+                  // VIP rear executive window (Extra dark)
+                  Container(
+                    width: 44,
+                    height: 11,
+                    decoration: BoxDecoration(
+                      color: Colors.black,
+                      borderRadius: BorderRadius.circular(2),
+                      border: Border.all(color: const Color(0xFF334155), width: 0.5),
+                    ),
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 4),
+                        child: Container(
+                          width: 4,
+                          height: 4,
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFFFD700),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Wheels
+          Positioned(
+            left: 20,
+            bottom: 2,
+            child: _buildLimousineWheel(),
+          ),
+          Positioned(
+            right: 22,
+            bottom: 2,
+            child: _buildLimousineWheel(),
+          ),
+
+          // Dual Fluttering Presidential Fender Flags
+          Positioned(
+            left: 6,
+            top: 2 + flagFlutter,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 1.5, height: 14, color: const Color(0xFFFFD700)),
+                Container(
+                  width: 10,
+                  height: 7,
+                  color: const Color(0xFFDC2626),
+                  child: const Center(
+                    child: Text('👑', style: TextStyle(fontSize: 4)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            left: 14,
+            top: 2 - flagFlutter,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 1.5, height: 14, color: const Color(0xFFFFD700)),
+                Container(
+                  width: 10,
+                  height: 7,
+                  color: const Color(0xFF1E3A8A),
+                  child: const Center(
+                    child: Text('🏛️', style: TextStyle(fontSize: 4)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLimousineWheel() {
+    return Container(
+      width: 16,
+      height: 16,
+      decoration: BoxDecoration(
+        color: Colors.black,
+        shape: BoxShape.circle,
+        border: Border.all(color: const Color(0xFF475569), width: 2),
+      ),
+      child: Center(
+        child: Container(
+          width: 6,
+          height: 6,
+          decoration: const BoxDecoration(
+            color: Color(0xFFCBD5E1),
+            shape: BoxShape.circle,
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 💂‍♂️ Armed Rifle Honor Guard Standing Post with Bayonet & Speech Bubble
+  Widget _buildArmedRifleHonorGuard({required bool isLeft, String? vocalText}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Vocal dialogue bubble if active
+        if (vocalText != null)
+          Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Text(
+              vocalText,
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD700),
+                fontSize: 8.5,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+        // Officer Head with Peaked Navy Cap
+        Container(
+          width: 22,
+          height: 9,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(3),
+            border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+          ),
+          child: Align(
+            alignment: Alignment.center,
+            child: Container(
+              width: 5,
+              height: 5,
+              decoration: const BoxDecoration(
+                color: Color(0xFFFFD700),
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+        ),
+        // Face
+        Container(
+          width: 14,
+          height: 13,
+          decoration: const BoxDecoration(
+            color: Color(0xFFFFDFBA),
+            shape: BoxShape.circle,
+          ),
+        ),
+        // Navy Uniform Torso + Gold Epaulets + Upright Rifle
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Left shoulder
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E3A8A),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Stack(
+                children: [
+                  // Gold chest buttons
+                  Align(
+                    alignment: Alignment.center,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(width: 3, height: 3, decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
+                        const SizedBox(height: 2),
+                        Container(width: 3, height: 3, decoration: const BoxDecoration(color: Color(0xFFFFD700), shape: BoxShape.circle)),
+                      ],
+                    ),
+                  ),
+                  // Gold shoulder braid
+                  Positioned(
+                    left: 2,
+                    top: 1,
+                    child: Container(width: 6, height: 2.5, color: const Color(0xFFFFD700)),
+                  ),
+                  Positioned(
+                    right: 2,
+                    top: 1,
+                    child: Container(width: 6, height: 2.5, color: const Color(0xFFFFD700)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 2),
+            // Upright Rifle held at attention
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Bayonet tip
+                Container(width: 1.5, height: 8, color: const Color(0xFFCBD5E1)),
+                // Rifle barrel
+                Container(width: 3, height: 22, color: Colors.black87),
+                // Rifle wooden stock
+                Container(width: 4, height: 10, color: const Color(0xFF78350F)),
+              ],
+            ),
+          ],
+        ),
+        // Navy Trousers
+        Container(width: 18, height: 18, color: const Color(0xFF0F172A)),
+        // Polished Black Dress Shoes
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 8, height: 5, color: Colors.black),
+            const SizedBox(width: 2),
+            Container(width: 8, height: 5, color: Colors.black),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// 🥷 Black Cat Commando in Tactical Stealth Black Gear & NVG Goggles
+  Widget _buildBlackCatCommando({required String codeName, String? vocalText}) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Tactical Radio Chatter Bubble
+        if (vocalText != null)
+          Container(
+            margin: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.95),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFF22C55E), width: 1.2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF22C55E).withValues(alpha: 0.4),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Text(
+              vocalText,
+              style: GoogleFonts.sourceCodePro(
+                color: const Color(0xFF4ADE80),
+                fontSize: 8,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+
+        // Tactical Ballistic Helmet with Glowing Green NVG Goggles
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              width: 22,
+              height: 12,
+              decoration: BoxDecoration(
+                color: const Color(0xFF090D16),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(color: const Color(0xFF334155), width: 0.8),
+              ),
+            ),
+            // Glowing Quad-Tube Night Vision Goggles
+            Positioned(
+              left: 4,
+              top: 5,
+              child: Row(
+                children: [
+                  Container(
+                    width: 3.5,
+                    height: 3.5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF22C55E),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.9),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 1.5),
+                  Container(
+                    width: 3.5,
+                    height: 3.5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF22C55E),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.9),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 1.5),
+                  Container(
+                    width: 3.5,
+                    height: 3.5,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF22C55E),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF22C55E).withValues(alpha: 0.9),
+                          blurRadius: 6,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+
+        // Balaclava Mask Face
+        Container(
+          width: 14,
+          height: 10,
+          color: const Color(0xFF0F172A),
+        ),
+
+        // Tactical Kevlar Vest & Assault Carbine in ready stance
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                color: const Color(0xFF020617),
+                borderRadius: BorderRadius.circular(4),
+                border: Border.all(color: const Color(0xFF1E293B), width: 1),
+              ),
+              child: Center(
+                child: Text(
+                  codeName,
+                  style: const TextStyle(
+                    color: Color(0xFF4ADE80),
+                    fontSize: 4.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 2),
+            // Tactical assault carbine
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(width: 10, height: 3, color: const Color(0xFF334155)),
+                Container(width: 5, height: 4, color: Colors.black),
+              ],
+            ),
+          ],
+        ),
+
+        // Black Tactical Cargo Pants
+        Container(width: 18, height: 18, color: const Color(0xFF020617)),
+        // Tactical Combat Boots
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(width: 8, height: 6, color: Colors.black),
+            const SizedBox(width: 2),
+            Container(width: 8, height: 6, color: Colors.black),
+          ],
+        ),
+      ],
+    );
+  }
+
+  /// 🔒 Level 90 Gate Lock Dialog: Displayed when attacking before Level 90
+  void _showPresidentialLevelLockDialog() {
+    HapticFeedback.heavyImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0A0F1D),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.8),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+                border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+              ),
+              child: const Text('🔒', style: TextStyle(fontSize: 22)),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Supreme Citadel Locked',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                  Text(
+                    'Level 90 Clearance Required',
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('🏛️', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Imperial Decree of Defense',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'By Imperial Decree of The President and Supreme Armed Command, the Sovereign Citadel is sealed under DEFCON 1 Royal Protection.\n\nOnly citizens who have completed all 90 daily English trials (Level 90 Graduation) and reached Level 91+ are permitted to challenge The President in the 200-question boss battle.',
+                    style: GoogleFonts.inter(
+                      color: Colors.white.withValues(alpha: 0.85),
+                      fontSize: 12,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // Progress Bar
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Your Mastery Progress',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12.5,
+                  ),
+                ),
+                Text(
+                  'Level $_attackerDay / 90 (Pass Level 90 to Challenge)',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11.5,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: LinearProgressIndicator(
+                value: (_attackerDay / 90.0).clamp(0.0, 1.0),
+                minHeight: 8,
+                backgroundColor: Colors.white12,
+                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '${(91 - _attackerDay).clamp(1, 90)} levels remaining to pass Level 90 and unlock the Supreme President Challenge.',
+              style: GoogleFonts.inter(
+                color: const Color(0xFF38BDF8),
+                fontSize: 11,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              onPressed: () => Navigator.pop(ctx),
+              child: Text(
+                'Understood, Sir! 🫡',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPresidentialSecurityDecreeDialog() {
+    HapticFeedback.lightImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0A0F1D),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+        ),
+        title: Row(
+          children: [
+            const Text('🏛️', style: TextStyle(fontSize: 26)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'IMPERIAL CITADEL DIRECTIVE',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Text('🚨', style: TextStyle(fontSize: 20)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'SOVEREIGN ESTATE UNDER DEFCON 1 READINESS',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11.5,
+                        letterSpacing: 0.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'The Sovereign Citadel of The President is safeguarded by the Black Cat Special Operations Group and Royal Honor Guards.\n\n• Security Clearance: Level 90+ Required\n• Gauntlet Trials: 200 English Mastery Challenges\n• Sovereign Boss Health: 10,000 HP',
+              style: GoogleFonts.outfit(color: const Color(0xFFCBD5E1), fontSize: 12.5, height: 1.45),
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () => Navigator.pop(ctx),
+            child: Text(
+              'Acknowledge Sovereign Orders 🫡',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 📜 Sovereign Drawer Content for The President (Decrees, Hotline, Mateship, Boss Stats)
+  Widget _buildPresidentialDrawerContent() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: PocketPresidentService.getActivePresidentVibes(),
+      builder: (context, snapshot) {
+        final announcements = snapshot.data ?? [];
+
+        return SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // 1. Imperial Identity Card
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                      blurRadius: 16,
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const PresidentAvatarWidget(size: 60, showGlow: true),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                'The President',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFFFD700),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(Icons.check, size: 12, color: Colors.black),
+                              ),
+                            ],
+                          ),
+                          Text(
+                            'Supreme Sovereign of Pocket World',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                            ),
+                            child: Text(
+                              '👑 Level 90 Supreme Boss • 10,000 HP',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // 2. Action Buttons Row (Chat & Appeal)
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1E3A8A),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: const Icon(Icons.chat_bubble_outline_rounded, size: 16),
+                      label: Text('Chat', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const WhatsAppGroupChat(
+                              groupId: 'p:${PocketPresidentService.presidentId}',
+                              groupName: PocketPresidentService.presidentName,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFD700),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      icon: const Icon(Icons.mail_outline_rounded, size: 16),
+                      label: Text('Petition Desk', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                      onPressed: _showPresidentialPetitionDialog,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // 3. Official Decrees & Announcements
+              Row(
+                children: [
+                  const Text('📜', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Imperial Decrees & Directives',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (announcements.isEmpty)
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(
+                      'No active imperial decrees at this hour. The realm is peaceful.',
+                      style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+                    ),
+                  ),
+                )
+              else
+                ...announcements.map((dec) {
+                  final title = dec['title']?.toString() ?? 'Imperial Decree';
+                  final body = dec['body']?.toString() ?? dec['message']?.toString() ?? '';
+                  final mediaUrl = dec['media_url']?.toString();
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          body,
+                          style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                        ),
+                        if (mediaUrl != null && mediaUrl.isNotEmpty) ...[
+                          const SizedBox(height: 8),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(10),
+                            child: Image.network(
+                              mediaUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                }),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showPresidentialPetitionDialog() {
+    final messageController = TextEditingController();
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0A0F1D),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (bContext) => StatefulBuilder(
+        builder: (context, setModalState) {
+          final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+          return Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: bottomInset + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const PresidentAvatarWidget(size: 36, showGlow: true),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Petition to The President',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Direct hotline to the Supreme Citadel Desk',
+                            style: GoogleFonts.inter(
+                              color: Colors.white60,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white54),
+                      onPressed: () => Navigator.pop(bContext),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: messageController,
+                  maxLines: 4,
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13.5),
+                  decoration: InputDecoration(
+                    hintText: 'State your petition or inquiry for The President...',
+                    hintStyle: GoogleFonts.inter(color: Colors.white30, fontSize: 13),
+                    filled: true,
+                    fillColor: Colors.white.withValues(alpha: 0.05),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: BorderSide(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                      borderSide: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: isSubmitting
+                        ? null
+                        : () async {
+                            final text = messageController.text.trim();
+                            if (text.isEmpty) return;
+                            setModalState(() => isSubmitting = true);
+                            final uid = SupaFlow.client.auth.currentUser?.id ?? 'guest';
+                            await PocketPresidentService.sendUserMessageToPresident(
+                              userId: uid,
+                              messageText: text,
+                            );
+                            if (context.mounted) {
+                              Navigator.pop(bContext);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('🏛️ Petition delivered to The President!'),
+                                  backgroundColor: Color(0xFF1E3A8A),
+                                ),
+                              );
+                            }
+                          },
+                    child: isSubmitting
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black))
+                        : Text('Send Petition 📜', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   /// ☁️ Soft translucent smoke puffs floating from chimneys
   Widget _buildChimneySmoke() {
     return Column(
@@ -1931,48 +3500,108 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ),
             ),
             const SizedBox(height: 3),
-            // Minimal Red Attack Button (Solid & Stable: scale animation removed per user request)
-            GestureDetector(
-              onTap: _onTapBottomAttack,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 7),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                  ),
-                  borderRadius: BorderRadius.circular(11),
-                  border: Border.all(
-                    color: const Color(0xFFFFD700).withValues(alpha: 0.9),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFEF4444).withValues(alpha: 0.5),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+            // Minimal Red Attack Button or President Level 90 Gate / Challenge Button
+            if (widget.neighbor.isPresident)
+              GestureDetector(
+                onTap: _onTapBottomAttack,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: _attackerDay <= 90
+                          ? [const Color(0xFF334155), const Color(0xFF1E293B)]
+                          : [const Color(0xFFDC2626), const Color(0xFFB45309), const Color(0xFFFFD700)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('⚔️', style: TextStyle(fontSize: 13)),
-                    const SizedBox(width: 6),
-                    Text(
-                      'ATTACK',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.8,
+                    borderRadius: BorderRadius.circular(11),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700),
+                      width: 1.4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (_attackerDay <= 90 ? Colors.black : const Color(0xFFFFD700)).withValues(alpha: 0.5),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
                       ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(_attackerDay <= 90 ? '🔒' : '👑', style: const TextStyle(fontSize: 13)),
+                      const SizedBox(width: 6),
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _attackerDay <= 90 ? 'LOCKED • PASS LVL 90' : 'CHALLENGE PRESIDENT ⚔️',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: _attackerDay <= 90 ? 11.5 : 13,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                          if (_attackerDay <= 90)
+                            Text(
+                              'Day $_attackerDay / 90 Progress (Pass Lvl 90)',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFFFD700),
+                                fontSize: 8.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else
+              GestureDetector(
+                onTap: _onTapBottomAttack,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
                     ),
-                  ],
+                    borderRadius: BorderRadius.circular(11),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.9),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFEF4444).withValues(alpha: 0.5),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('⚔️', style: TextStyle(fontSize: 13)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'ATTACK',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
           ],
         ),
       ),
@@ -2072,14 +3701,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           height: 32,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: Border.all(color: const Color(0xFFA78BFA), width: 1.4),
+                            border: Border.all(
+                              color: widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFFA78BFA),
+                              width: 1.4,
+                            ),
                             color: const Color(0xFF0F172A),
                           ),
                           child: ClipOval(
-                            child: VectorAvatarWidget(
-                              config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
-                              size: 32,
-                            ),
+                            child: widget.neighbor.isPresident
+                                ? const PresidentAvatarWidget(size: 32, showGlow: false)
+                                : VectorAvatarWidget(
+                                    config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
+                                    size: 32,
+                                  ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -2092,9 +3726,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      '${widget.neighbor.name}\'s Profile',
+                                      widget.neighbor.isPresident
+                                          ? 'The President\'s Sovereign Citadel'
+                                          : '${widget.neighbor.name}\'s Profile',
                                       style: GoogleFonts.outfit(
-                                        color: Colors.white,
+                                        color: widget.neighbor.isPresident ? const Color(0xFFFFD700) : Colors.white,
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13.5,
                                       ),
@@ -2106,17 +3742,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.3),
+                                      color: (widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFF8B5CF6)).withValues(alpha: 0.3),
                                       borderRadius: BorderRadius.circular(6),
                                       border: Border.all(
-                                        color: const Color(0xFFA78BFA).withValues(alpha: 0.5),
+                                        color: (widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFFA78BFA)).withValues(alpha: 0.5),
                                         width: 0.8,
                                       ),
                                     ),
                                     child: Text(
-                                      'Lvl ${widget.neighbor.day}',
+                                      widget.neighbor.isPresident ? '👑 Sovereign Lvl 90' : 'Lvl ${widget.neighbor.day}',
                                       style: GoogleFonts.outfit(
-                                        color: const Color(0xFFDDD6FE),
+                                        color: widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFFDDD6FE),
                                         fontWeight: FontWeight.w700,
                                         fontSize: 9.5,
                                       ),
@@ -2126,9 +3762,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               ),
                               const SizedBox(height: 1),
                               Text(
-                                prog > 0.5 ? 'Citadel Defender Profile' : 'Swipe up or tap to explore profile',
+                                prog > 0.5
+                                    ? (widget.neighbor.isPresident ? 'Sovereign Head of Pocket World' : 'Citadel Defender Profile')
+                                    : 'Swipe up or tap to explore profile',
                                 style: GoogleFonts.outfit(
-                                  color: prog > 0.5 ? const Color(0xFFA78BFA) : Colors.white60,
+                                  color: prog > 0.5
+                                      ? (widget.neighbor.isPresident ? const Color(0xFFFFD700) : const Color(0xFFA78BFA))
+                                      : Colors.white60,
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -2182,19 +3822,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               Expanded(
                 child: Container(
                   color: const Color(0xFF0F172A),
-                  child: MainProfileWidget(
-                    userId: widget.neighbor.id,
-                    preloadedProfile: {
-                      'user_id': widget.neighbor.id,
-                      'first_name': widget.neighbor.name,
-                      'bio': widget.neighbor.statusMessage,
-                      'learning_day': widget.neighbor.day,
-                      'streak': widget.neighbor.streak,
-                      'rank': widget.neighbor.rank,
-                      'palette_id': widget.neighbor.paletteId,
-                      'is_pocket_robo': widget.neighbor.isPocketRobo,
-                    },
-                  ),
+                  child: widget.neighbor.isPresident
+                      ? _buildPresidentialDrawerContent()
+                      : MainProfileWidget(
+                          userId: widget.neighbor.id,
+                          preloadedProfile: {
+                            'user_id': widget.neighbor.id,
+                            'first_name': widget.neighbor.name,
+                            'bio': widget.neighbor.statusMessage,
+                            'learning_day': widget.neighbor.day,
+                            'streak': widget.neighbor.streak,
+                            'rank': widget.neighbor.rank,
+                            'palette_id': widget.neighbor.paletteId,
+                            'is_pocket_robo': widget.neighbor.isPocketRobo,
+                          },
+                        ),
                 ),
               ),
           ],
@@ -2437,6 +4079,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   void _onTapBottomAttack() {
     HapticFeedback.heavyImpact();
+    if (widget.neighbor.isPresident) {
+      if (_attackerDay <= 90) {
+        _showPresidentialLevelLockDialog();
+        return;
+      }
+    }
     if (_isTargetProtected) {
       _showPresidentialProtectionInfoDialog();
       return;
@@ -2528,9 +4176,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               Row(
                 children: [
                   Text(
-                    'Gate Defense Challenge',
+                    widget.neighbor.isPresident
+                        ? '🏛️ Presidential Trial (${_currentQIdx + 1}/200)'
+                        : 'Gate Defense Challenge',
                     style: GoogleFonts.outfit(
-                      color: Colors.white,
+                      color: widget.neighbor.isPresident ? const Color(0xFFFFD700) : Colors.white,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
