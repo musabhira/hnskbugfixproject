@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -65,6 +66,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   late final TransformationController _transformationController;
   final ValueNotifier<double> _zoomScaleNotifier = ValueNotifier<double>(1.0);
   bool _hasInitializedTransform = false;
+  bool? _manualNightOverride;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -72,6 +74,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   late AnimationController _beamController;
   late AnimationController _particleController;
   late AnimationController _coinController;
+  late AnimationController _heroChargeController;
+  late AnimationController _ambientController;
 
   @override
   void initState() {
@@ -109,8 +113,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
     _coinController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1400),
     );
+    _heroChargeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1600),
+    );
+    _ambientController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat();
 
     _loadBattleState();
   }
@@ -126,6 +138,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     _beamController.dispose();
     _particleController.dispose();
     _coinController.dispose();
+    _heroChargeController.dispose();
+    _ambientController.dispose();
     super.dispose();
   }
 
@@ -289,14 +303,24 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     if (_isStriking) return;
     setState(() => _isStriking = true);
 
-    // Audio & acoustic haptic stage 1: Beam charge & targeting lock
+    final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay);
+
+    // Phase 1: Hero rushes forward with charging battle sprint up to citadel steps (y=1100 -> 730)
     SystemSound.play(SystemSoundType.click);
     HapticFeedback.mediumImpact();
+    _heroChargeController.forward(from: 0.0);
+
+    // Wait for hero sprint to reach mansion front steps (~600ms)
+    await Future.delayed(const Duration(milliseconds: 600));
+
+    // Phase 2: Hero leaps & unleashes avatar-specific weapon strike
+    HapticFeedback.heavyImpact();
     _beamController.forward(from: 0.0);
 
-    await Future.delayed(const Duration(milliseconds: 250));
+    // Strike travels and hits citadel mansion gates (~350ms)
+    await Future.delayed(const Duration(milliseconds: 350));
 
-    // Audio & acoustic haptic stage 2: Impact blast, screen shake & particle burst
+    // Phase 3: Blast impact, screen shake & explosion debris
     _shakeController.forward(from: 0.0);
     _particleController.forward(from: 0.0);
 
@@ -307,7 +331,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     }
     HapticFeedback.vibrate();
 
-    final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay);
     final result = await PocketFortressDefenseService.processRaidBreach(
       defenderHouseId: widget.neighbor.id,
       attackerId: 'me',
@@ -325,17 +348,20 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     if (looted > 0) {
       await PocketFortressDefenseService.awardRaidLoot(looted);
     }
-
     await PocketFortressDefenseService.awardPoints(looted > 0 ? looted : 15);
 
-    await Future.delayed(const Duration(milliseconds: 450));
+    // Phase 4: Fountain of looted coins exploding from citadel into player's grasp
+    _coinController.forward(from: 0.0);
+    setState(() {
+      _defenderScore = math.max(0, _defenderScore - (looted > 0 ? looted : 15));
+      _isDefenderDamaged = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 1400));
 
     if (mounted) {
-      _coinController.forward(from: 0.0);
       setState(() {
         _isStriking = false;
-        _defenderScore = math.max(0, _defenderScore - (looted > 0 ? looted : 15));
-        _isDefenderDamaged = true;
         _raidStep = 3; // Victory!
       });
       _showVictoryDialog();
@@ -440,8 +466,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   @override
   Widget build(BuildContext context) {
+    // ⏱️ 6-Hour Atmospheric Day/Night Cycle
+    // 06:00 - 12:00: Morning Sun (Day)
+    // 12:00 - 18:00: Golden Afternoon (Day)
+    // 18:00 - 24:00: Twilight & Starlit Evening (Night)
+    // 00:00 - 06:00: Deep Space Midnight (Night)
     final currentHour = DateTime.now().hour;
-    final isNight = currentHour >= 18 || currentHour < 6;
+    final isNightByDefault = currentHour >= 18 || currentHour < 6;
+    final isNight = _manualNightOverride ?? isNightByDefault;
+    final hoursLeftIn6hBlock = 6 - (currentHour % 6);
+    final cycleLabel = isNight ? '🌙 Night (${hoursLeftIn6hBlock}h left)' : '☀️ Day (${hoursLeftIn6hBlock}h left)';
     final isDay90 = widget.neighbor.day >= 90;
 
     // 🌍 Virtual World Dimensions (1800 x 1600): A vast, living open landscape
@@ -491,7 +525,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan (Locked at minScale so art covers 100% screen)
+                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan
                 Positioned.fill(
                   child: InteractiveViewer(
                     transformationController: _transformationController,
@@ -506,15 +540,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       child: Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          // 1. Full-Screen 2D Open World Scenery: Sky with Rocket, Stars/Moon, River with Boat, Mountains, Rolling Hills, Trees
+                          // 1. Full-Screen 2D Open World Living Scenery (Animated with _ambientController)
                           Positioned.fill(
-                            child: CustomPaint(
-                              painter: CitadelScenicLandscapePainter(
-                                isDamaged: _isDefenderDamaged,
-                                groundBaseY: groundY,
-                                isNight: isNight,
-                                isDay90: isDay90,
-                              ),
+                            child: AnimatedBuilder(
+                              animation: _ambientController,
+                              builder: (context, _) {
+                                return CustomPaint(
+                                  painter: CitadelScenicLandscapePainter(
+                                    isDamaged: _isDefenderDamaged,
+                                    groundBaseY: groundY,
+                                    isNight: isNight,
+                                    isDay90: isDay90,
+                                    ambientProg: _ambientController.value,
+                                  ),
+                                );
+                              },
                             ),
                           ),
 
@@ -546,7 +586,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             child: _buildChimneySmoke(),
                           ),
 
-                          // 4. Weapon Discharge & Particle Strike Layer
+                          // 4. Avatar-Specific Weapon Discharge & Particle Strike Layer
                           Positioned.fill(
                             child: AnimatedBuilder(
                               animation: Listenable.merge([_beamController, _particleController]),
@@ -556,9 +596,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 }
                                 return IgnorePointer(
                                   child: CustomPaint(
-                                    painter: CitadelLaserStrikePainter(
+                                    painter: CitadelAvatarStrikePainter(
                                       beamProg: _beamController.value,
                                       particleProg: _particleController.value,
+                                      attackerDay: widget.attackerDay,
+                                      perk: VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay),
                                     ),
                                   ),
                                 );
@@ -566,7 +608,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             ),
                           ),
 
-                          // 5. Victory Coin Shower Layer
+                          // 5. Victory Coin Shower & Magnetic Loot Attraction Layer
                           Positioned.fill(
                             child: AnimatedBuilder(
                               animation: _coinController,
@@ -584,24 +626,164 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               },
                             ),
                           ),
+
+                          // 6. 🥋 Attacking Hero Avatar Sprint & Leap Sprite during battle
+                          if (_isStriking)
+                            AnimatedBuilder(
+                              animation: Listenable.merge([_heroChargeController, _coinController]),
+                              builder: (context, _) {
+                                final prog = _heroChargeController.value;
+                                // Running up the stone path towards the citadel steps (y: 1100 -> 730)
+                                final runY = ui.lerpDouble(1100.0, 730.0, (prog / 0.55).clamp(0.0, 1.0))!;
+                                // Parabolic leap during weapon strike
+                                final leapY = (prog > 0.50 && prog < 0.88)
+                                    ? -math.sin((prog - 0.50) / 0.38 * math.pi) * 48.0
+                                    : 0.0;
+                                final heroY = runY + leapY;
+                                const heroX = 900.0;
+
+                                final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay);
+                                final isRunning = prog < 0.50;
+                                final isStrikingAtGate = prog >= 0.50 && prog < 0.88;
+                                final isCollectingLoot = _coinController.value > 0.15;
+
+                                return Positioned(
+                                  left: heroX - 42,
+                                  top: heroY - 42,
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // Floating weapon badge with glowing aura
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                                          borderRadius: BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: isStrikingAtGate ? Colors.redAccent : const Color(0xFFFFD700),
+                                            width: 1.3,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: (isStrikingAtGate ? Colors.redAccent : Colors.amber).withValues(alpha: 0.75),
+                                              blurRadius: 14,
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Text(perk.combatWeaponIcon, style: const TextStyle(fontSize: 14)),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              perk.combatWeaponName,
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFFD700),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10.5,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      // Attacking Avatar with Radiant Pulsing Aura & Running tilt
+                                      Transform.rotate(
+                                        angle: isRunning ? math.sin(prog * 36) * 0.12 : (isStrikingAtGate ? -0.18 : 0.0),
+                                        child: Container(
+                                          width: 64,
+                                          height: 64,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: (isStrikingAtGate
+                                                        ? const Color(0xFFEF4444)
+                                                        : (isCollectingLoot ? const Color(0xFFFFD700) : const Color(0xFF38BDF8)))
+                                                    .withValues(alpha: 0.75),
+                                                blurRadius: 18,
+                                                spreadRadius: 3,
+                                              ),
+                                            ],
+                                          ),
+                                          child: ClipOval(
+                                            child: VectorAvatarWidget(
+                                              config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.attackerDay),
+                                              size: 64,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // Running dust puff animation under feet
+                                      if (isRunning) ...[
+                                        const SizedBox(height: 3),
+                                        Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Container(width: 8, height: 4, decoration: BoxDecoration(color: Colors.white38, borderRadius: BorderRadius.circular(2))),
+                                            const SizedBox(width: 5),
+                                            Container(width: 14, height: 5, decoration: BoxDecoration(color: Colors.white60, borderRadius: BorderRadius.circular(3))),
+                                            const SizedBox(width: 5),
+                                            Container(width: 8, height: 4, decoration: BoxDecoration(color: Colors.white38, borderRadius: BorderRadius.circular(2))),
+                                          ],
+                                        ),
+                                      ],
+                                      // Open Treasure Chest when collecting coins
+                                      if (isCollectingLoot) ...[
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: const Color(0xFFFFD700).withValues(alpha: 0.65),
+                                                blurRadius: 12,
+                                              ),
+                                            ],
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              const Text('🪙', style: TextStyle(fontSize: 14)),
+                                              const SizedBox(width: 4),
+                                              Text(
+                                                '+15 PS LOOTED!',
+                                                style: GoogleFonts.outfit(
+                                                  color: const Color(0xFFFFD700),
+                                                  fontWeight: FontWeight.w900,
+                                                  fontSize: 11,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                         ],
                       ),
                     ),
                   ),
                 ),
 
-                // 6. Attack strike visual impact overlay
+                // 7. Attack strike visual impact overlay
                 if (_isStriking) _buildStrikeOverlay(),
 
-                // 7. Floating Top Capsule Header (Back button + View Profile + Info)
+                // 8. Floating Top Capsule Header (Back button + 6h Day/Night Cycle + Profile + Info)
                 Positioned(
                   top: 0,
                   left: 0,
                   right: 0,
-                  child: _buildTopHeaderCapsule(),
+                  child: _buildTopHeaderCapsule(isNight: isNight, cycleLabel: cycleLabel),
                 ),
 
-                // 8. Bottom Stacked Small Red "Attack" Button with Level & PS Pill
+                // 9. Bottom Stacked Small Red "Attack" Button with Level & PS Pill
                 if (!_isQuestionSheetOpen)
                   Positioned(
                     bottom: 24,
@@ -610,7 +792,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     child: _buildBottomAttackSection(),
                   ),
 
-                // 9. Stacked Expanded Question / Challenge Sheet (when opened)
+                // 10. Stacked Expanded Question / Challenge Sheet (when opened)
                 if (_isQuestionSheetOpen)
                   Positioned(
                     bottom: 0,
@@ -663,8 +845,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  /// 🌟 Top Floating Header: Back button on left, Minimal Profile Icon + (i) info button on right
-  Widget _buildTopHeaderCapsule() {
+  /// 🌟 Top Floating Header: Back button, 6h Day/Night Cycle indicator & Toggle, Profile Icon + (i) info button
+  Widget _buildTopHeaderCapsule({bool isNight = false, String cycleLabel = ''}) {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -686,10 +868,61 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ),
             ),
 
-            // Right group: Minimal Profile Avatar Icon + minimal (i) info button
+            // Right group: 6-Hour Cycle Badge + Day/Night Toggle + Defender Profile + info
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // ⏱️ 6-Hour Cycle Badge & Toggle
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _manualNightOverride = !isNight;
+                    });
+                    HapticFeedback.lightImpact();
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.70),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: isNight
+                            ? const Color(0xFFFDE047).withValues(alpha: 0.7)
+                            : const Color(0xFF38BDF8).withValues(alpha: 0.7),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (isNight ? const Color(0xFFFDE047) : const Color(0xFF38BDF8)).withValues(alpha: 0.25),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isNight ? Icons.nightlight_round : Icons.wb_sunny_rounded,
+                          color: isNight ? const Color(0xFFFDE047) : const Color(0xFF38BDF8),
+                          size: 15,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(
+                          cycleLabel.isNotEmpty ? cycleLabel : (isNight ? 'Night' : 'Day'),
+                          style: GoogleFonts.outfit(
+                            color: isNight ? const Color(0xFFFDE047) : const Color(0xFFBAE6FD),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // Defender Profile Button
                 InkWell(
                   onTap: _openDefenderProfile,
                   borderRadius: BorderRadius.circular(20),
@@ -727,33 +960,62 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-
   /// 💥 Attack Strike Visual Impact Overlay
   Widget _buildStrikeOverlay() {
-    return Positioned.fill(
-      child: Container(
-        color: Colors.red.withValues(alpha: 0.35),
-        child: Center(
+    final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay);
+    return Positioned(
+      top: 88,
+      left: 20,
+      right: 20,
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A).withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.redAccent, width: 1.8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.redAccent.withValues(alpha: 0.5),
+                blurRadius: 18,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
-                '💥 CITADEL STRIKE! ⚔️',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: 1.2,
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(perk.icon, style: const TextStyle(fontSize: 20)),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${perk.combatWeaponName.toUpperCase()} STRIKE! 💥',
+                    style: GoogleFonts.outfit(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              Text(
-                '-15 PS CRITICAL STRIKE!',
-                style: GoogleFonts.outfit(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFFFFD700),
-                ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🪙', style: TextStyle(fontSize: 13)),
+                  const SizedBox(width: 4),
+                  Text(
+                    '+15 PS LOOTED! • CITADEL BREACHED',
+                    style: GoogleFonts.outfit(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFFFFD700),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -762,37 +1024,68 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  /// ⚔️ Bottom Attack Section: Level & PS Pill right above small red Attack Button
+  /// ⚔️ Bottom Attack Section: Attacker vs Defender Pill right above small red Attack Button
   Widget _buildBottomAttackSection() {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // 🎖️ Compact Pill above Attack Button: Avatar + Level + PS
+        // 🎖️ Versus Pill: [Your Avatar Lvl X] ⚔️ VS 🛡️ [Defender Lvl Y • PS Z]
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           margin: const EdgeInsets.only(bottom: 8),
           decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+            color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 0.45),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+                color: Colors.black.withValues(alpha: 0.50),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
             ],
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Attacker Avatar Bubble
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                  color: const Color(0xFF1E293B),
+                ),
+                child: ClipOval(
+                  child: VectorAvatarWidget(
+                    config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.attackerDay),
+                    size: 22,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                'You Lvl ${widget.attackerDay}',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF38BDF8),
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(width: 8),
+              const Text('⚔️', style: TextStyle(fontSize: 11)),
+              const SizedBox(width: 8),
+
               // Defender Avatar Bubble
               Container(
                 width: 22,
                 height: 22,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFF1E293B),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                  color: const Color(0xFF1E293B),
                 ),
                 child: ClipOval(
                   child: VectorAvatarWidget(
@@ -801,24 +1094,23 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
-              // Level Pill
+              const SizedBox(width: 5),
               Text(
                 'Lvl ${widget.neighbor.day}',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
-                  fontSize: 11.5,
+                  fontSize: 11,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               Container(width: 3, height: 3, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.white38)),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
               // PS (Pocket Score)
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Text('🪙', style: TextStyle(fontSize: 11.5)),
+                  const Text('🪙', style: TextStyle(fontSize: 11)),
                   const SizedBox(width: 3),
                   Text(
                     'PS ${_defenderScore > 0 ? _defenderScore : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day)}',
@@ -1650,55 +1942,312 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 }
 
-class CitadelLaserStrikePainter extends CustomPainter {
+/// ⚡ Avatar-Specific Elemental Combat Strike Painter
+/// Renders unique weapon effects based on Attacker Perk & Weapon:
+/// - Cannon / Mortar (SiegeDamage): Blazing artillery shells & fiery blast
+/// - Plasma Blaster / Crossbow (VaultLoot): Dual rapid laser bolts & electric plasma
+/// - Mystic Wand / Sonic Disruptor (FdcBoost): Runic magic spiral & cosmic lightning
+/// - Chrono Katana / Blades (TimeFreeze): Supersonic X-blade slash & diamond glints
+/// - Paladin Broadsword (ArmyKnights): Holy golden celestial light pillar from heaven
+/// - Aegis Ram / Titanium Shield (IronDome/FortressShield): Ramming sonic shockwaves
+class CitadelAvatarStrikePainter extends CustomPainter {
   final double beamProg;
   final double particleProg;
-  CitadelLaserStrikePainter({required this.beamProg, required this.particleProg});
+  final int attackerDay;
+  final AvatarGamePerk perk;
+
+  CitadelAvatarStrikePainter({
+    required this.beamProg,
+    required this.particleProg,
+    required this.attackerDay,
+    required this.perk,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     if (beamProg <= 0 && particleProg <= 0) return;
-    if (beamProg > 0 && beamProg < 1) {
-      final paint = Paint()
-        ..color = Colors.cyanAccent.withValues(alpha: 1.0 - beamProg)
-        ..strokeWidth = 3.0 * (1.0 - beamProg)
-        ..style = PaintingStyle.stroke;
 
-      final path = Path();
-      path.moveTo(size.width * 0.5, size.height);
-      path.lineTo(size.width * 0.5, size.height * (1.0 - beamProg));
-      canvas.drawPath(path, paint);
+    final target = Offset(size.width * 0.5, 680.0); // Mansion entrance doors
+    final source = Offset(size.width * 0.5, 740.0); // Hero leap position at steps
 
-      final glowPaint = Paint()
-        ..color = Colors.amberAccent.withValues(alpha: (1.0 - beamProg) * 0.8)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-      canvas.drawCircle(Offset(size.width * 0.5, size.height * (1.0 - beamProg)), 12.0 * beamProg, glowPaint);
+    // ⚡ 1. Active Strike Trajectory / Projectile (beamProg > 0)
+    if (beamProg > 0 && beamProg <= 1.0) {
+      final fade = (1.0 - beamProg).clamp(0.0, 1.0);
+
+      switch (perk.perkType) {
+        // 💥 Cannon / Mortar: Heavy explosive shells launched in arc
+        case PerkType.siegeDamage:
+          // Heavy Cannon Muzzle Flash
+          canvas.drawCircle(
+            source,
+            18.0 * fade,
+            Paint()
+              ..color = const Color(0xFFF59E0B).withValues(alpha: fade)
+              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+          );
+          // Blazing projectile shell flying
+          final projY = ui.lerpDouble(source.dy, target.dy, beamProg)!;
+          final projX = source.dx + math.sin(beamProg * math.pi) * 24.0;
+          final projPos = Offset(projX, projY);
+          // Smoke and flame trail behind shell
+          canvas.drawLine(
+            source,
+            projPos,
+            Paint()
+              ..color = const Color(0xFFEF4444).withValues(alpha: fade * 0.7)
+              ..strokeWidth = 6.0 * fade
+              ..strokeCap = StrokeCap.round,
+          );
+          // Glowing Artillery Shell
+          canvas.drawCircle(
+            projPos,
+            9.0,
+            Paint()
+              ..color = const Color(0xFFFFB703)
+              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+          );
+          canvas.drawCircle(projPos, 5.5, Paint()..color = Colors.white);
+          break;
+
+        // 🔫 Plasma Blaster / Crossbow: Twin high-energy laser blaster bolts
+        case PerkType.vaultLoot:
+          // Left & right twin laser beams
+          for (final ox in [-12.0, 12.0]) {
+            final s = Offset(source.dx + ox, source.dy);
+            final t = Offset(target.dx + (ox * 0.6), target.dy);
+            // Neon cyan outer plasma glow
+            canvas.drawLine(
+              s,
+              t,
+              Paint()
+                ..color = const Color(0xFF00F0FF).withValues(alpha: fade * 0.7)
+                ..strokeWidth = 10.0 * fade
+                ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+            );
+            // Core laser beam
+            canvas.drawLine(
+              s,
+              t,
+              Paint()
+                ..color = Colors.white.withValues(alpha: fade)
+                ..strokeWidth = 3.5 * fade
+                ..strokeCap = StrokeCap.round,
+            );
+          }
+          break;
+
+        // ⚡ Mystic Wand / Sonic Disruptor: Spiral arcane cosmic runes & lightning
+        case PerkType.fdcBoost:
+          final auraPaint = Paint()
+            ..shader = const LinearGradient(
+              colors: [Color(0xFFA855F7), Color(0xFFFACC15), Color(0xFF38BDF8)],
+            ).createShader(Rect.fromPoints(target, source))
+            ..strokeWidth = 14.0 * fade
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+          canvas.drawLine(source, target, auraPaint);
+          // Double helix twisting magic arcs
+          for (int h = 0; h < 2; h++) {
+            final sign = h == 0 ? 1.0 : -1.0;
+            final arcPath = Path()..moveTo(source.dx, source.dy);
+            for (int i = 1; i <= 6; i++) {
+              final t = i / 6.0;
+              final lx = source.dx + math.sin(t * math.pi * 3 + beamProg * 8) * (18.0 * sign);
+              final ly = ui.lerpDouble(source.dy, target.dy, t)!;
+              arcPath.lineTo(lx, ly);
+            }
+            canvas.drawPath(
+              arcPath,
+              Paint()
+                ..color = (h == 0 ? const Color(0xFFFDE047) : const Color(0xFFE879F9)).withValues(alpha: fade * 0.85)
+                ..strokeWidth = 2.2
+                ..style = PaintingStyle.stroke,
+            );
+          }
+          break;
+
+        // 🗡️ Chrono Katana / Blades: Sonic speed cross-slash lines
+        case PerkType.timeFreeze:
+          // X-Slash 1
+          canvas.drawLine(
+            Offset(target.dx - 36, target.dy - 36),
+            Offset(target.dx + 36, target.dy + 36),
+            Paint()
+              ..color = const Color(0xFF38BDF8).withValues(alpha: fade)
+              ..strokeWidth = 4.5 * fade
+              ..strokeCap = StrokeCap.round,
+          );
+          // X-Slash 2
+          canvas.drawLine(
+            Offset(target.dx + 36, target.dy - 36),
+            Offset(target.dx - 36, target.dy + 36),
+            Paint()
+              ..color = Colors.white.withValues(alpha: fade)
+              ..strokeWidth = 4.5 * fade
+              ..strokeCap = StrokeCap.round,
+          );
+          // Blade glint diamond at center
+          canvas.drawCircle(
+            target,
+            12.0 * fade,
+            Paint()
+              ..color = const Color(0xFF93C5FD).withValues(alpha: fade * 0.6)
+              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+          );
+          break;
+
+        // ⚔️ Paladin Broadsword: Golden Holy Light Pillar from the sky
+        case PerkType.armyKnights:
+          final skyOrigin = Offset(target.dx, target.dy - 320);
+          canvas.drawLine(
+            skyOrigin,
+            target,
+            Paint()
+              ..shader = const LinearGradient(
+                colors: [Color(0xFFFEF08A), Color(0xFFFFD700), Colors.white],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ).createShader(Rect.fromPoints(skyOrigin, target))
+              ..strokeWidth = 22.0 * fade
+              ..strokeCap = StrokeCap.round
+              ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 14),
+          );
+          canvas.drawLine(
+            skyOrigin,
+            target,
+            Paint()
+              ..color = Colors.white.withValues(alpha: fade)
+              ..strokeWidth = 6.0 * fade,
+          );
+          break;
+
+        // 🛡️ Aegis Ram / Titanium Shield: Concentric sonic force ramming forward
+        default:
+          for (int r = 1; r <= 3; r++) {
+            canvas.drawCircle(
+              Offset(target.dx, target.dy + (20 * (1.0 - beamProg))),
+              (18.0 * r) * beamProg,
+              Paint()
+                ..color = const Color(0xFF10B981).withValues(alpha: fade * 0.6)
+                ..style = PaintingStyle.stroke
+                ..strokeWidth = 3.0 * fade,
+            );
+          }
+          break;
+      }
+    }
+
+    // 💥 2. Citadel Impact Explosion & Expanding Shockwave (particleProg > 0)
+    if (particleProg > 0 && particleProg <= 1.0) {
+      final pFade = (1.0 - particleProg).clamp(0.0, 1.0);
+
+      // Expanding Shockwave Ring
+      final ringPaint = Paint()
+        ..color = const Color(0xFFFFD700).withValues(alpha: pFade * 0.8)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.0 * pFade;
+      canvas.drawCircle(target, 68.0 * particleProg, ringPaint);
+
+      // Blinding Impact Core Flash
+      canvas.drawCircle(
+        target,
+        34.0 * (1.0 - particleProg),
+        Paint()
+          ..color = Colors.white.withValues(alpha: pFade)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12),
+      );
+
+      // Flying Explosion Sparks (28 directional particles)
+      final sparkPaint = Paint()..style = PaintingStyle.fill;
+      for (int i = 0; i < 28; i++) {
+        final angle = (i / 28.0) * math.pi * 2;
+        final speed = 45.0 + (i % 6) * 16.0;
+        final px = target.dx + math.cos(angle) * speed * particleProg;
+        final py = target.dy + math.sin(angle) * speed * particleProg - (12.0 * particleProg);
+
+        sparkPaint.color = (i % 2 == 0 ? const Color(0xFFFFB703) : const Color(0xFFEF4444)).withValues(alpha: pFade);
+        canvas.drawCircle(Offset(px, py), (3.8 - (particleProg * 1.6)).clamp(1.0, 4.0), sparkPaint);
+      }
     }
   }
 
   @override
-  bool shouldRepaint(covariant CitadelLaserStrikePainter oldDelegate) =>
+  bool shouldRepaint(covariant CitadelAvatarStrikePainter oldDelegate) =>
       oldDelegate.beamProg != beamProg || oldDelegate.particleProg != particleProg;
 }
 
+/// 🪙 Magnetic Coin Looting Shower Painter
+/// Coins fountain out of the breached citadel doors and fly down directly into
+/// the attacking hero's treasure chest/grasp!
 class CitadelCoinShowerPainter extends CustomPainter {
   final double progress;
   CitadelCoinShowerPainter({required this.progress});
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (progress <= 0 || progress >= 1) return;
-    final random = math.Random(42);
-    final paint = Paint()..style = PaintingStyle.fill;
+    if (progress <= 0 || progress >= 1.0) return;
 
-    for (int i = 0; i < 20; i++) {
-      final startX = size.width * (0.2 + random.nextDouble() * 0.6);
-      final y = size.height * progress * (0.5 + random.nextDouble() * 0.5);
-      final x = startX + math.sin(progress * math.pi * 2 + i) * 20;
-      final opacity = (1.0 - progress).clamp(0.0, 1.0);
+    final origin = Offset(size.width * 0.5, 680.0); // Breached mansion doors
+    final heroChest = Offset(size.width * 0.5, 760.0); // Hero collection chest
+    final coinPaint = Paint()..style = PaintingStyle.fill;
+    final rimPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..color = const Color(0xFFB45309);
+    final fade = (1.0 - progress).clamp(0.0, 1.0);
 
-      paint.color = (i % 2 == 0 ? Colors.amber : Colors.yellowAccent).withValues(alpha: opacity);
-      canvas.drawCircle(Offset(x, y), 4.0 + (i % 3), paint);
+    // 🪙 24 Shimmering Gold Coins in Magnetic Trajectories
+    for (int i = 0; i < 24; i++) {
+      // Phase 1 (prog 0.0 -> 0.35): Erupting upward & outward fountain
+      // Phase 2 (prog 0.35 -> 1.0): Pulled magnetically into heroChest!
+      final burstSpreadX = math.sin(i * 1.5) * 160.0;
+      final burstSpreadY = -80.0 - ((i % 5) * 22.0);
+      final apex = Offset(origin.dx + burstSpreadX, origin.dy + burstSpreadY);
+
+      double cx, cy;
+      if (progress < 0.35) {
+        final t = progress / 0.35;
+        cx = ui.lerpDouble(origin.dx, apex.dx, t)!;
+        cy = ui.lerpDouble(origin.dy, apex.dy, t)!;
+      } else {
+        final t = (progress - 0.35) / 0.65;
+        // Curved cubic pull towards hero's chest
+        final curvedT = Curves.easeInCubic.transform(t);
+        cx = ui.lerpDouble(apex.dx, heroChest.dx, curvedT)!;
+        cy = ui.lerpDouble(apex.dy, heroChest.dy, curvedT)!;
+      }
+
+      // Outer coin glow glint
+      canvas.drawCircle(
+        Offset(cx, cy),
+        7.5,
+        Paint()
+          ..color = const Color(0xFFFFD700).withValues(alpha: fade * 0.5)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+      );
+
+      // Gold Coin Face
+      coinPaint.color = const Color(0xFFFFD700).withValues(alpha: fade);
+      canvas.drawCircle(Offset(cx, cy), 5.5, coinPaint);
+      canvas.drawCircle(Offset(cx, cy), 5.5, rimPaint..color = const Color(0xFFB45309).withValues(alpha: fade));
+
+      // Shimmer highlight
+      canvas.drawCircle(
+        Offset(cx - 1.5, cy - 1.5),
+        1.5,
+        Paint()..color = Colors.white.withValues(alpha: fade * 0.9),
+      );
+    }
+
+    // Chest Collection Sparkle Glints
+    if (progress > 0.45) {
+      final glintFade = ((progress - 0.45) / 0.55).clamp(0.0, 1.0);
+      canvas.drawCircle(
+        heroChest,
+        18.0 * (1.0 - glintFade),
+        Paint()
+          ..color = const Color(0xFFFFD700).withValues(alpha: (1.0 - glintFade) * 0.6)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+      );
     }
   }
 
@@ -1891,19 +2440,22 @@ class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog
 
 /// 🌄 2D Open World Living Scenery Painter (1800 x 1600 Cinematic Landscape)
 /// Features infinite cosmic night sky (or azure daytime), passing space rocket / satellite,
-/// glowing crescent moon, constellations, distant mountain ranges, English Citadel estate,
-/// flowing river with floating wooden rowboat, street lamps, and lush rolling valley meadows.
+/// glowing crescent moon, Aurora Borealis, rotating Dutch windmill, arched stone footbridge,
+/// rotating waterwheel, swimming white swans, fluttering butterflies (day) / fireflies (night),
+/// floating hot air balloon, festive celebration bunting, flowerbeds, and lush orchard trees.
 class CitadelScenicLandscapePainter extends CustomPainter {
   final bool isDamaged;
   final double groundBaseY;
   final bool isNight;
   final bool isDay90;
+  final double ambientProg;
 
   CitadelScenicLandscapePainter({
     this.isDamaged = false,
     this.groundBaseY = 920.0,
     this.isNight = false,
     this.isDay90 = false,
+    this.ambientProg = 0.0,
   });
 
   @override
@@ -1943,8 +2495,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         ..shader = LinearGradient(
           colors: [
             Colors.transparent,
-            const Color(0xFF6366F1).withValues(alpha: 0.08),
-            const Color(0xFFA855F7).withValues(alpha: 0.07),
+            const Color(0xFF6366F1).withValues(alpha: 0.09),
+            const Color(0xFFA855F7).withValues(alpha: 0.08),
             Colors.transparent,
           ],
           begin: Alignment.topLeft,
@@ -1953,9 +2505,30 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 28);
       canvas.drawRect(Rect.fromLTWH(0, 0, w, gy * 0.7), nebulaPaint);
 
+      // 🌌 Shimmering Aurora Borealis (Northern Lights Ribbon)
+      final auroraPath = Path();
+      final auroraWave = math.sin(ambientProg * 2 * math.pi) * 18.0;
+      auroraPath.moveTo(0, gy * 0.35 + auroraWave);
+      auroraPath.cubicTo(w * 0.28, gy * 0.22 - auroraWave, w * 0.62, gy * 0.44 + auroraWave, w, gy * 0.28);
+      auroraPath.lineTo(w, gy * 0.46);
+      auroraPath.cubicTo(w * 0.62, gy * 0.60 + auroraWave, w * 0.28, gy * 0.38 - auroraWave, 0, gy * 0.52);
+      auroraPath.close();
+
+      final auroraShader = LinearGradient(
+        colors: [
+          Colors.transparent,
+          const Color(0xFF10B981).withValues(alpha: 0.18),
+          const Color(0xFF38BDF8).withValues(alpha: 0.16),
+          const Color(0xFFC084FC).withValues(alpha: 0.14),
+          Colors.transparent,
+        ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, gy * 0.20, w, gy * 0.40));
+      canvas.drawPath(auroraPath, Paint()..shader = auroraShader..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22));
+
       // 🌙 Glowing Crescent Moon
       final moonCenter = Offset(w * 0.82, gy * 0.22);
-      // Soft radial aura glow
       canvas.drawCircle(
         moonCenter,
         52,
@@ -1970,12 +2543,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
           ..color = const Color(0xFFFEF08A).withValues(alpha: 0.30)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
       );
-      // Moon Body
       canvas.drawCircle(moonCenter, 22, Paint()..color = const Color(0xFFFEF08A));
-      // Dark cutout to create sharp Crescent shape
       canvas.drawCircle(Offset(moonCenter.dx + 8, moonCenter.dy - 5), 20, Paint()..color = const Color(0xFF090D1A));
 
-      // ✨ Expansive Twinkling Starfield across the 1800px width
+      // ✨ Expansive Twinkling Starfield across width
       final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.88);
       final starGlowPaint = Paint()
         ..color = const Color(0xFFFEF08A).withValues(alpha: 0.55)
@@ -1999,8 +2570,9 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
       for (int i = 0; i < starPoints.length; i++) {
         final pt = starPoints[i];
-        final size = (i % 4 == 0) ? 2.5 : ((i % 2 == 0) ? 1.8 : 1.2);
-        if (size >= 1.8) {
+        final twinkle = 0.75 + math.sin(ambientProg * 8 * math.pi + i) * 0.25;
+        final size = ((i % 4 == 0) ? 2.5 : ((i % 2 == 0) ? 1.8 : 1.2)) * twinkle;
+        if (size >= 1.6) {
           canvas.drawCircle(pt, size + 1.2, starGlowPaint);
         }
         canvas.drawCircle(pt, size, starPaint);
@@ -2010,8 +2582,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       _drawShootingStar(canvas, w * 0.28, gy * 0.14, 68);
       _drawShootingStar(canvas, w * 0.72, gy * 0.08, 85);
 
-      // 🚀 Space Rocket / Cosmic Satellite (User Directive: "മേലെ എന്താ റോക്കറ്റ് പോകുന്ന പോലെയോ എന്തിനെയൊക്കെ ആക്കിയിട്ട് അത്രയും വലിയൊരു ആർട്ട് ആയി മാറണം")
-      _drawCosmicRocket(canvas, w * 0.24, gy * 0.20);
+      // 🚀 Cosmic Space Rocket with pulsating plasma flame
+      _drawCosmicRocket(canvas, w * 0.24, gy * 0.20, ambientProg: ambientProg);
     } else {
       // ☀️ Radiant Golden Sun with glowing aura rings
       final sunCenter = Offset(w * 0.82, gy * 0.26);
@@ -2031,21 +2603,26 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       );
       canvas.drawCircle(sunCenter, 26, Paint()..color = const Color(0xFFFDE047));
 
-      // ☁️ Drifting Fluffy Clouds across wide sky
-      _drawFluffyCloud(canvas, w * 0.12, gy * 0.18, 22);
-      _drawFluffyCloud(canvas, w * 0.38, gy * 0.28, 18);
-      _drawFluffyCloud(canvas, w * 0.62, gy * 0.22, 20);
-      _drawFluffyCloud(canvas, w * 0.88, gy * 0.38, 16);
+      // 🎈 Floating Striped Hot Air Balloon
+      final balloonX = w * 0.38 + math.sin(ambientProg * 2 * math.pi) * 28.0;
+      final balloonY = gy * 0.16 + math.cos(ambientProg * 2 * math.pi) * 8.0;
+      _drawHotAirBalloon(canvas, balloonX, balloonY);
+
+      // ☁️ Drifting Fluffy Clouds
+      final cloudFloat = math.sin(ambientProg * 2 * math.pi) * 14.0;
+      _drawFluffyCloud(canvas, w * 0.12 + cloudFloat, gy * 0.18, 22);
+      _drawFluffyCloud(canvas, w * 0.44 - cloudFloat, gy * 0.28, 18);
+      _drawFluffyCloud(canvas, w * 0.62 + cloudFloat, gy * 0.22, 20);
+      _drawFluffyCloud(canvas, w * 0.88 - cloudFloat, gy * 0.38, 16);
 
       // 🕊️ Flying Birds Soaring Across the Sky
-      _drawFlyingBird(canvas, w * 0.28, gy * 0.16, 15);
-      _drawFlyingBird(canvas, w * 0.34, gy * 0.12, 11);
-      _drawFlyingBird(canvas, w * 0.40, gy * 0.19, 10);
-      _drawFlyingBird(canvas, w * 0.68, gy * 0.14, 13);
-      _drawFlyingBird(canvas, w * 0.73, gy * 0.10, 9);
+      _drawFlyingBird(canvas, w * 0.24, gy * 0.16, 15);
+      _drawFlyingBird(canvas, w * 0.30, gy * 0.12, 11);
+      _drawFlyingBird(canvas, w * 0.54, gy * 0.14, 13);
+      _drawFlyingBird(canvas, w * 0.70, gy * 0.10, 10);
     }
 
-    // 🏔️ 2. Distant Majestic Mountain Ranges (Span full 1800 width)
+    // 🏔️ 2. Distant Majestic Mountain Ranges
     final mountainPath = Path();
     mountainPath.moveTo(0, gy - 20);
     mountainPath.lineTo(w * 0.10, gy - 95);
@@ -2066,7 +2643,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
           : const Color(0xFF0D9488).withValues(alpha: 0.40);
     canvas.drawPath(mountainPath, mountainPaint);
 
-    // Mountain Peak Moonlit / Snow highlights
+    // Mountain Peak highlights
     final peakHighlight = Paint()
       ..color = Colors.white.withValues(alpha: isNight ? 0.20 : 0.45)
       ..style = PaintingStyle.stroke
@@ -2090,7 +2667,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
           : const Color(0xFF15803D).withValues(alpha: 0.65);
     canvas.drawPath(foothillPath, foothillPaint);
 
-    // 🏡 4. Citadel Courtyard Hill Plateau (Where the house stands firmly)
+    // 💨 4. Traditional Dutch Windmill with Rotating Sails on Hilltop
+    _drawDutchWindmill(canvas, w * 0.18, gy - 32, ambientProg: ambientProg, isNight: isNight);
+
+    // 🏡 5. Citadel Courtyard Hill Plateau (Where house stands)
     final hillPath = Path();
     hillPath.moveTo(0, gy);
     hillPath.quadraticBezierTo(w * 0.25, gy - 22, w * 0.50, gy - 14);
@@ -2118,31 +2698,15 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       ..strokeWidth = 4.5;
     canvas.drawPath(hillPath, ridgePaint);
 
-    // 🌊 5. Curving Flowing River (പുഴ) Across Valley
+    // 🌊 6. Curving Flowing River Across Valley
     final riverPath = Path();
     final ry = gy + 190.0;
     riverPath.moveTo(0, ry + 15);
-    riverPath.cubicTo(
-      w * 0.25, ry - 35,
-      w * 0.55, ry + 55,
-      w * 0.82, ry - 15,
-    );
-    riverPath.cubicTo(
-      w * 0.90, ry - 25,
-      w * 0.96, ry,
-      w, ry + 25,
-    );
+    riverPath.cubicTo(w * 0.25, ry - 35, w * 0.55, ry + 55, w * 0.82, ry - 15);
+    riverPath.cubicTo(w * 0.90, ry - 25, w * 0.96, ry, w, ry + 25);
     riverPath.lineTo(w, ry + 115);
-    riverPath.cubicTo(
-      w * 0.96, ry + 95,
-      w * 0.90, ry + 75,
-      w * 0.82, ry + 85,
-    );
-    riverPath.cubicTo(
-      w * 0.55, ry + 155,
-      w * 0.25, ry + 65,
-      0, ry + 115,
-    );
+    riverPath.cubicTo(w * 0.96, ry + 95, w * 0.90, ry + 75, w * 0.82, ry + 85);
+    riverPath.cubicTo(w * 0.55, ry + 155, w * 0.25, ry + 65, 0, ry + 115);
     riverPath.close();
 
     final riverColors = isNight
@@ -2156,26 +2720,39 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       ).createShader(Rect.fromLTWH(0, ry - 35, w, 150));
     canvas.drawPath(riverPath, riverPaint);
 
-    // Sparkling River Water Ripples
+    // Sparkling River Water Ripples (Animated with ambientProg)
+    final rippleOffset = math.sin(ambientProg * 2 * math.pi) * 8.0;
     final wavePaint = Paint()
-      ..color = Colors.white.withValues(alpha: isNight ? 0.30 : 0.50)
+      ..color = Colors.white.withValues(alpha: isNight ? 0.35 : 0.55)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.6
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset(w * 0.12, ry + 22), Offset(w * 0.22, ry + 16), wavePaint);
-    canvas.drawLine(Offset(w * 0.36, ry + 36), Offset(w * 0.48, ry + 46), wavePaint);
-    canvas.drawLine(Offset(w * 0.65, ry + 50), Offset(w * 0.76, ry + 40), wavePaint);
-    canvas.drawLine(Offset(w * 0.86, ry + 24), Offset(w * 0.94, ry + 32), wavePaint);
+    canvas.drawLine(Offset(w * 0.12 + rippleOffset, ry + 22), Offset(w * 0.22 + rippleOffset, ry + 16), wavePaint);
+    canvas.drawLine(Offset(w * 0.36 - rippleOffset, ry + 36), Offset(w * 0.48 - rippleOffset, ry + 46), wavePaint);
+    canvas.drawLine(Offset(w * 0.65 + rippleOffset, ry + 50), Offset(w * 0.76 + rippleOffset, ry + 40), wavePaint);
+    canvas.drawLine(Offset(w * 0.86 - rippleOffset, ry + 24), Offset(w * 0.94 - rippleOffset, ry + 32), wavePaint);
 
-    // 🛶 6. Small Wooden Rowboat (തോണി) Floating on the River
+    // 🪷 Floating Pink Lotus Water Lilies on River
+    _drawWaterLily(canvas, w * 0.28, ry + 38);
+    _drawWaterLily(canvas, w * 0.78, ry + 68);
+
+    // 🦢 Swimming White Swans with water ripple wake
+    final swanX1 = w * 0.42 + math.sin(ambientProg * 2 * math.pi) * 16.0;
+    final swanY1 = ry + 46.0;
+    _drawSwan(canvas, swanX1, swanY1);
+
+    final swanX2 = w * 0.46 + math.sin(ambientProg * 2 * math.pi + 0.5) * 12.0;
+    final swanY2 = ry + 56.0;
+    _drawSwan(canvas, swanX2, swanY2);
+
+    // 🛶 Floating Wooden Rowboat
+    final boatBob = math.sin(ambientProg * 2 * math.pi) * 2.5;
     final boatX = w * 0.66;
-    final boatY = ry + 46.0;
-    // Water ripple shadow under boat
+    final boatY = ry + 46.0 + boatBob;
     canvas.drawOval(
       Rect.fromCenter(center: Offset(boatX, boatY + 9), width: 44, height: 7),
       Paint()..color = Colors.black.withValues(alpha: 0.30),
     );
-    // Wooden Hull
     final boatPath = Path();
     boatPath.moveTo(boatX - 20, boatY);
     boatPath.quadraticBezierTo(boatX - 14, boatY + 10, boatX, boatY + 10);
@@ -2184,65 +2761,81 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     boatPath.quadraticBezierTo(boatX, boatY + 2.5, boatX - 15, boatY - 1.5);
     boatPath.close();
     canvas.drawPath(boatPath, Paint()..color = const Color(0xFF78350F));
-    // Boat Rim & Seat Bench
-    canvas.drawLine(
-      Offset(boatX - 4, boatY + 2),
-      Offset(boatX + 4, boatY + 2),
-      Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.4,
-    );
-    // Oar resting over gunwale
-    final oarPaint = Paint()..color = const Color(0xFFFDE68A)..strokeWidth = 1.6;
-    canvas.drawLine(Offset(boatX - 8, boatY - 5), Offset(boatX + 10, boatY + 12), oarPaint);
+    canvas.drawLine(Offset(boatX - 4, boatY + 2), Offset(boatX + 4, boatY + 2), Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.4);
+    canvas.drawLine(Offset(boatX - 8, boatY - 5), Offset(boatX + 10, boatY + 12), Paint()..color = const Color(0xFFFDE68A)..strokeWidth = 1.6);
 
-    // 🏡 7. Cobblestone Courtyard Walkway from house entrance towards valley
+    // ⚙️ Rotating Wooden Waterwheel on Riverbank
+    _drawWaterWheel(canvas, w * 0.88, ry + 18, ambientProg: ambientProg);
+
+    // 🌉 7. Handsome Stone Arched Footbridge Spanning Across River
+    _drawStoneBridge(canvas, w * 0.50, ry + 40, isNight: isNight);
+
+    // 🏡 8. Cobblestone Courtyard Walkway from house entrance towards bridge
     final walkPath = Path();
     walkPath.moveTo(w * 0.47, gy + 10);
     walkPath.quadraticBezierTo(w * 0.48, gy + 80, w * 0.44, ry - 10);
-    walkPath.lineTo(w * 0.54, ry - 10);
+    walkPath.lineTo(w * 0.56, ry - 10);
     walkPath.quadraticBezierTo(w * 0.52, gy + 80, w * 0.53, gy + 10);
     walkPath.close();
 
-    final walkPaint = Paint()
-      ..color = const Color(0xFFCBD5E1).withValues(alpha: isNight ? 0.20 : 0.35);
+    final walkPaint = Paint()..color = const Color(0xFFCBD5E1).withValues(alpha: isNight ? 0.20 : 0.35);
     canvas.drawPath(walkPath, walkPaint);
 
-    // Stepping stones along the courtyard path
     final stonePaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: isNight ? 0.25 : 0.40);
     for (int i = 0; i < 7; i++) {
       final stoneY = gy + 18 + (i * 22);
       final stoneX = w * 0.50 + math.sin(i * 1.4) * 6;
       canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(stoneX, stoneY), width: 34 - (i * 1.5), height: 9),
-          const Radius.circular(4.5),
-        ),
+        RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(stoneX, stoneY), width: 34 - (i * 1.5), height: 9), const Radius.circular(4.5)),
         stonePaint,
       );
     }
 
-    // 8. White Picket Fences along property bounds
+    // 🚩 9. Festive Celebration Bunting Flags (Triangle party flags)
+    _drawPartyBunting(canvas, w * 0.24, gy - 16, w * 0.36, gy - 12);
+    _drawPartyBunting(canvas, w * 0.64, gy - 12, w * 0.76, gy - 16);
+
+    // 10. White Picket Fences along property bounds
     _drawPicketFence(canvas, w * 0.24, gy - 6, 5);
     _drawPicketFence(canvas, w * 0.68, gy - 2, 5);
 
-    // 9. Colorful Flowerbeds (Yellow, Pink, Red blossoms)
+    // 11. Colorful Flowerbeds (Tulips, Roses, Blossoms)
     _drawFlowerbed(canvas, w * 0.34, gy + 2);
     _drawFlowerbed(canvas, w * 0.64, gy + 4);
 
-    // 10. Lush Trees along Estate Flanks and Riverbank
+    // 🦋 12. Fluttering Butterflies in Day / ✨ Glowing Fireflies at Night
+    if (!isNight) {
+      _drawButterfly(canvas, w * 0.33, gy - 8, ambientProg: ambientProg, color: const Color(0xFFFB923C));
+      _drawButterfly(canvas, w * 0.36, gy + 6, ambientProg: ambientProg + 0.3, color: const Color(0xFF38BDF8));
+      _drawButterfly(canvas, w * 0.63, gy - 4, ambientProg: ambientProg + 0.6, color: const Color(0xFFFACC15));
+      _drawButterfly(canvas, w * 0.66, gy + 8, ambientProg: ambientProg + 0.2, color: const Color(0xFFF43F5E));
+      _drawButterfly(canvas, w * 0.26, gy - 22, ambientProg: ambientProg + 0.8, color: const Color(0xFFA855F7));
+    } else {
+      _drawFirefly(canvas, w * 0.28, gy - 14, ambientProg: ambientProg, phase: 0.1);
+      _drawFirefly(canvas, w * 0.32, gy + 8, ambientProg: ambientProg, phase: 0.4);
+      _drawFirefly(canvas, w * 0.65, gy - 10, ambientProg: ambientProg, phase: 0.7);
+      _drawFirefly(canvas, w * 0.72, gy + 12, ambientProg: ambientProg, phase: 0.2);
+      _drawFirefly(canvas, w * 0.48, ry + 20, ambientProg: ambientProg, phase: 0.5);
+      _drawFirefly(canvas, w * 0.54, ry + 35, ambientProg: ambientProg, phase: 0.8);
+      _drawFirefly(canvas, w * 0.80, gy - 25, ambientProg: ambientProg, phase: 0.3);
+      _drawFirefly(canvas, w * 0.15, gy - 18, ambientProg: ambientProg, phase: 0.9);
+    }
+
+    // 13. Lush Trees: Orchard Apples & Japanese Cherry Blossom (Sakura)
     _drawTree(canvas, w * 0.12, gy - 8, scale: 1.3);
-    _drawTree(canvas, w * 0.22, gy - 16, scale: 1.0);
-    _drawTree(canvas, w * 0.78, gy - 4, scale: 1.1);
+    _drawCherryBlossomTree(canvas, w * 0.22, gy - 16, scale: 1.1, ambientProg: ambientProg);
+    _drawCherryBlossomTree(canvas, w * 0.78, gy - 4, scale: 1.15, ambientProg: ambientProg);
     _drawTree(canvas, w * 0.88, gy + 6, scale: 1.35);
 
     // Riverbank shade trees
     _drawTree(canvas, w * 0.08, ry + 10, scale: 1.1);
-    _drawTree(canvas, w * 0.90, ry + 20, scale: 1.15);
+    _drawTree(canvas, w * 0.92, ry + 20, scale: 1.15);
 
-    // 11. Street Lamps with Warm Golden Glowing Lanterns
+    // 14. Street Lamps with Warm Golden Glowing Lanterns
     _drawStreetLamp(canvas, w * 0.30, gy + 12, isNight: isNight);
     _drawStreetLamp(canvas, w * 0.70, gy + 16, isNight: isNight);
 
-    // 12. Lower Valley Rolling Meadows (Covers from river down to h = 1600.0)
+    // 15. Lower Valley Rolling Meadows
     final lowerMeadowPath = Path();
     lowerMeadowPath.moveTo(0, ry + 115);
     lowerMeadowPath.quadraticBezierTo(w * 0.40, ry + 130, w * 0.75, ry + 110);
@@ -2251,20 +2844,18 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     lowerMeadowPath.lineTo(0, h);
     lowerMeadowPath.close();
 
-    final meadowPaint = Paint()
-      ..color = isNight ? const Color(0xFF022C22) : const Color(0xFF15803D);
+    final meadowPaint = Paint()..color = isNight ? const Color(0xFF022C22) : const Color(0xFF15803D);
     canvas.drawPath(lowerMeadowPath, meadowPaint);
 
     // Trees in the lower valley
     _drawTree(canvas, w * 0.18, ry + 180, scale: 1.1);
-    _drawTree(canvas, w * 0.42, ry + 220, scale: 1.0);
+    _drawCherryBlossomTree(canvas, w * 0.42, ry + 220, scale: 1.05, ambientProg: ambientProg);
     _drawTree(canvas, w * 0.68, ry + 200, scale: 1.2);
     _drawTree(canvas, w * 0.84, ry + 240, scale: 1.05);
 
-    // 👑 Day 90 Sovereign Citadel Special: Majestic Floating Crown with Radiant Golden Glow
+    // 👑 Day 90 Sovereign Citadel Special: Majestic Floating Crown
     if (isDay90) {
-      final crownCenter = Offset(w * 0.5, gy - 430); // Above mansion roof peak
-      // Radiant aura rings
+      final crownCenter = Offset(w * 0.5, gy - 430);
       canvas.drawCircle(
         crownCenter,
         44,
@@ -2272,7 +2863,6 @@ class CitadelScenicLandscapePainter extends CustomPainter {
           ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
           ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
       );
-      // Golden Crown Base
       final crownPath = Path();
       crownPath.moveTo(crownCenter.dx - 26, crownCenter.dy + 10);
       crownPath.lineTo(crownCenter.dx + 26, crownCenter.dy + 10);
@@ -2283,41 +2873,332 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       crownPath.lineTo(crownCenter.dx - 24, crownCenter.dy - 14);
       crownPath.close();
       canvas.drawPath(crownPath, Paint()..color = const Color(0xFFFFD700));
-      // Gemstones on Crown Peaks
       canvas.drawCircle(Offset(crownCenter.dx - 24, crownCenter.dy - 14), 2.8, Paint()..color = const Color(0xFFEF4444));
       canvas.drawCircle(Offset(crownCenter.dx, crownCenter.dy - 18), 3.4, Paint()..color = const Color(0xFF38BDF8));
       canvas.drawCircle(Offset(crownCenter.dx + 24, crownCenter.dy - 14), 2.8, Paint()..color = const Color(0xFF10B981));
     }
   }
 
-  /// 🚀 Cosmic Space Rocket / Satellite soaring through upper atmosphere
-  void _drawCosmicRocket(Canvas canvas, double x, double y) {
+  /// 💨 Traditional Dutch Windmill with Rotating Timber Sails
+  void _drawDutchWindmill(Canvas canvas, double x, double y, {double ambientProg = 0.0, bool isNight = false}) {
+    // Stone base
+    final basePath = Path();
+    basePath.moveTo(x - 18, y);
+    basePath.lineTo(x - 14, y - 48);
+    basePath.lineTo(x + 14, y - 48);
+    basePath.lineTo(x + 18, y);
+    basePath.close();
+    canvas.drawPath(basePath, Paint()..color = isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0));
+
+    // Wooden dome cap
+    final capPath = Path();
+    capPath.moveTo(x - 16, y - 48);
+    capPath.quadraticBezierTo(x, y - 62, x + 16, y - 48);
+    capPath.close();
+    canvas.drawPath(capPath, Paint()..color = const Color(0xFF78350F));
+
+    // Warm round window
+    canvas.drawCircle(
+      Offset(x, y - 28),
+      4.5,
+      Paint()..color = isNight ? const Color(0xFFFFB703) : const Color(0xFF38BDF8),
+    );
+
+    // Center hub for rotating sails
+    final hub = Offset(x, y - 46);
+    final angle = ambientProg * 2 * math.pi;
+
+    canvas.save();
+    canvas.translate(hub.dx, hub.dy);
+    canvas.rotate(angle);
+
+    final sailPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.90)
+      ..style = PaintingStyle.fill;
+    final sparPaint = Paint()
+      ..color = const Color(0xFF92400E)
+      ..strokeWidth = 2.0;
+
+    // 4 lattice sails
+    for (int i = 0; i < 4; i++) {
+      canvas.save();
+      canvas.rotate(i * (math.pi / 2));
+      // Spar
+      canvas.drawLine(Offset.zero, const Offset(0, -38), sparPaint);
+      // Sail canvas
+      final sail = Path();
+      sail.moveTo(1.5, -12);
+      sail.lineTo(9.5, -14);
+      sail.lineTo(9.5, -36);
+      sail.lineTo(1.5, -36);
+      sail.close();
+      canvas.drawPath(sail, sailPaint);
+      canvas.restore();
+    }
+
+    // Hub cap
+    canvas.drawCircle(Offset.zero, 3.5, Paint()..color = const Color(0xFF451A03));
+    canvas.restore();
+  }
+
+  /// 🎈 Striped Hot Air Balloon Floating Across Sky
+  void _drawHotAirBalloon(Canvas canvas, double x, double y) {
+    // Balloon envelope
+    final envPath = Path();
+    envPath.moveTo(x - 18, y - 10);
+    envPath.cubicTo(x - 24, y - 38, x + 24, y - 38, x + 18, y - 10);
+    envPath.lineTo(x + 7, y + 10);
+    envPath.lineTo(x - 7, y + 10);
+    envPath.close();
+
+    canvas.drawPath(
+      envPath,
+      Paint()
+        ..shader = const LinearGradient(
+          colors: [Color(0xFFEF4444), Color(0xFFFBBF24), Color(0xFF06B6D4), Color(0xFFEC4899)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ).createShader(Rect.fromCenter(center: Offset(x, y - 14), width: 48, height: 48)),
+    );
+
+    // Ropes to basket
+    final ropePaint = Paint()..color = const Color(0xFF78350F)..strokeWidth = 1.0;
+    canvas.drawLine(Offset(x - 6, y + 10), Offset(x - 4, y + 18), ropePaint);
+    canvas.drawLine(Offset(x + 6, y + 10), Offset(x + 4, y + 18), ropePaint);
+
+    // Wicker basket
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(x, y + 21), width: 9, height: 6), const Radius.circular(1.5)),
+      Paint()..color = const Color(0xFF92400E),
+    );
+  }
+
+  /// 🌉 Classical Stone Arched Footbridge Spanning River
+  void _drawStoneBridge(Canvas canvas, double x, double y, {bool isNight = false}) {
+    // Arch Path
+    final bridgePath = Path();
+    bridgePath.moveTo(x - 46, y - 40);
+    bridgePath.lineTo(x + 46, y - 40);
+    bridgePath.lineTo(x + 46, y + 42);
+    bridgePath.lineTo(x - 46, y + 42);
+    bridgePath.close();
+
+    // Stone bridge body
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(x, y), width: 90, height: 80), const Radius.circular(8)),
+      Paint()..color = isNight ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+    );
+
+    // Under-arch cutout for water
+    final archCut = Path();
+    archCut.moveTo(x - 30, y + 42);
+    archCut.quadraticBezierTo(x, y - 4, x + 30, y + 42);
+    archCut.close();
+    canvas.drawPath(archCut, Paint()..color = isNight ? const Color(0xFF0369A1) : const Color(0xFF0284C7));
+
+    // Bridge Balustrade Rails
+    final railPaint = Paint()..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF94A3B8)..strokeWidth = 2.4;
+    canvas.drawLine(Offset(x - 44, y - 36), Offset(x + 44, y - 36), railPaint);
+    canvas.drawLine(Offset(x - 44, y + 36), Offset(x + 44, y + 36), railPaint);
+
+    // 4 Coach Lanterns at bridge corners
+    for (final ox in [-40.0, 40.0]) {
+      for (final oy in [-38.0, 38.0]) {
+        canvas.drawCircle(
+          Offset(x + ox, y + oy),
+          isNight ? 9.0 : 6.0,
+          Paint()..color = const Color(0xFFFFD700).withValues(alpha: isNight ? 0.45 : 0.25)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+        );
+        canvas.drawCircle(Offset(x + ox, y + oy), 2.5, Paint()..color = const Color(0xFFFFD700));
+      }
+    }
+  }
+
+  /// ⚙️ Rotating Wooden Waterwheel
+  void _drawWaterWheel(Canvas canvas, double x, double y, {double ambientProg = 0.0}) {
     canvas.save();
     canvas.translate(x, y);
-    canvas.rotate(-0.38); // Tilted upwards ~22 degrees
+    final angle = ambientProg * 2 * math.pi;
+    canvas.rotate(angle);
 
-    // 1. Plasma exhaust flame trail
+    final timberPaint = Paint()..color = const Color(0xFF78350F)..strokeWidth = 2.5;
+    // Outer Rim
+    canvas.drawCircle(Offset.zero, 18, Paint()..color = const Color(0xFF92400E)..style = PaintingStyle.stroke..strokeWidth = 2.5);
+    // Inner Hub
+    canvas.drawCircle(Offset.zero, 5, Paint()..color = const Color(0xFF451A03));
+
+    // 8 Paddles
+    for (int i = 0; i < 8; i++) {
+      canvas.save();
+      canvas.rotate(i * (math.pi / 4));
+      canvas.drawLine(Offset.zero, const Offset(0, -18), timberPaint);
+      canvas.drawLine(const Offset(-4, -18), const Offset(4, -18), Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.0);
+      canvas.restore();
+    }
+    canvas.restore();
+  }
+
+  /// 🦢 Elegant White Swan Swimming in River
+  void _drawSwan(Canvas canvas, double x, double y) {
+    // Water ripple under swan
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(x, y + 3), width: 22, height: 5),
+      Paint()..color = Colors.white.withValues(alpha: 0.35)..style = PaintingStyle.stroke..strokeWidth = 1.0,
+    );
+
+    // Swan Body
+    final body = Path();
+    body.moveTo(x - 9, y);
+    body.quadraticBezierTo(x - 5, y + 4, x + 4, y + 4);
+    body.quadraticBezierTo(x + 9, y + 2, x + 8, y - 2);
+    body.quadraticBezierTo(x + 2, y, x - 7, y - 2);
+    body.close();
+    canvas.drawPath(body, Paint()..color = Colors.white);
+
+    // Swan S-Curved Neck & Head
+    final neck = Path();
+    neck.moveTo(x + 6, y);
+    neck.cubicTo(x + 10, y - 6, x + 8, y - 12, x + 5, y - 11);
+    neck.close();
+    canvas.drawPath(neck, Paint()..color = Colors.white);
+
+    // Orange Beak
+    canvas.drawCircle(Offset(x + 4, y - 11), 1.2, Paint()..color = const Color(0xFFF97316));
+  }
+
+  /// 🪷 Floating Pink Lotus Water Lily
+  void _drawWaterLily(Canvas canvas, double x, double y) {
+    // Lily Pad
+    canvas.drawCircle(Offset(x, y), 6.5, Paint()..color = const Color(0xFF059669));
+    // Pink Lotus Blossom
+    canvas.drawCircle(Offset(x - 1, y - 1), 3.0, Paint()..color = const Color(0xFFF472B6));
+    canvas.drawCircle(Offset(x, y), 1.5, Paint()..color = const Color(0xFFFEF08A));
+  }
+
+  /// 🚩 Festive Party Bunting (Triangle celebration flags)
+  void _drawPartyBunting(Canvas canvas, double x1, double y1, double x2, double y2) {
+    // String wire
+    final stringPath = Path();
+    stringPath.moveTo(x1, y1);
+    stringPath.quadraticBezierTo((x1 + x2) / 2, ((y1 + y2) / 2) + 8, x2, y2);
+    canvas.drawPath(stringPath, Paint()..color = Colors.white70..strokeWidth = 1.2..style = PaintingStyle.stroke);
+
+    final colors = [
+      const Color(0xFFEF4444),
+      const Color(0xFFFBBF24),
+      const Color(0xFF06B6D4),
+      const Color(0xFFEC4899),
+      const Color(0xFF10B981),
+      const Color(0xFF8B5CF6),
+    ];
+
+    // Triangle Pennant Flags hanging
+    const flagCount = 6;
+    for (int i = 0; i < flagCount; i++) {
+      final t = (i + 0.5) / flagCount;
+      final fx = ui.lerpDouble(x1, x2, t)!;
+      final fy = ui.lerpDouble(y1, y2, t)! + math.sin(t * math.pi) * 8.0;
+
+      final flag = Path();
+      flag.moveTo(fx - 4, fy);
+      flag.lineTo(fx + 4, fy);
+      flag.lineTo(fx, fy + 7);
+      flag.close();
+      canvas.drawPath(flag, Paint()..color = colors[i % colors.length]);
+    }
+  }
+
+  /// 🦋 Fluttering Butterfly (Daytime)
+  void _drawButterfly(Canvas canvas, double x, double y, {double ambientProg = 0.0, Color color = const Color(0xFFFB923C)}) {
+    final wingScale = math.sin(ambientProg * 18 * math.pi).abs();
+    canvas.save();
+    canvas.translate(x, y);
+
+    final wingPaint = Paint()..color = color;
+    // Left wing
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(-3.5 * wingScale, -2), width: 7 * wingScale, height: 6),
+      wingPaint,
+    );
+    // Right wing
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(3.5 * wingScale, -2), width: 7 * wingScale, height: 6),
+      wingPaint,
+    );
+    // Body
+    canvas.drawLine(const Offset(0, -3), const Offset(0, 3), Paint()..color = const Color(0xFF1E293B)..strokeWidth = 1.2);
+    canvas.restore();
+  }
+
+  /// ✨ Pulsing Firefly (Nighttime)
+  void _drawFirefly(Canvas canvas, double x, double y, {double ambientProg = 0.0, double phase = 0.0}) {
+    final pulse = 0.4 + (math.sin((ambientProg + phase) * 8 * math.pi) * 0.6).abs();
+    canvas.drawCircle(
+      Offset(x, y),
+      8.0 * pulse,
+      Paint()
+        ..color = const Color(0xFFFEF08A).withValues(alpha: 0.45 * pulse)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+    );
+    canvas.drawCircle(Offset(x, y), 2.2, Paint()..color = const Color(0xFFFEF08A));
+  }
+
+  /// 🌸 Japanese Cherry Blossom (Sakura) Tree with Falling Petals
+  void _drawCherryBlossomTree(Canvas canvas, double x, double y, {double scale = 1.0, double ambientProg = 0.0}) {
+    // Tree Trunk
+    canvas.drawLine(
+      Offset(x, y),
+      Offset(x, y - (28 * scale)),
+      Paint()..color = const Color(0xFF5B3417)..strokeWidth = 5.0 * scale,
+    );
+    // Soft pink blossom foliage
+    final p1 = Paint()..color = const Color(0xFFF472B6);
+    final p2 = Paint()..color = const Color(0xFFFBCFE8);
+    canvas.drawCircle(Offset(x, y - (38 * scale)), 17 * scale, p1);
+    canvas.drawCircle(Offset(x - (8 * scale), y - (32 * scale)), 13 * scale, p2);
+    canvas.drawCircle(Offset(x + (8 * scale), y - (32 * scale)), 13 * scale, p2);
+    canvas.drawCircle(Offset(x, y - (46 * scale)), 12 * scale, p2);
+
+    // Drifting flower petals
+    for (int i = 0; i < 3; i++) {
+      final t = (ambientProg + (i * 0.33)) % 1.0;
+      final px = x - 12 + (t * 26) + math.sin(t * 8) * 4;
+      final py = y - 25 + (t * 30);
+      canvas.drawCircle(Offset(px, py), 1.6, Paint()..color = const Color(0xFFF472B6).withValues(alpha: 1.0 - t));
+    }
+  }
+
+  /// 🚀 Cosmic Space Rocket / Satellite soaring through upper atmosphere
+  void _drawCosmicRocket(Canvas canvas, double x, double y, {double ambientProg = 0.0}) {
+    canvas.save();
+    canvas.translate(x, y);
+    canvas.rotate(-0.38);
+
+    // 1. Plasma exhaust flame trail (pulsing with ambientProg)
+    final pulse = 0.85 + math.sin(ambientProg * 14 * math.pi) * 0.15;
+    final flameLen = 75.0 * pulse;
     final flamePath = Path();
     flamePath.moveTo(-24, -5);
-    flamePath.lineTo(-75, 0);
+    flamePath.lineTo(-flameLen, 0);
     flamePath.lineTo(-24, 5);
     flamePath.close();
+
     final flameShader = const LinearGradient(
       colors: [Color(0xFF38BDF8), Color(0xFFFB923C), Color(0xFFEF4444), Colors.transparent],
       begin: Alignment.centerRight,
       end: Alignment.centerLeft,
-    ).createShader(const Rect.fromLTWH(-75, -5, 51, 10));
+    ).createShader(Rect.fromLTWH(-flameLen, -5, flameLen - 24, 10));
     canvas.drawPath(flamePath, Paint()..shader = flameShader);
 
     // Inner bright hot core flame
     final innerFlame = Path();
     innerFlame.moveTo(-24, -2.5);
-    innerFlame.lineTo(-44, 0);
+    innerFlame.lineTo(-44 * pulse, 0);
     innerFlame.lineTo(-24, 2.5);
     innerFlame.close();
     canvas.drawPath(innerFlame, Paint()..color = const Color(0xFFFEF08A));
 
-    // 2. Rocket Fuselage (Sleek aerodynamic capsule)
+    // 2. Rocket Fuselage
     final bodyPath = Path();
     bodyPath.moveTo(-24, -7);
     bodyPath.lineTo(12, -7);
@@ -2336,27 +3217,16 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawPath(nosePath, Paint()..color = const Color(0xFFEF4444));
 
     // Delta stabilization fins
-    final topFin = Path();
-    topFin.moveTo(-18, -7);
-    topFin.lineTo(-28, -18);
-    topFin.lineTo(-10, -7);
-    topFin.close();
+    final topFin = Path()..moveTo(-18, -7)..lineTo(-28, -18)..lineTo(-10, -7)..close();
     canvas.drawPath(topFin, Paint()..color = const Color(0xFFDC2626));
-
-    final btmFin = Path();
-    btmFin.moveTo(-18, 7);
-    btmFin.lineTo(-28, 18);
-    btmFin.lineTo(-10, 7);
-    btmFin.close();
+    final btmFin = Path()..moveTo(-18, 7)..lineTo(-28, 18)..lineTo(-10, 7)..close();
     canvas.drawPath(btmFin, Paint()..color = const Color(0xFFDC2626));
 
     // Glowing cyan cockpit porthole window
     canvas.drawCircle(
       const Offset(2, 0),
       4.5,
-      Paint()
-        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.40)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+      Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.40)..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
     canvas.drawCircle(const Offset(2, 0), 3.0, Paint()..color = const Color(0xFF38BDF8));
     canvas.drawCircle(const Offset(1, -1), 1.0, Paint()..color = Colors.white);
@@ -2400,7 +3270,6 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     birdPath.moveTo(x - span, y + (span * 0.28));
     birdPath.quadraticBezierTo(x - (span * 0.45), y - (span * 0.45), x, y);
     birdPath.quadraticBezierTo(x + (span * 0.45), y - (span * 0.45), x + span, y + (span * 0.28));
-
     canvas.drawPath(birdPath, birdPaint);
   }
 
@@ -2409,14 +3278,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     final shadowPaint = Paint()..color = Colors.black26;
 
     // Cross rails
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(startX, groundY - 18, pickets * 12.0 + 4, 3), const Radius.circular(1.5)),
-      fencePaint,
-    );
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(Rect.fromLTWH(startX, groundY - 8, pickets * 12.0 + 4, 3), const Radius.circular(1.5)),
-      fencePaint,
-    );
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(startX, groundY - 18, pickets * 12.0 + 4, 3), const Radius.circular(1.5)), fencePaint);
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(startX, groundY - 8, pickets * 12.0 + 4, 3), const Radius.circular(1.5)), fencePaint);
 
     // Vertical pickets with pointed tops
     for (int i = 0; i < pickets; i++) {
@@ -2434,14 +3297,14 @@ class CitadelScenicLandscapePainter extends CustomPainter {
   }
 
   void _drawFlowerbed(Canvas canvas, double x, double y) {
-    final colors = [const Color(0xFFEF4444), const Color(0xFFFBBF24), const Color(0xFFEC4899), const Color(0xFF38BDF8)];
-    for (int i = 0; i < 5; i++) {
-      final fx = x + (i * 7) - 14;
+    final colors = [const Color(0xFFEF4444), const Color(0xFFFBBF24), const Color(0xFFEC4899), const Color(0xFF38BDF8), const Color(0xFFA855F7)];
+    for (int i = 0; i < 6; i++) {
+      final fx = x + (i * 7) - 17;
       final fy = y + math.sin(i * 1.8) * 3;
       final stemPaint = Paint()..color = const Color(0xFF15803D)..strokeWidth = 1.5;
-      canvas.drawLine(Offset(fx, fy), Offset(fx, fy - 6), stemPaint);
+      canvas.drawLine(Offset(fx, fy), Offset(fx, fy - 7), stemPaint);
       final petalPaint = Paint()..color = colors[i % colors.length];
-      canvas.drawCircle(Offset(fx, fy - 7), 3, petalPaint);
+      canvas.drawCircle(Offset(fx, fy - 8), 3.2, petalPaint);
     }
   }
 
@@ -2491,7 +3354,8 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       oldDelegate.isDamaged != isDamaged ||
       oldDelegate.groundBaseY != groundBaseY ||
       oldDelegate.isNight != isNight ||
-      oldDelegate.isDay90 != isDay90;
+      oldDelegate.isDay90 != isDay90 ||
+      oldDelegate.ambientProg != ambientProg;
 }
 
 
