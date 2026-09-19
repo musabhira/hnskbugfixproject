@@ -64,6 +64,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   int _defenderScore = 0;
   late final TransformationController _transformationController;
   final ValueNotifier<double> _zoomScaleNotifier = ValueNotifier<double>(1.0);
+  bool _hasInitializedTransform = false;
 
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
@@ -439,44 +440,73 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   @override
   Widget build(BuildContext context) {
+    final currentHour = DateTime.now().hour;
+    final isNight = currentHour >= 18 || currentHour < 6;
+    final isDay90 = widget.neighbor.day >= 90;
+
+    // 🌍 Virtual World Dimensions (1800 x 1600): A vast, living open landscape
+    const double worldW = 1800.0;
+    const double worldH = 1600.0;
+    const double groundY = 920.0;
+    const double houseW = 420.0;
+    const double houseH = 380.0;
+    const double houseLeft = (worldW - houseW) / 2; // 690.0
+    const double houseTop = groundY - 14.0 - houseH; // 526.0
+
     return PopScope(
       canPop: true,
       onPopInvokedWithResult: (didPop, result) {},
       child: Scaffold(
-        backgroundColor: const Color(0xFF0284C7),
+        backgroundColor: isNight ? const Color(0xFF030712) : const Color(0xFF0284C7),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final w = constraints.maxWidth;
             final h = constraints.maxHeight;
 
-            // 🏡 Ground level where the green estate lawn and house foundation meet
-            final groundY = h * 0.54;
-            final houseW = math.min(w * 0.94, 390.0);
-            const houseH = 370.0;
-            // House foundation rests naturally on the courtyard grass slope
-            final houseBottom = h - groundY - 28.0;
+            // 🛡️ Mathematically guaranteed to cover 100% of the screen (Zero blue borders / letterbox):
+            final minScale = math.max(w / worldW, h / worldH);
+            const maxScale = 2.5;
 
-            final currentHour = DateTime.now().hour;
-            final isNight = currentHour >= 18 || currentHour < 6;
-            final isDay90 = widget.neighbor.day >= 90;
+            // 🏠 Default View: Camera smoothly focuses on the House and its front courtyard
+            if (!_hasInitializedTransform && w > 0 && h > 0) {
+              _hasInitializedTransform = true;
+              final defaultScale = math.min(maxScale, math.max(minScale, w / (houseW * 1.05)));
+              final houseCenterX = worldW / 2;
+              final houseCenterY = houseTop + (houseH * 0.52);
+              final tx = ((w / 2) - (houseCenterX * defaultScale)).clamp(-(worldW * defaultScale - w), 0.0);
+              final ty = ((h * 0.40) - (houseCenterY * defaultScale)).clamp(-(worldH * defaultScale - h), 0.0);
+
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  final initialMatrix = Matrix4.identity();
+                  initialMatrix.setEntry(0, 0, defaultScale);
+                  initialMatrix.setEntry(1, 1, defaultScale);
+                  initialMatrix.setEntry(0, 3, tx);
+                  initialMatrix.setEntry(1, 3, ty);
+                  _transformationController.value = initialMatrix;
+                }
+              });
+            }
 
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan (User Audio: "കൈകൊണ്ട് ഇങ്ങനെ ആക്കുമ്പോൾ സൂം ആവും, പിന്നെ സൂം ലെസ് ആവും")
+                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan (Locked at minScale so art covers 100% screen)
                 Positioned.fill(
                   child: InteractiveViewer(
-                    minScale: 0.30,
-                    maxScale: 2.5,
-                    boundaryMargin: const EdgeInsets.symmetric(horizontal: 400, vertical: 300),
+                    transformationController: _transformationController,
+                    minScale: minScale,
+                    maxScale: maxScale,
+                    boundaryMargin: EdgeInsets.zero,
+                    constrained: false,
                     clipBehavior: Clip.none,
                     child: SizedBox(
-                      width: w,
-                      height: h,
+                      width: worldW,
+                      height: worldH,
                       child: Stack(
                         clipBehavior: Clip.none,
                         children: [
-                          // 1. Full-Screen 2D Open World Scenery: Sky, Sun/Moon, River with Boat, Mountains, Rolling Hills, Trees
+                          // 1. Full-Screen 2D Open World Scenery: Sky with Rocket, Stars/Moon, River with Boat, Mountains, Rolling Hills, Trees
                           Positioned.fill(
                             child: CustomPaint(
                               painter: CitadelScenicLandscapePainter(
@@ -490,8 +520,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                           // 2. The 2D Flame English House seated firmly on the courtyard lawn
                           Positioned(
-                            bottom: houseBottom,
-                            left: (w - houseW) / 2,
+                            left: houseLeft,
+                            top: houseTop,
                             width: houseW,
                             height: houseH,
                             child: FlameEnglishHouseWidget(
@@ -506,96 +536,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                           // Chimney Smoke Puffs floating above the roof
                           Positioned(
-                            bottom: houseBottom + houseH - 24,
-                            left: (w / 2) - 86,
+                            top: houseTop - 28,
+                            left: 900.0 - 88,
                             child: _buildChimneySmoke(),
                           ),
                           Positioned(
-                            bottom: houseBottom + houseH - 24,
-                            right: (w / 2) - 86,
+                            top: houseTop - 28,
+                            left: 900.0 + 88 - 18,
                             child: _buildChimneySmoke(),
-                          ),
-
-                          // 3. Badges directly above the house roof (Avatar + Level + Pocket Score)
-                          Positioned(
-                            bottom: houseBottom + houseH - 20,
-                            left: 0,
-                            right: 0,
-                            child: Center(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                                  borderRadius: BorderRadius.circular(24),
-                                  border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.45),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (isDay90) ...[
-                                      const Text('👑', style: TextStyle(fontSize: 14)),
-                                      const SizedBox(width: 4),
-                                    ],
-                                    // Defender Avatar Bubble
-                                    Container(
-                                      width: 26,
-                                      height: 26,
-                                      decoration: const BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        color: Color(0xFF1E293B),
-                                      ),
-                                      child: ClipOval(
-                                        child: VectorAvatarWidget(
-                                          config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
-                                          size: 26,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 7),
-                                    // Level Pill
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF0284C7),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Text(
-                                        'Lvl ${widget.neighbor.day}',
-                                        style: GoogleFonts.outfit(
-                                          color: Colors.white,
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 7),
-                                    // Pocket Score (PS)
-                                    Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const Text('🪙', style: TextStyle(fontSize: 12)),
-                                        const SizedBox(width: 3),
-                                        Text(
-                                          'PS ${_defenderScore > 0 ? _defenderScore : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day)}',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFFFD700),
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
                           ),
 
                           // 4. Weapon Discharge & Particle Strike Layer
@@ -1941,9 +1889,10 @@ class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog
   }
 }
 
-/// 🌄 2D Open World Hill Climb Scenery Painter (Screenshot Aesthetics)
-/// Features vibrant sky blue gradient, glowing sun, drifting fluffy clouds, distant mountain ridges,
-/// lush rolling green hills, foliage trees with red berries/apples, and glowing street lamps.
+/// 🌄 2D Open World Living Scenery Painter (1800 x 1600 Cinematic Landscape)
+/// Features infinite cosmic night sky (or azure daytime), passing space rocket / satellite,
+/// glowing crescent moon, constellations, distant mountain ranges, English Citadel estate,
+/// flowing river with floating wooden rowboat, street lamps, and lush rolling valley meadows.
 class CitadelScenicLandscapePainter extends CustomPainter {
   final bool isDamaged;
   final double groundBaseY;
@@ -1952,7 +1901,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
   CitadelScenicLandscapePainter({
     this.isDamaged = false,
-    this.groundBaseY = 0.0,
+    this.groundBaseY = 920.0,
     this.isNight = false,
     this.isDay90 = false,
   });
@@ -1961,114 +1910,191 @@ class CitadelScenicLandscapePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final w = size.width;
     final h = size.height;
-    final gy = groundBaseY > 0 ? groundBaseY : h * 0.54;
+    final gy = groundBaseY > 0 ? groundBaseY : 920.0;
 
-    // 1. Sky Gradient (Daytime radiant blue vs Nighttime midnight starry sky)
+    // 1. Sky & Cosmic Atmosphere (Covers full 1800 width down to ground)
     final skyShader = isNight
         ? const LinearGradient(
-            colors: [Color(0xFF030712), Color(0xFF0B132B), Color(0xFF1E293B)],
+            colors: [
+              Color(0xFF030712), // Deep Space Obsidian
+              Color(0xFF090D1A),
+              Color(0xFF0F172A),
+              Color(0xFF1E293B), // Horizon Twilight
+            ],
+            stops: [0.0, 0.35, 0.70, 1.0],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-          ).createShader(Rect.fromLTWH(0, 0, w, h))
+          ).createShader(Rect.fromLTWH(0, 0, w, gy + 30))
         : const LinearGradient(
-            colors: [Color(0xFF0284C7), Color(0xFF38BDF8), Color(0xFFBAE6FD)],
+            colors: [
+              Color(0xFF0284C7), // Deep Azure
+              Color(0xFF38BDF8), // Vibrant Cyan
+              Color(0xFFBAE6FD), // Horizon Mist
+            ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-          ).createShader(Rect.fromLTWH(0, 0, w, h));
-    canvas.drawRect(Rect.fromLTWH(0, 0, w, h), Paint()..shader = skyShader);
+          ).createShader(Rect.fromLTWH(0, 0, w, gy + 30));
+
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, gy + 30), Paint()..shader = skyShader);
 
     if (isNight) {
-      // 🌙 Glowing Crescent Moon at Night
-      final moonCenter = Offset(w * 0.82, gy * 0.24);
+      // 🌌 Faint Celestial Nebula Dust Band Across Upper Sky
+      final nebulaPaint = Paint()
+        ..shader = LinearGradient(
+          colors: [
+            Colors.transparent,
+            const Color(0xFF6366F1).withValues(alpha: 0.08),
+            const Color(0xFFA855F7).withValues(alpha: 0.07),
+            Colors.transparent,
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ).createShader(Rect.fromLTWH(0, 0, w, gy * 0.7))
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 28);
+      canvas.drawRect(Rect.fromLTWH(0, 0, w, gy * 0.7), nebulaPaint);
+
+      // 🌙 Glowing Crescent Moon
+      final moonCenter = Offset(w * 0.82, gy * 0.22);
+      // Soft radial aura glow
       canvas.drawCircle(
         moonCenter,
-        42,
+        52,
         Paint()
-          ..color = const Color(0xFFFEF08A).withValues(alpha: 0.18)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16),
+          ..color = const Color(0xFFFEF08A).withValues(alpha: 0.16)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 22),
       );
-      // Main Moon Body
-      canvas.drawCircle(moonCenter, 18, Paint()..color = const Color(0xFFFEF08A));
-      // Dark cutout to create sharp Crescent Moon
-      canvas.drawCircle(Offset(moonCenter.dx + 6, moonCenter.dy - 4), 16, Paint()..color = const Color(0xFF0B132B));
+      canvas.drawCircle(
+        moonCenter,
+        34,
+        Paint()
+          ..color = const Color(0xFFFEF08A).withValues(alpha: 0.30)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+      );
+      // Moon Body
+      canvas.drawCircle(moonCenter, 22, Paint()..color = const Color(0xFFFEF08A));
+      // Dark cutout to create sharp Crescent shape
+      canvas.drawCircle(Offset(moonCenter.dx + 8, moonCenter.dy - 5), 20, Paint()..color = const Color(0xFF090D1A));
 
-      // ✨ Twinkling Stars Across the Night Sky
-      final starPoints = [
-        Offset(w * 0.08, gy * 0.12),
-        Offset(w * 0.18, gy * 0.22),
-        Offset(w * 0.28, gy * 0.08),
-        Offset(w * 0.38, gy * 0.18),
-        Offset(w * 0.48, gy * 0.10),
-        Offset(w * 0.58, gy * 0.24),
-        Offset(w * 0.68, gy * 0.09),
-        Offset(w * 0.74, gy * 0.16),
-        Offset(w * 0.90, gy * 0.12),
-        Offset(w * 0.94, gy * 0.22),
-        Offset(w * 0.14, gy * 0.32),
-        Offset(w * 0.32, gy * 0.28),
-        Offset(w * 0.62, gy * 0.32),
-        Offset(w * 0.84, gy * 0.35),
-      ];
-      final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.85);
+      // ✨ Expansive Twinkling Starfield across the 1800px width
+      final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.88);
       final starGlowPaint = Paint()
         ..color = const Color(0xFFFEF08A).withValues(alpha: 0.55)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
-      for (final pt in starPoints) {
-        canvas.drawCircle(pt, 2.2, starGlowPaint);
-        canvas.drawCircle(pt, 1.3, starPaint);
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5);
+
+      final starPoints = [
+        Offset(w * 0.04, gy * 0.08), Offset(w * 0.08, gy * 0.24), Offset(w * 0.12, gy * 0.14),
+        Offset(w * 0.16, gy * 0.32), Offset(w * 0.20, gy * 0.06), Offset(w * 0.24, gy * 0.20),
+        Offset(w * 0.28, gy * 0.10), Offset(w * 0.32, gy * 0.28), Offset(w * 0.36, gy * 0.15),
+        Offset(w * 0.40, gy * 0.05), Offset(w * 0.44, gy * 0.22), Offset(w * 0.48, gy * 0.12),
+        Offset(w * 0.52, gy * 0.30), Offset(w * 0.56, gy * 0.08), Offset(w * 0.60, gy * 0.25),
+        Offset(w * 0.64, gy * 0.16), Offset(w * 0.68, gy * 0.07), Offset(w * 0.72, gy * 0.28),
+        Offset(w * 0.76, gy * 0.14), Offset(w * 0.80, gy * 0.05), Offset(w * 0.84, gy * 0.34),
+        Offset(w * 0.88, gy * 0.18), Offset(w * 0.92, gy * 0.09), Offset(w * 0.96, gy * 0.26),
+        Offset(w * 0.06, gy * 0.42), Offset(w * 0.15, gy * 0.46), Offset(w * 0.22, gy * 0.38),
+        Offset(w * 0.35, gy * 0.42), Offset(w * 0.42, gy * 0.36), Offset(w * 0.58, gy * 0.44),
+        Offset(w * 0.67, gy * 0.38), Offset(w * 0.75, gy * 0.46), Offset(w * 0.89, gy * 0.40),
+        Offset(w * 0.95, gy * 0.48), Offset(w * 0.10, gy * 0.04), Offset(w * 0.50, gy * 0.03),
+        Offset(w * 0.70, gy * 0.03), Offset(w * 0.90, gy * 0.04),
+      ];
+
+      for (int i = 0; i < starPoints.length; i++) {
+        final pt = starPoints[i];
+        final size = (i % 4 == 0) ? 2.5 : ((i % 2 == 0) ? 1.8 : 1.2);
+        if (size >= 1.8) {
+          canvas.drawCircle(pt, size + 1.2, starGlowPaint);
+        }
+        canvas.drawCircle(pt, size, starPaint);
       }
+
+      // ☄️ Shooting Stars (Meteors)
+      _drawShootingStar(canvas, w * 0.28, gy * 0.14, 68);
+      _drawShootingStar(canvas, w * 0.72, gy * 0.08, 85);
+
+      // 🚀 Space Rocket / Cosmic Satellite (User Directive: "മേലെ എന്താ റോക്കറ്റ് പോകുന്ന പോലെയോ എന്തിനെയൊക്കെ ആക്കിയിട്ട് അത്രയും വലിയൊരു ആർട്ട് ആയി മാറണം")
+      _drawCosmicRocket(canvas, w * 0.24, gy * 0.20);
     } else {
       // ☀️ Radiant Golden Sun with glowing aura rings
-      final sunCenter = Offset(w * 0.82, gy * 0.28);
+      final sunCenter = Offset(w * 0.82, gy * 0.26);
       canvas.drawCircle(
         sunCenter,
-        50,
+        64,
         Paint()
-          ..color = const Color(0xFFFDE047).withValues(alpha: 0.22)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
+          ..color = const Color(0xFFFDE047).withValues(alpha: 0.18)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 24),
       );
       canvas.drawCircle(
         sunCenter,
-        36,
+        42,
         Paint()
-          ..color = const Color(0xFFFDE047).withValues(alpha: 0.45)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+          ..color = const Color(0xFFFDE047).withValues(alpha: 0.38)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
       );
-      canvas.drawCircle(sunCenter, 22, Paint()..color = const Color(0xFFFDE047));
+      canvas.drawCircle(sunCenter, 26, Paint()..color = const Color(0xFFFDE047));
 
-      // ☁️ Drifting Fluffy Clouds
-      _drawFluffyCloud(canvas, w * 0.16, gy * 0.22, 16);
-      _drawFluffyCloud(canvas, w * 0.50, gy * 0.35, 13);
-      _drawFluffyCloud(canvas, w * 0.86, gy * 0.44, 12);
+      // ☁️ Drifting Fluffy Clouds across wide sky
+      _drawFluffyCloud(canvas, w * 0.12, gy * 0.18, 22);
+      _drawFluffyCloud(canvas, w * 0.38, gy * 0.28, 18);
+      _drawFluffyCloud(canvas, w * 0.62, gy * 0.22, 20);
+      _drawFluffyCloud(canvas, w * 0.88, gy * 0.38, 16);
 
       // 🕊️ Flying Birds Soaring Across the Sky
-      _drawFlyingBird(canvas, w * 0.28, gy * 0.18, 13);
-      _drawFlyingBird(canvas, w * 0.36, gy * 0.13, 10);
-      _drawFlyingBird(canvas, w * 0.43, gy * 0.21, 9);
+      _drawFlyingBird(canvas, w * 0.28, gy * 0.16, 15);
+      _drawFlyingBird(canvas, w * 0.34, gy * 0.12, 11);
+      _drawFlyingBird(canvas, w * 0.40, gy * 0.19, 10);
+      _drawFlyingBird(canvas, w * 0.68, gy * 0.14, 13);
+      _drawFlyingBird(canvas, w * 0.73, gy * 0.10, 9);
     }
 
-    // 🏔️ Distant Mountain Silhouettes
+    // 🏔️ 2. Distant Majestic Mountain Ranges (Span full 1800 width)
     final mountainPath = Path();
-    mountainPath.moveTo(0, gy - 16);
-    mountainPath.lineTo(w * 0.22, gy - 70);
-    mountainPath.lineTo(w * 0.50, gy - 38);
-    mountainPath.lineTo(w * 0.76, gy - 75);
-    mountainPath.lineTo(w, gy - 26);
+    mountainPath.moveTo(0, gy - 20);
+    mountainPath.lineTo(w * 0.10, gy - 95);
+    mountainPath.lineTo(w * 0.24, gy - 160); // High Peak 1
+    mountainPath.lineTo(w * 0.38, gy - 85);
+    mountainPath.lineTo(w * 0.52, gy - 145); // High Peak 2
+    mountainPath.lineTo(w * 0.68, gy - 80);
+    mountainPath.lineTo(w * 0.82, gy - 175); // High Peak 3
+    mountainPath.lineTo(w * 0.92, gy - 90);
+    mountainPath.lineTo(w, gy - 35);
     mountainPath.lineTo(w, h);
     mountainPath.lineTo(0, h);
     mountainPath.close();
 
     final mountainPaint = Paint()
-      ..color = isNight ? const Color(0xFF1E1B4B).withValues(alpha: 0.55) : const Color(0xFF0D9488).withValues(alpha: 0.35);
+      ..color = isNight
+          ? const Color(0xFF1E1B4B).withValues(alpha: 0.65)
+          : const Color(0xFF0D9488).withValues(alpha: 0.40);
     canvas.drawPath(mountainPath, mountainPaint);
 
-    // 🌲 Midground Rolling Green Estate Courtyard / Hills
+    // Mountain Peak Moonlit / Snow highlights
+    final peakHighlight = Paint()
+      ..color = Colors.white.withValues(alpha: isNight ? 0.20 : 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+    canvas.drawLine(Offset(w * 0.24, gy - 160), Offset(w * 0.28, gy - 120), peakHighlight);
+    canvas.drawLine(Offset(w * 0.52, gy - 145), Offset(w * 0.56, gy - 110), peakHighlight);
+    canvas.drawLine(Offset(w * 0.82, gy - 175), Offset(w * 0.86, gy - 130), peakHighlight);
+
+    // 🌲 3. Midground Rolling Green Foothills
+    final foothillPath = Path();
+    foothillPath.moveTo(0, gy - 10);
+    foothillPath.quadraticBezierTo(w * 0.22, gy - 55, w * 0.48, gy - 25);
+    foothillPath.quadraticBezierTo(w * 0.74, gy - 60, w, gy - 15);
+    foothillPath.lineTo(w, h);
+    foothillPath.lineTo(0, h);
+    foothillPath.close();
+
+    final foothillPaint = Paint()
+      ..color = isNight
+          ? const Color(0xFF064E3B).withValues(alpha: 0.70)
+          : const Color(0xFF15803D).withValues(alpha: 0.65);
+    canvas.drawPath(foothillPath, foothillPaint);
+
+    // 🏡 4. Citadel Courtyard Hill Plateau (Where the house stands firmly)
     final hillPath = Path();
-    hillPath.moveTo(0, gy - 16);
-    hillPath.quadraticBezierTo(
-      w * 0.48, gy - 26,
-      w, gy - 8,
-    );
+    hillPath.moveTo(0, gy);
+    hillPath.quadraticBezierTo(w * 0.25, gy - 22, w * 0.50, gy - 14);
+    hillPath.quadraticBezierTo(w * 0.75, gy - 4, w, gy + 12);
     hillPath.lineTo(w, h);
     hillPath.lineTo(0, h);
     hillPath.close();
@@ -2092,20 +2118,30 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       ..strokeWidth = 4.5;
     canvas.drawPath(hillPath, ridgePaint);
 
-    // 🌊 Curving Flowing River (പുഴ) Across Valley
+    // 🌊 5. Curving Flowing River (പുഴ) Across Valley
     final riverPath = Path();
-    final ry = gy + 82;
-    riverPath.moveTo(0, ry + 12);
+    final ry = gy + 190.0;
+    riverPath.moveTo(0, ry + 15);
     riverPath.cubicTo(
-      w * 0.28, ry - 14,
-      w * 0.62, ry + 36,
-      w, ry + 10,
+      w * 0.25, ry - 35,
+      w * 0.55, ry + 55,
+      w * 0.82, ry - 15,
     );
-    riverPath.lineTo(w, ry + 54);
     riverPath.cubicTo(
-      w * 0.62, ry + 78,
-      w * 0.28, ry + 28,
-      0, ry + 52,
+      w * 0.90, ry - 25,
+      w * 0.96, ry,
+      w, ry + 25,
+    );
+    riverPath.lineTo(w, ry + 115);
+    riverPath.cubicTo(
+      w * 0.96, ry + 95,
+      w * 0.90, ry + 75,
+      w * 0.82, ry + 85,
+    );
+    riverPath.cubicTo(
+      w * 0.55, ry + 155,
+      w * 0.25, ry + 65,
+      0, ry + 115,
     );
     riverPath.close();
 
@@ -2117,116 +2153,232 @@ class CitadelScenicLandscapePainter extends CustomPainter {
         colors: riverColors,
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, ry - 15, w, 90));
+      ).createShader(Rect.fromLTWH(0, ry - 35, w, 150));
     canvas.drawPath(riverPath, riverPaint);
 
     // Sparkling River Water Ripples
     final wavePaint = Paint()
-      ..color = Colors.white.withValues(alpha: isNight ? 0.25 : 0.45)
+      ..color = Colors.white.withValues(alpha: isNight ? 0.30 : 0.50)
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.4
+      ..strokeWidth = 1.6
       ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset(w * 0.12, ry + 18), Offset(w * 0.20, ry + 14), wavePaint);
-    canvas.drawLine(Offset(w * 0.38, ry + 24), Offset(w * 0.48, ry + 30), wavePaint);
-    canvas.drawLine(Offset(w * 0.72, ry + 32), Offset(w * 0.82, ry + 28), wavePaint);
+    canvas.drawLine(Offset(w * 0.12, ry + 22), Offset(w * 0.22, ry + 16), wavePaint);
+    canvas.drawLine(Offset(w * 0.36, ry + 36), Offset(w * 0.48, ry + 46), wavePaint);
+    canvas.drawLine(Offset(w * 0.65, ry + 50), Offset(w * 0.76, ry + 40), wavePaint);
+    canvas.drawLine(Offset(w * 0.86, ry + 24), Offset(w * 0.94, ry + 32), wavePaint);
 
-    // 🛶 Small Wooden Rowboat (തോണി) Floating on the River
+    // 🛶 6. Small Wooden Rowboat (തോണി) Floating on the River
     final boatX = w * 0.66;
-    final boatY = ry + 28;
-    // Water ripple under boat
+    final boatY = ry + 46.0;
+    // Water ripple shadow under boat
     canvas.drawOval(
-      Rect.fromCenter(center: Offset(boatX, boatY + 7), width: 38, height: 6),
-      Paint()..color = Colors.black.withValues(alpha: 0.25),
+      Rect.fromCenter(center: Offset(boatX, boatY + 9), width: 44, height: 7),
+      Paint()..color = Colors.black.withValues(alpha: 0.30),
     );
     // Wooden Hull
     final boatPath = Path();
-    boatPath.moveTo(boatX - 16, boatY);
-    boatPath.quadraticBezierTo(boatX - 12, boatY + 8, boatX, boatY + 8);
-    boatPath.quadraticBezierTo(boatX + 12, boatY + 8, boatX + 16, boatY);
-    boatPath.lineTo(boatX + 12, boatY - 1);
-    boatPath.quadraticBezierTo(boatX, boatY + 2, boatX - 12, boatY - 1);
+    boatPath.moveTo(boatX - 20, boatY);
+    boatPath.quadraticBezierTo(boatX - 14, boatY + 10, boatX, boatY + 10);
+    boatPath.quadraticBezierTo(boatX + 14, boatY + 10, boatX + 20, boatY);
+    boatPath.lineTo(boatX + 15, boatY - 1.5);
+    boatPath.quadraticBezierTo(boatX, boatY + 2.5, boatX - 15, boatY - 1.5);
     boatPath.close();
     canvas.drawPath(boatPath, Paint()..color = const Color(0xFF78350F));
     // Boat Rim & Seat Bench
-    canvas.drawLine(Offset(boatX - 3, boatY + 2), Offset(boatX + 3, boatY + 2), Paint()..color = const Color(0xFFB45309)..strokeWidth = 2);
-    // Oar
-    final oarPaint = Paint()..color = const Color(0xFFFDE68A)..strokeWidth = 1.4;
-    canvas.drawLine(Offset(boatX - 6, boatY - 4), Offset(boatX + 8, boatY + 9), oarPaint);
+    canvas.drawLine(
+      Offset(boatX - 4, boatY + 2),
+      Offset(boatX + 4, boatY + 2),
+      Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.4,
+    );
+    // Oar resting over gunwale
+    final oarPaint = Paint()..color = const Color(0xFFFDE68A)..strokeWidth = 1.6;
+    canvas.drawLine(Offset(boatX - 8, boatY - 5), Offset(boatX + 10, boatY + 12), oarPaint);
 
-    // 🏡 Cobblestone Garden Walkway from the house steps towards street
+    // 🏡 7. Cobblestone Courtyard Walkway from house entrance towards valley
     final walkPath = Path();
-    walkPath.moveTo(w * 0.44, gy + 10);
-    walkPath.quadraticBezierTo(w * 0.45, gy + 70, w * 0.40, h);
-    walkPath.lineTo(w * 0.58, h);
-    walkPath.quadraticBezierTo(w * 0.55, gy + 70, w * 0.56, gy + 10);
+    walkPath.moveTo(w * 0.47, gy + 10);
+    walkPath.quadraticBezierTo(w * 0.48, gy + 80, w * 0.44, ry - 10);
+    walkPath.lineTo(w * 0.54, ry - 10);
+    walkPath.quadraticBezierTo(w * 0.52, gy + 80, w * 0.53, gy + 10);
     walkPath.close();
 
     final walkPaint = Paint()
       ..color = const Color(0xFFCBD5E1).withValues(alpha: isNight ? 0.20 : 0.35);
     canvas.drawPath(walkPath, walkPaint);
 
-    // Stepping stones along the path
-    final stonePaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: isNight ? 0.25 : 0.4);
-    for (int i = 0; i < 6; i++) {
-      final stoneY = gy + 20 + (i * 24);
-      final stoneX = w * 0.49 + math.sin(i * 1.5) * 6;
+    // Stepping stones along the courtyard path
+    final stonePaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: isNight ? 0.25 : 0.40);
+    for (int i = 0; i < 7; i++) {
+      final stoneY = gy + 18 + (i * 22);
+      final stoneX = w * 0.50 + math.sin(i * 1.4) * 6;
       canvas.drawRRect(
         RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset(stoneX, stoneY), width: 34 - (i * 2.0), height: 10),
-          const Radius.circular(5),
+          Rect.fromCenter(center: Offset(stoneX, stoneY), width: 34 - (i * 1.5), height: 9),
+          const Radius.circular(4.5),
         ),
         stonePaint,
       );
     }
 
-    // 8. White Picket Fences along the property line
-    _drawPicketFence(canvas, w * 0.04, gy - 6, 4);
-    _drawPicketFence(canvas, w * 0.78, gy + 2, 4);
+    // 8. White Picket Fences along property bounds
+    _drawPicketFence(canvas, w * 0.24, gy - 6, 5);
+    _drawPicketFence(canvas, w * 0.68, gy - 2, 5);
 
     // 9. Colorful Flowerbeds (Yellow, Pink, Red blossoms)
-    _drawFlowerbed(canvas, w * 0.22, gy - 2);
-    _drawFlowerbed(canvas, w * 0.72, gy + 4);
+    _drawFlowerbed(canvas, w * 0.34, gy + 2);
+    _drawFlowerbed(canvas, w * 0.64, gy + 4);
 
-    // 10. Lush Trees along Flanks and Riverbank
-    _drawTree(canvas, w * 0.08, gy - 6, scale: 1.15);
-    _drawTree(canvas, w * 0.22, gy - 14, scale: 0.9);
-    _drawTree(canvas, w * 0.82, gy - 4, scale: 0.95);
-    _drawTree(canvas, w * 0.93, gy + 6, scale: 1.1);
-    // Additional trees for lush scenic world
-    _drawTree(canvas, w * 0.05, ry + 22, scale: 0.85);
-    _drawTree(canvas, w * 0.92, ry + 36, scale: 0.90);
+    // 10. Lush Trees along Estate Flanks and Riverbank
+    _drawTree(canvas, w * 0.12, gy - 8, scale: 1.3);
+    _drawTree(canvas, w * 0.22, gy - 16, scale: 1.0);
+    _drawTree(canvas, w * 0.78, gy - 4, scale: 1.1);
+    _drawTree(canvas, w * 0.88, gy + 6, scale: 1.35);
+
+    // Riverbank shade trees
+    _drawTree(canvas, w * 0.08, ry + 10, scale: 1.1);
+    _drawTree(canvas, w * 0.90, ry + 20, scale: 1.15);
 
     // 11. Street Lamps with Warm Golden Glowing Lanterns
-    _drawStreetLamp(canvas, w * 0.04, gy + 12, isNight: isNight);
-    _drawStreetLamp(canvas, w * 0.95, gy + 20, isNight: isNight);
+    _drawStreetLamp(canvas, w * 0.30, gy + 12, isNight: isNight);
+    _drawStreetLamp(canvas, w * 0.70, gy + 16, isNight: isNight);
+
+    // 12. Lower Valley Rolling Meadows (Covers from river down to h = 1600.0)
+    final lowerMeadowPath = Path();
+    lowerMeadowPath.moveTo(0, ry + 115);
+    lowerMeadowPath.quadraticBezierTo(w * 0.40, ry + 130, w * 0.75, ry + 110);
+    lowerMeadowPath.quadraticBezierTo(w * 0.90, ry + 100, w, ry + 115);
+    lowerMeadowPath.lineTo(w, h);
+    lowerMeadowPath.lineTo(0, h);
+    lowerMeadowPath.close();
+
+    final meadowPaint = Paint()
+      ..color = isNight ? const Color(0xFF022C22) : const Color(0xFF15803D);
+    canvas.drawPath(lowerMeadowPath, meadowPaint);
+
+    // Trees in the lower valley
+    _drawTree(canvas, w * 0.18, ry + 180, scale: 1.1);
+    _drawTree(canvas, w * 0.42, ry + 220, scale: 1.0);
+    _drawTree(canvas, w * 0.68, ry + 200, scale: 1.2);
+    _drawTree(canvas, w * 0.84, ry + 240, scale: 1.05);
 
     // 👑 Day 90 Sovereign Citadel Special: Majestic Floating Crown with Radiant Golden Glow
     if (isDay90) {
-      final crownCenter = Offset(w * 0.5, gy - 165);
+      final crownCenter = Offset(w * 0.5, gy - 430); // Above mansion roof peak
       // Radiant aura rings
       canvas.drawCircle(
         crownCenter,
-        38,
+        44,
         Paint()
           ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16),
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 18),
       );
       // Golden Crown Base
       final crownPath = Path();
-      crownPath.moveTo(crownCenter.dx - 24, crownCenter.dy + 8);
-      crownPath.lineTo(crownCenter.dx + 24, crownCenter.dy + 8);
-      crownPath.lineTo(crownCenter.dx + 22, crownCenter.dy - 12);
-      crownPath.lineTo(crownCenter.dx + 11, crownCenter.dy - 2);
-      crownPath.lineTo(crownCenter.dx, crownCenter.dy - 16);
-      crownPath.lineTo(crownCenter.dx - 11, crownCenter.dy - 2);
-      crownPath.lineTo(crownCenter.dx - 22, crownCenter.dy - 12);
+      crownPath.moveTo(crownCenter.dx - 26, crownCenter.dy + 10);
+      crownPath.lineTo(crownCenter.dx + 26, crownCenter.dy + 10);
+      crownPath.lineTo(crownCenter.dx + 24, crownCenter.dy - 14);
+      crownPath.lineTo(crownCenter.dx + 12, crownCenter.dy - 3);
+      crownPath.lineTo(crownCenter.dx, crownCenter.dy - 18);
+      crownPath.lineTo(crownCenter.dx - 12, crownCenter.dy - 3);
+      crownPath.lineTo(crownCenter.dx - 24, crownCenter.dy - 14);
       crownPath.close();
       canvas.drawPath(crownPath, Paint()..color = const Color(0xFFFFD700));
       // Gemstones on Crown Peaks
-      canvas.drawCircle(Offset(crownCenter.dx - 22, crownCenter.dy - 12), 2.5, Paint()..color = const Color(0xFFEF4444));
-      canvas.drawCircle(Offset(crownCenter.dx, crownCenter.dy - 16), 3.0, Paint()..color = const Color(0xFF38BDF8));
-      canvas.drawCircle(Offset(crownCenter.dx + 22, crownCenter.dy - 12), 2.5, Paint()..color = const Color(0xFF10B981));
+      canvas.drawCircle(Offset(crownCenter.dx - 24, crownCenter.dy - 14), 2.8, Paint()..color = const Color(0xFFEF4444));
+      canvas.drawCircle(Offset(crownCenter.dx, crownCenter.dy - 18), 3.4, Paint()..color = const Color(0xFF38BDF8));
+      canvas.drawCircle(Offset(crownCenter.dx + 24, crownCenter.dy - 14), 2.8, Paint()..color = const Color(0xFF10B981));
     }
+  }
+
+  /// 🚀 Cosmic Space Rocket / Satellite soaring through upper atmosphere
+  void _drawCosmicRocket(Canvas canvas, double x, double y) {
+    canvas.save();
+    canvas.translate(x, y);
+    canvas.rotate(-0.38); // Tilted upwards ~22 degrees
+
+    // 1. Plasma exhaust flame trail
+    final flamePath = Path();
+    flamePath.moveTo(-24, -5);
+    flamePath.lineTo(-75, 0);
+    flamePath.lineTo(-24, 5);
+    flamePath.close();
+    final flameShader = const LinearGradient(
+      colors: [Color(0xFF38BDF8), Color(0xFFFB923C), Color(0xFFEF4444), Colors.transparent],
+      begin: Alignment.centerRight,
+      end: Alignment.centerLeft,
+    ).createShader(const Rect.fromLTWH(-75, -5, 51, 10));
+    canvas.drawPath(flamePath, Paint()..shader = flameShader);
+
+    // Inner bright hot core flame
+    final innerFlame = Path();
+    innerFlame.moveTo(-24, -2.5);
+    innerFlame.lineTo(-44, 0);
+    innerFlame.lineTo(-24, 2.5);
+    innerFlame.close();
+    canvas.drawPath(innerFlame, Paint()..color = const Color(0xFFFEF08A));
+
+    // 2. Rocket Fuselage (Sleek aerodynamic capsule)
+    final bodyPath = Path();
+    bodyPath.moveTo(-24, -7);
+    bodyPath.lineTo(12, -7);
+    bodyPath.quadraticBezierTo(26, -5, 34, 0);
+    bodyPath.quadraticBezierTo(26, 5, 12, 7);
+    bodyPath.lineTo(-24, 7);
+    bodyPath.close();
+    canvas.drawPath(bodyPath, Paint()..color = const Color(0xFFF1F5F9));
+
+    // Red Nose Cone tip
+    final nosePath = Path();
+    nosePath.moveTo(14, -6.5);
+    nosePath.quadraticBezierTo(26, -5, 34, 0);
+    nosePath.quadraticBezierTo(26, 5, 14, 6.5);
+    nosePath.close();
+    canvas.drawPath(nosePath, Paint()..color = const Color(0xFFEF4444));
+
+    // Delta stabilization fins
+    final topFin = Path();
+    topFin.moveTo(-18, -7);
+    topFin.lineTo(-28, -18);
+    topFin.lineTo(-10, -7);
+    topFin.close();
+    canvas.drawPath(topFin, Paint()..color = const Color(0xFFDC2626));
+
+    final btmFin = Path();
+    btmFin.moveTo(-18, 7);
+    btmFin.lineTo(-28, 18);
+    btmFin.lineTo(-10, 7);
+    btmFin.close();
+    canvas.drawPath(btmFin, Paint()..color = const Color(0xFFDC2626));
+
+    // Glowing cyan cockpit porthole window
+    canvas.drawCircle(
+      const Offset(2, 0),
+      4.5,
+      Paint()
+        ..color = const Color(0xFF38BDF8).withValues(alpha: 0.40)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
+    );
+    canvas.drawCircle(const Offset(2, 0), 3.0, Paint()..color = const Color(0xFF38BDF8));
+    canvas.drawCircle(const Offset(1, -1), 1.0, Paint()..color = Colors.white);
+
+    // Blinking beacon light on top fin tip
+    canvas.drawCircle(const Offset(-28, -18), 2.2, Paint()..color = const Color(0xFFF43F5E));
+
+    canvas.restore();
+  }
+
+  /// ☄️ Luminous shooting star with tapering tail
+  void _drawShootingStar(Canvas canvas, double startX, double startY, double length) {
+    final paint = Paint()
+      ..shader = LinearGradient(
+        colors: [Colors.white, const Color(0xFF38BDF8).withValues(alpha: 0.6), Colors.transparent],
+        begin: Alignment.centerRight,
+        end: Alignment.centerLeft,
+      ).createShader(Rect.fromLTWH(startX - length, startY, length, length * 0.4))
+      ..strokeWidth = 1.8
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(startX, startY), Offset(startX - length, startY + (length * 0.35)), paint);
+    canvas.drawCircle(Offset(startX, startY), 2.2, Paint()..color = Colors.white);
   }
 
   void _drawFluffyCloud(Canvas canvas, double cx, double cy, double r) {
