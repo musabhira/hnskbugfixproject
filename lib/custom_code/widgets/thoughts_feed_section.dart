@@ -12,6 +12,7 @@ import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 class ThoughtsFeedSection extends StatefulWidget {
   final String currentUserId;
@@ -123,17 +124,24 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
   }
 
   Future<void> _fetchUserLikes() async {
-    if (widget.currentUserId.isEmpty) return;
+    final Set<String> likes = {};
     try {
-      final response = await supabase
-          .from('thread_likes')
-          .select('thread_id')
-          .eq('user_id', widget.currentUserId);
+      final prefs = await SharedPreferences.getInstance();
+      final robotLiked = prefs.getStringList('robot_liked_threads_${widget.currentUserId}') ?? [];
+      likes.addAll(robotLiked);
+
+      if (widget.currentUserId.isNotEmpty) {
+        final response = await supabase
+            .from('thread_likes')
+            .select('thread_id')
+            .eq('user_id', widget.currentUserId);
+
+        likes.addAll(response.map<String>((e) => e['thread_id'].toString()));
+      }
 
       if (mounted) {
         setState(() {
-          _likedThreadIds =
-              response.map<String>((e) => e['thread_id'].toString()).toSet();
+          _likedThreadIds = likes;
         });
       }
     } catch (e) {
@@ -193,6 +201,22 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
       final List<Map<String, dynamic>> newThreads =
           List<Map<String, dynamic>>.from(response);
 
+      // 🤖 Inject Robot English Learning Thoughts into Public Feed
+      if ((refresh || _currentPage == 0) && _activeTab == 'Public') {
+        final robotThoughts = PocketRobotService.getAllRobotFeedThoughts(
+          currentUserId: widget.currentUserId,
+        );
+        final filteredRobo = widget.searchQuery.isNotEmpty
+            ? robotThoughts.where((t) {
+                final content = (t['content'] ?? '').toString().toLowerCase();
+                final name = (t['name'] ?? '').toString().toLowerCase();
+                final q = widget.searchQuery.toLowerCase();
+                return content.contains(q) || name.contains(q);
+              }).toList()
+            : robotThoughts;
+        newThreads.insertAll(0, filteredRobo);
+      }
+
       if (mounted) {
         setState(() {
           if (refresh) {
@@ -211,7 +235,7 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
 
           _isLoading = false;
           _isLoadingMore = false;
-          _hasMore = newThreads.length == _pageSize;
+          _hasMore = newThreads.length >= _pageSize;
           _currentPage++;
         });
 
@@ -238,6 +262,26 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
         _likedThreadIds.add(threadId);
       }
     });
+
+    // Handle robot posts locally with persistent preferences
+    if (threadId.startsWith('robot_thread_')) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final likedList = _likedThreadIds.where((id) => id.startsWith('robot_thread_')).toList();
+        await prefs.setStringList('robot_liked_threads_${widget.currentUserId}', likedList);
+
+        final threads =
+            _activeTab == 'Public' ? _publicThreads : _followingThreads;
+        final index = threads.indexWhere((t) => t['id'] == threadId);
+        if (index != -1) {
+          setState(() {
+            threads[index]['like_count'] =
+                (threads[index]['like_count'] ?? 0) + (currentlyLiked ? -1 : 1);
+          });
+        }
+      } catch (_) {}
+      return;
+    }
 
     try {
       if (currentlyLiked) {
@@ -522,6 +566,9 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
     final String displayedContent = (_isExpanded || !isLongContent)
         ? content
         : '${content.substring(0, 180)}...';
+    final bool isRobot = widget.thread['is_robot'] == true ||
+        widget.thread['profile']?['is_robot'] == true ||
+        widget.thread['user_id']?.toString().startsWith('robot_') == true;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
@@ -556,6 +603,10 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                 // Avatar
                 GestureDetector(
                   onTap: () {
+                    if (isRobot) {
+                      _showRobotMateSheet(context, widget.thread);
+                      return;
+                    }
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -569,8 +620,10 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
-                        width: 1,
+                        color: isRobot
+                            ? const Color(0xFFFFB300)
+                            : const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                        width: isRobot ? 1.8 : 1,
                       ),
                     ),
                     child: CircleAvatar(
@@ -596,13 +649,41 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        name,
-                        style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14.5,
-                          color: FlutterFlowTheme.of(context).primaryText,
-                        ),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              name,
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14.5,
+                                color: FlutterFlowTheme.of(context).primaryText,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isRobot) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [Color(0xFFFFB300), Color(0xFFFF5252)],
+                                ),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Text(
+                                'AI BOT',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       Text(
                         timeago.format(createdAt, locale: 'en_short'),
@@ -890,6 +971,125 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                 ),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRobotMateSheet(BuildContext context, Map<String, dynamic> thread) {
+    final name = thread['name'] ?? 'Pocket Mate';
+    final avatar = thread['profile_image_url'];
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F172A) : Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border.all(
+            color: const Color(0xFFFFB300).withValues(alpha: 0.3),
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 18),
+            CircleAvatar(
+              radius: 36,
+              backgroundImage: avatar != null ? NetworkImage(avatar) : null,
+              backgroundColor: const Color(0xFF1E293B),
+              child: avatar == null
+                  ? const Icon(Icons.smart_toy_rounded, size: 36, color: Color(0xFFFFD600))
+                  : null,
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  name,
+                  style: GoogleFonts.outfit(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: FlutterFlowTheme.of(context).primaryText,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFFFFB300), Color(0xFFFF5252)],
+                    ),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: const Text(
+                    'AI BOT',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD600).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFFD600).withValues(alpha: 0.4)),
+              ),
+              child: const Text(
+                '🏆 Level 90 Grandmaster • English AI Mate',
+                style: TextStyle(
+                  color: Color(0xFFFFD600),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              'Active in Pocket Mates to practice English speaking, share idioms, and cheer your learning journey!',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: FlutterFlowTheme.of(context).secondaryText,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pop(ctx),
+              icon: const Icon(Icons.check_circle_outline_rounded, size: 18, color: Colors.black),
+              label: const Text(
+                'Great to meet you!',
+                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD600),
+                minimumSize: const Size(double.infinity, 44),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),

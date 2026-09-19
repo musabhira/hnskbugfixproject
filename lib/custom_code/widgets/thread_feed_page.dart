@@ -13,6 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'ai_prompt_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ThreadFeedPage extends StatefulWidget {
   final double? width;
@@ -1885,15 +1886,34 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
     });
 
     try {
-      final response = await supabase
-          .from('thread_comments_view')
-          .select()
-          .eq('thread_id', widget.threadId)
-          .order('created_at');
+      List<Map<String, dynamic>> fetchedComments = [];
+      if (!widget.threadId.contains('robot')) {
+        final response = await supabase
+            .from('thread_comments_view')
+            .select()
+            .eq('thread_id', widget.threadId)
+            .order('created_at');
+        fetchedComments = List<Map<String, dynamic>>.from(response);
+      } else {
+        fetchedComments =
+            PocketRobotService.getRobotThreadComments(widget.threadId);
+      }
+
+      // Merge any locally posted comments for this thread
+      final prefs = await SharedPreferences.getInstance();
+      final localRaw =
+          prefs.getString('local_thread_comments_${widget.threadId}');
+      if (localRaw != null && localRaw.isNotEmpty) {
+        try {
+          final localList =
+              List<Map<String, dynamic>>.from(jsonDecode(localRaw));
+          fetchedComments.addAll(localList);
+        } catch (_) {}
+      }
 
       if (mounted) {
         safeSetState(() {
-          comments = List<Map<String, dynamic>>.from(response);
+          comments = fetchedComments;
           isLoading = false;
         });
         _fadeController.forward();
@@ -1923,14 +1943,46 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
     final userId = currentUser.id;
 
     try {
-      await supabase.from('thread_comments').insert({
-        'thread_id': widget.threadId,
-        'user_id': userId,
-        'content': _commentController.text.trim(),
-      });
+      if (widget.threadId.contains('robot')) {
+        final prefs = await SharedPreferences.getInstance();
+        final localKey = 'local_thread_comments_${widget.threadId}';
+        final localRaw = prefs.getString(localKey);
+        List<Map<String, dynamic>> localList = [];
+        if (localRaw != null && localRaw.isNotEmpty) {
+          try {
+            localList = List<Map<String, dynamic>>.from(jsonDecode(localRaw));
+          } catch (_) {}
+        }
+        final profileRes = await supabase
+            .from('profile')
+            .select('name, profile_image_url')
+            .eq('user_id', userId)
+            .maybeSingle();
 
-      _commentController.clear();
-      await _fetchComments();
+        localList.add({
+          'id': 'local_cmt_${DateTime.now().millisecondsSinceEpoch}',
+          'thread_id': widget.threadId,
+          'user_id': userId,
+          'content': _commentController.text.trim(),
+          'created_at': DateTime.now().toIso8601String(),
+          'name': profileRes?['name'] ?? 'You',
+          'profile_image_url': profileRes?['profile_image_url'],
+          'is_robot': false,
+        });
+        await prefs.setString(localKey, jsonEncode(localList));
+
+        _commentController.clear();
+        await _fetchComments();
+      } else {
+        await supabase.from('thread_comments').insert({
+          'thread_id': widget.threadId,
+          'user_id': userId,
+          'content': _commentController.text.trim(),
+        });
+
+        _commentController.clear();
+        await _fetchComments();
+      }
 
       // Scroll to bottom to show new comment
       if (_scrollController.hasClients) {

@@ -2430,6 +2430,17 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       _checkMateStatus(),
     ]));
 
+    // 🤖 Robot Social Simulation: robots view user's status and send encouraging replies
+    final authorUserId = status['user_id']?.toString() ??
+        widget.statusGroup['profile']?['user_id']?.toString();
+    if (authorUserId == widget.currentUserId) {
+      PocketRobotService.simulateRobotVibeReplies(
+        userId: widget.currentUserId,
+        statusId: status['id']?.toString() ?? '',
+        statusCaption: status['caption']?.toString(),
+      );
+    }
+
     // Preload next status
     _preloadNextStatus();
   }
@@ -2535,8 +2546,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           .eq('id', statusId)
           .single();
 
+      final baseCount = (response['views_count'] as num?)?.toInt() ?? 0;
+      final robotViews = PocketRobotService.getSimulatedRobotViewers(statusId).length;
+
       setState(() {
-        _currentViewCount = response['views_count'] ?? 0;
+        _currentViewCount = baseCount + robotViews;
       });
     } catch (e) {
       debugPrint('Error loading view count: $e');
@@ -2566,8 +2580,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       final likedProfileIds =
           likesResponse.map((like) => like['profile_id'] as String).toSet();
 
+      final robotViewers = PocketRobotService.getSimulatedRobotViewers(statusId);
+
       setState(() {
-        _currentViewers = List<Map<String, dynamic>>.from(response);
+        _currentViewers = [
+          ...List<Map<String, dynamic>>.from(response),
+          ...robotViewers,
+        ];
+        _currentViewCount = _currentViewers.length;
       });
 
       // Show viewers bottom sheet with likes info
@@ -2621,14 +2641,25 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         itemCount: _currentViewers.length,
                         itemBuilder: (context, index) {
                           final viewer = _currentViewers[index];
-                          final profile = viewer['profile'];
+                          final profile = viewer['profile'] ?? {};
+                          final isRobot = profile['is_robot'] == true || viewer['is_robot'] == true;
                           final viewerProfileId = viewer['viewer_profile_id'];
-                          final isLiked =
-                              likedProfileIds.contains(viewerProfileId);
+                          final isLiked = isRobot
+                              ? (viewer['is_liked'] == true)
+                              : likedProfileIds.contains(viewerProfileId);
                           final timeAgo = _getTimeAgo(viewer['created_at']);
 
                           return ListTile(
                             onTap: () {
+                              if (isRobot) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text('${profile['name'] ?? 'Robot'} is your AI English Mate 🤖'),
+                                    duration: const Duration(seconds: 2),
+                                  ),
+                                );
+                                return;
+                              }
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
@@ -2653,12 +2684,40 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                     )
                                   : null,
                             ),
-                            title: Text(
-                              profile['name'] ?? 'Unknown',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w500,
-                              ),
+                            title: Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    profile['name'] ?? 'Unknown',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                if (isRobot) ...[
+                                  const SizedBox(width: 6),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFFFFB300), Color(0xFFFF5252)],
+                                      ),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    child: const Text(
+                                      'AI BOT',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                             subtitle: Text(
                               timeAgo,
@@ -6073,6 +6132,13 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
 
       await supabase.from('statuses').insert(statusData);
 
+      // 🤖 Robot Social Simulation: trigger robot mates to view and send vibe comments
+      PocketRobotService.simulateRobotVibeReplies(
+        userId: widget.userId,
+        statusId: DateTime.now().millisecondsSinceEpoch.toString(),
+        statusCaption: statusData['caption'] as String?,
+      );
+
       // Post mention notifications
       await _sendMentionNotifications(mediaUrl, mediaType);
 
@@ -6177,6 +6243,13 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
             'gallery_id': int.tryParse(contentId.toString()) ?? contentId
         }
       });
+
+      // 🤖 Robot Social Simulation: trigger robot mates to view and send vibe comments
+      PocketRobotService.simulateRobotVibeReplies(
+        userId: widget.userId,
+        statusId: DateTime.now().millisecondsSinceEpoch.toString(),
+        statusCaption: caption,
+      );
 
       // Post mention notifications
       await _sendMentionNotifications(mediaUrl, mediaType);

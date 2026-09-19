@@ -3911,42 +3911,48 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 alignment: Alignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(2),
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: day >= 80
-                            ? const [
-                                Color(0xFFFFD700),
-                                Color(0xFFEF4444),
-                                Color(0xFFA855F7)
-                              ]
-                            : (day >= 40
-                                ? const [Color(0xFFFF8906), Color(0xFFFFD700)]
-                                : const [Color(0xFFFFFC00), Color(0xFFFFD700)]),
+                      gradient: const SweepGradient(
+                        colors: [
+                          Color(0xFFFFFC00), // Vibrant Yellow
+                          Color(0xFFFF8906), // Vivid Orange
+                          Color(0xFFFF2E93), // Rose Pink
+                          Color(0xFF833AB4), // Deep Purple
+                          Color(0xFFFFFC00), // Loop
+                        ],
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color:
-                              const Color(0xFFFF8906).withValues(alpha: 0.35),
+                          color: const Color(0xFFFF8906).withValues(alpha: 0.45),
                           blurRadius: 8,
                           spreadRadius: 1,
                         ),
                       ],
                     ),
-                    child: ClipOval(
-                      child: VectorAvatarWidget(
-                        config: _getNavAvatarConfig(),
-                        size: 30.0,
-                        showAura: false,
+                    padding: const EdgeInsets.all(2.2),
+                    child: Container(
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Color(0xFF0F172A),
+                      ),
+                      child: ClipOval(
+                        child: VectorAvatarWidget(
+                          config: _getNavAvatarConfig(),
+                          size: 35.0,
+                          useFlame: true,
+                          showAura: true,
+                        ),
                       ),
                     ),
                   ),
                   Positioned(
-                    bottom: -4,
+                    bottom: -3,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 4, vertical: 1),
+                          horizontal: 4.5, vertical: 1),
                       decoration: BoxDecoration(
                         color: const Color(0xFF0F172A),
                         borderRadius: BorderRadius.circular(6),
@@ -3954,6 +3960,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           color: const Color(0xFFFFD700),
                           width: 1,
                         ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black45,
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
                       child: Text(
                         'D$day',

@@ -10,6 +10,8 @@ import 'gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
+import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
 class MainMarketPage extends ConsumerStatefulWidget {
@@ -76,6 +78,47 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
                 ],
               ),
               actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 4),
+                  child: Center(
+                    child: InkWell(
+                      onTap: _openAddProductToMarket,
+                      borderRadius: BorderRadius.circular(10),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFFC00), Color(0xFFFF8906)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                              blurRadius: 6,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.add_business_rounded, color: Colors.black, size: 15),
+                            const SizedBox(width: 4),
+                            Text(
+                              'SELL',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 11.5,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
                 IconButton(
                   onPressed: () =>
                       ref.read(marketProvider.notifier).loadCategories(),
@@ -111,7 +154,71 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
           ],
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _openAddProductToMarket,
+        backgroundColor: const Color(0xFFFFFC00),
+        foregroundColor: Colors.black,
+        elevation: 5,
+        highlightElevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+        ),
+        icon: const Icon(Icons.add_photo_alternate_rounded, size: 19, color: Colors.black),
+        label: Text(
+          '+ Add Product',
+          style: GoogleFonts.outfit(
+            fontWeight: FontWeight.bold,
+            fontSize: 12.5,
+            color: Colors.black,
+          ),
+        ),
+      ),
     );
+  }
+
+  Future<void> _openAddProductToMarket() async {
+    final currentUser = SupaFlow.client.auth.currentUser;
+    if (currentUser == null) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF1E1E24),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Text('Login Required', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            content: const Text(
+              'Please login to list products in the Market Gallery.',
+              style: TextStyle(color: Colors.white70),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: const Text('OK', style: TextStyle(color: Color(0xFFFFD600))),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CreateGalleryWidget(
+          width: double.infinity,
+          height: double.infinity,
+        ),
+      ),
+    );
+
+    if (mounted) {
+      ref.read(marketProvider.notifier).loadCategories();
+      final state = ref.read(marketProvider);
+      if (state.categories.isNotEmpty) {
+        ref.read(marketProvider.notifier).loadItems(state.categories.first, isRefresh: true);
+      }
+    }
   }
 
   Future<void> _showInterestSelection() async {

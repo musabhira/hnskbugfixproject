@@ -99,6 +99,9 @@ class PocketRobot {
     required this.catchphrases,
   });
 
+  /// 🏆 Level 90 Grandmaster Trophy milestone
+  bool get hasTrophy => level == 90;
+
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
@@ -281,10 +284,12 @@ class PocketRobotService {
   static const String _part2 = 'aa71d8a223d927bd748bc051e56ae39daf27aac821cda1965e39a2bf529d1d53';
   static const String _openRouterApiKey = _part1 + _part2;
   static const List<String> _freeAiModels = [
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'google/gemini-2.0-flash-exp:free',
+    'qwen/qwen-2.5-72b-instruct:free',
+    'mistralai/mistral-small-3.1-24b-instruct:free',
+    'cognitivecomputations/dolphin-mistral-24b-v0.1:free',
     'liquid/lfm-2.5-2.6b:free',
-    'nex-agi/nex-n2.5-mini:free',
-    'nvidia/nemotron-3.5-lightning:free',
-    'google/gemma-4-26b-a4b-it:free',
   ];
 
   /// Search robots by name, level, or personality keywords
@@ -1071,6 +1076,233 @@ class PocketRobotService {
     }).toList();
   }
 
+  /// 🛍️ Retrieve all robot items for the Main Market catalog
+  static List<Map<String, dynamic>> getAllRobotMarketItems({String? category}) {
+    final List<Map<String, dynamic>> allItems = [];
+    final activeRobots = _allRobots.take(28).toList();
+    final now = DateTime.now();
+
+    for (final robot in activeRobots) {
+      final dynLvl = getDynamicLevel(robot);
+      final items = getRobotGalleryItems(robot.id);
+      for (final item in items) {
+        final cat = item['category']?.toString() ?? 'Literature';
+        if (category != null &&
+            category.isNotEmpty &&
+            category.toLowerCase() != 'all' &&
+            cat.toLowerCase() != category.toLowerCase()) {
+          continue;
+        }
+        final price = 149 + (dynLvl * 8);
+        allItems.add({
+          'id': item['id'],
+          'title': item['title'],
+          'gallery_title': item['title'],
+          'description': item['description'],
+          'gallery_description': item['description'],
+          'image_url': item['image_url'],
+          'gallery_image_url': item['image_url'],
+          'category': cat,
+          'gallery_category': cat,
+          'price': price,
+          'gallery_price': price,
+          'user_id': robot.id,
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'is_robot': true,
+          'created_at': item['created_at'] ?? now.toIso8601String(),
+          'likes_count': item['likes_count'] ?? 42,
+          'comment_count': item['comment_count'] ?? 5,
+        });
+      }
+    }
+    return allItems;
+  }
+
+  /// 💭 Aggregated feed of English thoughts from robots across levels with mutual likes & comments
+  static List<Map<String, dynamic>> getAllRobotFeedThoughts({String? currentUserId}) {
+    final List<Map<String, dynamic>> feed = [];
+    final now = DateTime.now();
+
+    final featuredRobots = [
+      _allRobots[0],  // Level 1
+      _allRobots[4],  // Level 5
+      _allRobots[11], // Level 12
+      _allRobots[21], // Level 22
+      _allRobots[34], // Level 35
+      _allRobots[44], // Level 45
+      _allRobots[59], // Level 60
+      _allRobots[74], // Level 75
+      _allRobots[89], // Level 90 Sovereign
+    ];
+
+    for (int i = 0; i < featuredRobots.length; i++) {
+      final robot = featuredRobots[i];
+      final dynLvl = getDynamicLevel(robot);
+      final thoughts = getRobotThreads(robot.id);
+      for (int j = 0; j < thoughts.length; j++) {
+        final t = thoughts[j];
+        feed.add({
+          'id': t['id'],
+          'content': t['content'],
+          'user_id': robot.id,
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'created_at': now.subtract(Duration(hours: (i * 3) + (j * 7) + 1)).toIso8601String(),
+          'like_count': t['like_count'] ?? (25 + dynLvl * 3),
+          'comment_count': t['comment_count'] ?? 6,
+          'is_robot': true,
+          'level': dynLvl,
+          'has_trophy': dynLvl == 90,
+        });
+      }
+    }
+
+    feed.sort((a, b) {
+      final tA = DateTime.tryParse(a['created_at'] ?? '') ?? now;
+      final tB = DateTime.tryParse(b['created_at'] ?? '') ?? now;
+      return tB.compareTo(tA);
+    });
+
+    return feed;
+  }
+
+  /// 💬 Simulated mutual comments from other robots on a thought post
+  static List<Map<String, dynamic>> getRobotThreadComments(String threadId) {
+    final now = DateTime.now();
+    final List<Map<String, dynamic>> comments = [];
+
+    final commentBank = [
+      {
+        'robotIndex': 4,
+        'text': 'Spot on explanation! My favorite example is: "She advised me to read every night, and that advice changed my fluency." 📖✨',
+      },
+      {
+        'robotIndex': 11,
+        'text': 'I always remind learners: \'advice\' has a soft \'c\' like ice, and \'advise\' sounds like prize! 🎯',
+      },
+      {
+        'robotIndex': 34,
+        'text': 'Good quiz! Now stop second-guessing yourself and start speaking it out loud! Confidence is everything! 🥊',
+      },
+      {
+        'robotIndex': 89,
+        'text': 'A foundational distinction. Precision in word choice separates novice speakers from true conversational masters. 👑',
+      },
+      {
+        'robotIndex': 21,
+        'text': 'Practicing this in our study session right now! Thank you for sharing! 💕',
+      },
+    ];
+
+    for (int i = 0; i < commentBank.length; i++) {
+      final c = commentBank[i];
+      final robot = _allRobots[(c['robotIndex'] as int).clamp(0, _allRobots.length - 1)];
+      final dynLvl = getDynamicLevel(robot);
+      comments.add({
+        'id': 'robot_cmt_${threadId}_$i',
+        'thread_id': threadId,
+        'user_id': robot.id,
+        'content': c['text'],
+        'created_at': now.subtract(Duration(hours: 4 - i, minutes: 12 * (i + 1))).toIso8601String(),
+        'name': robot.name,
+        'profile_image_url': robot.avatarUrl,
+        'is_robot': true,
+        'level': dynLvl,
+        'has_trophy': dynLvl == 90,
+      });
+    }
+
+    return comments;
+  }
+
+  /// 👁️ Simulated robot viewers for user-uploaded Vibes (status)
+  static List<Map<String, dynamic>> getSimulatedRobotViewers(String statusId) {
+    final now = DateTime.now();
+    final sampleRobots = [
+      _allRobots[0],
+      _allRobots[4],
+      _allRobots[11],
+      _allRobots[21],
+      _allRobots[44],
+    ];
+
+    return sampleRobots.asMap().entries.map((entry) {
+      final idx = entry.key;
+      final r = entry.value;
+      final dynLvl = getDynamicLevel(r);
+      return {
+        'id': 'sim_view_${statusId}_${r.id}',
+        'created_at': now.subtract(Duration(minutes: (idx + 1) * 8 + 4)).toIso8601String(),
+        'viewer_profile_id': r.id,
+        'viewer_user_id': r.id,
+        'profile': {
+          'id': r.id,
+          'name': r.name,
+          'profile_image_url': r.avatarUrl,
+          'user_id': r.id,
+          'is_robot': true,
+          'level': dynLvl,
+        },
+      };
+    }).toList();
+  }
+
+  /// 💌 Trigger simulated constructive English appreciation from robot mate on user's Vibe
+  static Future<void> simulateRobotVibeReplies({
+    required String userId,
+    required String statusId,
+    String? statusCaption,
+  }) async {
+    if (userId.isEmpty || statusId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final key = 'vibe_robot_replied_${userId}_$statusId';
+      if (prefs.getBool(key) == true) return;
+
+      final matesKey = 'pocket_mates_$userId';
+      final mates = prefs.getStringList(matesKey) ?? [];
+      final robotMates = mates.where((id) => isRobotId(id)).toList();
+
+      final targetRobotId = robotMates.isNotEmpty
+          ? robotMates.first
+          : _allRobots[0].id;
+      final robot = getRobotById(targetRobotId) ?? getRobotByLevel(1);
+
+      final replies = [
+        'Super speaking practice, Mate! 🔥 Loved your natural expression. You sound more fluent every single day!',
+        'Awesome Vibe! 🌟 Here is a tiny tip: try using "delighted" instead of "very happy" to level up your score even higher! Keep shining!',
+        'Caught your Vibe! Great body language and clear pronunciation! That definitely earned you extra practice points! 🚀',
+        'So inspiring to see your daily Vibe! Keep speaking with that bright confidence! ✨',
+      ];
+      final text = replies[math.Random().nextInt(replies.length)];
+
+      final replyMessage = {
+        'id': 'robot_vibe_reply_${DateTime.now().millisecondsSinceEpoch}',
+        'sender_id': robot.id,
+        'receiver_id': userId,
+        'message_text': text,
+        'message_type': 'text',
+        'created_at': DateTime.now().toIso8601String(),
+        'is_read': false,
+        'metadata': {
+          'reply_type': 'status_reply',
+          'replied_to_status_id': statusId,
+          'status_caption': statusCaption ?? 'Vibe',
+        },
+        'sender_profile': {
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+        },
+      };
+
+      await saveRobotChatMessage(userId, robot.id, replyMessage);
+      await prefs.setBool(key, true);
+    } catch (e) {
+      debugPrint('Error simulating robot vibe reply: $e');
+    }
+  }
+
   /// ⏰ Check and generate occasional robot vibes naturally (not bulk dumped!)
   /// Ensures 2 to 5 robots have active vibes at any time, rotated smoothly
   static Future<void> checkAndGenerateOccasionalRobotVibes(String userId) async {
@@ -1690,7 +1922,7 @@ class PocketRobotService {
                 'temperature': 0.7,
               }),
             )
-            .timeout(const Duration(milliseconds: 3500));
+            .timeout(const Duration(milliseconds: 7000));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);

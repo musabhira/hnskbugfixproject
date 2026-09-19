@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'dart:async';
 
 // State model for the market
@@ -83,14 +84,22 @@ class MarketNotifier extends Notifier<MarketState> {
       }
 
       final sortedCategories = categoryCounts.keys.toList()
-        ..sort((a, b) {
-          final countA = categoryCounts[a] ?? 0;
-          final countB = categoryCounts[b] ?? 0;
-          if (countB != countA) {
-            return countB.compareTo(countA); // Most items first!
-          }
-          return a.toLowerCase().compareTo(b.toLowerCase());
-        });
+        ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+
+      const robotCategories = [
+        'Literature',
+        'Philosophy',
+        'Science & Logic',
+        'Street Culture',
+        'Poetry & Music',
+        'Architecture',
+        'Executive English',
+      ];
+      for (final rCat in robotCategories) {
+        if (!sortedCategories.contains(rCat)) {
+          sortedCategories.add(rCat);
+        }
+      }
 
       List<String> orderedCategories = ['All', ...sortedCategories];
 
@@ -177,6 +186,14 @@ class MarketNotifier extends Notifier<MarketState> {
 
       final List<Map<String, dynamic>> fetchedItems =
           List<Map<String, dynamic>>.from(response as List);
+
+      // Seed robot items into the market catalog
+      if (page == 0) {
+        final robotItems =
+            PocketRobotService.getAllRobotMarketItems(category: category);
+        fetchedItems.addAll(robotItems);
+      }
+
       final currentCategoryItems = isRefresh
           ? <Map<String, dynamic>>[]
           : (state.itemsByCategory[category] ?? []);
