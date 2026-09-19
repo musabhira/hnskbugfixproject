@@ -2312,37 +2312,51 @@ Draft: "$draft"''';
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (isMe && message.messageType == 'text') ...[
-            IconButton(
-              icon: const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 16),
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              tooltip: 'AI Correct',
-              onPressed: () => _explainOrCorrectMessage(message),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6, right: 3),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => _explainOrCorrectMessage(message),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: Icon(
+                      Icons.auto_awesome,
+                      color: _aiAnalyses.containsKey(message.id)
+                          ? const Color(0xFFFFFC00)
+                          : const Color(0xFFFFFC00).withValues(alpha: 0.65),
+                      size: 15,
+                    ),
+                  ),
+                ),
+              ),
             ),
-            const SizedBox(width: 8),
           ],
           if (!isMe)
             GestureDetector(
               onTap: () => _showUserOptionsDialog(message.senderId, message.senderName ?? 'User'),
               child: Padding(
-                padding: const EdgeInsets.only(left: 8, bottom: 4),
+                padding: const EdgeInsets.only(left: 6, bottom: 4, right: 4),
                 child: () {
                   final isRobot = PocketRobotService.isRobotId(message.senderId);
-                  final member = _groupMembers.firstWhere(
-                      (m) => m['user_id'] == message.senderId,
-                      orElse: () => {});
-                  final url = member['profile']?['profile_image_url'];
-                  if (url != null && url.toString().isNotEmpty && !isRobot) {
-                    return CircleAvatar(
-                      radius: 14,
-                      backgroundColor: Colors.grey[800],
-                      backgroundImage: NetworkImage(url.toString()),
-                    );
-                  }
-                  return VectorAvatarWidget(
-                    config: _getPersonalAvatarConfig(message.senderId),
-                    size: 28,
-                    showAura: false,
+                  return Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      boxShadow: isRobot
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                                blurRadius: 6,
+                              )
+                            ]
+                          : null,
+                    ),
+                    child: VectorAvatarWidget(
+                      config: _getPersonalAvatarConfig(message.senderId),
+                      size: 28,
+                      showAura: isRobot,
+                    ),
                   );
                 }(),
               ),
@@ -2353,8 +2367,8 @@ Draft: "$draft"''';
             margin: EdgeInsets.only(
               top: 2,
               bottom: 2,
-              left: isMe ? 48 : 4,
-              right: isMe ? 8 : 48,
+              left: isMe ? 28 : 2,
+              right: isMe ? 4 : 28,
             ),
             child: Column(
               crossAxisAlignment:
@@ -2621,13 +2635,25 @@ Draft: "$draft"''';
           ),
         ),
         if (!isMe && message.messageType == 'text') ...[
-          const SizedBox(width: 8),
-          IconButton(
-            icon: const Icon(Icons.auto_awesome, color: Colors.white30, size: 16),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            tooltip: 'AI Correct',
-            onPressed: () => _explainOrCorrectMessage(message),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6, left: 3),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => _explainOrCorrectMessage(message),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Icon(
+                    Icons.auto_awesome,
+                    color: _aiAnalyses.containsKey(message.id)
+                        ? const Color(0xFFFFFC00)
+                        : Colors.white.withValues(alpha: 0.4),
+                    size: 15,
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ],
@@ -3700,7 +3726,50 @@ Draft: "$draft"''';
               borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
+          // Flame & Gamified Quick Reactions Bar
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF131A21),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.2)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: ['🔥', '⚡', '🏆', '💯', '❤️', '👏', '🎯'].map((emoji) {
+                return InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    Navigator.pop(context);
+                    HapticFeedback.lightImpact();
+                    _sendMessage(
+                      text: emoji,
+                      messageType: 'text',
+                      metadata: {
+                        'reply_to': {
+                          'id': message.id,
+                          'message_text': message.messageText,
+                          'sender_id': message.senderId,
+                          'sender_name': message.senderName,
+                        },
+                        'reaction_emoji': emoji,
+                      },
+                    );
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    child: Text(
+                      emoji,
+                      style: const TextStyle(fontSize: 21),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+          const SizedBox(height: 6),
           ListTile(
             leading: const Icon(Icons.reply, color: Colors.blue),
             title: const Text('Reply', style: TextStyle(color: Colors.white)),
@@ -4089,14 +4158,6 @@ Draft: "$draft"''';
                               icon: const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFF8A00)),
                               onPressed: () => _pickAndSendSnap(),
                             ),
-                            IconButton(
-                              iconSize: 20,
-                              constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
-                              padding: EdgeInsets.zero,
-                              tooltip: 'Take photo',
-                              icon: const Icon(Icons.camera_alt, color: Colors.white70),
-                              onPressed: () => _handleCameraAction(),
-                            ),
                             const SizedBox(width: 4),
                           ],
                         );
@@ -4283,12 +4344,7 @@ Draft: "$draft"''';
                     Navigator.pop(ctx);
                     _pickAndSendSnap();
                   }),
-                  _buildAttachOption(Icons.camera_alt, Colors.pink, 'Camera',
-                      () {
-                    Navigator.pop(ctx);
-                    _pickAndUploadImage(ImageSource.camera);
-                  }),
-                  _buildAttachOption(Icons.image, Colors.purple, 'Gallery', () {
+                  _buildAttachOption(Icons.photo_library_rounded, Colors.purple, 'Gallery', () {
                     Navigator.pop(context);
                     _pickAndUploadImage(ImageSource.gallery);
                   }),
@@ -4472,29 +4528,6 @@ Draft: "$draft"''';
     }
   }
 
-  Future<void> _handleCameraAction() async {
-    try {
-      if (kIsWeb || (!Platform.isAndroid && !Platform.isIOS)) {
-        await _pickAndUploadImage(ImageSource.camera);
-        return;
-      }
-      final status = await Permission.camera.request();
-      if (status.isGranted) {
-        await _pickAndUploadImage(ImageSource.camera);
-      } else if (status.isPermanentlyDenied) {
-        _showErrorSnackBar('Camera access is permanently denied. Please enable it in settings.');
-        openAppSettings();
-      } else {
-        await _pickAndUploadImage(ImageSource.camera);
-      }
-    } catch (_) {
-      try {
-        await _pickAndUploadImage(ImageSource.gallery);
-      } catch (e) {
-        _showErrorSnackBar('Could not open camera: $e');
-      }
-    }
-  }
 
   Future<void> _uploadStagedFile(String? caption, String path, String type) async {
     // 1. Immediate optimistic send
@@ -4747,12 +4780,36 @@ Draft: "$draft"''';
 
   Future<void> _pickAndUploadImage(ImageSource source) async {
     try {
-      final image = await _imagePicker.pickImage(
-        source: source,
-        maxWidth: 1600,
-        maxHeight: 1600,
-        imageQuality: 85,
-      );
+      XFile? image;
+      final isDesktop = !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
+      if (source == ImageSource.camera && isDesktop) {
+        image = await _imagePicker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 1600,
+          maxHeight: 1600,
+          imageQuality: 85,
+        );
+      } else {
+        try {
+          image = await _imagePicker.pickImage(
+            source: source,
+            maxWidth: 1600,
+            maxHeight: 1600,
+            imageQuality: 85,
+          );
+        } catch (camErr) {
+          if (source == ImageSource.camera) {
+            image = await _imagePicker.pickImage(
+              source: ImageSource.gallery,
+              maxWidth: 1600,
+              maxHeight: 1600,
+              imageQuality: 85,
+            );
+          } else {
+            rethrow;
+          }
+        }
+      }
       if (image == null) return;
 
       final path = image.path;
@@ -4779,12 +4836,34 @@ Draft: "$draft"''';
 
   Future<void> _pickAndSendSnap() async {
     try {
-      final image = await _imagePicker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1080,
-        maxHeight: 1920,
-        imageQuality: 80,
-      );
+      XFile? image;
+      final isDesktop = !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
+      if (isDesktop) {
+        // Desktop does not implement CameraDelegate, pick from files/gallery cleanly
+        image = await _imagePicker.pickImage(
+          source: ImageSource.gallery,
+          maxWidth: 1080,
+          maxHeight: 1920,
+          imageQuality: 80,
+        );
+      } else {
+        try {
+          image = await _imagePicker.pickImage(
+            source: ImageSource.camera,
+            maxWidth: 1080,
+            maxHeight: 1920,
+            imageQuality: 80,
+          );
+        } catch (camErr) {
+          debugPrint('Camera delegate unavailable, falling back to gallery: $camErr');
+          image = await _imagePicker.pickImage(
+            source: ImageSource.gallery,
+            maxWidth: 1080,
+            maxHeight: 1920,
+            imageQuality: 80,
+          );
+        }
+      }
       if (image == null) return;
 
       final path = image.path;

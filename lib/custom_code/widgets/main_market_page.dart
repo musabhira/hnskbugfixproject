@@ -12,6 +12,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/create_gallery_widget.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 
 class MainMarketPage extends ConsumerStatefulWidget {
@@ -225,7 +226,14 @@ class _MainMarketPageState extends ConsumerState<MainMarketPage>
     final state = ref.read(marketProvider);
     final allCategories = state.categories.where((c) => c != 'All').toList()
       ..sort();
-    final selectedInterests = <String>[];
+    
+    // Pre-populate previously selected interests from SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    if (!mounted) return;
+    final savedInterests = prefs.getStringList('user_selected_market_interests') ?? [];
+    final selectedInterests = <String>[
+      ...savedInterests.where((c) => allCategories.contains(c))
+    ];
     String searchQuery = '';
 
     await showDialog(
@@ -927,17 +935,22 @@ class MarketLoadingSkeleton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Shimmer.fromColors(
-      baseColor: const Color(0xFF13151D),
-      highlightColor: const Color(0xFF1E2230),
-      child: MasonryGridView.count(
-        crossAxisCount: 3,
-        mainAxisSpacing: 8,
-        crossAxisSpacing: 8,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-        itemCount: 9,
-        itemBuilder: (context, index) => const ItemSkeleton(),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final crossAxisCount = constraints.maxWidth > 800 ? 3 : 2;
+        return Shimmer.fromColors(
+          baseColor: const Color(0xFF13151D),
+          highlightColor: const Color(0xFF1E2230),
+          child: MasonryGridView.count(
+            crossAxisCount: crossAxisCount,
+            mainAxisSpacing: 8,
+            crossAxisSpacing: 8,
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            itemCount: 8,
+            itemBuilder: (context, index) => const ItemSkeleton(),
+          ),
+        );
+      },
     );
   }
 }

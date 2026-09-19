@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'dart:async';
 
@@ -103,30 +104,41 @@ class MarketNotifier extends Notifier<MarketState> {
 
       List<String> orderedCategories = ['All', ...sortedCategories];
 
-      if (user != null) {
-        try {
-          final userTrending = await _supabase.rpc(
-              'get_user_trending_categories',
-              params: {'p_user_id': user.id});
-          if (userTrending != null &&
-              userTrending is List &&
-              userTrending.isNotEmpty) {
-            final trending =
-                userTrending.map((e) => e['category'].toString()).toList();
-            List<String> prioritized = ['All'];
-            for (var t in trending) {
-              if (orderedCategories.contains(t) && t != 'All') {
-                prioritized.add(t);
-              }
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final localInterests = prefs.getStringList('user_selected_market_interests') ?? [];
+        List<String> trending = List<String>.from(localInterests);
+
+        if (trending.isEmpty && user != null) {
+          try {
+            final userTrending = await _supabase.rpc(
+                'get_user_trending_categories',
+                params: {'p_user_id': user.id});
+            if (userTrending != null &&
+                userTrending is List &&
+                userTrending.isNotEmpty) {
+              trending =
+                  userTrending.map((e) => e['category'].toString()).toList();
             }
-            for (var c in orderedCategories) {
-              if (!prioritized.contains(c)) prioritized.add(c);
-            }
-            orderedCategories = prioritized;
+          } catch (e) {
+            debugPrint('Error loading trending categories: $e');
           }
-        } catch (e) {
-          debugPrint('Error loading trending categories: $e');
         }
+
+        if (trending.isNotEmpty) {
+          List<String> prioritized = ['All'];
+          for (var t in trending) {
+            if (orderedCategories.contains(t) && t != 'All') {
+              prioritized.add(t);
+            }
+          }
+          for (var c in orderedCategories) {
+            if (!prioritized.contains(c)) prioritized.add(c);
+          }
+          orderedCategories = prioritized;
+        }
+      } catch (e) {
+        debugPrint('Error prioritizing categories: $e');
       }
 
       state = state.copyWith(
@@ -237,21 +249,25 @@ class MarketNotifier extends Notifier<MarketState> {
   }
 
   Future<void> saveSelectedInterests(List<String> interests) async {
-    final user = _supabase.auth.currentUser;
-    if (user == null) return;
-
     try {
-      // First, clear all existing interests for the user
-      await _supabase.rpc('clear_user_interests', params: {
-        'p_user_id': user.id,
-      });
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList('user_selected_market_interests', interests);
 
-      // Then add the new interests
-      for (String interest in interests) {
-        await _supabase.rpc('update_trending_search', params: {
-          'p_user_id': user.id,
-          'p_category': interest,
-        });
+      final user = _supabase.auth.currentUser;
+      if (user != null) {
+        try {
+          await _supabase.rpc('clear_user_interests', params: {
+            'p_user_id': user.id,
+          });
+          for (String interest in interests) {
+            await _supabase.rpc('update_trending_search', params: {
+              'p_user_id': user.id,
+              'p_category': interest,
+            });
+          }
+        } catch (rpcErr) {
+          debugPrint('RPC error saving interests: $rpcErr');
+        }
       }
 
       // Reset items and pages to ensure fresh data and correct order
