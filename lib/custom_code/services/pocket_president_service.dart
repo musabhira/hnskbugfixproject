@@ -8,7 +8,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 /// and presidential vibes/announcements with Golden Verified Tick verification.
 class PocketPresidentService {
   static const String presidentId = 'pocket_president';
-  static const String presidentName = 'The President';
+  static const String presidentName = 'President';
   static const String presidentBadge = 'Pocket Mates';
   static const String presidentRole = 'Head of Pocket World';
 

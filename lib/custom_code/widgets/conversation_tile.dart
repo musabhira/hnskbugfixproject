@@ -569,85 +569,75 @@ class _ConversationTileState extends State<ConversationTile> {
                           Expanded(
                             child: Row(
                               children: [
-                                Flexible(
-                                  child: Text(
-                                    ContactsNameService().getDisplayName(
-                                      userId: widget.conversation.id,
-                                      fallbackName: widget.conversation.name,
-                                    ),
+                                if (PocketPresidentService.isPresidentId(
+                                    widget.conversation.id)) ...[
+                                  Text(
+                                    'President',
                                     style: GoogleFonts.outfit(
                                       color: primaryTextColor,
                                       fontSize: 15.5,
                                       fontWeight: FontWeight.w600,
                                       letterSpacing: 0.1,
                                     ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                ),
-                                Builder(
-                                  builder: (context) {
-                                    final isPresident =
-                                        PocketPresidentService.isPresidentId(
-                                            widget.conversation.id);
-                                    if (isPresident) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(left: 5),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(
-                                              material.Icons.verified_rounded,
-                                              color: Color(0xFFFFD700),
-                                              size: 14.5,
-                                            ),
-                                            const SizedBox(width: 3),
-                                            Text(
-                                              'President of Pocket Mates',
-                                              style: GoogleFonts.outfit(
-                                                color: const Color(0xFFFFD700),
-                                                fontSize: 9.5,
-                                                fontWeight: FontWeight.w700,
-                                                letterSpacing: 0.2,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      );
-                                    }
-
-                                    final isRobot =
-                                        PocketRobotService.isRobotId(
-                                            widget.conversation.id);
-                                    if (isRobot) {
-                                      return Container(
-                                        margin: const EdgeInsets.only(left: 6),
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 5.5, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF06B6D4)
-                                              .withValues(alpha: 0.15),
-                                          borderRadius:
-                                              BorderRadius.circular(4),
-                                          border: Border.all(
+                                  const SizedBox(width: 4.5),
+                                  const Icon(
+                                    material.Icons.verified_rounded,
+                                    color: Color(0xFFFFD700),
+                                    size: 15,
+                                  ),
+                                ] else ...[
+                                  Flexible(
+                                    child: Text(
+                                      ContactsNameService().getDisplayName(
+                                        userId: widget.conversation.id,
+                                        fallbackName: widget.conversation.name,
+                                      ),
+                                      style: GoogleFonts.outfit(
+                                        color: primaryTextColor,
+                                        fontSize: 15.5,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.1,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Builder(
+                                    builder: (context) {
+                                      final isRobot =
+                                          PocketRobotService.isRobotId(
+                                              widget.conversation.id);
+                                      if (isRobot) {
+                                        return Container(
+                                          margin: const EdgeInsets.only(left: 6),
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 5.5, vertical: 2),
+                                          decoration: BoxDecoration(
                                             color: const Color(0xFF06B6D4)
-                                                .withValues(alpha: 0.4),
-                                            width: 0.8,
+                                                .withValues(alpha: 0.15),
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                            border: Border.all(
+                                              color: const Color(0xFF06B6D4)
+                                                  .withValues(alpha: 0.4),
+                                              width: 0.8,
+                                            ),
                                           ),
-                                        ),
-                                        child: Text(
-                                          '🤖 Robot',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFF06B6D4),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 10,
+                                          child: Text(
+                                            '🤖 Robot',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFF06B6D4),
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w700,
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
-                                  },
-                                ),
+                                        );
+                                      }
+                                      return const SizedBox.shrink();
+                                    },
+                                  ),
+                                ],
                                 if (_isPendingSent)
                                   Container(
                                     margin: const EdgeInsets.only(left: 6),

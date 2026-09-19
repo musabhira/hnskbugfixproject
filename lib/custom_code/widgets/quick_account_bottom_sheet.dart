@@ -2,6 +2,7 @@
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '/pages/home_page/home_page_widget.dart';
@@ -34,6 +35,7 @@ class AutoLoginBottomSheet extends StatefulWidget {
 class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
   final SupabaseClient supabase = SupaFlow.client;
   List<Map<String, dynamic>> autoLoginUsers = [];
+  Map<String, dynamic>? currentProfile;
   bool isLoading = true;
   bool showAuth = false;
   bool isCreatingAccount = false;
@@ -78,6 +80,40 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
   Future<void> _loadAutoLoginUsers() async {
     final currentUserId = supabase.auth.currentUser?.id;
     final currentUserEmail = supabase.auth.currentUser?.email;
+
+    // Fetch current user's profile info for top active card
+    if (currentUserId != null) {
+      try {
+        final pRes = await supabase
+            .from('profile')
+            .select('name, profile_image_url')
+            .eq('user_id', currentUserId)
+            .maybeSingle();
+        if (mounted) {
+          setState(() {
+            currentProfile = {
+              'user_id': currentUserId,
+              'email': currentUserEmail ?? '',
+              'name': pRes?['name']?.toString() ??
+                  currentUserEmail?.split('@').first ??
+                  'You',
+              'profile_image_url': pRes?['profile_image_url']?.toString(),
+            };
+          });
+        }
+      } catch (_) {
+        if (mounted) {
+          setState(() {
+            currentProfile = {
+              'user_id': currentUserId,
+              'email': currentUserEmail ?? '',
+              'name': currentUserEmail?.split('@').first ?? 'You',
+              'profile_image_url': null,
+            };
+          });
+        }
+      }
+    }
 
     // 1. FAST PATH: Read from SharedPreferences immediately (0ms blank delay)
     final localList = await _getLocalAccounts();
@@ -509,58 +545,72 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height * 0.85,
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A), // Dark slate theme
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0A0F1D), // Dark slate / Pitch Black
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(26),
+          topRight: Radius.circular(26),
         ),
         border: Border(
-          top: BorderSide(color: Color(0xFF334155), width: 1),
-          left: BorderSide(color: Color(0xFF334155), width: 1),
-          right: BorderSide(color: Color(0xFF334155), width: 1),
+          top: BorderSide(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+            width: 1.2,
+          ),
+          left: BorderSide(
+            color: const Color(0xFF1E293B).withValues(alpha: 0.8),
+            width: 1,
+          ),
+          right: BorderSide(
+            color: const Color(0xFF1E293B).withValues(alpha: 0.8),
+            width: 1,
+          ),
         ),
       ),
       child: Column(
         children: [
           // Drag Handle
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 4),
+            margin: const EdgeInsets.only(top: 12, bottom: 6),
             height: 4.5,
-            width: 44,
+            width: 46,
             decoration: BoxDecoration(
-              color: const Color(0xFF475569),
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFFFFFC00).withValues(alpha: 0.7),
+                  const Color(0xFFFF8906).withValues(alpha: 0.7),
+                ],
+              ),
               borderRadius: BorderRadius.circular(3),
             ),
           ),
 
           // Header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             child: Row(
               children: [
                 Container(
-                  width: 40,
-                  height: 40,
+                  width: 42,
+                  height: 42,
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                      colors: [Color(0xFFFFFC00), Color(0xFFFF8906)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(13),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
                         blurRadius: 10,
-                        offset: const Offset(0, 4),
+                        offset: const Offset(0, 3),
                       ),
                     ],
                   ),
                   child: const Icon(
                     Icons.switch_account_rounded,
-                    color: Colors.white,
-                    size: 22,
+                    color: Colors.black,
+                    size: 23,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -569,7 +619,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Switch Account',
+                        'Switch Profile',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
                           fontSize: 19,
@@ -578,7 +628,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                         ),
                       ),
                       Text(
-                        'Instant switch between paired accounts',
+                        'Instant 1-tap switch between profiles',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFF94A3B8),
                           fontSize: 12,
@@ -607,25 +657,25 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isCreatingAccount ? 'Create New Sub-Account' : 'Link Existing Account',
+                      isCreatingAccount ? 'Create New Sub-Account' : 'Connect Another Account',
                       style: GoogleFonts.outfit(
                         color: Colors.white,
-                        fontSize: 22,
+                        fontSize: 21,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       isCreatingAccount
-                          ? 'Set up a new paired profile for instant high-speed switching.'
-                          : 'Enter credentials of your other account to pair both accounts bidirectionally.',
+                          ? 'Set up a fresh profile for instant 1-tap switching anytime.'
+                          : 'Log in with your other Pocket Mates account to jump between them without signing out.',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFF94A3B8),
                         fontSize: 13,
                         height: 1.4,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 22),
 
                     // Email field
                     Text(
@@ -641,24 +691,25 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
                       style: GoogleFonts.outfit(color: Colors.white, fontSize: 15),
+                      cursorColor: const Color(0xFFFFFC00),
                       decoration: InputDecoration(
                         hintText: 'user@example.com',
                         hintStyle: GoogleFonts.outfit(color: const Color(0xFF64748B)),
-                        prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFF8B5CF6), size: 20),
+                        prefixIcon: const Icon(Icons.email_outlined, color: Color(0xFFFFD700), size: 20),
                         filled: true,
-                        fillColor: const Color(0xFF1E293B),
+                        fillColor: const Color(0xFF131C2E),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Color(0xFF334155)),
+                          borderSide: const BorderSide(color: Color(0xFF1E293B)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.5),
+                          borderSide: const BorderSide(color: Color(0xFFFFFC00), width: 1.5),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 16),
 
                     // Password field
                     Text(
@@ -674,49 +725,80 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                       controller: passwordController,
                       obscureText: true,
                       style: GoogleFonts.outfit(color: Colors.white, fontSize: 15),
+                      cursorColor: const Color(0xFFFFFC00),
                       decoration: InputDecoration(
                         hintText: '••••••••',
                         hintStyle: GoogleFonts.outfit(color: const Color(0xFF64748B)),
-                        prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFF8B5CF6), size: 20),
+                        prefixIcon: const Icon(Icons.lock_outline_rounded, color: Color(0xFFFFD700), size: 20),
                         filled: true,
-                        fillColor: const Color(0xFF1E293B),
+                        fillColor: const Color(0xFF131C2E),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                         enabledBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Color(0xFF334155)),
+                          borderSide: const BorderSide(color: Color(0xFF1E293B)),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         focusedBorder: OutlineInputBorder(
-                          borderSide: const BorderSide(color: Color(0xFF8B5CF6), width: 1.5),
+                          borderSide: const BorderSide(color: Color(0xFFFFFC00), width: 1.5),
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 28),
+                    const SizedBox(height: 26),
 
                     // Primary Action button
-                    SizedBox(
+                    Container(
                       width: double.infinity,
                       height: 50,
-                      child: ElevatedButton(
-                        onPressed: isLoading ? null : (isCreatingAccount ? _createAccount : _loginAccount),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF8B5CF6),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFFC00), Color(0xFFFF8906)],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Material(
+                        color: Colors.transparent,
+                        child: InkWell(
+                          borderRadius: BorderRadius.circular(14),
+                          onTap: isLoading
+                              ? null
+                              : () {
+                                  HapticFeedback.lightImpact();
+                                  if (isCreatingAccount) {
+                                    _createAccount();
+                                  } else {
+                                    _loginAccount();
+                                  }
+                                },
+                          child: Center(
+                            child: isLoading
+                                ? const SizedBox(
+                                    width: 22,
+                                    height: 22,
+                                    child: CircularProgressIndicator(
+                                      color: Colors.black,
+                                      strokeWidth: 2.5,
+                                    ),
+                                  )
+                                : Text(
+                                    isCreatingAccount ? 'Create & Link Profile' : 'Connect & Link Profile',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 15.5,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.black,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
                           ),
                         ),
-                        child: isLoading
-                            ? const SizedBox(
-                                width: 22,
-                                height: 22,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                              )
-                            : Text(
-                                isCreatingAccount ? 'Create & Link Sub-Account' : 'Link & Pair Account',
-                                style: GoogleFonts.outfit(fontSize: 15, fontWeight: FontWeight.bold),
-                              ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -729,10 +811,10 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                         },
                         child: Text(
                           isCreatingAccount
-                              ? 'Already have an account? Link it'
-                              : 'Don\'t have an account? Create a new one',
+                              ? 'Already have an account? Connect it'
+                              : 'Don\'t have an account? Create a new sub-profile',
                           style: GoogleFonts.outfit(
-                            color: const Color(0xFFA78BFA),
+                            color: const Color(0xFFFFD700),
                             fontSize: 13.5,
                             fontWeight: FontWeight.w600,
                           ),
@@ -747,7 +829,7 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                           setState(() => showAuth = false);
                         },
                         child: Text(
-                          'Back to accounts',
+                          '← Back to accounts',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF94A3B8),
                             fontSize: 13,
@@ -762,223 +844,415 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
           ] else ...[
             // Accounts List
             Expanded(
-              child: isLoading && autoLoginUsers.isEmpty
-                  ? const Center(
-                      child: CircularProgressIndicator(color: Color(0xFF8B5CF6)),
-                    )
-                  : autoLoginUsers.isEmpty
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(28),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 72,
-                                  height: 72,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF1E293B),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(color: const Color(0xFF334155)),
-                                  ),
-                                  child: const Icon(
-                                    Icons.group_add_rounded,
-                                    size: 36,
-                                    color: Color(0xFF64748B),
-                                  ),
-                                ),
-                                const SizedBox(height: 18),
-                                Text(
-                                  'No Paired Accounts Yet',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Link your other accounts here. Once paired, you can switch between them instantly with a single tap!',
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF94A3B8),
-                                    fontSize: 13,
-                                    height: 1.4,
-                                  ),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
+              child: ListView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                children: [
+                  // ACTIVE LOGGED-IN ACCOUNT CARD
+                  if (currentProfile != null) ...[
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 18),
+                      padding: const EdgeInsets.all(13),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131C2E),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.08),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
                           ),
-                        )
-                      : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                          itemCount: autoLoginUsers.length,
-                          itemBuilder: (context, index) {
-                            final user = autoLoginUsers[index];
-                            final targetUserId = user['user_id']?.toString() ?? '';
-                            final autoLoginId = user['auto_login_id']?.toString();
-                            final profileName = user['name']?.toString() ?? 'User';
-                            final userEmail = user['email']?.toString() ?? '';
-                            final profileImageUrl = user['profile_image_url']?.toString();
-
-                            return Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF1E293B),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFF334155), width: 1),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          // Avatar
+                          Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFFC00), Color(0xFFFF8906)],
                               ),
-                              child: ListTile(
-                                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                leading: Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: const Color(0xFF334155),
-                                    border: Border.all(color: const Color(0xFF6366F1), width: 1.5),
-                                    image: (profileImageUrl != null && profileImageUrl.isNotEmpty)
-                                        ? DecorationImage(
-                                            image: NetworkImage(profileImageUrl),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null,
-                                  ),
-                                  child: (profileImageUrl == null || profileImageUrl.isEmpty)
-                                      ? Center(
-                                          child: Text(
-                                            profileName.isNotEmpty ? profileName[0].toUpperCase() : 'U',
-                                            style: GoogleFonts.outfit(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        )
-                                      : null,
-                                ),
-                                title: Text(
-                                  profileName,
+                              border: Border.all(color: const Color(0xFFFFFC00), width: 1.5),
+                              image: (currentProfile!['profile_image_url'] != null &&
+                                      currentProfile!['profile_image_url'].toString().isNotEmpty)
+                                  ? DecorationImage(
+                                      image: NetworkImage(currentProfile!['profile_image_url']),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: (currentProfile!['profile_image_url'] == null ||
+                                    currentProfile!['profile_image_url'].toString().isEmpty)
+                                ? Center(
+                                    child: Text(
+                                      (currentProfile!['name']?.toString().isNotEmpty == true)
+                                          ? currentProfile!['name'][0].toUpperCase()
+                                          : 'U',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.black,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w900,
+                                      ),
+                                    ),
+                                  )
+                                : null,
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  currentProfile!['name']?.toString() ?? 'You',
                                   style: GoogleFonts.outfit(
                                     color: Colors.white,
                                     fontSize: 15.5,
                                     fontWeight: FontWeight.bold,
                                   ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                subtitle: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (userEmail.isNotEmpty)
-                                      Text(
-                                        userEmail,
-                                        style: GoogleFonts.outfit(
-                                          color: const Color(0xFF94A3B8),
-                                          fontSize: 12,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        const Icon(
-                                          Icons.sync_alt_rounded,
-                                          size: 13,
-                                          color: Color(0xFF10B981),
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          'Paired Account',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFF10B981),
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                                trailing: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                                    ),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: Text(
-                                    'Switch',
+                                if (currentProfile!['email'] != null &&
+                                    currentProfile!['email'].toString().isNotEmpty)
+                                  Text(
+                                    currentProfile!['email'].toString(),
                                     style: GoogleFonts.outfit(
-                                      color: Colors.white,
-                                      fontSize: 12.5,
-                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF94A3B8),
+                                      fontSize: 12,
                                     ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                              ],
+                            ),
+                          ),
+                          // Active Badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 6,
+                                  height: 6,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFFFFC00),
+                                    shape: BoxShape.circle,
                                   ),
                                 ),
-                                onTap: () => _quickLogin(user),
-                                onLongPress: () {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                      backgroundColor: const Color(0xFF1E293B),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(18),
-                                        side: const BorderSide(color: Color(0xFF334155)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'ACTIVE',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFFC00),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+
+                  // Section Header
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 10, left: 4),
+                    child: Row(
+                      children: [
+                        Text(
+                          'OTHER CONNECTED ACCOUNTS',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.7,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF1E293B),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Text(
+                            '${autoLoginUsers.length}',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  if (isLoading && autoLoginUsers.isEmpty)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(32),
+                        child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
+                      ),
+                    )
+                  else if (autoLoginUsers.isEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 36, horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131C2E),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF1E293B)),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.1),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.group_add_rounded,
+                              size: 28,
+                              color: Color(0xFFFFD700),
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Text(
+                            'No Other Accounts Linked',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Connect your second account or create a sub-profile below to switch between them in 1 tap without typing passwords.',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 12.5,
+                              height: 1.4,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    ...autoLoginUsers.map((user) {
+                      final targetUserId = user['user_id']?.toString() ?? '';
+                      final autoLoginId = user['auto_login_id']?.toString();
+                      final profileName = user['name']?.toString() ?? 'User';
+                      final userEmail = user['email']?.toString() ?? '';
+                      final profileImageUrl = user['profile_image_url']?.toString();
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF131C2E),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: const Color(0xFF1E293B), width: 1),
+                        ),
+                        child: ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                          leading: Container(
+                            width: 44,
+                            height: 44,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: const Color(0xFF1E293B),
+                              border: Border.all(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                                width: 1.5,
+                              ),
+                              image: (profileImageUrl != null && profileImageUrl.isNotEmpty)
+                                  ? DecorationImage(
+                                      image: NetworkImage(profileImageUrl),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : null,
+                            ),
+                            child: (profileImageUrl == null || profileImageUrl.isEmpty)
+                                ? Center(
+                                    child: Text(
+                                      profileName.isNotEmpty ? profileName[0].toUpperCase() : 'U',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFFD700),
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
                                       ),
-                                      title: Text(
-                                        'Unlink Account',
-                                        style: GoogleFonts.outfit(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      content: Text(
-                                        'Unlink "$profileName" from quick switch?\n\nBoth accounts will remain safe, but will no longer appear in each other\'s quick switch list.',
-                                        style: GoogleFonts.outfit(
-                                          color: const Color(0xFFCBD5E1),
-                                          fontSize: 13.5,
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                      actions: [
-                                        TextButton(
-                                          onPressed: () => Navigator.pop(context),
-                                          child: Text(
-                                            'Cancel',
-                                            style: GoogleFonts.outfit(color: const Color(0xFF94A3B8)),
-                                          ),
-                                        ),
-                                        ElevatedButton(
-                                          onPressed: () {
-                                            Navigator.pop(context);
-                                            _deleteAutoLogin(targetUserId, autoLoginId);
-                                          },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFFEF4444),
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                          ),
-                                          child: Text(
-                                            'Unlink',
-                                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                      ],
                                     ),
-                                  );
-                                },
+                                  )
+                                : null,
+                          ),
+                          title: Text(
+                            profileName,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (userEmail.isNotEmpty)
+                                Text(
+                                  userEmail,
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF94A3B8),
+                                    fontSize: 12,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.bolt_rounded,
+                                    size: 13,
+                                    color: Color(0xFFFFFC00),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    '1-Tap Switch',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                          trailing: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFFC00), Color(0xFFFF8906)],
+                              ),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                                  blurRadius: 6,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Switch',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontSize: 12.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                                const SizedBox(width: 3),
+                                const Icon(
+                                  Icons.arrow_forward_rounded,
+                                  size: 14,
+                                  color: Colors.black,
+                                ),
+                              ],
+                            ),
+                          ),
+                          onTap: () {
+                            HapticFeedback.mediumImpact();
+                            _quickLogin(user);
+                          },
+                          onLongPress: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                backgroundColor: const Color(0xFF131C2E),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  side: const BorderSide(color: Color(0xFF1E293B)),
+                                ),
+                                title: Text(
+                                  'Unlink Account',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                content: Text(
+                                  'Remove "$profileName" from quick switch?\n\nThe account remains safe, but will no longer appear in this list.',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFCBD5E1),
+                                    fontSize: 13.5,
+                                    height: 1.4,
+                                  ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    onPressed: () => Navigator.pop(context),
+                                    child: Text(
+                                      'Cancel',
+                                      style: GoogleFonts.outfit(color: const Color(0xFF94A3B8)),
+                                    ),
+                                  ),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      _deleteAutoLogin(targetUserId, autoLoginId);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: const Color(0xFFEF4444),
+                                      foregroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Unlink',
+                                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
                               ),
                             );
                           },
                         ),
+                      );
+                    }),
+                ],
+              ),
             ),
 
             // Bottom Buttons
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               decoration: const BoxDecoration(
                 border: Border(
                   top: BorderSide(color: Color(0xFF1E293B), width: 1),
@@ -986,31 +1260,52 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
               ),
               child: Column(
                 children: [
-                  // Add Sub-Account Button
-                  SizedBox(
+                  // Add Account Button
+                  Container(
                     width: double.infinity,
                     height: 48,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        setState(() {
-                          showAuth = true;
-                          isCreatingAccount = false;
-                        });
-                      },
-                      icon: const Icon(Icons.add_circle_outline_rounded, color: Colors.white, size: 20),
-                      label: Text(
-                        'Add Paired Account',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFFFC00), Color(0xFFFF8906)],
                       ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          setState(() {
+                            showAuth = true;
+                            isCreatingAccount = false;
+                          });
+                        },
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.add_circle_outline_rounded,
+                              color: Colors.black,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Connect Another Account',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -1021,20 +1316,20 @@ class _AutoLoginBottomSheetState extends State<AutoLoginBottomSheet> {
                   // Logout Button
                   SizedBox(
                     width: double.infinity,
-                    height: 44,
+                    height: 42,
                     child: OutlinedButton.icon(
                       onPressed: _logout,
-                      icon: const Icon(Icons.logout_rounded, color: Color(0xFFF87171), size: 18),
+                      icon: const Icon(Icons.logout_rounded, color: Color(0xFFF87171), size: 17),
                       label: Text(
                         'Log Out',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFF87171),
-                          fontSize: 14,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
                       style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: Color(0xFF334155)),
+                        side: const BorderSide(color: Color(0xFF1E293B)),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

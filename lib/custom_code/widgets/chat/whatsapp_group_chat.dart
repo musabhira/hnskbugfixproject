@@ -1832,38 +1832,39 @@ Draft: "$draft"''';
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        widget.groupName,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                Builder(
+                  builder: (context) {
+                    final targetId = widget.groupId.startsWith('p:')
+                        ? widget.groupId.substring(2)
+                        : widget.groupId;
+                    final isPresident =
+                        PocketPresidentService.isPresidentId(targetId);
+
+                    return Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            isPresident ? 'President' : widget.groupName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    Builder(
-                      builder: (context) {
-                        final targetId = widget.groupId.startsWith('p:')
-                            ? widget.groupId.substring(2)
-                            : widget.groupId;
-                        final isPresident =
-                            PocketPresidentService.isPresidentId(targetId);
-                        if (isPresident) {
-                          return Container(
+                        if (isPresident)
+                          Container(
                             margin: const EdgeInsets.only(left: 5),
                             child: const Icon(
                               Icons.verified_rounded,
                               color: Color(0xFFFFD700),
                               size: 14.5,
                             ),
-                          );
-                        } else if (widget.groupId.startsWith('p:')) {
-                          return Container(
+                          )
+                        else if (widget.groupId.startsWith('p:'))
+                          Container(
                             margin: const EdgeInsets.only(left: 6),
                             width: 7,
                             height: 7,
@@ -1871,12 +1872,10 @@ Draft: "$draft"''';
                               color: Color(0xFF22C55E),
                               shape: BoxShape.circle,
                             ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ],
+                          ),
+                      ],
+                    );
+                  },
                 ),
                 Builder(
                   builder: (context) {
@@ -1888,7 +1887,7 @@ Draft: "$draft"''';
                       return const Padding(
                         padding: EdgeInsets.only(top: 1.5),
                         child: Text(
-                          'President of Pocket Mates • Help & Support',
+                          'Official Presidential Desk',
                           style: TextStyle(
                             fontSize: 10.5,
                             color: Color(0xFFFFD700),
