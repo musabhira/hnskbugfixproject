@@ -121,6 +121,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   final int _presidentVibeDuration = 10;
   final TextEditingController _presidentAnnouncementTitleController = TextEditingController();
   final TextEditingController _presidentAnnouncementContentController = TextEditingController();
+  final TextEditingController _presidentAnnouncementMediaUrlController = TextEditingController();
   String _presidentAnnouncementPriority = 'high';
   final TextEditingController _presidentProtectionTargetController = TextEditingController();
   int _presidentProtectionHours = 24;
@@ -246,6 +247,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     _presidentVibeMediaUrlController.dispose();
     _presidentAnnouncementTitleController.dispose();
     _presidentAnnouncementContentController.dispose();
+    _presidentAnnouncementMediaUrlController.dispose();
     _presidentProtectionTargetController.dispose();
     super.dispose();
   }
@@ -8752,6 +8754,26 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     ),
                   ),
                 ),
+                const SizedBox(height: 12),
+                Text('Poster / Banner Image URL (Optional):',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white70, fontSize: 12)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentAnnouncementMediaUrlController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'https://... image or campaign poster URL',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 14),
 
                 Row(
@@ -8798,6 +8820,8 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                         _presidentAnnouncementTitleController.text.trim();
                     final content =
                         _presidentAnnouncementContentController.text.trim();
+                    final mediaUrl =
+                        _presidentAnnouncementMediaUrlController.text.trim();
 
                     if (title.isEmpty || content.isEmpty) {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -8812,11 +8836,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     await PocketPresidentService.broadcastAnnouncement(
                       title: title,
                       content: content,
+                      mediaUrl: mediaUrl.isNotEmpty ? mediaUrl : null,
                       priority: _presidentAnnouncementPriority,
                     );
 
                     _presidentAnnouncementTitleController.clear();
                     _presidentAnnouncementContentController.clear();
+                    _presidentAnnouncementMediaUrlController.clear();
 
                     if (!mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(

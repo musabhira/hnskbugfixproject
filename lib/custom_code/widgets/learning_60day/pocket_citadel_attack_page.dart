@@ -15,6 +15,7 @@ import 'pocket_world_street_page.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import '../president/president_palace_page.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
 /// Audio Directive:
@@ -43,6 +44,17 @@ class PocketCitadelAttackPage extends StatefulWidget {
     Map<String, dynamic>? preloadedProfile,
     int attackerDay = 1,
   }) async {
+    // 🏛️ If target is The President of Pocket World, open the Royal Palace!
+    if (PocketPresidentService.isPresidentId(userId) || userId == 'pocket_president') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PresidentPalacePage(),
+        ),
+      );
+      return;
+    }
+
     if (neighbor != null) {
       Navigator.push(
         context,

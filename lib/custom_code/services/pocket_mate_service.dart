@@ -47,6 +47,32 @@ class PocketMateService {
     }
   }
 
+  /// Add a user or entity to local mates list
+  static Future<void> addMateLocally(String myId, String otherUserId) async {
+    if (myId.isEmpty || otherUserId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList('pocket_mates_$myId') ?? [];
+      if (!list.contains(otherUserId)) {
+        list.add(otherUserId);
+        await prefs.setStringList('pocket_mates_$myId', list);
+      }
+    } catch (_) {}
+  }
+
+  /// Remove a user or entity from local mates list
+  static Future<void> removeMateLocally(String myId, String otherUserId) async {
+    if (myId.isEmpty || otherUserId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final list = prefs.getStringList('pocket_mates_$myId') ?? [];
+      if (list.contains(otherUserId)) {
+        list.remove(otherUserId);
+        await prefs.setStringList('pocket_mates_$myId', list);
+      }
+    } catch (_) {}
+  }
+
   /// Send a Mate Request (writes to Supabase notifications table)
   static Future<bool> sendMateRequest({
     required String senderId,

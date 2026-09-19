@@ -108,3 +108,4 @@ export 'pod_2d_preview_widget.dart';
 export 'pod_creator_studio.dart';
 export 'pod_marketplace_view.dart';
 export 'pod_b2b_portal.dart' show PodB2BPortal;
+export 'president/president_palace_page.dart';

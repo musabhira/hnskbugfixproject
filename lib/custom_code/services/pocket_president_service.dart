@@ -66,12 +66,15 @@ class PocketPresidentService {
           final annId = ann['id']?.toString() ?? '';
           final alreadyInChat = historyList.any((m) => m['id'] == 'pres_broadcast_$annId');
           if (!alreadyInChat) {
+            final mediaUrl = ann['media_url']?.toString();
+            final hasMedia = mediaUrl != null && mediaUrl.isNotEmpty;
             historyList.insert(0, {
               'id': 'pres_broadcast_$annId',
               'sender_id': presidentId,
               'receiver_id': userId,
               'message_text': '🏛️ [PRESIDENTIAL BROADCAST: ${ann['title']}]\n\n${ann['content']}',
-              'message_type': 'text',
+              'message_type': hasMedia ? 'image' : 'text',
+              'file_url': mediaUrl,
               'created_at': ann['created_at'] ?? DateTime.now().toIso8601String(),
               'is_read': false,
               'metadata': {
@@ -79,6 +82,7 @@ class PocketPresidentService {
                 'is_president': true,
                 'golden_tick': true,
                 'is_broadcast': true,
+                'media_url': mediaUrl,
               }
             });
             addedNew = true;
@@ -391,6 +395,7 @@ class PocketPresidentService {
   static Future<void> broadcastAnnouncement({
     required String title,
     required String content,
+    String? mediaUrl,
     String? priority = 'high',
   }) async {
     final now = DateTime.now();
@@ -403,6 +408,7 @@ class PocketPresidentService {
       'id': 'ann_${now.millisecondsSinceEpoch}',
       'title': title,
       'content': content,
+      'media_url': mediaUrl,
       'priority': priority,
       'created_at': now.toIso8601String(),
     });
@@ -414,6 +420,7 @@ class PocketPresidentService {
       await supabase.from('announcements').insert({
         'title': '🏛️ [Presidential Decree] $title',
         'content': content,
+        if (mediaUrl != null && mediaUrl.isNotEmpty) 'media_url': mediaUrl,
         'priority': priority ?? 'high',
         'created_at': now.toIso8601String(),
       });

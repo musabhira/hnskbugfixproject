@@ -15,6 +15,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
 
@@ -657,10 +659,22 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         'robot_opening': r.openingMessage,
       }).toList();
 
+      // 🏛️ The President of Pocket World & Sovereign Citadel
+      final presMap = {
+        'user_id': PocketPresidentService.presidentId,
+        'name': PocketPresidentService.presidentName,
+        'shop_name': 'Head of State • Supreme Palace 🏛️',
+        'profile_image_url': PocketPresidentService.presidentAvatarUrl,
+        'verified': true,
+        'is_president': true,
+        'golden_tick': true,
+        'learning_day': 90,
+      };
+
       safeSetState(() {
         var resultsToDisplay = List<Map<String, dynamic>>.from(response);
         _hasMoreData = response.length == _pageSize;
-        _searchResults = [...robotMaps, ...resultsToDisplay];
+        _searchResults = [presMap, ...robotMaps, ...resultsToDisplay];
         _isLoading = false;
         _currentPage++;
       });
@@ -745,10 +759,34 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         'robot_opening': r.openingMessage,
       }).toList();
 
+      // 🏛️ Check if query matches President
+      final isPresMatch = cleanQ.contains('pres') ||
+          cleanQ.contains('palace') ||
+          cleanQ.contains('royal') ||
+          cleanQ.contains('head') ||
+          cleanQ.contains('world');
+      Map<String, dynamic>? matchingPres;
+      if (isPresMatch && !isHumanOnly && !isRobotOnly) {
+        matchingPres = {
+          'user_id': PocketPresidentService.presidentId,
+          'name': PocketPresidentService.presidentName,
+          'shop_name': 'Head of State • Supreme Palace 🏛️',
+          'profile_image_url': PocketPresidentService.presidentAvatarUrl,
+          'verified': true,
+          'is_president': true,
+          'golden_tick': true,
+          'learning_day': 90,
+        };
+      }
+
       safeSetState(() {
         var resultsToDisplay = List<Map<String, dynamic>>.from(response);
         _hasMoreData = response.length == _pageSize;
-        _searchResults = [...robotMaps, ...resultsToDisplay];
+        _searchResults = [
+          if (matchingPres != null) matchingPres,
+          ...robotMaps,
+          ...resultsToDisplay
+        ];
         _isLoading = false;
         _currentPage++;
       });
@@ -912,17 +950,31 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
         }
 
         final profile = _searchResults[index];
-        final name = profile['name'] ?? 'Partner';
+        final isPresident = profile['is_president'] == true ||
+            PocketPresidentService.isPresidentId(profile['user_id'] ?? '');
+        final name = isPresident ? 'The President' : (profile['name'] ?? 'Partner');
         final shopName = profile['shop_name'];
-        final isVerified = profile['verified'] == true ||
+        final isVerified = isPresident ||
+            profile['verified'] == true ||
             profile['is_vip'] == true ||
             profile['is_subscribed'] == true;
-        final isRobot = profile['is_robot'] == true;
+        final isRobot = !isPresident && profile['is_robot'] == true;
         final userDay = (profile['learning_day'] as num?)?.toInt() ?? 1;
-        final userStage = isRobot ? null : LearningMilestoneStage.getStageForDay(userDay);
+        final userStage = (isRobot || isPresident)
+            ? null
+            : LearningMilestoneStage.getStageForDay(userDay);
 
         return GestureDetector(
           onTap: () {
+            if (isPresident) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PresidentPalacePage(),
+                ),
+              );
+              return;
+            }
             if (isRobot) {
               _showPocketRobotProfileSheet(context, profile);
               return;
@@ -936,22 +988,26 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
             decoration: BoxDecoration(
-              color: isRobot
-                  ? FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7)
-                  : (userStage != null
-                      ? Color.alphaBlend(
-                          userStage.bgColor.withValues(alpha: 0.22),
-                          FlutterFlowTheme.of(context).secondaryBackground,
-                        )
-                      : FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7)),
+              color: isPresident
+                  ? const Color(0xFF0F172A)
+                  : (isRobot
+                      ? FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7)
+                      : (userStage != null
+                          ? Color.alphaBlend(
+                              userStage.bgColor.withValues(alpha: 0.22),
+                              FlutterFlowTheme.of(context).secondaryBackground,
+                            )
+                          : FlutterFlowTheme.of(context).secondaryBackground.withValues(alpha: 0.7))),
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: isRobot
-                    ? const Color(0xFF06B6D4).withValues(alpha: 0.35)
-                    : (userStage != null
-                        ? userStage.buttonColor.withValues(alpha: 0.35)
-                        : Colors.white.withValues(alpha: 0.05)),
-                width: 0.9,
+                color: isPresident
+                    ? const Color(0xFFFFD700).withValues(alpha: 0.5)
+                    : (isRobot
+                        ? const Color(0xFF06B6D4).withValues(alpha: 0.35)
+                        : (userStage != null
+                            ? userStage.buttonColor.withValues(alpha: 0.35)
+                            : Colors.white.withValues(alpha: 0.05))),
+                width: isPresident ? 1.4 : 0.9,
               ),
             ),
             child: Row(
@@ -963,41 +1019,47 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                   padding: const EdgeInsets.all(1.5),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    gradient: isRobot
+                    gradient: isPresident
                         ? const LinearGradient(
-                            colors: [Color(0xFF06B6D4), Color(0xFF3B82F6)])
-                        : (userStage != null
-                            ? LinearGradient(
-                                colors: [userStage.buttonColor, userStage.tickColor],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : (isVerified
-                                ? const LinearGradient(
-                                    colors: [Color(0xFFFFFC00), Colors.orangeAccent])
-                                : LinearGradient(
-                                    colors: [
-                                      const Color(0xFFFFFC00).withValues(alpha: 0.8),
-                                      const Color(0xFF10B981).withValues(alpha: 0.8),
-                                    ],
-                                  ))),
-                    border: (!isVerified && !isRobot && userStage == null)
+                            colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
+                          )
+                        : (isRobot
+                            ? const LinearGradient(
+                                colors: [Color(0xFF06B6D4), Color(0xFF3B82F6)])
+                            : (userStage != null
+                                ? LinearGradient(
+                                    colors: [userStage.buttonColor, userStage.tickColor],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : (isVerified
+                                    ? const LinearGradient(
+                                        colors: [Color(0xFFFFFC00), Colors.orangeAccent])
+                                    : LinearGradient(
+                                        colors: [
+                                          const Color(0xFFFFFC00).withValues(alpha: 0.8),
+                                          const Color(0xFF10B981).withValues(alpha: 0.8),
+                                        ],
+                                      )))),
+                    border: (!isVerified && !isRobot && userStage == null && !isPresident)
                         ? Border.all(color: Colors.white12, width: 0.8)
                         : null,
                   ),
-                  child: ClipOval(
-                    child: Container(
-                      color: FlutterFlowTheme.of(context).primaryBackground,
-                      child: VectorAvatarWidget(
-                        config: isRobot
-                            ? VectorAvatarConfig.getEvolutionAvatarForStage((profile['robot_level'] as num?)?.toInt() ?? 1)
-                            : ((profile['avatar_config'] != null)
-                                ? VectorAvatarConfig.fromMap(Map<String, dynamic>.from(profile['avatar_config']))
-                                : VectorAvatarConfig.getEvolutionAvatarForStage(userDay)),
-                        size: 38,
-                      ),
-                    ),
-                  ),
+                  child: isPresident
+                      ? const PresidentAvatarWidget(size: 38, showGlow: false)
+                      : ClipOval(
+                          child: Container(
+                            color: FlutterFlowTheme.of(context).primaryBackground,
+                            child: VectorAvatarWidget(
+                              config: isRobot
+                                  ? VectorAvatarConfig.getEvolutionAvatarForStage((profile['robot_level'] as num?)?.toInt() ?? 1)
+                                  : ((profile['avatar_config'] != null)
+                                      ? VectorAvatarConfig.fromMap(Map<String, dynamic>.from(profile['avatar_config']))
+                                      : VectorAvatarConfig.getEvolutionAvatarForStage(userDay)),
+                              size: 38,
+                            ),
+                          ),
+                        ),
                 ),
                 const SizedBox(width: 11),
                 // Compact Info Section
@@ -1039,13 +1101,17 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
                               ),
                             ),
                             child: Text(
-                              isRobot
-                                  ? 'Lvl ${(profile['robot_level'] as num?)?.toInt() ?? 1} 🤖'
-                                  : 'Lvl $userDay ${userStage?.emoji ?? "⭐"}',
+                              isPresident
+                                  ? 'Supreme 🏛️'
+                                  : (isRobot
+                                      ? 'Lvl ${(profile['robot_level'] as num?)?.toInt() ?? 1} 🤖'
+                                      : 'Lvl $userDay ${userStage?.emoji ?? "⭐"}'),
                               style: GoogleFonts.outfit(
-                                color: isRobot
-                                    ? const Color(0xFF06B6D4)
-                                    : (userStage?.buttonColor ?? const Color(0xFFFFFC00)),
+                                color: isPresident
+                                    ? const Color(0xFFFFD700)
+                                    : (isRobot
+                                        ? const Color(0xFF06B6D4)
+                                        : (userStage?.buttonColor ?? const Color(0xFFFFFC00))),
                                 fontSize: 10,
                                 fontWeight: FontWeight.w800,
                               ),

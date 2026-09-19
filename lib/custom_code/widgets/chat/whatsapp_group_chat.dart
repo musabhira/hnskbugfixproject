@@ -13,6 +13,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/president/president_palace_page.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -1977,11 +1978,15 @@ Draft: "$draft"''';
                 ),
               ),
             ],
-            IconButton(
-              icon: const Icon(Icons.casino_outlined, color: Color(0xFFFFFC00), size: 21),
-              tooltip: 'Daily Topic 🎲',
-              onPressed: _showDailyIcebreakerModal,
-            ),
+            if (!PocketPresidentService.isPresidentId(
+                widget.groupId.startsWith('p:')
+                    ? widget.groupId.substring(2)
+                    : widget.groupId))
+              IconButton(
+                icon: const Icon(Icons.casino_outlined, color: Color(0xFFFFFC00), size: 21),
+                tooltip: 'Daily Topic 🎲',
+                onPressed: _showDailyIcebreakerModal,
+              ),
             if (_isEnglishHubGroup) ...[
               IconButton(
                 icon: const Icon(Icons.hub_outlined, color: Colors.lightBlueAccent),
@@ -2374,10 +2379,33 @@ Draft: "$draft"''';
           ],
           if (!isMe)
             GestureDetector(
-              onTap: () => _showUserOptionsDialog(message.senderId, message.senderName ?? 'User'),
+              onTap: () {
+                final isPres = PocketPresidentService.isPresidentId(message.senderId) ||
+                    (widget.groupId.startsWith('p:') &&
+                        PocketPresidentService.isPresidentId(
+                            widget.groupId.substring(2)));
+                if (isPres) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PresidentPalacePage(),
+                    ),
+                  );
+                  return;
+                }
+                _showUserOptionsDialog(
+                    message.senderId, message.senderName ?? 'User');
+              },
               child: Padding(
                 padding: const EdgeInsets.only(left: 6, bottom: 4, right: 4),
                 child: () {
+                  final isPres = PocketPresidentService.isPresidentId(message.senderId) ||
+                      (widget.groupId.startsWith('p:') &&
+                          PocketPresidentService.isPresidentId(
+                              widget.groupId.substring(2)));
+                  if (isPres) {
+                    return const PresidentAvatarWidget(size: 28, showGlow: true);
+                  }
                   final isRobot = PocketRobotService.isRobotId(message.senderId);
                   return Container(
                     decoration: BoxDecoration(
@@ -5233,6 +5261,18 @@ Draft: "$draft"''';
     if (widget.groupId.startsWith('p:')) {
       final rawTarget = widget.groupId.substring(2);
       String targetId = rawTarget;
+
+      // 🏛️ If this is The President of Pocket World, open the Royal Palace!
+      if (PocketPresidentService.isPresidentId(targetId) ||
+          PocketPresidentService.isPresidentId(rawTarget) ||
+          targetId == 'pocket_president' ||
+          rawTarget == 'pocket_president') {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const PresidentPalacePage()),
+        );
+        return;
+      }
       
       // Only split if it's a composite 2-UUID string (e.g. uuid1_uuid2)
       if (rawTarget.contains('_') && !PocketRobotService.isRobotId(rawTarget)) {
