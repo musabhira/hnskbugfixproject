@@ -7,6 +7,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'whats_app_groups_provider.dart';
 
 import 'chat_models.dart';
@@ -87,7 +88,7 @@ class ChatMessages extends _$ChatMessages {
     try {
       if (isPersonal) {
         final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(actualId);
-        if (!isUuid || PocketRobotService.isRobotId(actualId)) return;
+        if (!isUuid || PocketRobotService.isRobotId(actualId) || PocketPresidentService.isPresidentId(actualId)) return;
 
         await _supabase
             .from('messages')
@@ -130,8 +131,8 @@ class ChatMessages extends _$ChatMessages {
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
 
-    // Robot chats are handled locally
-    if (isPersonal && (!RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(actualId) || PocketRobotService.isRobotId(actualId))) {
+    // Robot chats and President chats are handled locally
+    if (isPersonal && (!RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(actualId) || PocketRobotService.isRobotId(actualId) || PocketPresidentService.isPresidentId(actualId))) {
       return;
     }
 
@@ -337,6 +338,15 @@ class ChatMessages extends _$ChatMessages {
       return robotMessages;
     }
 
+    // 🏛️ The President: load messages from PocketPresidentService
+    if (PocketPresidentService.isPresidentId(actualId)) {
+      final presHistory = await PocketPresidentService.getPresidentChatHistory(uid);
+      final List<ChatMessage> presMessages = presHistory.map((data) {
+        return ChatMessage.fromJson(data);
+      }).toList();
+      return presMessages;
+    }
+
     // If forcing latest (polling), we temporarily look at page 0 without resetting main pagination state
     final int pageToFetch = forceLatest ? 0 : _currentPage;
 
@@ -524,6 +534,48 @@ class ChatMessages extends _$ChatMessages {
 
     final isPersonal = groupId.startsWith('p:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
+
+    // 🏛️ The President chat: handle via PocketPresidentService
+    if (PocketPresidentService.isPresidentId(actualId)) {
+      final userMessage = ChatMessage(
+        id: 'pres_msg_${DateTime.now().millisecondsSinceEpoch}',
+        receiverId: actualId,
+        senderId: uid,
+        messageText: text,
+        messageType: messageType,
+        fileUrl: fileUrl,
+        voiceDuration: voiceDuration,
+        replyToMessageId: replyToId,
+        createdAt: DateTime.now(),
+        isOptimistic: false,
+        isRead: true,
+      );
+
+      // Save user message in President Service (local + sync to Supabase reports)
+      await PocketPresidentService.sendUserMessageToPresident(
+        userId: uid,
+        messageText: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Note' : 'Media Attachment'),
+        messageType: messageType,
+        fileUrl: fileUrl,
+      );
+
+      // Update state immediately
+      state.whenData((messages) {
+        final updated = [userMessage, ...messages];
+        state = AsyncData(updated);
+        _saveToCache(updated);
+      });
+
+      // Instantly update conversations list tile
+      ref.read(conversationsProvider.notifier).updateLastMessage(
+        conversationId: actualId,
+        message: text.isNotEmpty ? text : (messageType == 'voice' ? '🎤 Voice Message' : 'Photo'),
+        time: DateTime.now(),
+        senderId: uid,
+      );
+
+      return userMessage;
+    }
 
     // 🤖 Pocket Robot chat: handle locally with AI-powered instant human-like response
     if (PocketRobotService.isRobotId(actualId)) {

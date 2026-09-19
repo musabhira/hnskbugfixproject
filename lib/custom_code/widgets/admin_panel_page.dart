@@ -16,6 +16,7 @@ import 'package:pocket_mates_app/custom_code/services/monetization_service.dart'
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 
 class AdminDashboardPage extends StatefulWidget {
   const AdminDashboardPage({super.key});
@@ -109,15 +110,31 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   Map<int, Map<String, dynamic>> _adminMediaOverrides = {};
   bool _isLoadingAdminMedia = true;
 
+  // President Desk State
+  int _presidentSubTab = 0; // 0: Inquiries, 1: Post Vibe, 2: Announcements, 3: Protection
+  List<Map<String, dynamic>> _presidentInquiries = [];
+  bool _isLoadingPresidentInquiries = false;
+  String _presidentInquirySearchQuery = '';
+  int _presidentInquiryStatusFilter = 0; // 0: All, 1: Pending, 2: Replied
+  final TextEditingController _presidentVibeCaptionController = TextEditingController();
+  final TextEditingController _presidentVibeMediaUrlController = TextEditingController();
+  final int _presidentVibeDuration = 10;
+  final TextEditingController _presidentAnnouncementTitleController = TextEditingController();
+  final TextEditingController _presidentAnnouncementContentController = TextEditingController();
+  String _presidentAnnouncementPriority = 'high';
+  final TextEditingController _presidentProtectionTargetController = TextEditingController();
+  int _presidentProtectionHours = 24;
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 12, vsync: this);
+    _tabController = TabController(length: 13, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
       _loadMonetizationData();
       _loadAdminMediaOverrides();
+      _loadPresidentInquiries();
     });
   }
 
@@ -225,6 +242,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     _promoMonthlyPriceController.dispose();
     _promoYearlyPriceController.dispose();
     _promoUpiIdController.dispose();
+    _presidentVibeCaptionController.dispose();
+    _presidentVibeMediaUrlController.dispose();
+    _presidentAnnouncementTitleController.dispose();
+    _presidentAnnouncementContentController.dispose();
+    _presidentProtectionTargetController.dispose();
     super.dispose();
   }
 
@@ -610,10 +632,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.ondemand_video_rounded),
                 text: 'Media Tasks'),
-            Tab(icon: Icon(Icons.smart_toy_outlined), text: 'Robots'),
             Tab(
                 icon: Icon(Icons.monetization_on_outlined),
                 text: 'Monetization'),
+            Tab(
+                icon: Icon(Icons.account_balance_rounded),
+                text: 'President Desk 🏛️'),
           ],
         ),
       ),
@@ -632,6 +656,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildMediaTasksTab(),
           _buildRobotsTab(),
           _buildMonetizationTab(),
+          _buildPresidentDeskTab(),
         ],
       ),
     );
@@ -7832,6 +7857,1123 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // ==========================================
+  // 🏛️ PRESIDENT DESK & INQUIRIES IMPLEMENTATION
+  // ==========================================
+
+  Future<void> _loadPresidentInquiries() async {
+    setState(() => _isLoadingPresidentInquiries = true);
+    try {
+      final list = await PocketPresidentService.getAdminInquiriesList();
+      if (mounted) {
+        setState(() {
+          _presidentInquiries = list;
+          _isLoadingPresidentInquiries = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoadingPresidentInquiries = false);
+    }
+  }
+
+  Widget _buildPresidentDeskTab() {
+    final pendingCount =
+        _presidentInquiries.where((i) => i['status'] == 'pending').length;
+
+    return Column(
+      children: [
+        // Sub-navigation bar with Presidential Gold accents
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF111827),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              _buildPresidentSubNavButton(
+                label: 'Inbox ${pendingCount > 0 ? '($pendingCount)' : ''}',
+                icon: Icons.inbox_rounded,
+                index: 0,
+              ),
+              _buildPresidentSubNavButton(
+                label: 'Vibes',
+                icon: Icons.auto_awesome_rounded,
+                index: 1,
+              ),
+              _buildPresidentSubNavButton(
+                label: 'Broadcast',
+                icon: Icons.campaign_rounded,
+                index: 2,
+              ),
+              _buildPresidentSubNavButton(
+                label: 'Shield 24h',
+                icon: Icons.shield_rounded,
+                index: 3,
+              ),
+            ],
+          ),
+        ),
+
+        Expanded(
+          child: _presidentSubTab == 0
+              ? _buildPresidentInquiriesSubTab()
+              : _presidentSubTab == 1
+                  ? _buildPresidentVibeSubTab()
+                  : _presidentSubTab == 2
+                      ? _buildPresidentAnnouncementsSubTab()
+                      : _buildPresidentProtectionSubTab(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPresidentSubNavButton({
+    required String label,
+    required IconData icon,
+    required int index,
+  }) {
+    final isSelected = _presidentSubTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _presidentSubTab = index),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
+                  )
+                : null,
+            color: isSelected ? null : Colors.transparent,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 14,
+                color: isSelected ? Colors.black : Colors.white70,
+              ),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  color: isSelected ? Colors.black : Colors.white70,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  fontSize: 11.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 1. INQUIRIES & COMPLAINTS SUB-TAB
+  Widget _buildPresidentInquiriesSubTab() {
+    if (_isLoadingPresidentInquiries) {
+      return const Center(
+        child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+      );
+    }
+
+    final filtered = _presidentInquiries.where((inq) {
+      final text = (inq['last_message'] ?? '').toString().toLowerCase();
+      final name = (inq['user_name'] ?? '').toString().toLowerCase();
+      final q = _presidentInquirySearchQuery.toLowerCase();
+      if (q.isNotEmpty && !text.contains(q) && !name.contains(q)) {
+        return false;
+      }
+      if (_presidentInquiryStatusFilter == 1 && inq['status'] != 'pending') {
+        return false;
+      }
+      if (_presidentInquiryStatusFilter == 2 && inq['status'] != 'resolved') {
+        return false;
+      }
+      return true;
+    }).toList();
+
+    return Column(
+      children: [
+        // Search & Filter row
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  onChanged: (val) =>
+                      setState(() => _presidentInquirySearchQuery = val),
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search inquiries or citizen names...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    prefixIcon: const Icon(Icons.search,
+                        color: Color(0xFFFFD700), size: 18),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded,
+                    color: Color(0xFFFFD700)),
+                onPressed: _loadPresidentInquiries,
+                tooltip: 'Refresh Inquiries',
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+
+        // Status Filter Chips
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              _buildInquiryFilterChip('All', 0),
+              const SizedBox(width: 8),
+              _buildInquiryFilterChip('Pending ⏳', 1),
+              const SizedBox(width: 8),
+              _buildInquiryFilterChip('Replied ✅', 2),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+
+        Expanded(
+          child: filtered.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.mark_chat_read_outlined,
+                          color: Color(0xFFFFD700), size: 42),
+                      const SizedBox(height: 10),
+                      Text(
+                        'No Presidential Inquiries Found',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Citizens\' questions & complaints will appear here.',
+                        style: GoogleFonts.inter(
+                            color: Colors.white38, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final inq = filtered[index];
+                    final isPending = inq['status'] == 'pending';
+                    final type = inq['report_type'] ?? 'general';
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 10),
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF131B26),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isPending
+                              ? const Color(0xFFFF9100).withValues(alpha: 0.4)
+                              : Colors.white.withValues(alpha: 0.08),
+                          width: 1,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundColor: const Color(0xFF1E293B),
+                                backgroundImage: inq['user_avatar'] != null
+                                    ? NetworkImage(inq['user_avatar'])
+                                    : null,
+                                child: inq['user_avatar'] == null
+                                    ? const Icon(Icons.person,
+                                        color: Colors.white54, size: 16)
+                                    : null,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      inq['user_name'] ?? 'Citizen',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                    Text(
+                                      'ID: ${inq['user_id']}',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white38,
+                                        fontSize: 10.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: isPending
+                                      ? const Color(0xFFFF9100)
+                                          .withValues(alpha: 0.15)
+                                      : const Color(0xFF10B981)
+                                          .withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isPending
+                                        ? const Color(0xFFFF9100)
+                                        : const Color(0xFF10B981),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Text(
+                                  isPending ? 'Pending ⏳' : 'Replied ✅',
+                                  style: TextStyle(
+                                    color: isPending
+                                        ? const Color(0xFFFF9100)
+                                        : const Color(0xFF10B981),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text('💬 ', style: TextStyle(fontSize: 12)),
+                                Expanded(
+                                  child: Text(
+                                    inq['last_message'] ?? '',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white.withValues(alpha: 0.85),
+                                      fontSize: 12.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  type.toString().toUpperCase(),
+                                  style: const TextStyle(
+                                    color: Color(0xFFFFD700),
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              ElevatedButton.icon(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFFFD700),
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12, vertical: 6),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.reply_rounded, size: 14),
+                                label: const Text(
+                                  'Reply as President 👑',
+                                  style: TextStyle(
+                                      fontSize: 11, fontWeight: FontWeight.bold),
+                                ),
+                                onPressed: () =>
+                                    _openPresidentReplyModal(inq),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInquiryFilterChip(String label, int index) {
+    final isSelected = _presidentInquiryStatusFilter == index;
+    return GestureDetector(
+      onTap: () => setState(() => _presidentInquiryStatusFilter = index),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? const Color(0xFFFFD700)
+              : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+            color: isSelected ? Colors.black : Colors.white70,
+            fontWeight: FontWeight.bold,
+            fontSize: 11,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openPresidentReplyModal(Map<String, dynamic> inquiry) {
+    final targetId = inquiry['user_id']?.toString() ?? '';
+    final name = inquiry['user_name'] ?? 'Citizen';
+    final replyController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF121B22),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => Padding(
+          padding: EdgeInsets.only(
+            top: 20,
+            left: 20,
+            right: 20,
+            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Text('🏛️ ', style: TextStyle(fontSize: 18)),
+                      Text(
+                        'Reply to $name',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white60),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.black45,
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.2)),
+                ),
+                child: Text(
+                  'Citizen Inquiry: "${inquiry['last_message']}"',
+                  style: GoogleFonts.inter(
+                      color: Colors.white70, fontSize: 12),
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Quick Presidential Templates:',
+                style: GoogleFonts.outfit(
+                    color: Colors.white60, fontSize: 11),
+              ),
+              const SizedBox(height: 6),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: [
+                    _buildReplyTemplateChip(
+                      label: '🛡️ Safe under Guard',
+                      text:
+                          'Your Citadel is under 24-Hour Presidential Guard protection. Raids are blocked. Keep practicing your English tasks!',
+                      controller: replyController,
+                    ),
+                    const SizedBox(width: 6),
+                    _buildReplyTemplateChip(
+                      label: '🏛️ Under Review',
+                      text:
+                          'Thank you for bringing this to the Presidential Desk. Our administration is reviewing your issue right away.',
+                      controller: replyController,
+                    ),
+                    const SizedBox(width: 6),
+                    _buildReplyTemplateChip(
+                      label: '🌟 Keep It Up',
+                      text:
+                          'The President of Pocket World commends your dedication! Keep learning and speaking English every day.',
+                      controller: replyController,
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: replyController,
+                maxLines: 4,
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Type official response as The President...',
+                  hintStyle:
+                      const TextStyle(color: Colors.white38, fontSize: 12),
+                  filled: true,
+                  fillColor: const Color(0xFF1E293B),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFD700),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.send_rounded, size: 16),
+                label: const Text(
+                  'Dispatch Official Presidential Reply 👑',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+                onPressed: () async {
+                  final text = replyController.text.trim();
+                  if (text.isEmpty) return;
+
+                  Navigator.pop(ctx);
+                  await PocketPresidentService.sendPresidentReplyToUser(
+                    targetUserId: targetId,
+                    replyText: text,
+                    adminName: 'Presidential Desk',
+                  );
+
+                  await _loadPresidentInquiries();
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Presidential response dispatched! 🚀'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildReplyTemplateChip({
+    required String label,
+    required String text,
+    required TextEditingController controller,
+  }) {
+    return GestureDetector(
+      onTap: () => controller.text = text,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.outfit(
+              color: const Color(0xFFFFD700), fontSize: 11),
+        ),
+      ),
+    );
+  }
+
+  // 2. PRESIDENT VIBE / STORY SUB-TAB
+  Widget _buildPresidentVibeSubTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.auto_awesome_rounded,
+                        color: Color(0xFFFFD700), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Post Official President Vibe 👑',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Presidential vibes appear in all citizens\' status feeds with an animated Golden Crown Aura.',
+                  style: GoogleFonts.inter(
+                      color: Colors.white60, fontSize: 11.5),
+                ),
+                const SizedBox(height: 14),
+
+                // Caption
+                Text(
+                  'Vibe Message / Caption:',
+                  style: GoogleFonts.outfit(
+                      color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentVibeCaptionController,
+                  maxLines: 3,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText:
+                        'e.g., "Good morning Pocket World! 🌟 Today\'s English idiom is..."',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF0F172A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Media URL (optional)
+                Text(
+                  'Media Image URL (Optional):',
+                  style: GoogleFonts.outfit(
+                      color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentVibeMediaUrlController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'https://images.unsplash.com/...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF0F172A),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Colors.white.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.rocket_launch_rounded, size: 16),
+                  label: const Text(
+                    'Publish President Vibe to Feed 🚀',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  onPressed: () async {
+                    final caption =
+                        _presidentVibeCaptionController.text.trim();
+                    if (caption.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please enter a caption for the vibe.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    final media = _presidentVibeMediaUrlController.text.trim();
+                    await PocketPresidentService.postPresidentVibe(
+                      caption: caption,
+                      mediaUrl: media.isNotEmpty ? media : null,
+                      mediaType: media.isNotEmpty ? 'image' : 'text',
+                      duration: _presidentVibeDuration,
+                    );
+
+                    _presidentVibeCaptionController.clear();
+                    _presidentVibeMediaUrlController.clear();
+
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'Official President Vibe posted to all feeds! 🌟'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    setState(() {});
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Active Vibes Preview
+          FutureBuilder<List<Map<String, dynamic>>>(
+            future: PocketPresidentService.getActivePresidentVibes(),
+            builder: (context, snapshot) {
+              final vibes = snapshot.data ?? [];
+              if (vibes.isEmpty) return const SizedBox.shrink();
+
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Currently Active President Vibes (${vibes.length})',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  ...vibes.map((v) => Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF131B26),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.08),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('🌟', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                v['caption']?.toString() ?? '',
+                                style: GoogleFonts.inter(
+                                    color: Colors.white70, fontSize: 12),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              '👀 ${v['views_count'] ?? 0}',
+                              style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700), fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      )),
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 3. PRESIDENTIAL ANNOUNCEMENTS & ADS SUB-TAB
+  Widget _buildPresidentAnnouncementsSubTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111827),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.campaign_rounded,
+                        color: Color(0xFFFFD700), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Broadcast Presidential Announcement / Ad',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Dispatches an official presidential alert or house promotional message to all Pocket World citizens.',
+                  style: GoogleFonts.inter(
+                      color: Colors.white60, fontSize: 11.5),
+                ),
+                const SizedBox(height: 14),
+
+                Text('Announcement Title:',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white70, fontSize: 12)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentAnnouncementTitleController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'e.g., Grand English League Tournament 🏆',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                Text('Announcement Content / Body:',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white70, fontSize: 12)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentAnnouncementContentController,
+                  maxLines: 4,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText:
+                        'Type official decree, new features, or promotional campaign details...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                Row(
+                  children: [
+                    Text('Priority: ',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 12)),
+                    const SizedBox(width: 10),
+                    DropdownButton<String>(
+                      value: _presidentAnnouncementPriority,
+                      dropdownColor: const Color(0xFF1E293B),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      items: const [
+                        DropdownMenuItem(value: 'normal', child: Text('Normal')),
+                        DropdownMenuItem(value: 'high', child: Text('High ⭐')),
+                        DropdownMenuItem(value: 'urgent', child: Text('Urgent 🚨')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _presidentAnnouncementPriority = val);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.broadcast_on_personal_rounded, size: 16),
+                  label: const Text(
+                    'Broadcast to All Citizens 📢',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  onPressed: () async {
+                    final title =
+                        _presidentAnnouncementTitleController.text.trim();
+                    final content =
+                        _presidentAnnouncementContentController.text.trim();
+
+                    if (title.isEmpty || content.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please enter both title and content.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    await PocketPresidentService.broadcastAnnouncement(
+                      title: title,
+                      content: content,
+                      priority: _presidentAnnouncementPriority,
+                    );
+
+                    _presidentAnnouncementTitleController.clear();
+                    _presidentAnnouncementContentController.clear();
+
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Presidential Announcement broadcasted! 📢'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 4. CITADEL 24-HOUR PRESIDENTIAL RESIDENCY PROTECTION
+  Widget _buildPresidentProtectionSubTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111827),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.shield_rounded,
+                        color: Color(0xFF22C55E), size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Presidential Citadel Residency Guard 🛡️',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'As per audio decree, citadels placed under Presidential Protection are sheltered for 24 hours from combat raids, and an automated alert is sent to the citizen.',
+                  style: GoogleFonts.inter(
+                      color: Colors.white60, fontSize: 11.5),
+                ),
+                const SizedBox(height: 16),
+
+                Text('Citizen User ID to Protect:',
+                    style: GoogleFonts.outfit(
+                        color: Colors.white70, fontSize: 12)),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: _presidentProtectionTargetController,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Enter target user_id (UUID or robot ID)...',
+                    hintStyle:
+                        const TextStyle(color: Colors.white38, fontSize: 12),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                Row(
+                  children: [
+                    Text('Protection Duration: ',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white70, fontSize: 12)),
+                    const SizedBox(width: 10),
+                    DropdownButton<int>(
+                      value: _presidentProtectionHours,
+                      dropdownColor: const Color(0xFF1E293B),
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                      items: const [
+                        DropdownMenuItem(value: 12, child: Text('12 Hours')),
+                        DropdownMenuItem(value: 24, child: Text('24 Hours (Standard)')),
+                        DropdownMenuItem(value: 48, child: Text('48 Hours')),
+                      ],
+                      onChanged: (val) {
+                        if (val != null) {
+                          setState(() => _presidentProtectionHours = val);
+                        }
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF22C55E),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.security_rounded, size: 16),
+                  label: const Text(
+                    'Authorize Presidential Protection & Send Alert 🛡️',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                  ),
+                  onPressed: () async {
+                    final targetId =
+                        _presidentProtectionTargetController.text.trim();
+                    if (targetId.isEmpty) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Please enter a target User ID.'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                      return;
+                    }
+
+                    await PocketFortressDefenseService.placeUnderPresidentialProtection(
+                      targetId,
+                      hours: _presidentProtectionHours,
+                    );
+                    await PocketPresidentService.notifyPresidentialProtection(
+                      targetId,
+                      hours: _presidentProtectionHours,
+                    );
+
+                    _presidentProtectionTargetController.clear();
+
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                            'User $targetId placed under Presidential Guard for $_presidentProtectionHours hours! 🛡️'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

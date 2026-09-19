@@ -10,6 +10,7 @@ import 'voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart' hide supabaseClientProvider;
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 
 // Begin custom widget code
@@ -541,6 +542,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   String? _stagedAudioPath;
 
   VectorAvatarConfig _getPersonalAvatarConfig(String targetId) {
+    if (PocketPresidentService.isPresidentId(targetId)) {
+      return VectorAvatarConfig.getEvolutionAvatarForStage(90);
+    }
     if (PocketRobotService.isRobotId(targetId)) {
       final robot = PocketRobotService.getRobotById(targetId) ??
           PocketRobotService.getRobotByLevel(1);
@@ -1841,17 +1845,62 @@ Draft: "$draft"''';
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    if (widget.groupId.startsWith('p:')) ...[
-                      const SizedBox(width: 6),
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF22C55E),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
+                    Builder(
+                      builder: (context) {
+                        final targetId = widget.groupId.startsWith('p:')
+                            ? widget.groupId.substring(2)
+                            : widget.groupId;
+                        final isPresident =
+                            PocketPresidentService.isPresidentId(targetId);
+                        if (isPresident) {
+                          return Container(
+                            margin: const EdgeInsets.only(left: 6),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 1.5),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.4),
+                                  blurRadius: 4,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: const [
+                                Icon(Icons.verified_rounded,
+                                    color: Colors.black, size: 10),
+                                SizedBox(width: 2.5),
+                                Text(
+                                  'Pocket Mates',
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        } else if (widget.groupId.startsWith('p:')) {
+                          return Container(
+                            margin: const EdgeInsets.only(left: 6),
+                            width: 7,
+                            height: 7,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF22C55E),
+                              shape: BoxShape.circle,
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
                   ],
                 ),
                 Builder(
@@ -1859,6 +1908,22 @@ Draft: "$draft"''';
                     final targetId = widget.groupId.startsWith('p:')
                         ? widget.groupId.substring(2)
                         : widget.groupId;
+                    final isPresident = PocketPresidentService.isPresidentId(targetId);
+                    if (isPresident) {
+                      return const Padding(
+                        padding: EdgeInsets.only(top: 1.5),
+                        child: Text(
+                          'President of Pocket World • Help & Support',
+                          style: TextStyle(
+                            fontSize: 10.5,
+                            color: Color(0xFFFFD700),
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
+                    }
                     final isRobot = PocketRobotService.isRobotId(targetId);
                     if (isRobot) {
                       final robot = PocketRobotService.getRobotById(targetId);

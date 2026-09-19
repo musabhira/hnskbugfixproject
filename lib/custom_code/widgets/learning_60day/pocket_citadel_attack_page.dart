@@ -14,6 +14,7 @@ import 'pocket_score_level_engine.dart';
 import 'pocket_world_street_page.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
 /// Audio Directive:
@@ -428,6 +429,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     await PocketFortressDefenseService.recordAttackLaunchedToday();
     // 🛡️ User Audio Directive: 24-Hour Presidential Protection activated after raid
     await PocketFortressDefenseService.placeUnderPresidentialProtection(widget.neighbor.id, hours: 24);
+    await PocketPresidentService.notifyPresidentialProtection(widget.neighbor.id, hours: 24);
 
     // ⚔️ Audio Directive: Raider earns 10 to 15 Pocket Score (PS) points globally
     final looted = (result['lootedCoins'] as num? ?? 15).toInt();

@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 
 part 'whats_app_groups_provider.g.dart';
@@ -651,6 +652,41 @@ class Conversations extends _$Conversations {
         debugPrint('Error loading robot mates: $e');
       }
 
+      // 🏛️ Official President of Pocket World & Pocket Mates
+      try {
+        final presInfo = await PocketPresidentService.getLastPresidentMessage(userId);
+        final presVibes = await PocketPresidentService.getActivePresidentVibes();
+        final hasStatus = presVibes.isNotEmpty;
+        final isSeen = hasStatus && VibesSeenService.isWatched(
+          currentUserId: userId,
+          userId: PocketPresidentService.presidentId,
+          profileId: PocketPresidentService.presidentId,
+          statuses: presVibes,
+        );
+        final hasUnwatchedStatus = hasStatus && !isSeen;
+
+        final lastTime = presInfo['created_at'] is DateTime
+            ? presInfo['created_at'] as DateTime
+            : (DateTime.tryParse(presInfo['created_at']?.toString() ?? '') ?? DateTime.now());
+
+        updatedPersonal.add(ChatConversation(
+          id: PocketPresidentService.presidentId,
+          name: PocketPresidentService.presidentName,
+          imageUrl: PocketPresidentService.presidentAvatarUrl,
+          lastMessage: presInfo['message_text']?.toString(),
+          lastMessageTime: lastTime,
+          unreadCount: (presInfo['unread_count'] as num?)?.toInt() ?? 0,
+          isGroup: false,
+          isOnline: true,
+          isPinned: pinnedIds.contains(PocketPresidentService.presidentId),
+          hasStatus: hasStatus,
+          hasUnwatchedStatus: hasUnwatchedStatus,
+          statusData: hasStatus ? presVibes : null,
+        ));
+      } catch (e) {
+        debugPrint('Error adding President conversation: $e');
+      }
+
       // Combine and sort
       final combined = [
         ...notifications,
@@ -1020,7 +1056,9 @@ class Conversations extends _$Conversations {
         state = AsyncValue.data(updatedList);
       });
 
-      if (PocketRobotService.isRobotId(conversationId)) {
+      if (PocketPresidentService.isPresidentId(conversationId)) {
+        await PocketPresidentService.markPresidentChatAsRead(userId);
+      } else if (PocketRobotService.isRobotId(conversationId)) {
         await PocketRobotService.markRobotChatAsRead(userId, conversationId);
       } else if (isGroup) {
         await _supabase

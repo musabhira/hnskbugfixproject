@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -75,6 +76,11 @@ class _ConversationTileState extends State<ConversationTile> {
   }
 
   VectorAvatarConfig _getAvatarConfig() {
+    // 0. If it's the President of Pocket World, use Level 90 Supreme Grandmaster Sovereign avatar
+    if (PocketPresidentService.isPresidentId(widget.conversation.id)) {
+      return VectorAvatarConfig.getEvolutionAvatarForStage(90);
+    }
+
     // 1. If it's a Pocket Robot, always use their exact dynamic looped level evolution avatar
     if (PocketRobotService.isRobotId(widget.conversation.id)) {
       final robot = PocketRobotService.getRobotById(widget.conversation.id) ??
@@ -577,6 +583,55 @@ class _ConversationTileState extends State<ConversationTile> {
                                 ),
                                 Builder(
                                   builder: (context) {
+                                    final isPresident =
+                                        PocketPresidentService.isPresidentId(
+                                            widget.conversation.id);
+                                    if (isPresident) {
+                                      return Container(
+                                        margin: const EdgeInsets.only(left: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [
+                                              Color(0xFFFFD700),
+                                              Color(0xFFFF9100)
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(5),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFFFFD700)
+                                                  .withValues(alpha: 0.4),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 1),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: const [
+                                            Icon(material.Icons.verified_rounded,
+                                                color: Colors.black,
+                                                size: 11),
+                                            SizedBox(width: 3),
+                                            Text(
+                                              'Pocket Mates',
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontWeight: FontWeight.w900,
+                                                fontSize: 9.5,
+                                                letterSpacing: 0.3,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }
+
                                     final isRobot =
                                         PocketRobotService.isRobotId(
                                             widget.conversation.id);
