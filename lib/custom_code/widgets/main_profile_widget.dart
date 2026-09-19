@@ -189,6 +189,27 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     _loadPocketScore();
   }
 
+  void _ensurePublicTabController() {
+    final expectedLength = isMe ? 3 : 2;
+    if (_publicTabController.length != expectedLength) {
+      final oldIndex = _publicTabController.index.clamp(0, expectedLength - 1);
+      _publicTabController.dispose();
+      _publicTabController = material.TabController(
+        length: expectedLength,
+        vsync: this,
+        initialIndex: oldIndex,
+      )..addListener(() {
+          if (mounted) setState(() {});
+        });
+    }
+  }
+
+  @override
+  void didUpdateWidget(MainProfileWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _ensurePublicTabController();
+  }
+
   // 🪙 Unified Pocket Score state (highest priority on user profile)
   int _pocketScore = 0;
 
@@ -1132,6 +1153,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final textColor = _ensureContrast(rawTextColor, bgColor, isButton: false);
     final btnTextColor = _ensureContrast(finalBtnTextColor, btnColor, isButton: false);
 
+    _ensurePublicTabController();
+
     return material.Scaffold(
       backgroundColor: bgColor,
       body: PocketSnapFlameRefresh(
@@ -1346,22 +1369,26 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                   children: [
                                     Row(
                                       children: [
-                                        Text(
-                                          '⚔️ CITADEL SIEGE ALERT',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFFCA5A5),
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 12,
-                                            letterSpacing: 0.5,
+                                        Expanded(
+                                          child: Text(
+                                            '⚔️ CITADEL SIEGE ALERT',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFFCA5A5),
+                                              fontWeight: FontWeight.w900,
+                                              fontSize: 12,
+                                              letterSpacing: 0.5,
+                                            ),
                                           ),
                                         ),
-                                        const Spacer(),
+                                        const SizedBox(width: 6),
                                         Text(
                                           _recentRaids.first.breached ? '💥 Breached (-60 HP)' : '🛡️ Repelled',
                                           style: TextStyle(
                                             color: _recentRaids.first.breached ? const Color(0xFFF87171) : const Color(0xFF34D399),
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 12,
+                                            fontSize: 11.5,
                                           ),
                                         ),
                                       ],
@@ -1978,29 +2005,28 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                     ),
                                   ),
                                   const SizedBox(height: 2),
-                                  Row(
-                                    children: [
-                                      Flexible(
-                                        child: Text(
-                                          entry.attackerWeapon,
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
+                                  Text.rich(
+                                    TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: entry.attackerWeapon,
                                           style: const TextStyle(
                                             color: Colors.amber,
                                             fontSize: 10,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 6),
-                                      Text(
-                                        '• $timeText',
-                                        style: GoogleFonts.inter(
-                                          color: Colors.white54,
-                                          fontSize: 10,
+                                        TextSpan(
+                                          text: ' • $timeText',
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white54,
+                                            fontSize: 10,
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ],
                               ),

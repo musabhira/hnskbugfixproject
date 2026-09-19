@@ -86,6 +86,9 @@ class ChatMessages extends _$ChatMessages {
 
     try {
       if (isPersonal) {
+        final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(actualId);
+        if (!isUuid || PocketRobotService.isRobotId(actualId)) return;
+
         await _supabase
             .from('messages')
             .update({'is_read': true})
@@ -126,6 +129,11 @@ class ChatMessages extends _$ChatMessages {
     final isPersonal = groupId.startsWith('p:');
     final actualId = isPersonal ? groupId.substring(2) : groupId;
     final uid = ref.read(currentUserIdProvider);
+
+    // Robot chats are handled locally
+    if (isPersonal && (!RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(actualId) || PocketRobotService.isRobotId(actualId))) {
+      return;
+    }
 
     final channel = _supabase.channel('chat_messages_$groupId');
 
@@ -431,6 +439,9 @@ class ChatMessages extends _$ChatMessages {
       final cutoffTime = DateTime.now().subtract(const Duration(hours: 24));
 
       if (isPersonal) {
+        if (!RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(actualId) || PocketRobotService.isRobotId(actualId)) {
+          return;
+        }
         // Safe delete for personal chat: only messages between these match two users
         await _supabase
             .from('messages')

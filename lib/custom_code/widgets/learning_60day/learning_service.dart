@@ -6,6 +6,7 @@ import 'pocket_fortress_defense_service.dart';
 import 'learning_models.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/services/push_notification_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 /// Core Service managing 90-Stage Progression, Pocket Score, Inactivity Decay & Profile UI sync
 class Learning60DayService {
@@ -172,6 +173,26 @@ class Learning60DayService {
   Future<UserLearningProgress> fetchProgress(String userId) async {
     final now = DateTime.now();
     try {
+      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+      if (!isUuid || PocketRobotService.isRobotId(userId)) {
+        final robot = PocketRobotService.getRobotById(userId) ??
+            PocketRobotService.getRobotByLevel(1);
+        final dynLvl = PocketRobotService.getDynamicLevel(robot);
+        final stage = LearningMilestoneStage.getStageForDay(dynLvl);
+        return UserLearningProgress(
+          currentDay: dynLvl.clamp(1, 90),
+          currentStage: stage.stageNumber,
+          streakDays: dynLvl,
+          totalPoints: dynLvl * 100,
+          minutesPracticedToday: 60,
+          targetDailyMinutes: 90,
+          missedDaysCount: 0,
+          hasInactivityWarning: false,
+          lastActiveDate: now,
+          todayTasks: generateTodayTasks(dynLvl),
+        );
+      }
+
       final res = await _supabase
           .from('profile')
           .select('learning_day, learning_stage, learning_points, learning_streak, last_learning_date, bg_color_code, button_color_code')

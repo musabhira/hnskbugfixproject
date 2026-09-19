@@ -596,7 +596,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final w = constraints.maxWidth;
             final h = constraints.maxHeight;
             final bottomPad = MediaQuery.of(context).padding.bottom;
-            final collapsedH = 64.0 + bottomPad;
+            final collapsedH = 76.0 + bottomPad;
             final drawerMaxH = h * 0.92;
             final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
@@ -2028,7 +2028,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 }
               },
               child: Container(
-                padding: EdgeInsets.fromLTRB(16, 8, 16, prog < 0.1 ? (10 + bottomPad) : 10),
+                padding: EdgeInsets.fromLTRB(16, 6, 16, prog < 0.1 ? (8 + bottomPad) : 8),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B).withValues(alpha: 0.95),
                   border: Border(

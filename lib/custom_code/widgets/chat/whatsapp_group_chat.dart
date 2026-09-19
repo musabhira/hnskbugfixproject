@@ -608,6 +608,17 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     if (!widget.groupId.startsWith('p:')) return;
     try {
       final mateUserId = widget.groupId.substring(2);
+      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(mateUserId);
+      if (!isUuid || PocketRobotService.isRobotId(mateUserId)) {
+        final robot = PocketRobotService.getRobotById(mateUserId) ??
+            PocketRobotService.getRobotByLevel(1);
+        final dynLvl = PocketRobotService.getDynamicLevel(robot);
+        safeSetState(() {
+          _mateStreakDays = dynLvl;
+        });
+        return;
+      }
+
       final prefs = await SharedPreferences.getInstance();
       final cachedStreak = prefs.getInt('mate_streak_${widget.groupId}');
       if (cachedStreak != null && cachedStreak > 0) {
@@ -3248,47 +3259,56 @@ Draft: "$draft"''';
               ),
             ),
             const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Text(
-                      isBurned ? 'Opened Snap' : 'Snap 🔥',
-                      style: GoogleFonts.outfit(
-                        color: isBurned ? Colors.white54 : Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                      decoration: BoxDecoration(
-                        color: isBurned ? Colors.transparent : Colors.redAccent.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(6),
-                        border: isBurned ? null : Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
-                      ),
-                      child: Text(
-                        isBurned ? 'EXPIRED' : 'VIEW ONCE',
-                        style: GoogleFonts.inter(
-                          color: isBurned ? Colors.white30 : Colors.redAccent,
-                          fontSize: 8,
-                          fontWeight: FontWeight.w800,
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          isBurned ? 'Opened Snap' : 'Snap 🔥',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            color: isBurned ? Colors.white54 : Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                Text(
-                  isBurned ? 'Burned permanently' : 'Tap to view (Self-destructs)',
-                  style: GoogleFonts.inter(
-                    color: isBurned ? Colors.white30 : Colors.white70,
-                    fontSize: 11,
+                      const SizedBox(width: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        decoration: BoxDecoration(
+                          color: isBurned ? Colors.transparent : Colors.redAccent.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(6),
+                          border: isBurned ? null : Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                        ),
+                        child: Text(
+                          isBurned ? 'EXPIRED' : 'VIEW ONCE',
+                          style: GoogleFonts.inter(
+                            color: isBurned ? Colors.white30 : Colors.redAccent,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                  Text(
+                    isBurned ? 'Burned permanently' : 'Tap to view (Self-destructs)',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      color: isBurned ? Colors.white30 : Colors.white70,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
