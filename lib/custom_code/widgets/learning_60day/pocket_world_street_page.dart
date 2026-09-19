@@ -354,14 +354,14 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
               const Text('🔒 ', style: TextStyle(fontSize: 22)),
               Expanded(
                 child: Text(
-                  'Raid Warfare Unlocks at Level 4',
+                  'Raid Warfare Unlocks at Level 1',
                   style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             ],
           ),
           content: Text(
-            'Complete your English training missions up to Level 4 (Day 4) to unlock direct citadel attacks and test your vocabulary under pressure!',
+            'Complete your English training missions up to Level 1 to unlock direct citadel attacks and test your vocabulary under pressure!',
             style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.4),
           ),
           actions: [
@@ -418,14 +418,14 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
               const Text('🔒 ', style: TextStyle(fontSize: 22)),
               Expanded(
                 child: Text(
-                  'Raid Warfare Unlocks at Level 4',
+                  'Raid Warfare Unlocks at Level 1',
                   style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             ],
           ),
           content: Text(
-            'Complete your English training missions up to Level 4 (Day 4) to unlock direct citadel attacks and test your vocabulary under pressure!',
+            'Complete your English training missions up to Level 1 to unlock direct citadel attacks and test your vocabulary under pressure!',
             style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, height: 1.4),
           ),
           actions: [
@@ -785,9 +785,9 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              widget.currentDay >= 4
+                              widget.currentDay >= 1
                                   ? 'Level ${widget.currentDay}: Raid higher citadels (+1 or +2 Lvls) to sharpen English!'
-                                  : 'Raid warfare unlocks at Level 4. Complete tasks to unlock!',
+                                  : 'Raid warfare unlocks at Level 1. Complete tasks to unlock!',
                               style: const TextStyle(color: Colors.white70, fontSize: 11),
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
@@ -805,17 +805,17 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: widget.currentDay >= 4
+                          colors: widget.currentDay >= 1
                               ? [const Color(0xFFDC2626), const Color(0xFF991B1B)]
                               : [const Color(0xFF334155), const Color(0xFF1E293B)],
                         ),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: widget.currentDay >= 4 ? const Color(0xFFF87171) : Colors.white24,
+                          color: widget.currentDay >= 1 ? const Color(0xFFF87171) : Colors.white24,
                           width: 1.2,
                         ),
                         boxShadow: [
-                          if (widget.currentDay >= 4)
+                          if (widget.currentDay >= 1)
                             BoxShadow(
                               color: Colors.redAccent.withValues(alpha: 0.35),
                               blurRadius: 8,

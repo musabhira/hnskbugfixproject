@@ -450,179 +450,183 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                // 1. Full-Screen 2D Open World Scenery: Sky, Radiant Sun, Clouds, Mountain Silhouettes, Rolling Hills, Courtyard Lawn, Trees, Street Lamps
+                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan (User Audio: "കൈകൊണ്ട് ഇങ്ങനെ ആക്കുമ്പോൾ സൂം ആവും, പിന്നെ സൂം ലെസ് ആവും")
                 Positioned.fill(
-                  child: CustomPaint(
-                    painter: CitadelScenicLandscapePainter(
-                      isDamaged: _isDefenderDamaged,
-                      groundBaseY: groundY,
-                    ),
-                  ),
-                ),
-
-                // 2. The 2D Flame English House seated firmly on the courtyard lawn
-                Positioned(
-                  bottom: houseBottom,
-                  left: (w - houseW) / 2,
-                  width: houseW,
-                  height: houseH,
-                  child: FlameEnglishHouseWidget(
-                    currentDay: widget.neighbor.day,
-                    streak: widget.neighbor.streak,
-                    isDamaged: _isDefenderDamaged,
-                    houseId: widget.neighbor.id,
-                    paletteId: widget.neighbor.paletteId,
-                  ),
-                ),
-
-                // Chimney Smoke Puffs floating above the roof
-                Positioned(
-                  bottom: houseBottom + houseH - 24,
-                  left: (w / 2) - 86,
-                  child: _buildChimneySmoke(),
-                ),
-                Positioned(
-                  bottom: houseBottom + houseH - 24,
-                  right: (w / 2) - 86,
-                  child: _buildChimneySmoke(),
-                ),
-
-                // 3. Badges directly above the house roof
-                Positioned(
-                  bottom: houseBottom + houseH - 24,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // 👑 Yellow Banner: DEFENDER CITADEL
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFFC00),
-                            borderRadius: BorderRadius.circular(8),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.35),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                  child: InteractiveViewer(
+                    minScale: 0.75,
+                    maxScale: 2.5,
+                    boundaryMargin: const EdgeInsets.symmetric(horizontal: 100, vertical: 80),
+                    clipBehavior: Clip.none,
+                    child: SizedBox(
+                      width: w,
+                      height: h,
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          // 1. Full-Screen 2D Open World Scenery: Sky, Radiant Sun, Flying Birds, Clouds, Mountains, Rolling Hills, Courtyard Lawn, Trees
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: CitadelScenicLandscapePainter(
+                                isDamaged: _isDefenderDamaged,
+                                groundBaseY: groundY,
                               ),
-                            ],
-                          ),
-                          child: Text(
-                            '👑 DEFENDER CITADEL • ${widget.neighbor.name.toUpperCase()}',
-                            style: GoogleFonts.outfit(
-                              color: Colors.black,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.6,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 5),
 
-                        // 🪙 Pocket Score (PS) Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                          // 2. The 2D Flame English House seated firmly on the courtyard lawn
+                          Positioned(
+                            bottom: houseBottom,
+                            left: (w - houseW) / 2,
+                            width: houseW,
+                            height: houseH,
+                            child: FlameEnglishHouseWidget(
+                              currentDay: widget.neighbor.day,
+                              streak: widget.neighbor.streak,
+                              isDamaged: _isDefenderDamaged,
+                              houseId: widget.neighbor.id,
+                              paletteId: widget.neighbor.paletteId,
                             ),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                                blurRadius: 8,
-                              ),
-                            ],
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text('🪙', style: TextStyle(fontSize: 13)),
-                              const SizedBox(width: 5),
-                              Text(
-                                'PS ${_defenderScore > 0 ? _defenderScore : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day)} PTS',
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFFFFD700),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w900,
+
+                          // Chimney Smoke Puffs floating above the roof
+                          Positioned(
+                            bottom: houseBottom + houseH - 24,
+                            left: (w / 2) - 86,
+                            child: _buildChimneySmoke(),
+                          ),
+                          Positioned(
+                            bottom: houseBottom + houseH - 24,
+                            right: (w / 2) - 86,
+                            child: _buildChimneySmoke(),
+                          ),
+
+                          // 3. Badges directly above the house roof (Avatar + Level + Pocket Score)
+                          // User Audio Directive: "പിന്നെ അതിന്റെ മേലെ ചെറുതായിട്ട് എന്ത് ചെയ്യുക ഇവരുടെ അവതാർ കാണിക്കുക അത്രതന്നെ. പിന്നെ അവർ ഏതാ ലെവൽ എന്നുള്ളത് കാണിക്കുക, ഇവരുടെ പോക്കറ്റ് സ്കോറും കാണിക്കുക അത്രതന്നെ. വേറെ ഒന്നുമില്ല."
+                          Positioned(
+                            bottom: houseBottom + houseH - 20,
+                            left: 0,
+                            right: 0,
+                            child: Center(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(alpha: 0.45),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Defender Avatar Bubble
+                                    Container(
+                                      width: 26,
+                                      height: 26,
+                                      decoration: const BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Color(0xFF1E293B),
+                                      ),
+                                      child: ClipOval(
+                                        child: VectorAvatarWidget(
+                                          config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
+                                          size: 26,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 7),
+                                    // Level Pill
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF0284C7),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'Lvl ${widget.neighbor.day}',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 7),
+                                    // Pocket Score
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text('🪙', style: TextStyle(fontSize: 12)),
+                                        const SizedBox(width: 3),
+                                        Text(
+                                          'PS ${_defenderScore > 0 ? _defenderScore : PocketScoreLevelEngine.getRequiredScoreForLevel(widget.neighbor.day)} PTS',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFFD700),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w900,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ],
+
+                          // 4. Weapon Discharge & Particle Strike Layer
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: Listenable.merge([_beamController, _particleController]),
+                              builder: (context, _) {
+                                if (_beamController.value <= 0 && _particleController.value <= 0) {
+                                  return const SizedBox.shrink();
+                                }
+                                return IgnorePointer(
+                                  child: CustomPaint(
+                                    painter: CitadelLaserStrikePainter(
+                                      beamProg: _beamController.value,
+                                      particleProg: _particleController.value,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+
+                          // 5. Victory Coin Shower Layer
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _coinController,
+                              builder: (context, _) {
+                                if (_coinController.value <= 0.0 || _coinController.value >= 1.0) {
+                                  return const SizedBox.shrink();
+                                }
+                                return IgnorePointer(
+                                  child: CustomPaint(
+                                    painter: CitadelCoinShowerPainter(
+                                      progress: _coinController.value,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
 
-                // 4. Defender in Courtyard Lawn (speech bubble & avatar)
-                Positioned(
-                  bottom: houseBottom - 8,
-                  left: (w / 2) - 135,
-                  child: _buildDefenderInCourtyard(),
-                ),
-
-                // 5. Cute little red car parked on the driveway curb in front of the house
-                Positioned(
-                  bottom: houseBottom - 6,
-                  right: (w / 2) - 140,
-                  child: _buildDefenderLittleCar(),
-                ),
-
-                // 6. Roadside Street Signpost
-                Positioned(
-                  bottom: houseBottom - 42,
-                  right: 18,
-                  child: _buildRoadsideSignpost(),
-                ),
-
-                // 7. Weapon Discharge & Particle Strike Layer
-                Positioned.fill(
-                  child: AnimatedBuilder(
-                    animation: Listenable.merge([_beamController, _particleController]),
-                    builder: (context, _) {
-                      if (_beamController.value <= 0 && _particleController.value <= 0) {
-                        return const SizedBox.shrink();
-                      }
-                      return IgnorePointer(
-                        child: CustomPaint(
-                          painter: CitadelLaserStrikePainter(
-                            beamProg: _beamController.value,
-                            particleProg: _particleController.value,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // 8. Victory Coin Shower Layer
-                Positioned.fill(
-                  child: AnimatedBuilder(
-                    animation: _coinController,
-                    builder: (context, _) {
-                      if (_coinController.value <= 0.0 || _coinController.value >= 1.0) {
-                        return const SizedBox.shrink();
-                      }
-                      return IgnorePointer(
-                        child: CustomPaint(
-                          painter: CitadelCoinShowerPainter(
-                            progress: _coinController.value,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // 9. Attack strike visual impact overlay
+                // 6. Attack strike visual impact overlay
                 if (_isStriking) _buildStrikeOverlay(),
 
-                // 10. Floating Top Capsule Header
+                // 7. Floating Top Capsule Header (Back button + View Profile + Info)
                 Positioned(
                   top: 0,
                   left: 0,
@@ -630,7 +634,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   child: _buildTopHeaderCapsule(),
                 ),
 
-                // 11. Bottom Stacked Red "Attack" Button (when challenge sheet is closed)
+                // 8. Bottom Stacked Small Red "Attack" Button (when challenge sheet is closed)
                 if (!_isQuestionSheetOpen)
                   Positioned(
                     bottom: 26,
@@ -639,7 +643,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     child: _buildBottomAttackButton(),
                   ),
 
-                // 12. Stacked Expanded Question / Challenge Sheet (when opened)
+                // 9. Stacked Expanded Question / Challenge Sheet (when opened)
                 if (_isQuestionSheetOpen)
                   Positioned(
                     bottom: 0,
@@ -655,216 +659,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  /// 👤 Defender Character standing / present in the Courtyard (User Directive: "അവരവിടെ ഇങ്ങനെ ഇരിക്കുന്നത്... അവന്റെ വീട്ടിൽ നടക്കുന്നത്, ആ ഒരു ഫീൽ കിട്ടാൻ")
-  Widget _buildDefenderInCourtyard() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Speech Bubble
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: widget.neighbor.hasActiveShield ? const Color(0xFF00F0FF) : const Color(0xFFFFD700),
-              width: 1.2,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.35),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🏰', style: TextStyle(fontSize: 11)),
-              const SizedBox(width: 4),
-              Text(
-                'Defending my Citadel!',
-                style: GoogleFonts.outfit(
-                  color: widget.neighbor.hasActiveShield ? const Color(0xFF38BDF8) : const Color(0xFFFFD700),
-                  fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 5),
 
-        // Glowing Avatar Orb & Platform
-        Container(
-          width: 54,
-          height: 54,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFF0F172A),
-            border: Border.all(
-              color: widget.neighbor.hasActiveShield ? const Color(0xFF00F0FF) : const Color(0xFFFFD700),
-              width: 2.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: (widget.neighbor.hasActiveShield ? const Color(0xFF00F0FF) : const Color(0xFFFFD700))
-                    .withValues(alpha: 0.45),
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: ClipOval(
-            child: VectorAvatarWidget(
-              config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.neighbor.day),
-              size: 54,
-            ),
-          ),
-        ),
-        const SizedBox(height: 3),
-
-        // Name & Level Pill
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: Colors.black.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: Colors.white24, width: 0.8),
-          ),
-          child: Text(
-            '${widget.neighbor.name} (Lvl ${widget.neighbor.day})',
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 9.5,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 🚗 Cute Little Car in front of the house on street curb (matching user's screenshot)
-  Widget _buildDefenderLittleCar() {
-    return SizedBox(
-      width: 96,
-      height: 54,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-          // Shadow under car
-          Positioned(
-            bottom: 2,
-            child: Container(
-              width: 82,
-              height: 10,
-              decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          // Car Red Body
-          Positioned(
-            bottom: 12,
-            child: Container(
-              width: 78,
-              height: 24,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                ),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(18),
-                  topRight: Radius.circular(18),
-                  bottomLeft: Radius.circular(6),
-                  bottomRight: Radius.circular(6),
-                ),
-                border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    blurRadius: 6,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Windshield & Driver Bubble
-          Positioned(
-            bottom: 26,
-            child: Container(
-              width: 44,
-              height: 20,
-              decoration: BoxDecoration(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.75),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(14),
-                  topRight: Radius.circular(14),
-                ),
-                border: Border.all(color: Colors.white, width: 1.2),
-              ),
-              child: Center(
-                child: Container(
-                  width: 14,
-                  height: 14,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(Icons.person, size: 11, color: Colors.black),
-                ),
-              ),
-            ),
-          ),
-          // Wheels (Left & Right)
-          Positioned(
-            left: 6,
-            bottom: 4,
-            child: _buildCarWheel(),
-          ),
-          Positioned(
-            right: 6,
-            bottom: 4,
-            child: _buildCarWheel(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCarWheel() {
-    return Container(
-      width: 22,
-      height: 22,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1E293B),
-        shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFFFD700), width: 2.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 4,
-          ),
-        ],
-      ),
-      child: Center(
-        child: Container(
-          width: 7,
-          height: 7,
-          decoration: const BoxDecoration(
-            color: Color(0xFFFFD700),
-            shape: BoxShape.circle,
-          ),
-        ),
-      ),
-    );
-  }
 
   /// ☁️ Soft translucent smoke puffs floating from chimneys
   Widget _buildChimneySmoke() {
@@ -901,45 +696,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  /// 🏡 Roadside Street Signpost Plaque (matching screenshot)
-  Widget _buildRoadsideSignpost() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: const Color(0xFFFFFC00), width: 1.2),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            '🏡 Street ${widget.neighbor.day}',
-            style: GoogleFonts.outfit(
-              color: const Color(0xFFFFFC00),
-              fontSize: 9.5,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          Text(
-            widget.neighbor.name,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 10.5,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  /// 🌟 Top Floating Header Capsule (matching user's screenshot)
+  /// 🌟 Top Floating Header: Back button on left, "View Profile" + minimal (i) info button on right
   Widget _buildTopHeaderCapsule() {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -958,94 +719,65 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ),
             ),
 
-            // Main Header Capsule (matching user screenshot)
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0F172A).withValues(alpha: 0.88),
-                  borderRadius: BorderRadius.circular(30),
-                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5), width: 1.2),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 12,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(
-                      child: Text(
-                        '${widget.neighbor.name} 😈 (Lvl ${widget.neighbor.day})',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
+            // Right group: "View Profile" button + minimal (i) info button (User Directive: "ഒരു വ്യൂ പ്രൊഫൈൽ എന്ന് പറഞ്ഞിട്ട് ഒരു സാധനം കൊടുക്കണം. ജസ്റ്റ് അത് മാത്രം മതി വേറെ ഒന്നും വേണ്ട മേലെ")
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                InkWell(
+                  onTap: _openDefenderProfile,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
                       ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.35), width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF8B5CF6).withValues(alpha: 0.45),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 6),
-                    InkWell(
-                      onTap: _showCitadelStatsSheet,
-                      child: const Icon(Icons.info_outline_rounded, color: Color(0xFFFFD700), size: 18),
-                    ),
-                    const SizedBox(width: 8),
-                    // Chat button
-                    InkWell(
-                      onTap: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('💬 Sending ping to ${widget.neighbor.name}...'),
-                            duration: const Duration(seconds: 2),
-                            behavior: SnackBarBehavior.floating,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.person_rounded, color: Colors.white, size: 16),
+                        const SizedBox(width: 6),
+                        Text(
+                          'View Profile',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 0.3,
                           ),
-                        );
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981),
-                          borderRadius: BorderRadius.circular(8),
                         ),
-                        child: const Icon(Icons.chat_bubble_rounded, color: Colors.white, size: 14),
-                      ),
+                      ],
                     ),
-                    const SizedBox(width: 6),
-                    // Profile View button
-                    InkWell(
-                      onTap: _openDefenderProfile,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF8B5CF6),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Icon(Icons.person_rounded, color: Colors.white, size: 14),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    // Attacks count pill
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFEF4444),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '⚔️ $_attacksUsed/2',
-                        style: const TextStyle(color: Colors.white, fontSize: 10.5, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
+                const SizedBox(width: 8),
 
-            const SizedBox(width: 36), // Balance for back button
+                // Minimal (i) info button (User Directive: "വേണമെങ്കിൽ ഒരു ഐ ബട്ടൺ ഇവിടെ ചെറുതായി മിനിമൽ ഇട്ടാൽ മതി")
+                InkWell(
+                  onTap: _showCitadelStatsSheet,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    padding: const EdgeInsets.all(7),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white24, width: 1),
+                    ),
+                    child: const Icon(Icons.info_outline_rounded, color: Color(0xFFFFD700), size: 18),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
@@ -1087,7 +819,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
-  /// ⚔️ Small Stacked Red Button at Bottom (User Directive: "അടിയിൽ സ്റ്റാക്ക് ചെയ്തിട്ട് ചെറിയൊരു Attack എന്ന് മാത്രം എഴുതിയ ചെറിയൊരു റെഡ് ബട്ടൺ കൊടുക്കണം")
+  /// ⚔️ Small Stacked Red Button at Bottom (User Directive: "ഈ Attack എന്നുള്ളത് ചെറിയ ബട്ടൺ ആക്കിയാൽ മതി")
   Widget _buildBottomAttackButton() {
     return Center(
       child: ScaleTransition(
@@ -1095,36 +827,36 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         child: GestureDetector(
           onTap: _onTapBottomAttack,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 9),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
                 colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
-              borderRadius: BorderRadius.circular(30),
-              border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFEF4444).withValues(alpha: 0.55),
-                  blurRadius: 18,
-                  spreadRadius: 2,
-                  offset: const Offset(0, 4),
+                  color: const Color(0xFFEF4444).withValues(alpha: 0.45),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text('⚔️', style: TextStyle(fontSize: 20)),
-                const SizedBox(width: 8),
+                const Text('⚔️', style: TextStyle(fontSize: 15)),
+                const SizedBox(width: 6),
                 Text(
                   'Attack',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.8,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
@@ -1218,6 +950,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               'Shield Status',
               widget.neighbor.hasActiveShield ? '🛡️ Active Iron Dome' : '🔓 Unshielded',
             ),
+            _buildStatRow('Daily Attacks', '$_attacksUsed / 2 used'),
             if (_isTargetProtected)
               _buildStatRow(
                 'Presidential Guard',
@@ -1387,16 +1120,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       _showNoticeDialog(
         '🔒 Daily Limit Reached!',
         'You have used 2/2 attacks today. Return tomorrow!',
-      );
-      return;
-    }
-    if (widget.attackerDay < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('🔒 Citadel attack warfare unlocks at Level 4!'),
-          backgroundColor: Color(0xFFDC2626),
-          behavior: SnackBarBehavior.floating,
-        ),
       );
       return;
     }
@@ -2196,6 +1919,11 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     _drawFluffyCloud(canvas, w * 0.50, gy * 0.35, 13);
     _drawFluffyCloud(canvas, w * 0.86, gy * 0.44, 12);
 
+    // 4. Flying Birds Soaring Across the Sky (User Audio: "പക്ഷികൾ മേലെ പറന്നു പോവുന്നതും")
+    _drawFlyingBird(canvas, w * 0.28, gy * 0.18, 13);
+    _drawFlyingBird(canvas, w * 0.36, gy * 0.13, 10);
+    _drawFlyingBird(canvas, w * 0.43, gy * 0.21, 9);
+
     // 4. Distant Mountain Silhouettes (Teal/Emerald haze)
     final mountainPath = Path();
     mountainPath.moveTo(0, gy - 16);
@@ -2293,6 +2021,21 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawCircle(Offset(cx + r * 0.9, cy - r * 0.35), r * 1.25, cloudPaint);
     canvas.drawCircle(Offset(cx + r * 1.9, cy - r * 0.15), r, cloudPaint);
     canvas.drawCircle(Offset(cx + r * 2.6, cy + r * 0.1), r * 0.75, cloudPaint);
+  }
+
+  void _drawFlyingBird(Canvas canvas, double x, double y, double span) {
+    final birdPaint = Paint()
+      ..color = const Color(0xFF0369A1).withValues(alpha: 0.70)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+
+    final birdPath = Path();
+    birdPath.moveTo(x - span, y + (span * 0.28));
+    birdPath.quadraticBezierTo(x - (span * 0.45), y - (span * 0.45), x, y);
+    birdPath.quadraticBezierTo(x + (span * 0.45), y - (span * 0.45), x + span, y + (span * 0.28));
+
+    canvas.drawPath(birdPath, birdPaint);
   }
 
   void _drawPicketFence(Canvas canvas, double startX, double groundY, int pickets) {
