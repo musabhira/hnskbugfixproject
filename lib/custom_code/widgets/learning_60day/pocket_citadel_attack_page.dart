@@ -213,6 +213,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   late AnimationController _heroChargeController;
   late AnimationController _ambientController;
   late AnimationController _profileDrawerController;
+  bool _isIronDomeFiring = false;
+  late AnimationController _ironDomeController;
 
   @override
   void initState() {
@@ -249,6 +251,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       vsync: this,
       duration: const Duration(milliseconds: 1600),
     );
+    _ironDomeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    );
     _ambientController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 8),
@@ -274,6 +280,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     _particleController.dispose();
     _coinController.dispose();
     _heroChargeController.dispose();
+    _ironDomeController.dispose();
     _ambientController.dispose();
     _profileDrawerController.dispose();
     super.dispose();
@@ -461,6 +468,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     // Wait for hero sprint to reach mansion front steps (~600ms)
     await Future.delayed(const Duration(milliseconds: 600));
 
+    final bool isTargetPresident = widget.neighbor.isPresident;
+    if (isTargetPresident) {
+      // 🛡️ User Audio Directive: Iron Dome System actively intercepts incoming strikes!
+      setState(() => _isIronDomeFiring = true);
+      _ironDomeController.forward(from: 0.0);
+      SystemSound.play(SystemSoundType.alert);
+    }
+
     // Phase 2: Hero leaps & unleashes avatar-specific weapon strike
     HapticFeedback.heavyImpact();
     _beamController.forward(from: 0.0);
@@ -515,6 +530,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     if (mounted) {
       setState(() {
         _isStriking = false;
+        _isIronDomeFiring = false;
         _raidStep = 3; // Victory!
       });
       _showVictoryDialog();
@@ -631,22 +647,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final cycleLabel = isNight ? '🌙 Night (${hoursLeftIn6hBlock}h left)' : '☀️ Day (${hoursLeftIn6hBlock}h left)';
     final isDay90 = widget.neighbor.day >= 90;
 
-    // 🌍 Virtual World Dimensions (1800 x 1600): A vast, living open landscape
-    const double worldW = 1800.0;
-    const double worldH = 1600.0;
-    const double groundY = 920.0;
+    final bool isPresident = widget.neighbor.isPresident;
+
+    // 🌍 Virtual World Dimensions:
+    // For President: A vast 3,600 x 2,000 sovereign territory with perimeter blast walls,
+    // Iron Dome air defense battery, police checkpoints, SWAT BearCat, and deep zoom-out!
+    final double worldW = isPresident ? 3600.0 : 1800.0;
+    final double worldH = isPresident ? 2000.0 : 1600.0;
+    final double groundY = isPresident ? 1120.0 : 920.0;
     const double houseW = 420.0;
     const double houseH = 380.0;
-    const double houseLeft = (worldW - houseW) / 2; // 690.0
-    const double houseTop = groundY - 14.0 - houseH; // 526.0
+    final double houseLeft = (worldW - houseW) / 2;
+    final double houseTop = groundY - 14.0 - houseH;
 
     // 🏛️ Sovereign Presidential Palace Castle Dimensions (Magnificent Central Citadel)
-    const double palaceW = 640.0;
-    const double palaceH = 500.0;
-    const double palaceLeft = (worldW - palaceW) / 2; // 580.0
-    const double palaceTop = groundY - 14.0 - palaceH; // 406.0
+    final double palaceW = 760.0;
+    final double palaceH = 580.0;
+    final double palaceLeft = (worldW - palaceW) / 2; // 1420.0
+    final double palaceTop = groundY - 14.0 - palaceH; // 526.0
 
-    final bool isPresident = widget.neighbor.isPresident;
     final effectiveHouseW = isPresident ? palaceW : houseW;
     final effectiveHouseH = isPresident ? palaceH : houseH;
     final effectiveHouseTop = isPresident ? palaceTop : houseTop;
@@ -676,14 +695,19 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final drawerMaxH = h * 0.92;
             final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
-            // 🛡️ Mathematically guaranteed to cover 100% of the screen (Zero blue borders / letterbox):
-            final minScale = math.max(w / worldW, h / worldH);
-            const maxScale = 2.5;
+            // 🛡️ Deep Zoom-out support: Allows zooming way out to view all presidential land,
+            // or zooming close into the palace gates:
+            final minScale = isPresident
+                ? (math.min(w / worldW, h / worldH) * 0.92).clamp(0.12, 1.0)
+                : math.max(w / worldW, h / worldH);
+            const maxScale = 2.8;
 
             // 🏠 Default View: Camera smoothly focuses on the House/Palace and its front courtyard
             if (!_hasInitializedTransform && w > 0 && h > 0) {
               _hasInitializedTransform = true;
-              final defaultScale = math.min(maxScale, math.max(minScale, w / (effectiveHouseW * 1.05)));
+              final defaultScale = isPresident
+                  ? (w / (effectiveHouseW * 1.35)).clamp(minScale, maxScale)
+                  : math.min(maxScale, math.max(minScale, w / (effectiveHouseW * 1.05)));
               final houseCenterX = worldW / 2;
               final houseCenterY = effectiveHouseTop + (effectiveHouseH * 0.52);
               final tx = ((w / 2) - (houseCenterX * defaultScale)).clamp(-(worldW * defaultScale - w), 0.0);
@@ -704,13 +728,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan
+                // 🔍 Interactive Estate Canvas with Smooth Deep Pinch-to-Zoom & Pan
                 Positioned.fill(
                   child: InteractiveViewer(
                     transformationController: _transformationController,
                     minScale: minScale,
                     maxScale: maxScale,
-                    boundaryMargin: EdgeInsets.zero,
+                    boundaryMargin: isPresident ? const EdgeInsets.all(400) : EdgeInsets.zero,
                     constrained: false,
                     clipBehavior: Clip.none,
                     child: SizedBox(
@@ -737,7 +761,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             ),
                           ),
 
-                          // 2. Central Estate: Grand Presidential Palace or 2D Flame English House
+                          // 2A. ⚡ Luminous Hexagonal Iron Dome Forcefield Canopy over Palace
+                          if (isPresident)
+                            Positioned(
+                              left: palaceLeft - 80,
+                              top: palaceTop - 70,
+                              width: palaceW + 160,
+                              height: palaceH + 90,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialIronDomeShieldCanopyWidget(
+                                  width: palaceW + 160,
+                                  height: palaceH + 90,
+                                  animProg: _ambientController.value,
+                                  isShieldActive: true,
+                                ),
+                              ),
+                            ),
+
+                          // 2B. Central Estate: Grand Presidential Palace or 2D Flame English House
                           if (isPresident)
                             Positioned(
                               left: palaceLeft,
@@ -787,37 +829,92 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                           // 3B. Presidential Security Layer: Limousine, Armed Guards, Black Cat Commandos & Cordon
                           if (isPresident || _isDefenderDamaged || _isTargetProtected)
-                            _buildPresidentialSecurityLayer(houseLeft, houseTop, houseW, houseH, groundY),
+                            _buildPresidentialSecurityLayer(houseLeft, houseTop, houseW, houseH, groundY, worldW),
 
-                          // 3C. 🚁 ✈️ 🚀 🚢 Grand Sovereign Living Airspace & Naval Defense Props
+                          // 3C. 🛡️ 🧱 🚧 🚔 🐕 📡 ✈️ 🚁 🚢 Grand Sovereign Living Airspace & Land Defense Props
                           if (isPresident) ...[
-                            // ✈️ Air Force One Supersonic VIP Jet soaring across high sky with contrails
+                            // 🧱 WEST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
                             Positioned(
-                              left: 260,
-                              top: 105,
+                              left: 200,
+                              top: groundY - 110,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
-                                builder: (context, _) => PresidentialSupersonicJetWidget(
+                                builder: (context, _) => PresidentialPerimeterWallWidget(
+                                  width: 480,
+                                  height: 110,
                                   animProg: _ambientController.value,
                                 ),
                               ),
                             ),
 
-                            // 🚁 Marine One Presidential Security Helicopter hovering with searchlight
+                            // 🚧 WEST POLICE BARRICADE CHECKPOINT ("Barricadukal")
                             Positioned(
-                              right: 250,
-                              top: 185,
+                              left: 720,
+                              top: groundY - 52,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
-                                builder: (context, _) => PresidentialHelicopterWidget(
+                                builder: (context, _) => PresidentialPoliceBarricadeWidget(
+                                  animProg: _ambientController.value,
+                                  width: 140,
+                                  label: 'WEST GATE: POLICE CHECKPOINT 🚧',
+                                ),
+                              ),
+                            ),
+
+                            // 🚔 SWAT ARMORED TACTICAL BEARCAT / STRYKER APC
+                            Positioned(
+                              left: 880,
+                              top: groundY - 65,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialSwatArmoredCarWidget(
                                   animProg: _ambientController.value,
                                 ),
                               ),
                             ),
 
-                            // 🚀 Aerospace Defense Interceptor Rocket & Gantry Launcher
+                            // 🐕 POLICE K9 TACTICAL PATROL UNIT
                             Positioned(
-                              left: 1360,
+                              left: 1030,
+                              top: groundY - 35,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialK9PoliceUnitWidget(
+                                  animProg: _ambientController.value,
+                                ),
+                              ),
+                            ),
+
+                            // 🛡️ WEST IRON DOME TAMIR INTERCEPTOR MISSILE BATTERY ("Iron Dome System")
+                            Positioned(
+                              left: 1120,
+                              top: groundY - 122,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialIronDomeBatteryWidget(
+                                  animProg: _ambientController.value,
+                                  isLaunching: _isIronDomeFiring,
+                                  onTap: _showPresidentialIronDomeModal,
+                                ),
+                              ),
+                            ),
+
+                            // 📡 EAST IRON DOME PHASED ARRAY RADAR STATION
+                            Positioned(
+                              left: 2360,
+                              top: groundY - 125,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialRadarDomeWidget(
+                                  animProg: _ambientController.value,
+                                  onTap: _showPresidentialIronDomeModal,
+                                ),
+                              ),
+                            ),
+
+                            // 🚀 AEROSPACE DEFENSE INTERCEPTOR ROCKET & GANTRY LAUNCHER
+                            Positioned(
+                              left: 2520,
                               top: groundY - 170,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -827,10 +924,74 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               ),
                             ),
 
-                            // 🚢 Armed Naval Patrol Gunboat Cruising on River with rotating radar & wake
+                            // 🛑 EAST POLICE CHECKPOINT WITH BARRICADES
                             Positioned(
-                              left: 420,
-                              top: groundY + 190.0 + 15.0, // 1125.0
+                              left: 2750,
+                              top: groundY - 52,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialPoliceBarricadeWidget(
+                                  animProg: _ambientController.value,
+                                  width: 140,
+                                  label: 'EAST GATE: ARMED PERIMETER 🛑',
+                                ),
+                              ),
+                            ),
+
+                            // 🚓 POLICE INTERCEPTOR CRUISER PATROL CAR
+                            Positioned(
+                              left: 2910,
+                              top: groundY - 78,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PoliceInterceptorCarWidget(
+                                  animProg: _ambientController.value,
+                                ),
+                              ),
+                            ),
+
+                            // 🧱 EAST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
+                            Positioned(
+                              left: 3040,
+                              top: groundY - 110,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialPerimeterWallWidget(
+                                  width: 480,
+                                  height: 110,
+                                  animProg: _ambientController.value,
+                                ),
+                              ),
+                            ),
+
+                            // ✈️ AIR FORCE ONE SUPERSONIC VIP JET
+                            Positioned(
+                              left: 450 + (_ambientController.value * 2200),
+                              top: 105,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialSupersonicJetWidget(
+                                  animProg: _ambientController.value,
+                                ),
+                              ),
+                            ),
+
+                            // 🚁 MARINE ONE SECURITY HELICOPTER
+                            Positioned(
+                              right: 420,
+                              top: 185,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialHelicopterWidget(
+                                  animProg: _ambientController.value,
+                                ),
+                              ),
+                            ),
+
+                            // 🚢 ARMED NAVAL PATROL GUNBOAT ON RIVER
+                            Positioned(
+                              left: 1400 + (math.sin(_ambientController.value * 2 * math.pi) * 350),
+                              top: groundY + 190.0 + 15.0,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialNavalPatrolShipWidget(
@@ -840,6 +1001,27 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             ),
                           ],
 
+                          // 3D. 🛡️ Active Iron Dome Interception Missile & Blast Effect
+                          if (isPresident)
+                            Positioned.fill(
+                              child: AnimatedBuilder(
+                                animation: _ironDomeController,
+                                builder: (context, _) {
+                                  if (_ironDomeController.value <= 0.0 || _ironDomeController.value >= 1.0) {
+                                    return const SizedBox.shrink();
+                                  }
+                                  return IgnorePointer(
+                                    child: CustomPaint(
+                                      painter: CitadelIronDomeInterceptPainter(
+                                        prog: _ironDomeController.value,
+                                        source: Offset(1180, groundY - 110),
+                                        target: Offset(worldW / 2, palaceTop + 60),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
 
                           // 4. Avatar-Specific Weapon Discharge & Particle Strike Layer
                           Positioned.fill(
@@ -856,6 +1038,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                       particleProg: _particleController.value,
                                       attackerDay: widget.attackerDay,
                                       perk: VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay),
+                                      groundBaseY: groundY,
                                     ),
                                   ),
                                 );
@@ -875,6 +1058,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                   child: CustomPaint(
                                     painter: CitadelCoinShowerPainter(
                                       progress: _coinController.value,
+                                      groundBaseY: groundY,
                                     ),
                                   ),
                                 );
@@ -888,14 +1072,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               animation: Listenable.merge([_heroChargeController, _coinController]),
                               builder: (context, _) {
                                 final prog = _heroChargeController.value;
-                                // Running up the stone path towards the citadel steps (y: 1100 -> 730)
-                                final runY = ui.lerpDouble(1100.0, 730.0, (prog / 0.55).clamp(0.0, 1.0))!;
+                                // Running up the stone path towards the citadel steps
+                                final runY = ui.lerpDouble(groundY + 180.0, groundY - 190.0, (prog / 0.55).clamp(0.0, 1.0))!;
                                 // Parabolic leap during weapon strike
                                 final leapY = (prog > 0.50 && prog < 0.88)
                                     ? -math.sin((prog - 0.50) / 0.38 * math.pi) * 48.0
                                     : 0.0;
                                 final heroY = runY + leapY;
-                                const heroX = 900.0;
+                                final heroX = worldW / 2;
 
                                 final perk = VectorAvatarConfig.getAvatarPerkForDay(widget.attackerDay);
                                 final isRunning = prog < 0.50;
@@ -1276,9 +1460,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 🛡️ Presidential Protection Layer: Police Officers, Army Guards, Emergency Strobes, Hazard Barricade & Warning Sign
-  Widget _buildPresidentialSecurityLayer(double houseLeft, double houseTop, double houseW, double houseH, double groundY) {
+  Widget _buildPresidentialSecurityLayer(double houseLeft, double houseTop, double houseW, double houseH, double groundY, [double worldW = 1800.0]) {
     if (widget.neighbor.isPresident) {
-      return _buildPresidentialSupremeSecurityPerimeter(groundY);
+      return _buildPresidentialSupremeSecurityPerimeter(groundY, worldW);
     }
     return AnimatedBuilder(
       animation: _ambientController,
@@ -1757,7 +1941,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 🛡️ Supreme Presidential Security Perimeter: Limousine, Honor Guards, Black Cat Commandos & Warning Cordon
-  Widget _buildPresidentialSupremeSecurityPerimeter(double groundY) {
+  Widget _buildPresidentialSupremeSecurityPerimeter(double groundY, [double worldW = 1800.0]) {
     return AnimatedBuilder(
       animation: _ambientController,
       builder: (context, _) {
@@ -1766,7 +1950,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         final vocalStep = (prog * 4).floor() % 4;
 
         return Positioned(
-          left: 400.0,
+          left: (worldW - 1000.0) / 2,
           top: groundY - 145.0,
           width: 1000.0,
           height: 290.0,
@@ -2815,6 +2999,339 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+  /// 🛡️ Iron Dome Defense Matrix & Telemetry Modal
+  void _showPresidentialIronDomeModal() {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0B1120),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                blurRadius: 25,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0369A1).withValues(alpha: 0.35),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                    ),
+                    child: const Text('🛡️', style: TextStyle(fontSize: 22)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'IRON DOME DEFENSE MATRIX',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                        Text(
+                          'Sovereign Citadel Active Air & Ground Defense System',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              // Threat Level & Radar HUD
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF475569)),
+                ),
+                child: Row(
+                  children: [
+                    // Radar Graphic Indicator
+                    Container(
+                      width: 54,
+                      height: 54,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF031525),
+                        border: Border.all(color: const Color(0xFF22C55E), width: 1.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF22C55E).withValues(alpha: 0.3),
+                            blurRadius: 10,
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          const Icon(Icons.radar, color: Color(0xFF4ADE80), size: 28),
+                          Positioned(
+                            top: 8,
+                            right: 12,
+                            child: Container(
+                              width: 5,
+                              height: 5,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFEF4444),
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: const Color(0xFFEF4444), width: 1.0),
+                                ),
+                                child: const Text(
+                                  'DEFCON 1 ACTIVE',
+                                  style: TextStyle(
+                                    color: Color(0xFFF87171),
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'STATUS: ONLINE',
+                                style: GoogleFonts.sourceCodePro(
+                                  color: const Color(0xFF4ADE80),
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'EL/M-2084 Phased Array 360° Radar tracking 4 sky corridors across 3,600m perimeter territory.',
+                            style: GoogleFonts.outfit(color: const Color(0xFFCBD5E1), fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // Defense Telemetry Grid (6 Metrics)
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                mainAxisSpacing: 8,
+                crossAxisSpacing: 8,
+                childAspectRatio: 2.3,
+                children: [
+                  _buildDefenseMetricCard('🚀 Tamir Interceptors', '20 / 20 READY', const Color(0xFF4ADE80)),
+                  _buildDefenseMetricCard('⚡ Intercept Rate', '99.8% ACCURACY', const Color(0xFF38BDF8)),
+                  _buildDefenseMetricCard('🧱 Perimeter Blast Walls', '3,600m HARDENED', const Color(0xFFFFD700)),
+                  _buildDefenseMetricCard('🚧 Police Barricades', '4 CHECKPOINTS', const Color(0xFFF97316)),
+                  _buildDefenseMetricCard('🚔 SWAT & K9 Forces', '12 UNITS ARMED', const Color(0xFFA78BFA)),
+                  _buildDefenseMetricCard('👑 Sovereign Protocol', 'LVL 90 REQUIRED', const Color(0xFFFFD700)),
+                ],
+              ),
+
+              const SizedBox(height: 18),
+
+              // Test Fire Interceptor Action Button
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF0284C7),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 6,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _testFireIronDome();
+                      },
+                      icon: const Text('🚀', style: TextStyle(fontSize: 16)),
+                      label: Text(
+                        'Test Fire Interceptor',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B),
+                      foregroundColor: const Color(0xFFFFD700),
+                      padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: const BorderSide(color: Color(0xFFFFD700), width: 1.0),
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _zoomToOverview();
+                    },
+                    child: Text(
+                      '🔍 View All Land',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildDefenseMetricCard(String title, String val, Color valColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131D33),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFF334155), width: 0.8),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.outfit(color: const Color(0xFF94A3B8), fontSize: 10.5, fontWeight: FontWeight.w600),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            val,
+            style: GoogleFonts.sourceCodePro(color: valColor, fontSize: 11.5, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _testFireIronDome() async {
+    if (_ironDomeController.isAnimating) return;
+    setState(() => _isIronDomeFiring = true);
+    HapticFeedback.heavyImpact();
+    SystemSound.play(SystemSoundType.alert);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF0F172A),
+        behavior: SnackBarBehavior.floating,
+        content: Row(
+          children: [
+            const Text('🛡️', style: TextStyle(fontSize: 18)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'IRON DOME INTERCEPTOR LAUNCHED!',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF38BDF8),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                  Text(
+                    'Tamir-1 missile tracking aerial threat. Intercept successful at 5,000m altitude!',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+
+    _ironDomeController.forward(from: 0.0);
+    await Future.delayed(const Duration(milliseconds: 1400));
+    if (mounted) {
+      setState(() => _isIronDomeFiring = false);
+    }
+  }
+
+  void _zoomToOverview() {
+    final w = MediaQuery.of(context).size.width;
+    final h = MediaQuery.of(context).size.height;
+    final worldW = widget.neighbor.isPresident ? 3600.0 : 1800.0;
+    final worldH = widget.neighbor.isPresident ? 2000.0 : 1600.0;
+    final targetScale = math.min(w / worldW, h / worldH);
+    final tx = (w - (worldW * targetScale)) / 2;
+    final ty = (h - (worldH * targetScale)) / 2;
+    final matrix = Matrix4.identity()
+      ..setEntry(0, 0, targetScale)
+      ..setEntry(1, 1, targetScale)
+      ..setEntry(0, 3, tx)
+      ..setEntry(1, 3, ty);
+    _transformationController.value = matrix;
+    HapticFeedback.mediumImpact();
+  }
+
   /// 📜 Sovereign Drawer Content for The President (Decrees, Hotline, Mateship, Boss Stats)
   Widget _buildPresidentialDrawerContent() {
     return FutureBuilder<List<Map<String, dynamic>>>(
@@ -3194,25 +3711,107 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Back button
-            InkWell(
-              onTap: () => Navigator.pop(context, _raidStep == 3),
-              borderRadius: BorderRadius.circular(24),
-              child: Container(
-                padding: const EdgeInsets.all(9),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.65),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white24, width: 1),
-                ),
-                child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
-              ),
-            ),
-
-            // Right group: 6-Hour Cycle Badge + Day/Night Toggle + Defender Profile + info
+            // Left group: Back button + Full Land overview
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                InkWell(
+                  onTap: () => Navigator.pop(context, _raidStep == 3),
+                  borderRadius: BorderRadius.circular(24),
+                  child: Container(
+                    padding: const EdgeInsets.all(9),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.65),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white24, width: 1),
+                    ),
+                    child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+                  ),
+                ),
+                if (widget.neighbor.isPresident) ...[
+                  const SizedBox(width: 8),
+                  InkWell(
+                    onTap: _zoomToOverview,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.8), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.zoom_out_map_rounded, color: Color(0xFF38BDF8), size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Full Land',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+
+            // Right group: Iron Dome + 6-Hour Cycle Badge + Day/Night Toggle + Defender Profile + info
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (widget.neighbor.isPresident) ...[
+                  InkWell(
+                    onTap: _showPresidentialIronDomeModal,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF052E16), Color(0xFF064E3B)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFF10B981), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.shield_outlined, color: Color(0xFF34D399), size: 14),
+                          const SizedBox(width: 4),
+                          Text(
+                            'IRON DOME',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF6EE7B7),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
                 // ⏱️ 6-Hour Cycle Badge & Toggle
                 InkWell(
                   onTap: () {
@@ -4776,20 +5375,23 @@ class CitadelAvatarStrikePainter extends CustomPainter {
   final double particleProg;
   final int attackerDay;
   final AvatarGamePerk perk;
+  final double groundBaseY;
 
   CitadelAvatarStrikePainter({
     required this.beamProg,
     required this.particleProg,
     required this.attackerDay,
     required this.perk,
+    this.groundBaseY = 920.0,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
     if (beamProg <= 0 && particleProg <= 0) return;
 
-    final target = Offset(size.width * 0.5, 680.0); // Mansion entrance doors
-    final source = Offset(size.width * 0.5, 740.0); // Hero leap position at steps
+    final gy = groundBaseY > 0 ? groundBaseY : 920.0;
+    final target = Offset(size.width * 0.5, gy - 240.0); // Citadel entrance
+    final source = Offset(size.width * 0.5, gy - 180.0); // Hero leap position at steps
 
     // ⚡ 1. Active Strike Trajectory / Projectile (beamProg > 0)
     if (beamProg > 0 && beamProg <= 1.0) {
@@ -5001,14 +5603,20 @@ class CitadelAvatarStrikePainter extends CustomPainter {
 /// the attacking hero's treasure chest/grasp!
 class CitadelCoinShowerPainter extends CustomPainter {
   final double progress;
-  CitadelCoinShowerPainter({required this.progress});
+  final double groundBaseY;
+
+  CitadelCoinShowerPainter({
+    required this.progress,
+    this.groundBaseY = 920.0,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     if (progress <= 0 || progress >= 1.0) return;
 
-    final origin = Offset(size.width * 0.5, 680.0); // Breached mansion doors
-    final heroChest = Offset(size.width * 0.5, 760.0); // Hero collection chest
+    final gy = groundBaseY > 0 ? groundBaseY : 920.0;
+    final origin = Offset(size.width * 0.5, gy - 240.0); // Breached mansion doors
+    final heroChest = Offset(size.width * 0.5, gy - 160.0); // Hero collection chest
     final coinPaint = Paint()..style = PaintingStyle.fill;
     final rimPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -5074,6 +5682,125 @@ class CitadelCoinShowerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CitadelCoinShowerPainter oldDelegate) => oldDelegate.progress != progress;
+}
+
+/// 🛡️ Iron Dome Missile Interception & Kinetic Blast Painter
+/// Tamir interceptor missile launches from the battery pad, arcs up across the sky,
+/// collides with the incoming hostile strike in mid-air, and creates a blazing intercept fireball
+/// with expanding shockwaves and forcefield deflection ring!
+class CitadelIronDomeInterceptPainter extends CustomPainter {
+  final double prog;
+  final Offset source;
+  final Offset target;
+
+  CitadelIronDomeInterceptPainter({
+    required this.prog,
+    required this.source,
+    required this.target,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (prog <= 0 || prog >= 1.0) return;
+
+    // Phase 1: Missile Ascent (prog 0.0 -> 0.48)
+    if (prog < 0.48) {
+      final t = prog / 0.48;
+      // High-arching parabolic trajectory
+      final mx = ui.lerpDouble(source.dx, target.dx, t)!;
+      final baseY = ui.lerpDouble(source.dy, target.dy, t)!;
+      final arcHeight = -180.0 * math.sin(t * math.pi);
+      final my = baseY + arcHeight;
+      final missilePos = Offset(mx, my);
+
+      // Rocket Exhaust Vapor & Smoke Trail
+      final trailPaint = Paint()
+        ..shader = LinearGradient(
+          colors: [
+            const Color(0xFFEF4444),
+            const Color(0xFFF97316),
+            const Color(0xFFFEF08A),
+            Colors.white.withValues(alpha: 0.6),
+          ],
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+        ).createShader(Rect.fromPoints(source, missilePos))
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 4.5
+        ..strokeCap = StrokeCap.round;
+
+      final path = Path()..moveTo(source.dx, source.dy);
+      path.quadraticBezierTo(
+        (source.dx + target.dx) / 2,
+        (source.dy + target.dy) / 2 - 200,
+        missilePos.dx,
+        missilePos.dy,
+      );
+      canvas.drawPath(path, trailPaint);
+
+      // Blazing Interceptor Missile Head
+      canvas.drawCircle(
+        missilePos,
+        14,
+        Paint()
+          ..color = const Color(0xFFFEF08A).withValues(alpha: 0.8)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+      );
+      canvas.drawCircle(missilePos, 4.5, Paint()..color = Colors.white);
+    }
+    // Phase 2: Mid-Air Interception & Fireball Detonation (prog 0.48 -> 1.0)
+    else {
+      final blastT = (prog - 0.48) / 0.52;
+      final fade = (1.0 - blastT).clamp(0.0, 1.0);
+
+      // Expanding Shockwave Kinetic Ring
+      final shockwaveR = 25.0 + (blastT * 150.0);
+      canvas.drawCircle(
+        target,
+        shockwaveR,
+        Paint()
+          ..color = const Color(0xFF38BDF8).withValues(alpha: fade * 0.75)
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 3.5 * fade
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6),
+      );
+
+      // Core Fireball Blast
+      final blastR = (38.0 * math.sin(blastT * math.pi)).clamp(0.0, 52.0);
+      canvas.drawCircle(
+        target,
+        blastR,
+        Paint()
+          ..shader = RadialGradient(
+            colors: [
+              Colors.white,
+              const Color(0xFFFEF08A),
+              const Color(0xFFF97316),
+              const Color(0xFFEF4444).withValues(alpha: fade),
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.25, 0.55, 0.85, 1.0],
+          ).createShader(Rect.fromCircle(center: target, radius: blastR + 12)),
+      );
+
+      // Exploding Intercept Sparks (18 particles)
+      for (int i = 0; i < 18; i++) {
+        final angle = (i * 20.0) * math.pi / 180;
+        final speed = 42.0 + ((i % 5) * 24.0);
+        final px = target.dx + math.cos(angle) * (speed * blastT);
+        final py = target.dy + math.sin(angle) * (speed * blastT);
+        canvas.drawCircle(
+          Offset(px, py),
+          2.6 * fade,
+          Paint()..color = (i % 2 == 0) ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+        );
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CitadelIronDomeInterceptPainter oldDelegate) =>
+      oldDelegate.prog != prog;
 }
 
 /// 🏛️ Animated Presidential Court Case Filing Dialog

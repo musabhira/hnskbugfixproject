@@ -105,6 +105,9 @@ class PresidentialPalaceCastlePainter extends CustomPainter {
 
     // 8. Guardian Lions on Pedestals
     _drawGuardianLions(canvas, cx, groundY);
+
+    // 9. Ceremonial Imperial Fountain & Tiered Water Jet Cascades
+    _drawCeremonialFountain(canvas, cx, groundY, animProg);
   }
 
   /// 01. Foundation Plinth & Reflecting Water Basin
@@ -835,6 +838,80 @@ class PresidentialPalaceCastlePainter extends CustomPainter {
       14.0,
       Paint()..color = const Color(0xFFFFD700).withValues(alpha: 0.25),
     );
+  }
+
+  /// 09. Ceremonial Imperial Fountain & Tiered Water Jet Cascades
+  void _drawCeremonialFountain(Canvas canvas, double cx, double groundY, double animProg) {
+    final fx = cx;
+    final fy = groundY + 12.0;
+
+    // Lower Circular Marble Basin
+    final outerBasin = Rect.fromCenter(center: Offset(fx, fy + 4), width: 84, height: 16);
+    canvas.drawOval(
+      outerBasin,
+      Paint()
+        ..shader = const LinearGradient(
+          colors: [Color(0xFFCBD5E1), Color(0xFF94A3B8), Color(0xFF64748B)],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ).createShader(outerBasin),
+    );
+    canvas.drawOval(
+      outerBasin,
+      Paint()
+        ..color = goldDark
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.2,
+    );
+
+    // Basin Water with Shimmer
+    final waterBasin = Rect.fromCenter(center: Offset(fx, fy + 3), width: 72, height: 11);
+    canvas.drawOval(
+      waterBasin,
+      Paint()
+        ..shader = const RadialGradient(
+          colors: [Color(0xFF38BDF8), Color(0xFF0284C7), Color(0xFF0369A1)],
+        ).createShader(waterBasin),
+    );
+
+    // Center Sculpted Fountain Column & Upper Tier
+    canvas.drawRect(
+      Rect.fromLTWH(fx - 4, fy - 18, 8, 18),
+      Paint()..color = wallLight,
+    );
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(fx, fy - 18), width: 34, height: 8),
+      Paint()..color = gold,
+    );
+
+    // Animated Fountain Jet Spray Arcs
+    final sprayWave = math.sin(animProg * 8 * math.pi);
+    final jetPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.75)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4
+      ..strokeCap = StrokeCap.round;
+
+    // Left and Right Water Arcs
+    final leftArc = Path()
+      ..moveTo(fx, fy - 20)
+      ..quadraticBezierTo(fx - 24, fy - 36 + (sprayWave * 3), fx - 32, fy + 2);
+    final rightArc = Path()
+      ..moveTo(fx, fy - 20)
+      ..quadraticBezierTo(fx + 24, fy - 36 - (sprayWave * 3), fx + 32, fy + 2);
+    final centerArc = Path()
+      ..moveTo(fx, fy - 20)
+      ..quadraticBezierTo(fx + (sprayWave * 4), fy - 46, fx, fy - 22);
+
+    canvas.drawPath(leftArc, jetPaint);
+    canvas.drawPath(rightArc, jetPaint);
+    canvas.drawPath(centerArc, jetPaint..strokeWidth = 2.0);
+
+    // Droplet Sparkles
+    final sparkPaint = Paint()..color = const Color(0xFFBAE6FD);
+    canvas.drawCircle(Offset(fx - 14, fy - 28), 1.5, sparkPaint);
+    canvas.drawCircle(Offset(fx + 14, fy - 28), 1.5, sparkPaint);
+    canvas.drawCircle(Offset(fx, fy - 42), 2.0, sparkPaint);
   }
 
   @override
