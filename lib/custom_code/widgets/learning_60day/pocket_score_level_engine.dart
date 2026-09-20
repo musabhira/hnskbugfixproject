@@ -3,30 +3,46 @@ import 'dart:math' as math;
 /// 🏛️ PocketScoreLevelEngine
 /// Core progression, score thresholds, star ratings, and 9-tier English defense gauntlets (Levels 1 to 90).
 class PocketScoreLevelEngine {
-  /// Base points required per level jump (Audio Directive: 200 PTS per level)
-  static const int kPointsPerLevel = 200;
+  /// Base points required for the first level jump (Level 1 -> 2)
+  static const int kBasePointsPerLevel = 200;
+  /// Incremental point growth per subsequent level to ensure progressive difficulty (Audio Directive)
+  static const int kLevelPointsGrowth = 15;
   static const int kMaxLevel = 91;
 
-  /// Returns minimum Pocket Score required to reach a specific level (1 to 91).
+  /// Precomputed cumulative thresholds for Levels 1 to 91.
   /// Level 1: 0 PTS
-  /// Level 2: 200 PTS
-  /// Level 3: 400 PTS
-  /// Level 10: 1,800 PTS
-  /// Level 90: 17,800 PTS
-  /// Level 91 (Presidential Citadel Raid): 18,000 PTS
+  /// Level 2: 200 PTS (Gap: 200)
+  /// Level 3: 415 PTS (Gap: 215)
+  /// Level 4: 645 PTS (Gap: 230)
+  /// ...
+  /// Level 91: 78,075 PTS (PALACE RAID: Supreme Sovereign Attack)
+  static final List<int> _levelThresholds = () {
+    final list = <int>[0]; // index 0 unused
+    list.add(0); // Level 1 threshold = 0
+    int current = 0;
+    for (int lvl = 1; lvl < kMaxLevel; lvl++) {
+      final gap = kBasePointsPerLevel + (lvl - 1) * kLevelPointsGrowth;
+      current += gap;
+      list.add(current);
+    }
+    return list;
+  }();
+
+  /// Returns minimum Pocket Score required to reach a specific level (1 to 91).
   static int getRequiredScoreForLevel(int level) {
     final clampedLevel = level.clamp(1, kMaxLevel);
-    return (clampedLevel - 1) * kPointsPerLevel;
+    return _levelThresholds[clampedLevel];
   }
 
   /// Calculates the player's level based strictly on their current Pocket Score.
-  /// Score < 200 => Level 1
-  /// Score 200..399 => Level 2
-  /// Score 400..599 => Level 3
   static int getLevelFromScore(int score) {
     if (score <= 0) return 1;
-    final calculated = (score ~/ kPointsPerLevel) + 1;
-    return calculated.clamp(1, kMaxLevel);
+    for (int lvl = kMaxLevel; lvl >= 1; lvl--) {
+      if (score >= _levelThresholds[lvl]) {
+        return lvl;
+      }
+    }
+    return 1;
   }
 
   /// Returns the score progress inside the current level (e.g. 0.0 to 1.0)
@@ -34,16 +50,20 @@ class PocketScoreLevelEngine {
     final currentLevel = getLevelFromScore(score);
     if (currentLevel >= kMaxLevel) return 1.0;
 
-    final currentLevelBase = getRequiredScoreForLevel(currentLevel);
+    final currentLevelBase = _levelThresholds[currentLevel];
+    final nextLevelBase = _levelThresholds[currentLevel + 1];
+    final gap = nextLevelBase - currentLevelBase;
+    if (gap <= 0) return 1.0;
+
     final scoreInLevel = score - currentLevelBase;
-    return (scoreInLevel / kPointsPerLevel).clamp(0.0, 1.0);
+    return (scoreInLevel / gap).clamp(0.0, 1.0);
   }
 
   /// Returns how many points are needed to unlock the next level
   static int getRemainingScoreForNextLevel(int score) {
     final currentLevel = getLevelFromScore(score);
     if (currentLevel >= kMaxLevel) return 0;
-    final nextLevelThreshold = getRequiredScoreForLevel(currentLevel + 1);
+    final nextLevelThreshold = _levelThresholds[currentLevel + 1];
     return math.max(0, nextLevelThreshold - score);
   }
 
@@ -53,7 +73,7 @@ class PocketScoreLevelEngine {
     if (currentLevel >= kMaxLevel) {
       return '$score PTS • 👑 MAX LEVEL';
     }
-    final nextThreshold = getRequiredScoreForLevel(currentLevel + 1);
+    final nextThreshold = _levelThresholds[currentLevel + 1];
     final remaining = nextThreshold - score;
     return '🪙 $score / $nextThreshold PTS ($remaining PTS to Lvl ${currentLevel + 1})';
   }

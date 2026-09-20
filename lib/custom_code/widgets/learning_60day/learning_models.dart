@@ -82,14 +82,14 @@ class LearningMilestoneStage {
     required this.avatarReward,
   });
 
-  /// Factory generator producing all 90 unique stages with distinct color progressions
-  static final List<LearningMilestoneStage> allStages = List.generate(90, (i) {
+  /// Factory generator producing all 91 unique stages with distinct color progressions
+  static final List<LearningMilestoneStage> allStages = List.generate(91, (i) {
     final dayNum = i + 1;
     return _createStageForDay(dayNum);
   });
 
   static LearningMilestoneStage _createStageForDay(int day) {
-    final clamped = day.clamp(1, 90);
+    final clamped = day.clamp(1, 91);
     final def = _stageDefs[clamped - 1];
 
     // Intelligent high-contrast text calculation based on background luminance
@@ -1215,6 +1215,19 @@ class LearningMilestoneStage {
       variant: ProfileUIThemeVariant.diamondCelestial,
       isMajor: true,
     ),
+    _StageDef(
+      day: 91,
+      name: 'ATTACK FOR PRESIDENT',
+      tier: 'Supreme Sovereign Palace Raid',
+      emoji: '🏛️',
+      desc: '⚔️ PALACE RAID! Overthrow the reigning President in the Grand Presidential Citadel to claim the ultimate sovereign crown & Master C2 Certificate.',
+      bg: Color(0xFF0F0728),
+      secondBg: Color(0xFF1E0A45),
+      btn: Color(0xFFFFD700),
+      tick: Color(0xFFFF3366),
+      variant: ProfileUIThemeVariant.diamondCelestial,
+      isMajor: true,
+    ),
   ];
 
 
@@ -1222,9 +1235,9 @@ class LearningMilestoneStage {
     return '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2).toUpperCase()}';
   }
 
-  /// Resolves the stage matching a given learning day (1 to 90)
+  /// Resolves the stage matching a given learning day (1 to 91)
   static LearningMilestoneStage getStageForDay(int day) {
-    final clampedDay = day.clamp(1, 90);
+    final clampedDay = day.clamp(1, 91);
     return allStages[clampedDay - 1];
   }
 }

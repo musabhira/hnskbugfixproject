@@ -1116,12 +1116,34 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
       itemCount: LearningMilestoneStage.allStages.length,
       itemBuilder: (context, index) {
         final stage = LearningMilestoneStage.allStages[index];
-        final isUnlocked = currentDay >= stage.day;
+        final isStage91 = stage.day == 91;
+        final isUnlocked = isStage91 ? (currentDay >= 90) : (currentDay >= stage.day);
         final isCurrent = currentDay == stage.day;
         final isCompletedToday = _lastCompletedDate == _todayDateStr && _lastCompletedDay == stage.day;
 
         return InkWell(
           onTap: () {
+            if (isStage91) {
+              if (currentDay >= 90) {
+                PocketCitadelAttackPage.openForUser(
+                  context,
+                  userId: PocketPresidentService.presidentId,
+                  attackerDay: 91,
+                );
+              } else {
+                HapticFeedback.lightImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      '🔒 Complete Day 90 to unlock STAGE 91: ATTACK FOR PRESIDENT (Palace Raid)!',
+                    ),
+                    backgroundColor: Color(0xFF1E293B),
+                  ),
+                );
+              }
+              return;
+            }
+
             if (isUnlocked) {
               Navigator.push(
                 context,
@@ -1154,20 +1176,28 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: isUnlocked ? stage.gradientColors : [const Color(0xFF14151F), const Color(0xFF0E0F17)],
+                colors: isStage91
+                    ? (isUnlocked
+                        ? [const Color(0xFF2E0818), const Color(0xFF16062A)]
+                        : [const Color(0xFF14151F), const Color(0xFF0E0F17)])
+                    : (isUnlocked
+                        ? stage.gradientColors
+                        : [const Color(0xFF14151F), const Color(0xFF0E0F17)]),
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: isCurrent
-                    ? const Color(0xFFFFD700)
-                    : stage.isMajorGate
-                        ? const Color(0xFFFFD700).withValues(alpha: 0.8)
-                        : isUnlocked
-                            ? stage.buttonColor.withValues(alpha: 0.5)
-                            : Colors.white10,
-                width: (isCurrent || stage.isMajorGate) ? 2 : 1,
+                color: isStage91
+                    ? (isUnlocked ? const Color(0xFFFF3366) : const Color(0xFFFFD700).withValues(alpha: 0.4))
+                    : (isCurrent
+                        ? const Color(0xFFFFD700)
+                        : stage.isMajorGate
+                            ? const Color(0xFFFFD700).withValues(alpha: 0.8)
+                            : isUnlocked
+                                ? stage.buttonColor.withValues(alpha: 0.5)
+                                : Colors.white10),
+                width: (isStage91 || isCurrent || stage.isMajorGate) ? 2 : 1,
               ),
             ),
             child: Row(
@@ -1177,7 +1207,9 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    color: isUnlocked ? stage.buttonColor : Colors.white10,
+                    color: isUnlocked
+                        ? (isStage91 ? const Color(0xFFFF3366) : stage.buttonColor)
+                        : Colors.white10,
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -1196,15 +1228,20 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
                         children: [
                           Expanded(
                             child: Text(
-                              'Stage ${stage.stageNumber}: ${stage.stageName}',
+                              isStage91
+                                  ? 'STAGE 91: ATTACK FOR PRESIDENT'
+                                  : 'Stage ${stage.stageNumber}: ${stage.stageName}',
                               style: GoogleFonts.outfit(
-                                color: isUnlocked ? Colors.white : Colors.white54,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13.5,
+                                color: isStage91
+                                    ? const Color(0xFFFFD700)
+                                    : (isUnlocked ? Colors.white : Colors.white54),
+                                fontWeight: FontWeight.w900,
+                                fontSize: isStage91 ? 14.0 : 13.5,
+                                letterSpacing: isStage91 ? 0.6 : 0,
                               ),
                             ),
                           ),
-                          if (isCurrent) ...[
+                          if (isCurrent && !isStage91) ...[
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
@@ -1225,19 +1262,25 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        isCompletedToday
-                            ? '✅ DAY ${stage.day} COMPLETED TODAY • Day ${stage.day + 1} Unlocks Tomorrow'
-                            : (isUnlocked
-                                ? 'Day ${stage.day} of 90 • ${stage.fluencyTier}'
-                                : (stage.day == currentDay + 1
-                                    ? '⚡ TAP TO UNLOCK NOW (Ad / VIP) • Day ${stage.day}'
-                                    : '🔒 Locked • Complete Day ${stage.day - 1}')),
+                        isStage91
+                            ? (isUnlocked
+                                ? '⚔️ PALACE RAID • OVERTHROW THE PRESIDENT TO EARN MASTER C2 CERTIFICATE'
+                                : '🔒 Locked • Complete Day 90 to unlock PALACE RAID')
+                            : (isCompletedToday
+                                ? '✅ DAY ${stage.day} COMPLETED TODAY • Day ${stage.day + 1} Unlocks Tomorrow'
+                                : (isUnlocked
+                                    ? 'Day ${stage.day} of 90 • ${stage.fluencyTier}'
+                                    : (stage.day == currentDay + 1
+                                        ? '⚡ TAP TO UNLOCK NOW (Ad / VIP) • Day ${stage.day}'
+                                        : '🔒 Locked • Complete Day ${stage.day - 1}'))),
                         style: GoogleFonts.inter(
-                          color: isCompletedToday
-                              ? const Color(0xFF10B981)
-                              : (isUnlocked
-                                  ? stage.buttonColor
-                                  : (stage.day == currentDay + 1 ? const Color(0xFFFFD700) : Colors.white38)),
+                          color: isStage91
+                              ? (isUnlocked ? const Color(0xFFFF6B00) : Colors.white38)
+                              : (isCompletedToday
+                                  ? const Color(0xFF10B981)
+                                  : (isUnlocked
+                                      ? stage.buttonColor
+                                      : (stage.day == currentDay + 1 ? const Color(0xFFFFD700) : Colors.white38))),
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                         ),
@@ -1245,39 +1288,66 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
                     ],
                   ),
                 ),
-              const SizedBox(width: 8),
-              // Verified Tick Badge Preview for this Stage
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.verified, color: stage.tickColor, size: 14),
-                    const SizedBox(width: 6),
-                    Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(color: stage.bgColor, shape: BoxShape.circle),
+                const SizedBox(width: 8),
+                if (isStage91) ...[
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFF3366), Color(0xFFFF8800)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF3366).withValues(alpha: 0.4),
+                          blurRadius: 6,
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 4),
-                    Container(
-                      width: 14,
-                      height: 14,
-                      decoration: BoxDecoration(color: stage.buttonColor, shape: BoxShape.circle),
+                    child: Text(
+                      'PALACE RAID',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 10,
+                        letterSpacing: 0.5,
+                      ),
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ] else ...[
+                  // Verified Tick Badge Preview for this Stage
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black45,
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.verified, color: stage.tickColor, size: 14),
+                        const SizedBox(width: 6),
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(color: stage.bgColor, shape: BoxShape.circle),
+                        ),
+                        const SizedBox(width: 4),
+                        Container(
+                          width: 14,
+                          height: 14,
+                          decoration: BoxDecoration(color: stage.buttonColor, shape: BoxShape.circle),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-        ),
-      );
-    },
-  );
+        );
+      },
+    );
   }
 }
 

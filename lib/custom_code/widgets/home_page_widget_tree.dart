@@ -3566,6 +3566,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 onStatusTap: () {
                                   if (conversation.hasStatus &&
                                       conversation.statusData != null) {
+                                    VibesSeenService.markSeen(
+                                      currentUserId: _currentUserId ?? '',
+                                      userId: conversation.id,
+                                      profileId: conversation.id,
+                                      groupId: conversation.isGroup
+                                          ? conversation.id
+                                          : null,
+                                      statusIds: conversation.statusData!
+                                          .map((s) => s['id']?.toString() ?? '')
+                                          .where((id) => id.isNotEmpty)
+                                          .toList(),
+                                    );
                                     Navigator.push(
                                       context,
                                       material.MaterialPageRoute(
@@ -3575,6 +3587,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             {
                                               'profile': {
                                                 'id': conversation.id,
+                                                'user_id': conversation.id,
                                                 'name': conversation.name,
                                                 'profile_image_url':
                                                     conversation.imageUrl,
@@ -3588,9 +3601,33 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           currentUserId: _currentUserId ?? '',
                                           currentProfileId: profileId ?? '',
                                           isFromGroup: true,
+                                          onGroupWatched: (gId) {
+                                            VibesSeenService.markSeen(
+                                              currentUserId:
+                                                  _currentUserId ?? '',
+                                              userId: conversation.id,
+                                              profileId: gId,
+                                              groupId: conversation.isGroup
+                                                  ? conversation.id
+                                                  : null,
+                                            );
+                                          },
                                         ),
                                       ),
-                                    );
+                                    ).then((_) {
+                                      VibesSeenService.markSeen(
+                                        currentUserId: _currentUserId ?? '',
+                                        userId: conversation.id,
+                                        profileId: conversation.id,
+                                        groupId: conversation.isGroup
+                                            ? conversation.id
+                                            : null,
+                                      );
+                                      ref
+                                          .read(conversationsProvider.notifier)
+                                          .refreshNow();
+                                      if (mounted) setState(() {});
+                                    });
                                   }
                                 },
                               ),

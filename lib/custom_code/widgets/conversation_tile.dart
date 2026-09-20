@@ -378,9 +378,22 @@ class _ConversationTileState extends State<ConversationTile> {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: _hasUnwatchedStatus
-                      ? widget.onStatusTap
-                      : widget.onTap,
+                  onTap: () {
+                    if (_hasUnwatchedStatus && widget.onStatusTap != null) {
+                      VibesSeenService.markSeen(
+                        currentUserId: widget.currentUserId,
+                        userId: widget.conversation.id,
+                        profileId: widget.conversation.id,
+                        groupId: widget.conversation.isGroup
+                            ? widget.conversation.id
+                            : null,
+                      );
+                      setState(() {});
+                      widget.onStatusTap!();
+                    } else {
+                      widget.onTap();
+                    }
+                  },
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -405,6 +418,15 @@ class _ConversationTileState extends State<ConversationTile> {
                         onTap: () {
                           if (_hasUnwatchedStatus &&
                               widget.onStatusTap != null) {
+                            VibesSeenService.markSeen(
+                              currentUserId: widget.currentUserId,
+                              userId: widget.conversation.id,
+                              profileId: widget.conversation.id,
+                              groupId: widget.conversation.isGroup
+                                  ? widget.conversation.id
+                                  : null,
+                            );
+                            setState(() {});
                             widget.onStatusTap!();
                           } else if (widget.conversation.imageUrl != null) {
                             setState(() => _showRealPhoto = !_showRealPhoto);
