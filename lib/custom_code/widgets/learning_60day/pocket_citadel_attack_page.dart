@@ -650,11 +650,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final bool isPresident = widget.neighbor.isPresident;
 
     // 🌍 Virtual World Dimensions:
-    // For President: A grand 3,200 x 1,600 sovereign territory with perimeter blast walls,
-    // Iron Dome air defense battery, police checkpoints, SWAT BearCat, and living guard details.
-    final double worldW = isPresident ? 3200.0 : 1800.0;
-    final double worldH = 1600.0;
-    final double groundY = 920.0;
+    // For President: A grand 3,400 x 2,200 Sovereign Island Fortress ("Dweepu") surrounded
+    // by boundless glowing ocean ("Samudram"), heavy naval warships, lighthouses, and Air Force squadrons!
+    final double worldW = isPresident ? 3400.0 : 1800.0;
+    final double worldH = isPresident ? 2200.0 : 1600.0;
+    final double groundY = isPresident ? 960.0 : 920.0;
     const double houseW = 420.0;
     const double houseH = 380.0;
     final double houseLeft = (worldW - houseW) / 2;
@@ -663,8 +663,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     // 🏛️ Sovereign Presidential Palace Castle Dimensions (Magnificent Central Citadel)
     final double palaceW = 760.0;
     final double palaceH = 580.0;
-    final double palaceLeft = (worldW - palaceW) / 2; // (3200 - 760) / 2 = 1220.0
-    final double palaceTop = groundY - 14.0 - palaceH; // 920 - 14 - 580 = 326.0
+    final double palaceLeft = (worldW - palaceW) / 2; // (3400 - 760) / 2 = 1320.0
+    final double palaceTop = groundY - 14.0 - palaceH; // 960 - 14 - 580 = 366.0
 
     final effectiveHouseW = isPresident ? palaceW : houseW;
     final effectiveHouseH = isPresident ? palaceH : houseH;
@@ -685,7 +685,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         Navigator.of(context).pop(_raidStep == 3);
       },
       child: Scaffold(
-        backgroundColor: isNight ? const Color(0xFF030712) : const Color(0xFF0284C7),
+        backgroundColor: isNight ? const Color(0xFF031024) : const Color(0xFF0284C7),
         body: LayoutBuilder(
           builder: (context, constraints) {
             final w = constraints.maxWidth;
@@ -695,15 +695,17 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final drawerMaxH = h * 0.92;
             final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
-            // 🛡️ Guaranteed Full Screen Fill (NEVER any black borders, exactly like regular bases):
-            final minScale = math.max(w / worldW, h / worldH);
+            // 🛡️ Zoom Range: Deep zoom out for island overview, or close-up on palace gates:
+            final minScale = isPresident
+                ? (math.min(w / worldW, h / worldH) * 1.15).clamp(0.20, 0.45)
+                : math.max(w / worldW, h / worldH);
             const maxScale = 2.8;
 
             // 🏠 Default View: Camera smoothly focuses on the House/Palace and its front courtyard
             if (!_hasInitializedTransform && w > 0 && h > 0) {
               _hasInitializedTransform = true;
               final defaultScale = isPresident
-                  ? math.max(minScale, (w / (effectiveHouseW * 1.15)).clamp(minScale, maxScale))
+                  ? math.max(minScale, (w / (effectiveHouseW * 1.18)).clamp(minScale, maxScale))
                   : math.min(maxScale, math.max(minScale, w / (effectiveHouseW * 1.05)));
               final houseCenterX = worldW / 2;
               final houseCenterY = effectiveHouseTop + (effectiveHouseH * 0.52);
@@ -725,13 +727,26 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan (No black edges!)
+                // 🌌 🌊 Full-Bleed Infinite Ocean & Sky Backdrop behind InteractiveViewer (NEVER any black borders!)
+                Positioned.fill(
+                  child: AnimatedBuilder(
+                    animation: _ambientController,
+                    builder: (context, _) => CustomPaint(
+                      painter: CitadelInfiniteOceanSkyBackdropPainter(
+                        isNight: isNight,
+                        ambientProg: _ambientController.value,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan
                 Positioned.fill(
                   child: InteractiveViewer(
                     transformationController: _transformationController,
                     minScale: minScale,
                     maxScale: maxScale,
-                    boundaryMargin: EdgeInsets.zero,
+                    boundaryMargin: isPresident ? const EdgeInsets.all(250) : EdgeInsets.zero,
                     constrained: false,
                     clipBehavior: Clip.none,
                     child: SizedBox(
@@ -752,6 +767,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     isNight: isNight,
                                     isDay90: isDay90,
                                     ambientProg: _ambientController.value,
+                                    isPresident: isPresident,
                                   ),
                                 );
                               },
@@ -828,11 +844,24 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           if (isPresident || _isDefenderDamaged || _isTargetProtected)
                             _buildPresidentialSecurityLayer(houseLeft, houseTop, houseW, houseH, groundY, worldW),
 
-                          // 3C. 🛡️ 🧱 🚧 🚔 🐕 📡 ✈️ 🚁 🚢 Grand Sovereign Living Airspace & Land Defense Props
+                          // 3C. 🛡️ 🧱 🚧 🚔 🐕 📡 ✈️ 🚁 🚢 🏮 🐬 ⚓ Sovereign Island & Ocean Defenses
                           if (isPresident) ...[
+                            // 🏮 COASTAL LIGHTHOUSE (West Island Bluff)
+                            Positioned(
+                              left: 110,
+                              top: groundY - 50,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialCoastalLighthouseWidget(
+                                  animProg: _ambientController.value,
+                                  isNight: isNight,
+                                ),
+                              ),
+                            ),
+
                             // 🧱 WEST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
                             Positioned(
-                              left: 80,
+                              left: 210,
                               top: groundY - 110,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -846,7 +875,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚧 WEST POLICE BARRICADE CHECKPOINT ("Barricadukal")
                             Positioned(
-                              left: 560,
+                              left: 690,
                               top: groundY - 52,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -860,7 +889,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚔 SWAT ARMORED TACTICAL BEARCAT / STRYKER APC
                             Positioned(
-                              left: 710,
+                              left: 840,
                               top: groundY - 65,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -872,7 +901,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🐕 POLICE K9 TACTICAL PATROL UNIT
                             Positioned(
-                              left: 850,
+                              left: 970,
                               top: groundY - 35,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -884,7 +913,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🛡️ WEST IRON DOME TAMIR INTERCEPTOR MISSILE BATTERY ("Iron Dome System")
                             Positioned(
-                              left: 950,
+                              left: 1060,
                               top: groundY - 122,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -898,7 +927,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 📡 EAST IRON DOME PHASED ARRAY RADAR STATION
                             Positioned(
-                              left: 2050,
+                              left: 2140,
                               top: groundY - 125,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -911,7 +940,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚀 AEROSPACE DEFENSE INTERCEPTOR ROCKET & GANTRY LAUNCHER
                             Positioned(
-                              left: 2210,
+                              left: 2300,
                               top: groundY - 170,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -923,7 +952,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🛑 EAST POLICE CHECKPOINT WITH BARRICADES
                             Positioned(
-                              left: 2420,
+                              left: 2510,
                               top: groundY - 52,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -937,7 +966,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚓 POLICE INTERCEPTOR CRUISER PATROL CAR
                             Positioned(
-                              left: 2570,
+                              left: 2660,
                               top: groundY - 78,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -949,7 +978,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🧱 EAST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
                             Positioned(
-                              left: 2680,
+                              left: 2770,
                               top: groundY - 110,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -961,10 +990,23 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               ),
                             ),
 
+                            // ✈️ AIR FORCE SUPERSONIC FIGHTER SQUADRON (V-Formation)
+                            Positioned(
+                              left: 200 + (_ambientController.value * 2400),
+                              top: 60,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialAirForceFighterSquadronWidget(
+                                  animProg: _ambientController.value,
+                                  isNight: isNight,
+                                ),
+                              ),
+                            ),
+
                             // ✈️ AIR FORCE ONE SUPERSONIC VIP JET
                             Positioned(
-                              left: 250 + (_ambientController.value * 2200),
-                              top: 80,
+                              left: 550 + (_ambientController.value * 2200),
+                              top: 120,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialSupersonicJetWidget(
@@ -976,7 +1018,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             // 🚁 MARINE ONE SECURITY HELICOPTER
                             Positioned(
                               right: 320,
-                              top: 140,
+                              top: 170,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialHelicopterWidget(
@@ -985,10 +1027,64 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                               ),
                             ),
 
-                            // 🚢 ARMED NAVAL PATROL GUNBOAT ON RIVER
+                            // ⚓ MASSIVE GUIDED-MISSILE DESTROYER WARSHIP 1 (West Sovereign Waters)
                             Positioned(
-                              left: 1200 + (math.sin(_ambientController.value * 2 * math.pi) * 300),
-                              top: groundY + 190.0 + 15.0,
+                              left: 240,
+                              top: groundY + 220,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialNavalWarshipWidget(
+                                  animProg: _ambientController.value,
+                                  isNight: isNight,
+                                  width: 280,
+                                ),
+                              ),
+                            ),
+
+                            // ⚓ MASSIVE GUIDED-MISSILE DESTROYER WARSHIP 2 (East Sovereign Waters)
+                            Positioned(
+                              left: 2280,
+                              top: groundY + 320,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialNavalWarshipWidget(
+                                  animProg: (_ambientController.value + 0.35) % 1.0,
+                                  isNight: isNight,
+                                  width: 280,
+                                ),
+                              ),
+                            ),
+
+                            // 🐬 PLAYFUL LEAPING OCEAN DOLPHIN 1
+                            Positioned(
+                              left: 950,
+                              top: groundY + 280,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialLeapingDolphinWidget(
+                                  animProg: _ambientController.value,
+                                  isNight: isNight,
+                                ),
+                              ),
+                            ),
+
+                            // 🐬 PLAYFUL LEAPING OCEAN DOLPHIN 2
+                            Positioned(
+                              left: 1950,
+                              top: groundY + 360,
+                              child: AnimatedBuilder(
+                                animation: _ambientController,
+                                builder: (context, _) => PresidentialLeapingDolphinWidget(
+                                  animProg: (_ambientController.value + 0.5) % 1.0,
+                                  isNight: isNight,
+                                ),
+                              ),
+                            ),
+
+                            // 🚢 ARMED NAVAL PATROL GUNBOAT (Center Waters)
+                            Positioned(
+                              left: 1400 + (math.sin(_ambientController.value * 2 * math.pi) * 350),
+                              top: groundY + 460,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialNavalPatrolShipWidget(
@@ -1011,7 +1107,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     child: CustomPaint(
                                       painter: CitadelIronDomeInterceptPainter(
                                         prog: _ironDomeController.value,
-                                        source: Offset(1010, groundY - 110),
+                                        source: Offset(1120, groundY - 110),
                                         target: Offset(worldW / 2, palaceTop + 60),
                                       ),
                                     ),
@@ -5875,6 +5971,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
   final bool isNight;
   final bool isDay90;
   final double ambientProg;
+  final bool isPresident;
 
   CitadelScenicLandscapePainter({
     this.isDamaged = false,
@@ -5882,6 +5979,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     this.isNight = false,
     this.isDay90 = false,
     this.ambientProg = 0.0,
+    this.isPresident = false,
   });
 
   @override
@@ -6105,16 +6203,30 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawPath(foothillPath, foothillPaint);
 
     // 💨 4. Traditional Dutch Windmill with Rotating Sails on Hilltop
-    _drawDutchWindmill(canvas, w * 0.18, gy - 32, ambientProg: ambientProg, isNight: isNight);
+    if (!isPresident) {
+      _drawDutchWindmill(canvas, w * 0.18, gy - 32, ambientProg: ambientProg, isNight: isNight);
+    }
 
-    // 🏡 5. Citadel Courtyard Hill Plateau (Where house stands)
+    // 🏡 5. Citadel Courtyard Hill Plateau (Island vs Normal Estate)
     final hillPath = Path();
-    hillPath.moveTo(0, gy);
-    hillPath.quadraticBezierTo(w * 0.25, gy - 22, w * 0.50, gy - 14);
-    hillPath.quadraticBezierTo(w * 0.75, gy - 4, w, gy + 12);
-    hillPath.lineTo(w, h);
-    hillPath.lineTo(0, h);
-    hillPath.close();
+    if (isPresident) {
+      // 🏝️ Sovereign Fortress Island Plateau ("Dweepu")
+      // Center is a grand elevated plateau, tapering down into the sea on both left and right shores
+      hillPath.moveTo(0, gy + 140);
+      hillPath.quadraticBezierTo(w * 0.16, gy + 20, w * 0.32, gy - 12);
+      hillPath.lineTo(w * 0.68, gy - 12);
+      hillPath.quadraticBezierTo(w * 0.84, gy + 20, w, gy + 140);
+      hillPath.lineTo(w, h);
+      hillPath.lineTo(0, h);
+      hillPath.close();
+    } else {
+      hillPath.moveTo(0, gy);
+      hillPath.quadraticBezierTo(w * 0.25, gy - 22, w * 0.50, gy - 14);
+      hillPath.quadraticBezierTo(w * 0.75, gy - 4, w, gy + 12);
+      hillPath.lineTo(w, h);
+      hillPath.lineTo(0, h);
+      hillPath.close();
+    }
 
     final hillColors = isNight
         ? [const Color(0xFF064E3B), const Color(0xFF065F46), const Color(0xFF022C22), const Color(0xFF022C22)]
@@ -6135,160 +6247,171 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       ..strokeWidth = 4.5;
     canvas.drawPath(hillPath, ridgePaint);
 
-    // 🌊 6. Curving Flowing River Across Valley
-    final riverPath = Path();
-    final ry = gy + 190.0;
-    riverPath.moveTo(0, ry + 15);
-    riverPath.cubicTo(w * 0.25, ry - 35, w * 0.55, ry + 55, w * 0.82, ry - 15);
-    riverPath.cubicTo(w * 0.90, ry - 25, w * 0.96, ry, w, ry + 25);
-    riverPath.lineTo(w, ry + 115);
-    riverPath.cubicTo(w * 0.96, ry + 95, w * 0.90, ry + 75, w * 0.82, ry + 85);
-    riverPath.cubicTo(w * 0.55, ry + 155, w * 0.25, ry + 65, 0, ry + 115);
-    riverPath.close();
+    if (isPresident) {
+      // 🌊 6. Boundless Sovereign Ocean, Island Coastal Shoreline, Bioluminescent Waves & Marine Life
+      _drawPresidentialSovereignOcean(canvas, w, h, gy, ambientProg: ambientProg, isNight: isNight);
 
-    final riverColors = isNight
-        ? [const Color(0xFF0C4A6E), const Color(0xFF075985), const Color(0xFF0369A1)]
-        : [const Color(0xFF0284C7), const Color(0xFF38BDF8), const Color(0xFF0EA5E9)];
-    final riverPaint = Paint()
-      ..shader = LinearGradient(
-        colors: riverColors,
-        begin: Alignment.topCenter,
-        end: Alignment.bottomCenter,
-      ).createShader(Rect.fromLTWH(0, ry - 35, w, 150));
-    canvas.drawPath(riverPath, riverPaint);
-
-    // Sparkling River Water Ripples (Animated with ambientProg)
-    final rippleOffset = math.sin(ambientProg * 2 * math.pi) * 8.0;
-    final wavePaint = Paint()
-      ..color = Colors.white.withValues(alpha: isNight ? 0.35 : 0.55)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.6
-      ..strokeCap = StrokeCap.round;
-    canvas.drawLine(Offset(w * 0.12 + rippleOffset, ry + 22), Offset(w * 0.22 + rippleOffset, ry + 16), wavePaint);
-    canvas.drawLine(Offset(w * 0.36 - rippleOffset, ry + 36), Offset(w * 0.48 - rippleOffset, ry + 46), wavePaint);
-    canvas.drawLine(Offset(w * 0.65 + rippleOffset, ry + 50), Offset(w * 0.76 + rippleOffset, ry + 40), wavePaint);
-    canvas.drawLine(Offset(w * 0.86 - rippleOffset, ry + 24), Offset(w * 0.94 - rippleOffset, ry + 32), wavePaint);
-
-    // 🪷 Floating Pink Lotus Water Lilies on River
-    _drawWaterLily(canvas, w * 0.28, ry + 38);
-    _drawWaterLily(canvas, w * 0.78, ry + 68);
-
-    // 🦢 Swimming White Swans with water ripple wake
-    final swanX1 = w * 0.42 + math.sin(ambientProg * 2 * math.pi) * 16.0;
-    final swanY1 = ry + 46.0;
-    _drawSwan(canvas, swanX1, swanY1);
-
-    final swanX2 = w * 0.46 + math.sin(ambientProg * 2 * math.pi + 0.5) * 12.0;
-    final swanY2 = ry + 56.0;
-    _drawSwan(canvas, swanX2, swanY2);
-
-    // 🛶 Floating Wooden Rowboat
-    final boatBob = math.sin(ambientProg * 2 * math.pi) * 2.5;
-    final boatX = w * 0.66;
-    final boatY = ry + 46.0 + boatBob;
-    canvas.drawOval(
-      Rect.fromCenter(center: Offset(boatX, boatY + 9), width: 44, height: 7),
-      Paint()..color = Colors.black.withValues(alpha: 0.30),
-    );
-    final boatPath = Path();
-    boatPath.moveTo(boatX - 20, boatY);
-    boatPath.quadraticBezierTo(boatX - 14, boatY + 10, boatX, boatY + 10);
-    boatPath.quadraticBezierTo(boatX + 14, boatY + 10, boatX + 20, boatY);
-    boatPath.lineTo(boatX + 15, boatY - 1.5);
-    boatPath.quadraticBezierTo(boatX, boatY + 2.5, boatX - 15, boatY - 1.5);
-    boatPath.close();
-    canvas.drawPath(boatPath, Paint()..color = const Color(0xFF78350F));
-    canvas.drawLine(Offset(boatX - 4, boatY + 2), Offset(boatX + 4, boatY + 2), Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.4);
-    canvas.drawLine(Offset(boatX - 8, boatY - 5), Offset(boatX + 10, boatY + 12), Paint()..color = const Color(0xFFFDE68A)..strokeWidth = 1.6);
-
-    // ⚙️ Rotating Wooden Waterwheel on Riverbank
-    _drawWaterWheel(canvas, w * 0.88, ry + 18, ambientProg: ambientProg);
-
-    // 🌉 7. Handsome Stone Arched Footbridge Spanning Across River
-    _drawStoneBridge(canvas, w * 0.50, ry + 40, isNight: isNight);
-
-    // 🏡 8. Cobblestone Courtyard Walkway from house entrance towards bridge
-    final walkPath = Path();
-    walkPath.moveTo(w * 0.47, gy + 10);
-    walkPath.quadraticBezierTo(w * 0.48, gy + 80, w * 0.44, ry - 10);
-    walkPath.lineTo(w * 0.56, ry - 10);
-    walkPath.quadraticBezierTo(w * 0.52, gy + 80, w * 0.53, gy + 10);
-    walkPath.close();
-
-    final walkPaint = Paint()..color = const Color(0xFFCBD5E1).withValues(alpha: isNight ? 0.20 : 0.35);
-    canvas.drawPath(walkPath, walkPaint);
-
-    final stonePaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: isNight ? 0.25 : 0.40);
-    for (int i = 0; i < 7; i++) {
-      final stoneY = gy + 18 + (i * 22);
-      final stoneX = w * 0.50 + math.sin(i * 1.4) * 6;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(stoneX, stoneY), width: 34 - (i * 1.5), height: 9), const Radius.circular(4.5)),
-        stonePaint,
-      );
-    }
-
-    // 🚩 9. Festive Celebration Bunting Flags (Triangle party flags)
-    _drawPartyBunting(canvas, w * 0.24, gy - 16, w * 0.36, gy - 12);
-    _drawPartyBunting(canvas, w * 0.64, gy - 12, w * 0.76, gy - 16);
-
-    // 10. White Picket Fences along property bounds
-    _drawPicketFence(canvas, w * 0.24, gy - 6, 5);
-    _drawPicketFence(canvas, w * 0.68, gy - 2, 5);
-
-    // 11. Colorful Flowerbeds (Tulips, Roses, Blossoms)
-    _drawFlowerbed(canvas, w * 0.34, gy + 2);
-    _drawFlowerbed(canvas, w * 0.64, gy + 4);
-
-    // 🦋 12. Fluttering Butterflies in Day / ✨ Glowing Fireflies at Night
-    if (!isNight) {
-      _drawButterfly(canvas, w * 0.33, gy - 8, ambientProg: ambientProg, color: const Color(0xFFFB923C));
-      _drawButterfly(canvas, w * 0.36, gy + 6, ambientProg: ambientProg + 0.3, color: const Color(0xFF38BDF8));
-      _drawButterfly(canvas, w * 0.63, gy - 4, ambientProg: ambientProg + 0.6, color: const Color(0xFFFACC15));
-      _drawButterfly(canvas, w * 0.66, gy + 8, ambientProg: ambientProg + 0.2, color: const Color(0xFFF43F5E));
-      _drawButterfly(canvas, w * 0.26, gy - 22, ambientProg: ambientProg + 0.8, color: const Color(0xFFA855F7));
+      // Coastal royal trees & island perimeter lamps
+      _drawTree(canvas, w * 0.14, gy + 45, scale: 1.3);
+      _drawTree(canvas, w * 0.86, gy + 45, scale: 1.35);
+      _drawStreetLamp(canvas, w * 0.28, gy - 6, isNight: isNight);
+      _drawStreetLamp(canvas, w * 0.72, gy - 6, isNight: isNight);
     } else {
-      _drawFirefly(canvas, w * 0.28, gy - 14, ambientProg: ambientProg, phase: 0.1);
-      _drawFirefly(canvas, w * 0.32, gy + 8, ambientProg: ambientProg, phase: 0.4);
-      _drawFirefly(canvas, w * 0.65, gy - 10, ambientProg: ambientProg, phase: 0.7);
-      _drawFirefly(canvas, w * 0.72, gy + 12, ambientProg: ambientProg, phase: 0.2);
-      _drawFirefly(canvas, w * 0.48, ry + 20, ambientProg: ambientProg, phase: 0.5);
-      _drawFirefly(canvas, w * 0.54, ry + 35, ambientProg: ambientProg, phase: 0.8);
-      _drawFirefly(canvas, w * 0.80, gy - 25, ambientProg: ambientProg, phase: 0.3);
-      _drawFirefly(canvas, w * 0.15, gy - 18, ambientProg: ambientProg, phase: 0.9);
+      // 🌊 6. Curving Flowing River Across Valley
+      final riverPath = Path();
+      final ry = gy + 190.0;
+      riverPath.moveTo(0, ry + 15);
+      riverPath.cubicTo(w * 0.25, ry - 35, w * 0.55, ry + 55, w * 0.82, ry - 15);
+      riverPath.cubicTo(w * 0.90, ry - 25, w * 0.96, ry, w, ry + 25);
+      riverPath.lineTo(w, ry + 115);
+      riverPath.cubicTo(w * 0.96, ry + 95, w * 0.90, ry + 75, w * 0.82, ry + 85);
+      riverPath.cubicTo(w * 0.55, ry + 155, w * 0.25, ry + 65, 0, ry + 115);
+      riverPath.close();
+
+      final riverColors = isNight
+          ? [const Color(0xFF0C4A6E), const Color(0xFF075985), const Color(0xFF0369A1)]
+          : [const Color(0xFF0284C7), const Color(0xFF38BDF8), const Color(0xFF0EA5E9)];
+      final riverPaint = Paint()
+        ..shader = LinearGradient(
+          colors: riverColors,
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ).createShader(Rect.fromLTWH(0, ry - 35, w, 150));
+      canvas.drawPath(riverPath, riverPaint);
+
+      // Sparkling River Water Ripples (Animated with ambientProg)
+      final rippleOffset = math.sin(ambientProg * 2 * math.pi) * 8.0;
+      final wavePaint = Paint()
+        ..color = Colors.white.withValues(alpha: isNight ? 0.35 : 0.55)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.6
+        ..strokeCap = StrokeCap.round;
+      canvas.drawLine(Offset(w * 0.12 + rippleOffset, ry + 22), Offset(w * 0.22 + rippleOffset, ry + 16), wavePaint);
+      canvas.drawLine(Offset(w * 0.36 - rippleOffset, ry + 36), Offset(w * 0.48 - rippleOffset, ry + 46), wavePaint);
+      canvas.drawLine(Offset(w * 0.65 + rippleOffset, ry + 50), Offset(w * 0.76 + rippleOffset, ry + 40), wavePaint);
+      canvas.drawLine(Offset(w * 0.86 - rippleOffset, ry + 24), Offset(w * 0.94 - rippleOffset, ry + 32), wavePaint);
+
+      // 🪷 Floating Pink Lotus Water Lilies on River
+      _drawWaterLily(canvas, w * 0.28, ry + 38);
+      _drawWaterLily(canvas, w * 0.78, ry + 68);
+
+      // 🦢 Swimming White Swans with water ripple wake
+      final swanX1 = w * 0.42 + math.sin(ambientProg * 2 * math.pi) * 16.0;
+      final swanY1 = ry + 46.0;
+      _drawSwan(canvas, swanX1, swanY1);
+
+      final swanX2 = w * 0.46 + math.sin(ambientProg * 2 * math.pi + 0.5) * 12.0;
+      final swanY2 = ry + 56.0;
+      _drawSwan(canvas, swanX2, swanY2);
+
+      // 🛶 Floating Wooden Rowboat
+      final boatBob = math.sin(ambientProg * 2 * math.pi) * 2.5;
+      final boatX = w * 0.66;
+      final boatY = ry + 46.0 + boatBob;
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(boatX, boatY + 9), width: 44, height: 7),
+        Paint()..color = Colors.black.withValues(alpha: 0.30),
+      );
+      final boatPath = Path();
+      boatPath.moveTo(boatX - 20, boatY);
+      boatPath.quadraticBezierTo(boatX - 14, boatY + 10, boatX, boatY + 10);
+      boatPath.quadraticBezierTo(boatX + 14, boatY + 10, boatX + 20, boatY);
+      boatPath.lineTo(boatX + 15, boatY - 1.5);
+      boatPath.quadraticBezierTo(boatX, boatY + 2.5, boatX - 15, boatY - 1.5);
+      boatPath.close();
+      canvas.drawPath(boatPath, Paint()..color = const Color(0xFF78350F));
+      canvas.drawLine(Offset(boatX - 4, boatY + 2), Offset(boatX + 4, boatY + 2), Paint()..color = const Color(0xFFB45309)..strokeWidth = 2.4);
+      canvas.drawLine(Offset(boatX - 8, boatY - 5), Offset(boatX + 10, boatY + 12), Paint()..color = const Color(0xFFFDE68A)..strokeWidth = 1.6);
+
+      // ⚙️ Rotating Wooden Waterwheel on Riverbank
+      _drawWaterWheel(canvas, w * 0.88, ry + 18, ambientProg: ambientProg);
+
+      // 🌉 7. Handsome Stone Arched Footbridge Spanning Across River
+      _drawStoneBridge(canvas, w * 0.50, ry + 40, isNight: isNight);
+
+      // 🏡 8. Cobblestone Courtyard Walkway from house entrance towards bridge
+      final walkPath = Path();
+      walkPath.moveTo(w * 0.47, gy + 10);
+      walkPath.quadraticBezierTo(w * 0.48, gy + 80, w * 0.44, ry - 10);
+      walkPath.lineTo(w * 0.56, ry - 10);
+      walkPath.quadraticBezierTo(w * 0.52, gy + 80, w * 0.53, gy + 10);
+      walkPath.close();
+
+      final walkPaint = Paint()..color = const Color(0xFFCBD5E1).withValues(alpha: isNight ? 0.20 : 0.35);
+      canvas.drawPath(walkPath, walkPaint);
+
+      final stonePaint = Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: isNight ? 0.25 : 0.40);
+      for (int i = 0; i < 7; i++) {
+        final stoneY = gy + 18 + (i * 22);
+        final stoneX = w * 0.50 + math.sin(i * 1.4) * 6;
+        canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromCenter(center: Offset(stoneX, stoneY), width: 34 - (i * 1.5), height: 9), const Radius.circular(4.5)),
+          stonePaint,
+        );
+      }
+
+      // 🚩 9. Festive Celebration Bunting Flags (Triangle party flags)
+      _drawPartyBunting(canvas, w * 0.24, gy - 16, w * 0.36, gy - 12);
+      _drawPartyBunting(canvas, w * 0.64, gy - 12, w * 0.76, gy - 16);
+
+      // 10. White Picket Fences along property bounds
+      _drawPicketFence(canvas, w * 0.24, gy - 6, 5);
+      _drawPicketFence(canvas, w * 0.68, gy - 2, 5);
+
+      // 11. Colorful Flowerbeds (Tulips, Roses, Blossoms)
+      _drawFlowerbed(canvas, w * 0.34, gy + 2);
+      _drawFlowerbed(canvas, w * 0.64, gy + 4);
+
+      // 🦋 12. Fluttering Butterflies in Day / ✨ Glowing Fireflies at Night
+      if (!isNight) {
+        _drawButterfly(canvas, w * 0.33, gy - 8, ambientProg: ambientProg, color: const Color(0xFFFB923C));
+        _drawButterfly(canvas, w * 0.36, gy + 6, ambientProg: ambientProg + 0.3, color: const Color(0xFF38BDF8));
+        _drawButterfly(canvas, w * 0.63, gy - 4, ambientProg: ambientProg + 0.6, color: const Color(0xFFFACC15));
+        _drawButterfly(canvas, w * 0.66, gy + 8, ambientProg: ambientProg + 0.2, color: const Color(0xFFF43F5E));
+        _drawButterfly(canvas, w * 0.26, gy - 22, ambientProg: ambientProg + 0.8, color: const Color(0xFFA855F7));
+      } else {
+        _drawFirefly(canvas, w * 0.28, gy - 14, ambientProg: ambientProg, phase: 0.1);
+        _drawFirefly(canvas, w * 0.32, gy + 8, ambientProg: ambientProg, phase: 0.4);
+        _drawFirefly(canvas, w * 0.65, gy - 10, ambientProg: ambientProg, phase: 0.7);
+        _drawFirefly(canvas, w * 0.72, gy + 12, ambientProg: ambientProg, phase: 0.2);
+        _drawFirefly(canvas, w * 0.48, ry + 20, ambientProg: ambientProg, phase: 0.5);
+        _drawFirefly(canvas, w * 0.54, ry + 35, ambientProg: ambientProg, phase: 0.8);
+        _drawFirefly(canvas, w * 0.80, gy - 25, ambientProg: ambientProg, phase: 0.3);
+        _drawFirefly(canvas, w * 0.15, gy - 18, ambientProg: ambientProg, phase: 0.9);
+      }
+
+      // 13. Lush Trees: Orchard Apples & Japanese Cherry Blossom (Sakura)
+      _drawTree(canvas, w * 0.12, gy - 8, scale: 1.3);
+      _drawCherryBlossomTree(canvas, w * 0.22, gy - 16, scale: 1.1, ambientProg: ambientProg);
+      _drawCherryBlossomTree(canvas, w * 0.78, gy - 4, scale: 1.15, ambientProg: ambientProg);
+      _drawTree(canvas, w * 0.88, gy + 6, scale: 1.35);
+
+      // Riverbank shade trees
+      _drawTree(canvas, w * 0.08, ry + 10, scale: 1.1);
+      _drawTree(canvas, w * 0.92, ry + 20, scale: 1.15);
+
+      // 14. Street Lamps with Warm Golden Glowing Lanterns
+      _drawStreetLamp(canvas, w * 0.30, gy + 12, isNight: isNight);
+      _drawStreetLamp(canvas, w * 0.70, gy + 16, isNight: isNight);
+
+      // 15. Lower Valley Rolling Meadows
+      final lowerMeadowPath = Path();
+      lowerMeadowPath.moveTo(0, ry + 115);
+      lowerMeadowPath.quadraticBezierTo(w * 0.40, ry + 130, w * 0.75, ry + 110);
+      lowerMeadowPath.quadraticBezierTo(w * 0.90, ry + 100, w, ry + 115);
+      lowerMeadowPath.lineTo(w, h);
+      lowerMeadowPath.lineTo(0, h);
+      lowerMeadowPath.close();
+
+      final meadowPaint = Paint()..color = isNight ? const Color(0xFF022C22) : const Color(0xFF15803D);
+      canvas.drawPath(lowerMeadowPath, meadowPaint);
+
+      // Trees in the lower valley
+      _drawTree(canvas, w * 0.18, ry + 180, scale: 1.1);
+      _drawCherryBlossomTree(canvas, w * 0.42, ry + 220, scale: 1.05, ambientProg: ambientProg);
+      _drawTree(canvas, w * 0.68, ry + 200, scale: 1.2);
+      _drawTree(canvas, w * 0.84, ry + 240, scale: 1.05);
     }
-
-    // 13. Lush Trees: Orchard Apples & Japanese Cherry Blossom (Sakura)
-    _drawTree(canvas, w * 0.12, gy - 8, scale: 1.3);
-    _drawCherryBlossomTree(canvas, w * 0.22, gy - 16, scale: 1.1, ambientProg: ambientProg);
-    _drawCherryBlossomTree(canvas, w * 0.78, gy - 4, scale: 1.15, ambientProg: ambientProg);
-    _drawTree(canvas, w * 0.88, gy + 6, scale: 1.35);
-
-    // Riverbank shade trees
-    _drawTree(canvas, w * 0.08, ry + 10, scale: 1.1);
-    _drawTree(canvas, w * 0.92, ry + 20, scale: 1.15);
-
-    // 14. Street Lamps with Warm Golden Glowing Lanterns
-    _drawStreetLamp(canvas, w * 0.30, gy + 12, isNight: isNight);
-    _drawStreetLamp(canvas, w * 0.70, gy + 16, isNight: isNight);
-
-    // 15. Lower Valley Rolling Meadows
-    final lowerMeadowPath = Path();
-    lowerMeadowPath.moveTo(0, ry + 115);
-    lowerMeadowPath.quadraticBezierTo(w * 0.40, ry + 130, w * 0.75, ry + 110);
-    lowerMeadowPath.quadraticBezierTo(w * 0.90, ry + 100, w, ry + 115);
-    lowerMeadowPath.lineTo(w, h);
-    lowerMeadowPath.lineTo(0, h);
-    lowerMeadowPath.close();
-
-    final meadowPaint = Paint()..color = isNight ? const Color(0xFF022C22) : const Color(0xFF15803D);
-    canvas.drawPath(lowerMeadowPath, meadowPaint);
-
-    // Trees in the lower valley
-    _drawTree(canvas, w * 0.18, ry + 180, scale: 1.1);
-    _drawCherryBlossomTree(canvas, w * 0.42, ry + 220, scale: 1.05, ambientProg: ambientProg);
-    _drawTree(canvas, w * 0.68, ry + 200, scale: 1.2);
-    _drawTree(canvas, w * 0.84, ry + 240, scale: 1.05);
 
     // 👑 Day 90 Sovereign Citadel Special: Majestic Celestial Grandeur & Floating Crown
     if (isDay90) {
@@ -7050,13 +7173,455 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawCircle(Offset(x, y - 46), 5.5, Paint()..color = const Color(0xFFFFFC00));
   }
 
+  /// 🌊 6. Boundless Sovereign Ocean ("Samudram") surrounding Fortress Island ("Dweepu")
+  /// Includes golden shoreline beach, granite sea walls, shimmering moonlight reflection beam,
+  /// undulating wave crests, bioluminescent glowing wave foam, darting schools of glowing fish,
+  /// ceremonial marble naval pier, and nautical buoy beacons.
+  void _drawPresidentialSovereignOcean(
+    Canvas canvas,
+    double w,
+    double h,
+    double gy, {
+    required double ambientProg,
+    required bool isNight,
+  }) {
+    final oceanTopY = gy + 75.0;
+
+    // A. 🏖️ Island Coastal Sandy Beach & Granite Sea Wall Breakwater
+    final beachPath = Path();
+    beachPath.moveTo(0, gy + 138);
+    beachPath.quadraticBezierTo(w * 0.16, gy + 18, w * 0.32, gy - 10);
+    beachPath.lineTo(w * 0.68, gy - 10);
+    beachPath.quadraticBezierTo(w * 0.84, gy + 18, w, gy + 138);
+    beachPath.lineTo(w, gy + 175);
+    beachPath.quadraticBezierTo(w * 0.84, gy + 65, w * 0.68, gy + 32);
+    beachPath.lineTo(w * 0.32, gy + 32);
+    beachPath.quadraticBezierTo(w * 0.16, gy + 65, 0, gy + 175);
+    beachPath.close();
+
+    final beachPaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [
+                Color(0xFF78592E),
+                Color(0xFF523B18),
+                Color(0xFF2E220D),
+              ]
+            : const [
+                Color(0xFFFDE68A),
+                Color(0xFFF59E0B),
+                Color(0xFFD97706),
+              ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, gy - 10, w, 190));
+    canvas.drawPath(beachPath, beachPaint);
+
+    // Granite Breakwater Boulders along island base
+    final rockPaint = Paint()..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF64748B);
+    for (int i = 0; i < 28; i++) {
+      final rx = (i / 27) * w;
+      double ryBase;
+      if (rx < w * 0.32) {
+        final t = rx / (w * 0.32);
+        ryBase = ui.lerpDouble(gy + 155, gy + 18, t)!;
+      } else if (rx > w * 0.68) {
+        final t = (rx - w * 0.68) / (w * 0.32);
+        ryBase = ui.lerpDouble(gy + 18, gy + 155, t)!;
+      } else {
+        ryBase = gy + 18;
+      }
+      final rockSize = 14.0 + (math.sin(i * 2.3) * 6).abs();
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(rx, ryBase + 12), width: rockSize * 1.5, height: rockSize * 0.85),
+        rockPaint,
+      );
+    }
+
+    // B. 🌊 Boundless Sovereign Ocean Gradient
+    final oceanRect = Rect.fromLTWH(0, oceanTopY, w, h - oceanTopY);
+    final oceanShader = LinearGradient(
+      colors: isNight
+          ? const [
+              Color(0xFF092E4E), // Shoreline deep navy
+              Color(0xFF07243F),
+              Color(0xFF051B30),
+              Color(0xFF031221),
+              Color(0xFF010A14), // Abyssal deep base
+            ]
+          : const [
+              Color(0xFF0284C7), // Shallows tropical azure
+              Color(0xFF0369A1),
+              Color(0xFF075985),
+              Color(0xFF0C4A6E),
+              Color(0xFF082F49), // Deep sea
+            ],
+      stops: const [0.0, 0.22, 0.48, 0.75, 1.0],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).createShader(oceanRect);
+
+    final oceanPath = Path();
+    oceanPath.moveTo(0, oceanTopY + 45);
+    oceanPath.quadraticBezierTo(w * 0.20, oceanTopY + 15, w * 0.50, oceanTopY);
+    oceanPath.quadraticBezierTo(w * 0.80, oceanTopY + 15, w, oceanTopY + 45);
+    oceanPath.lineTo(w, h);
+    oceanPath.lineTo(0, h);
+    oceanPath.close();
+    canvas.drawPath(oceanPath, Paint()..shader = oceanShader);
+
+    // C. 🌕 Shimmering Vertical Moonlight Reflection Track on Sea Surface (Night)
+    if (isNight) {
+      final moonCenterX = w * 0.48;
+      for (int i = 0; i < 20; i++) {
+        final my = oceanTopY + 40 + (i * ((h - oceanTopY - 60) / 20));
+        final trackWidth = 50.0 + (i * 28.0);
+        final shimmerOffset = math.sin(ambientProg * 2 * math.pi + i * 0.6) * 18.0;
+        final shimmerAlpha = (0.18 + 0.25 * math.sin(ambientProg * 4 * math.pi + i * 0.8)).clamp(0.08, 0.50);
+
+        final shimmerPaint = Paint()
+          ..color = const Color(0xFFBAE6FD).withValues(alpha: shimmerAlpha)
+          ..strokeWidth = 2.2 + (i * 0.12)
+          ..strokeCap = StrokeCap.round;
+
+        canvas.drawLine(
+          Offset(moonCenterX - (trackWidth / 2) + shimmerOffset, my),
+          Offset(moonCenterX + (trackWidth / 2) + shimmerOffset, my),
+          shimmerPaint,
+        );
+      }
+    }
+
+    // D. 🌊 Rolling Ocean Wave Swells with Bioluminescent Crests
+    for (int i = 0; i < 16; i++) {
+      final wy = oceanTopY + 30 + (i * ((h - oceanTopY - 40) / 16));
+      final waveOffset = math.sin(ambientProg * 2 * math.pi + (i * 0.8)) * 32.0;
+      final waveSpeed = (ambientProg * 2 * math.pi + (i * 0.4));
+      final waveAlpha = isNight
+          ? (0.20 + (0.35 * math.sin(waveSpeed + i).abs())).clamp(0.12, 0.60)
+          : (0.30 + (0.30 * math.sin(waveSpeed + i).abs())).clamp(0.20, 0.65);
+
+      final crestColor = isNight
+          ? (i % 2 == 0 ? const Color(0xFF00F0FF) : const Color(0xFF2DD4BF))
+          : const Color(0xFFE0F2FE);
+
+      final wavePaint = Paint()
+        ..color = crestColor.withValues(alpha: waveAlpha)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8 + (i * 0.15)
+        ..strokeCap = StrokeCap.round;
+
+      final p = Path();
+      p.moveTo(0, wy);
+      for (double x = 0; x <= w; x += 160) {
+        final hAmp = 4.0 + (i * 0.35);
+        p.quadraticBezierTo(
+          x + 40 + waveOffset,
+          wy - hAmp,
+          x + 80,
+          wy,
+        );
+        p.quadraticBezierTo(
+          x + 120 - waveOffset,
+          wy + hAmp,
+          x + 160,
+          wy,
+        );
+      }
+      canvas.drawPath(p, wavePaint);
+    }
+
+    // E. 🐟 Darting Schools of Bioluminescent Ocean Fish
+    _drawBioluminescentFishSchool(canvas, w, oceanTopY + 180, ambientProg: ambientProg, isNight: isNight, count: 7, dir: 1.0);
+    _drawBioluminescentFishSchool(canvas, w, oceanTopY + 460, ambientProg: (ambientProg + 0.4) % 1.0, isNight: isNight, count: 9, dir: -1.0);
+    _drawBioluminescentFishSchool(canvas, w, oceanTopY + 820, ambientProg: (ambientProg + 0.7) % 1.0, isNight: isNight, count: 6, dir: 1.0);
+
+    // F. 🏛️ Grand Ceremonial Presidential Naval Pier / Marble Promenade
+    _drawCeremonialOceanPier(canvas, w * 0.50, gy + 20, ambientProg: ambientProg, isNight: isNight);
+
+    // G. 🚨 Offshore Nautical Territorial Warning Buoys with Flashing Beacons
+    _drawOceanNavigationalBuoy(canvas, w * 0.16, oceanTopY + 280, ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFFEF4444));
+    _drawOceanNavigationalBuoy(canvas, w * 0.84, oceanTopY + 380, ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFF10B981));
+  }
+
+  /// 🐟 Swimming Bioluminescent Fish in the Deep Sovereign Sea
+  void _drawBioluminescentFishSchool(
+    Canvas canvas,
+    double w,
+    double baseY, {
+    required double ambientProg,
+    required bool isNight,
+    required int count,
+    required double dir,
+  }) {
+    final schoolSpeed = ambientProg * w;
+    final fishGlow = Paint()
+      ..color = (isNight ? const Color(0xFF00F0FF) : const Color(0xFF38BDF8)).withValues(alpha: isNight ? 0.65 : 0.45)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+
+    final fishBody = Paint()
+      ..color = isNight ? const Color(0xFFE0F2FE) : const Color(0xFF0284C7);
+
+    for (int i = 0; i < count; i++) {
+      final fx = (dir > 0)
+          ? ((schoolSpeed + (i * 24)) % (w + 100)) - 50
+          : w - (((schoolSpeed + (i * 24)) % (w + 100)) - 50);
+      final fy = baseY + (math.sin((ambientProg * 4 * math.pi) + (i * 0.7)) * 14.0) + (i * 4);
+
+      // Glow halo
+      canvas.drawCircle(Offset(fx, fy), 5.0, fishGlow);
+
+      // Tiny fish body
+      final fPath = Path();
+      fPath.moveTo(fx + (dir * 7), fy);
+      fPath.quadraticBezierTo(fx, fy - 3, fx - (dir * 6), fy);
+      fPath.quadraticBezierTo(fx, fy + 3, fx + (dir * 7), fy);
+      fPath.close();
+      canvas.drawPath(fPath, fishBody);
+
+      // Tail fin
+      final tail = Path();
+      tail.moveTo(fx - (dir * 6), fy);
+      tail.lineTo(fx - (dir * 11), fy - 4);
+      tail.lineTo(fx - (dir * 11), fy + 4);
+      tail.close();
+      canvas.drawPath(tail, fishBody);
+    }
+  }
+
+  /// 🏛️ Grand Ceremonial Presidential Pier Extending into the Sovereign Harbor
+  void _drawCeremonialOceanPier(Canvas canvas, double x, double y, {required double ambientProg, required bool isNight}) {
+    const pierW = 120.0;
+    const pierH = 260.0;
+
+    // Granite foundation pillars under water
+    final pillarPaint = Paint()..color = isNight ? const Color(0xFF0F172A) : const Color(0xFF475569);
+    for (int i = 0; i < 4; i++) {
+      final py = y + 40 + (i * 55);
+      canvas.drawRect(Rect.fromLTWH(x - (pierW / 2) + 10, py, 14, 28), pillarPaint);
+      canvas.drawRect(Rect.fromLTWH(x + (pierW / 2) - 24, py, 14, 28), pillarPaint);
+    }
+
+    // Marble Pier Deck
+    final pierRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(x - (pierW / 2), y, pierW, pierH),
+      const Radius.circular(8),
+    );
+    final deckShader = LinearGradient(
+      colors: isNight
+          ? const [Color(0xFF334155), Color(0xFF1E293B), Color(0xFF0F172A)]
+          : const [Color(0xFFF1F5F9), Color(0xFFE2E8F0), Color(0xFFCBD5E1)],
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+    ).createShader(pierRect.outerRect);
+    canvas.drawRRect(pierRect, Paint()..shader = deckShader);
+
+    // Presidential Red Carpet Runner down the pier
+    final carpetRect = Rect.fromLTWH(x - 14, y, 28, pierH - 12);
+    canvas.drawRect(carpetRect, Paint()..color = const Color(0xFFDC2626));
+    canvas.drawRect(
+      Rect.fromLTWH(x - 14, y, 28, pierH - 12),
+      Paint()
+        ..color = const Color(0xFFFFD700)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0,
+    );
+
+    // Golden Deck Railings & Warm Lantern Posts
+    final railPaint = Paint()
+      ..color = const Color(0xFFFFD700)
+      ..strokeWidth = 2.4;
+    canvas.drawLine(Offset(x - (pierW / 2) + 4, y), Offset(x - (pierW / 2) + 4, y + pierH - 8), railPaint);
+    canvas.drawLine(Offset(x + (pierW / 2) - 4, y), Offset(x + (pierW / 2) - 4, y + pierH - 8), railPaint);
+
+    // Pierhead Flagpole with Presidential Standard
+    final poleX = x;
+    final poleY = y + pierH - 10;
+    canvas.drawLine(Offset(poleX, poleY), Offset(poleX, poleY - 45), Paint()..color = const Color(0xFFFFD700)..strokeWidth = 3);
+    final flagPath = Path();
+    flagPath.moveTo(poleX, poleY - 45);
+    flagPath.lineTo(poleX + 26, poleY - 37);
+    flagPath.lineTo(poleX, poleY - 29);
+    flagPath.close();
+    canvas.drawPath(flagPath, Paint()..color = const Color(0xFF1E40AF));
+    canvas.drawCircle(Offset(poleX + 10, poleY - 37), 3, Paint()..color = const Color(0xFFFFD700));
+
+    // Warm pierhead lantern
+    canvas.drawCircle(
+      Offset(poleX, poleY - 46),
+      14,
+      Paint()
+        ..color = const Color(0xFFFFB703).withValues(alpha: isNight ? 0.55 : 0.35)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8),
+    );
+    canvas.drawCircle(Offset(poleX, poleY - 46), 4, Paint()..color = const Color(0xFFFFFC00));
+  }
+
+  /// 🚨 Offshore Navigational Buoy with Flashing Beacon
+  void _drawOceanNavigationalBuoy(
+    Canvas canvas,
+    double x,
+    double y, {
+    required double ambientProg,
+    required bool isNight,
+    required Color beaconColor,
+  }) {
+    final bob = math.sin(ambientProg * 2 * math.pi + (x * 0.05)) * 3.5;
+    final by = y + bob;
+
+    // Buoy float body
+    final buoyPath = Path();
+    buoyPath.moveTo(x - 14, by);
+    buoyPath.lineTo(x - 9, by - 22);
+    buoyPath.lineTo(x + 9, by - 22);
+    buoyPath.lineTo(x + 14, by);
+    buoyPath.quadraticBezierTo(x, by + 10, x - 14, by);
+    buoyPath.close();
+    canvas.drawPath(buoyPath, Paint()..color = const Color(0xFFE2E8F0));
+    canvas.drawRect(Rect.fromLTWH(x - 11, by - 14, 22, 7), Paint()..color = beaconColor);
+
+    // Cage mast
+    canvas.drawLine(Offset(x - 5, by - 22), Offset(x - 2, by - 36), Paint()..color = const Color(0xFF475569)..strokeWidth = 2);
+    canvas.drawLine(Offset(x + 5, by - 22), Offset(x + 2, by - 36), Paint()..color = const Color(0xFF475569)..strokeWidth = 2);
+    canvas.drawLine(Offset(x, by - 22), Offset(x, by - 36), Paint()..color = const Color(0xFF475569)..strokeWidth = 2);
+
+    // Flashing Strobe Light
+    final flashProg = ((ambientProg * 3.0) + (x * 0.01)) % 1.0;
+    final isStrobe = flashProg > 0.65;
+    if (isStrobe || !isNight) {
+      canvas.drawCircle(
+        Offset(x, by - 38),
+        16,
+        Paint()
+          ..color = beaconColor.withValues(alpha: 0.60)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10),
+      );
+      canvas.drawCircle(Offset(x, by - 38), 4.5, Paint()..color = Colors.white);
+    }
+  }
+
   @override
   bool shouldRepaint(covariant CitadelScenicLandscapePainter oldDelegate) =>
       oldDelegate.isDamaged != isDamaged ||
       oldDelegate.groundBaseY != groundBaseY ||
       oldDelegate.isNight != isNight ||
       oldDelegate.isDay90 != isDay90 ||
-      oldDelegate.ambientProg != ambientProg;
+      oldDelegate.ambientProg != ambientProg ||
+      oldDelegate.isPresident != isPresident;
 }
+
+/// 🌌 🌊 Full-Bleed Infinite Ocean & Sky Backdrop behind InteractiveViewer.
+/// Guarantees that no matter how far the user zooms out or pans around the island,
+/// the screen is 100% covered in beautiful boundless ocean and sky—NEVER black bars!
+class CitadelInfiniteOceanSkyBackdropPainter extends CustomPainter {
+  final bool isNight;
+  final double ambientProg;
+
+  CitadelInfiniteOceanSkyBackdropPainter({
+    required this.isNight,
+    this.ambientProg = 0.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    if (w <= 0 || h <= 0) return;
+
+    final horizonY = h * 0.44;
+
+    // 1. Sky Gradient (Upper 44% of infinite viewport)
+    final skyPaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [
+                Color(0xFF020713), // Deep Cosmos
+                Color(0xFF081226),
+                Color(0xFF0F203C),
+                Color(0xFF193252), // Atmospheric horizon glow
+              ]
+            : const [
+                Color(0xFF0284C7),
+                Color(0xFF38BDF8),
+                Color(0xFF7DD3FC),
+                Color(0xFFBAE6FD),
+              ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, 0, w, horizonY + 2));
+    canvas.drawRect(Rect.fromLTWH(0, 0, w, horizonY + 2), skyPaint);
+
+    // Cosmic Stars in the backdrop
+    if (isNight) {
+      final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.65);
+      final r = math.Random(42);
+      for (int i = 0; i < 70; i++) {
+        final sx = r.nextDouble() * w;
+        final sy = r.nextDouble() * (horizonY - 20);
+        final rad = 0.7 + r.nextDouble() * 1.5;
+        final twinkle = 0.5 + 0.5 * math.sin(ambientProg * 2 * math.pi + i);
+        canvas.drawCircle(Offset(sx, sy), rad, starPaint..color = Colors.white.withValues(alpha: 0.3 + 0.6 * twinkle));
+      }
+    }
+
+    // 2. Boundless Ocean (Lower 56% of infinite viewport)
+    final oceanPaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [
+                Color(0xFF0A2540), // Horizon ocean edge
+                Color(0xFF071C33),
+                Color(0xFF041224),
+                Color(0xFF020A14), // Abyssal deep base
+              ]
+            : const [
+                Color(0xFF0284C7),
+                Color(0xFF0369A1),
+                Color(0xFF075985),
+                Color(0xFF0C4A6E),
+              ],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, horizonY, w, h - horizonY));
+    canvas.drawRect(Rect.fromLTWH(0, horizonY, w, h - horizonY), oceanPaint);
+
+    // Ocean horizon glow & distant rolling waves
+    final wavePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    for (int i = 0; i < 14; i++) {
+      final wy = horizonY + 15 + (i * ((h - horizonY) / 14));
+      final waveOffset = math.sin(ambientProg * 2 * math.pi + (i * 0.7)) * 25.0;
+      final alpha = (0.12 + (0.18 * (i / 14))).clamp(0.08, 0.35);
+      wavePaint
+        ..color = (isNight ? const Color(0xFF38BDF8) : Colors.white).withValues(alpha: alpha)
+        ..strokeWidth = 1.0 + (i * 0.18);
+
+      final p = Path();
+      p.moveTo(-40, wy);
+      for (double x = -40; x <= w + 40; x += 120) {
+        p.quadraticBezierTo(
+          x + 30 + waveOffset,
+          wy - 3 - (i * 0.3),
+          x + 60,
+          wy,
+        );
+        p.quadraticBezierTo(
+          x + 90 - waveOffset,
+          wy + 3 + (i * 0.3),
+          x + 120,
+          wy,
+        );
+      }
+      canvas.drawPath(p, wavePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CitadelInfiniteOceanSkyBackdropPainter oldDelegate) =>
+      oldDelegate.isNight != isNight || oldDelegate.ambientProg != ambientProg;
+}
+
 
 

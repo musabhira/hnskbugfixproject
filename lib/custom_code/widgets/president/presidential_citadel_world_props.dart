@@ -2141,3 +2141,804 @@ class _IronDomeHexCanopyPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _IronDomeHexCanopyPainter oldDelegate) => true;
 }
+
+/// 🚢 Massive Guided-Missile Destroyer / Sovereign Naval Warship ("Yudha Kappal")
+/// Stationed in the sovereign waters surrounding the island with rotating radar,
+/// deck gun turret, missile silos, bridge command deck, and churning wake wash.
+class PresidentialNavalWarshipWidget extends StatelessWidget {
+  final double animProg;
+  final bool isNight;
+  final double width;
+  final double height;
+
+  const PresidentialNavalWarshipWidget({
+    super.key,
+    required this.animProg,
+    this.isNight = false,
+    this.width = 280,
+    this.height = 84,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final shipBob = math.sin(animProg * 3 * math.pi) * 3.0;
+    final radarAngle = animProg * 8 * math.pi;
+    final navFlash = math.sin(animProg * 6 * math.pi) > 0;
+
+    return Transform.translate(
+      offset: Offset(0, shipBob),
+      child: SizedBox(
+        width: width,
+        height: height + 24,
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // 1. Water churn & foam wake trails beneath hull
+            Positioned(
+              left: -18,
+              bottom: 4,
+              right: -18,
+              height: 18,
+              child: CustomPaint(
+                painter: _ShipWakePainter(
+                  prog: animProg,
+                  isNight: isNight,
+                ),
+              ),
+            ),
+
+            // 2. Main Steel Warship Hull
+            Positioned(
+              left: 12,
+              bottom: 12,
+              width: width - 24,
+              height: 34,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isNight
+                        ? [const Color(0xFF1E293B), const Color(0xFF0F172A), const Color(0xFF020617)]
+                        : [const Color(0xFF64748B), const Color(0xFF475569), const Color(0xFF334155)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(8),
+                    bottomRight: Radius.circular(22),
+                    topLeft: Radius.circular(2),
+                  ),
+                  border: Border.all(
+                    color: isNight ? const Color(0xFF38BDF8).withValues(alpha: 0.4) : const Color(0xFF94A3B8),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.6),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                    if (isNight)
+                      BoxShadow(
+                        color: const Color(0xFF00F0FF).withValues(alpha: 0.2),
+                        blurRadius: 12,
+                      ),
+                  ],
+                ),
+                child: Stack(
+                  children: [
+                    // Red Waterline Striping
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: 5,
+                      child: Container(
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFDC2626),
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(6),
+                            bottomRight: Radius.circular(20),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Hull Pennant Number "DDG-01 NAVY"
+                    Positioned(
+                      left: 20,
+                      top: 8,
+                      child: Text(
+                        'DDG-01 NAVY ⚓',
+                        style: TextStyle(
+                          color: isNight ? const Color(0xFF38BDF8) : Colors.white,
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                    // Starboard / Port Navigation Strobe
+                    Positioned(
+                      right: 14,
+                      top: 4,
+                      child: Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: navFlash ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: navFlash ? const Color(0xFF22C55E) : const Color(0xFFEF4444),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 3. Superstructure Command Bridge
+            Positioned(
+              left: 78,
+              bottom: 44,
+              width: 90,
+              height: 28,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isNight
+                        ? [const Color(0xFF334155), const Color(0xFF1E293B)]
+                        : [const Color(0xFF94A3B8), const Color(0xFF64748B)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(6),
+                    topRight: Radius.circular(10),
+                  ),
+                  border: Border.all(color: const Color(0xFF475569), width: 1),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: List.generate(
+                    5,
+                    (i) => Container(
+                      width: 9,
+                      height: 5,
+                      margin: const EdgeInsets.only(top: 4),
+                      decoration: BoxDecoration(
+                        color: isNight ? const Color(0xFFFDE047) : const Color(0xFF38BDF8),
+                        borderRadius: BorderRadius.circular(1.5),
+                        boxShadow: [
+                          if (isNight)
+                            BoxShadow(
+                              color: const Color(0xFFFDE047).withValues(alpha: 0.8),
+                              blurRadius: 4,
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // 4. Main Phased-Array Radar Mast & Rotating Radar Dish
+            Positioned(
+              left: 114,
+              bottom: 70,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Rotating radar antenna
+                  Transform.rotate(
+                    angle: math.sin(radarAngle) * 0.4,
+                    child: Container(
+                      width: 22,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFCBD5E1),
+                        borderRadius: BorderRadius.circular(2),
+                        border: Border.all(color: Colors.white70, width: 0.8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  // Radar Mast Tower
+                  Container(
+                    width: 5,
+                    height: 16,
+                    color: const Color(0xFF475569),
+                  ),
+                ],
+              ),
+            ),
+
+            // 5. Foredeck 5-Inch Naval Cannon Turret (Angled forward)
+            Positioned(
+              left: 36,
+              bottom: 44,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  // Gun barrel
+                  Positioned(
+                    left: -14,
+                    top: 5,
+                    child: Transform.rotate(
+                      angle: -0.22,
+                      alignment: Alignment.centerRight,
+                      child: Container(
+                        width: 18,
+                        height: 3,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F172A),
+                          borderRadius: BorderRadius.circular(1.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Turret housing dome
+                  Container(
+                    width: 20,
+                    height: 13,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF334155),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(8),
+                        topRight: Radius.circular(6),
+                      ),
+                      border: Border.all(color: const Color(0xFF64748B), width: 1),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // 6. VLS Missile Launch Deck Behind Bridge
+            Positioned(
+              left: 174,
+              bottom: 44,
+              width: 38,
+              height: 14,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(3),
+                  border: Border.all(color: const Color(0xFF64748B), width: 0.8),
+                ),
+                child: GridView.count(
+                  crossAxisCount: 4,
+                  padding: const EdgeInsets.all(2),
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: List.generate(
+                    8,
+                    (i) => Container(
+                      margin: const EdgeInsets.all(1),
+                      color: const Color(0xFF0F172A),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // 7. Stern Flight Deck Helipad with "H" & National Flag
+            Positioned(
+              right: 18,
+              bottom: 44,
+              width: 44,
+              height: 12,
+              child: Stack(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF334155),
+                      borderRadius: BorderRadius.circular(2),
+                      border: Border.all(color: const Color(0xFF64748B), width: 0.8),
+                    ),
+                    child: const Center(
+                      child: Text(
+                        'Ⓗ',
+                        style: TextStyle(
+                          color: Color(0xFFFFD700),
+                          fontSize: 8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Flagpole at Stern
+                  Positioned(
+                    right: 2,
+                    top: -12,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Container(width: 1.5, height: 14, color: const Color(0xFFCBD5E1)),
+                        Container(
+                          width: 8,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444),
+                            borderRadius: BorderRadius.circular(1),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ShipWakePainter extends CustomPainter {
+  final double prog;
+  final bool isNight;
+
+  _ShipWakePainter({required this.prog, required this.isNight});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final waveOffset = math.sin(prog * 4 * math.pi) * 6.0;
+    final paint = Paint()
+      ..color = (isNight ? const Color(0xFF00F0FF) : Colors.white).withValues(alpha: isNight ? 0.45 : 0.65)
+      ..strokeWidth = 2.2
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final path = Path();
+    path.moveTo(0, size.height * 0.5);
+    path.quadraticBezierTo(size.width * 0.25, size.height * 0.8 + waveOffset, size.width * 0.5, size.height * 0.5);
+    path.quadraticBezierTo(size.width * 0.75, size.height * 0.2 - waveOffset, size.width, size.height * 0.5);
+    canvas.drawPath(path, paint);
+
+    // Secondary foam line
+    final subPaint = Paint()
+      ..color = (isNight ? const Color(0xFF2DD4BF) : Colors.white70).withValues(alpha: isNight ? 0.3 : 0.4)
+      ..strokeWidth = 1.4
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(Offset(10, size.height * 0.7), Offset(size.width - 20, size.height * 0.7), subPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _ShipWakePainter oldDelegate) => true;
+}
+
+/// 🏮 Coastal Lighthouse Tower on Island Edge ("Dweepu Kaaval")
+/// Features stone ashlar brick body, catwalk gallery, and rotating 360° sweeping
+/// searchlight beam penetrating the nighttime ocean mist.
+class PresidentialCoastalLighthouseWidget extends StatelessWidget {
+  final double animProg;
+  final bool isNight;
+
+  const PresidentialCoastalLighthouseWidget({
+    super.key,
+    required this.animProg,
+    this.isNight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final beamAngle = animProg * 2 * math.pi;
+
+    return SizedBox(
+      width: 80,
+      height: 140,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.bottomCenter,
+        children: [
+          // 1. Sweeping Searchlight Beam (Rotates across the ocean)
+          Positioned(
+            bottom: 96,
+            child: Transform.rotate(
+              angle: beamAngle,
+              alignment: Alignment.bottomCenter,
+              child: CustomPaint(
+                size: const Size(180, 120),
+                painter: _LighthouseBeamPainter(isNight: isNight),
+              ),
+            ),
+          ),
+
+          // 2. Rocky Island Cliff Outcrop Base
+          Positioned(
+            bottom: 0,
+            child: Container(
+              width: 76,
+              height: 26,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF334155), Color(0xFF1E293B), Color(0xFF0F172A)],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF475569), width: 1.2),
+              ),
+            ),
+          ),
+
+          // 3. Tapered Lighthouse Tower
+          Positioned(
+            bottom: 22,
+            child: Container(
+              width: 44,
+              height: 78,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFFF8FAFC),
+                    Color(0xFFE2E8F0),
+                    Color(0xFFDC2626), // Classic Red Striping
+                    Color(0xFFDC2626),
+                    Color(0xFFF8FAFC),
+                    Color(0xFFE2E8F0),
+                  ],
+                  stops: [0.0, 0.32, 0.33, 0.65, 0.66, 1.0],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
+                border: Border.all(color: const Color(0xFF94A3B8), width: 1),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 4. Lantern Room with Golden Lamp & Catwalk
+          Positioned(
+            bottom: 98,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Cupola Roof Dome
+                Container(
+                  width: 32,
+                  height: 10,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF1E293B),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(14)),
+                  ),
+                ),
+                // Glowing Glass Lantern Room
+                Container(
+                  width: 36,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFDE047).withValues(alpha: isNight ? 0.95 : 0.7),
+                    border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: isNight ? 0.9 : 0.5),
+                        blurRadius: isNight ? 22 : 10,
+                        spreadRadius: isNight ? 5 : 2,
+                      ),
+                    ],
+                  ),
+                ),
+                // Catwalk Railing
+                Container(
+                  width: 46,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LighthouseBeamPainter extends CustomPainter {
+  final bool isNight;
+  _LighthouseBeamPainter({required this.isNight});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final path = Path();
+    path.moveTo(size.width * 0.5, size.height);
+    path.lineTo(size.width * 0.1, 0);
+    path.lineTo(size.width * 0.9, 0);
+    path.close();
+
+    final paint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          (isNight ? const Color(0xFFFEF08A) : Colors.white).withValues(alpha: isNight ? 0.85 : 0.4),
+          const Color(0xFFFACC15).withValues(alpha: isNight ? 0.4 : 0.15),
+          Colors.transparent,
+        ],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+      ).createShader(Rect.fromLTWH(0, 0, size.width, size.height))
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 10);
+
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _LighthouseBeamPainter oldDelegate) => false;
+}
+
+/// 🐬 Playful Leaping Ocean Dolphin ("Meenukal / Dolphins")
+/// Smoothly arcs in and out of the water creating animated water droplets & splash rings.
+class PresidentialLeapingDolphinWidget extends StatelessWidget {
+  final double animProg;
+  final bool isNight;
+
+  const PresidentialLeapingDolphinWidget({
+    super.key,
+    required this.animProg,
+    this.isNight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Parabolic leap height (0 to 1 and back)
+    final leapPhase = animProg % 1.0;
+    final isJumping = leapPhase < 0.65;
+    final normalizedT = isJumping ? (leapPhase / 0.65) : 0.0;
+    final leapY = isJumping ? -math.sin(normalizedT * math.pi) * 38.0 : 0.0;
+    final leapRot = isJumping ? (normalizedT - 0.5) * 1.4 : 0.0;
+
+    return SizedBox(
+      width: 70,
+      height: 60,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.bottomCenter,
+        children: [
+          // Water Splash Foam Ring
+          if (isJumping && (normalizedT < 0.2 || normalizedT > 0.8))
+            Positioned(
+              bottom: 2,
+              child: Container(
+                width: 32,
+                height: 8,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(
+                    color: (isNight ? const Color(0xFF00F0FF) : Colors.white).withValues(alpha: 0.8),
+                    width: 1.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (isNight ? const Color(0xFF00F0FF) : const Color(0xFF38BDF8)).withValues(alpha: 0.5),
+                      blurRadius: 8,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // Animated Leaping Dolphin Body
+          if (isJumping)
+            Transform.translate(
+              offset: Offset(0, leapY),
+              child: Transform.rotate(
+                angle: leapRot,
+                alignment: Alignment.center,
+                child: SizedBox(
+                  width: 44,
+                  height: 22,
+                  child: CustomPaint(
+                    painter: _DolphinPainter(isNight: isNight),
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DolphinPainter extends CustomPainter {
+  final bool isNight;
+  _DolphinPainter({required this.isNight});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final bodyPath = Path();
+    bodyPath.moveTo(w * 0.95, h * 0.5); // Snout
+    bodyPath.quadraticBezierTo(w * 0.65, 0, w * 0.25, h * 0.35); // Arched back
+    bodyPath.lineTo(0, h * 0.25); // Tail fluke upper
+    bodyPath.lineTo(w * 0.08, h * 0.5); // Tail notch
+    bodyPath.lineTo(0, h * 0.75); // Tail fluke lower
+    bodyPath.quadraticBezierTo(w * 0.45, h * 0.95, w * 0.85, h * 0.7); // Belly
+    bodyPath.close();
+
+    final bodyPaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? [const Color(0xFF38BDF8), const Color(0xFF0284C7), const Color(0xFF0369A1)]
+            : [const Color(0xFF67E8F9), const Color(0xFF0EA5E9), const Color(0xFF0369A1)],
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+      ).createShader(Rect.fromLTWH(0, 0, w, h));
+
+    canvas.drawPath(bodyPath, bodyPaint);
+
+    // Glowing Eye
+    canvas.drawCircle(
+      Offset(w * 0.85, h * 0.45),
+      1.8,
+      Paint()..color = isNight ? const Color(0xFF00F0FF) : Colors.white,
+    );
+    // Dorsal Fin
+    final finPath = Path();
+    finPath.moveTo(w * 0.50, h * 0.12);
+    finPath.quadraticBezierTo(w * 0.42, -h * 0.25, w * 0.38, -h * 0.25);
+    finPath.quadraticBezierTo(w * 0.40, 0, w * 0.36, h * 0.22);
+    finPath.close();
+    canvas.drawPath(finPath, bodyPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _DolphinPainter oldDelegate) => false;
+}
+
+/// ✈️ Air Force Supersonic Escort Fighter Squadron ("Air Force")
+/// 3 Stealth Delta-Wing Jets in tight V-Formation with twin blue afterburner plumes.
+class PresidentialAirForceFighterSquadronWidget extends StatelessWidget {
+  final double animProg;
+  final bool isNight;
+
+  const PresidentialAirForceFighterSquadronWidget({
+    super.key,
+    required this.animProg,
+    this.isNight = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 140,
+      height: 70,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // Lead Fighter Jet
+          Positioned(
+            left: 55,
+            top: 0,
+            child: _buildFighterJet(scale: 1.0),
+          ),
+          // Left Wingman
+          Positioned(
+            left: 10,
+            top: 26,
+            child: _buildFighterJet(scale: 0.85),
+          ),
+          // Right Wingman
+          Positioned(
+            left: 95,
+            top: 26,
+            child: _buildFighterJet(scale: 0.85),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFighterJet({double scale = 1.0}) {
+    return Transform.scale(
+      scale: scale,
+      child: SizedBox(
+        width: 38,
+        height: 34,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Twin Neon Blue Afterburner Exhaust Plumes
+            Positioned(
+              bottom: 0,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 3.5,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF38BDF8), Colors.transparent],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Container(
+                    width: 3.5,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF38BDF8), Colors.transparent],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Delta Wing Jet Body
+            CustomPaint(
+              size: const Size(36, 26),
+              painter: _JetPainter(isNight: isNight),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _JetPainter extends CustomPainter {
+  final bool isNight;
+  _JetPainter({required this.isNight});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    final path = Path();
+    path.moveTo(w * 0.5, 0); // Needle nose
+    path.lineTo(w * 0.6, h * 0.45);
+    path.lineTo(w, h * 0.85); // Right wingtip
+    path.lineTo(w * 0.65, h * 0.82);
+    path.lineTo(w * 0.58, h);
+    path.lineTo(w * 0.42, h);
+    path.lineTo(w * 0.35, h * 0.82);
+    path.lineTo(0, h * 0.85); // Left wingtip
+    path.lineTo(w * 0.4, h * 0.45);
+    path.close();
+
+    final paint = Paint()
+      ..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF64748B)
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, paint);
+
+    // Jet Outline & Cockpit Glass
+    final stroke = Paint()
+      ..color = isNight ? const Color(0xFF38BDF8).withValues(alpha: 0.6) : const Color(0xFFCBD5E1)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.0;
+    canvas.drawPath(path, stroke);
+
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(w * 0.5, h * 0.35), width: 4.5, height: 9),
+      Paint()..color = const Color(0xFF38BDF8),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _JetPainter oldDelegate) => false;
+}
