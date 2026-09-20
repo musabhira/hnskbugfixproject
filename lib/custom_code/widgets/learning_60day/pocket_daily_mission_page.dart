@@ -30,6 +30,7 @@ import 'pocket_time_machine_trainer_modal.dart';
 import 'pocket_secret_code_grammar_card.dart';
 import 'pocket_sentence_builder_card.dart';
 import 'pocket_slang_smart_english_card.dart';
+import 'pocket_practice_speaking_card.dart';
 
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
@@ -148,6 +149,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _secretCodeGrammarCompleted = false;
   bool _sentenceBuilderCompleted = false;
   bool _slangSmartEnglishCompleted = false;
+  bool _practiceSpeakingCompleted = false;
 
   // Story Aloud Reading Recorder
   AudioRecorder? _storyRecorder;
@@ -4166,6 +4168,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           prefs.getBool('${dayKey}_sentence_builder') ?? false;
       _slangSmartEnglishCompleted =
           prefs.getBool('${dayKey}_slang_smart') ?? false;
+      _practiceSpeakingCompleted =
+          prefs.getBool('${dayKey}_practice_speaking') ?? false;
       _storyAudioPath = prefs.getString('${dayKey}_story_recording_path');
       _storyRecordDuration = prefs.getInt('${dayKey}_story_recording_duration') ?? 0;
     });
@@ -4651,7 +4655,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_hasEnglishThinking) count++;
     if (_hasSpeakingChallenge) count++;
     if (widget.day >= 4) count++;
-    count += 3; // ⚡ Secret Code Grammar + 🏗️ Sentence Builder + 💬 Slang to Smart English
+    count += 4; // ⚡ Secret Code Grammar + 🏗️ Sentence Builder + 💬 Slang to Smart English + 🎤 Practice Speaking
     return count;
   }
 
@@ -4662,6 +4666,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_secretCodeGrammarCompleted) count++;
     if (_sentenceBuilderCompleted) count++;
     if (_slangSmartEnglishCompleted) count++;
+    if (_practiceSpeakingCompleted) count++;
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
     if (_vocabMemorized) count++;
@@ -4821,6 +4826,19 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           onCompleted: (val) {
                             setState(() => _slangSmartEnglishCompleted = val);
                             _saveSubtask('slang_smart', val);
+                          },
+                          onSpeak: _speakWord,
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 🎤 Practice Speaking (SpeakNow-inspired Fill in Blank & Say It Aloud)
+                        PocketPracticeSpeakingCard(
+                          day: widget.day,
+                          isCompleted: _practiceSpeakingCompleted,
+                          onCompleted: (val) {
+                            setState(() => _practiceSpeakingCompleted = val);
+                            _saveSubtask('practice_speaking', val);
                           },
                           onSpeak: _speakWord,
                         ),
