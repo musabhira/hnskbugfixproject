@@ -324,18 +324,16 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
     final Matrix4 target = Matrix4.identity();
     if (_isVantageView) {
-      // Long Vantage View (Full panorama from southern island/boat to distant palace)
+      // Long Vantage View: Locked 100% full screen overview
       target.setEntry(0, 0, _savedMinScale);
       target.setEntry(1, 1, _savedMinScale);
-      final tx = ((_savedViewportW - _savedWorldW * _savedMinScale) / 2).clamp(-(_savedWorldW * _savedMinScale - _savedViewportW), 0.0);
-      final ty = (_savedViewportH - _savedWorldH * _savedMinScale);
-      target.setEntry(0, 3, tx);
-      target.setEntry(1, 3, ty);
+      target.setEntry(0, 3, 0.0);
+      target.setEntry(1, 3, 0.0);
     } else {
       // Citadel Focus View (Close up on Palace Gates & Castle)
-      final closeScale = (_savedViewportW / (680.0 * 1.12)).clamp(_savedMinScale * 1.5, 3.5);
+      final closeScale = (_savedViewportW / (540.0 * 1.15)).clamp(_savedMinScale * 1.6, 3.5);
       final houseCenterX = _savedWorldW / 2;
-      final houseCenterY = 846.0 + (520.0 * 0.50);
+      final houseCenterY = (_savedWorldH * 0.44) - 10.0 - (410.0 * 0.50);
       final tx = ((_savedViewportW / 2) - (houseCenterX * closeScale)).clamp(-(_savedWorldW * closeScale - _savedViewportW), 0.0);
       final ty = ((_savedViewportH * 0.38) - (houseCenterY * closeScale)).clamp(-(_savedWorldH * closeScale - _savedViewportH), 0.0);
       target.setEntry(0, 0, closeScale);
@@ -717,24 +715,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final bool isPresident = widget.neighbor.isPresident;
 
     // 🌍 Virtual World Dimensions:
-    // For President: A grand 1,600 x 3,400 Unified Sovereign World ("Otta Art")
-    // Proportioned to smartphone screen aspect ratio so it fills 100% of the display edge-to-edge at max zoom-out!
-    final double worldW = isPresident ? 1600.0 : 1800.0;
-    final double worldH = isPresident ? 3400.0 : 1600.0;
-    final double groundY = isPresident ? 1380.0 : 920.0;
+    // For President: Proportional to smartphone screen aspect ratio so that at max zoom-out
+    // the world naturally and completely fills 100% of the screen, locked horizontally and vertically!
+    final double worldW = 1200.0;
     const double houseW = 420.0;
     const double houseH = 380.0;
-    final double houseLeft = (worldW - houseW) / 2;
-    final double houseTop = groundY - 14.0 - houseH;
-
-    // 🏛️ Sovereign Presidential Palace Castle Dimensions (Magnificent Central Citadel)
-    final double palaceW = 680.0;
-    final double palaceH = 520.0;
-    final double palaceLeft = (worldW - palaceW) / 2; // (1600 - 680) / 2 = 460.0
-    final double palaceTop = groundY - 14.0 - palaceH; // 1380 - 14 - 520 = 846.0
-
-    final effectiveHouseH = isPresident ? palaceH : houseH;
-    final effectiveHouseTop = isPresident ? palaceTop : houseTop;
 
     return PopScope(
       canPop: false,
@@ -761,23 +746,39 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final drawerMaxH = h * 0.92;
             final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
+            final double worldH = isPresident
+                ? (worldW * (h / (w > 0 ? w : 368.0)))
+                : 1600.0;
+            final double groundY = isPresident ? (worldH * 0.44) : 920.0;
+            final double houseLeft = (worldW - houseW) / 2;
+            final double houseTop = groundY - 14.0 - houseH;
+
+            // 🏛️ Sovereign Presidential Palace Castle Dimensions
+            final double palaceW = 540.0;
+            final double palaceH = 410.0;
+            final double palaceLeft = (worldW - palaceW) / 2; // (1200 - 540) / 2 = 330.0
+            final double palaceTop = groundY - 10.0 - palaceH;
+
+            final effectiveHouseH = isPresident ? palaceH : houseH;
+            final effectiveHouseTop = isPresident ? palaceTop : houseTop;
+
             _savedViewportW = w;
             _savedViewportH = h;
             _savedWorldW = worldW;
             _savedWorldH = worldH;
 
-            // 🛡️ Zoom Range: MinScale ensures the unified canvas ALWAYS covers 100% of the screen with ZERO letterboxing!
-            // Limited zoom-lessing: never zooms out beyond full screen coverage!
-            final minScale = (w <= 0 || h <= 0) ? 0.23 : math.max(w / worldW, h / worldH);
+            // 🛡️ Zoom Range: MinScale ensures the canvas ALWAYS covers 100% of the screen with ZERO letterboxing!
+            // Locked horizontally and vertically at max zoom out!
+            final minScale = (w <= 0) ? 0.30 : (w / worldW);
             _savedMinScale = minScale;
             const maxScale = 3.5;
 
-            // 🏠 Default View: Camera smoothly focuses on the Panoramic Long View for President (Vantage Island & Distant Palace)
+            // 🏠 Default View: Camera focuses on the 100% locked overview
             if (!_hasInitializedTransform && w > 0 && h > 0) {
               _hasInitializedTransform = true;
               final defaultScale = minScale;
-              final tx = ((w - worldW * defaultScale) / 2).clamp(-(worldW * defaultScale - w), 0.0);
-              final ty = isPresident ? (h - worldH * defaultScale) : ((h * 0.40) - ((effectiveHouseTop + effectiveHouseH * 0.52) * defaultScale)).clamp(-(worldH * defaultScale - h), 0.0);
+              final tx = 0.0;
+              final ty = isPresident ? 0.0 : ((h * 0.40) - ((effectiveHouseTop + effectiveHouseH * 0.52) * defaultScale)).clamp(-(worldH * defaultScale - h), 0.0);
 
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
@@ -794,20 +795,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                // 🌌 Full-Bleed Infinite Living Ocean & Sky Backdrop behind InteractiveViewer:
-                // Guarantees zero plain blue or black space can EVER be seen anywhere on screen!
-                Positioned.fill(
-                  child: AnimatedBuilder(
-                    animation: _ambientController,
-                    builder: (context, _) => CustomPaint(
-                      painter: CitadelInfiniteOceanSkyBackdropPainter(
-                        isNight: isNight,
-                        ambientProg: _ambientController.value,
-                      ),
-                    ),
-                  ),
-                ),
-
                 // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan (No letterbox, zero borders)
                 Positioned.fill(
                   child: InteractiveViewer(
@@ -916,8 +903,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           if (isPresident) ...[
                             // 🏮 COASTAL LIGHTHOUSE (West Island Bluff)
                             Positioned(
-                              left: 20,
-                              top: groundY - 50,
+                              left: 10,
+                              top: groundY - 48,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialCoastalLighthouseWidget(
@@ -929,13 +916,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🧱 WEST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
                             Positioned(
-                              left: 80,
-                              top: groundY - 110,
+                              left: 45,
+                              top: groundY - 95,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialPerimeterWallWidget(
-                                  width: 220,
-                                  height: 110,
+                                  width: 170,
+                                  height: 95,
                                   animProg: _ambientController.value,
                                 ),
                               ),
@@ -943,13 +930,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚧 WEST POLICE BARRICADE CHECKPOINT ("Barricadukal")
                             Positioned(
-                              left: 310,
-                              top: groundY - 52,
+                              left: 215,
+                              top: groundY - 48,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialPoliceBarricadeWidget(
                                   animProg: _ambientController.value,
-                                  width: 90,
+                                  width: 75,
                                   label: 'WEST GATE: POLICE CHECKPOINT 🚧',
                                 ),
                               ),
@@ -957,8 +944,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚔 SWAT ARMORED TACTICAL BEARCAT / STRYKER APC
                             Positioned(
-                              left: 390,
-                              top: groundY - 65,
+                              left: 290,
+                              top: groundY - 58,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialSwatArmoredCarWidget(
@@ -969,8 +956,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🐕 POLICE K9 TACTICAL PATROL UNIT
                             Positioned(
-                              left: 470,
-                              top: groundY - 35,
+                              left: 350,
+                              top: groundY - 32,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialK9PoliceUnitWidget(
@@ -981,8 +968,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🛡️ WEST IRON DOME TAMIR INTERCEPTOR MISSILE BATTERY ("Iron Dome System")
                             Positioned(
-                              left: 510,
-                              top: groundY - 122,
+                              left: 310,
+                              top: groundY - 110,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialIronDomeBatteryWidget(
@@ -995,8 +982,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 📡 EAST IRON DOME PHASED ARRAY RADAR STATION
                             Positioned(
-                              left: 1080,
-                              top: groundY - 125,
+                              left: 770,
+                              top: groundY - 105,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialRadarDomeWidget(
@@ -1008,8 +995,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚀 AEROSPACE DEFENSE INTERCEPTOR ROCKET & GANTRY LAUNCHER
                             Positioned(
-                              left: 1180,
-                              top: groundY - 170,
+                              left: 850,
+                              top: groundY - 145,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialDefenseRocketWidget(
@@ -1020,13 +1007,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🛑 EAST POLICE CHECKPOINT WITH BARRICADES
                             Positioned(
-                              left: 1260,
-                              top: groundY - 52,
+                              left: 920,
+                              top: groundY - 48,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialPoliceBarricadeWidget(
                                   animProg: _ambientController.value,
-                                  width: 90,
+                                  width: 75,
                                   label: 'EAST GATE: ARMED PERIMETER 🛑',
                                 ),
                               ),
@@ -1034,8 +1021,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚓 POLICE INTERCEPTOR CRUISER PATROL CAR
                             Positioned(
-                              left: 1350,
-                              top: groundY - 78,
+                              left: 990,
+                              top: groundY - 68,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PoliceInterceptorCarWidget(
@@ -1046,13 +1033,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🧱 EAST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
                             Positioned(
-                              left: 1370,
-                              top: groundY - 110,
+                              left: 985,
+                              top: groundY - 95,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialPerimeterWallWidget(
-                                  width: 210,
-                                  height: 110,
+                                  width: 170,
+                                  height: 95,
                                   animProg: _ambientController.value,
                                 ),
                               ),
@@ -1060,8 +1047,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // ✈️ AIR FORCE SUPERSONIC FIGHTER SQUADRON (V-Formation)
                             Positioned(
-                              left: 60 + (_ambientController.value * 1400),
-                              top: 100,
+                              left: 40 + (_ambientController.value * 950),
+                              top: groundY * 0.20,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialAirForceFighterSquadronWidget(
@@ -1073,8 +1060,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // ✈️ AIR FORCE ONE SUPERSONIC VIP JET
                             Positioned(
-                              left: 200 + (_ambientController.value * 1300),
-                              top: 200,
+                              left: 100 + (_ambientController.value * 900),
+                              top: groundY * 0.35,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialSupersonicJetWidget(
@@ -1085,8 +1072,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚁 MARINE ONE SECURITY HELICOPTER
                             Positioned(
-                              right: 120,
-                              top: 260,
+                              right: 80,
+                              top: groundY * 0.40,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialHelicopterWidget(
@@ -1097,36 +1084,36 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // ⚓ MASSIVE GUIDED-MISSILE DESTROYER WARSHIP 1 (West Sovereign Waters)
                             Positioned(
-                              left: 50,
-                              top: groundY + 160,
+                              left: 25,
+                              top: groundY + 90,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialNavalWarshipWidget(
                                   animProg: _ambientController.value,
                                   isNight: isNight,
-                                  width: 250,
+                                  width: 210,
                                 ),
                               ),
                             ),
 
                             // ⚓ MASSIVE GUIDED-MISSILE DESTROYER WARSHIP 2 (East Sovereign Waters)
                             Positioned(
-                              left: 1300,
-                              top: groundY + 180,
+                              left: 965,
+                              top: groundY + 105,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialNavalWarshipWidget(
                                   animProg: (_ambientController.value + 0.35) % 1.0,
                                   isNight: isNight,
-                                  width: 250,
+                                  width: 210,
                                 ),
                               ),
                             ),
 
                             // 🐬 PLAYFUL LEAPING OCEAN DOLPHIN 1
                             Positioned(
-                              left: 340,
-                              top: groundY + 220,
+                              left: 255,
+                              top: groundY + 130,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialLeapingDolphinWidget(
@@ -1138,8 +1125,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🐬 PLAYFUL LEAPING OCEAN DOLPHIN 2
                             Positioned(
-                              left: 1160,
-                              top: groundY + 240,
+                              left: 890,
+                              top: groundY + 145,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialLeapingDolphinWidget(
@@ -1151,8 +1138,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚢 ARMED NAVAL PATROL GUNBOAT (Center Waters)
                             Positioned(
-                              left: 720 + (math.sin(_ambientController.value * 2 * math.pi) * 140),
-                              top: groundY + 310,
+                              left: 540 + (math.sin(_ambientController.value * 2 * math.pi) * 110),
+                              top: groundY + 185,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialNavalPatrolShipWidget(
@@ -1175,7 +1162,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     child: CustomPaint(
                                       painter: CitadelIronDomeInterceptPainter(
                                         prog: _ironDomeController.value,
-                                        source: Offset(510, groundY - 110),
+                                        source: Offset(350, groundY - 95),
                                         target: Offset(worldW / 2, palaceTop + 60),
                                       ),
                                     ),
@@ -7430,26 +7417,26 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     }
 
     // E. 🐟 Darting Schools of Bioluminescent Ocean Fish
-    _drawBioluminescentFishSchool(canvas, w, oceanTopY + 140, ambientProg: ambientProg, isNight: isNight, count: 7, dir: 1.0);
-    _drawBioluminescentFishSchool(canvas, w, oceanTopY + 360, ambientProg: (ambientProg + 0.4) % 1.0, isNight: isNight, count: 9, dir: -1.0);
-    _drawBioluminescentFishSchool(canvas, w, oceanTopY + 580, ambientProg: (ambientProg + 0.7) % 1.0, isNight: isNight, count: 6, dir: 1.0);
+    _drawBioluminescentFishSchool(canvas, w, oceanTopY + (h * 0.05), ambientProg: ambientProg, isNight: isNight, count: 7, dir: 1.0);
+    _drawBioluminescentFishSchool(canvas, w, oceanTopY + (h * 0.11), ambientProg: (ambientProg + 0.4) % 1.0, isNight: isNight, count: 9, dir: -1.0);
+    _drawBioluminescentFishSchool(canvas, w, oceanTopY + (h * 0.17), ambientProg: (ambientProg + 0.7) % 1.0, isNight: isNight, count: 6, dir: 1.0);
 
     // F. 🏛️ Grand Ceremonial Presidential Naval Pier / Marble Promenade
     _drawCeremonialOceanPier(canvas, w * 0.50, gy + 16, ambientProg: ambientProg, isNight: isNight);
 
     // G. 🚨 Offshore Nautical Territorial Warning Buoys with Flashing Beacons
-    _drawOceanNavigationalBuoy(canvas, w * 0.14, oceanTopY + 160, ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFFEF4444));
-    _drawOceanNavigationalBuoy(canvas, w * 0.86, oceanTopY + 200, ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFF10B981));
+    _drawOceanNavigationalBuoy(canvas, w * 0.12, oceanTopY + (h * 0.04), ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFFEF4444));
+    _drawOceanNavigationalBuoy(canvas, w * 0.88, oceanTopY + (h * 0.05), ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFF10B981));
 
     // H. 🏝️ Southern Vantage Island (Challenger's Island Shoreline looking across the Sovereign Bay)
     _drawSouthernVantageIsland(canvas, w, h, ambientProg: ambientProg, isNight: isNight);
 
     // I. 🛥️ Foreground Big Tactical Assault Boat (Stationed at Vantage Shoreline Pier)
-    _drawForegroundBigBoat(canvas, w * 0.50, 2100.0, ambientProg: ambientProg, isNight: isNight);
+    _drawForegroundBigBoat(canvas, w * 0.50, h * 0.655, ambientProg: ambientProg, isNight: isNight);
 
     // J. 🌴 Giant Tropical Coconut Palms (Framing the Panoramic View from Vantage Island)
-    _drawGiantCoconutTree(canvas, 160.0, 3000.0, height: 850.0, curveDirection: 1.0, ambientProg: ambientProg, isNight: isNight, twin: true);
-    _drawGiantCoconutTree(canvas, 1440.0, 3020.0, height: 880.0, curveDirection: -1.0, ambientProg: ambientProg, isNight: isNight);
+    _drawGiantCoconutTree(canvas, 100.0, h * 0.90, height: h * 0.28, curveDirection: 1.0, ambientProg: ambientProg, isNight: isNight, twin: true);
+    _drawGiantCoconutTree(canvas, w - 100.0, h * 0.91, height: h * 0.29, curveDirection: -1.0, ambientProg: ambientProg, isNight: isNight);
   }
 
   /// 🐟 Swimming Bioluminescent Fish in the Deep Sovereign Sea
@@ -7621,14 +7608,18 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     required double ambientProg,
     required bool isNight,
   }) {
+    final lagoonTop = h * 0.65;
+    final beachTop = h * 0.685;
+    final grassTop = h * 0.73;
+
     // 1. Shallow Aquamarine / Turquoise Coral Lagoon Wash
     final lagoonPath = Path();
     lagoonPath.moveTo(-60, h + 60);
-    lagoonPath.lineTo(-60, 2160);
+    lagoonPath.lineTo(-60, lagoonTop + 20);
     lagoonPath.cubicTo(
-      w * 0.25, 2100,
-      w * 0.75, 2110,
-      w + 60, 2140,
+      w * 0.25, lagoonTop - 15,
+      w * 0.75, lagoonTop - 10,
+      w + 60, lagoonTop + 15,
     );
     lagoonPath.lineTo(w + 60, h + 60);
     lagoonPath.close();
@@ -7648,7 +7639,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
               ],
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
-      ).createShader(Rect.fromLTWH(-60, 2100, w + 120, h - 2100));
+      ).createShader(Rect.fromLTWH(-60, lagoonTop, w + 120, h - lagoonTop));
     canvas.drawPath(lagoonPath, lagoonPaint);
 
     // Dynamic foam surf lines breaking along the shoreline
@@ -7658,7 +7649,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
 
     for (int s = 0; s < 3; s++) {
       final surfOffset = math.sin((ambientProg * 2 * math.pi) + (s * 1.8)) * 14.0;
-      final surfY = 2170.0 + (s * 20.0) + surfOffset;
+      final surfY = lagoonTop + 25.0 + (s * 15.0) + surfOffset;
       surfPaint
         ..color = (isNight ? const Color(0xFF67E8F9) : Colors.white)
             .withValues(alpha: (0.35 - (s * 0.08)).clamp(0.1, 0.5))
@@ -7686,11 +7677,11 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     // 2. Golden Sand Shoreline / Sandy Beach (Deep crescent curve)
     final beachPath = Path();
     beachPath.moveTo(-40, h + 60);
-    beachPath.lineTo(-40, 2230);
+    beachPath.lineTo(-40, beachTop + 20);
     beachPath.cubicTo(
-      w * 0.28, 2180,
-      w * 0.72, 2190,
-      w + 40, 2220,
+      w * 0.28, beachTop - 15,
+      w * 0.72, beachTop - 10,
+      w + 40, beachTop + 15,
     );
     beachPath.lineTo(w + 40, h + 60);
     beachPath.close();
@@ -7710,7 +7701,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
               ],
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
-      ).createShader(Rect.fromLTWH(-40, 2180, w + 80, h - 2180));
+      ).createShader(Rect.fromLTWH(-40, beachTop, w + 80, h - beachTop));
     canvas.drawPath(beachPath, beachPaint);
 
     // Subtle beach dunes and pebbles
@@ -7719,7 +7710,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     final pebbleRand = math.Random(108);
     for (int i = 0; i < 45; i++) {
       final px = pebbleRand.nextDouble() * w;
-      final py = 2250.0 + pebbleRand.nextDouble() * 200.0;
+      final py = beachTop + 10.0 + pebbleRand.nextDouble() * (h * 0.08);
       canvas.drawOval(
         Rect.fromCenter(center: Offset(px, py), width: 6.0 + pebbleRand.nextDouble() * 8, height: 3.0 + pebbleRand.nextDouble() * 4),
         pebblePaint,
@@ -7729,16 +7720,16 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     // 3. Lush Curved Island Terrain / Grassy Headland (Deep emerald tropical turf)
     final grassPath = Path();
     grassPath.moveTo(-40, h + 60);
-    grassPath.lineTo(-40, 2360);
+    grassPath.lineTo(-40, grassTop + 20);
     grassPath.cubicTo(
-      w * 0.22, 2300,
-      w * 0.45, 2320,
-      w * 0.65, 2290,
+      w * 0.22, grassTop - 15,
+      w * 0.45, grassTop,
+      w * 0.65, grassTop - 20,
     );
     grassPath.cubicTo(
-      w * 0.85, 2280,
-      w * 0.95, 2310,
-      w + 40, 2340,
+      w * 0.85, grassTop - 25,
+      w * 0.95, grassTop - 5,
+      w + 40, grassTop + 10,
     );
     grassPath.lineTo(w + 40, h + 60);
     grassPath.close();
@@ -7758,7 +7749,7 @@ class CitadelScenicLandscapePainter extends CustomPainter {
               ],
         begin: Alignment.bottomCenter,
         end: Alignment.topCenter,
-      ).createShader(Rect.fromLTWH(-40, 2280, w + 80, h - 2280));
+      ).createShader(Rect.fromLTWH(-40, grassTop - 25, w + 80, h - grassTop + 25));
     canvas.drawPath(grassPath, grassPaint);
 
     // Grass crest highlight ridge
@@ -7769,10 +7760,10 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     canvas.drawPath(grassPath, ridgePaint);
 
     // 4. Southern Wooden Assault Pier / Dock (Extending into the bay toward the citadel)
-    _drawVantageIslandPier(canvas, w * 0.50, 2360.0, pierLength: 260.0, isNight: isNight, ambientProg: ambientProg);
+    _drawVantageIslandPier(canvas, w * 0.50, grassTop + 5, pierLength: (h * 0.08).clamp(120.0, 200.0), isNight: isNight, ambientProg: ambientProg);
 
     // 5. Challenger's Tactical Reconnaissance Outpost (Telescope, Supply Crates, Lantern)
-    _drawVantageReconPost(canvas, w * 0.41, 2440.0, isNight: isNight, ambientProg: ambientProg);
+    _drawVantageReconPost(canvas, w * 0.41, grassTop + (h * 0.04), isNight: isNight, ambientProg: ambientProg);
   }
 
   /// 🪵 Wooden Assault Dock extending from the southern vantage beach into the water
