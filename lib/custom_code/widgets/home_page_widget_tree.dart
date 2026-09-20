@@ -2675,6 +2675,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             groupId: 'p:${conversation.id}',
                                             groupName: conversation.name,
                                             groupImage: conversation.imageUrl,
+                                            avatarConfig: conversation.avatarConfig,
                                           ),
                                         ),
                                       );
@@ -3490,6 +3491,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           groupId: conversation.id,
                                           groupName: conversation.name,
                                           groupImage: conversation.imageUrl,
+                                          avatarConfig: conversation.avatarConfig,
                                         ),
                                       ),
                                     );
@@ -3510,6 +3512,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           groupId: 'p:${conversation.id}',
                                           groupName: conversation.name,
                                           groupImage: conversation.imageUrl,
+                                          avatarConfig: conversation.avatarConfig,
                                         ),
                                       ),
                                     );

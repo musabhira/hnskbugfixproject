@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 
 part 'whats_app_groups_provider.g.dart';
 
@@ -125,6 +126,31 @@ class ChatConversation {
     List<Map<String, dynamic>>? statusData,
     bool isPinned = false,
   }) {
+    Map<String, dynamic>? avatarCfg;
+    if (otherProfile != null) {
+      final score = (otherProfile['pocket_score'] as num?)?.toInt() ??
+          (otherProfile['learning_points'] as num?)?.toInt() ??
+          (otherProfile['xp'] as num?)?.toInt() ?? 0;
+      final stage = score > 0
+          ? PocketScoreLevelEngine.getLevelFromScore(score)
+          : ((otherProfile['learning_day'] as num?)?.toInt() ??
+             (otherProfile['learning_stage'] as num?)?.toInt() ??
+             (otherProfile['stage'] as num?)?.toInt() ??
+             (otherProfile['level'] as num?)?.toInt() ?? 1);
+      final talisman = otherProfile['equipped_talisman']?.toString() ??
+          otherProfile['talisman_id']?.toString();
+      if (otherProfile['avatar_config'] != null && otherProfile['avatar_config'] is Map) {
+        avatarCfg = Map<String, dynamic>.from(otherProfile['avatar_config']);
+        avatarCfg['stage'] = stage;
+        if (talisman != null) avatarCfg['talismanId'] = talisman;
+      } else {
+        avatarCfg = {
+          'stage': stage,
+          if (talisman != null) 'talismanId': talisman,
+        };
+      }
+    }
+
     // This expects a row from the 'conversations' table
     return ChatConversation(
       id: otherProfile?['user_id'] ??
@@ -152,6 +178,7 @@ class ChatConversation {
       hasUnwatchedStatus: hasUnwatchedStatus,
       statusData: statusData,
       isPinned: isPinned,
+      avatarConfig: avatarCfg,
     );
   }
 
@@ -914,7 +941,7 @@ class Conversations extends _$Conversations {
       // Fetch user profiles for all participants
       final profilesResponse = await _supabase
           .from('profile')
-          .select('id, user_id, name, profile_image_url')
+          .select('id, user_id, name, profile_image_url, pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id')
           .inFilter('user_id', userIds.toList());
 
       final profileMap = <String, Map<String, dynamic>>{};

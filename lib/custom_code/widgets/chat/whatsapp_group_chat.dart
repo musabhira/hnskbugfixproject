@@ -59,6 +59,7 @@ import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart'
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 
 class WhatsAppGroupChat extends ConsumerStatefulWidget {
   final double? width;
@@ -68,6 +69,7 @@ class WhatsAppGroupChat extends ConsumerStatefulWidget {
   final String? groupImage;
   final bool showBackButton;
   final bool isAdminView;
+  final Map<String, dynamic>? avatarConfig;
 
   const WhatsAppGroupChat({
     super.key,
@@ -78,6 +80,7 @@ class WhatsAppGroupChat extends ConsumerStatefulWidget {
     this.groupImage,
     this.showBackButton = true,
     this.isAdminView = false,
+    this.avatarConfig,
   });
 
   @override
@@ -93,6 +96,12 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
   final _imagePicker = ImagePicker();
+
+  // PocketScore Avatar Caches to ensure instant & accurate display
+  static final Map<String, VectorAvatarConfig> _userAvatarConfigCache = {};
+  static final Map<String, int> _userPocketScoreCache = {};
+  static final Map<String, int> _userPocketStageCache = {};
+  final Set<String> _fetchingAvatarUserIds = {};
 
   late String _currentUserId;
   bool _isRecording = false;
@@ -441,6 +450,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   void initState() {
     super.initState();
     _currentUserId = _supabase.auth.currentUser?.id ?? ''; // Original line
+    // Seed avatar cache from widget argument if provided
+    if (widget.avatarConfig != null && widget.groupId.startsWith('p:')) {
+      final targetId = widget.groupId.substring(2);
+      final cfg = widget.avatarConfig!;
+      final stage = cfg['stage'] ?? cfg['learning_day'] ?? cfg['level'];
+      final talisman = cfg['talismanId']?.toString();
+      if (stage != null && stage is num && stage > 0) {
+        _userAvatarConfigCache[targetId] = VectorAvatarConfig.getEvolutionAvatarForStage(
+          stage.toInt().clamp(1, 90),
+          talismanId: talisman,
+        );
+      }
+    }
     // Assuming currentUserIdProvider is defined elsewhere if needed, otherwise keep original
     // _currentUserId = ref.read(currentUserIdProvider); // New line from user's snippet, commented out to avoid compile error if not defined
     _messageController.addListener(_onMessageChanged);
@@ -542,6 +564,67 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   String? _stagedDocumentPath;
   String? _stagedAudioPath;
 
+  Future<void> _fetchUserAvatarConfigAsync(String targetId) async {
+    if (targetId.isEmpty ||
+        PocketRobotService.isRobotId(targetId) ||
+        PocketPresidentService.isPresidentId(targetId) ||
+        _fetchingAvatarUserIds.contains(targetId) ||
+        _userAvatarConfigCache.containsKey(targetId)) {
+      return;
+    }
+
+    _fetchingAvatarUserIds.add(targetId);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cachedScore = prefs.getInt('user_pocket_score_$targetId');
+      final cachedStage = prefs.getInt('user_pocket_stage_$targetId');
+      if (cachedScore != null && cachedScore > 0) {
+        final stage = cachedStage ?? PocketScoreLevelEngine.getLevelFromScore(cachedScore);
+        final cfg = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90));
+        _userAvatarConfigCache[targetId] = cfg;
+        if (mounted) safeSetState(() {});
+      }
+
+      final profileRes = await _supabase
+          .from('profile')
+          .select('pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id')
+          .eq('user_id', targetId)
+          .maybeSingle();
+
+      if (profileRes != null) {
+        final score = (profileRes['pocket_score'] as num?)?.toInt() ??
+            (profileRes['learning_points'] as num?)?.toInt() ??
+            (profileRes['xp'] as num?)?.toInt() ?? 0;
+        final stage = score > 0
+            ? PocketScoreLevelEngine.getLevelFromScore(score)
+            : ((profileRes['learning_day'] as num?)?.toInt() ??
+               (profileRes['learning_stage'] as num?)?.toInt() ??
+               (profileRes['stage'] as num?)?.toInt() ??
+               (profileRes['level'] as num?)?.toInt() ?? 1);
+        final talismanId = profileRes['equipped_talisman']?.toString() ??
+            profileRes['talisman_id']?.toString();
+
+        final cfg = VectorAvatarConfig.getEvolutionAvatarForStage(
+          stage.clamp(1, 90),
+          talismanId: talismanId,
+        );
+
+        _userAvatarConfigCache[targetId] = cfg;
+        _userPocketScoreCache[targetId] = score;
+        _userPocketStageCache[targetId] = stage;
+
+        await prefs.setInt('user_pocket_score_$targetId', score);
+        await prefs.setInt('user_pocket_stage_$targetId', stage);
+
+        if (mounted) safeSetState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error fetching avatar config for $targetId: $e');
+    } finally {
+      _fetchingAvatarUserIds.remove(targetId);
+    }
+  }
+
   VectorAvatarConfig _getPersonalAvatarConfig(String targetId) {
     if (PocketPresidentService.isPresidentId(targetId)) {
       return VectorAvatarConfig.getEvolutionAvatarForStage(90);
@@ -552,19 +635,43 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final dynLvl = PocketRobotService.getDynamicLevel(robot);
       return VectorAvatarConfig.getEvolutionAvatarForStage(dynLvl);
     }
+
+    // 1. Check in-memory avatar config cache
+    if (_userAvatarConfigCache.containsKey(targetId)) {
+      return _userAvatarConfigCache[targetId]!;
+    }
+
+    // 2. Check group members if available
     final member = _groupMembers.firstWhere(
       (m) => m['user_id'] == targetId,
       orElse: () => {},
     );
     final profile = member['profile'];
-    final lvl = (profile?['learning_day'] as num?)?.toInt() ??
-        (profile?['stage'] as num?)?.toInt() ??
-        (profile?['level'] as num?)?.toInt();
-    if (lvl != null && lvl > 0) {
-      return VectorAvatarConfig.getEvolutionAvatarForStage(lvl.clamp(1, 90));
+    if (profile != null) {
+      final score = (profile['pocket_score'] as num?)?.toInt() ??
+          (profile['learning_points'] as num?)?.toInt() ??
+          (profile['xp'] as num?)?.toInt() ?? 0;
+      final lvl = score > 0
+          ? PocketScoreLevelEngine.getLevelFromScore(score)
+          : ((profile['learning_day'] as num?)?.toInt() ??
+             (profile['learning_stage'] as num?)?.toInt() ??
+             (profile['stage'] as num?)?.toInt() ??
+             (profile['level'] as num?)?.toInt() ?? 1);
+      final talismanId = profile['equipped_talisman']?.toString() ??
+          profile['talisman_id']?.toString();
+      final cfg = VectorAvatarConfig.getEvolutionAvatarForStage(
+        lvl.clamp(1, 90),
+        talismanId: talismanId,
+      );
+      _userAvatarConfigCache[targetId] = cfg;
+      return cfg;
     }
-    final stage = (targetId.hashCode.abs() % 90) + 1;
-    return VectorAvatarConfig.getEvolutionAvatarForStage(stage);
+
+    // 3. Trigger asynchronous background fetch for targetId
+    _fetchUserAvatarConfigAsync(targetId);
+
+    // Default stage 1 Genesis (consistent evolution stage instead of random hash)
+    return VectorAvatarConfig.getEvolutionAvatarForStage(1);
   }
 
   Future<void> _fetchMembers() async {
@@ -573,7 +680,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final supabase = ref.read(supabaseClientProvider);
       final response = await supabase.from('group_members').select('''
             *,
-            profile:profile!profile_id(name, profile_image_url)
+            profile:profile!profile_id(name, profile_image_url, pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id)
           ''').eq('group_id', widget.groupId).eq('is_active', true);
 
       final List rawMembers = response as List;
@@ -611,8 +718,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   Future<void> _loadMateStreak() async {
     if (!widget.groupId.startsWith('p:')) return;
+    final mateUserId = widget.groupId.substring(2);
     try {
-      final mateUserId = widget.groupId.substring(2);
       final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(mateUserId);
       if (!isUuid || PocketRobotService.isRobotId(mateUserId)) {
         final robot = PocketRobotService.getRobotById(mateUserId) ??
@@ -632,21 +739,59 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         });
       }
 
+      // Check cached score/stage first for instant UI response
+      final cachedScore = prefs.getInt('user_pocket_score_$mateUserId');
+      final cachedStage = prefs.getInt('user_pocket_stage_$mateUserId');
+      if (cachedScore != null && cachedScore > 0) {
+        final stage = cachedStage ?? PocketScoreLevelEngine.getLevelFromScore(cachedScore);
+        _userPocketScoreCache[mateUserId] = cachedScore;
+        _userPocketStageCache[mateUserId] = stage;
+        _userAvatarConfigCache[mateUserId] = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90));
+        safeSetState(() {});
+      }
+
       final profileRes = await _supabase
           .from('profile')
-          .select('daily_streak, learning_day')
+          .select('daily_streak, learning_day, learning_stage, stage, level, pocket_score, learning_points, xp, avatar_config, equipped_talisman, talisman_id')
           .eq('user_id', mateUserId)
           .maybeSingle();
 
       if (profileRes != null) {
         final streak = (profileRes['daily_streak'] as num?)?.toInt() ?? 1;
         await prefs.setInt('mate_streak_${widget.groupId}', streak);
+
+        final score = (profileRes['pocket_score'] as num?)?.toInt() ??
+            (profileRes['learning_points'] as num?)?.toInt() ??
+            (profileRes['xp'] as num?)?.toInt() ?? 0;
+
+        final stage = score > 0
+            ? PocketScoreLevelEngine.getLevelFromScore(score)
+            : ((profileRes['learning_day'] as num?)?.toInt() ??
+               (profileRes['learning_stage'] as num?)?.toInt() ??
+               (profileRes['stage'] as num?)?.toInt() ??
+               (profileRes['level'] as num?)?.toInt() ?? 1);
+
+        final talismanId = profileRes['equipped_talisman']?.toString() ??
+            profileRes['talisman_id']?.toString();
+
+        final config = VectorAvatarConfig.getEvolutionAvatarForStage(
+          stage.clamp(1, 90),
+          talismanId: talismanId,
+        );
+
+        _userAvatarConfigCache[mateUserId] = config;
+        _userPocketScoreCache[mateUserId] = score;
+        _userPocketStageCache[mateUserId] = stage;
+
+        await prefs.setInt('user_pocket_score_$mateUserId', score);
+        await prefs.setInt('user_pocket_stage_$mateUserId', stage);
+
         safeSetState(() {
           _mateStreakDays = streak;
         });
       }
     } catch (e) {
-      debugPrint('Error loading mate streak: $e');
+      debugPrint('Error loading mate profile & avatar: $e');
     }
   }
 
