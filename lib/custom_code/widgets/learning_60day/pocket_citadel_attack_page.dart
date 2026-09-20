@@ -650,11 +650,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final bool isPresident = widget.neighbor.isPresident;
 
     // 🌍 Virtual World Dimensions:
-    // For President: A vast 3,600 x 2,000 sovereign territory with perimeter blast walls,
-    // Iron Dome air defense battery, police checkpoints, SWAT BearCat, and deep zoom-out!
-    final double worldW = isPresident ? 3600.0 : 1800.0;
-    final double worldH = isPresident ? 2000.0 : 1600.0;
-    final double groundY = isPresident ? 1120.0 : 920.0;
+    // For President: A grand 3,200 x 1,600 sovereign territory with perimeter blast walls,
+    // Iron Dome air defense battery, police checkpoints, SWAT BearCat, and living guard details.
+    final double worldW = isPresident ? 3200.0 : 1800.0;
+    final double worldH = 1600.0;
+    final double groundY = 920.0;
     const double houseW = 420.0;
     const double houseH = 380.0;
     final double houseLeft = (worldW - houseW) / 2;
@@ -663,8 +663,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     // 🏛️ Sovereign Presidential Palace Castle Dimensions (Magnificent Central Citadel)
     final double palaceW = 760.0;
     final double palaceH = 580.0;
-    final double palaceLeft = (worldW - palaceW) / 2; // 1420.0
-    final double palaceTop = groundY - 14.0 - palaceH; // 526.0
+    final double palaceLeft = (worldW - palaceW) / 2; // (3200 - 760) / 2 = 1220.0
+    final double palaceTop = groundY - 14.0 - palaceH; // 920 - 14 - 580 = 326.0
 
     final effectiveHouseW = isPresident ? palaceW : houseW;
     final effectiveHouseH = isPresident ? palaceH : houseH;
@@ -695,18 +695,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final drawerMaxH = h * 0.92;
             final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
-            // 🛡️ Deep Zoom-out support: Allows zooming way out to view all presidential land,
-            // or zooming close into the palace gates:
-            final minScale = isPresident
-                ? (math.min(w / worldW, h / worldH) * 0.92).clamp(0.12, 1.0)
-                : math.max(w / worldW, h / worldH);
+            // 🛡️ Guaranteed Full Screen Fill (NEVER any black borders, exactly like regular bases):
+            final minScale = math.max(w / worldW, h / worldH);
             const maxScale = 2.8;
 
             // 🏠 Default View: Camera smoothly focuses on the House/Palace and its front courtyard
             if (!_hasInitializedTransform && w > 0 && h > 0) {
               _hasInitializedTransform = true;
               final defaultScale = isPresident
-                  ? (w / (effectiveHouseW * 1.35)).clamp(minScale, maxScale)
+                  ? math.max(minScale, (w / (effectiveHouseW * 1.15)).clamp(minScale, maxScale))
                   : math.min(maxScale, math.max(minScale, w / (effectiveHouseW * 1.05)));
               final houseCenterX = worldW / 2;
               final houseCenterY = effectiveHouseTop + (effectiveHouseH * 0.52);
@@ -728,13 +725,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                // 🔍 Interactive Estate Canvas with Smooth Deep Pinch-to-Zoom & Pan
+                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan (No black edges!)
                 Positioned.fill(
                   child: InteractiveViewer(
                     transformationController: _transformationController,
                     minScale: minScale,
                     maxScale: maxScale,
-                    boundaryMargin: isPresident ? const EdgeInsets.all(400) : EdgeInsets.zero,
+                    boundaryMargin: EdgeInsets.zero,
                     constrained: false,
                     clipBehavior: Clip.none,
                     child: SizedBox(
@@ -835,12 +832,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           if (isPresident) ...[
                             // 🧱 WEST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
                             Positioned(
-                              left: 200,
+                              left: 80,
                               top: groundY - 110,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialPerimeterWallWidget(
-                                  width: 480,
+                                  width: 440,
                                   height: 110,
                                   animProg: _ambientController.value,
                                 ),
@@ -849,13 +846,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚧 WEST POLICE BARRICADE CHECKPOINT ("Barricadukal")
                             Positioned(
-                              left: 720,
+                              left: 560,
                               top: groundY - 52,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialPoliceBarricadeWidget(
                                   animProg: _ambientController.value,
-                                  width: 140,
+                                  width: 130,
                                   label: 'WEST GATE: POLICE CHECKPOINT 🚧',
                                 ),
                               ),
@@ -863,7 +860,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚔 SWAT ARMORED TACTICAL BEARCAT / STRYKER APC
                             Positioned(
-                              left: 880,
+                              left: 710,
                               top: groundY - 65,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -875,7 +872,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🐕 POLICE K9 TACTICAL PATROL UNIT
                             Positioned(
-                              left: 1030,
+                              left: 850,
                               top: groundY - 35,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -887,7 +884,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🛡️ WEST IRON DOME TAMIR INTERCEPTOR MISSILE BATTERY ("Iron Dome System")
                             Positioned(
-                              left: 1120,
+                              left: 950,
                               top: groundY - 122,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -901,7 +898,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 📡 EAST IRON DOME PHASED ARRAY RADAR STATION
                             Positioned(
-                              left: 2360,
+                              left: 2050,
                               top: groundY - 125,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -914,7 +911,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚀 AEROSPACE DEFENSE INTERCEPTOR ROCKET & GANTRY LAUNCHER
                             Positioned(
-                              left: 2520,
+                              left: 2210,
                               top: groundY - 170,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -926,13 +923,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🛑 EAST POLICE CHECKPOINT WITH BARRICADES
                             Positioned(
-                              left: 2750,
+                              left: 2420,
                               top: groundY - 52,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialPoliceBarricadeWidget(
                                   animProg: _ambientController.value,
-                                  width: 140,
+                                  width: 130,
                                   label: 'EAST GATE: ARMED PERIMETER 🛑',
                                 ),
                               ),
@@ -940,7 +937,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚓 POLICE INTERCEPTOR CRUISER PATROL CAR
                             Positioned(
-                              left: 2910,
+                              left: 2570,
                               top: groundY - 78,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -952,12 +949,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🧱 EAST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
                             Positioned(
-                              left: 3040,
+                              left: 2680,
                               top: groundY - 110,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialPerimeterWallWidget(
-                                  width: 480,
+                                  width: 440,
                                   height: 110,
                                   animProg: _ambientController.value,
                                 ),
@@ -966,8 +963,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // ✈️ AIR FORCE ONE SUPERSONIC VIP JET
                             Positioned(
-                              left: 450 + (_ambientController.value * 2200),
-                              top: 105,
+                              left: 250 + (_ambientController.value * 2200),
+                              top: 80,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialSupersonicJetWidget(
@@ -978,8 +975,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚁 MARINE ONE SECURITY HELICOPTER
                             Positioned(
-                              right: 420,
-                              top: 185,
+                              right: 320,
+                              top: 140,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
                                 builder: (context, _) => PresidentialHelicopterWidget(
@@ -990,7 +987,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
                             // 🚢 ARMED NAVAL PATROL GUNBOAT ON RIVER
                             Positioned(
-                              left: 1400 + (math.sin(_ambientController.value * 2 * math.pi) * 350),
+                              left: 1200 + (math.sin(_ambientController.value * 2 * math.pi) * 300),
                               top: groundY + 190.0 + 15.0,
                               child: AnimatedBuilder(
                                 animation: _ambientController,
@@ -1014,7 +1011,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                     child: CustomPaint(
                                       painter: CitadelIronDomeInterceptPainter(
                                         prog: _ironDomeController.value,
-                                        source: Offset(1180, groundY - 110),
+                                        source: Offset(1010, groundY - 110),
                                         target: Offset(worldW / 2, palaceTop + 60),
                                       ),
                                     ),
@@ -3207,26 +3204,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1E293B),
-                      foregroundColor: const Color(0xFFFFD700),
-                      padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: Color(0xFFFFD700), width: 1.0),
-                      ),
-                    ),
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      _zoomToOverview();
-                    },
-                    child: Text(
-                      '🔍 View All Land',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
-                    ),
-                  ),
                 ],
               ),
               const SizedBox(height: 8),
@@ -3313,23 +3290,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     if (mounted) {
       setState(() => _isIronDomeFiring = false);
     }
-  }
-
-  void _zoomToOverview() {
-    final w = MediaQuery.of(context).size.width;
-    final h = MediaQuery.of(context).size.height;
-    final worldW = widget.neighbor.isPresident ? 3600.0 : 1800.0;
-    final worldH = widget.neighbor.isPresident ? 2000.0 : 1600.0;
-    final targetScale = math.min(w / worldW, h / worldH);
-    final tx = (w - (worldW * targetScale)) / 2;
-    final ty = (h - (worldH * targetScale)) / 2;
-    final matrix = Matrix4.identity()
-      ..setEntry(0, 0, targetScale)
-      ..setEntry(1, 1, targetScale)
-      ..setEntry(0, 3, tx)
-      ..setEntry(1, 3, ty);
-    _transformationController.value = matrix;
-    HapticFeedback.mediumImpact();
   }
 
   /// 📜 Sovereign Drawer Content for The President (Decrees, Hotline, Mateship, Boss Stats)
@@ -3711,107 +3671,25 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Left group: Back button + Full Land overview
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                InkWell(
-                  onTap: () => Navigator.pop(context, _raidStep == 3),
-                  borderRadius: BorderRadius.circular(24),
-                  child: Container(
-                    padding: const EdgeInsets.all(9),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.65),
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white24, width: 1),
-                    ),
-                    child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
-                  ),
+            // Back button
+            InkWell(
+              onTap: () => Navigator.pop(context, _raidStep == 3),
+              borderRadius: BorderRadius.circular(24),
+              child: Container(
+                padding: const EdgeInsets.all(9),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.65),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white24, width: 1),
                 ),
-                if (widget.neighbor.isPresident) ...[
-                  const SizedBox(width: 8),
-                  InkWell(
-                    onTap: _zoomToOverview,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.8), width: 1.2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                            blurRadius: 6,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.zoom_out_map_rounded, color: Color(0xFF38BDF8), size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Full Land',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ],
+                child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 18),
+              ),
             ),
 
-            // Right group: Iron Dome + 6-Hour Cycle Badge + Day/Night Toggle + Defender Profile + info
+            // Right group: 6-Hour Cycle Badge + Day/Night Toggle + Defender Profile + info
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (widget.neighbor.isPresident) ...[
-                  InkWell(
-                    onTap: _showPresidentialIronDomeModal,
-                    borderRadius: BorderRadius.circular(16),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF052E16), Color(0xFF064E3B)],
-                        ),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: const Color(0xFF10B981), width: 1.2),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.35),
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.shield_outlined, color: Color(0xFF34D399), size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            'IRON DOME',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF6EE7B7),
-                              fontSize: 10,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                ],
                 // ⏱️ 6-Hour Cycle Badge & Toggle
                 InkWell(
                   onTap: () {
