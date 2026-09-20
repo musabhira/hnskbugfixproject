@@ -220,9 +220,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   bool _isVantageView = true;
   double _savedViewportW = 400.0;
   double _savedViewportH = 800.0;
-  double _savedWorldW = 1600.0;
+  double _savedWorldW = 1200.0;
   double _savedWorldH = 3400.0;
   double _savedMinScale = 0.23;
+  double _savedGroundY = 920.0;
 
   @override
   void initState() {
@@ -339,9 +340,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       target.setEntry(1, 3, safeMinTy / 2);
     } else {
       // Citadel Focus View (Close up on Palace Gates & Castle)
-      final closeScale = (_savedViewportW / (540.0 * 1.08)).clamp(_savedMinScale, 3.5);
+      final isLandscape = _savedViewportW > _savedViewportH;
+      final closeScale = isLandscape
+          ? (_savedViewportH / (410.0 * 1.25)).clamp(_savedMinScale, 3.5)
+          : (_savedViewportW / (540.0 * 1.08)).clamp(_savedMinScale, 3.5);
       final houseCenterX = _savedWorldW / 2;
-      final houseCenterY = (_savedWorldH * 0.44) - 10.0 - (410.0 * 0.50);
+      final houseCenterY = _savedGroundY - 10.0 - (410.0 * 0.50);
       final maxTx = 0.0;
       final minTx = -((_savedWorldW * closeScale) - _savedViewportW);
       final safeMinTx = minTx < maxTx ? minTx : maxTx;
@@ -349,7 +353,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       final maxTy = 0.0;
       final minTy = -((_savedWorldH * closeScale) - _savedViewportH);
       final safeMinTy = minTy < maxTy ? minTy : maxTy;
-      final ty = ((_savedViewportH * 0.40) - (houseCenterY * closeScale)).clamp(safeMinTy, maxTy);
+      final targetTy = isLandscape
+          ? ((_savedViewportH * 0.50) - (houseCenterY * closeScale))
+          : ((_savedViewportH * 0.40) - (houseCenterY * closeScale));
+      final ty = targetTy.clamp(safeMinTy, maxTy);
       target.setEntry(0, 0, closeScale);
       target.setEntry(1, 1, closeScale);
       target.setEntry(0, 3, tx);
@@ -760,10 +767,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final drawerMaxH = h * 0.92;
             final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
+            final isLandscape = w > h;
             final double worldH = isPresident
-                ? (worldW * (h / (w > 0 ? w : 368.0)))
+                ? math.max(1800.0, worldW * (h / (w > 0 ? w : 368.0)))
                 : 1600.0;
-            final double groundY = isPresident ? (worldH * 0.44) : 920.0;
+            final double groundY = isPresident
+                ? (isLandscape ? 780.0 : (worldH * 0.44))
+                : 920.0;
             final double houseLeft = (worldW - houseW) / 2;
             final double houseTop = groundY - 14.0 - houseH;
 
@@ -777,16 +787,23 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             _savedViewportH = h;
             _savedWorldW = worldW;
             _savedWorldH = worldH;
+            _savedGroundY = groundY;
 
             // 🛡️ Zoom Range:
             // For regular houses: math.max(w / worldW, h / worldH) fills the screen perfectly.
-            // For Presidential Citadel: Zoom-out is strictly limited so the palace never becomes a tiny speck!
+            // For Presidential Citadel:
+            // On desktop/landscape (w > h): fit palace vertically with ample sky above, never cut off!
+            // On mobile portrait (h >= w): zoom in to fill ~92% width as previously perfected.
             final double houseZoomScale = isPresident
-                ? (w / (palaceW * 1.08))
+                ? (isLandscape
+                    ? math.min(w / (palaceW * 1.15), h / (palaceH * 1.25))
+                    : (w / (palaceW * 1.08)))
                 : (w / (houseW * 1.05));
 
             final double baseMinScale = isPresident
-                ? (houseZoomScale * 0.70).clamp(0.44, 0.54)
+                ? (isLandscape
+                    ? math.max(w / worldW, h / worldH)
+                    : (houseZoomScale * 0.70).clamp(0.44, 0.54))
                 : math.max(w / worldW, h / worldH);
 
             final minScale = (w <= 0) ? 0.30 : baseMinScale;
@@ -796,7 +813,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final defaultScale = (w <= 0)
                 ? 1.0
                 : (isPresident
-                    ? houseZoomScale.clamp(minScale, maxScale)
+                    ? (isLandscape ? math.max(minScale, houseZoomScale) : houseZoomScale.clamp(minScale, maxScale))
                     : math.min(maxScale, math.max(minScale, houseZoomScale)));
 
             // 🏠 Default View: Camera smoothly focuses on the House/Palace centered on screen!
@@ -805,7 +822,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
               final houseCenterX = worldW / 2;
               final houseCenterY = isPresident
-                  ? (palaceTop + (palaceH * 0.50))
+                  ? (palaceTop + (palaceH * 0.48))
                   : (houseTop + (houseH * 0.52));
 
               final maxTx = 0.0;
@@ -817,7 +834,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               final minTy = -((worldH * defaultScale) - h);
               final safeMinTy = minTy < maxTy ? minTy : maxTy;
               final targetTy = isPresident
-                  ? ((h * 0.38) - (houseCenterY * defaultScale))
+                  ? (isLandscape
+                      ? ((h * 0.50) - (houseCenterY * defaultScale))
+                      : ((h * 0.38) - (houseCenterY * defaultScale)))
                   : ((h * 0.42) - (houseCenterY * defaultScale));
               final ty = targetTy.clamp(safeMinTy, maxTy);
 
@@ -2197,7 +2216,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               Positioned(
                 right: 90,
                 top: 78,
-                child: _buildPresidentialOfficialLimousine(prog: prog, isRedFlash: isRedFlash),
+                child: GestureDetector(
+                  onTap: _showPresidentialSecurityDecreeDialog,
+                  child: _buildPresidentialOfficialLimousine(prog: prog, isRedFlash: isRedFlash),
+                ),
               ),
 
               // 3. Military Army Soldiers ("പട്ടാളക്കാർ") on Watch
@@ -2272,96 +2294,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
               ),
 
-              // 7. Imperial Security Barricade with Warning Plaque
-              Positioned(
-                left: 240,
-                right: 240,
-                bottom: 12,
-                child: GestureDetector(
-                  onTap: _showPresidentialSecurityDecreeDialog,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A).withValues(alpha: 0.96),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: const Color(0xFFFFD700),
-                        width: 1.8,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.8),
-                          blurRadius: 16,
-                          offset: const Offset(0, 4),
-                        ),
-                        BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                          blurRadius: 16,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Caution hazard stripe
-                        Container(
-                          height: 5,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(2.5),
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFFFACC15),
-                                Colors.black,
-                                Color(0xFFFACC15),
-                                Colors.black,
-                                Color(0xFFFACC15),
-                                Colors.black,
-                                Color(0xFFFACC15),
-                              ],
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Text('🏛️', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 6),
-                            Text(
-                              'SOVEREIGN PRESIDENTIAL CITADEL',
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFD700),
-                                fontWeight: FontWeight.w900,
-                                fontSize: 12,
-                                letterSpacing: 0.8,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '🔒 PASS LEVEL 90 TO CHALLENGE • 200 GAUNTLET TRIALS',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF38BDF8),
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          'Guarded by Army Forces, Pocket Police & Black Cat Commandos • Tap for Decrees',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white70,
-                            fontSize: 8.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             ],
           ),
         );
