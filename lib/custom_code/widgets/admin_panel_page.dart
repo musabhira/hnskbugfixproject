@@ -620,6 +620,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           indicatorColor: Color(0xFFFFFC00),
           indicatorWeight: 3,
           tabs: const [
+            Tab(
+                icon: Icon(Icons.account_balance_rounded),
+                text: 'President Desk 🏛️'),
             Tab(icon: Icon(Icons.dashboard_outlined), text: 'Insight'),
             Tab(icon: Icon(Icons.people_outline), text: 'Users'),
             Tab(icon: Icon(Icons.school_outlined), text: 'Requests'),
@@ -638,15 +641,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.monetization_on_outlined),
                 text: 'Monetization'),
-            Tab(
-                icon: Icon(Icons.account_balance_rounded),
-                text: 'President Desk 🏛️'),
           ],
         ),
       ),
       body: TabBarView(
         controller: _tabController,
         children: [
+          _buildPresidentDeskTab(),
           _buildInsightTab(),
           _buildUserTab(),
           _buildRequestsTab(),
@@ -659,7 +660,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildMediaTasksTab(),
           _buildRobotsTab(),
           _buildMonetizationTab(),
-          _buildPresidentDeskTab(),
         ],
       ),
     );
@@ -7886,6 +7886,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   Widget _buildPresidentDeskTab() {
     final pendingCount =
         _presidentInquiries.where((i) => i['status'] == 'pending').length;
+    final totalReports = reportsList.length;
 
     return Column(
       children: [
@@ -7904,24 +7905,29 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           child: Row(
             children: [
               _buildPresidentSubNavButton(
-                label: 'Inbox ${pendingCount > 0 ? '($pendingCount)' : ''}',
-                icon: Icons.inbox_rounded,
+                label: 'Chats ${pendingCount > 0 ? '($pendingCount)' : ''}',
+                icon: Icons.forum_rounded,
                 index: 0,
+              ),
+              _buildPresidentSubNavButton(
+                label: 'Reports ${totalReports > 0 ? '($totalReports)' : ''}',
+                icon: Icons.shield_outlined,
+                index: 1,
               ),
               _buildPresidentSubNavButton(
                 label: 'Vibes',
                 icon: Icons.auto_awesome_rounded,
-                index: 1,
+                index: 2,
               ),
               _buildPresidentSubNavButton(
                 label: 'Broadcast',
                 icon: Icons.campaign_rounded,
-                index: 2,
+                index: 3,
               ),
               _buildPresidentSubNavButton(
                 label: 'Shield 24h',
-                icon: Icons.shield_rounded,
-                index: 3,
+                icon: Icons.security_rounded,
+                index: 4,
               ),
             ],
           ),
@@ -7931,10 +7937,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           child: _presidentSubTab == 0
               ? _buildPresidentInquiriesSubTab()
               : _presidentSubTab == 1
-                  ? _buildPresidentVibeSubTab()
+                  ? _buildReportsTab()
                   : _presidentSubTab == 2
-                      ? _buildPresidentAnnouncementsSubTab()
-                      : _buildPresidentProtectionSubTab(),
+                      ? _buildPresidentVibeSubTab()
+                      : _presidentSubTab == 3
+                          ? _buildPresidentAnnouncementsSubTab()
+                          : _buildPresidentProtectionSubTab(),
         ),
       ],
     );
@@ -7975,7 +7983,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                 style: GoogleFonts.outfit(
                   color: isSelected ? Colors.black : Colors.white70,
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 11.5,
+                  fontSize: 11,
                 ),
               ),
             ],
@@ -7985,7 +7993,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     );
   }
 
-  // 1. INQUIRIES & COMPLAINTS SUB-TAB
+  // 1. INQUIRIES & CITIZEN CHATS SUB-TAB
   Widget _buildPresidentInquiriesSubTab() {
     if (_isLoadingPresidentInquiries) {
       return const Center(
@@ -8054,11 +8062,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Row(
             children: [
-              _buildInquiryFilterChip('All', 0),
+              _buildInquiryFilterChip('All (${_presidentInquiries.length})', 0),
               const SizedBox(width: 8),
-              _buildInquiryFilterChip('Pending ⏳', 1),
+              _buildInquiryFilterChip(
+                  'Pending ⏳ (${_presidentInquiries.where((i) => i['status'] == 'pending').length})',
+                  1),
               const SizedBox(width: 8),
-              _buildInquiryFilterChip('Replied ✅', 2),
+              _buildInquiryFilterChip(
+                  'Replied ✅ (${_presidentInquiries.where((i) => i['status'] == 'resolved').length})',
+                  2),
             ],
           ),
         ),
@@ -8083,7 +8095,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Citizens\' questions & complaints will appear here.',
+                        'Citizens\' messages & questions will appear here.',
                         style: GoogleFonts.inter(
                             color: Colors.white38, fontSize: 12),
                       ),
@@ -8096,156 +8108,224 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   itemBuilder: (context, index) {
                     final inq = filtered[index];
                     final isPending = inq['status'] == 'pending';
-                    final type = inq['report_type'] ?? 'general';
+                    final type = inq['report_type'] ?? 'inquiry';
+                    final citizenName = inq['user_name'] ?? 'Citizen';
+                    final avatarUrl = inq['user_avatar'];
+                    final day = inq['learning_day'] ?? 1;
+                    final level = inq['english_level'];
 
-                    return Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF131B26),
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(
-                          color: isPending
-                              ? const Color(0xFFFF9100).withValues(alpha: 0.4)
-                              : Colors.white.withValues(alpha: 0.08),
-                          width: 1,
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              CircleAvatar(
-                                radius: 16,
-                                backgroundColor: const Color(0xFF1E293B),
-                                backgroundImage: inq['user_avatar'] != null
-                                    ? NetworkImage(inq['user_avatar'])
-                                    : null,
-                                child: inq['user_avatar'] == null
-                                    ? const Icon(Icons.person,
-                                        color: Colors.white54, size: 16)
-                                    : null,
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      inq['user_name'] ?? 'Citizen',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                    Text(
-                                      'ID: ${inq['user_id']}',
-                                      style: GoogleFonts.inter(
-                                        color: Colors.white38,
-                                        fontSize: 10.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: isPending
-                                      ? const Color(0xFFFF9100)
-                                          .withValues(alpha: 0.15)
-                                      : const Color(0xFF10B981)
-                                          .withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: isPending
-                                        ? const Color(0xFFFF9100)
-                                        : const Color(0xFF10B981),
-                                    width: 0.8,
-                                  ),
-                                ),
-                                child: Text(
-                                  isPending ? 'Pending ⏳' : 'Replied ✅',
-                                  style: TextStyle(
-                                    color: isPending
-                                        ? const Color(0xFFFF9100)
-                                        : const Color(0xFF10B981),
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
+                    return InkWell(
+                      onTap: () => _openPresidentChatModal(inq),
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        margin: const EdgeInsets.only(bottom: 10),
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF131B26),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: isPending
+                                ? const Color(0xFFFF9100).withValues(alpha: 0.45)
+                                : Colors.white.withValues(alpha: 0.08),
+                            width: 1,
                           ),
-                          const SizedBox(height: 10),
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withValues(alpha: 0.3),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
-                                const Text('💬 ', style: TextStyle(fontSize: 12)),
+                                CircleAvatar(
+                                  radius: 20,
+                                  backgroundColor: const Color(0xFF1E293B),
+                                  backgroundImage: (avatarUrl != null &&
+                                          avatarUrl.toString().isNotEmpty)
+                                      ? NetworkImage(avatarUrl.toString())
+                                      : null,
+                                  child: (avatarUrl == null ||
+                                          avatarUrl.toString().isEmpty)
+                                      ? Text(
+                                          citizenName.isNotEmpty
+                                              ? citizenName[0].toUpperCase()
+                                              : 'C',
+                                          style: const TextStyle(
+                                            color: Color(0xFFFFD700),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        )
+                                      : null,
+                                ),
+                                const SizedBox(width: 12),
                                 Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Flexible(
+                                            child: Text(
+                                              citizenName,
+                                              style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14.5,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 6, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: const Color(0xFFFFD700)
+                                                  .withValues(alpha: 0.15),
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                            ),
+                                            child: Text(
+                                              'Day $day',
+                                              style: const TextStyle(
+                                                color: Color(0xFFFFD700),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                          if (level != null) ...[
+                                            const SizedBox(width: 4),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 5,
+                                                      vertical: 1.5),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFF3B82F6)
+                                                    .withValues(alpha: 0.15),
+                                                borderRadius:
+                                                    BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                '$level',
+                                                style: const TextStyle(
+                                                  color: Color(0xFF60A5FA),
+                                                  fontSize: 9.5,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                                      Text(
+                                        'ID: ${inq['user_id']}',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white38,
+                                          fontSize: 10,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 7, vertical: 2.5),
+                                  decoration: BoxDecoration(
+                                    color: isPending
+                                        ? const Color(0xFFFF9100)
+                                            .withValues(alpha: 0.15)
+                                        : const Color(0xFF10B981)
+                                            .withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: isPending
+                                          ? const Color(0xFFFF9100)
+                                          : const Color(0xFF10B981),
+                                      width: 0.8,
+                                    ),
+                                  ),
                                   child: Text(
-                                    inq['last_message'] ?? '',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white.withValues(alpha: 0.85),
-                                      fontSize: 12.5,
+                                    isPending ? 'Pending ⏳' : 'Replied ✅',
+                                    style: TextStyle(
+                                      color: isPending
+                                          ? const Color(0xFFFF9100)
+                                          : const Color(0xFF10B981),
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFFFD700)
-                                      .withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  type.toString().toUpperCase(),
-                                  style: const TextStyle(
-                                    color: Color(0xFFFFD700),
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                            const SizedBox(height: 10),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.35),
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                              ElevatedButton.icon(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFFD700),
-                                  foregroundColor: Colors.black,
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('💬 ', style: TextStyle(fontSize: 12)),
+                                  Expanded(
+                                    child: Text(
+                                      inq['last_message'] ?? '',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white.withValues(alpha: 0.88),
+                                        fontSize: 12.5,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 12, vertical: 6),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    type.toString().toUpperCase(),
+                                    style: const TextStyle(
+                                      color: Color(0xFFFFD700),
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                 ),
-                                icon: const Icon(Icons.reply_rounded, size: 14),
-                                label: const Text(
-                                  'Reply as President 👑',
-                                  style: TextStyle(
-                                      fontSize: 11, fontWeight: FontWeight.bold),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFFFD700),
+                                    foregroundColor: Colors.black,
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  icon: const Icon(Icons.forum_rounded, size: 14),
+                                  label: const Text(
+                                    'Chat as President 👑',
+                                    style: TextStyle(
+                                        fontSize: 11, fontWeight: FontWeight.bold),
+                                  ),
+                                  onPressed: () =>
+                                      _openPresidentChatModal(inq),
                                 ),
-                                onPressed: () =>
-                                    _openPresidentReplyModal(inq),
-                              ),
-                            ],
-                          ),
-                        ],
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -8279,180 +8359,474 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     );
   }
 
-  void _openPresidentReplyModal(Map<String, dynamic> inquiry) {
+  /// Live Two-Way Chat Sheet with Citizen
+  void _openPresidentChatModal(Map<String, dynamic> inquiry) {
     final targetId = inquiry['user_id']?.toString() ?? '';
     final name = inquiry['user_name'] ?? 'Citizen';
+    final avatar = inquiry['user_avatar'];
+    final day = inquiry['learning_day'] ?? 1;
+    final level = inquiry['english_level'];
     final replyController = TextEditingController();
+    final scrollController = ScrollController();
+
+    // Initialize messages list
+    List<Map<String, dynamic>> messages = [];
+    if (inquiry['messages'] is List && (inquiry['messages'] as List).isNotEmpty) {
+      messages = List<Map<String, dynamic>>.from(
+        (inquiry['messages'] as List).map((m) => Map<String, dynamic>.from(m)),
+      );
+    } else {
+      final lastMsg = inquiry['last_message']?.toString() ?? '';
+      if (lastMsg.isNotEmpty) {
+        messages.add({
+          'id': 'msg_init_${DateTime.now().millisecondsSinceEpoch}',
+          'sender_id': targetId,
+          'sender_name': name,
+          'sender_avatar': avatar,
+          'is_president': false,
+          'text': lastMsg,
+          'created_at': inquiry['created_at'] ?? DateTime.now().toIso8601String(),
+        });
+      }
+    }
+
+    bool isSending = false;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF121B22),
+      backgroundColor: const Color(0xFF0D131F),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
-          padding: EdgeInsets.only(
-            top: 20,
-            left: 20,
-            right: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
+        builder: (context, setModalState) {
+          void scrollToBottom() {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (scrollController.hasClients) {
+                scrollController.animateTo(
+                  scrollController.position.maxScrollExtent,
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOut,
+                );
+              }
+            });
+          }
+
+          Future<void> sendReply([String? customText]) async {
+            final text = (customText ?? replyController.text).trim();
+            if (text.isEmpty || isSending) return;
+
+            setModalState(() => isSending = true);
+
+            final now = DateTime.now();
+            final newMsg = {
+              'id': 'pres_${now.millisecondsSinceEpoch}',
+              'sender_id': PocketPresidentService.presidentId,
+              'sender_name': 'The President',
+              'is_president': true,
+              'golden_tick': true,
+              'text': text,
+              'created_at': now.toIso8601String(),
+              'admin_author': 'Presidential Desk',
+            };
+
+            setModalState(() {
+              messages.add(newMsg);
+              replyController.clear();
+            });
+            scrollToBottom();
+
+            await PocketPresidentService.sendPresidentReplyToUser(
+              targetUserId: targetId,
+              replyText: text,
+              adminName: 'Presidential Desk',
+            );
+
+            // Update parent inquiry record
+            inquiry['status'] = 'resolved';
+            inquiry['last_message'] = text;
+            inquiry['messages'] = messages;
+
+            if (mounted) {
+              setState(() {});
+            }
+
+            setModalState(() => isSending = false);
+          }
+
+          return Container(
+            height: MediaQuery.of(context).size.height * 0.85,
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 10),
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // Citizen Header Bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
                     children: [
-                      const Text('🏛️ ', style: TextStyle(fontSize: 18)),
-                      Text(
-                        'Reply to $name',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+                      CircleAvatar(
+                        radius: 22,
+                        backgroundColor: const Color(0xFF1E293B),
+                        backgroundImage: (avatar != null &&
+                                avatar.toString().isNotEmpty)
+                            ? NetworkImage(avatar.toString())
+                            : null,
+                        child: (avatar == null || avatar.toString().isEmpty)
+                            ? Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : 'C',
+                                style: const TextStyle(
+                                  color: Color(0xFFFFD700),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              )
+                            : null,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    name,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFD700)
+                                        .withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    'Day $day',
+                                    style: const TextStyle(
+                                      color: Color(0xFFFFD700),
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                if (level != null) ...[
+                                  const SizedBox(width: 4),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF3B82F6)
+                                          .withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      '$level',
+                                      style: const TextStyle(
+                                        color: Color(0xFF60A5FA),
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
+                            Text(
+                              'ID: $targetId',
+                              style: GoogleFonts.inter(
+                                color: Colors.white38,
+                                fontSize: 10.5,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded,
+                            color: Colors.white70),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(color: Colors.white12, height: 18),
+
+                // Chat Message Stream
+                Expanded(
+                  child: messages.isEmpty
+                      ? Center(
+                          child: Text(
+                            'No conversation history with citizen yet.',
+                            style: GoogleFonts.inter(color: Colors.white38),
+                          ),
+                        )
+                      : ListView.builder(
+                          controller: scrollController,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          itemCount: messages.length,
+                          itemBuilder: (context, idx) {
+                            final msg = messages[idx];
+                            final isPres = msg['is_president'] == true ||
+                                msg['sender_id'] ==
+                                    PocketPresidentService.presidentId;
+                            final text = msg['text'] ??
+                                msg['message_text'] ??
+                                '';
+                            final time = msg['created_at'] != null
+                                ? DateTime.tryParse(msg['created_at'])
+                                : null;
+                            final timeStr = time != null
+                                ? '${time.hour > 12 ? time.hour - 12 : (time.hour == 0 ? 12 : time.hour)}:${time.minute.toString().padLeft(2, '0')} ${time.hour >= 12 ? 'PM' : 'AM'}'
+                                : '';
+
+                            return Align(
+                              alignment: isPres
+                                  ? Alignment.centerRight
+                                  : Alignment.centerLeft,
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 12),
+                                constraints: BoxConstraints(
+                                  maxWidth:
+                                      MediaQuery.of(context).size.width * 0.78,
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: isPres
+                                      ? const Color(0xFF2C2205)
+                                      : const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(16).copyWith(
+                                    bottomRight: isPres
+                                        ? const Radius.circular(2)
+                                        : null,
+                                    bottomLeft: !isPres
+                                        ? const Radius.circular(2)
+                                        : null,
+                                  ),
+                                  border: Border.all(
+                                    color: isPres
+                                        ? const Color(0xFFFFD700)
+                                            .withValues(alpha: 0.45)
+                                        : Colors.white.withValues(alpha: 0.1),
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: isPres
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
+                                  children: [
+                                    if (isPres)
+                                      Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Text('👑 ',
+                                              style: TextStyle(fontSize: 11)),
+                                          Text(
+                                            'The President',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFFFD700),
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      )
+                                    else
+                                      Text(
+                                        name,
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white70,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 11,
+                                        ),
+                                      ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      text,
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white,
+                                        fontSize: 13.5,
+                                        height: 1.35,
+                                      ),
+                                    ),
+                                    if (timeStr.isNotEmpty) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        timeStr,
+                                        style: TextStyle(
+                                          color: isPres
+                                              ? const Color(0xFFFFD700)
+                                                  .withValues(alpha: 0.6)
+                                              : Colors.white38,
+                                          fontSize: 9.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+
+                // Quick Presidential Template Chips
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  color: const Color(0xFF0B101B),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        _buildQuickReplyChip(
+                          label: '🛡️ 24h Guard Shield',
+                          onTap: () => sendReply(
+                            '🛡️ PRESIDENTIAL PROTECTION GRANTED: Your Citadel is now under 24-Hour Presidential Guard protection! Attacks are blocked. Keep practicing your English tasks!',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildQuickReplyChip(
+                          label: '🏛️ Under Review',
+                          onTap: () => sendReply(
+                            'Thank you for bringing this to the Presidential Desk. Our administration is reviewing your inquiry right away.',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildQuickReplyChip(
+                          label: '🌟 Commended',
+                          onTap: () => sendReply(
+                            'The President of Pocket World commends your dedication! Keep learning and speaking English every day 🌟',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _buildQuickReplyChip(
+                          label: '✅ Resolved',
+                          onTap: () => sendReply(
+                            'Your request has been officially reviewed and resolved by the Presidential Office.',
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // Bottom Input Row
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
+                  color: const Color(0xFF111827),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: replyController,
+                          maxLines: 3,
+                          minLines: 1,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 13.5),
+                          decoration: InputDecoration(
+                            hintText: 'Type response to $name...',
+                            hintStyle: const TextStyle(
+                                color: Colors.white38, fontSize: 12.5),
+                            filled: true,
+                            fillColor: const Color(0xFF1E293B),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 10),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(20),
+                              borderSide: BorderSide.none,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
+                          ),
+                          shape: BoxShape.circle,
+                        ),
+                        child: IconButton(
+                          icon: isSending
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.black,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Icon(Icons.send_rounded,
+                                  color: Colors.black, size: 20),
+                          onPressed: isSending ? null : () => sendReply(),
                         ),
                       ),
                     ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white60),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.black45,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.2)),
                 ),
-                child: Text(
-                  'Citizen Inquiry: "${inquiry['last_message']}"',
-                  style: GoogleFonts.inter(
-                      color: Colors.white70, fontSize: 12),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Quick Presidential Templates:',
-                style: GoogleFonts.outfit(
-                    color: Colors.white60, fontSize: 11),
-              ),
-              const SizedBox(height: 6),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _buildReplyTemplateChip(
-                      label: '🛡️ Safe under Guard',
-                      text:
-                          'Your Citadel is under 24-Hour Presidential Guard protection. Raids are blocked. Keep practicing your English tasks!',
-                      controller: replyController,
-                    ),
-                    const SizedBox(width: 6),
-                    _buildReplyTemplateChip(
-                      label: '🏛️ Under Review',
-                      text:
-                          'Thank you for bringing this to the Presidential Desk. Our administration is reviewing your issue right away.',
-                      controller: replyController,
-                    ),
-                    const SizedBox(width: 6),
-                    _buildReplyTemplateChip(
-                      label: '🌟 Keep It Up',
-                      text:
-                          'The President of Pocket World commends your dedication! Keep learning and speaking English every day.',
-                      controller: replyController,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: replyController,
-                maxLines: 4,
-                style: const TextStyle(color: Colors.white, fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: 'Type official response as The President...',
-                  hintStyle:
-                      const TextStyle(color: Colors.white38, fontSize: 12),
-                  filled: true,
-                  fillColor: const Color(0xFF1E293B),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFD700),
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                icon: const Icon(Icons.send_rounded, size: 16),
-                label: const Text(
-                  'Dispatch Official Presidential Reply 👑',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                ),
-                onPressed: () async {
-                  final text = replyController.text.trim();
-                  if (text.isEmpty) return;
-
-                  Navigator.pop(ctx);
-                  await PocketPresidentService.sendPresidentReplyToUser(
-                    targetUserId: targetId,
-                    replyText: text,
-                    adminName: 'Presidential Desk',
-                  );
-
-                  await _loadPresidentInquiries();
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Presidential response dispatched! 🚀'),
-                      backgroundColor: Colors.green,
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
+              ],
+            ),
+          );
+        },
       ),
-    );
+    ).then((_) {
+      _loadPresidentInquiries();
+    });
   }
 
-  Widget _buildReplyTemplateChip({
+  Widget _buildQuickReplyChip({
     required String label,
-    required String text,
-    required TextEditingController controller,
+    required VoidCallback onTap,
   }) {
     return GestureDetector(
-      onTap: () => controller.text = text,
+      onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+            color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+            width: 0.8,
+          ),
         ),
         child: Text(
           label,
           style: GoogleFonts.outfit(
-              color: const Color(0xFFFFD700), fontSize: 11),
+            color: const Color(0xFFFFD700),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

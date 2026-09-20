@@ -57,6 +57,53 @@ class PocketPresidentService {
         historyList = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
       }
 
+      // Sync any remote messages or replies from Supabase reports
+      try {
+        final supabase = SupaFlow.client;
+        final reportRow = await supabase
+            .from('reports')
+            .select('additional_info, status, created_at')
+            .eq('reporter_id', userId)
+            .eq('content_type', 'president_inquiry')
+            .maybeSingle();
+
+        if (reportRow != null && reportRow['additional_info'] != null) {
+          final Map<String, dynamic> extra = jsonDecode(reportRow['additional_info'].toString());
+          if (extra['messages'] is List) {
+            final List<dynamic> remoteMsgs = extra['messages'];
+            bool addedRemote = false;
+            for (var rm in remoteMsgs) {
+              final mid = rm['id']?.toString() ?? '';
+              if (mid.isNotEmpty && !historyList.any((h) => h['id'] == mid)) {
+                final isPres = rm['is_president'] == true || rm['sender_id'] == presidentId;
+                historyList.insert(0, {
+                  'id': mid,
+                  'sender_id': isPres ? presidentId : userId,
+                  'receiver_id': isPres ? userId : presidentId,
+                  'message_text': rm['text'] ?? rm['message_text'] ?? '',
+                  'message_type': rm['message_type'] ?? 'text',
+                  'file_url': rm['file_url'],
+                  'created_at': rm['created_at'] ?? DateTime.now().toIso8601String(),
+                  'is_read': true,
+                  'metadata': {
+                    'is_official': isPres,
+                    'is_president': isPres,
+                    'golden_tick': isPres,
+                    'admin_author': rm['admin_author'],
+                  }
+                });
+                addedRemote = true;
+              }
+            }
+            if (addedRemote) {
+              await prefs.setString(key, jsonEncode(historyList));
+            }
+          }
+        }
+      } catch (e) {
+        debugPrint('Error syncing President chat messages from Supabase: $e');
+      }
+
       // Merge any broadcast announcements into user's chat history so all citizens receive presidential broadcasts
       final rawAnn = prefs.getString(_kPresidentAnnouncementsKey);
       if (rawAnn != null && rawAnn.isNotEmpty) {
@@ -190,36 +237,85 @@ class PocketPresidentService {
     // 3. Sync to Supabase reports table for cross-device Admin Panel support
     try {
       final supabase = SupaFlow.client;
-      // Fetch user profile info if possible
+      // Fetch user profile info with real name
       String userName = 'Citizen';
       String? userAvatar;
+      int learningDay = 1;
       try {
         final prof = await supabase
             .from('profile')
-            .select('name, profile_image_url')
+            .select('name, first_name, profile_image_url, learning_day')
             .eq('user_id', userId)
             .maybeSingle();
         if (prof != null) {
-          userName = prof['name'] ?? 'Citizen';
-          userAvatar = prof['profile_image_url'];
+          final n = (prof['name'] ?? prof['first_name'] ?? '').toString().trim();
+          if (n.isNotEmpty) userName = n;
+          userAvatar = prof['profile_image_url']?.toString();
+          if (prof['learning_day'] != null) {
+            learningDay = (prof['learning_day'] as num).toInt();
+          }
         }
       } catch (_) {}
 
-      await supabase.from('reports').insert({
-        'reporter_id': userId,
-        'content_type': 'president_inquiry',
-        'content_id': messageId,
-        'report_type': _categorizeInquiry(messageText),
-        'description': messageText,
-        'additional_info': jsonEncode({
-          'user_id': userId,
-          'user_name': userName,
-          'user_avatar': userAvatar,
-          'message_id': messageId,
-          'created_at': now.toIso8601String(),
-        }),
-        'status': 'pending',
+      // Check if report row already exists for this citizen inquiry
+      final existingReport = await supabase
+          .from('reports')
+          .select('id, additional_info')
+          .eq('reporter_id', userId)
+          .eq('content_type', 'president_inquiry')
+          .maybeSingle();
+
+      List<dynamic> messageThread = [];
+      if (existingReport != null && existingReport['additional_info'] != null) {
+        try {
+          final oldExtra = jsonDecode(existingReport['additional_info'].toString());
+          if (oldExtra['messages'] is List) {
+            messageThread = List.from(oldExtra['messages']);
+          }
+        } catch (_) {}
+      }
+
+      messageThread.add({
+        'id': messageId,
+        'sender_id': userId,
+        'sender_name': userName,
+        'sender_avatar': userAvatar,
+        'is_president': false,
+        'text': messageText,
+        'message_type': messageType,
+        'file_url': fileUrl,
+        'created_at': now.toIso8601String(),
       });
+
+      final additionalData = {
+        'user_id': userId,
+        'user_name': userName,
+        'user_avatar': userAvatar,
+        'learning_day': learningDay,
+        'message_id': messageId,
+        'updated_at': now.toIso8601String(),
+        'messages': messageThread,
+      };
+
+      if (existingReport != null) {
+        await supabase.from('reports').update({
+          'description': messageText,
+          'additional_info': jsonEncode(additionalData),
+          'status': 'pending',
+          'updated_at': now.toIso8601String(),
+        }).eq('id', existingReport['id']);
+      } else {
+        await supabase.from('reports').insert({
+          'reporter_id': userId,
+          'content_type': 'president_inquiry',
+          'content_id': messageId,
+          'report_type': _categorizeInquiry(messageText),
+          'description': messageText,
+          'additional_info': jsonEncode(additionalData),
+          'status': 'pending',
+          'created_at': now.toIso8601String(),
+        });
+      }
     } catch (e) {
       debugPrint('Error syncing President inquiry to Supabase: $e');
     }
@@ -252,29 +348,62 @@ class PocketPresidentService {
       },
     };
 
-    // 1. Save in user's chat history
+    // 1. Save in user's chat history locally (for when running on same device)
     final prefs = await SharedPreferences.getInstance();
     final key = '$_kPresidentChatPrefix$targetUserId';
     final history = await getPresidentChatHistory(targetUserId);
     final updated = [reply, ...history];
     await prefs.setString(key, jsonEncode(updated));
 
-    // 2. Update master inquiries status to replied
+    // 2. Update master inquiries status to replied locally
     await _markMasterInquiryReplied(targetUserId, replyText);
 
-    // 3. Mark Supabase report as resolved
+    // 3. Update Supabase reports table so citizen receives it immediately across devices
     try {
       final supabase = SupaFlow.client;
-      await supabase
+      final existingReport = await supabase
           .from('reports')
-          .update({
-            'status': 'resolved',
-            'updated_at': now.toIso8601String(),
-          })
+          .select('id, additional_info')
           .eq('reporter_id', targetUserId)
-          .eq('content_type', 'president_inquiry');
+          .eq('content_type', 'president_inquiry')
+          .maybeSingle();
+
+      if (existingReport != null) {
+        List<dynamic> thread = [];
+        Map<String, dynamic> extra = {};
+        if (existingReport['additional_info'] != null) {
+          try {
+            extra = jsonDecode(existingReport['additional_info'].toString());
+            if (extra['messages'] is List) {
+              thread = List.from(extra['messages']);
+            }
+          } catch (_) {}
+        }
+
+        thread.add({
+          'id': messageId,
+          'sender_id': presidentId,
+          'sender_name': 'The President',
+          'is_president': true,
+          'golden_tick': true,
+          'text': replyText,
+          'message_type': 'text',
+          'created_at': now.toIso8601String(),
+          'admin_author': adminName ?? 'Presidential Desk',
+        });
+
+        extra['messages'] = thread;
+        extra['last_reply'] = replyText;
+        extra['last_reply_at'] = now.toIso8601String();
+
+        await supabase.from('reports').update({
+          'status': 'resolved',
+          'additional_info': jsonEncode(extra),
+          'updated_at': now.toIso8601String(),
+        }).eq('id', existingReport['id']);
+      }
     } catch (e) {
-      debugPrint('Error marking inquiry as resolved in Supabase: $e');
+      debugPrint('Error updating inquiry in Supabase: $e');
     }
 
     return reply;
@@ -323,7 +452,7 @@ class PocketPresidentService {
       'created_at': now.toIso8601String(),
       'expires_at': expiresAt.toIso8601String(),
       'is_active': true,
-      'views_count': 42, // Starting simulated engagement from world citizens
+      'views_count': 42,
       'profile': {
         'id': presidentId,
         'name': presidentName,
@@ -333,36 +462,81 @@ class PocketPresidentService {
       },
     };
 
+    // 1. Local cache
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_kPresidentVibesKey);
     List<dynamic> list = raw != null && raw.isNotEmpty ? jsonDecode(raw) : [];
     list.insert(0, vibe);
     await prefs.setString(_kPresidentVibesKey, jsonEncode(list));
 
+    // 2. Sync to Supabase statuses table so all users across the world see it in their Vibes feed!
+    try {
+      final supabase = SupaFlow.client;
+      final myUser = supabase.auth.currentUser;
+      if (myUser != null) {
+        String? profileId;
+        try {
+          final pRes = await supabase
+              .from('profile')
+              .select('id')
+              .eq('user_id', myUser.id)
+              .maybeSingle();
+          if (pRes != null) profileId = pRes['id']?.toString();
+        } catch (_) {}
+
+        await supabase.from('statuses').insert({
+          'user_id': myUser.id,
+          'profile_id': profileId ?? myUser.id,
+          'media_type': mediaType,
+          'media_url': mediaUrl ?? '',
+          'caption': caption,
+          'duration': duration,
+          'expires_at': expiresAt.toIso8601String(),
+          'is_active': true,
+          'metadata': {
+            'is_president': true,
+            'golden_tick': true,
+            'president_title': 'The President of Pocket World',
+            'president_name': presidentName,
+          },
+        });
+      }
+    } catch (e) {
+      debugPrint('Error inserting President Vibe into Supabase: $e');
+    }
+
     return vibe;
   }
 
   /// Retrieve active (non-expired) President Vibes
   static Future<List<Map<String, dynamic>>> getActivePresidentVibes() async {
+    final List<Map<String, dynamic>> allVibes = [];
+
+    // 1. Fetch from Supabase statuses table
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final raw = prefs.getString(_kPresidentVibesKey);
-      if (raw == null || raw.isEmpty) {
-        // Return default welcome vibe if none posted yet
-        return [
-          {
-            'id': 'pres_initial_vibe',
+      final supabase = SupaFlow.client;
+      final res = await supabase
+          .from('statuses')
+          .select('*, profile:profile_id(id, name, profile_image_url)')
+          .eq('is_active', true)
+          .gt('expires_at', DateTime.now().toIso8601String())
+          .order('created_at', ascending: false);
+
+      for (var row in res) {
+        final meta = row['metadata'] is Map ? row['metadata'] as Map : {};
+        if (meta['is_president'] == true || row['user_id']?.toString() == presidentId) {
+          allVibes.add({
+            'id': row['id']?.toString(),
             'user_id': presidentId,
             'profile_id': presidentId,
-            'media_type': 'text',
-            'media_url': '',
-            'caption':
-                '🏛️ Pocket World State Address:\n"English is your passport to the world. Speak with confidence every single day!" — The President 🌟',
-            'duration': 8,
-            'created_at': DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(),
-            'expires_at': DateTime.now().add(const Duration(hours: 23)).toIso8601String(),
+            'media_type': row['media_type'] ?? 'text',
+            'media_url': row['media_url'] ?? '',
+            'caption': row['caption'] ?? '',
+            'duration': row['duration'] ?? 10,
+            'created_at': row['created_at'],
+            'expires_at': row['expires_at'],
             'is_active': true,
-            'views_count': 158,
+            'views_count': row['views_count'] ?? 100,
             'profile': {
               'id': presidentId,
               'name': presidentName,
@@ -370,25 +544,60 @@ class PocketPresidentService {
               'is_president': true,
               'golden_tick': true,
             },
-          }
-        ];
+          });
+        }
       }
-
-      final List<dynamic> list = jsonDecode(raw);
-      final now = DateTime.now();
-
-      final active = list.whereType<Map<String, dynamic>>().where((v) {
-        final expStr = v['expires_at']?.toString();
-        if (expStr == null) return true;
-        final exp = DateTime.tryParse(expStr);
-        return exp != null && exp.isAfter(now);
-      }).toList();
-
-      return active;
     } catch (e) {
-      debugPrint('Error getting active President vibes: $e');
-      return [];
+      debugPrint('Error getting President vibes from Supabase: $e');
     }
+
+    // 2. Merge local vibes
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kPresidentVibesKey);
+      if (raw != null && raw.isNotEmpty) {
+        final List<dynamic> list = jsonDecode(raw);
+        final now = DateTime.now();
+        for (var v in list) {
+          final expStr = v['expires_at']?.toString();
+          if (expStr != null) {
+            final exp = DateTime.tryParse(expStr);
+            if (exp != null && exp.isBefore(now)) continue;
+          }
+          if (!allVibes.any((ev) => ev['caption'] == v['caption'])) {
+            allVibes.add(Map<String, dynamic>.from(v));
+          }
+        }
+      }
+    } catch (_) {}
+
+    if (allVibes.isEmpty) {
+      return [
+        {
+          'id': 'pres_initial_vibe',
+          'user_id': presidentId,
+          'profile_id': presidentId,
+          'media_type': 'text',
+          'media_url': '',
+          'caption':
+              '🏛️ Pocket World State Address:\n"English is your passport to the world. Speak with confidence every single day!" — The President 🌟',
+          'duration': 8,
+          'created_at': DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(),
+          'expires_at': DateTime.now().add(const Duration(hours: 23)).toIso8601String(),
+          'is_active': true,
+          'views_count': 158,
+          'profile': {
+            'id': presidentId,
+            'name': presidentName,
+            'profile_image_url': presidentAvatarUrl,
+            'is_president': true,
+            'golden_tick': true,
+          },
+        }
+      ];
+    }
+
+    return allVibes;
   }
 
   /// Broadcast an official Presidential Announcement / House Ad to all citizens
@@ -414,7 +623,7 @@ class PocketPresidentService {
     });
     await prefs.setString(_kPresidentAnnouncementsKey, jsonEncode(list));
 
-    // 2. Sync to Supabase announcements table if available
+    // 2. Sync to Supabase announcements table
     try {
       final supabase = SupaFlow.client;
       await supabase.from('announcements').insert({
@@ -429,7 +638,7 @@ class PocketPresidentService {
     }
   }
 
-  /// Get all user inquiries for Admin Panel President Desk
+  /// Get all user inquiries for Admin Panel President Desk with real citizen profile details
   static Future<List<Map<String, dynamic>>> getAdminInquiriesList() async {
     final List<Map<String, dynamic>> inquiries = [];
 
@@ -442,6 +651,28 @@ class PocketPresidentService {
           .order('created_at', ascending: false)
           .limit(100);
 
+      // Collect all reporter IDs to batch fetch real citizen profiles
+      final List<String> reporterIds = [];
+      for (var row in res) {
+        final rId = (row['reporter_id'] ?? '').toString();
+        if (rId.isNotEmpty) reporterIds.add(rId);
+      }
+
+      Map<String, Map<String, dynamic>> profileMap = {};
+      if (reporterIds.isNotEmpty) {
+        try {
+          final profs = await supabase
+              .from('profile')
+              .select('user_id, name, first_name, profile_image_url, learning_day, english_level')
+              .inFilter('user_id', reporterIds.toSet().toList());
+          for (var p in profs) {
+            profileMap[p['user_id'].toString()] = p;
+          }
+        } catch (e) {
+          debugPrint('Error batch-fetching citizen profiles: $e');
+        }
+      }
+
       for (var row in res) {
         Map<String, dynamic> extra = {};
         if (row['additional_info'] != null) {
@@ -453,18 +684,39 @@ class PocketPresidentService {
         final isGeneralReport = row['content_type'] != 'president_inquiry';
         final desc = row['description'] ?? row['reason'] ?? '';
         final reporterId = (row['reporter_id'] ?? '').toString();
-        final displayUid = reporterId.length > 5 ? reporterId.substring(0, 5) : reporterId;
+        final prof = profileMap[reporterId];
+
+        String realName = '';
+        if (prof != null) {
+          realName = (prof['name'] ?? prof['first_name'] ?? '').toString().trim();
+        }
+        if (realName.isEmpty) {
+          realName = (extra['user_name'] ?? '').toString().trim();
+        }
+        if (realName.isEmpty || realName == 'Citizen' || realName.startsWith('Citizen (')) {
+          realName = reporterId.length > 5 ? 'Citizen ${reporterId.substring(0, 5)}' : 'Citizen';
+        }
+
+        final avatarUrl = prof?['profile_image_url'] ?? extra['user_avatar'];
+        final day = prof?['learning_day'] ?? extra['learning_day'] ?? 1;
+        final messages = (extra['messages'] is List)
+            ? List<Map<String, dynamic>>.from(extra['messages'].map((m) => Map<String, dynamic>.from(m)))
+            : <Map<String, dynamic>>[];
 
         inquiries.add({
           'id': row['id']?.toString(),
           'user_id': reporterId,
-          'user_name': extra['user_name'] ?? 'Citizen ($displayUid)',
-          'user_avatar': extra['user_avatar'],
+          'user_name': realName,
+          'user_avatar': avatarUrl,
+          'learning_day': day,
+          'english_level': prof?['english_level'],
           'last_message': isGeneralReport ? '⚠️ [REPORT: ${row['report_type'] ?? 'Citizen Report'}] $desc' : desc,
           'report_type': row['report_type'] ?? (isGeneralReport ? 'citizen_report' : 'doubt'),
           'status': row['status'] ?? 'pending',
           'created_at': row['created_at'],
           'is_general_report': isGeneralReport,
+          'messages': messages,
+          'report_id': row['id']?.toString(),
         });
       }
     } catch (e) {
