@@ -215,6 +215,14 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   late AnimationController _profileDrawerController;
   bool _isIronDomeFiring = false;
   late AnimationController _ironDomeController;
+  late final AnimationController _cameraAnimationController;
+  Animation<Matrix4>? _cameraAnimation;
+  bool _isVantageView = true;
+  double _savedViewportW = 400.0;
+  double _savedViewportH = 800.0;
+  double _savedWorldW = 3400.0;
+  double _savedWorldH = 4600.0;
+  double _savedMinScale = 0.2;
 
   @override
   void initState() {
@@ -230,6 +238,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         _zoomScaleNotifier.value = scale;
       }
     });
+
+    _cameraAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 950),
+    );
 
     _shakeController = AnimationController(
       vsync: this,
@@ -274,6 +287,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     WidgetsBinding.instance.removeObserver(this);
     _combatTimer?.cancel();
     _transformationController.dispose();
+    _cameraAnimationController.dispose();
     _zoomScaleNotifier.dispose();
     _shakeController.dispose();
     _beamController.dispose();
@@ -284,6 +298,41 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     _ambientController.dispose();
     _profileDrawerController.dispose();
     super.dispose();
+  }
+
+  void _togglePerspective() {
+    HapticFeedback.lightImpact();
+    setState(() => _isVantageView = !_isVantageView);
+
+    final Matrix4 target = Matrix4.identity();
+    if (_isVantageView) {
+      // Long Vantage View (Full panorama from southern island/boat to distant palace)
+      target.setEntry(0, 0, _savedMinScale);
+      target.setEntry(1, 1, _savedMinScale);
+      final tx = (_savedViewportW - _savedWorldW * _savedMinScale) / 2;
+      const ty = 0.0;
+      target.setEntry(0, 3, tx);
+      target.setEntry(1, 3, ty);
+    } else {
+      // Citadel Focus View (Close up on Palace Gates & Castle)
+      final closeScale = (_savedViewportW / (780.0 * 1.18)).clamp(_savedMinScale * 1.8, 2.8);
+      final houseCenterX = _savedWorldW / 2;
+      final houseCenterY = 596.0 + (590.0 * 0.52);
+      final tx = ((_savedViewportW / 2) - (houseCenterX * closeScale)).clamp(-(_savedWorldW * closeScale - _savedViewportW), 0.0);
+      final ty = ((_savedViewportH * 0.38) - (houseCenterY * closeScale)).clamp(-(_savedWorldH * closeScale - _savedViewportH), 0.0);
+      target.setEntry(0, 0, closeScale);
+      target.setEntry(1, 1, closeScale);
+      target.setEntry(0, 3, tx);
+      target.setEntry(1, 3, ty);
+    }
+
+    final start = _transformationController.value;
+    _cameraAnimation = Matrix4Tween(begin: start, end: target).animate(
+      CurvedAnimation(parent: _cameraAnimationController, curve: Curves.easeInOutCubic),
+    )..addListener(() {
+        _transformationController.value = _cameraAnimation!.value;
+      });
+    _cameraAnimationController.forward(from: 0.0);
   }
 
 
@@ -650,23 +699,22 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final bool isPresident = widget.neighbor.isPresident;
 
     // 🌍 Virtual World Dimensions:
-    // For President: A grand 3,400 x 2,200 Sovereign Island Fortress ("Dweepu") surrounded
-    // by boundless glowing ocean ("Samudram"), heavy naval warships, lighthouses, and Air Force squadrons!
+    // For President: A grand 3,400 x 4,600 Unified Sovereign World ("Otta Art")
+    // From Southern Vantage Island with Big Assault Boat & Towering Coconut Palms across the ocean to the Presidential Palace!
     final double worldW = isPresident ? 3400.0 : 1800.0;
-    final double worldH = isPresident ? 2200.0 : 1600.0;
-    final double groundY = isPresident ? 960.0 : 920.0;
+    final double worldH = isPresident ? 4600.0 : 1600.0;
+    final double groundY = isPresident ? 1200.0 : 920.0;
     const double houseW = 420.0;
     const double houseH = 380.0;
     final double houseLeft = (worldW - houseW) / 2;
     final double houseTop = groundY - 14.0 - houseH;
 
     // 🏛️ Sovereign Presidential Palace Castle Dimensions (Magnificent Central Citadel)
-    final double palaceW = 760.0;
-    final double palaceH = 580.0;
-    final double palaceLeft = (worldW - palaceW) / 2; // (3400 - 760) / 2 = 1320.0
-    final double palaceTop = groundY - 14.0 - palaceH; // 960 - 14 - 580 = 366.0
+    final double palaceW = 780.0;
+    final double palaceH = 590.0;
+    final double palaceLeft = (worldW - palaceW) / 2; // (3400 - 780) / 2 = 1310.0
+    final double palaceTop = groundY - 14.0 - palaceH; // 1200 - 14 - 590 = 596.0
 
-    final effectiveHouseW = isPresident ? palaceW : houseW;
     final effectiveHouseH = isPresident ? palaceH : houseH;
     final effectiveHouseTop = isPresident ? palaceTop : houseTop;
 
@@ -695,22 +743,23 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final drawerMaxH = h * 0.92;
             final drawerCurrentH = ui.lerpDouble(collapsedH, drawerMaxH, _profileDrawerController.value)!;
 
-            // 🛡️ Zoom Range: Deep zoom out for island overview, or close-up on palace gates:
-            final minScale = isPresident
-                ? (math.min(w / worldW, h / worldH) * 1.15).clamp(0.20, 0.45)
-                : math.max(w / worldW, h / worldH);
+            _savedViewportW = w;
+            _savedViewportH = h;
+            _savedWorldW = worldW;
+            _savedWorldH = worldH;
+
+            // 🛡️ Zoom Range: MinScale ensures the unified canvas ALWAYS covers 100% of the screen with ZERO letterboxing!
+            final minScale = math.max(w / worldW, h / worldH);
+            _savedMinScale = minScale;
             const maxScale = 2.8;
 
-            // 🏠 Default View: Camera smoothly focuses on the House/Palace and its front courtyard
+            // 🏠 Default View: Camera smoothly focuses on the Panoramic Long View for President (Vantage Island & Distant Palace)
             if (!_hasInitializedTransform && w > 0 && h > 0) {
               _hasInitializedTransform = true;
-              final defaultScale = isPresident
-                  ? math.max(minScale, (w / (effectiveHouseW * 1.18)).clamp(minScale, maxScale))
-                  : math.min(maxScale, math.max(minScale, w / (effectiveHouseW * 1.05)));
+              final defaultScale = minScale;
               final houseCenterX = worldW / 2;
-              final houseCenterY = effectiveHouseTop + (effectiveHouseH * 0.52);
               final tx = ((w / 2) - (houseCenterX * defaultScale)).clamp(-(worldW * defaultScale - w), 0.0);
-              final ty = ((h * 0.40) - (houseCenterY * defaultScale)).clamp(-(worldH * defaultScale - h), 0.0);
+              final ty = isPresident ? 0.0 : ((h * 0.40) - ((effectiveHouseTop + effectiveHouseH * 0.52) * defaultScale)).clamp(-(worldH * defaultScale - h), 0.0);
 
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
@@ -727,28 +776,15 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             return Stack(
               clipBehavior: Clip.none,
               children: [
-                // 🌌 🌊 Full-Bleed Infinite Ocean & Sky Backdrop behind InteractiveViewer (NEVER any black borders!)
-                Positioned.fill(
-                  child: AnimatedBuilder(
-                    animation: _ambientController,
-                    builder: (context, _) => CustomPaint(
-                      painter: CitadelInfiniteOceanSkyBackdropPainter(
-                        isNight: isNight,
-                        ambientProg: _ambientController.value,
-                      ),
-                    ),
-                  ),
-                ),
-
-                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan
+                // 🔍 Interactive Estate Canvas with Smooth Pinch-to-Zoom & Pan (No letterbox, zero borders)
                 Positioned.fill(
                   child: InteractiveViewer(
                     transformationController: _transformationController,
                     minScale: minScale,
                     maxScale: maxScale,
-                    boundaryMargin: isPresident ? const EdgeInsets.all(250) : EdgeInsets.zero,
+                    boundaryMargin: EdgeInsets.zero,
                     constrained: false,
-                    clipBehavior: Clip.none,
+                    clipBehavior: Clip.hardEdge,
                     child: SizedBox(
                       width: worldW,
                       height: worldH,
@@ -3782,10 +3818,51 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ),
             ),
 
-            // Right group: 6-Hour Cycle Badge + Day/Night Toggle + Defender Profile + info
+            // Right group: Perspective Switcher + 6-Hour Cycle Badge + Day/Night Toggle + Defender Profile + info
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // 🔭 Panoramic Vantage / Citadel Perspective Switcher (President World)
+                if (widget.neighbor.isPresident) ...[
+                  InkWell(
+                    onTap: _togglePerspective,
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF0284C7), Color(0xFF4F46E5)],
+                        ),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4F46E5).withValues(alpha: 0.45),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(_isVantageView ? '🏰' : '🔭', style: const TextStyle(fontSize: 13)),
+                          const SizedBox(width: 4),
+                          Text(
+                            _isVantageView ? 'CITADEL FOCUS' : 'LONG VANTAGE',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+
                 // ⏱️ 6-Hour Cycle Badge & Toggle
                 InkWell(
                   onTap: () {
@@ -7342,6 +7419,16 @@ class CitadelScenicLandscapePainter extends CustomPainter {
     // G. 🚨 Offshore Nautical Territorial Warning Buoys with Flashing Beacons
     _drawOceanNavigationalBuoy(canvas, w * 0.16, oceanTopY + 280, ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFFEF4444));
     _drawOceanNavigationalBuoy(canvas, w * 0.84, oceanTopY + 380, ambientProg: ambientProg, isNight: isNight, beaconColor: const Color(0xFF10B981));
+
+    // H. 🏝️ Southern Vantage Island (Challenger's Island Shoreline looking across the Sovereign Bay)
+    _drawSouthernVantageIsland(canvas, w, h, ambientProg: ambientProg, isNight: isNight);
+
+    // I. 🛥️ Foreground Big Tactical Assault Boat (Stationed at Vantage Shoreline)
+    _drawForegroundBigBoat(canvas, w * 0.50, 3180.0, ambientProg: ambientProg, isNight: isNight);
+
+    // J. 🌴 Giant Tropical Coconut Palms (Framing the Panoramic View from Vantage Island)
+    _drawGiantCoconutTree(canvas, 380.0, 3750.0, height: 750.0, curveDirection: 1.0, ambientProg: ambientProg, isNight: isNight, twin: true);
+    _drawGiantCoconutTree(canvas, 2920.0, 3800.0, height: 780.0, curveDirection: -1.0, ambientProg: ambientProg, isNight: isNight);
   }
 
   /// 🐟 Swimming Bioluminescent Fish in the Deep Sovereign Sea
@@ -7498,6 +7585,767 @@ class CitadelScenicLandscapePainter extends CustomPainter {
       );
       canvas.drawCircle(Offset(x, by - 38), 4.5, Paint()..color = Colors.white);
     }
+  }
+
+  // =========================================================================
+  // 🏝️ SOUTHERN VANTAGE ISLAND & CHALLENGER'S FOREGROUND WORLD
+  // =========================================================================
+
+  /// 🏝️ Southern Vantage Island: The curved tropical island shoreline from which
+  /// the challenger views the distant Sovereign Presidential Palace across the sea.
+  void _drawSouthernVantageIsland(
+    Canvas canvas,
+    double w,
+    double h, {
+    required double ambientProg,
+    required bool isNight,
+  }) {
+    // 1. Shallow Aquamarine / Turquoise Coral Lagoon Wash
+    final lagoonPath = Path();
+    lagoonPath.moveTo(-80, h + 80);
+    lagoonPath.lineTo(-80, 3280);
+    lagoonPath.cubicTo(
+      w * 0.25, 3220,
+      w * 0.75, 3240,
+      w + 80, 3260,
+    );
+    lagoonPath.lineTo(w + 80, h + 80);
+    lagoonPath.close();
+
+    final lagoonPaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [
+                Color(0x660891B2),
+                Color(0x330E7490),
+                Color(0x000F172A),
+              ]
+            : const [
+                Color(0x9922D3EE),
+                Color(0x6606B6D4),
+                Color(0x000284C7),
+              ],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+      ).createShader(Rect.fromLTWH(-80, 3180, w + 160, h - 3180));
+    canvas.drawPath(lagoonPath, lagoonPaint);
+
+    // Dynamic foam surf lines breaking along the shoreline
+    final surfPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    for (int s = 0; s < 3; s++) {
+      final surfOffset = math.sin((ambientProg * 2 * math.pi) + (s * 1.8)) * 14.0;
+      final surfY = 3300.0 + (s * 25.0) + surfOffset;
+      surfPaint
+        ..color = (isNight ? const Color(0xFF67E8F9) : Colors.white)
+            .withValues(alpha: (0.35 - (s * 0.08)).clamp(0.1, 0.5))
+        ..strokeWidth = 3.5 - (s * 0.8);
+
+      final sp = Path();
+      sp.moveTo(-40, surfY);
+      for (double x = -40; x <= w + 40; x += 140) {
+        sp.quadraticBezierTo(
+          x + 35 + (math.sin((ambientProg * 3 * math.pi) + (x * 0.01)) * 12),
+          surfY - 6,
+          x + 70,
+          surfY,
+        );
+        sp.quadraticBezierTo(
+          x + 105 - (math.sin((ambientProg * 3 * math.pi) + (x * 0.01)) * 12),
+          surfY + 6,
+          x + 140,
+          surfY,
+        );
+      }
+      canvas.drawPath(sp, surfPaint);
+    }
+
+    // 2. Golden Sand Shoreline / Sandy Beach (Deep crescent curve)
+    final beachPath = Path();
+    beachPath.moveTo(-60, h + 80);
+    beachPath.lineTo(-60, 3360);
+    beachPath.cubicTo(
+      w * 0.28, 3300,
+      w * 0.72, 3310,
+      w + 60, 3350,
+    );
+    beachPath.lineTo(w + 60, h + 80);
+    beachPath.close();
+
+    final beachPaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [
+                Color(0xFF64748B),
+                Color(0xFF475569),
+                Color(0xFF334155),
+              ]
+            : const [
+                Color(0xFFFDE68A), // Warm sunlight golden sand
+                Color(0xFFF59E0B),
+                Color(0xFFD97706), // Wet tide-line amber
+              ],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+      ).createShader(Rect.fromLTWH(-60, 3300, w + 120, h - 3300));
+    canvas.drawPath(beachPath, beachPaint);
+
+    // Subtle beach dunes and pebbles
+    final pebblePaint = Paint()
+      ..color = (isNight ? const Color(0xFF1E293B) : const Color(0xFFB45309)).withValues(alpha: 0.4);
+    final pebbleRand = math.Random(108);
+    for (int i = 0; i < 45; i++) {
+      final px = pebbleRand.nextDouble() * w;
+      final py = 3380.0 + pebbleRand.nextDouble() * 220.0;
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(px, py), width: 6.0 + pebbleRand.nextDouble() * 8, height: 3.0 + pebbleRand.nextDouble() * 4),
+        pebblePaint,
+      );
+    }
+
+    // 3. Lush Curved Island Terrain / Grassy Headland (Deep emerald tropical turf)
+    final grassPath = Path();
+    grassPath.moveTo(-60, h + 80);
+    grassPath.lineTo(-60, 3550);
+    grassPath.cubicTo(
+      w * 0.22, 3480,
+      w * 0.45, 3520,
+      w * 0.65, 3470,
+    );
+    grassPath.cubicTo(
+      w * 0.85, 3440,
+      w * 0.95, 3500,
+      w + 60, 3520,
+    );
+    grassPath.lineTo(w + 60, h + 80);
+    grassPath.close();
+
+    final grassPaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [
+                Color(0xFF022C22),
+                Color(0xFF064E3B),
+                Color(0xFF065F46),
+              ]
+            : const [
+                Color(0xFF064E3B),
+                Color(0xFF047857),
+                Color(0xFF10B981), // Sunlight emerald grass crest
+              ],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+      ).createShader(Rect.fromLTWH(-60, 3440, w + 120, h - 3440));
+    canvas.drawPath(grassPath, grassPaint);
+
+    // Grass crest highlight ridge
+    final ridgePaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..color = (isNight ? const Color(0xFF10B981) : const Color(0xFF34D399)).withValues(alpha: 0.55);
+    canvas.drawPath(grassPath, ridgePaint);
+
+    // 4. Southern Wooden Assault Pier / Dock (Extending into the bay toward the citadel)
+    _drawVantageIslandPier(canvas, w * 0.50, 3480.0, pierLength: 320.0, isNight: isNight, ambientProg: ambientProg);
+
+    // 5. Challenger's Tactical Reconnaissance Outpost (Telescope, Supply Crates, Lantern)
+    _drawVantageReconPost(canvas, w * 0.42, 3560.0, isNight: isNight, ambientProg: ambientProg);
+  }
+
+  /// 🪵 Wooden Assault Dock extending from the southern vantage beach into the water
+  void _drawVantageIslandPier(
+    Canvas canvas,
+    double cx,
+    double landY, {
+    required double pierLength,
+    required bool isNight,
+    required double ambientProg,
+  }) {
+    final pierTopY = landY - pierLength;
+    const pierW = 84.0;
+
+    // Heavy wooden pylons submerged in water
+    final pylonPaint = Paint()..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF451A03);
+    final pylonHighlight = Paint()..color = isNight ? const Color(0xFF334155) : const Color(0xFF78350F);
+
+    for (double py = pierTopY + 20; py < landY; py += 55) {
+      // Left pylon
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx - (pierW / 2) - 8, py, 14, 28), const Radius.circular(3)),
+        pylonPaint,
+      );
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx - (pierW / 2) - 6, py, 4, 28), const Radius.circular(2)),
+        pylonHighlight,
+      );
+      // Right pylon
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx + (pierW / 2) - 6, py, 14, 28), const Radius.circular(3)),
+        pylonPaint,
+      );
+    }
+
+    // Pier main wooden deck structure
+    final deckRect = Rect.fromCenter(
+      center: Offset(cx, pierTopY + (pierLength / 2)),
+      width: pierW,
+      height: pierLength,
+    );
+    final deckPaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [Color(0xFF1E293B), Color(0xFF334155), Color(0xFF1E293B)]
+            : const [Color(0xFF78350F), Color(0xFFB45309), Color(0xFF78350F)],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(deckRect);
+    canvas.drawRRect(RRect.fromRectAndRadius(deckRect, const Radius.circular(6)), deckPaint);
+
+    // Wooden plank floor lines
+    final plankLine = Paint()
+      ..color = (isNight ? const Color(0xFF0F172A) : const Color(0xFF451A03)).withValues(alpha: 0.8)
+      ..strokeWidth = 2.0;
+    for (double py = pierTopY + 8; py < landY; py += 16) {
+      canvas.drawLine(Offset(cx - (pierW / 2) + 2, py), Offset(cx + (pierW / 2) - 2, py), plankLine);
+    }
+
+    // Pier bollards / mooring posts with coiled ropes
+    final bollardPaint = Paint()..color = isNight ? const Color(0xFF64748B) : const Color(0xFF92400E);
+    canvas.drawCircle(Offset(cx - (pierW / 2) + 8, pierTopY + 12), 6, bollardPaint);
+    canvas.drawCircle(Offset(cx + (pierW / 2) - 8, pierTopY + 12), 6, bollardPaint);
+
+    // Warm dockhead navigational lantern at the tip of the pier
+    final flicker = 0.85 + 0.15 * math.sin(ambientProg * 8 * math.pi);
+    final lanternGlow = Paint()
+      ..color = (isNight ? const Color(0xFFF59E0B) : const Color(0xFFFBBF24)).withValues(alpha: 0.55 * flicker)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 16);
+    canvas.drawCircle(Offset(cx, pierTopY - 4), 22, lanternGlow);
+    canvas.drawCircle(Offset(cx, pierTopY - 4), 5.5, Paint()..color = const Color(0xFFFEF08A));
+  }
+
+  /// 🔭 Reconnaissance Vantage Post (Long-range Brass Telescope on Tripod pointing at Citadel)
+  void _drawVantageReconPost(
+    Canvas canvas,
+    double x,
+    double y, {
+    required bool isNight,
+    required double ambientProg,
+  }) {
+    // Sturdy wooden expedition crates
+    final cratePaint = Paint()..color = isNight ? const Color(0xFF334155) : const Color(0xFF92400E);
+    final crateBorder = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF78350F);
+
+    canvas.drawRect(Rect.fromLTWH(x - 30, y - 24, 28, 24), cratePaint);
+    canvas.drawRect(Rect.fromLTWH(x - 30, y - 24, 28, 24), crateBorder);
+    canvas.drawRect(Rect.fromLTWH(x - 6, y - 20, 22, 20), cratePaint);
+    canvas.drawRect(Rect.fromLTWH(x - 6, y - 20, 22, 20), crateBorder);
+
+    // High-powered tactical observation telescope on tripod pointing directly north
+    final metalPaint = Paint()..color = isNight ? const Color(0xFF94A3B8) : const Color(0xFFD97706);
+    // Tripod legs
+    final legPaint = Paint()
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round
+      ..color = isNight ? const Color(0xFF475569) : const Color(0xFF78350F);
+    canvas.drawLine(Offset(x + 36, y - 28), Offset(x + 24, y), legPaint);
+    canvas.drawLine(Offset(x + 36, y - 28), Offset(x + 36, y + 2), legPaint);
+    canvas.drawLine(Offset(x + 36, y - 28), Offset(x + 48, y), legPaint);
+
+    // Optical barrel pointed upward toward the distant castle (-0.28 rad elevation)
+    canvas.save();
+    canvas.translate(x + 36, y - 28);
+    canvas.rotate(-0.28);
+    final barrelRect = RRect.fromRectAndRadius(const Rect.fromLTWH(-8, -5, 34, 10), const Radius.circular(3));
+    canvas.drawRRect(barrelRect, metalPaint);
+    // Lens reflection
+    canvas.drawCircle(
+      const Offset(26, 0),
+      4.0,
+      Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.85),
+    );
+    canvas.restore();
+  }
+
+  // =========================================================================
+  // 🛥️ FOREGROUND BIG TACTICAL ASSAULT BOAT ("Valiya Boat")
+  // =========================================================================
+
+  /// 🛥️ Draws a large, detailed, high-impact tactical assault cruiser anchored
+  /// in the foreground waters right by the southern vantage pier.
+  /// When zoomed out, this vessel stands grand and close to the camera, giving
+  /// immediate depth and scale before the view transitions to the distant palace.
+  void _drawForegroundBigBoat(
+    Canvas canvas,
+    double cx,
+    double cy, {
+    required double ambientProg,
+    required bool isNight,
+  }) {
+    // Gentle nautical buoyancy bobbing and pitching
+    final bobY = math.sin(ambientProg * 2 * math.pi) * 7.0;
+    final pitchAngle = math.sin((ambientProg * 2 * math.pi) + 1.0) * 0.022;
+
+    canvas.save();
+    canvas.translate(cx, cy + bobY);
+    canvas.rotate(pitchAngle);
+
+    // 1. Churning Water Wake & Reflection around the massive hull
+    final wakePaint = Paint()
+      ..color = (isNight ? const Color(0xFF38BDF8) : Colors.white).withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5;
+
+    final wakePath = Path();
+    wakePath.moveTo(-240, 48);
+    wakePath.quadraticBezierTo(-120, 68, 0, 58);
+    wakePath.quadraticBezierTo(120, 68, 240, 48);
+    canvas.drawPath(wakePath, wakePaint);
+
+    final foamGlow = Paint()
+      ..color = (isNight ? const Color(0xFF00F0FF) : const Color(0xFFE0F2FE)).withValues(alpha: 0.22)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 12);
+    canvas.drawOval(Rect.fromCenter(center: const Offset(0, 54), width: 440, height: 42), foamGlow);
+
+    // 2. Heavy Armored Cruiser Hull (Width ~420, Height ~90)
+    // Sharpened tactical bow facing north towards the Citadel
+    final hullPath = Path();
+    hullPath.moveTo(-200, 36); // Stern waterline
+    hullPath.lineTo(-210, -8); // Stern transom
+    hullPath.lineTo(-140, -18); // Stern deck
+    hullPath.lineTo(130, -18); // Foredeck
+    hullPath.cubicTo(
+      180, -18,
+      215, 0,
+      225, 26, // Sharp tactical prow
+    );
+    hullPath.cubicTo(
+      190, 48,
+      120, 52,
+      -180, 50, // Keel curve
+    );
+    hullPath.close();
+
+    // Hull military paint gradient
+    final hullPaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [
+                Color(0xFF0F172A),
+                Color(0xFF1E293B),
+                Color(0xFF334155),
+              ]
+            : const [
+                Color(0xFF1E293B), // Sleek tactical stealth slate
+                Color(0xFF334155),
+                Color(0xFF475569),
+              ],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+      ).createShader(const Rect.fromLTWH(-210, -20, 440, 75));
+    canvas.drawPath(hullPath, hullPaint);
+
+    // Tactical Crimson Antifouling Waterline Stripe
+    final waterlinePath = Path();
+    waterlinePath.moveTo(-198, 36);
+    waterlinePath.cubicTo(0, 42, 140, 42, 222, 28);
+    waterlinePath.lineTo(218, 35);
+    waterlinePath.cubicTo(140, 48, 0, 48, -196, 42);
+    waterlinePath.close();
+    canvas.drawPath(waterlinePath, Paint()..color = const Color(0xFFDC2626));
+
+    // Hull armor plating seam lines
+    final seamPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6
+      ..color = (isNight ? const Color(0xFF020617) : const Color(0xFF0F172A)).withValues(alpha: 0.65);
+    canvas.drawLine(const Offset(-100, -18), const Offset(-100, 46), seamPaint);
+    canvas.drawLine(const Offset(0, -18), const Offset(0, 48), seamPaint);
+    canvas.drawLine(const Offset(100, -18), const Offset(100, 44), seamPaint);
+
+    // Hull upper deck safety handrails
+    final railPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..color = isNight ? const Color(0xFF94A3B8) : const Color(0xFFE2E8F0);
+    canvas.drawLine(const Offset(-140, -28), const Offset(130, -28), railPaint);
+    for (double rx = -130; rx <= 120; rx += 35) {
+      canvas.drawLine(Offset(rx, -18), Offset(rx, -28), railPaint);
+    }
+
+    // 3. Central Armored Command Wheelhouse / Pilot Bridge
+    final bridgePath = Path();
+    bridgePath.moveTo(-85, -18);
+    bridgePath.lineTo(-78, -62);
+    bridgePath.lineTo(45, -62);
+    bridgePath.lineTo(68, -18);
+    bridgePath.close();
+
+    final bridgePaint = Paint()
+      ..shader = LinearGradient(
+        colors: isNight
+            ? const [Color(0xFF1E293B), Color(0xFF475569)]
+            : const [Color(0xFF334155), Color(0xFF64748B)],
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+      ).createShader(const Rect.fromLTWH(-85, -62, 155, 45));
+    canvas.drawPath(bridgePath, bridgePaint);
+
+    // Panoramic cockpit observation glass (glowing cockpit lights)
+    final windowPaint = Paint()
+      ..color = isNight ? const Color(0xFF00F0FF).withValues(alpha: 0.85) : const Color(0xFF38BDF8).withValues(alpha: 0.75);
+    final windowGlow = Paint()
+      ..color = const Color(0xFF00F0FF).withValues(alpha: 0.40)
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+    for (int wIdx = 0; wIdx < 4; wIdx++) {
+      final wx = -62.0 + (wIdx * 28.0);
+      final wRect = RRect.fromRectAndRadius(
+        Rect.fromLTWH(wx, -54, 20, 14),
+        const Radius.circular(3),
+      );
+      if (isNight) canvas.drawRRect(wRect, windowGlow);
+      canvas.drawRRect(wRect, windowPaint);
+    }
+
+    // 4. Roof Tactical Mast & Rotating Radar Dish
+    final mastPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.0
+      ..strokeCap = StrokeCap.round
+      ..color = isNight ? const Color(0xFF94A3B8) : const Color(0xFFCBD5E1);
+
+    canvas.drawLine(const Offset(-15, -62), const Offset(-15, -95), mastPaint);
+    canvas.drawLine(const Offset(-32, -82), const Offset(2, -82), mastPaint);
+
+    // Rotating Radar Dish (oscillates dynamically with ambientProg)
+    final radarAngle = math.cos(ambientProg * 4 * math.pi) * 0.85;
+    canvas.save();
+    canvas.translate(-15, -95);
+    canvas.rotate(radarAngle);
+    final radarDish = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.2
+      ..color = const Color(0xFFF59E0B);
+    canvas.drawArc(const Rect.fromLTWH(-16, -10, 32, 20), -math.pi * 0.75, math.pi * 1.5, false, radarDish);
+    canvas.drawCircle(Offset.zero, 3.5, Paint()..color = Colors.white);
+    canvas.restore();
+
+    // 5. Twin Tactical Heavy Cannons / Plasma Harpoon Turret on Forward Deck
+    final turretBase = Paint()..color = isNight ? const Color(0xFF0F172A) : const Color(0xFF1E293B);
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(const Rect.fromLTWH(115, -28, 38, 14), const Radius.circular(4)),
+      turretBase,
+    );
+
+    // Twin cannon barrels pointing proudly north-east toward the President's Citadel
+    final cannonPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 4.0
+      ..strokeCap = StrokeCap.round
+      ..color = isNight ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+    canvas.drawLine(const Offset(145, -24), const Offset(195, -42), cannonPaint);
+    canvas.drawLine(const Offset(148, -19), const Offset(198, -37), cannonPaint);
+
+    // Glowing targeting lens optics at cannon tips
+    final opticGlow = Paint()..color = const Color(0xFFEF4444);
+    canvas.drawCircle(const Offset(195, -42), 3.0, opticGlow);
+    canvas.drawCircle(const Offset(198, -37), 3.0, opticGlow);
+
+    // 6. Challenger Fleet Flag flying high at the stern
+    final flagSway = math.sin((ambientProg * 3 * math.pi) + 0.5) * 8.0;
+    final polePaint = Paint()
+      ..strokeWidth = 2.5
+      ..color = isNight ? const Color(0xFFCBD5E1) : const Color(0xFF64748B);
+    canvas.drawLine(const Offset(-135, -28), const Offset(-135, -85), polePaint);
+
+    final flagPath = Path();
+    flagPath.moveTo(-135, -85);
+    flagPath.quadraticBezierTo(-112 + flagSway, -80, -90, -78);
+    flagPath.lineTo(-90, -58);
+    flagPath.quadraticBezierTo(-112 + flagSway, -60, -135, -65);
+    flagPath.close();
+
+    final flagPaint = Paint()
+      ..shader = const LinearGradient(
+        colors: [Color(0xFFEF4444), Color(0xFFF59E0B)],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      ).createShader(const Rect.fromLTWH(-135, -85, 50, 30));
+    canvas.drawPath(flagPath, flagPaint);
+
+    // 7. Powerful Forward Searchlight Beam cutting through water toward the Citadel
+    final beamPath = Path();
+    beamPath.moveTo(180, -10);
+    beamPath.lineTo(440, -140);
+    beamPath.lineTo(480, -40);
+    beamPath.close();
+
+    final beamPaint = Paint()
+      ..shader = LinearGradient(
+        colors: [
+          (isNight ? const Color(0xFF38BDF8) : Colors.white).withValues(alpha: isNight ? 0.35 : 0.20),
+          Colors.transparent,
+        ],
+        begin: Alignment.centerLeft,
+        end: Alignment.centerRight,
+      ).createShader(const Rect.fromLTWH(180, -140, 300, 140));
+    canvas.drawPath(beamPath, beamPaint);
+
+    canvas.restore();
+  }
+
+  // =========================================================================
+  // 🌴 GIANT TROPICAL COCONUT PALMS ("Valiya Coconut Tree")
+  // =========================================================================
+
+  /// 🌴 Draws majestic towering coconut palms arching in from the vantage island.
+  /// When zoomed out, these giant palms frame the panoramic ocean view, giving
+  /// the authentic feeling of standing on a tropical island looking across at
+  /// the distant Sovereign Presidential Palace.
+  void _drawGiantCoconutTree(
+    Canvas canvas,
+    double baseX,
+    double baseY, {
+    required double height,
+    required double curveDirection, // 1.0 = leaning right, -1.0 = leaning left
+    required double ambientProg,
+    required bool isNight,
+    bool twin = false,
+  }) {
+    // If twin is true, draw a slightly smaller companion palm behind it
+    if (twin) {
+      _drawSingleCoconutTree(
+        canvas,
+        baseX - (curveDirection * 90.0),
+        baseY + 30.0,
+        height * 0.82,
+        curveDirection * 1.25,
+        ambientProg: ambientProg,
+        isNight: isNight,
+      );
+    }
+
+    _drawSingleCoconutTree(
+      canvas,
+      baseX,
+      baseY,
+      height,
+      curveDirection,
+      ambientProg: ambientProg,
+      isNight: isNight,
+    );
+  }
+
+  /// Single giant coconut tree with ringed segmented trunk, ripe coconuts, and swaying fronds
+  void _drawSingleCoconutTree(
+    Canvas canvas,
+    double baseX,
+    double baseY,
+    double height,
+    double curveDirection, {
+    required double ambientProg,
+    required bool isNight,
+  }) {
+    // Dynamic breeze sway for canopy apex
+    final windSway = math.sin((ambientProg * 2 * math.pi) + (baseX * 0.005)) * 24.0;
+    final topX = baseX + (curveDirection * (height * 0.42)) + windSway;
+    final topY = baseY - height;
+    final ctrlX = baseX + (curveDirection * (height * 0.22));
+    final ctrlY = baseY - (height * 0.55);
+
+    // 1. Root Flare & Ground Tufts at Base of Tree
+    final rootPaint = Paint()..color = isNight ? const Color(0xFF1E293B) : const Color(0xFF451A03);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(baseX, baseY), width: 72, height: 28),
+      rootPaint,
+    );
+
+    // 2. Thick Curved Palm Trunk (Tapering from 34px at base to 18px at crown)
+    const int segments = 24;
+    for (int i = 0; i < segments; i++) {
+      final t0 = i / segments;
+      final t1 = (i + 1) / segments;
+
+      // Quadratic bezier point calculation: B(t) = (1-t)^2 P0 + 2(1-t)t P1 + t^2 P2
+      final p0x = math.pow(1 - t0, 2) * baseX + 2 * (1 - t0) * t0 * ctrlX + math.pow(t0, 2) * topX;
+      final p0y = math.pow(1 - t0, 2) * baseY + 2 * (1 - t0) * t0 * ctrlY + math.pow(t0, 2) * topY;
+      final p1x = math.pow(1 - t1, 2) * baseX + 2 * (1 - t1) * t1 * ctrlX + math.pow(t1, 2) * topX;
+      final p1y = math.pow(1 - t1, 2) * baseY + 2 * (1 - t1) * t1 * ctrlY + math.pow(t1, 2) * topY;
+
+      final w0 = 36.0 - (t0 * 18.0);
+      final w1 = 36.0 - (t1 * 18.0);
+
+      final segPath = Path();
+      segPath.moveTo(p0x - (w0 / 2), p0y);
+      segPath.lineTo(p1x - (w1 / 2), p1y);
+      segPath.lineTo(p1x + (w1 / 2), p1y);
+      segPath.lineTo(p0x + (w0 / 2), p0y);
+      segPath.close();
+
+      // Alternating wood tones creating natural ring ridges
+      final isLightRing = (i % 2 == 0);
+      final trunkPaint = Paint()
+        ..shader = LinearGradient(
+          colors: isNight
+              ? (isLightRing
+                  ? const [Color(0xFF334155), Color(0xFF1E293B)]
+                  : const [Color(0xFF1E293B), Color(0xFF0F172A)])
+              : (isLightRing
+                  ? const [Color(0xFFB45309), Color(0xFF78350F), Color(0xFF451A03)]
+                  : const [Color(0xFF92400E), Color(0xFF5A2508), Color(0xFF361502)]),
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ).createShader(Rect.fromLTWH(p0x - w0, p0y - 10, w0 * 2, 20));
+
+      canvas.drawPath(segPath, trunkPaint);
+
+      // Distinct horizontal ring ridge line
+      final ringRidge = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 2.0
+        ..color = (isNight ? const Color(0xFF020617) : const Color(0xFF260F02)).withValues(alpha: 0.7);
+      canvas.drawLine(Offset(p1x - (w1 / 2), p1y), Offset(p1x + (w1 / 2), p1y), ringRidge);
+    }
+
+    // 3. Cluster of Ripe Coconuts hanging beneath the palm crown
+    final nutColors = isNight
+        ? const [Color(0xFF334155), Color(0xFF1E293B)]
+        : const [Color(0xFFD97706), Color(0xFF92400E), Color(0xFF65A30D)]; // Mix of golden & green nuts
+
+    final nutRand = math.Random(42);
+    for (int n = 0; n < 9; n++) {
+      final angle = (n * (2 * math.pi / 9)) + 0.3;
+      final dist = 10.0 + nutRand.nextDouble() * 14.0;
+      final nutX = topX + math.cos(angle) * dist;
+      final nutY = topY + 12.0 + math.sin(angle) * (dist * 0.7);
+
+      final nutPaint = Paint()..color = nutColors[n % nutColors.length];
+      canvas.drawOval(
+        Rect.fromCenter(center: Offset(nutX, nutY), width: 18.0, height: 22.0),
+        nutPaint,
+      );
+      // Nut specular highlight dot
+      canvas.drawCircle(
+        Offset(nutX - 3, nutY - 4),
+        2.5,
+        Paint()..color = Colors.white.withValues(alpha: isNight ? 0.3 : 0.5),
+      );
+    }
+
+    // 4. Magnificent Radiating Palm Fronds (Feathered Pinnate Leaves)
+    // 8 long sweeping fronds radiating outwards
+    final frondAngles = [
+      -math.pi * 0.88, // Far left drooping frond
+      -math.pi * 0.72,
+      -math.pi * 0.56, // Upright left
+      -math.pi * 0.44, // Upright center-right
+      -math.pi * 0.30,
+      -math.pi * 0.12, // Far right drooping frond
+      math.pi * 0.05,  // Heavy lower right droop
+      -math.pi * 0.98, // Heavy lower left droop
+    ];
+
+    for (int f = 0; f < frondAngles.length; f++) {
+      final baseAngle = frondAngles[f];
+      final frondLen = height * (0.42 + (0.08 * (f % 3)));
+      final swayFrond = math.sin((ambientProg * 2 * math.pi) + (f * 0.8)) * 0.07;
+
+      canvas.save();
+      canvas.translate(topX, topY);
+      _drawDetailedPalmFrond(
+        canvas,
+        frondLen,
+        baseAngle + swayFrond,
+        0.55 + (0.15 * (f % 2)),
+        isNight: isNight,
+        ambientProg: ambientProg,
+        frondIndex: f,
+      );
+      canvas.restore();
+    }
+  }
+
+  /// 🌿 High-fidelity feathered palm frond with individual leaflet pinnae
+  void _drawDetailedPalmFrond(
+    Canvas canvas,
+    double length,
+    double angle,
+    double curvature, {
+    required bool isNight,
+    required double ambientProg,
+    required int frondIndex,
+  }) {
+    canvas.save();
+    canvas.rotate(angle);
+
+    // Frond central stem / rachis path
+    final stemPath = Path();
+    stemPath.moveTo(0, 0);
+    final midX = length * 0.52;
+    final midY = length * curvature * 0.45;
+    final endX = length;
+    final endY = length * curvature;
+    stemPath.quadraticBezierTo(midX, midY, endX, endY);
+
+    // Frond leaflets (feathered pinnae on both sides of rachis)
+    final leafletPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final leafColors = isNight
+        ? const [
+            Color(0xFF047857),
+            Color(0xFF065F46),
+            Color(0xFF064E3B),
+          ]
+        : const [
+            Color(0xFF10B981), // Emerald green
+            Color(0xFF34D399), // Sunlight mint
+            Color(0xFF84CC16), // Lime sunlight edge
+            Color(0xFF047857), // Deep shadow green
+          ];
+
+    const int pinnaeCount = 28;
+    for (int p = 3; p < pinnaeCount; p++) {
+      final t = p / pinnaeCount;
+      // Stem location at t
+      final sx = 2 * (1 - t) * t * midX + math.pow(t, 2) * endX;
+      final sy = 2 * (1 - t) * t * midY + math.pow(t, 2) * endY;
+
+      final pinnaLen = (math.sin(t * math.pi) * (length * 0.24)).clamp(12.0, 75.0);
+      final col = leafColors[(p + frondIndex) % leafColors.length];
+      leafletPaint
+        ..color = col
+        ..strokeWidth = 2.4 - (t * 0.8);
+
+      // Left leaflet
+      canvas.drawLine(
+        Offset(sx, sy),
+        Offset(sx - (pinnaLen * 0.4), sy + pinnaLen),
+        leafletPaint,
+      );
+      // Right leaflet
+      canvas.drawLine(
+        Offset(sx, sy),
+        Offset(sx + (pinnaLen * 0.4), sy + pinnaLen),
+        leafletPaint,
+      );
+    }
+
+    // Main rachis stem
+    final stemPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..strokeCap = StrokeCap.round
+      ..color = isNight ? const Color(0xFF064E3B) : const Color(0xFF65A30D);
+    canvas.drawPath(stemPath, stemPaint);
+
+    canvas.restore();
   }
 
   @override

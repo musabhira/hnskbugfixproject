@@ -1124,23 +1124,11 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
         return InkWell(
           onTap: () {
             if (isStage91) {
-              if (currentDay >= 90) {
-                PocketCitadelAttackPage.openForUser(
-                  context,
-                  userId: PocketPresidentService.presidentId,
-                  attackerDay: 91,
-                );
-              } else {
-                HapticFeedback.lightImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      '🔒 Complete Day 90 to unlock STAGE 91: ATTACK FOR PRESIDENT (Palace Raid)!',
-                    ),
-                    backgroundColor: Color(0xFF1E293B),
-                  ),
-                );
-              }
+              PocketCitadelAttackPage.openForUser(
+                context,
+                userId: PocketPresidentService.presidentId,
+                attackerDay: currentDay,
+              );
               return;
             }
 
