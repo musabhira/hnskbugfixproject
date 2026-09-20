@@ -243,11 +243,13 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
       if (_savedMinScale > 0.05 && scale < (_savedMinScale - 0.002)) {
         final clampedScale = _savedMinScale;
         final maxTx = 0.0;
-        final minTx = -(_savedWorldW * clampedScale - _savedViewportW).clamp(0.0, double.infinity);
+        final minTx = -(_savedWorldW * clampedScale - _savedViewportW);
+        final safeMinTx = minTx < maxTx ? minTx : maxTx;
         final maxTy = 0.0;
-        final minTy = -(_savedWorldH * clampedScale - _savedViewportH).clamp(0.0, double.infinity);
-        final tx = matrix.getTranslation().x.clamp(minTx, maxTx);
-        final ty = matrix.getTranslation().y.clamp(minTy, maxTy);
+        final minTy = -(_savedWorldH * clampedScale - _savedViewportH);
+        final safeMinTy = minTy < maxTy ? minTy : maxTy;
+        final tx = matrix.getTranslation().x.clamp(safeMinTx, maxTx);
+        final ty = matrix.getTranslation().y.clamp(safeMinTy, maxTy);
         final corrected = Matrix4.identity()
           ..setEntry(0, 0, clampedScale)
           ..setEntry(1, 1, clampedScale)
@@ -324,18 +326,30 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
     final Matrix4 target = Matrix4.identity();
     if (_isVantageView) {
-      // Long Vantage View: Locked 100% full screen overview
+      // Long Vantage View: Overview of Sovereign Island Defenses
+      final maxTx = 0.0;
+      final minTx = -((_savedWorldW * _savedMinScale) - _savedViewportW);
+      final safeMinTx = minTx < maxTx ? minTx : maxTx;
+      final maxTy = 0.0;
+      final minTy = -((_savedWorldH * _savedMinScale) - _savedViewportH);
+      final safeMinTy = minTy < maxTy ? minTy : maxTy;
       target.setEntry(0, 0, _savedMinScale);
       target.setEntry(1, 1, _savedMinScale);
-      target.setEntry(0, 3, 0.0);
-      target.setEntry(1, 3, 0.0);
+      target.setEntry(0, 3, safeMinTx / 2);
+      target.setEntry(1, 3, safeMinTy / 2);
     } else {
       // Citadel Focus View (Close up on Palace Gates & Castle)
-      final closeScale = (_savedViewportW / (540.0 * 1.15)).clamp(_savedMinScale * 1.6, 3.5);
+      final closeScale = (_savedViewportW / (540.0 * 1.08)).clamp(_savedMinScale, 3.5);
       final houseCenterX = _savedWorldW / 2;
       final houseCenterY = (_savedWorldH * 0.44) - 10.0 - (410.0 * 0.50);
-      final tx = ((_savedViewportW / 2) - (houseCenterX * closeScale)).clamp(-(_savedWorldW * closeScale - _savedViewportW), 0.0);
-      final ty = ((_savedViewportH * 0.38) - (houseCenterY * closeScale)).clamp(-(_savedWorldH * closeScale - _savedViewportH), 0.0);
+      final maxTx = 0.0;
+      final minTx = -((_savedWorldW * closeScale) - _savedViewportW);
+      final safeMinTx = minTx < maxTx ? minTx : maxTx;
+      final tx = ((_savedViewportW / 2) - (houseCenterX * closeScale)).clamp(safeMinTx, maxTx);
+      final maxTy = 0.0;
+      final minTy = -((_savedWorldH * closeScale) - _savedViewportH);
+      final safeMinTy = minTy < maxTy ? minTy : maxTy;
+      final ty = ((_savedViewportH * 0.40) - (houseCenterY * closeScale)).clamp(safeMinTy, maxTy);
       target.setEntry(0, 0, closeScale);
       target.setEntry(1, 1, closeScale);
       target.setEntry(0, 3, tx);
@@ -759,26 +773,53 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
             final double palaceLeft = (worldW - palaceW) / 2; // (1200 - 540) / 2 = 330.0
             final double palaceTop = groundY - 10.0 - palaceH;
 
-            final effectiveHouseH = isPresident ? palaceH : houseH;
-            final effectiveHouseTop = isPresident ? palaceTop : houseTop;
-
             _savedViewportW = w;
             _savedViewportH = h;
             _savedWorldW = worldW;
             _savedWorldH = worldH;
 
-            // 🛡️ Zoom Range: MinScale ensures the canvas ALWAYS covers 100% of the screen with ZERO letterboxing!
-            // Locked horizontally and vertically at max zoom out!
-            final minScale = (w <= 0) ? 0.30 : (w / worldW);
+            // 🛡️ Zoom Range:
+            // For regular houses: math.max(w / worldW, h / worldH) fills the screen perfectly.
+            // For Presidential Citadel: Zoom-out is strictly limited so the palace never becomes a tiny speck!
+            final double houseZoomScale = isPresident
+                ? (w / (palaceW * 1.08))
+                : (w / (houseW * 1.05));
+
+            final double baseMinScale = isPresident
+                ? (houseZoomScale * 0.70).clamp(0.44, 0.54)
+                : math.max(w / worldW, h / worldH);
+
+            final minScale = (w <= 0) ? 0.30 : baseMinScale;
             _savedMinScale = minScale;
             const maxScale = 3.5;
 
-            // 🏠 Default View: Camera focuses on the 100% locked overview
+            final defaultScale = (w <= 0)
+                ? 1.0
+                : (isPresident
+                    ? houseZoomScale.clamp(minScale, maxScale)
+                    : math.min(maxScale, math.max(minScale, houseZoomScale)));
+
+            // 🏠 Default View: Camera smoothly focuses on the House/Palace centered on screen!
             if (!_hasInitializedTransform && w > 0 && h > 0) {
               _hasInitializedTransform = true;
-              final defaultScale = minScale;
-              final tx = 0.0;
-              final ty = isPresident ? 0.0 : ((h * 0.40) - ((effectiveHouseTop + effectiveHouseH * 0.52) * defaultScale)).clamp(-(worldH * defaultScale - h), 0.0);
+
+              final houseCenterX = worldW / 2;
+              final houseCenterY = isPresident
+                  ? (palaceTop + (palaceH * 0.50))
+                  : (houseTop + (houseH * 0.52));
+
+              final maxTx = 0.0;
+              final minTx = -((worldW * defaultScale) - w);
+              final safeMinTx = minTx < maxTx ? minTx : maxTx;
+              final tx = ((w / 2) - (houseCenterX * defaultScale)).clamp(safeMinTx, maxTx);
+
+              final maxTy = 0.0;
+              final minTy = -((worldH * defaultScale) - h);
+              final safeMinTy = minTy < maxTy ? minTy : maxTy;
+              final targetTy = isPresident
+                  ? ((h * 0.38) - (houseCenterY * defaultScale))
+                  : ((h * 0.42) - (houseCenterY * defaultScale));
+              final ty = targetTy.clamp(safeMinTy, maxTy);
 
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (mounted) {
