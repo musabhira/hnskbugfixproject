@@ -1,18 +1,20 @@
 import 'package:flutter/material.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-import 'package:pocket_mates_app/custom_code/widgets/main_profile_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 
 class ThoughtsFeedSection extends StatefulWidget {
   final String currentUserId;
@@ -555,7 +557,6 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
   Widget build(BuildContext context) {
     final String content = widget.thread['content'] ?? '';
     final String name = widget.thread['name'] ?? 'Anonymous';
-    final String? avatar = widget.thread['profile_image_url'];
     final createdAt = DateTime.parse(
         widget.thread['created_at'] ?? DateTime.now().toIso8601String());
     final likes =
@@ -571,24 +572,56 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
         widget.thread['user_id']?.toString().startsWith('robot_') == true;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Resolve author's evolution avatar
+    VectorAvatarConfig avatarConfig;
+    if (isRobot) {
+      final robot = PocketRobotService.getRobotById(widget.thread['user_id']?.toString() ?? '') ??
+          PocketRobotService.getRobotByLevel(1);
+      final dynLvl = PocketRobotService.getDynamicLevel(robot);
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(dynLvl);
+    } else {
+      final profile = widget.thread['profile'] is Map ? widget.thread['profile'] : null;
+      final rawScore = widget.thread['pocket_score'] ?? profile?['pocket_score'] ?? widget.thread['xp'] ?? profile?['xp'];
+      final score = (rawScore as num?)?.toInt() ?? 0;
+      int stage = 1;
+      if (score > 0) {
+        stage = PocketScoreLevelEngine.getLevelFromScore(score);
+      } else {
+        final day = widget.thread['learning_day'] ?? profile?['learning_day'] ?? widget.thread['stage'] ?? profile?['stage'] ?? widget.thread['level'];
+        if (day is num && day > 0) {
+          stage = day.toInt();
+        }
+      }
+      final talisman = widget.thread['equipped_talisman']?.toString() ?? profile?['equipped_talisman']?.toString() ?? profile?['talisman_id']?.toString();
+      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90), talismanId: talisman);
+    }
+
+    final authorId = widget.thread['user_id']?.toString() ?? '';
+
     return Container(
       margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: isDark
-            ? const Color(0xFF131B26).withValues(alpha: 0.85)
-            : Colors.white.withValues(alpha: 0.95),
-        borderRadius: BorderRadius.circular(16),
+            ? const Color(0xFF131B26).withValues(alpha: 0.95)
+            : Colors.white.withValues(alpha: 0.98),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.06),
-          width: 1,
+              ? (isRobot
+                  ? const Color(0xFFFFB300).withValues(alpha: 0.25)
+                  : Colors.white.withValues(alpha: 0.10))
+              : Colors.black.withValues(alpha: 0.08),
+          width: 1.2,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: isDark
+                ? (isRobot
+                    ? const Color(0xFFFFB300).withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.35))
+                : Colors.black.withValues(alpha: 0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -600,20 +633,13 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Avatar
+                // Avatar (Tapping navigates to Attack Profile)
                 GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onTap: () {
-                    if (isRobot) {
-                      _showRobotMateSheet(context, widget.thread);
-                      return;
+                    if (authorId.isNotEmpty) {
+                      PocketCitadelAttackPage.openForUser(context, userId: authorId);
                     }
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => MainProfileWidget(
-                            userId: widget.thread['user_id'] ?? ''),
-                      ),
-                    );
                   },
                   child: Container(
                     padding: const EdgeInsets.all(1.5),
@@ -626,64 +652,37 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                         width: isRobot ? 1.8 : 1,
                       ),
                     ),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
-                      backgroundImage: avatar != null
-                          ? CachedNetworkImageProvider(avatar)
-                          : null,
-                      child: avatar == null
-                          ? Text(name.isNotEmpty ? name[0].toUpperCase() : '?',
-                              style: const TextStyle(
-                                color: Color(0xFFFFFC00),
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ))
-                          : null,
+                    child: ClipOval(
+                      child: VectorAvatarWidget(
+                        config: avatarConfig,
+                        size: 36,
+                        showAura: isRobot,
+                      ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 10),
-                // Header: Name & Time
+                // Header: Name & Time (Tapping name navigates to Attack Profile)
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              name,
-                              style: GoogleFonts.outfit(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 14.5,
-                                color: FlutterFlowTheme.of(context).primaryText,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                      GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () {
+                          if (authorId.isNotEmpty) {
+                            PocketCitadelAttackPage.openForUser(context, userId: authorId);
+                          }
+                        },
+                        child: Text(
+                          name,
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14.5,
+                            color: FlutterFlowTheme.of(context).primaryText,
                           ),
-                          if (isRobot) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                              decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [Color(0xFFFFB300), Color(0xFFFF5252)],
-                                ),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Text(
-                                'AI BOT',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 0.5,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       Text(
                         timeago.format(createdAt, locale: 'en_short'),
@@ -971,125 +970,6 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
                 ),
               ),
             ],
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showRobotMateSheet(BuildContext context, Map<String, dynamic> thread) {
-    final name = thread['name'] ?? 'Pocket Mate';
-    final avatar = thread['profile_image_url'];
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF0F172A) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-          border: Border.all(
-            color: const Color(0xFFFFB300).withValues(alpha: 0.3),
-            width: 1.5,
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 18),
-            CircleAvatar(
-              radius: 36,
-              backgroundImage: avatar != null ? NetworkImage(avatar) : null,
-              backgroundColor: const Color(0xFF1E293B),
-              child: avatar == null
-                  ? const Icon(Icons.smart_toy_rounded, size: 36, color: Color(0xFFFFD600))
-                  : null,
-            ),
-            const SizedBox(height: 12),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  name,
-                  style: GoogleFonts.outfit(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: FlutterFlowTheme.of(context).primaryText,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFFB300), Color(0xFFFF5252)],
-                    ),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: const Text(
-                    'AI BOT',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFD600).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: const Color(0xFFFFD600).withValues(alpha: 0.4)),
-              ),
-              child: const Text(
-                '🏆 Level 90 Grandmaster • English AI Mate',
-                style: TextStyle(
-                  color: Color(0xFFFFD600),
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(height: 14),
-            Text(
-              'Active in Pocket Mates to practice English speaking, share idioms, and cheer your learning journey!',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: FlutterFlowTheme.of(context).secondaryText,
-                height: 1.4,
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton.icon(
-              onPressed: () => Navigator.pop(ctx),
-              icon: const Icon(Icons.check_circle_outline_rounded, size: 18, color: Colors.black),
-              label: const Text(
-                'Great to meet you!',
-                style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD600),
-                minimumSize: const Size(double.infinity, 44),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              ),
-            ),
-            const SizedBox(height: 8),
           ],
         ),
       ),

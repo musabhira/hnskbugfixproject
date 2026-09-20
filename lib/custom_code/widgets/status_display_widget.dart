@@ -43,6 +43,9 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/president/presidential_palace_castle_painter.dart';
 import 'dart:async';
 
 class StatusDisplayWidget extends StatefulWidget {
@@ -3170,27 +3173,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                if (isRobot) ...[
-                                  const SizedBox(width: 6),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFFFFB300), Color(0xFFFF5252)],
-                                      ),
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: const Text(
-                                      'AI BOT',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 9,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ),
-                                ],
                               ],
                             ),
                             subtitle: Text(
@@ -3270,6 +3252,29 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         _progressController.forward();
       }
     }
+  }
+
+  void _openAuthorCitadel(Map<String, dynamic>? authorProfile) {
+    final statuses = widget.statusGroup['statuses'] as List;
+    final curStatus = _currentIndex < statuses.length ? statuses[_currentIndex] : null;
+    final authorUserId = curStatus?['user_id']?.toString() ??
+        authorProfile?['user_id']?.toString() ??
+        authorProfile?['id']?.toString() ??
+        '';
+    if (authorUserId.isEmpty) return;
+
+    if (!_isPaused) {
+      _togglePause();
+    }
+    PocketCitadelAttackPage.openForUser(
+      context,
+      userId: authorUserId,
+      preloadedProfile: authorProfile,
+    ).then((_) {
+      if (mounted && _isPaused) {
+        _togglePause();
+      }
+    });
   }
 
   Future<void> _deleteStatus(String statusId, String mediaUrl) async {
@@ -3466,7 +3471,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                     // Profile Info with View Count
                     Row(
                       children: [
-                        _buildViewerAvatar(currentStatus['profile'] ?? profile, size: 36),
+                        GestureDetector(
+                          onTap: () => _openAuthorCitadel(currentStatus['profile'] ?? profile),
+                          child: _buildViewerAvatar(currentStatus['profile'] ?? profile, size: 36),
+                        ),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Column(
@@ -3492,15 +3500,18 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                     ),
                                   ],
                                   Flexible(
-                                    child: Text(
-                                      currentStatus['profile']?['name'] ??
-                                          'Unknown',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 15,
+                                    child: GestureDetector(
+                                      onTap: () => _openAuthorCitadel(currentStatus['profile'] ?? profile),
+                                      child: Text(
+                                        currentStatus['profile']?['name'] ??
+                                            'Unknown',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 15,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
-                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
                                   if (!isOwnStatus && !_isAuthorMate) ...[
@@ -4542,6 +4553,183 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               ],
             ),
           ),
+        ),
+      );
+    } else if (status['media_type'] == 'citadel_fortress') {
+      final metadata = status['metadata'] is Map ? status['metadata'] as Map : {};
+      final targetUserId = metadata['target_user_id']?.toString() ?? status['user_id']?.toString() ?? '';
+      final targetUserName = metadata['target_user_name']?.toString() ?? (status['profile']?['name']?.toString() ?? 'Hero');
+      final bool isPresident = metadata['is_president'] == true ||
+          PocketPresidentService.isPresidentId(targetUserId) ||
+          targetUserId == 'pocket_president';
+      final int level = (metadata['day'] as num?)?.toInt() ?? 1;
+      final String rank = metadata['cefr_rank']?.toString() ?? 'A1';
+      final String paletteId = metadata['palette_id']?.toString() ?? 'slate';
+
+      content = Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: isPresident
+                ? const [Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF030712)]
+                : const [Color(0xFF021B35), Color(0xFF0B192C), Color(0xFF030712)],
+          ),
+        ),
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            // Living Citadel Fortress inside Pinch-to-Zoom InteractiveViewer
+            InteractiveViewer(
+              minScale: 0.6,
+              maxScale: 3.5,
+              boundaryMargin: const EdgeInsets.all(120),
+              child: Center(
+                child: isPresident
+                    ? const PresidentialPalaceCastleWidget(
+                        width: 480,
+                        height: 380,
+                        animProg: 0.5,
+                      )
+                    : SizedBox(
+                        width: 360,
+                        height: 320,
+                        child: FlameEnglishHouseWidget(
+                          currentDay: level,
+                          streak: level,
+                          paletteId: paletteId,
+                        ),
+                      ),
+              ),
+            ),
+
+            // Top Citadel Title Card (Non-blocking)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 75,
+              left: 20,
+              right: 20,
+              child: IgnorePointer(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.68),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isPresident
+                          ? const Color(0xFFFFD700).withValues(alpha: 0.5)
+                          : const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.45),
+                        blurRadius: 16,
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              isPresident ? '🏛️ Sovereign Citadel' : '🏰 $targetUserName\'s Citadel',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: isPresident
+                                  ? const Color(0xFFFFD700).withValues(alpha: 0.25)
+                                  : const Color(0xFF0284C7).withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'LV $level • $rank',
+                              style: TextStyle(
+                                color: isPresident ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '🔍 Pinch to zoom in/out • Tap below to visit & challenge',
+                        style: GoogleFonts.inter(
+                          color: Colors.white70,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom Glowing Action Button: "⚔️ Enter Battle / Visit Citadel"
+            Positioned(
+              bottom: MediaQuery.of(context).padding.bottom + 115,
+              child: GestureDetector(
+                onTap: () {
+                  _togglePause();
+                  PocketCitadelAttackPage.openForUser(
+                    context,
+                    userId: targetUserId,
+                  ).then((_) {
+                    if (mounted && _isPaused) _togglePause();
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: isPresident
+                          ? const [Color(0xFFFFD700), Color(0xFFF59E0B)]
+                          : const [Color(0xFFEF4444), Color(0xFFDC2626)],
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: (isPresident ? const Color(0xFFFFD700) : const Color(0xFFEF4444)).withValues(alpha: 0.5),
+                        blurRadius: 18,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.shield_rounded, color: Colors.white, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        isPresident ? '⚔️ VISIT SOVEREIGN PALACE' : '⚔️ RAID / VISIT CITADEL',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       );
     } else if (status['media_type'] == 'image') {

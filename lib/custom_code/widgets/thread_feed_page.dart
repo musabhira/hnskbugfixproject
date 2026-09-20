@@ -18,6 +18,10 @@ import 'dart:math' as math;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 
 class ThreadFeedPage extends StatefulWidget {
   final double? width;
@@ -2130,7 +2134,8 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
 
   Widget _buildParentThread(bool isDark) {
     final authorName = _threadDetail?['name'] ?? _threadDetail?['author_name'] ?? 'Author';
-    final avatarUrl = _threadDetail?['profile_image_url'] ?? _threadDetail?['author_avatar'];
+    final authorUserId = _threadDetail?['user_id']?.toString() ?? _threadDetail?['author_id']?.toString() ?? '';
+    final isAuthorRobot = PocketRobotService.isRobotId(authorUserId);
     final timeStr = _threadDetail?['created_at']?.toString();
     final timeFormatted = timeStr != null
         ? timeago.format(DateTime.tryParse(timeStr) ?? DateTime.now())
@@ -2138,6 +2143,18 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
     final isVerified = _threadDetail?['verified'] == true || _threadDetail?['is_verified'] == true;
     final day = (_threadDetail?['learning_day'] as num?)?.toInt() ?? 1;
     final mediaUrl = _threadDetail?['media_url']?.toString();
+
+    VectorAvatarConfig authorAvatarConfig;
+    if (isAuthorRobot) {
+      final robot = PocketRobotService.getRobotById(authorUserId) ?? PocketRobotService.getRobotByLevel(1);
+      authorAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(PocketRobotService.getDynamicLevel(robot));
+    } else {
+      final rawScore = _threadDetail?['pocket_score'] ?? _threadDetail?['xp'];
+      final score = (rawScore as num?)?.toInt() ?? 0;
+      final stage = score > 0 ? PocketScoreLevelEngine.getLevelFromScore(score) : day;
+      final talisman = _threadDetail?['equipped_talisman']?.toString() ?? _threadDetail?['talisman_id']?.toString();
+      authorAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90), talismanId: talisman);
+    }
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
@@ -2150,22 +2167,32 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
               // Author Avatar with continuous line connector below it
               Column(
                 children: [
-                  CircleAvatar(
-                    radius: 20,
-                    backgroundColor: const Color(0xFFFFD700).withValues(alpha: 0.2),
-                    backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
-                        ? CachedNetworkImageProvider(avatarUrl)
-                        : null,
-                    child: (avatarUrl == null || avatarUrl.isEmpty)
-                        ? Text(
-                            authorName.isNotEmpty ? authorName[0].toUpperCase() : 'U',
-                            style: const TextStyle(
-                              color: Color(0xFFFFFC00),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          )
-                        : null,
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      if (authorUserId.isNotEmpty) {
+                        PocketCitadelAttackPage.openForUser(context, userId: authorUserId);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(1.5),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isAuthorRobot
+                              ? const Color(0xFFFFB300)
+                              : const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                          width: isAuthorRobot ? 1.8 : 1,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: VectorAvatarWidget(
+                          config: authorAvatarConfig,
+                          size: 38,
+                          showAura: isAuthorRobot,
+                        ),
+                      ),
+                    ),
                   ),
                   if (comments.isNotEmpty)
                     Container(
@@ -2184,15 +2211,23 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                     Row(
                       children: [
                         Flexible(
-                          child: Text(
-                            authorName,
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 15.5,
-                              color: isDark ? Colors.white : Colors.black87,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              if (authorUserId.isNotEmpty) {
+                                PocketCitadelAttackPage.openForUser(context, userId: authorUserId);
+                              }
+                            },
+                            child: Text(
+                              authorName,
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15.5,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (isVerified) ...[
@@ -2277,7 +2312,8 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
     final currentUserId = supabase.auth.currentUser?.id;
     final isOwner = comment['user_id'] == currentUserId;
     final authorName = comment['name'] ?? 'User';
-    final avatarUrl = comment['profile_image_url'];
+    final commentUserId = comment['user_id']?.toString() ?? '';
+    final isCommentRobot = PocketRobotService.isRobotId(commentUserId);
     final timeStr = comment['created_at']?.toString();
     final timeFormatted = timeStr != null
         ? timeago.format(DateTime.tryParse(timeStr) ?? DateTime.now(), locale: 'en_short')
@@ -2286,6 +2322,24 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
     final isLiked = _likedCommentIds.contains(commentId);
     final likesCount = _commentLikesCount[commentId] ?? (comment['likes_count'] as num?)?.toInt() ?? 0;
     final isLast = index == comments.length - 1;
+
+    VectorAvatarConfig commentAvatarConfig;
+    if (isCommentRobot) {
+      final robot = PocketRobotService.getRobotById(commentUserId) ?? PocketRobotService.getRobotByLevel(1);
+      commentAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(PocketRobotService.getDynamicLevel(robot));
+    } else {
+      final rawScore = comment['pocket_score'] ?? comment['xp'];
+      final score = (rawScore as num?)?.toInt() ?? 0;
+      int stage = 1;
+      if (score > 0) {
+        stage = PocketScoreLevelEngine.getLevelFromScore(score);
+      } else {
+        final day = comment['learning_day'] ?? comment['stage'] ?? comment['level'];
+        if (day is num && day > 0) stage = day.toInt();
+      }
+      final talisman = comment['equipped_talisman']?.toString() ?? comment['talisman_id']?.toString();
+      commentAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90), talismanId: talisman);
+    }
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -2298,22 +2352,32 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
               width: 40,
               child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 17,
-                    backgroundColor: const Color(0xFFFFD700).withValues(alpha: 0.2),
-                    backgroundImage: (avatarUrl != null && avatarUrl.isNotEmpty)
-                        ? CachedNetworkImageProvider(avatarUrl)
-                        : null,
-                    child: (avatarUrl == null || avatarUrl.isEmpty)
-                        ? Text(
-                            authorName.isNotEmpty ? authorName[0].toUpperCase() : 'U',
-                            style: const TextStyle(
-                              color: Color(0xFFFFFC00),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 13,
-                            ),
-                          )
-                        : null,
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: () {
+                      if (commentUserId.isNotEmpty) {
+                        PocketCitadelAttackPage.openForUser(context, userId: commentUserId);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(1),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isCommentRobot
+                              ? const Color(0xFFFFB300)
+                              : const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                          width: isCommentRobot ? 1.6 : 1,
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: VectorAvatarWidget(
+                          config: commentAvatarConfig,
+                          size: 34,
+                          showAura: isCommentRobot,
+                        ),
+                      ),
+                    ),
                   ),
                   if (!isLast)
                     Expanded(
@@ -2337,15 +2401,23 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
                     Row(
                       children: [
                         Flexible(
-                          child: Text(
-                            authorName,
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w700,
-                              fontSize: 14.5,
-                              color: isDark ? Colors.white : Colors.black87,
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              if (commentUserId.isNotEmpty) {
+                                PocketCitadelAttackPage.openForUser(context, userId: commentUserId);
+                              }
+                            },
+                            child: Text(
+                              authorName,
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.w700,
+                                fontSize: 14.5,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         if (timeFormatted.isNotEmpty) ...[

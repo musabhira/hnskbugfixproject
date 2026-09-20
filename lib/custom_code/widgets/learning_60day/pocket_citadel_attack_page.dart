@@ -719,6 +719,93 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+  Future<void> _shareCitadelToVibes() async {
+    try {
+      final myUser = SupaFlow.client.auth.currentUser;
+      final myId = myUser?.id;
+      if (myId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please log in to share to Vibes')),
+        );
+        return;
+      }
+
+      String? profileId;
+      try {
+        final pRes = await SupaFlow.client
+            .from('profile')
+            .select('id')
+            .eq('user_id', myId)
+            .maybeSingle();
+        if (pRes != null) {
+          profileId = pRes['id']?.toString();
+        }
+      } catch (_) {}
+
+      final bool isPres = widget.neighbor.isPresident;
+      final String defenderName = widget.neighbor.name;
+      final int level = widget.neighbor.day;
+      final String caption = isPres
+          ? '🏛️ Sovereign Presidential Palace! Tap to visit or challenge ⚔️'
+          : '🏰 Explore $defenderName\'s Level $level Citadel! Tap to visit or challenge ⚔️';
+
+      final metadata = {
+        'target_user_id': widget.neighbor.id,
+        'target_user_name': defenderName,
+        'is_president': isPres,
+        'is_robot': widget.neighbor.isPocketRobo,
+        'day': level,
+        'cefr_rank': widget.neighbor.rank,
+        'palette_id': widget.neighbor.paletteId,
+        'hp': widget.neighbor.hp,
+        'max_hp': widget.neighbor.maxHp,
+      };
+
+      await SupaFlow.client.from('statuses').insert({
+        'user_id': myId,
+        'profile_id': profileId,
+        'media_type': 'citadel_fortress',
+        'metadata': metadata,
+        'media_url': '',
+        'thumbnail_url': null,
+        'caption': caption,
+        'duration': 10,
+        'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+        'is_active': true,
+      });
+
+      if (mounted) {
+        HapticFeedback.mediumImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Color(0xFFFFD700)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Shared $defenderName\'s Citadel to Vibes! ✨',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF1E1B4B),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error sharing citadel to vibes: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to share to Vibes: $e')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // ⏱️ 6-Hour Atmospheric Day/Night Cycle
@@ -3921,6 +4008,33 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                     ),
                     child: const Center(
                       child: Icon(Icons.info_outline_rounded, color: Color(0xFFFFD700), size: 18),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // 5. ✨ Share to Vibes Icon Button
+                InkWell(
+                  onTap: _shareCitadelToVibes,
+                  borderRadius: BorderRadius.circular(20),
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFEC4899), Color(0xFF8B5CF6)],
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFFFFC00), width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFEC4899).withValues(alpha: 0.4),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 17),
                     ),
                   ),
                 ),

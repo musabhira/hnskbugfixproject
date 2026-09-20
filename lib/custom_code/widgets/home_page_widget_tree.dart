@@ -3023,16 +3023,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               overflow: TextOverflow.ellipsis,
                                               textAlign: TextAlign.center,
                                             ),
-                                            if (isRobot)
-                                              Text(
-                                                'AI Bot',
-                                                style: GoogleFonts.outfit(
-                                                  color:
-                                                      const Color(0xFFFFFC00),
-                                                  fontSize: 9,
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
                                           ],
                                         ),
                                       ),
@@ -3161,35 +3151,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                                           TextOverflow.ellipsis,
                                                     ),
                                                   ),
-                                                  if (isRobot) ...[
-                                                    const SizedBox(width: 6),
-                                                    Container(
-                                                      padding: const EdgeInsets
-                                                          .symmetric(
-                                                          horizontal: 5,
-                                                          vertical: 1.5),
-                                                      decoration: BoxDecoration(
-                                                        color: const Color(
-                                                                0xFFFFFC00)
-                                                            .withValues(
-                                                                alpha: 0.2),
-                                                        borderRadius:
-                                                            BorderRadius
-                                                                .circular(6),
-                                                      ),
-                                                      child: Text(
-                                                        'AI BOT',
-                                                        style:
-                                                            GoogleFonts.outfit(
-                                                          fontSize: 9,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: const Color(
-                                                              0xFFFFFC00),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
                                                 ],
                                               ),
                                               if (bio.isNotEmpty) ...[
