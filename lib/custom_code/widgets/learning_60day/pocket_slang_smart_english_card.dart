@@ -28,6 +28,7 @@ class PocketSlangSmartEnglishCard extends StatefulWidget {
   final bool isCompleted;
   final ValueChanged<bool> onCompleted;
   final Function(String text) onSpeak;
+  final String stepNumber;
 
   const PocketSlangSmartEnglishCard({
     super.key,
@@ -36,6 +37,7 @@ class PocketSlangSmartEnglishCard extends StatefulWidget {
     required this.isCompleted,
     required this.onCompleted,
     required this.onSpeak,
+    this.stepNumber = '4',
   });
 
   @override
@@ -136,9 +138,11 @@ class _PocketSlangSmartEnglishCardState
                   ),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
-                  '💬 SLANG ➔ SMART',
-                  style: TextStyle(
+                child: Text(
+                  widget.stepNumber.isNotEmpty
+                      ? 'STEP ${widget.stepNumber}'
+                      : '💬 SLANG ➔ SMART',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -151,7 +155,7 @@ class _PocketSlangSmartEnglishCardState
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Daily Slang to Smart English (നിത്യജീവിത ശൈലികൾ)',
+                  _getTitle(widget.selectedLanguage),
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -166,7 +170,7 @@ class _PocketSlangSmartEnglishCardState
           ),
           const SizedBox(height: 6),
           Text(
-            'Replace native vernacular thoughts with native-sounding English reflex!',
+            _getSubtitle(widget.selectedLanguage),
             style: GoogleFonts.inter(
               color: Colors.white60,
               fontSize: 11,
@@ -272,9 +276,7 @@ class _PocketSlangSmartEnglishCardState
                 size: 16,
               ),
               label: Text(
-                widget.isCompleted
-                    ? 'SLANG REFLEXES MASTERED ✓'
-                    : 'I DRILLED THESE SMART SLANGS ✓',
+                _getButtonLabel(widget.selectedLanguage, widget.isCompleted),
                 style: GoogleFonts.outfit(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
@@ -295,5 +297,73 @@ class _PocketSlangSmartEnglishCardState
         ],
       ),
     );
+  }
+
+  String _getTitle(String language) {
+    switch (language.toLowerCase()) {
+      case 'tamil':
+        return 'Daily Slang to Smart English (அன்றாட வாழ்க்கை பயன்பாடுகள்)';
+      case 'telugu':
+        return 'Daily Slang to Smart English (నిత్యజీవిత శైలులు)';
+      case 'hindi':
+        return 'Daily Slang to Smart English (दैनिक बोलचाल)';
+      case 'kannada':
+        return 'Daily Slang to Smart English (ದೈನಂದಿನ ಶೈಲಿಗಳು)';
+      case 'malayalam':
+        return 'Daily Slang to Smart English (നിത്യജീവിത ശൈലികൾ)';
+      default:
+        return 'Daily Slang to Smart English (Real-Life Spoken Reflex)';
+    }
+  }
+
+  String _getSubtitle(String language) {
+    switch (language.toLowerCase()) {
+      case 'tamil':
+        return 'பேச்சுவழக்கு எண்ணங்களை இயல்பான ஆங்கிலமாக மாற்றுங்கள்!';
+      case 'telugu':
+        return 'స్థానిక భావాలను సహజమైన ఆంగ్ల ప్రతిస్పందనగా మార్చండి!';
+      case 'hindi':
+        return 'अपनी क्षेत्रीय सोच को धाराप्रवाह अंग्रेजी में बदलें!';
+      case 'kannada':
+        return 'ಸ್ಥಳೀಯ ಯೋಚನೆಗಳನ್ನು ಸಹಜ ಇಂಗ್ಲಿಷ್ ಶೈಲಿಗೆ ಬದಲಾಯಿಸಿ!';
+      case 'malayalam':
+        return 'പ്രാദേശിക ചിന്തകളെ സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലിയിലേക്ക് മാറ്റുക!';
+      default:
+        return 'Replace native vernacular thoughts with native-sounding English reflex!';
+    }
+  }
+
+  String _getButtonLabel(String language, bool isCompleted) {
+    if (isCompleted) {
+      switch (language.toLowerCase()) {
+        case 'tamil':
+          return 'நடைமுறை ஆங்கிலம் கற்றேன் ✓';
+        case 'telugu':
+          return 'స్లాంగ్స్ నేర్చుకున్నాను ✓';
+        case 'hindi':
+          return 'दैनिक बोलचाल पूरी हुई ✓';
+        case 'kannada':
+          return 'ಶೈಲಿಗಳನ್ನು ಅಭ್ಯಾಸ ಮಾಡಿದೆ ✓';
+        case 'malayalam':
+          return 'ശൈലികൾ പരിശീലിച്ചു കഴിഞ്ഞു ✓';
+        default:
+          return 'SLANG REFLEXES MASTERED ✓';
+      }
+    } else {
+      switch (language.toLowerCase()) {
+        case 'tamil':
+          return 'இந்த நடைமுறை ஆங்கிலத்தைப் பழகினேன் ✓';
+        case 'telugu':
+          return 'స్మార్ట్ స్లాంగ్స్ సాధన చేశాను ✓';
+        case 'hindi':
+          return 'दैनिक बोलचाल का अभ्यास किया ✓';
+        case 'kannada':
+          return 'ಈ ಶೈಲಿಗಳನ್ನು ಅಭ್ಯಾಸ ಮಾಡಿದೆ ✓';
+        case 'malayalam':
+          return 'ഈ ശൈലികൾ സംസാരിച്ചു ശീലിച്ചു ✓';
+        default:
+          return 'I DRILLED THESE SMART SLANGS ✓';
+      }
+    }
   }
 }

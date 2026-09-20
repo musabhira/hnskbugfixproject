@@ -6,6 +6,7 @@ class AlphabetPhonicItem {
   final String exampleWord;
   final String pronunciationGuide;
   final String audioPrompt;
+  final Map<String, String>? localizedGuides;
 
   const AlphabetPhonicItem({
     required this.letter,
@@ -13,7 +14,187 @@ class AlphabetPhonicItem {
     required this.exampleWord,
     required this.pronunciationGuide,
     required this.audioPrompt,
+    this.localizedGuides,
   });
+
+  String getPronunciationGuide(String language) {
+    if (localizedGuides != null) {
+      final key = language.toLowerCase();
+      for (final entry in localizedGuides!.entries) {
+        if (entry.key.toLowerCase() == key && entry.value.isNotEmpty) {
+          return entry.value;
+        }
+      }
+    }
+    return _lookupPhonicGuide(letter, language, pronunciationGuide);
+  }
+
+  static String _lookupPhonicGuide(String letter, String language, String fallback) {
+    final lang = language.toLowerCase();
+    if (lang == 'malayalam') return fallback;
+
+    final char = letter.isNotEmpty ? letter[0].toUpperCase() : '';
+    switch (char) {
+      case 'A':
+        if (lang == 'tamil') return 'வாயைத் திறந்து நாவைத் தாழ்த்தி: /æ/ ஆப்பிள் (Apple)';
+        if (lang == 'telugu') return 'నోరు తెరిచి నాలుక కిందకు ఉంచి: /æ/ ఆపిల్ (Apple)';
+        if (lang == 'hindi') return 'मुँह खोलकर जीभ नीचे रखकर: /æ/ एप्पल (Apple)';
+        if (lang == 'kannada') return 'ಬಾಯಿ ತೆರೆದು ನಾಲಿಗೆ ಕೆಳಗೆ ಇರಿಸಿ: /æ/ ಆಪಲ್ (Apple)';
+        return 'Open mouth wide, tongue flat and low: /æ/ as in Apple';
+      case 'B':
+        if (lang == 'tamil') return 'இரு உதடுகளையும் இணைத்து காற்றுடன்: /b/ புக் (Book)';
+        if (lang == 'telugu') return 'రెండు పెదవులను కలిపి గాలిని వదులుతూ: /b/ బుక్ (Book)';
+        if (lang == 'hindi') return 'दोनों होंठ मिलाकर हवा के साथ: /b/ बुक (Book)';
+        if (lang == 'kannada') return 'ಎರಡೂ ತುಟಿಗಳನ್ನು ಸೇರಿಸಿ ಗಾಳಿ ಹೊರಹಾಕಿ: /b/ ಬುಕ್ (Book)';
+        return 'Press both lips together and release voice: /b/ as in Book';
+      case 'C':
+        if (lang == 'tamil') return 'தொண்டையின் பின்புறத்திலிருந்து வெடித்து: /k/ கேட் (Cat)';
+        if (lang == 'telugu') return 'గొంతు వెనుక భాగం నుంచి: /k/ క్యాట్ (Cat)';
+        if (lang == 'hindi') return 'गले के पिछले हिस्से से: /k/ कैट (Cat)';
+        if (lang == 'kannada') return 'ಗಂಟಲಿನ ಹಿಂಭಾಗದಿಂದ: /k/ ಕ್ಯಾಟ್ (Cat)';
+        return 'Back of tongue against soft palate: /k/ as in Cat';
+      case 'D':
+        if (lang == 'tamil') return 'நாவின் நுனி மேல் பற்களின் பின்னால் தட்டி: /d/ ட்ரீம் (Dream)';
+        if (lang == 'telugu') return 'నాలుక కొన పై పళ్ళ వెనుక తగిలించి: /d/ డ్రీమ్ (Dream)';
+        if (lang == 'hindi') return 'जीभ की नोक ऊपरी दांतों के पीछे छूकर: /d/ ड्रीम (Dream)';
+        if (lang == 'kannada') return 'ನಾಲಿಗೆಯ ತುದಿಯನ್ನು ಮೇಲಿನ ಹಲ್ಲಿನ ಹಿಂದೆ ತಾಗಿಸಿ: /d/ ಡ್ರೀಮ್ (Dream)';
+        return 'Tip of tongue taps behind upper teeth: /d/ as in Dream';
+      case 'E':
+        if (lang == 'tamil') return 'குறுகிய உதடுகளுடன் லேசாக திறந்து: /e/ எக்கோ (Echo)';
+        if (lang == 'telugu') return 'పెదవులు కొద్దిగా తెరిచి: /e/ ఎకో (Echo)';
+        if (lang == 'hindi') return 'होंठों को हल्का खोलकर: /e/ एको (Echo)';
+        if (lang == 'kannada') return 'ತುಟಿಗಳನ್ನು ಸ್ವಲ್ಪ ತೆರೆದು: /e/ ಎಕೊ (Echo)';
+        return 'Lips relaxed, half-open sound: /e/ as in Echo';
+      case 'F':
+        if (lang == 'tamil') return 'மேல் பற்களை கீழ் உதட்டில் வைத்து காற்று வெளிப்பட: /f/ ஃபோகஸ் (Focus)';
+        if (lang == 'telugu') return 'పై పళ్ళు కింది పెదవిపై ఆనించి గాలి వదులుతూ: /f/ ఫోకస్ (Focus)';
+        if (lang == 'hindi') return 'ऊपरी दांत निचले होंठ पर रखकर हवा बाहर निकालें: /f/ फोकस (Focus)';
+        if (lang == 'kannada') return 'ಮೇಲಿನ ಹಲ್ಲು ಕೆಳಗಿನ ತುಟಿಗೆ ತಾಗಿಸಿ ಗಾಳಿ ಹೊರಹಾಕಿ: /f/ ಫೋಕಸ್ (Focus)';
+        return 'Top teeth touch bottom lip, blow air: /f/ as in Focus';
+      case 'G':
+        if (lang == 'tamil') return 'தொண்டையிலிருந்து குரல் அதிர்வுடன்: /ɡ/ க்ரோ (Grow)';
+        if (lang == 'telugu') return 'గొంతులో స్వరం పలికిస్తూ: /ɡ/ గ్రో (Grow)';
+        if (lang == 'hindi') return 'गले से गहरी आवाज निकालकर: /ɡ/ ग्रो (Grow)';
+        if (lang == 'kannada') return 'ಗಂಟಲಿನಿಂದ ಧ್ವನಿ ಹೊರಡಿಸಿ: /ɡ/ ಗ್ರೋ (Grow)';
+        return 'Voiced sound from back of throat: /ɡ/ as in Grow';
+      case 'H':
+        if (lang == 'tamil') return 'மூச்சை மென்மையாக வெளிவிட்டு: /h/ ஹோப் (Hope)';
+        if (lang == 'telugu') return 'శ్వాసను మెల్లగా వదులుతూ: /h/ హోప్ (Hope)';
+        if (lang == 'hindi') return 'हल्की सांस बाहर छोड़ते हुए: /h/ होप (Hope)';
+        if (lang == 'kannada') return 'ಉಸಿರನ್ನು ಮೃದುವಾಗಿ ಹೊರಹಾಕಿ: /h/ ಹೋಪ್ (Hope)';
+        return 'Soft exhale of warm breath from throat: /h/ as in Hope';
+      case 'I':
+        if (lang == 'tamil') return 'குறுகிய விரைவான ஒலி: /ɪ/ இக்னைட் (Ignite)';
+        if (lang == 'telugu') return 'చిన్న ధ్వనితో: /ɪ/ ఇగ్నైట్ (Ignite)';
+        if (lang == 'hindi') return 'छोटा हल्का स्वर: /ɪ/ इग्नाइट (Ignite)';
+        if (lang == 'kannada') return 'ಹ್ರಸ್ವ ಧ್ವನಿ: /ɪ/ ಇಗ್ನೈಟ್ (Ignite)';
+        return 'Short crisp vowel sound: /ɪ/ as in Ignite';
+      case 'J':
+        if (lang == 'tamil') return 'உதடுகளை முன்னால் குவித்து அழுத்தி: /dʒ/ ஜர்னி (Journey)';
+        if (lang == 'telugu') return 'పెదవులు కొద్దిగా ముందుకు చాచి: /dʒ/ జర్నీ (Journey)';
+        if (lang == 'hindi') return 'होंठ आगे बढ़ाकर स्पष्ट आवाज: /dʒ/ जर्नी (Journey)';
+        if (lang == 'kannada') return 'ತುಟಿಗಳನ್ನು ಸ್ವಲ್ಪ ಮುಂದೆ ಚಾಚಿ: /dʒ/ ಜರ್ನಿ (Journey)';
+        return 'Tongue on roof of mouth, release with voice: /dʒ/ as in Journey';
+      case 'K':
+        if (lang == 'tamil') return 'காற்றை வெடித்து வெளியே தள்ளி: /k/ கீ (Key)';
+        if (lang == 'telugu') return 'గాలిని బలంగా వదులుతూ: /k/ కీ (Key)';
+        if (lang == 'hindi') return 'हवा के झोंके के साथ निकालें: /k/ की (Key)';
+        if (lang == 'kannada') return 'ಗಾಳಿ ರಭಸವಾಗಿ ಹೊರಹಾಕಿ: /k/ ಕೀ (Key)';
+        return 'Sharp puff of unvoiced air: /k/ as in Key';
+      case 'L':
+        if (lang == 'tamil') return 'நாவின் நுனி மேல் ஈறுகளில் அழுத்தி: /l/ லேர்ன் (Learn)';
+        if (lang == 'telugu') return 'నాలుక కొన పై చిగుళ్ళపై ఉంచి: /l/ లెర్న్ (Learn)';
+        if (lang == 'hindi') return 'जीभ की नोक ऊपरी मसूड़े पर टिकाकर: /l/ लर्न (Learn)';
+        if (lang == 'kannada') return 'ನಾಲಿಗೆಯ ತುದಿ ಮೇಲಿನ ವಸಡಿಗೆ ತಾಗಿಸಿ: /l/ ಲರ್ನ್ (Learn)';
+        return 'Tip of tongue against gum ridge: /l/ as in Learn';
+      case 'M':
+        if (lang == 'tamil') return 'உதடுகளை முழுமையாக மூடி மூக்கின் வழியே ஒலி: /m/ மாஸ்டர் (Master)';
+        if (lang == 'telugu') return 'పెదవులు మూసి ముక్కు ద్వారా ధ్వని: /m/ మాస్టర్ (Master)';
+        if (lang == 'hindi') return 'होंठ बंद करके नाक से गूंज: /m/ मास्टर (Master)';
+        if (lang == 'kannada') return 'ತುಟಿಗಳನ್ನು ಮುಚ್ಚಿ ಮೂಗಿನಿಂದ ಧ್ವನಿ: /m/ ಮಾಸ್ಟರ್ (Master)';
+        return 'Close both lips firmly, hum through nose: /m/ as in Master';
+      case 'N':
+        if (lang == 'tamil') return 'நாவை மேல் அன்னத்தில் தொட்டு மூக்கின் வழியே: /n/ நோபல் (Noble)';
+        if (lang == 'telugu') return 'నాలుక పై అంగిలి తాకించి: /n/ నోబుల్ (Noble)';
+        if (lang == 'hindi') return 'जीभ तालू से लगाकर नाक से ध्वनि: /n/ नोबल (Noble)';
+        if (lang == 'kannada') return 'ನಾಲಿಗೆಯನ್ನು ಮೇಲಿನ ಅಂಗಳಕ್ಕೆ ಮುಟ್ಟಿಸಿ: /n/ ನೋಬಲ್ (Noble)';
+        return 'Tongue touches roof of mouth, air through nose: /n/ as in Noble';
+      case 'O':
+        if (lang == 'tamil') return 'உதடுகளை வட்ட வடிவில் குவித்து: /ɒ/ ஓபன் (Open)';
+        if (lang == 'telugu') return 'పెదవులు గుండ్రంగా చుట్టి: /ɒ/ ఓపెన్ (Open)';
+        if (lang == 'hindi') return 'होंठ गोल बनाकर साफ स्वर: /ɒ/ ओपन (Open)';
+        if (lang == 'kannada') return 'ತುಟಿಗಳನ್ನು ವೃತ್ತಾಕಾರವಾಗಿರಿಸಿ: /ɒ/ ಓಪನ್ (Open)';
+        return 'Round your lips into an O-shape: /ɒ/ as in Open';
+      case 'P':
+        if (lang == 'tamil') return 'உதடுகளை இறுக்கமாக மூடி காற்றை வெளித்தள்ளி: /p/ பவர் (Power)';
+        if (lang == 'telugu') return 'పెదవులు గట్టిగా మూసి బలంగా గాలి వదులుతూ: /p/ పవర్ (Power)';
+        if (lang == 'hindi') return 'होंठ दबाकर तेज हवा के साथ छोड़ें: /p/ पावर (Power)';
+        if (lang == 'kannada') return 'ತುಟಿಗಳನ್ನು ಮುಚ್ಚಿ ಬಲವಾಗಿ ಗಾಳಿ ಹೊರಹಾಕಿ: /p/ ಪವರ್ (Power)';
+        return 'Pop lips open with a burst of air: /p/ as in Power';
+      case 'Q':
+        if (lang == 'tamil') return 'க்+வ இணைந்த துடிப்பான ஒலி: /kw/ குவெஸ்ட் (Quest)';
+        if (lang == 'telugu') return 'క్+వ కలిపిన ధ్వని: /kw/ క్వెస్ట్ (Quest)';
+        if (lang == 'hindi') return 'क्+व मिली हुई ध्वनि: /kw/ क्वेस्ट (Quest)';
+        if (lang == 'kannada') return 'ಕ್+ವ ಕೂಡಿದ ಧ್ವನಿ: /kw/ ಕ್ವೆಸ್ಟ್ (Quest)';
+        return 'Combined /k/ and /w/ glide: /kw/ as in Quest';
+      case 'R':
+        if (lang == 'tamil') return 'நாவை மேல் அன்னத்தில் தொடாமல் வளைத்து: /r/ ரைஸ் (Rise)';
+        if (lang == 'telugu') return 'నాలుక అంగిలిని తాకకుండా వంచి: /r/ రైజ్ (Rise)';
+        if (lang == 'hindi') return 'जीभ को बिना तालू छुए पीछे मोड़ें: /r/ राइज (Rise)';
+        if (lang == 'kannada') return 'ನಾಲಿಗೆಯನ್ನು ಅಂಗಳಕ್ಕೆ ತಾಗಿಸದೆ ಬಾಗಿಸಿ: /r/ ರೈಸ್ (Rise)';
+        return 'Curl tongue back without touching roof: /r/ as in Rise';
+      case 'S':
+        if (lang == 'tamil') return 'பற்களை இணைத்து மெல்லிய சீறல் காற்று: /s/ ஸ்பீக் (Speak)';
+        if (lang == 'telugu') return 'పళ్ళు కలిపి విజిల్‌లా గాలి వదలండి: /s/ స్పీక్ (Speak)';
+        if (lang == 'hindi') return 'दांत मिलाकर सीटी जैसी हवा निकालें: /s/ स्पीक (Speak)';
+        if (lang == 'kannada') return 'ಹಲ್ಲುಗಳನ್ನು ಸೇರಿಸಿ ಗಾಳಿ ಸೀಟಿ ಶಬ್ದದಂತೆ ಹೊರಹಾಕಿ: /s/ ಸ್ಪೀಕ್ (Speak)';
+        return 'Hissing stream of air through closed teeth: /s/ as in Speak';
+      case 'T':
+        if (lang == 'tamil') return 'நாவை அன்னத்தில் தட்டி காற்றுடன் வெடிக்க: /t/ டைம் (Time)';
+        if (lang == 'telugu') return 'నాలుక అంగిలికి తగిలించి గాలితో: /t/ టైమ్ (Time)';
+        if (lang == 'hindi') return 'जीभ तालू पर मारकर हवा के साथ: /t/ टाइम (Time)';
+        if (lang == 'kannada') return 'ನಾಲಿಗೆ ಅಂಗಳಕ್ಕೆ ತಟ್ಟಿ ಗಾಳಿಯೊಂದಿಗೆ: /t/ ಟೈಮ್ (Time)';
+        return 'Tongue taps hard palate and releases air: /t/ as in Time';
+      case 'U':
+        if (lang == 'tamil') return 'வயிற்றிலிருந்து நேராக வெளிப்பாடு: /ʌ/ அன்ஸ்டாப்பபிள் (Unstoppable)';
+        if (lang == 'telugu') return 'పొట్ట నుంచి సూటిగా వెలువడే ధ్వని: /ʌ/ అన్‌స్టాపబుల్ (Unstoppable)';
+        if (lang == 'hindi') return 'नाभि से सीधा खुला स्वर: /ʌ/ अनस्टॉपेबल (Unstoppable)';
+        if (lang == 'kannada') return 'ಹೊಟ್ಟೆಯಿಂದ ನೇರವಾಗಿ ಹೊರಡುವ ಧ್ವನಿ: /ʌ/ ಅನ್‌ಸ್ಟಾಪಬಲ್ (Unstoppable)';
+        return 'Short gut sound from diaphragm: /ʌ/ as in Unstoppable';
+      case 'V':
+        if (lang == 'tamil') return 'மேல் பற்களை கீழ் உதட்டில் வைத்து அதிர்வுடன்: /v/ விக்டரி (Victory)';
+        if (lang == 'telugu') return 'పై పళ్ళు కింది పెదవిపై అదిమి కంపనంతో: /v/ విక్టరీ (Victory)';
+        if (lang == 'hindi') return 'ऊपरी दांत निचले होंठ पर रखकर कम्पन: /v/ विक्ट्री (Victory)';
+        if (lang == 'kannada') return 'ಮೇಲಿನ ಹಲ್ಲು ಕೆಳತುಟಿಯ ಮೇಲಿರಿಸಿ ಕಂಪನದೊಂದಿಗೆ: /v/ ವಿಕ್ಟರಿ (Victory)';
+        return 'Top teeth on lower lip with voice buzzing: /v/ as in Victory';
+      case 'W':
+        if (lang == 'tamil') return 'உதடுகளை வட்டமாக குவித்து மென்மையாக: /w/ விஸ்டம் (Wisdom)';
+        if (lang == 'telugu') return 'పెదవులు గుండ్రంగా చుట్టి మృదువుగా: /w/ విస్డమ్ (Wisdom)';
+        if (lang == 'hindi') return 'होंठों को गोल बनाकर कोमल ध्वनि: /w/ विस्डम (Wisdom)';
+        if (lang == 'kannada') return 'ತುಟಿಗಳನ್ನು ದುಂಡುಮಾಡಿ ಮೃದುವಾಗಿ: /w/ ವಿಸ್ಡಮ್ (Wisdom)';
+        return 'Purse lips tight into a circle and glide: /w/ as in Wisdom';
+      case 'X':
+        if (lang == 'tamil') return 'க்+ஸ் இணைந்த கூர்மையான ஒலி: /ks/ எக்செல் (Excel)';
+        if (lang == 'telugu') return 'క్+స్ కలిసిన పదునైన ధ్వని: /ks/ ఎక్సెల్ (Excel)';
+        if (lang == 'hindi') return 'क्+स मिली हुई तीखी ध्वनि: /ks/ एक्सेल (Excel)';
+        if (lang == 'kannada') return 'ಕ್+ಸ್ ಸಂಯೋಜಿತ ಧ್ವನಿ: /ks/ ಎಕ್ಸೆಲ್ (Excel)';
+        return 'Blended /k/ and /s/ sound: /ks/ as in Excel';
+      case 'Y':
+        if (lang == 'tamil') return 'நாவை மேல்நோக்கி உயர்த்தி நீட்டி: /j/ யூத் (Youth)';
+        if (lang == 'telugu') return 'నాలుక పైకి లేపి సాగదీస్తూ: /j/ యూత్ (Youth)';
+        if (lang == 'hindi') return 'जीभ ऊपर उठाकर लंबा स्वर: /j/ यूथ (Youth)';
+        if (lang == 'kannada') return 'ನಾಲಿಗೆಯನ್ನು ಮೇಲಕ್ಕೆ ಎತ್ತಿ: /j/ ಯೂತ್ (Youth)';
+        return 'High tongue glide: /j/ as in Youth';
+      case 'Z':
+        if (lang == 'tamil') return 'தேனீயின் ரீங்காரம் போல பற்களை இணைத்து: /z/ ஜீல் (Zeal)';
+        if (lang == 'telugu') return 'తేనెటీగ ఝంకారంలా పళ్ళు అదిమి: /z/ జీల్ (Zeal)';
+        if (lang == 'hindi') return 'मधुमक्खी जैसी भिनभिनाहट के साथ: /z/ जील (Zeal)';
+        if (lang == 'kannada') return 'ಜೇನುನೊಣದ ಗುಂಗುರುವಿನಂತೆ ಹಲ್ಲು ಸೇರಿಸಿ: /z/ ಝೀಲ್ (Zeal)';
+        return 'Voiced buzzing sound through teeth: /z/ as in Zeal';
+      default:
+        return fallback;
+    }
+  }
 }
 
 /// 📐 Sentence Pattern Model
@@ -24,6 +205,8 @@ class SentencePatternItem {
   final List<String> subjects;
   final List<String> verbs;
   final List<String> objects;
+  final Map<String, String>? localizedExplanations;
+  final Map<String, String>? localizedSentenceMeanings;
 
   const SentencePatternItem({
     required this.formula,
@@ -32,7 +215,143 @@ class SentencePatternItem {
     required this.subjects,
     required this.verbs,
     required this.objects,
+    this.localizedExplanations,
+    this.localizedSentenceMeanings,
   });
+
+  String getExplanation(String language) {
+    if (localizedExplanations != null) {
+      final key = language.toLowerCase();
+      for (final entry in localizedExplanations!.entries) {
+        if (entry.key.toLowerCase() == key && entry.value.isNotEmpty) {
+          return entry.value;
+        }
+      }
+    }
+    final lang = language.toLowerCase();
+    if (lang == 'malayalam') return explanation;
+    return _lookupPatternExplanation(formula, lang, explanation);
+  }
+
+  String getSentenceMeaning(String sentence, String language) {
+    if (localizedSentenceMeanings != null &&
+        localizedSentenceMeanings!.containsKey(sentence)) {
+      return localizedSentenceMeanings![sentence]!;
+    }
+    return _lookupSentenceTranslation(sentence, language);
+  }
+
+  static String _lookupPatternExplanation(String formula, String lang, String fallback) {
+    if (formula.contains('ready to')) {
+      if (lang == 'tamil') return 'தயாராக இருக்கிறேன் என்று தன்னம்பிக்கையுடன் கூற பயன்படுத்தும் சக்திவாய்ந்த வாக்கிய அமைப்பு.';
+      if (lang == 'telugu') return 'సిద్ధంగా ఉన్నానని ఆత్మవిశ్వాసంతో చెప్పడానికి ఉపయోగించే బలమైన వాక్య నిర్మాణం.';
+      if (lang == 'hindi') return 'तैयार हूँ यह आत्मविश्वास से कहने के लिए सबसे शक्तिशाली वाक्य संरचना।';
+      if (lang == 'kannada') return 'ಸಿದ್ಧನಾಗಿದ್ದೇನೆ ಎಂದು ಆತ್ಮವಿಶ್ವಾಸದಿಂದ ಹೇಳಲು ಬಳಸುವ ಶಕ್ತಿಶಾಲಿ ವಾಕ್ಯ ರಚನೆ.';
+      return 'The most powerful pattern to state your readiness with complete confidence.';
+    } else if (formula.contains('I want to') && formula.contains('because')) {
+      if (lang == 'tamil') return 'வெறும் விருப்பத்தை மட்டும் சொல்லாமல், அதன் நோக்கத்தை விளக்கிப் பேசும் முறை.';
+      if (lang == 'telugu') return 'కేవలం కోరిక మాత్రమే కాకుండా, దాని ఉద్దేశాన్ని వివరించి మాట్లాడే పద్ధతి.';
+      if (lang == 'hindi') return 'सिर्फ इच्छा न बताकर, उसके पीछे का कारण स्पष्ट करने का तरीका।';
+      if (lang == 'kannada') return 'ಕೇವಲ ಇಷ್ಟವನ್ನು ಮಾತ್ರ ಹೇಳದೆ, ಅದರ ಉದ್ದೇಶವನ್ನು ಸ್ಪಷ್ಟಪಡಿಸಿ ಮಾತನಾಡುವ ವಿಧಾನ.';
+      return 'Express not just your desire, but clearly articulate the purposeful reason behind it.';
+    } else if (formula.contains('Could you please')) {
+      if (lang == 'tamil') return 'எந்த ஒரு விஷயத்தையும் பணிவாக (Polite Request) கேட்கப் பயன்படுத்தும் கோல்டன் பார்முலா.';
+      if (lang == 'telugu') return 'ఏదైనా విషయాన్ని చాలా మర్యాదగా (Polite Request) అడగడానికి ఉపయోగించే గోల్డెన్ ఫార్ములా.';
+      if (lang == 'hindi') return 'किसी भी बात को बहुत विनम्रता (Polite Request) से पूछने का गोल्डन फॉर्मूला।';
+      if (lang == 'kannada') return 'ಯಾವುದೇ ವಿಷಯವನ್ನು ಅತ್ಯಂತ ವಿನಯದಿಂದ (Polite Request) ಕೇಳಲು ಬಳಸುವ ಸುವರ್ಣ ಸೂತ್ರ.';
+      return 'The golden formula to make polite, professional requests in any daily situation.';
+    } else if (formula.contains('Routine Time') || formula.contains('V1 Base')) {
+      if (lang == 'tamil') return 'வழக்கமாகச் செய்யும் செயல்களைக் கூற V1 வடிவத்தை மட்டும் பயன்படுத்தவும் (am/is/are சேர்க்கக் கூடாது!).';
+      if (lang == 'telugu') return 'రోజూ చేసే పనులను తెలపడానికి V1 మాత్రమే వాడండి (am/is/are చేర్చవద్దు!).';
+      if (lang == 'hindi') return 'दैनिक दिनचर्या बताने के लिए केवल V1 का प्रयोग करें (am/is/are न लगाएं!).';
+      if (lang == 'kannada') return 'ದೈನಂದಿನ ಕೆಲಸಗಳನ್ನು ತಿಳಿಸಲು V1 ಮಾತ್ರ ಬಳಸಿ (am/is/are ಸೇರಿಸಬೇಡಿ!).';
+      return 'Express your daily routines using V1 base verb (never add am/is/are before V1!).';
+    } else if (formula.contains('yesterday') || formula.contains('V2 Past')) {
+      if (lang == 'tamil') return 'நேற்று முடிந்த நிகழ்வுகளைக் கூற V2 கடந்த கால வினையைப் பயன்படுத்தவும்.';
+      if (lang == 'telugu') return 'నిన్న పూర్తయిన పనులను తెలపడానికి V2 భూతకాల రూపాన్ని వాడండి.';
+      if (lang == 'hindi') return 'बीती हुई बातों को बताने के लिए V2 पास्ट फॉर्म का प्रयोग करें।';
+      if (lang == 'kannada') return 'ನಿನ್ನೆ ಮುಗಿದ ಕೆಲಸಗಳನ್ನು ತಿಳಿಸಲು V2 ಭೂತಕಾಲ ರೂಪವನ್ನು ಬಳಸಿ.';
+      return 'State completed past actions accurately using the V2 past verb form.';
+    }
+    return fallback;
+  }
+
+  static String _lookupSentenceTranslation(String sentence, String language) {
+    final lang = language.toLowerCase();
+    switch (sentence) {
+      case 'I am ready to learn English.':
+        if (lang == 'tamil') return 'நான் ஆங்கிலம் கற்க தயாராக இருக்கிறேன்.';
+        if (lang == 'telugu') return 'నేను ఇంగ్లీష్ నేర్చుకోవడానికి సిద్ధంగా ఉన్నాను.';
+        if (lang == 'hindi') return 'मैं अंग्रेजी सीखने के लिए तैयार हूँ।';
+        if (lang == 'kannada') return 'ನಾನು ಇಂಗ್ಲಿಷ್ ಕಲಿಯಲು ಸಿದ್ಧನಾಗಿದ್ದೇನೆ.';
+        if (lang == 'malayalam') return 'ഞാൻ ഇംഗ്ലീഷ് പഠിക്കാൻ തയ്യാറാണ്.';
+        break;
+      case 'She is ready to speak boldly.':
+        if (lang == 'tamil') return 'அவள் தைரியமாகப் பேச தயாராக இருக்கிறாள்.';
+        if (lang == 'telugu') return 'ఆమె ధైర్యంగా మాట్లాడటానికి సిద్ధంగా ఉంది.';
+        if (lang == 'hindi') return 'वह साहसपूर्वक बोलने के लिए तैयार है।';
+        if (lang == 'kannada') return 'ಅವಳು ಧೈರ್ಯವಾಗಿ ಮಾತನಾಡಲು ಸಿದ್ಧಳಾಗಿದ್ದಾಳೆ.';
+        if (lang == 'malayalam') return 'അവൾ ധൈര്യമായി സംസാരിക്കാൻ തയ്യാറാണ്.';
+        break;
+      case 'We are ready to conquer Day 1.':
+        if (lang == 'tamil') return 'நாம் நாள் 1-ஐ வெற்றிகொள்ள தயாராக இருக்கிறோம்.';
+        if (lang == 'telugu') return 'మనం 1వ రోజును జయించడానికి సిద్ధంగా ఉన్నాము.';
+        if (lang == 'hindi') return 'हम डे 1 जीतने के लिए तैयार हैं।';
+        if (lang == 'kannada') return 'ನಾವು ದಿನ 1 ಅನ್ನು ಗೆಲ್ಲಲು ಸಿದ್ಧರಾಗಿದ್ದೇವೆ.';
+        if (lang == 'malayalam') return 'ഞങ്ങൾ ഒന്നാം ദിനം കീഴടക്കാൻ തയ്യാറാണ്.';
+        break;
+      case 'They are ready to practice now.':
+        if (lang == 'tamil') return 'அவர்கள் இப்போது பயிற்சி செய்ய தயாராக உள்ளனர்.';
+        if (lang == 'telugu') return 'వారు ఇప్పుడు సాధన చేయడానికి సిద్ధంగా ఉన్నారు.';
+        if (lang == 'hindi') return 'वे अब अभ्यास करने के लिए तैयार हैं।';
+        if (lang == 'kannada') return 'ಅವರು ಈಗ ಅಭ್ಯಾಸ ಮಾಡಲು ಸಿದ್ಧರಾಗಿದ್ದಾರೆ.';
+        if (lang == 'malayalam') return 'അവർ ഇപ്പോൾ പരിശീലിക്കാൻ തയ്യാറാണ്.';
+        break;
+      case 'I want to speak English because it opens global doors.':
+        if (lang == 'tamil') return 'நான் ஆங்கிலம் பேச விரும்புகிறேன், ஏனெனில் அது உலகளாவிய வாய்ப்புகளைத் திறக்கிறது.';
+        if (lang == 'telugu') return 'నేను ఇంగ్లీష్ మాట్లాడాలనుకుంటున్నాను ఎందుకంటే ఇది ప్రపంచ అవకాశాలను తెరుస్తుంది.';
+        if (lang == 'hindi') return 'मैं अंग्रेजी बोलना चाहता हूँ क्योंकि यह वैश्विक अवसर खोलती है।';
+        if (lang == 'kannada') return 'ನಾನು ಇಂಗ್ಲಿಷ್ ಮಾತನಾಡಲು ಬಯಸುತ್ತೇನೆ ಏಕೆಂದರೆ ಅದು ಜಾಗತಿಕ ಬಾಗಿಲುಗಳನ್ನು ತೆರೆಯುತ್ತದೆ.';
+        if (lang == 'malayalam') return 'ഇംഗ്ലീഷ് ആഗോള വാതിലുകൾ തുറക്കുന്നതിനാൽ ഞാൻ അത് സംസാരിക്കാൻ ആഗ്രഹിക്കുന്നു.';
+        break;
+      case 'I want to read books because it builds rich vocabulary.':
+        if (lang == 'tamil') return 'நான் புத்தகங்களைப் படிக்க விரும்புகிறேன், ஏனெனில் அது நல்ல சொற்களஞ்சியத்தை உருவாக்குகிறது.';
+        if (lang == 'telugu') return 'నేను పుస్తకాలు చదవాలనుకుంటున్నాను ఎందుకంటే ఇది గొప్ప పదజాలాన్ని పెంచుతుంది.';
+        if (lang == 'hindi') return 'मैं किताबें पढ़ना चाहता हूँ क्योंकि इससे समृद्ध शब्दावली बनती है।';
+        if (lang == 'kannada') return 'ನಾನು ಪುಸ್ತಕಗಳನ್ನು ಓದಲು ಬಯಸುತ್ತೇನೆ ಏಕೆಂದರೆ ಅದು ಶಬ್ದಭಂಡಾರವನ್ನು ಹೆಚ್ಚಿಸುತ್ತದೆ.';
+        if (lang == 'malayalam') return 'സമ്പന്നമായ പദസമ്പത്ത് നൽകുന്നതിനാൽ ഞാൻ പുസ്തകങ്ങൾ വായിക്കാൻ ആഗ്രഹിക്കുന്നു.';
+        break;
+      case 'I want to practice daily because consistency builds fluency.':
+        if (lang == 'tamil') return 'நான் தினமும் பயிற்சி செய்ய விரும்புகிறேன், ஏனெனில் தொடர்ச்சி சரளத்தை உருவாக்குகிறது.';
+        if (lang == 'telugu') return 'నేను రోజూ సాధన చేయాలనుకుంటున్నాను ఎందుకంటే నిరంతరత ప్రవాహాన్ని పెంచుతుంది.';
+        if (lang == 'hindi') return 'मैं रोज अभ्यास करना चाहता हूँ क्योंकि निरंतरता से प्रवाह आता है।';
+        if (lang == 'kannada') return 'ನಾನು ಪ್ರತಿದಿನ ಅಭ್ಯಾಸ ಮಾಡಲು ಬಯಸುತ್ತೇನೆ ಏಕೆಂದರೆ ನಿರಂತರತೆಯು ನಿರರ್ಗಳತೆಯನ್ನು ತರುತ್ತದೆ.';
+        if (lang == 'malayalam') return 'തുടർച്ചയായ പരിശീലനം ഒഴുക്ക് നൽകുന്നതിനാൽ ഞാൻ ദിവസവും പ്രാക്ടീസ് ചെയ്യാൻ ആഗ്രഹിക്കുന്നു.';
+        break;
+      case 'Could you please help me with this word?':
+        if (lang == 'tamil') return 'தயவுசெய்து இந்த வார்த்தைக்கு எனக்கு உதவ முடியுமா?';
+        if (lang == 'telugu') return 'దయచేసి ఈ పదంలో నాకు సహాయం చేయగలరా?';
+        if (lang == 'hindi') return 'क्या आप कृपया इस शब्द में मेरी मदद कर सकते हैं?';
+        if (lang == 'kannada') return 'ದಯವಿಟ್ಟು ಈ ಪದದಲ್ಲಿ ನನಗೆ ಸಹಾಯ ಮಾಡುವಿರಾ?';
+        if (lang == 'malayalam') return 'ഈ വാക്കിന്റെ കാര്യത്തിൽ എന്നെ സഹായിക്കാമോ?';
+        break;
+      case 'Could you please repeat that sentence?':
+        if (lang == 'tamil') return 'தயவுசெய்து அந்த வாக்கியத்தை மீண்டும் கூற முடியுமா?';
+        if (lang == 'telugu') return 'దయచేసి ఆ వాక్యాన్ని మళ్లీ చెప్పగలరా?';
+        if (lang == 'hindi') return 'क्या आप कृपया वह वाक्य दोहरा सकते हैं?';
+        if (lang == 'kannada') return 'ದಯವಿಟ್ಟು ಆ ವಾಕ್ಯವನ್ನು ಪುನರಾವರ್ತಿಸುವಿರಾ?';
+        if (lang == 'malayalam') return 'ദയവായി ആ വാചകം ഒന്നുകൂടി ആവർത്തിക്കാമോ?';
+        break;
+      case 'Could you please speak a little slower?':
+        if (lang == 'tamil') return 'தயவுசெய்து கொஞ்சம் மெதுவாகப் பேச முடியுமா?';
+        if (lang == 'telugu') return 'దయచేసి కొంచెం నెమ్మదిగా మాట్లాడగలరా?';
+        if (lang == 'hindi') return 'क्या आप कृपया थोड़ा धीरे बोल सकते हैं?';
+        if (lang == 'kannada') return 'ದಯವಿಟ್ಟು ಸ್ವಲ್ಪ ನಿಧಾನವಾಗಿ ಮಾತನಾಡುವಿರಾ?';
+        if (lang == 'malayalam') return 'ദയവായി കുറച്ചുകൂടി സാവധാനം സംസാരിക്കാമോ?';
+        break;
+    }
+    return '';
+  }
 }
 
 /// 🗣️ Pronunciation Clinic Model

@@ -31,10 +31,22 @@ import 'pocket_secret_code_grammar_card.dart';
 import 'pocket_sentence_builder_card.dart';
 import 'pocket_slang_smart_english_card.dart';
 import 'pocket_practice_speaking_card.dart';
+import 'pocket_12_tenses_practice_card.dart';
+import 'pocket_articles_practice_card.dart';
+import 'pocket_prepositions_practice_card.dart';
+import 'pocket_modal_verbs_practice_card.dart';
+import 'pocket_conjunctions_practice_card.dart';
+import 'pocket_active_passive_practice_card.dart';
+import 'pocket_direct_indirect_practice_card.dart';
+import 'pocket_conditionals_practice_card.dart';
+import 'pocket_question_tags_practice_card.dart';
+import 'pocket_sentence_structure_practice_card.dart';
 
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
 import 'pocket_mission_curriculum_registry.dart';
+import 'pocket_alphabet_phonics_game_page.dart';
+import 'pocket_mission_topic_detail_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'career_adventure/adventure_models.dart';
@@ -150,6 +162,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _sentenceBuilderCompleted = false;
   bool _slangSmartEnglishCompleted = false;
   bool _practiceSpeakingCompleted = false;
+  bool _tensesSpeakingCompleted = false;
+  bool _articlesPracticeCompleted = false;
+  bool _prepositionsPracticeCompleted = false;
+  bool _modalVerbsPracticeCompleted = false;
+  bool _conjunctionsPracticeCompleted = false;
+  bool _activePassivePracticeCompleted = false;
+  bool _directIndirectPracticeCompleted = false;
+  bool _conditionalsPracticeCompleted = false;
+  bool _questionTagsPracticeCompleted = false;
+  bool _sentenceStructurePracticeCompleted = false;
 
   // Story Aloud Reading Recorder
   AudioRecorder? _storyRecorder;
@@ -1478,10 +1500,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (mounted) setState(() {});
   }
 
-  void _onLanguageSelected(String lang) {
+  void _onLanguageSelected(String lang) async {
     setState(() {
       _selectedLanguage = lang;
     });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pocket_mission_pref_lang', lang);
+    } catch (_) {}
   }
 
   Future<void> _speakWord(String text) async {
@@ -4170,12 +4196,79 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           prefs.getBool('${dayKey}_slang_smart') ?? false;
       _practiceSpeakingCompleted =
           prefs.getBool('${dayKey}_practice_speaking') ?? false;
+      _tensesSpeakingCompleted =
+          prefs.getBool('${dayKey}_tenses_speaking') ?? false;
+      _articlesPracticeCompleted =
+          prefs.getBool('${dayKey}_articles_practice') ?? false;
+      _prepositionsPracticeCompleted =
+          prefs.getBool('${dayKey}_prepositions_practice') ?? false;
+      _modalVerbsPracticeCompleted =
+          prefs.getBool('${dayKey}_modal_verbs_practice') ?? false;
+      _conjunctionsPracticeCompleted =
+          prefs.getBool('${dayKey}_conjunctions_practice') ?? false;
+      _activePassivePracticeCompleted =
+          prefs.getBool('${dayKey}_active_passive_practice') ?? false;
+      _directIndirectPracticeCompleted =
+          prefs.getBool('${dayKey}_direct_indirect_practice') ?? false;
+      _conditionalsPracticeCompleted =
+          prefs.getBool('${dayKey}_conditionals_practice') ?? false;
+      _questionTagsPracticeCompleted =
+          prefs.getBool('${dayKey}_question_tags_practice') ?? false;
+      _sentenceStructurePracticeCompleted =
+          prefs.getBool('${dayKey}_sentence_structure_practice') ?? false;
       _storyAudioPath = prefs.getString('${dayKey}_story_recording_path');
       _storyRecordDuration = prefs.getInt('${dayKey}_story_recording_duration') ?? 0;
     });
   }
 
   Future<void> _saveSubtask(String key, bool value) async {
+    switch (key) {
+      case 'alphabet_phonics':
+        _alphabetPhonicsCompleted = value;
+        break;
+      case 'secret_code':
+        _secretCodeGrammarCompleted = value;
+        break;
+      case 'sentence_builder':
+        _sentenceBuilderCompleted = value;
+        break;
+      case 'slang_smart':
+        _slangSmartEnglishCompleted = value;
+        break;
+      case 'practice_speaking':
+        _practiceSpeakingCompleted = value;
+        break;
+      case 'tenses_speaking':
+        _tensesSpeakingCompleted = value;
+        break;
+      case 'articles_practice':
+        _articlesPracticeCompleted = value;
+        break;
+      case 'prepositions_practice':
+        _prepositionsPracticeCompleted = value;
+        break;
+      case 'modal_verbs_practice':
+        _modalVerbsPracticeCompleted = value;
+        break;
+      case 'conjunctions_practice':
+        _conjunctionsPracticeCompleted = value;
+        break;
+      case 'active_passive_practice':
+        _activePassivePracticeCompleted = value;
+        break;
+      case 'direct_indirect_practice':
+        _directIndirectPracticeCompleted = value;
+        break;
+      case 'conditionals_practice':
+        _conditionalsPracticeCompleted = value;
+        break;
+      case 'question_tags_practice':
+        _questionTagsPracticeCompleted = value;
+        break;
+      case 'sentence_structure_practice':
+        _sentenceStructurePracticeCompleted = value;
+        break;
+    }
     final prefs = await SharedPreferences.getInstance();
     final dayKey = 'pocket_mission_day_${widget.day}';
     await prefs.setBool('${dayKey}_$key', value);
@@ -4655,7 +4748,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_hasEnglishThinking) count++;
     if (_hasSpeakingChallenge) count++;
     if (widget.day >= 4) count++;
-    count += 4; // ⚡ Secret Code Grammar + 🏗️ Sentence Builder + 💬 Slang to Smart English + 🎤 Practice Speaking
+    count += 11; // ⚡ Grammar + 🏗️ Builder + 💬 Slang + 🎤 Speaking + ⏰ 12 Tenses + 📝 Articles + 📍 Prepositions + 🎯 Modal Verbs + 🔗 Conjunctions + 🔄 Active/Passive + 💬 Direct/Indirect
     return count;
   }
 
@@ -4667,6 +4760,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_sentenceBuilderCompleted) count++;
     if (_slangSmartEnglishCompleted) count++;
     if (_practiceSpeakingCompleted) count++;
+    if (_tensesSpeakingCompleted) count++;
+    if (_articlesPracticeCompleted) count++;
+    if (_prepositionsPracticeCompleted) count++;
+    if (_modalVerbsPracticeCompleted) count++;
+    if (_conjunctionsPracticeCompleted) count++;
+    if (_activePassivePracticeCompleted) count++;
+    if (_directIndirectPracticeCompleted) count++;
+    if (_conditionalsPracticeCompleted) count++;
+    if (_questionTagsPracticeCompleted) count++;
+    if (_sentenceStructurePracticeCompleted) count++;
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
     if (_vocabMemorized) count++;
@@ -4724,6 +4827,32 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (widget.day >= 4 && _trialRaidLaunched) count++;
     return count;
   }
+
+  // 🔢 Dynamic Sequential Step Numbering (Audio Directive: Step 1 to N unbroken sequence)
+  int get _stepPhonics => 1;
+  int get _stepSecretCode => _hasAlphabetPhonics ? 2 : 1;
+  int get _stepSentenceBuilder => _stepSecretCode + 1;
+  int get _stepSlang => _stepSentenceBuilder + 1;
+  int get _stepSpeaking => _stepSlang + 1;
+  int get _stepTenses => _stepSpeaking + 1;
+  int get _stepArticles => _stepTenses + 1;
+  int get _stepPrepositions => _stepArticles + 1;
+  int get _stepModalVerbs => _stepPrepositions + 1;
+  int get _stepConjunctions => _stepModalVerbs + 1;
+  int get _stepActivePassive => _stepConjunctions + 1;
+  int get _stepDirectIndirect => _stepActivePassive + 1;
+  int get _stepConditionals => _stepDirectIndirect + 1;
+  int get _stepQuestionTags => _stepConditionals + 1;
+  int get _stepSentenceStructure => _stepQuestionTags + 1;
+  int get _stepEnglishHub => _stepSentenceStructure + 1;
+  int get _stepPeerCall => _stepEnglishHub + 1;
+  int get _stepVocab => _stepPeerCall + 1;
+  int get _stepAdventureGame => _stepVocab + 1;
+  int get _stepReadingNotes => _stepAdventureGame + 1;
+  int get _stepCodeEnglish => _stepReadingNotes + 1;
+  int get _stepQuiz => _stepCodeEnglish + 1;
+  int get _stepDefenseTrap => _stepQuiz + 1;
+  int get _stepBattleRaid => _stepDefenseTrap + 1;
 
   int get _currentDayPoints {
     final total = _totalSubtasksCount;
@@ -4792,62 +4921,399 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ],
 
                         // ⚡ Secret Code Grammar Matrix (Audio Directive: Code-Based English Tenses & Rules)
-                        PocketSecretCodeGrammarCard(
-                          day: widget.day,
-                          selectedLanguage: _selectedLanguage,
-                          isCompleted: _secretCodeGrammarCompleted,
-                          onCompleted: (val) {
-                            setState(() => _secretCodeGrammarCompleted = val);
-                            _saveSubtask('secret_code', val);
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepSecretCode',
+                          icon: '⚡',
+                          title: 'Secret Code Grammar Matrix',
+                          subtitle:
+                              'Master formula-based English codes & zero-error sentence rules in an interactive practice arena.',
+                          isVerified: _secretCodeGrammarCompleted,
+                          actionColor: const Color(0xFFFFD700),
+                          actionLabel: 'SECRET CODE ARENA ⚡',
+                          subtaskKey: 'secret_code',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketSecretCodeGrammarCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _secretCodeGrammarCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('secret_code', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepSecretCode',
+                            );
                           },
-                          onSpeak: _speakWord,
                         ),
 
                         const SizedBox(height: 14),
 
                         // 🏗️ Sentence Builder Game (Audio Directive: 1-2-3 Code Block Puzzle)
-                        PocketSentenceBuilderCard(
-                          day: widget.day,
-                          isCompleted: _sentenceBuilderCompleted,
-                          onCompleted: (val) {
-                            setState(() => _sentenceBuilderCompleted = val);
-                            _saveSubtask('sentence_builder', val);
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepSentenceBuilder',
+                          icon: '🏗️',
+                          title: 'Sentence Builder Puzzle',
+                          subtitle:
+                              'Assemble scrambled word blocks into natural native sentence structures with real-time feedback.',
+                          isVerified: _sentenceBuilderCompleted,
+                          actionColor: const Color(0xFF00E5FF),
+                          actionLabel: 'SENTENCE BUILDER 🏗️',
+                          subtaskKey: 'sentence_builder',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketSentenceBuilderCard(
+                              day: widget.day,
+                              isCompleted: _sentenceBuilderCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('sentence_builder', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepSentenceBuilder',
+                            );
                           },
-                          onSpeak: _speakWord,
                         ),
 
                         const SizedBox(height: 14),
 
                         // 💬 Daily Slang to Smart English (Audio Directive: Vernacular talk to native English)
-                        PocketSlangSmartEnglishCard(
-                          day: widget.day,
-                          selectedLanguage: _selectedLanguage,
-                          isCompleted: _slangSmartEnglishCompleted,
-                          onCompleted: (val) {
-                            setState(() => _slangSmartEnglishCompleted = val);
-                            _saveSubtask('slang_smart', val);
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepSlang',
+                          icon: '💬',
+                          title: 'Daily Slang to Smart English',
+                          subtitle:
+                              'Transform regional vernacular phrases into polished, confident professional English idioms.',
+                          isVerified: _slangSmartEnglishCompleted,
+                          actionColor: const Color(0xFFFF6D00),
+                          actionLabel: 'SMART SLANG ARENA 💬',
+                          subtaskKey: 'slang_smart',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketSlangSmartEnglishCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _slangSmartEnglishCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('slang_smart', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepSlang',
+                            );
                           },
-                          onSpeak: _speakWord,
                         ),
 
                         const SizedBox(height: 14),
 
                         // 🎤 Practice Speaking (SpeakNow-inspired Fill in Blank & Say It Aloud)
-                        PocketPracticeSpeakingCard(
-                          day: widget.day,
-                          isCompleted: _practiceSpeakingCompleted,
-                          onCompleted: (val) {
-                            setState(() => _practiceSpeakingCompleted = val);
-                            _saveSubtask('practice_speaking', val);
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepSpeaking',
+                          icon: '🎤',
+                          title: 'Practice Speaking Aloud',
+                          subtitle:
+                              'SpeakNow-style vocal pronunciation drills. Speak aloud and build unconscious muscle memory.',
+                          isVerified: _practiceSpeakingCompleted,
+                          actionColor: const Color(0xFFE040FB),
+                          actionLabel: 'SPEAKING ARENA 🎤',
+                          subtaskKey: 'practice_speaking',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketPracticeSpeakingCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _practiceSpeakingCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('practice_speaking', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepSpeaking',
+                            );
                           },
-                          onSpeak: _speakWord,
                         ),
 
                         const SizedBox(height: 14),
 
-                      // Subtask 1: 💬 English Hub Group Practice
+                        // ⏰ 12 Tenses Speaking Mastery Card (User Audio Directive: 12 Tenses vocal drills)
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepTenses',
+                          icon: '⏰',
+                          title: '12 Tenses Speaking Mastery',
+                          subtitle:
+                              'Drill through past, present and future tenses with voice playback and mouth placements.',
+                          isVerified: _tensesSpeakingCompleted,
+                          actionColor: const Color(0xFF00E676),
+                          actionLabel: '12 TENSES DRILLS ⏰',
+                          subtaskKey: 'tenses_speaking',
+                          builder: (ctx, lang, markCompleted) {
+                            return Pocket12TensesPracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _tensesSpeakingCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('tenses_speaking', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepTenses',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 📝 Articles Practice Card (A, An, The Speaking Drills)
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepArticles',
+                          icon: '📝',
+                          title: 'Articles Practice (A, An, The)',
+                          subtitle:
+                              'Eliminate article mistakes forever with zero-hesitation vocal pattern drills.',
+                          isVerified: _articlesPracticeCompleted,
+                          actionColor: const Color(0xFFFFB74D),
+                          actionLabel: 'ARTICLES QUEST 📝',
+                          subtaskKey: 'articles_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketArticlesPracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _articlesPracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('articles_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepArticles',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 📍 Prepositions Practice Card (In, On, At)
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepPrepositions',
+                          icon: '📍',
+                          title: 'Prepositions Practice (In, On, At)',
+                          subtitle:
+                              'Master physical, temporal, and spatial prepositions with contextual examples.',
+                          isVerified: _prepositionsPracticeCompleted,
+                          actionColor: const Color(0xFF64B5F6),
+                          actionLabel: 'PREPOSITIONS QUEST 📍',
+                          subtaskKey: 'prepositions_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketPrepositionsPracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _prepositionsPracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('prepositions_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepPrepositions',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 🎯 Modal Verbs Practice Card (Can, Must, Should)
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepModalVerbs',
+                          icon: '🎯',
+                          title: 'Modal Verbs Practice (Can, Must, Should)',
+                          subtitle:
+                              'Master subtle shades of certainty, permission, obligation, and polite requests.',
+                          isVerified: _modalVerbsPracticeCompleted,
+                          actionColor: const Color(0xFFFF8A65),
+                          actionLabel: 'MODAL VERBS QUEST 🎯',
+                          subtaskKey: 'modal_verbs_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketModalVerbsPracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _modalVerbsPracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('modal_verbs_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepModalVerbs',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 🔗 Conjunctions Practice Card (FANBOYS & Linkers)
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepConjunctions',
+                          icon: '🔗',
+                          title: 'Conjunctions & Linkers',
+                          subtitle:
+                              'Connect complex thoughts fluently using coordinating and subordinating linkers.',
+                          isVerified: _conjunctionsPracticeCompleted,
+                          actionColor: const Color(0xFF81C784),
+                          actionLabel: 'CONJUNCTIONS QUEST 🔗',
+                          subtaskKey: 'conjunctions_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketConjunctionsPracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _conjunctionsPracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('conjunctions_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepConjunctions',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 🔄 Active & Passive Voice Practice Card
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepActivePassive',
+                          icon: '🔄',
+                          title: 'Active & Passive Voice',
+                          subtitle:
+                              'Switch effortlessly between active and passive structures for business and formal speaking.',
+                          isVerified: _activePassivePracticeCompleted,
+                          actionColor: const Color(0xFF4DD0E1),
+                          actionLabel: 'VOICE TRANSFORMATION 🔄',
+                          subtaskKey: 'active_passive_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketActivePassivePracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _activePassivePracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('active_passive_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepActivePassive',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 💬 Direct & Indirect Speech Practice Card
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepDirectIndirect',
+                          icon: '💬',
+                          title: 'Direct & Indirect Speech',
+                          subtitle:
+                              'Report dialogues, meetings, and statements accurately without backshift confusion.',
+                          isVerified: _directIndirectPracticeCompleted,
+                          actionColor: const Color(0xFFBA68C8),
+                          actionLabel: 'REPORTED SPEECH 💬',
+                          subtaskKey: 'direct_indirect_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketDirectIndirectPracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _directIndirectPracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('direct_indirect_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepDirectIndirect',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 🔀 Conditionals (If Clauses) Practice Card
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepConditionals',
+                          icon: '🔀',
+                          title: 'Conditionals (If Clauses)',
+                          subtitle:
+                              'Master Zero, 1st, 2nd, and 3rd hypothetical conditions with immediate voice drills.',
+                          isVerified: _conditionalsPracticeCompleted,
+                          actionColor: const Color(0xFFFFD54F),
+                          actionLabel: 'CONDITIONALS QUEST 🔀',
+                          subtaskKey: 'conditionals_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketConditionalsPracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _conditionalsPracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('conditionals_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepConditionals',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // ❓ Question Tags Practice Card
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepQuestionTags',
+                          icon: '❓',
+                          title: 'Question Tags Practice',
+                          subtitle:
+                              'Keep English conversations lively and engaging with natural confirmation tags.',
+                          isVerified: _questionTagsPracticeCompleted,
+                          actionColor: const Color(0xFFFF7043),
+                          actionLabel: 'QUESTION TAGS QUEST ❓',
+                          subtaskKey: 'question_tags_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketQuestionTagsPracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _questionTagsPracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('question_tags_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepQuestionTags',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 🏗️ Sentence Structure Practice Card
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepSentenceStructure',
+                          icon: '🏗️',
+                          title: 'Sentence Structure Practice',
+                          subtitle:
+                              'Master foundational S-V-O patterns, compound clauses, and complex modifiers.',
+                          isVerified: _sentenceStructurePracticeCompleted,
+                          actionColor: const Color(0xFF4DB6AC),
+                          actionLabel: 'SENTENCE STRUCTURES 🏗️',
+                          subtaskKey: 'sentence_structure_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketSentenceStructurePracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _sentenceStructurePracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('sentence_structure_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepSentenceStructure',
+                            );
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                      // Subtask: 💬 English Hub Group Practice
                       _buildSubtaskCard(
-                        stepNumber: '1',
+                        stepNumber: '$_stepEnglishHub',
                         icon: '💬',
                         title: 'English Hub Group Practice',
                         description:
@@ -4890,9 +5356,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 14),
 
-                      // Subtask 2: 🎙️ Anonymous Peer Talk / Call
+                      // Subtask: 🎙️ Anonymous Peer Talk / Call
                       _buildSubtaskCard(
-                        stepNumber: '2',
+                        stepNumber: '$_stepPeerCall',
                         icon: '🎙️',
                         title: 'Peer Call / 1-on-1 English Talk',
                         description:
@@ -5064,7 +5530,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       // Subtask 7: 🛡️ Craft Citadel Defense Trap
                       _buildSubtaskCard(
-                        stepNumber: '7',
+                        stepNumber: '$_stepDefenseTrap',
                         icon: '🛡️',
                         title: 'Add Day ${widget.day} Home Defense',
                         description:
@@ -5092,7 +5558,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       // Subtask 8: ⚔️ Pocket Battle Raid (Audio Directive: Routes directly to Pocket World to select & attack homes)
                       if (widget.day >= 4) ...[
                         _buildSubtaskCard(
-                          stepNumber: '8',
+                          stepNumber: '$_stepBattleRaid',
                           icon: '⚔️',
                           title: 'Day ${widget.day} Pocket Battle Raid',
                           description:
@@ -6025,6 +6491,76 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
+  // --- TOPIC DETAIL PAGE SUBTASK CARD WRAPPER ---
+  Widget _buildTopicSubtaskCard({
+    required String stepNumber,
+    required String icon,
+    required String title,
+    required String subtitle,
+    required bool isVerified,
+    required Color actionColor,
+    required String actionLabel,
+    required String subtaskKey,
+    required Widget Function(
+      BuildContext context,
+      String lang,
+      void Function(bool) markCompleted,
+    ) builder,
+  }) {
+    return _buildSubtaskCard(
+      stepNumber: stepNumber,
+      icon: icon,
+      title: title,
+      description: subtitle,
+      isVerified: isVerified,
+      actionLabel: isVerified ? 'REPLAY $actionLabel' : 'OPEN $actionLabel',
+      actionColor: actionColor,
+      onAction: () async {
+        final res = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => PocketMissionTopicDetailPage(
+              day: widget.day,
+              stepNumber: stepNumber,
+              icon: icon,
+              title: title,
+              subtitle: subtitle,
+              accentColor: actionColor,
+              initialLanguage: _selectedLanguage,
+              isInitiallyCompleted: isVerified,
+              builder: builder,
+            ),
+          ),
+        );
+        if (res == true && mounted) {
+          _saveSubtask(subtaskKey, true);
+          HapticFeedback.heavyImpact();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  Text(icon, style: const TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '$title Mastered! Step Verified ✓',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF10B981),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+      },
+      onVerify: () {
+        _saveSubtask(subtaskKey, true);
+        HapticFeedback.lightImpact();
+      },
+    );
+  }
+
   // --- GENERIC SUBTASK CARD ---
   Widget _buildSubtaskCard({
     required String stepNumber,
@@ -6059,7 +6595,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP $stepNumber',
+                  isVerified ? 'STEP $stepNumber ✓' : 'STEP $stepNumber',
                   style: TextStyle(
                     color: isVerified ? Colors.black : Colors.white70,
                     fontSize: 10,
@@ -6269,11 +6805,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       : const Color(0xFFFF8906),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text('STEP 3',
-                    style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900)),
+                child: Text(
+                  _vocabMemorized ? 'STEP $_stepVocab ✓' : 'STEP $_stepVocab',
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               const Text('🧠', style: TextStyle(fontSize: 16)),
@@ -6693,236 +7232,56 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day);
     if (phonicsList.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: _alphabetPhonicsCompleted
-              ? const Color(0xFF10B981)
-              : const Color(0xFFFFD700).withValues(alpha: 0.35),
-          width: _alphabetPhonicsCompleted ? 1.5 : 1.0,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: _alphabetPhonicsCompleted
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFFFD700),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'PHONICS',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-              const Text('🔤', style: TextStyle(fontSize: 16)),
-              const SizedBox(width: 6),
-              Expanded(
-                child: Text(
-                  'Alphabet & 44 Phonics Sound System',
-                  style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14),
-                ),
-              ),
-              if (_alphabetPhonicsCompleted)
-                const Icon(Icons.check_circle_rounded,
-                    color: Color(0xFF10B981), size: 18),
-            ],
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Master authentic mouth placements, vocal releases & acoustic IPA frequencies. Tap 🔊 on each word to tune your subconscious ear.',
-            style: GoogleFonts.inter(
-                color: Colors.white70, fontSize: 11.5, height: 1.35),
-          ),
-          const SizedBox(height: 12),
-
-          // Grid of Phonics Sounds for today
-          Column(
-            children: phonicsList.map((item) {
-              return Container(
-                margin: const EdgeInsets.only(bottom: 10),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 36,
-                          height: 36,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            item.letter,
-                            style: GoogleFonts.outfit(
-                              color: Colors.black,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 18,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    item.phoneme,
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFF00E5FF),
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 14,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white10,
-                                      borderRadius: BorderRadius.circular(4),
-                                    ),
-                                    child: Text(
-                                      'Example: ${item.exampleWord}',
-                                      style: GoogleFonts.inter(
-                                        color: Colors.white70,
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                '👄 ${item.pronunciationGuide}',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFFFDE68A),
-                                  fontSize: 11,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    InkWell(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        _speakWord(item.exampleWord);
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F172A),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                              color: const Color(0xFF00E5FF)
-                                  .withValues(alpha: 0.3)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              item.exampleWord,
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            const Icon(Icons.volume_up_rounded,
-                                color: Color(0xFFFFFC00), size: 14),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
-          ),
-
-          const SizedBox(height: 8),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                setState(() => _alphabetPhonicsCompleted = true);
-                _saveSubtask('alphabet_phonics', true);
-                HapticFeedback.lightImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        '🔤 Phonics Sounds Mastered! Authentic mouth placement verified ✓'),
-                    backgroundColor: Color(0xFF10B981),
-                  ),
-                );
-              },
-              icon: Icon(
-                _alphabetPhonicsCompleted
-                    ? Icons.check_circle_rounded
-                    : Icons.record_voice_over_rounded,
-                color: Colors.black,
-                size: 16,
-              ),
-              label: Text(
-                _alphabetPhonicsCompleted
-                    ? 'PHONICS MASTERED ✓'
-                    : 'PRACTICED SOUNDS & WORDS ALOUD ✓',
-                style: GoogleFonts.outfit(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 12,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _alphabetPhonicsCompleted
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFFFD700),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-              ),
+    return _buildSubtaskCard(
+      stepNumber: '$_stepPhonics',
+      icon: '🔤',
+      title: 'Alphabet & 44 Phonics Sound System',
+      description:
+          'Master authentic mouth placements, vocal releases & acoustic IPA frequencies in an interactive 2D Flame gamified arena with voice playback.',
+      isVerified: _alphabetPhonicsCompleted,
+      actionLabel: _alphabetPhonicsCompleted
+          ? 'REPLAY ALPHABET GAME 🎮'
+          : 'PLAY ALPHABET GAME 🎮',
+      actionColor: const Color(0xFFFF9100),
+      onAction: () async {
+        final result = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => PocketAlphabetPhonicsGamePage(
+              day: widget.day,
+              selectedLanguage: _selectedLanguage,
+              phonicsList: phonicsList,
             ),
           ),
-        ],
-      ),
+        );
+        if (result == true && mounted) {
+          setState(() => _alphabetPhonicsCompleted = true);
+          _saveSubtask('alphabet_phonics', true);
+          HapticFeedback.heavyImpact();
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Row(
+                children: [
+                  Text('🏆', style: TextStyle(fontSize: 18)),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '🔤 Alphabet & Phonics Mastered! Step Verified ✓',
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Color(0xFF10B981),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      },
+      onVerify: () {
+        setState(() => _alphabetPhonicsCompleted = true);
+        _saveSubtask('alphabet_phonics', true);
+        HapticFeedback.lightImpact();
+      },
     );
   }
 
@@ -6974,7 +7333,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Daily Sentence Pattern Practice',
+                  _getSentencePatternTitle(_selectedLanguage),
                   style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -6988,7 +7347,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 6),
           Text(
-            pattern.explanation,
+            pattern.getExplanation(_selectedLanguage),
             style: GoogleFonts.inter(
                 color: Colors.white70, fontSize: 11.5, height: 1.35),
           ),
@@ -7074,6 +7433,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           // Master Sentences
           Column(
             children: pattern.masterSentences.map((sent) {
+              final meaning = pattern.getSentenceMeaning(sent, _selectedLanguage);
               return Container(
                 margin: const EdgeInsets.only(bottom: 6),
                 padding: const EdgeInsets.all(10),
@@ -7085,13 +7445,29 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        sent,
-                        style: GoogleFonts.inter(
-                          color: Colors.white,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            sent,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          if (meaning.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              meaning,
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF67E8F9),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                     IconButton(
@@ -7130,9 +7506,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 size: 16,
               ),
               label: Text(
-                _sentencePatternCompleted
-                    ? 'PATTERN MASTERED ✓'
-                    : 'I PRACTICED THIS PATTERN ALOUD ✓',
+                _getSentencePatternButtonLabel(
+                    _selectedLanguage, _sentencePatternCompleted),
                 style: GoogleFonts.outfit(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
@@ -7152,6 +7527,57 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         ],
       ),
     );
+  }
+
+  String _getSentencePatternTitle(String language) {
+    switch (language.toLowerCase()) {
+      case 'tamil':
+        return 'Daily Sentence Pattern (தினசரி வாக்கிய அமைப்புகள்)';
+      case 'telugu':
+        return 'Daily Sentence Pattern (రోజువారీ వాక్య నమూనాలు)';
+      case 'hindi':
+        return 'Daily Sentence Pattern (दैनिक वाक्य संरचना)';
+      case 'kannada':
+        return 'Daily Sentence Pattern (ದೈನಂದಿನ ವಾಕ್ಯ ರಚನೆಗಳು)';
+      case 'malayalam':
+        return 'Daily Sentence Pattern (ദൈനംദിന വാക്യഘടനകൾ)';
+      default:
+        return 'Daily Sentence Pattern Practice';
+    }
+  }
+
+  String _getSentencePatternButtonLabel(String language, bool isCompleted) {
+    if (isCompleted) {
+      switch (language.toLowerCase()) {
+        case 'tamil':
+          return 'வாக்கிய அமைப்பு தேர்ச்சி பெற்றது ✓';
+        case 'telugu':
+          return 'వాక్య నమూనా సాధన పూర్తయింది ✓';
+        case 'hindi':
+          return 'वाक्य संरचना पूरी हुई ✓';
+        case 'kannada':
+          return 'ವಾಕ್ಯ ರಚನೆ ಪೂರ್ಣಗೊಂಡಿದೆ ✓';
+        case 'malayalam':
+          return 'വാക്യഘടന സ്വായത്തമാക്കി ✓';
+        default:
+          return 'PATTERN MASTERED ✓';
+      }
+    } else {
+      switch (language.toLowerCase()) {
+        case 'tamil':
+          return 'இந்த வாக்கிய அமைப்பைப் பழகினேன் ✓';
+        case 'telugu':
+          return 'ఈ వాక్య నమూనాను సాధన చేశాను ✓';
+        case 'hindi':
+          return 'मैंने इस वाक्य संरचना का अभ्यास किया ✓';
+        case 'kannada':
+          return 'ಈ ವಾಕ್ಯ ರಚನೆಯನ್ನು ಅಭ್ಯಾಸ ಮಾಡಿದೆ ✓';
+        case 'malayalam':
+          return 'ഈ വാക്യഘടന പറഞ്ഞു പരിശീലിച്ചു ✓';
+        default:
+          return 'I PRACTICED THIS PATTERN ALOUD ✓';
+      }
+    }
   }
 
   // --- SUBTASK 4: 🏢 MISSION 01 CAREER ADVENTURE 2D GAME CARD (User Audio Directive: Mature Level 1 Game) ---
@@ -7197,7 +7623,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -7453,7 +7879,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -7702,7 +8128,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -8141,7 +8567,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -8369,7 +8795,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -8597,7 +9023,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -8825,7 +9251,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -9053,7 +9479,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -9261,7 +9687,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.white,
                     fontSize: 10,
@@ -9475,7 +9901,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -9685,7 +10111,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -9870,7 +10296,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -10055,7 +10481,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  'STEP 4',
+                  isDone ? 'STEP $_stepAdventureGame ✓' : 'STEP $_stepAdventureGame',
                   style: TextStyle(
                     color: isDone ? Colors.white : Colors.black,
                     fontSize: 10,
@@ -10363,13 +10789,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       : Colors.white12,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text(widget.day == 1 ? 'STEP 5' : 'STEP 4',
-                    style: TextStyle(
-                        color: _readingNotesCompleted
-                            ? Colors.black
-                            : Colors.white70,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900)),
+                child: Text(
+                  _readingNotesCompleted
+                      ? 'STEP $_stepReadingNotes ✓'
+                      : 'STEP $_stepReadingNotes',
+                  style: TextStyle(
+                    color: _readingNotesCompleted
+                        ? Colors.black
+                        : Colors.white70,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               const Text('📖', style: TextStyle(fontSize: 16)),
@@ -11089,8 +11520,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  widget.day == 1 ? 'STEP 6' : 'STEP 5',
-                  style: TextStyle(
+                  _codeEnglishCompleted
+                      ? 'STEP $_stepCodeEnglish ✓'
+                      : 'STEP $_stepCodeEnglish',
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -12794,12 +13227,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       : Colors.white12,
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text('STEP 6',
-                    style: TextStyle(
-                        color:
-                            _revisionQuizPassed ? Colors.black : Colors.white70,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w900)),
+                child: Text(
+                  _revisionQuizPassed
+                      ? 'STEP $_stepQuiz ✓'
+                      : 'STEP $_stepQuiz',
+                  style: TextStyle(
+                    color: _revisionQuizPassed ? Colors.black : Colors.white70,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               const Text('✍️', style: TextStyle(fontSize: 16)),

@@ -41,6 +41,7 @@ class PocketSecretCodeGrammarCard extends StatefulWidget {
   final bool isCompleted;
   final ValueChanged<bool> onCompleted;
   final Function(String text) onSpeak;
+  final String stepNumber;
 
   const PocketSecretCodeGrammarCard({
     super.key,
@@ -49,6 +50,7 @@ class PocketSecretCodeGrammarCard extends StatefulWidget {
     required this.isCompleted,
     required this.onCompleted,
     required this.onSpeak,
+    this.stepNumber = '2',
   });
 
   @override
@@ -238,9 +240,11 @@ class _PocketSecretCodeGrammarCardState
                   ),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
-                  '⚡ CHEAT CODES',
-                  style: TextStyle(
+                child: Text(
+                  widget.stepNumber.isNotEmpty
+                      ? 'STEP ${widget.stepNumber}'
+                      : '⚡ CHEAT CODES',
+                  style: const TextStyle(
                     color: Colors.black,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,

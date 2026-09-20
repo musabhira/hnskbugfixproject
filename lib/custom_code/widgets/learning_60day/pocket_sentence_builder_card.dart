@@ -22,6 +22,7 @@ class PocketSentenceBuilderCard extends StatefulWidget {
   final bool isCompleted;
   final ValueChanged<bool> onCompleted;
   final Function(String text) onSpeak;
+  final String stepNumber;
 
   const PocketSentenceBuilderCard({
     super.key,
@@ -29,6 +30,7 @@ class PocketSentenceBuilderCard extends StatefulWidget {
     required this.isCompleted,
     required this.onCompleted,
     required this.onSpeak,
+    this.stepNumber = '3',
   });
 
   @override
@@ -173,9 +175,11 @@ class _PocketSentenceBuilderCardState extends State<PocketSentenceBuilderCard> {
                   ),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
-                  '🧩 CODE BUILDER',
-                  style: TextStyle(
+                child: Text(
+                  widget.stepNumber.isNotEmpty
+                      ? 'STEP ${widget.stepNumber}'
+                      : '🧩 CODE BUILDER',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
@@ -196,7 +200,7 @@ class _PocketSentenceBuilderCardState extends State<PocketSentenceBuilderCard> {
                   ),
                 ),
               ),
-              if (_streak > 0)
+              if (_streak > 0) ...[
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -214,6 +218,11 @@ class _PocketSentenceBuilderCardState extends State<PocketSentenceBuilderCard> {
                     ),
                   ),
                 ),
+                const SizedBox(width: 6),
+              ],
+              if (widget.isCompleted)
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
             ],
           ),
           const SizedBox(height: 6),
