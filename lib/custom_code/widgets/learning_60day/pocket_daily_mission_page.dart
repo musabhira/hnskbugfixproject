@@ -21,20 +21,20 @@ import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_game_rules_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_time_machine_trainer_modal.dart';
+import 'package:record/record.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:path_provider/path_provider.dart';
+import 'flame_english_house_game.dart';
 import 'pocket_score_level_engine.dart';
+import 'pocket_time_machine_trainer_modal.dart';
 
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
 import 'pocket_mission_curriculum_registry.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
-import 'games/word_catcher_models.dart';
-import 'games/word_catcher_game_page.dart';
 import 'career_adventure/adventure_models.dart';
 import 'career_adventure/career_adventure_game_page.dart';
-import 'career_adventure/city_navigator_models.dart';
-import 'career_adventure/city_navigator_game_page.dart';
 import 'career_adventure/cyber_vocab_models.dart';
 import 'career_adventure/cyber_vocab_game_page.dart';
 import 'career_adventure/memory_break_in_models.dart';
@@ -141,6 +141,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int _activeStoryPageIndex = 0;
   double _ttsSpeechRate = 0.48;
   bool _isPocketVocabSaved = false;
+
+  // Story Aloud Reading Recorder
+  AudioRecorder? _storyRecorder;
+  bool _isStoryRecording = false;
+  int _storyRecordDuration = 0;
+  Timer? _storyRecordTimer;
+  String? _storyAudioPath;
+  AudioPlayer? _storyPlaybackPlayer;
+  bool _isStoryAudioPlaying = false;
 
   // Quiz state
   int _selectedQuizAnswer = -1;
@@ -1499,6 +1508,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   void dispose() {
     _tts.stop();
     _speakingTimer?.cancel();
+    _storyRecordTimer?.cancel();
+    _storyRecorder?.dispose();
+    _storyPlaybackPlayer?.dispose();
     _timerService.removeListener(_onTimerStateChanged);
     super.dispose();
   }
@@ -4141,6 +4153,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           prefs.getBool('${dayKey}_english_thinking') ?? false;
       _speakingChallengeCompleted =
           prefs.getBool('${dayKey}_speaking_challenge') ?? false;
+      _storyAudioPath = prefs.getString('${dayKey}_story_recording_path');
+      _storyRecordDuration = prefs.getInt('${dayKey}_story_recording_duration') ?? 0;
     });
   }
 
@@ -5441,12 +5455,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       ),
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'Stage ${widget.day}/90 • Pass: 100 PTS',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF6EE7B7),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
+                    Expanded(
+                      child: Text(
+                        'Stage ${widget.day}/90 • Pass: 100 PTS',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF6EE7B7),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -5820,12 +5837,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          'Day ${widget.day} Mission Score',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                        Flexible(
+                          child: Text(
+                            'Day ${widget.day} Mission Score',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -7199,12 +7219,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     const Icon(Icons.stars_rounded,
                         color: Color(0xFFFFD700), size: 14),
                     const SizedBox(width: 4),
-                    Text(
-                      '10 Workplace Vocabulary Words · Practical Spoken English',
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFFFFD700),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w600,
+                    Expanded(
+                      child: Text(
+                        '10 Workplace Vocabulary Words · Practical Spoken English',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -7212,7 +7235,28 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
+
+          // 🏡 Interactive Flame Habit House Engine for Level 1!
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              height: 220,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                  width: 1.2,
+                ),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const FlameEnglishHouseWidget(
+                currentDay: 1,
+                streak: 1,
+                showTestingControls: false,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             height: 44,
@@ -10057,6 +10101,112 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
+  String _formatSeconds(int totalSecs) {
+    final m = totalSecs ~/ 60;
+    final s = totalSecs % 60;
+    return '${m.toString().padLeft(2, '0')}:${s.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _startStoryRecording() async {
+    try {
+      _storyRecorder ??= AudioRecorder();
+      final hasPerm = await _storyRecorder!.hasPermission();
+      if (!hasPerm) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚠️ Microphone permission is required to record your aloud reading.'),
+            backgroundColor: Color(0xFFDC2626),
+          ),
+        );
+        return;
+      }
+
+      final dir = await getApplicationDocumentsDirectory();
+      final filePath = '${dir.path}/story_reading_day_${widget.day}.m4a';
+
+      await _storyRecorder!.start(
+        const RecordConfig(encoder: AudioEncoder.aacLc),
+        path: filePath,
+      );
+
+      _storyRecordTimer?.cancel();
+      _storyRecordDuration = 0;
+      _storyRecordTimer = Timer.periodic(const Duration(seconds: 1), (t) {
+        if (mounted) {
+          setState(() {
+            _storyRecordDuration++;
+          });
+        }
+      });
+
+      setState(() {
+        _isStoryRecording = true;
+      });
+
+      HapticFeedback.mediumImpact();
+    } catch (e) {
+      debugPrint('Error starting story recording: $e');
+    }
+  }
+
+  Future<void> _stopStoryRecording() async {
+    try {
+      _storyRecordTimer?.cancel();
+      final path = await _storyRecorder?.stop();
+      final savedPath = path ?? _storyAudioPath;
+
+      if (savedPath != null) {
+        final prefs = await SharedPreferences.getInstance();
+        final dayKey = 'pocket_mission_day_${widget.day}';
+        await prefs.setString('${dayKey}_story_recording_path', savedPath);
+        await prefs.setInt('${dayKey}_story_recording_duration', _storyRecordDuration);
+      }
+
+      setState(() {
+        _isStoryRecording = false;
+        _storyAudioPath = savedPath;
+      });
+
+      HapticFeedback.heavyImpact();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🎙️ Aloud reading recorded and saved locally (${_storyRecordDuration}s)! You can now verify this reading.',
+          ),
+          backgroundColor: const Color(0xFF10B981),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Error stopping story recording: $e');
+      setState(() => _isStoryRecording = false);
+    }
+  }
+
+  Future<void> _togglePlayStoryRecording() async {
+    if (_storyAudioPath == null) return;
+    try {
+      _storyPlaybackPlayer ??= AudioPlayer();
+      if (_isStoryAudioPlaying) {
+        await _storyPlaybackPlayer!.stop();
+        setState(() => _isStoryAudioPlaying = false);
+      } else {
+        await _storyPlaybackPlayer!.setFilePath(_storyAudioPath!);
+        setState(() => _isStoryAudioPlaying = true);
+        _storyPlaybackPlayer!.play();
+        _storyPlaybackPlayer!.playerStateStream.listen((state) {
+          if (state.processingState == ProcessingState.completed) {
+            if (mounted) setState(() => _isStoryAudioPlaying = false);
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error playing recorded story: $e');
+      if (mounted) setState(() => _isStoryAudioPlaying = false);
+    }
+  }
+
   // --- SUBTASK 4/5: 📖 CORE NOTES & AUTHENTIC MULTI-PAGE STORY READING CARD ---
   Widget _buildReadingNotesCard() {
     final storyPages =
@@ -10508,33 +10658,205 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(height: 12),
 
-          // Primary Story Completion Verification Button + Library & Fullscreen Options
+          // 🎙️ Local Aloud Reading Recorder Widget
+          Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _isStoryRecording
+                  ? const Color(0xFF3B0707)
+                  : (_storyAudioPath != null
+                      ? const Color(0xFF064E3B).withValues(alpha: 0.35)
+                      : const Color(0xFF1E293B)),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _isStoryRecording
+                    ? const Color(0xFFEF4444)
+                    : (_storyAudioPath != null
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                width: 1.2,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      _isStoryRecording
+                          ? Icons.mic_rounded
+                          : (_storyAudioPath != null
+                              ? Icons.verified_rounded
+                              : Icons.mic_none_rounded),
+                      color: _isStoryRecording
+                          ? const Color(0xFFEF4444)
+                          : (_storyAudioPath != null
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFFFD700)),
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            _isStoryRecording
+                                ? 'RECORDING ALOUD... [ ${_formatSeconds(_storyRecordDuration)} ]'
+                                : (_storyAudioPath != null
+                                    ? 'ALOUD READING RECORDED ✓ (${_storyRecordDuration}s)'
+                                    : 'READ ALOUD & RECORD MISSION'),
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                          Text(
+                            _isStoryRecording
+                                ? 'Read the story out loud. Voice note is being saved locally on your device.'
+                                : (_storyAudioPath != null
+                                    ? 'Your voice reading is safely saved on this device.'
+                                    : 'Turn on the mic and read today\'s story aloud to verify.'),
+                            style: GoogleFonts.inter(
+                              color: Colors.white60,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                if (_isStoryRecording) ...[
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF4444),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.stop_rounded, size: 18),
+                    label: const Text(
+                      'STOP & SAVE READING RECORDING ⏹️',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    onPressed: _stopStoryRecording,
+                  ),
+                ] else if (_storyAudioPath != null) ...[
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            foregroundColor: const Color(0xFF10B981),
+                            side: const BorderSide(color: Color(0xFF10B981)),
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          icon: Icon(
+                            _isStoryAudioPlaying
+                                ? Icons.stop_rounded
+                                : Icons.play_arrow_rounded,
+                            size: 18,
+                          ),
+                          label: Text(
+                            _isStoryAudioPlaying ? 'STOP' : 'LISTEN BACK',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+                          ),
+                          onPressed: _togglePlayStoryRecording,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white70,
+                          side: const BorderSide(color: Colors.white24),
+                          padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        icon: const Icon(Icons.refresh_rounded, size: 16),
+                        label: const Text(
+                          'RE-RECORD',
+                          style: TextStyle(fontSize: 11),
+                        ),
+                        onPressed: _startStoryRecording,
+                      ),
+                    ],
+                  ),
+                ] else ...[
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    icon: const Icon(Icons.mic_rounded, size: 18),
+                    label: const Text(
+                      'START READING & RECORDING ALOUD 🎙️',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    onPressed: _startStoryRecording,
+                  ),
+                ],
+              ],
+            ),
+          ),
+
+          // Primary Story Completion Verification Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {
-                setState(() => _readingNotesCompleted = true);
-                _saveSubtask('reading', true);
-                HapticFeedback.heavyImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        '🎉 Authentic Story ($totalPages Pages) verified as read! (+25 PTS)'),
-                    backgroundColor: const Color(0xFF10B981),
-                  ),
-                );
-              },
+              onPressed: (_storyAudioPath != null || _readingNotesCompleted)
+                  ? () {
+                      setState(() => _readingNotesCompleted = true);
+                      _saveSubtask('reading', true);
+                      HapticFeedback.heavyImpact();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              '🎉 Authentic Story ($totalPages Pages) verified as read & recorded! (+25 PTS)'),
+                          backgroundColor: const Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  : () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            '🎙️ Please tap "START READING & RECORDING ALOUD" and read the story aloud first!',
+                          ),
+                          backgroundColor: Color(0xFFB45309),
+                        ),
+                      );
+                    },
               icon: Icon(
                 _readingNotesCompleted
                     ? Icons.check_circle_rounded
-                    : Icons.menu_book_rounded,
+                    : (_storyAudioPath != null
+                        ? Icons.verified_rounded
+                        : Icons.lock_outline_rounded),
                 color: Colors.black,
                 size: 16,
               ),
               label: Text(
                 _readingNotesCompleted
-                    ? 'ALL $totalPages PAGES READ & VERIFIED ✓'
-                    : 'I HAVE READ ALL $totalPages PAGES OF TODAY\'S STORY ✓',
+                    ? 'ALL $totalPages PAGES READ & RECORDED ✓'
+                    : (_storyAudioPath != null
+                        ? 'VERIFY READING COMPLETED (+25 PTS) ✓'
+                        : 'READ & RECORD FIRST TO UNLOCK VERIFY 🔒'),
                 style: GoogleFonts.outfit(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
@@ -10544,7 +10866,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _readingNotesCompleted
                     ? const Color(0xFF10B981)
-                    : const Color(0xFFFFFC00),
+                    : (_storyAudioPath != null
+                        ? const Color(0xFFFFD700)
+                        : const Color(0xFF64748B)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
@@ -11440,8 +11764,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   Widget _buildPronunciationClinicCard() {
     final clinic =
         PocketMissionCurriculumRegistry.getPronunciationClinic(widget.day);
-    if (clinic.minimalPairs.isEmpty && clinic.practicePhrases.isEmpty)
+    if (clinic.minimalPairs.isEmpty && clinic.practicePhrases.isEmpty) {
       return const SizedBox.shrink();
+    }
 
     return Container(
       padding: const EdgeInsets.all(14),
@@ -11705,7 +12030,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // --- 🧠 ENGLISH THINKING WORKOUT CARD ---
+  // --- 🧠 ENGLISH THINKING WORKOUT / MANGLISH KILLER CARD ---
   Widget _buildEnglishThinkingCard() {
     final workout =
         PocketMissionCurriculumRegistry.getEnglishThinkingWorkout(widget.day);
@@ -11719,7 +12044,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         border: Border.all(
           color: _englishThinkingCompleted
               ? const Color(0xFF10B981)
-              : const Color(0xFF38BDF8).withValues(alpha: 0.35),
+              : const Color(0xFFF59E0B).withValues(alpha: 0.4),
           width: _englishThinkingCompleted ? 1.5 : 1.0,
         ),
       ),
@@ -11731,17 +12056,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _englishThinkingCompleted
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFF38BDF8),
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF97316), Color(0xFFEF4444)],
+                  ),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Text(
-                  'REFLEX',
+                  '🔥 MANGLISH KILLER',
                   style: TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
@@ -11750,7 +12076,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'English Thinking Workout (No Mother-Tongue Lag)',
+                  'Mental Trap & Direct English Reflex',
                   style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -11762,25 +12088,108 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     color: Color(0xFF10B981), size: 18),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            workout.situation,
-            style: GoogleFonts.inter(
-                color: const Color(0xFFBAE6FD),
-                fontSize: 12,
-                fontWeight: FontWeight.w600),
+          const SizedBox(height: 8),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              '🎯 Real Scenario: ${workout.situation}',
+              style: GoogleFonts.inter(
+                  color: const Color(0xFFBAE6FD),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600),
+            ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            '⚠️ Avoid: ${workout.mentalTrapMalayalam}',
-            style:
-                GoogleFonts.inter(color: Colors.deepOrangeAccent, fontSize: 11),
+          const SizedBox(height: 8),
+
+          // ❌ Avoid Manglish Card
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF450A0A).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('❌', style: TextStyle(fontSize: 12)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'AVOID MANGLISH / MALAYALAM TRAP:',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFCA5A5),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  workout.mentalTrapMalayalam,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFFECACA),
+                    fontSize: 11.5,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            '💡 Thought: ${workout.directEnglishThought}',
-            style:
-                GoogleFonts.inter(color: const Color(0xFF34D399), fontSize: 11),
+          const SizedBox(height: 8),
+
+          // ⚡ Direct English Reflex
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF064E3B).withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: const Color(0xFF10B981).withValues(alpha: 0.35),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Text('⚡', style: TextStyle(fontSize: 12)),
+                    const SizedBox(width: 6),
+                    Text(
+                      'DIRECT ENGLISH THOUGHT (NO TRANSLATION LAG):',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF6EE7B7),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  workout.directEnglishThought,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFA7F3D0),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                    height: 1.35,
+                  ),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 10),
 
@@ -11830,7 +12239,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text(
-                        '🧠 English Thinking Reflex Mastered! Zero translation lag verified ✓'),
+                        '🧠 Manglish Trap Eliminated! Direct English reflex drilled with zero translation lag ✓'),
                     backgroundColor: Color(0xFF10B981),
                   ),
                 );
@@ -11844,18 +12253,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
               label: Text(
                 _englishThinkingCompleted
-                    ? 'THINKING REFLEX MASTERED ✓'
-                    : 'I DRILLED DIRECT REFLEXES ✓',
+                    ? 'MANGLISH ELIMINATED & REFLEX DRILL MASTERED ✓'
+                    : 'I ELIMINATED MANGLISH & DRILLED REFLEXES ✓',
                 style: GoogleFonts.outfit(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
-                  fontSize: 12,
+                  fontSize: 11.5,
                 ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: _englishThinkingCompleted
                     ? const Color(0xFF10B981)
-                    : const Color(0xFF38BDF8),
+                    : const Color(0xFFFF9800),
                 padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
@@ -11867,22 +12276,27 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // --- 🎙️ IN-LESSON 30-SECOND SPEAKING CHALLENGE CARD ---
+  // --- 🎙️ IN-LESSON 30-SECOND SPEAKING CHALLENGE / BOSS BATTLE CARD ---
   Widget _buildSpeakingChallengeCard() {
     final challenge =
         PocketMissionCurriculumRegistry.getSpeakingChallenge(widget.day);
     if (challenge.title.isEmpty) return const SizedBox.shrink();
 
+    final isBossBattle = (widget.day % 15 == 0);
+    final targetSecs = isBossBattle ? 45 : challenge.targetSeconds;
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: isBossBattle ? const Color(0xFF180A0A) : const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: _speakingChallengeCompleted
               ? const Color(0xFF10B981)
-              : const Color(0xFFF43F5E).withValues(alpha: 0.35),
-          width: _speakingChallengeCompleted ? 1.5 : 1.0,
+              : (isBossBattle
+                  ? const Color(0xFFFFD700)
+                  : const Color(0xFFF43F5E).withValues(alpha: 0.35)),
+          width: isBossBattle ? 1.8 : (_speakingChallengeCompleted ? 1.5 : 1.0),
         ),
       ),
       child: Column(
@@ -11893,28 +12307,38 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: _speakingChallengeCompleted
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFFF43F5E),
+                  gradient: isBossBattle
+                      ? const LinearGradient(
+                          colors: [Color(0xFFDC2626), Color(0xFFD97706)],
+                        )
+                      : null,
+                  color: isBossBattle
+                      ? null
+                      : (_speakingChallengeCompleted
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFF43F5E)),
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: const Text(
-                  'CHALLENGE',
-                  style: TextStyle(
+                child: Text(
+                  isBossBattle ? '⚔️ BOSS BATTLE' : 'CHALLENGE',
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              const Text('🎙️', style: TextStyle(fontSize: 16)),
+              Text(isBossBattle ? '👑' : '🎙️', style: const TextStyle(fontSize: 16)),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'In-Lesson 30s Solo Speaking Challenge',
+                  isBossBattle
+                      ? 'Milestone Speaking Boss Battle (Stage ${widget.day})'
+                      : 'In-Lesson 30s Solo Speaking Challenge',
                   style: GoogleFonts.outfit(
-                      color: Colors.white,
+                      color: isBossBattle ? const Color(0xFFFFD700) : Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 14),
                 ),
@@ -11925,10 +12349,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             ],
           ),
           const SizedBox(height: 6),
+          if (isBossBattle)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 6),
+              child: Text(
+                '🔥 No Multiple Choice Quiz! Prove your spoken mastery directly in this intense boss challenge.',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFFFCA5A5),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           Text(
             challenge.title,
             style: GoogleFonts.outfit(
-                color: const Color(0xFFFDA4AF),
+                color: isBossBattle
+                    ? const Color(0xFFFFE4E6)
+                    : const Color(0xFFFDA4AF),
                 fontSize: 13,
                 fontWeight: FontWeight.bold),
           ),
@@ -11944,15 +12382,21 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
+              color: isBossBattle
+                  ? const Color(0xFF271010)
+                  : const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white10),
+              border: Border.all(
+                color: isBossBattle
+                    ? const Color(0xFFFFD700).withValues(alpha: 0.3)
+                    : Colors.white10,
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'SPEAKING FRAMEWORK (${challenge.targetSeconds} Seconds):',
+                  '${isBossBattle ? '⚔️ BOSS ' : ''}SPEAKING FRAMEWORK ($targetSecs Seconds):',
                   style: GoogleFonts.outfit(
                       color: const Color(0xFFFFD700),
                       fontSize: 10,
@@ -11964,9 +12408,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text('• ',
+                          Text('• ',
                               style: TextStyle(
-                                  color: Color(0xFF00E5FF),
+                                  color: isBossBattle
+                                      ? const Color(0xFFFF6B6B)
+                                      : const Color(0xFF00E5FF),
                                   fontWeight: FontWeight.bold)),
                           Expanded(
                             child: Text(guide,
@@ -11982,7 +12428,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
           const SizedBox(height: 12),
 
-          // Interactive 30s Countdown timer button
+          // Interactive Countdown timer button
           Row(
             children: [
               Expanded(
@@ -11996,7 +12442,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       _speakingTimer?.cancel();
                       setState(() {
                         _isSpeakingChallengeRecording = true;
-                        _speakingChallengeSecondsRemaining = 30;
+                        _speakingChallengeSecondsRemaining = targetSecs;
                       });
                       _speakingTimer =
                           Timer.periodic(const Duration(seconds: 1), (t) {
@@ -12013,10 +12459,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           });
                           _saveSubtask('speaking_challenge', true);
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
+                            SnackBar(
                               content: Text(
-                                  '🎉 30s Speaking Challenge Finished! Vocal agility activated ✓'),
-                              backgroundColor: Color(0xFF10B981),
+                                  isBossBattle
+                                      ? '👑 MILESTONE BOSS DEFEATED! Stage ${widget.day} speaking mastery unlocked (+50 PTS) ⚔️'
+                                      : '🎉 ${targetSecs}s Speaking Challenge Finished! Vocal agility activated ✓'),
+                              backgroundColor: const Color(0xFF10B981),
                             ),
                           );
                         } else {
@@ -12030,14 +12478,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   icon: Icon(
                     _isSpeakingChallengeRecording
                         ? Icons.stop_circle_rounded
-                        : Icons.mic_rounded,
+                        : (isBossBattle ? Icons.shield_rounded : Icons.mic_rounded),
                     color: Colors.white,
                     size: 16,
                   ),
                   label: Text(
                     _isSpeakingChallengeRecording
                         ? 'SPEAKING ALOUD: ${_speakingChallengeSecondsRemaining}s'
-                        : 'START 30s SPEAKING DRILL 🎙️',
+                        : (isBossBattle
+                            ? 'ENTER ${targetSecs}s BOSS ARENA ⚔️'
+                            : 'START ${targetSecs}s SPEAKING DRILL 🎙️'),
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
@@ -12047,7 +12497,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _isSpeakingChallengeRecording
                         ? Colors.redAccent
-                        : const Color(0xFFF43F5E),
+                        : (isBossBattle
+                            ? const Color(0xFFDC2626)
+                            : const Color(0xFFF43F5E)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10)),
@@ -12073,7 +12525,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       borderRadius: BorderRadius.circular(10)),
                 ),
                 child: Text(
-                  _speakingChallengeCompleted ? 'DONE ✓' : 'FINISH',
+                  _speakingChallengeCompleted
+                      ? (isBossBattle ? 'DEFEATED ✓' : 'DONE ✓')
+                      : 'FINISH',
                   style: const TextStyle(
                       color: Color(0xFF10B981),
                       fontWeight: FontWeight.bold,
@@ -12255,10 +12709,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
             Color optionBg = const Color(0xFF1E293B);
             if (_quizSubmitted) {
-              if (isCorrect)
+              if (isCorrect) {
                 optionBg = const Color(0xFF10B981).withValues(alpha: 0.3);
-              if (isSelected && !isCorrect)
+              }
+              if (isSelected && !isCorrect) {
                 optionBg = Colors.red.withValues(alpha: 0.3);
+              }
             } else if (isSelected) {
               optionBg = const Color(0xFFFFFC00).withValues(alpha: 0.2);
             }
@@ -12429,13 +12885,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               children: [
                 Row(
                   children: [
-                    Text(
-                      'DAY ${widget.day} HOME DEFENSE',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
-                        letterSpacing: 0.4,
+                    Flexible(
+                      child: Text(
+                        'DAY ${widget.day} HOME DEFENSE',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 13,
+                          letterSpacing: 0.4,
+                        ),
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                     const SizedBox(width: 6),
