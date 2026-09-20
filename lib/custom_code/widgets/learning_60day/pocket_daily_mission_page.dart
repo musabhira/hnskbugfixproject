@@ -7551,7 +7551,28 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
+
+          // 🏡 Interactive Flame Habit House Engine for Level 2!
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color(0xFF00E5FF).withValues(alpha: 0.35),
+                  width: 1.2,
+                ),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const FlameEnglishHouseWidget(
+                currentDay: 2,
+                streak: 2,
+                showTestingControls: false,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             height: 44,
@@ -7779,7 +7800,28 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ],
             ),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
+
+          // 🏡 Interactive Flame Habit House Engine for Level 3!
+          ClipRRect(
+            borderRadius: BorderRadius.circular(14),
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  color: const Color(0xFFA855F7).withValues(alpha: 0.35),
+                  width: 1.2,
+                ),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const FlameEnglishHouseWidget(
+                currentDay: 3,
+                streak: 3,
+                showTestingControls: false,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
           SizedBox(
             width: double.infinity,
             height: 44,

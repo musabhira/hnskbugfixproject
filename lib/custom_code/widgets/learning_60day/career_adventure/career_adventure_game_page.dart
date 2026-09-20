@@ -266,9 +266,8 @@ class _CareerAdventureGamePageState extends State<CareerAdventureGamePage>
         earned += 10;
       }
       _scoreXp += earned;
-
       _playerAnim = PlayerAnimationState.celebrating;
-      _speakDialogue(option.reaction ?? 'Great job!');
+      _speakDialogue('${option.text}. ${option.reaction ?? "Great job!"}');
     } else {
       // ❌ Wrong
       HapticFeedback.heavyImpact();
@@ -889,6 +888,14 @@ class _CareerAdventureGamePageState extends State<CareerAdventureGamePage>
                                     ),
                                   ),
                                 ),
+                                IconButton(
+                                  icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 18),
+                                  onPressed: () => _speakDialogue(option.text),
+                                  tooltip: 'Listen to pronunciation',
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                ),
+                                const SizedBox(width: 6),
                                 if (showResult && option.isCorrect)
                                   const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18)
                                 else if (showResult && isSelected && !option.isCorrect)
@@ -920,6 +927,37 @@ class _CareerAdventureGamePageState extends State<CareerAdventureGamePage>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          if (_activeChallenge!.options[_selectedOptionIndex!].isCorrect) ...[
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                              margin: const EdgeInsets.only(bottom: 8),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.mic_rounded, color: Color(0xFFFFD700), size: 16),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      '🗣️ SAY ALOUD NOW: "${_activeChallenge!.options[_selectedOptionIndex!].text}"',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFFD700),
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  InkWell(
+                                    onTap: () => _speakDialogue(_activeChallenge!.options[_selectedOptionIndex!].text),
+                                    child: const Text('🔊 REPLAY', style: TextStyle(color: Color(0xFFFFD700), fontSize: 10, fontWeight: FontWeight.bold)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                           Text(
                             _activeChallenge!.options[_selectedOptionIndex!].isCorrect
                                 ? '🎯 SPOT ON!'
