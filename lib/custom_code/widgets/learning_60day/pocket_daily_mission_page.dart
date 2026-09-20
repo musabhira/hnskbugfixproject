@@ -27,6 +27,9 @@ import 'package:path_provider/path_provider.dart';
 import 'flame_english_house_game.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_time_machine_trainer_modal.dart';
+import 'pocket_secret_code_grammar_card.dart';
+import 'pocket_sentence_builder_card.dart';
+import 'pocket_slang_smart_english_card.dart';
 
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
@@ -69,10 +72,11 @@ class PocketDailyMissionPage extends StatefulWidget {
 
   static const List<String> kSupportedLanguages = [
     'Malayalam',
-    'Tamil',
     'Hindi',
+    'Tamil',
     'Telugu',
     'Kannada',
+    'English',
   ];
 
   static const Map<String, String> kLanguageLabels = {
@@ -141,6 +145,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int _activeStoryPageIndex = 0;
   double _ttsSpeechRate = 0.48;
   bool _isPocketVocabSaved = false;
+  bool _secretCodeGrammarCompleted = false;
+  bool _sentenceBuilderCompleted = false;
+  bool _slangSmartEnglishCompleted = false;
 
   // Story Aloud Reading Recorder
   AudioRecorder? _storyRecorder;
@@ -4153,6 +4160,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           prefs.getBool('${dayKey}_english_thinking') ?? false;
       _speakingChallengeCompleted =
           prefs.getBool('${dayKey}_speaking_challenge') ?? false;
+      _secretCodeGrammarCompleted =
+          prefs.getBool('${dayKey}_secret_code') ?? false;
+      _sentenceBuilderCompleted =
+          prefs.getBool('${dayKey}_sentence_builder') ?? false;
+      _slangSmartEnglishCompleted =
+          prefs.getBool('${dayKey}_slang_smart') ?? false;
       _storyAudioPath = prefs.getString('${dayKey}_story_recording_path');
       _storyRecordDuration = prefs.getInt('${dayKey}_story_recording_duration') ?? 0;
     });
@@ -4638,6 +4651,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_hasEnglishThinking) count++;
     if (_hasSpeakingChallenge) count++;
     if (widget.day >= 4) count++;
+    count += 3; // ⚡ Secret Code Grammar + 🏗️ Sentence Builder + 💬 Slang to Smart English
     return count;
   }
 
@@ -4645,6 +4659,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     int count = 0;
     if (_dailyRuleCompleted) count++;
     if (_hasAlphabetPhonics && _alphabetPhonicsCompleted) count++;
+    if (_secretCodeGrammarCompleted) count++;
+    if (_sentenceBuilderCompleted) count++;
+    if (_slangSmartEnglishCompleted) count++;
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
     if (_vocabMemorized) count++;
@@ -4751,18 +4768,64 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         // ⏱️ 60-Min Daily Practice Study Timer Card
                         _buildDailyStudyTimerCard(),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 12),
+
+                        // 🌐 Top Multilingual Switcher Bar (Audio Directive: Switch categories/languages at top)
+                        _buildLanguageSelectorBar(),
+
+                        const SizedBox(height: 16),
 
                         // 📋 Mission Subtasks Tracker Header
                         _buildMissionProgressCard(),
 
-                        const SizedBox(height: 18),
+                        const SizedBox(height: 16),
 
                         // 🔤 Foundation: Alphabet & 44 Phonics Sound System (User Audio Directive)
                         if (_hasAlphabetPhonics) ...[
                           _buildAlphabetPhonicsCard(),
                           const SizedBox(height: 14),
                         ],
+
+                        // ⚡ Secret Code Grammar Matrix (Audio Directive: Code-Based English Tenses & Rules)
+                        PocketSecretCodeGrammarCard(
+                          day: widget.day,
+                          selectedLanguage: _selectedLanguage,
+                          isCompleted: _secretCodeGrammarCompleted,
+                          onCompleted: (val) {
+                            setState(() => _secretCodeGrammarCompleted = val);
+                            _saveSubtask('secret_code', val);
+                          },
+                          onSpeak: _speakWord,
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 🏗️ Sentence Builder Game (Audio Directive: 1-2-3 Code Block Puzzle)
+                        PocketSentenceBuilderCard(
+                          day: widget.day,
+                          isCompleted: _sentenceBuilderCompleted,
+                          onCompleted: (val) {
+                            setState(() => _sentenceBuilderCompleted = val);
+                            _saveSubtask('sentence_builder', val);
+                          },
+                          onSpeak: _speakWord,
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // 💬 Daily Slang to Smart English (Audio Directive: Vernacular talk to native English)
+                        PocketSlangSmartEnglishCard(
+                          day: widget.day,
+                          selectedLanguage: _selectedLanguage,
+                          isCompleted: _slangSmartEnglishCompleted,
+                          onCompleted: (val) {
+                            setState(() => _slangSmartEnglishCompleted = val);
+                            _saveSubtask('slang_smart', val);
+                          },
+                          onSpeak: _speakWord,
+                        ),
+
+                        const SizedBox(height: 14),
 
                       // Subtask 1: 💬 English Hub Group Practice
                       _buildSubtaskCard(
