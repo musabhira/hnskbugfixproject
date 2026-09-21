@@ -561,11 +561,40 @@ class _PocketDirectIndirectPracticeCardState
                           color: widget.isCompleted
                               ? const Color(0xFF10B981)
                               : Colors.white70,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Title & Subtitle
+          Text(
+            'Direct & Indirect Speech 💬',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              letterSpacing: 0.2,
             ),
           ),
+          const SizedBox(height: 3),
+          Text(
+            _getLocalizedSubtitle(widget.selectedLanguage),
+            style: GoogleFonts.inter(
+              color: const Color(0xFFBA68C8),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          const SizedBox(height: 12),
 
           // ─── FILTER TABS (ALL, STATEMENTS, QUESTIONS, COMMANDS, TIME) ───
           Padding(
