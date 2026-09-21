@@ -21,7 +21,9 @@ class SlangPairItem {
   }
 }
 
-/// ⚡ Slang to Smart English (നിത്യജീവിത ശൈലികൾ)
+/// ⚡ Minimal Arcade Slang-to-Smart Reflex Game (നിത്യജീവിത ശൈലികൾ)
+/// 1-card-at-a-time reflex arena with tap-to-reveal native English,
+/// audio pronunciation on demand, and seamless side navigation.
 class PocketSlangSmartEnglishCard extends StatefulWidget {
   final int day;
   final String selectedLanguage;
@@ -47,6 +49,9 @@ class PocketSlangSmartEnglishCard extends StatefulWidget {
 
 class _PocketSlangSmartEnglishCardState
     extends State<PocketSlangSmartEnglishCard> {
+  int _currentIndex = 0;
+  final Set<int> _revealedCards = {};
+
   static const List<SlangPairItem> kSlangItems = [
     SlangPairItem(
       englishPhrase: "It's no big deal! / Don't sweat it.",
@@ -110,189 +115,430 @@ class _PocketSlangSmartEnglishCardState
     ),
   ];
 
+  void _revealCurrent() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _revealedCards.add(_currentIndex);
+    });
+    if (_revealedCards.length >= 3 && !widget.isCompleted) {
+      widget.onCompleted(true);
+    }
+  }
+
+  void _nextCard() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _currentIndex = (_currentIndex + 1) % kSlangItems.length;
+    });
+  }
+
+  void _prevCard() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _currentIndex =
+          (_currentIndex - 1 + kSlangItems.length) % kSlangItems.length;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final item = kSlangItems[_currentIndex];
+    final vernacular = item.getVernacular(widget.selectedLanguage);
+    final isRevealed = _revealedCards.contains(_currentIndex);
+    final totalCards = kSlangItems.length;
+    final cardNum = _currentIndex + 1;
+
     return Container(
-      padding: const EdgeInsets.all(14),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF0A0E17), // Minimal, plain dark game canvas
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: widget.isCompleted
               ? const Color(0xFF10B981)
-              : const Color(0xFFEC4899).withValues(alpha: 0.35),
+              : const Color(0xFFEC4899).withValues(alpha: 0.4),
           width: widget.isCompleted ? 1.5 : 1.0,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: (widget.isCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFEC4899))
+                .withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // ── TOP GAME HUD ─────────────────────────────────────────────────
           Row(
             children: [
+              // Step Capsule
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     colors: [Color(0xFFEC4899), Color(0xFFF43F5E)],
                   ),
-                  borderRadius: BorderRadius.circular(6),
+                  borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
                   widget.stepNumber.isNotEmpty
-                      ? 'STEP ${widget.stepNumber}'
-                      : '💬 SLANG ➔ SMART',
+                      ? 'STEP ${widget.stepNumber} • GAME'
+                      : 'SLANG ARENA',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 10,
+                    fontSize: 10.5,
                     fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
+                    letterSpacing: 0.6,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              const Text('⚡', style: TextStyle(fontSize: 16)),
-              const SizedBox(width: 6),
-              Expanded(
+
+              // Card Counter
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.white12),
+                ),
                 child: Text(
-                  _getTitle(widget.selectedLanguage),
+                  'CARD $cardNum / $totalCards',
                   style: GoogleFonts.outfit(
-                    color: Colors.white,
+                    color: const Color(0xFFF472B6),
+                    fontSize: 10.5,
                     fontWeight: FontWeight.bold,
-                    fontSize: 14,
                   ),
                 ),
               ),
-              if (widget.isCompleted)
-                const Icon(Icons.check_circle_rounded,
-                    color: Color(0xFF10B981), size: 18),
+
+              const Spacer(),
+
+              // Quick Side Navigation Controls in HUD
+              InkWell(
+                onTap: _prevCard,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Icon(Icons.chevron_left_rounded,
+                      color: Colors.white70, size: 18),
+                ),
+              ),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: _nextCard,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Icon(Icons.chevron_right_rounded,
+                      color: Colors.white70, size: 18),
+                ),
+              ),
             ],
           ),
-          const SizedBox(height: 6),
+
+          const SizedBox(height: 12),
+
+          // ── TITLE & SUBTITLE ─────────────────────────────────────────────
+          Text(
+            _getTitle(widget.selectedLanguage),
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 15.5,
+              letterSpacing: 0.2,
+            ),
+          ),
+          const SizedBox(height: 4),
           Text(
             _getSubtitle(widget.selectedLanguage),
             style: GoogleFonts.inter(
-              color: Colors.white60,
+              color: Colors.white54,
               fontSize: 11,
             ),
           ),
-          const SizedBox(height: 12),
 
-          // Slang Items List
-          Column(
-            children: kSlangItems.map((item) {
-              final vernacular = item.getVernacular(widget.selectedLanguage);
+          const SizedBox(height: 14),
 
-              return Container(
-                margin: const EdgeInsets.only(bottom: 8),
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white12),
+          // ── HERO FLASHCARD (CASUAL GAME CARD) ─────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF111827),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isRevealed
+                    ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                    : const Color(0xFFEC4899).withValues(alpha: 0.3),
+                width: isRevealed ? 1.5 : 1.0,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: isRevealed
+                      ? const Color(0xFF10B981).withValues(alpha: 0.08)
+                      : const Color(0xFFEC4899).withValues(alpha: 0.08),
+                  blurRadius: 14,
+                  offset: const Offset(0, 4),
                 ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Vernacular Thought
-                    Row(
-                      children: [
-                        const Text('🗣️ ', style: TextStyle(fontSize: 12)),
-                        Expanded(
-                          child: Text(
-                            '"$vernacular"',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFFDA4AF),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
-                            ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Context Tag
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🎯', style: TextStyle(fontSize: 11)),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          item.context,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFFBCFE8),
+                            fontSize: 10.5,
+                            fontStyle: FontStyle.italic,
                           ),
                         ),
-                        IconButton(
-                          icon: const Icon(Icons.volume_up_rounded,
-                              color: Color(0xFFFFD700), size: 18),
-                          onPressed: () => widget.onSpeak(item.englishPhrase),
-                          tooltip: 'Listen to English reflex',
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Vernacular Thought Bubble
+                Text(
+                  '🗣️ Vernacular Thought:',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white60,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  vernacular,
+                  style: GoogleFonts.notoSans(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    height: 1.3,
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // ── REVEALED RESULT OR REVEAL BUTTON ───────────────────────
+                if (isRevealed) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF064E3B).withValues(alpha: 0.4),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.6),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            const Text('⚡', style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Smart English Reflex:',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF6EE7B7),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const Spacer(),
+                            // Audio Speaker button on demand
+                            IconButton(
+                              icon: const Icon(Icons.volume_up_rounded,
+                                  color: Color(0xFFFFD700), size: 20),
+                              onPressed: () =>
+                                  widget.onSpeak(item.englishPhrase),
+                              tooltip: 'Listen to pronunciation',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          item.englishPhrase,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.3,
+                          ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
-
-                    // Smart English Equivalent
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
-                        borderRadius: BorderRadius.circular(6),
+                  ),
+                ] else ...[
+                  // Tap to Reveal Neon Arcade Button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _revealCurrent,
+                      style: ElevatedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        backgroundColor: const Color(0xFFEC4899),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 3,
                       ),
-                      child: Text(
-                        '➔ ${item.englishPhrase}',
+                      icon: const Icon(Icons.flash_on_rounded,
+                          color: Colors.white, size: 18),
+                      label: Text(
+                        '⚡ TAP TO REVEAL SMART ENGLISH',
                         style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12,
+                          letterSpacing: 0.5,
                         ),
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Text(
-                      '• ${item.context}',
-                      style: GoogleFonts.inter(
-                        color: Colors.white54,
-                        fontSize: 10,
-                        fontStyle: FontStyle.italic,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }).toList(),
+                  ),
+                ],
+              ],
+            ),
           ),
 
-          const SizedBox(height: 6),
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                widget.onCompleted(true);
-                HapticFeedback.lightImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        '⚡ Native Slang Reflexes Practiced! Direct speech activated (+15 PTS) ✓'),
-                    backgroundColor: Color(0xFF10B981),
+          const SizedBox(height: 14),
+
+          // ── PROGRESS CAPSULES (1 TO 5) ───────────────────────────────────
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(totalCards, (idx) {
+              final isCurrent = idx == _currentIndex;
+              final isRev = _revealedCards.contains(idx);
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                width: isCurrent ? 24 : 10,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: isRev
+                      ? const Color(0xFF10B981)
+                      : (isCurrent
+                          ? const Color(0xFFEC4899)
+                          : Colors.white24),
+                  borderRadius: BorderRadius.circular(3),
+                ),
+              );
+            }),
+          ),
+
+          const SizedBox(height: 16),
+
+          // ── BOTTOM SIDE NAVIGATION DECK ──────────────────────────────────
+          Row(
+            children: [
+              // PREV BUTTON
+              OutlinedButton.icon(
+                onPressed: _prevCard,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.white70,
+                  side: const BorderSide(color: Colors.white24),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                );
-              },
-              icon: Icon(
-                widget.isCompleted
-                    ? Icons.check_circle_rounded
-                    : Icons.auto_fix_high_rounded,
-                color: Colors.black,
-                size: 16,
-              ),
-              label: Text(
-                _getButtonLabel(widget.selectedLanguage, widget.isCompleted),
-                style: GoogleFonts.outfit(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 11.5,
+                ),
+                icon: const Icon(Icons.arrow_back_rounded, size: 14),
+                label: Text(
+                  'PREV',
+                  style: GoogleFonts.outfit(
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: widget.isCompleted
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFFEC4899),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+
+              const SizedBox(width: 8),
+
+              // NEXT CARD or VERIFY BUTTON
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    if (cardNum < totalCards) {
+                      _nextCard();
+                    } else {
+                      widget.onCompleted(true);
+                      HapticFeedback.lightImpact();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              '⚡ Smart Slangs Mastered! Reflex speaking unlocked (+25 PTS) ✓'),
+                          backgroundColor: Color(0xFF10B981),
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.isCompleted
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFFEC4899),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 11),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  icon: Icon(
+                    cardNum < totalCards
+                        ? Icons.arrow_forward_rounded
+                        : Icons.check_circle_rounded,
+                    size: 16,
+                  ),
+                  label: Text(
+                    cardNum < totalCards
+                        ? 'NEXT SLANG (${cardNum + 1}/$totalCards) ➔'
+                        : _getButtonLabel(
+                            widget.selectedLanguage, widget.isCompleted),
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -302,7 +548,7 @@ class _PocketSlangSmartEnglishCardState
   String _getTitle(String language) {
     switch (language.toLowerCase()) {
       case 'tamil':
-        return 'Daily Slang to Smart English (அன்றாட வாழ்க்கை பயன்பாடுகள்)';
+        return 'Daily Slang to Smart English (அன்றாட பயன்பாடு)';
       case 'telugu':
         return 'Daily Slang to Smart English (నిత్యజీవిత శైలులు)';
       case 'hindi':

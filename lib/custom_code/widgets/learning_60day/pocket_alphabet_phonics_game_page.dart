@@ -230,7 +230,7 @@ class AlphabetFlameGame extends FlameGame with TapCallbacks {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 🎮 DEDICATED ALPHABET & PHONICS GAME SCREEN
+// 🎮 DEDICATED ALPHABET & PHONICS GAME SCREEN (MINIMALIST GAME EDITION)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class PocketAlphabetPhonicsGamePage extends StatefulWidget {
@@ -263,7 +263,6 @@ class _PocketAlphabetPhonicsGamePageState
 
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnimation;
-  final ScrollController _chipScrollController = ScrollController();
 
   @override
   void initState() {
@@ -292,16 +291,12 @@ class _PocketAlphabetPhonicsGamePageState
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
-    _pulseAnimation = Tween<double>(begin: 0.96, end: 1.05).animate(
+    _pulseAnimation = Tween<double>(begin: 0.97, end: 1.04).animate(
       CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
     );
 
-    // Auto speak initial letter after brief delay
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) _speakCurrentLetter();
-      });
-    });
+    // Audio directive: DO NOT auto-speak on initial screen open.
+    // Audio only triggers when learner explicitly taps the speaker/sound button.
   }
 
   Future<void> _initTts() async {
@@ -322,7 +317,6 @@ class _PocketAlphabetPhonicsGamePageState
   void dispose() {
     _tts.stop();
     _pulseController.dispose();
-    _chipScrollController.dispose();
     super.dispose();
   }
 
@@ -369,6 +363,20 @@ class _PocketAlphabetPhonicsGamePageState
     } catch (_) {}
   }
 
+  void _goToNextLetter() {
+    if (_currentIndex < widget.phonicsList.length - 1) {
+      _selectIndex(_currentIndex + 1);
+    } else {
+      _showCompletionDialog();
+    }
+  }
+
+  void _goToPrevLetter() {
+    if (_currentIndex > 0) {
+      _selectIndex(_currentIndex - 1);
+    }
+  }
+
   void _selectIndex(int index) {
     if (index < 0 || index >= widget.phonicsList.length) return;
     HapticFeedback.selectionClick();
@@ -376,17 +384,7 @@ class _PocketAlphabetPhonicsGamePageState
       _currentIndex = index;
     });
     _flameGame.updateLetter(widget.phonicsList[index].letter);
-    _speakCurrentLetter();
-
-    // Auto-scroll chip strip
-    if (_chipScrollController.hasClients) {
-      final target = (index * 48.0) - 100.0;
-      _chipScrollController.animateTo(
-        target.clamp(0.0, _chipScrollController.position.maxScrollExtent),
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOut,
-      );
-    }
+    // User Audio Directive: Silent by default; do NOT auto-speak when advancing letters!
   }
 
   void _markCurrentAsMastered() {
@@ -418,9 +416,9 @@ class _PocketAlphabetPhonicsGamePageState
       ),
     );
 
-    // If not last, advance to next letter automatically
+    // Auto-advance to next letter if not last
     if (_currentIndex < widget.phonicsList.length - 1) {
-      Future.delayed(const Duration(milliseconds: 400), () {
+      Future.delayed(const Duration(milliseconds: 350), () {
         if (mounted) _selectIndex(_currentIndex + 1);
       });
     } else {
@@ -467,18 +465,18 @@ class _PocketAlphabetPhonicsGamePageState
                 ),
                 const SizedBox(height: 18),
                 Text(
-                  'ALPHABET & PHONICS MASTERED!',
+                  'ALPHABET QUEST COMPLETED!',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w900,
-                    fontSize: 20,
+                    fontSize: 19,
                     letterSpacing: 0.5,
                   ),
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Outstanding job! You practiced authentic mouth placement and pronunciation for all ${widget.phonicsList.length} phonics sounds.',
+                  'All ${widget.phonicsList.length} alphabet sounds & mouth placements practiced!',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.inter(
                     color: Colors.white70,
@@ -528,10 +526,10 @@ class _PocketAlphabetPhonicsGamePageState
                       elevation: 4,
                     ),
                     child: Text(
-                      'COMPLETE STEP ✓',
+                      'RETURN TO MISSIONS ✓',
                       style: GoogleFonts.outfit(
                         fontWeight: FontWeight.w900,
-                        fontSize: 15,
+                        fontSize: 14,
                         letterSpacing: 0.5,
                       ),
                     ),
@@ -551,566 +549,449 @@ class _PocketAlphabetPhonicsGamePageState
     final totalCount = widget.phonicsList.length;
     final progress = totalCount > 0 ? (_currentIndex + 1) / totalCount : 1.0;
     final isMastered = _completedIndices.contains(_currentIndex);
+    final hasNext = _currentIndex < totalCount - 1;
+    final hasPrev = _currentIndex > 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF080D1A),
+      backgroundColor: const Color(0xFF070B14),
       body: SafeArea(
-        child: Column(
-          children: [
-            // ─────────────────────────────────────────────────────────────
-            // 1. GAME TOP HUD BAR
-            // ─────────────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              child: Row(
+        child: GestureDetector(
+          // Horizontal swipe gestures to glide effortlessly between letters
+          onHorizontalDragEnd: (details) {
+            if ((details.primaryVelocity ?? 0) < -200) {
+              _goToNextLetter();
+            } else if ((details.primaryVelocity ?? 0) > 200) {
+              _goToPrevLetter();
+            }
+          },
+          child: Stack(
+            children: [
+              // ─────────────────────────────────────────────────────────────
+              // 1. MINIMAL PLAIN GAME BACKGROUND WITH CENTRAL CONTENT
+              // ─────────────────────────────────────────────────────────────
+              Column(
                 children: [
-                  IconButton(
-                    onPressed: () => Navigator.of(context).pop(_completedIndices.length >= totalCount),
-                    icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                    tooltip: 'Back to Missions',
-                  ),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  // ── TOP MINIMAL HUD ──
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFF6D00),
-                                borderRadius: BorderRadius.circular(6),
+                        IconButton(
+                          onPressed: () => Navigator.of(context)
+                              .pop(_completedIndices.length >= totalCount),
+                          icon: const Icon(Icons.close_rounded,
+                              color: Colors.white70, size: 24),
+                          tooltip: 'Exit Game',
+                        ),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'LETTER ${_currentIndex + 1} OF $totalCount',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFF9100),
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 11,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '⭐ ${_completedIndices.length * 10} XP',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 11,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              child: Text(
-                                'DAY ${widget.day} QUEST',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 10,
+                              const SizedBox(height: 6),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(4),
+                                child: LinearProgressIndicator(
+                                  value: progress,
+                                  backgroundColor: Colors.white12,
+                                  valueColor: const AlwaysStoppedAnimation<Color>(
+                                      Color(0xFFFF9100)),
+                                  minHeight: 5,
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Letter ${_currentIndex + 1} of $totalCount',
-                              style: GoogleFonts.inter(
-                                color: Colors.white70,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: LinearProgressIndicator(
-                            value: progress,
-                            backgroundColor: Colors.white12,
-                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFFFF9100)),
-                            minHeight: 6,
+                            ],
                           ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Language Dropdown
+                        PopupMenuButton<String>(
+                          initialValue: _activeLanguage,
+                          onSelected: (lang) => setState(() => _activeLanguage = lang),
+                          color: const Color(0xFF1E293B),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 9, vertical: 5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF131C2E),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white24),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.translate_rounded,
+                                    color: Color(0xFFFFD700), size: 13),
+                                const SizedBox(width: 4),
+                                Text(
+                                  _activeLanguage,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          itemBuilder: (_) => [
+                            const PopupMenuItem(
+                                value: 'Malayalam',
+                                child: Text('മലയാളം (Malayalam)',
+                                    style: TextStyle(color: Colors.white))),
+                            const PopupMenuItem(
+                                value: 'English',
+                                child: Text('English',
+                                    style: TextStyle(color: Colors.white))),
+                            const PopupMenuItem(
+                                value: 'Tamil',
+                                child: Text('தமிழ் (Tamil)',
+                                    style: TextStyle(color: Colors.white))),
+                            const PopupMenuItem(
+                                value: 'Telugu',
+                                child: Text('తెలుగు (Telugu)',
+                                    style: TextStyle(color: Colors.white))),
+                            const PopupMenuItem(
+                                value: 'Hindi',
+                                child: Text('हिन्दी (Hindi)',
+                                    style: TextStyle(color: Colors.white))),
+                            const PopupMenuItem(
+                                value: 'Kannada',
+                                child: Text('ಕನ್ನಡ (Kannada)',
+                                    style: TextStyle(color: Colors.white))),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  // Language Switcher Chip
-                  PopupMenuButton<String>(
-                    initialValue: _activeLanguage,
-                    onSelected: (lang) => setState(() => _activeLanguage = lang),
-                    color: const Color(0xFF1E293B),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.translate_rounded, color: Color(0xFFFFD700), size: 14),
-                          const SizedBox(width: 4),
-                          Text(
-                            _activeLanguage,
-                            style: GoogleFonts.inter(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const Icon(Icons.arrow_drop_down, color: Colors.white70, size: 16),
-                        ],
-                      ),
-                    ),
-                    itemBuilder: (_) => [
-                      const PopupMenuItem(value: 'Malayalam', child: Text('മലയാളം (Malayalam)', style: TextStyle(color: Colors.white))),
-                      const PopupMenuItem(value: 'English', child: Text('English', style: TextStyle(color: Colors.white))),
-                      const PopupMenuItem(value: 'Tamil', child: Text('தமிழ் (Tamil)', style: TextStyle(color: Colors.white))),
-                      const PopupMenuItem(value: 'Telugu', child: Text('తెలుగు (Telugu)', style: TextStyle(color: Colors.white))),
-                      const PopupMenuItem(value: 'Hindi', child: Text('हिन्दी (Hindi)', style: TextStyle(color: Colors.white))),
-                      const PopupMenuItem(value: 'Kannada', child: Text('ಕನ್ನಡ (Kannada)', style: TextStyle(color: Colors.white))),
-                    ],
-                  ),
-                ],
-              ),
-            ),
 
-            // ─────────────────────────────────────────────────────────────
-            // 2. FLAME 2D INTERACTIVE GAME CANVAS
-            // ─────────────────────────────────────────────────────────────
-            SizedBox(
-              height: 170,
-              width: double.infinity,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  GameWidget(game: _flameGame),
-                  Positioned(
-                    bottom: 8,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.55),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white12),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.touch_app_rounded, color: Color(0xFFFF9100), size: 14),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Tap Orb to Trigger Fire Burst & Sound',
-                            style: GoogleFonts.inter(
-                              color: Colors.white70,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
+                  // ── CENTER HERO STAGE (HERO FLAME ORB + MINIMAL DETAILS) ──
+                  Expanded(
+                    child: Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 56),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // 2D Flame Letter Orb (interactive tap for sparks/burst)
+                            SizedBox(
+                              height: 180,
+                              width: 180,
+                              child: GameWidget(game: _flameGame),
                             ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
 
-            // ─────────────────────────────────────────────────────────────
-            // 3. MAIN GAMIFIED CARD WITH PHONEME, WORDS & ARTICULATION
-            // ─────────────────────────────────────────────────────────────
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-                child: Column(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF0F172A),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isMastered
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFFFF9100).withValues(alpha: 0.4),
-                          width: isMastered ? 2.0 : 1.2,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: isMastered
-                                ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                                : const Color(0xFFFF6D00).withValues(alpha: 0.12),
-                            blurRadius: 16,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Letter Badge & Phoneme Chip
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFFF9100), Color(0xFFFF3D00)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(12),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFFFF6D00).withValues(alpha: 0.4),
-                                      blurRadius: 8,
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  item.letter,
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w900,
-                                  ),
+                            const SizedBox(height: 8),
+
+                            // IPA Phoneme Tag
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(
+                                    color: const Color(0xFF00E5FF).withValues(alpha: 0.5)),
+                              ),
+                              child: Text(
+                                item.phoneme,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF00E5FF),
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.0,
                                 ),
                               ),
-                              const SizedBox(width: 14),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'IPA PHONIC SOUND',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white54,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 0.5,
+                            ),
+
+                            const SizedBox(height: 14),
+
+                            // Target Word Chip (Tap to hear)
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              alignment: WrapAlignment.center,
+                              children: item.exampleWord.split('/').map((w) {
+                                final trimmed = w.trim();
+                                return InkWell(
+                                  onTap: () => _speakWordOnly(trimmed),
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF131C2E),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                          color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          trimmed,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        const Icon(
+                                          Icons.volume_up_rounded,
+                                          color: Color(0xFFFFD700),
+                                          size: 16,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: const Color(0xFF00E5FF)),
-                                    ),
+                                );
+                              }).toList(),
+                            ),
+
+                            const SizedBox(height: 16),
+
+                            // Minimal Articulation Guide in Malayalam/Selected Language
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E170A),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: const Color(0xFFFFB300).withValues(alpha: 0.4),
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Text('👄', style: TextStyle(fontSize: 18)),
+                                  const SizedBox(width: 10),
+                                  Expanded(
                                     child: Text(
-                                      item.phoneme,
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFF00E5FF),
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
+                                      item.getPronunciationGuide(_activeLanguage),
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFFFFF8E1),
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.w600,
+                                        height: 1.35,
                                       ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-
-                          const SizedBox(height: 16),
-
-                          // Example Words Card
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(color: Colors.white12),
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Text('🎯', style: TextStyle(fontSize: 14)),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'EXAMPLE TARGET WORDS',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white70,
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w800,
-                                        letterSpacing: 0.5,
-                                      ),
+
+                            const SizedBox(height: 20),
+
+                            // 🔊 Minimal Game Sound Button
+                            ScaleTransition(
+                              scale: _isPlayingAudio
+                                  ? _pulseAnimation
+                                  : const AlwaysStoppedAnimation(1.0),
+                              child: SizedBox(
+                                width: double.infinity,
+                                height: 48,
+                                child: ElevatedButton.icon(
+                                  onPressed: _speakCurrentLetter,
+                                  icon: Icon(
+                                    _isPlayingAudio
+                                        ? Icons.graphic_eq_rounded
+                                        : Icons.volume_up_rounded,
+                                    color: Colors.black,
+                                    size: 20,
+                                  ),
+                                  label: Text(
+                                    _isPlayingAudio ? 'PLAYING SOUND...' : 'PLAY SOUND 🔊',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 14,
+                                      letterSpacing: 0.5,
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 8),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: item.exampleWord.split('/').map((w) {
-                                    final trimmed = w.trim();
-                                    return InkWell(
-                                      onTap: () => _speakWordOnly(trimmed),
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xFF0F172A),
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: const Color(0xFFFFD700).withValues(alpha: 0.4),
-                                          ),
-                                        ),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              trimmed,
-                                              style: GoogleFonts.inter(
-                                                color: Colors.white,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 6),
-                                            const Icon(
-                                              Icons.volume_up_rounded,
-                                              color: Color(0xFFFFD700),
-                                              size: 14,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          const SizedBox(height: 14),
-
-                          // Mouth & Articulation Guide (Malayalam/Selected Language)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF3B2805).withValues(alpha: 0.45),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: const Color(0xFFFFB300).withValues(alpha: 0.6),
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Text('👄', style: TextStyle(fontSize: 16)),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'MOUTH & VOCAL PLACEMENT GUIDE',
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFFFFD54F),
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.w900,
-                                        letterSpacing: 0.5,
-                                      ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: _isPlayingAudio
+                                        ? const Color(0xFF00E5FF)
+                                        : const Color(0xFFFF9100),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  item.getPronunciationGuide(_activeLanguage),
-                                  style: GoogleFonts.inter(
-                                    color: const Color(0xFFFFF8E1),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    height: 1.4,
+                                    elevation: 4,
                                   ),
                                 ),
-                              ],
+                              ),
                             ),
-                          ),
 
-                          const SizedBox(height: 18),
+                            const SizedBox(height: 10),
 
-                          // 🔊 Big Gamified Audio Action Button
-                          ScaleTransition(
-                            scale: _isPlayingAudio ? _pulseAnimation : const AlwaysStoppedAnimation(1.0),
-                            child: SizedBox(
+                            // 🌟 Mastered / Practice Action
+                            SizedBox(
                               width: double.infinity,
-                              height: 52,
-                              child: ElevatedButton.icon(
-                                onPressed: _speakCurrentLetter,
+                              height: 42,
+                              child: OutlinedButton.icon(
+                                onPressed: _markCurrentAsMastered,
                                 icon: Icon(
-                                  _isPlayingAudio ? Icons.graphic_eq_rounded : Icons.volume_up_rounded,
-                                  color: Colors.black,
-                                  size: 22,
+                                  isMastered
+                                      ? Icons.check_circle_rounded
+                                      : Icons.star_rounded,
+                                  color: isMastered
+                                      ? const Color(0xFF10B981)
+                                      : const Color(0xFFFFD700),
+                                  size: 18,
                                 ),
                                 label: Text(
-                                  _isPlayingAudio ? 'SPEAKING SOUND...' : 'PLAY SOUND & PRONOUNCE 🔊',
+                                  isMastered
+                                      ? 'LETTER MASTERED ✓'
+                                      : 'MARK MASTERED (+10 XP) 🌟',
                                   style: GoogleFonts.outfit(
-                                    color: Colors.black,
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 14,
-                                    letterSpacing: 0.5,
+                                    color: isMastered
+                                        ? const Color(0xFF10B981)
+                                        : Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 12.5,
                                   ),
                                 ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: _isPlayingAudio
-                                      ? const Color(0xFF00E5FF)
-                                      : const Color(0xFFFF9100),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: isMastered
+                                        ? const Color(0xFF10B981)
+                                        : Colors.white24,
+                                  ),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                  elevation: 6,
                                 ),
                               ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 10),
-
-                          // 🗣️ Voice Practice Aloud Action
-                          SizedBox(
-                            width: double.infinity,
-                            height: 44,
-                            child: OutlinedButton.icon(
-                              onPressed: _markCurrentAsMastered,
-                              icon: Icon(
-                                isMastered ? Icons.check_circle_rounded : Icons.record_voice_over_rounded,
-                                color: isMastered ? const Color(0xFF10B981) : const Color(0xFFFFD700),
-                                size: 18,
-                              ),
-                              label: Text(
-                                isMastered ? 'SOUND MASTERED ✓ (+10 XP)' : 'I PRACTICED THIS SOUND ALOUD 🗣️',
-                                style: GoogleFonts.outfit(
-                                  color: isMastered ? const Color(0xFF10B981) : Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 12.5,
-                                ),
-                              ),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: isMastered ? const Color(0xFF10B981) : Colors.white24,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            // ─────────────────────────────────────────────────────────────
-            // 4. QUICK ALPHABET CHIP STRIP
-            // ─────────────────────────────────────────────────────────────
-            Container(
-              height: 48,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: ListView.separated(
-                controller: _chipScrollController,
-                scrollDirection: Axis.horizontal,
-                itemCount: totalCount,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
-                itemBuilder: (context, index) {
-                  final itm = widget.phonicsList[index];
-                  final isCurrent = index == _currentIndex;
-                  final isDone = _completedIndices.contains(index);
-
-                  return InkWell(
-                    onTap: () => _selectIndex(index),
-                    borderRadius: BorderRadius.circular(10),
-                    child: Container(
-                      width: 44,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: isCurrent
-                            ? const Color(0xFFFF9100)
-                            : (isDone ? const Color(0xFF10B981).withValues(alpha: 0.25) : const Color(0xFF1E293B)),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: isCurrent
-                              ? const Color(0xFFFFD700)
-                              : (isDone ? const Color(0xFF10B981) : Colors.white12),
-                          width: isCurrent ? 2 : 1,
-                        ),
-                      ),
-                      child: Text(
-                        itm.letter.split(' ').first,
-                        style: GoogleFonts.outfit(
-                          color: isCurrent ? Colors.black : (isDone ? const Color(0xFF10B981) : Colors.white),
-                          fontWeight: FontWeight.w900,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            // ─────────────────────────────────────────────────────────────
-            // 5. BOTTOM NAVIGATION BAR (PREV / NEXT / FINISH)
-            // ─────────────────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 10, 16, 14),
-              child: Row(
-                children: [
-                  // Previous Letter Button
-                  Expanded(
-                    flex: 1,
-                    child: SizedBox(
-                      height: 48,
-                      child: OutlinedButton(
-                        onPressed: _currentIndex > 0 ? () => _selectIndex(_currentIndex - 1) : null,
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.white24),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text(
-                          'PREV',
-                          style: GoogleFonts.outfit(
-                            color: _currentIndex > 0 ? Colors.white : Colors.white30,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Next / Finish Button
-                  Expanded(
-                    flex: 2,
-                    child: SizedBox(
-                      height: 48,
-                      child: ElevatedButton(
-                        onPressed: () {
-                          if (_currentIndex < totalCount - 1) {
-                            _selectIndex(_currentIndex + 1);
-                          } else {
-                            _showCompletionDialog();
-                          }
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFF9100),
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          elevation: 4,
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              _currentIndex < totalCount - 1 ? 'NEXT LETTER' : 'FINISH GAME 🏆',
-                              style: GoogleFonts.outfit(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 14,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Icon(
-                              _currentIndex < totalCount - 1
-                                  ? Icons.arrow_forward_rounded
-                                  : Icons.emoji_events_rounded,
-                              size: 18,
-                              color: Colors.black,
                             ),
                           ],
                         ),
                       ),
                     ),
                   ),
+
+                  // Bottom mini letter dots indicator
+                  Container(
+                    height: 28,
+                    alignment: Alignment.center,
+                    child: Text(
+                      'Swipe left / right or tap side arrows to navigate',
+                      style: GoogleFonts.inter(
+                        color: Colors.white38,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
-          ],
+
+              // ─────────────────────────────────────────────────────────────
+              // 2. PROMINENT SIDE NAVIGATION CONTROLS (LEFT & RIGHT)
+              // ─────────────────────────────────────────────────────────────
+              // Left Prev Button
+              Positioned(
+                left: 8,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: InkWell(
+                    onTap: hasPrev ? _goToPrevLetter : null,
+                    borderRadius: BorderRadius.circular(24),
+                    child: AnimatedOpacity(
+                      duration: const Duration(milliseconds: 200),
+                      opacity: hasPrev ? 1.0 : 0.2,
+                      child: Container(
+                        width: 44,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF131C2E).withValues(alpha: 0.85),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.white12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.3),
+                              blurRadius: 8,
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // Right Next Button
+              Positioned(
+                right: 8,
+                top: 0,
+                bottom: 0,
+                child: Center(
+                  child: InkWell(
+                    onTap: _goToNextLetter,
+                    borderRadius: BorderRadius.circular(24),
+                    child: Container(
+                      width: 44,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: hasNext
+                              ? [const Color(0xFFFF9100), const Color(0xFFFF3D00)]
+                              : [const Color(0xFF10B981), const Color(0xFF059669)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (hasNext
+                                    ? const Color(0xFFFF9100)
+                                    : const Color(0xFF10B981))
+                                .withValues(alpha: 0.4),
+                            blurRadius: 10,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        hasNext
+                            ? Icons.arrow_forward_ios_rounded
+                            : Icons.check_rounded,
+                        color: Colors.black,
+                        size: 22,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

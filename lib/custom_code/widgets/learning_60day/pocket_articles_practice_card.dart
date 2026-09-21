@@ -352,21 +352,21 @@ class _PocketArticlesPracticeCardState
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF0A0E17), // Minimal, plain dark game canvas
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: widget.isCompleted
               ? const Color(0xFF10B981)
-              : const Color(0xFF7C5CFC).withValues(alpha: 0.5),
+              : const Color(0xFFFFB74D).withValues(alpha: 0.4),
           width: widget.isCompleted ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
             color: (widget.isCompleted
                     ? const Color(0xFF10B981)
-                    : const Color(0xFF7C5CFC))
-                .withValues(alpha: 0.12),
-            blurRadius: 18,
+                    : const Color(0xFFFFB74D))
+                .withValues(alpha: 0.08),
+            blurRadius: 20,
             offset: const Offset(0, 4),
           ),
         ],
@@ -374,38 +374,85 @@ class _PocketArticlesPracticeCardState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Header ─────────────────────────────────────────────
+          // ── TOP GAME HUD BAR ─────────────────────────────────────────────
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.stepNumber.isNotEmpty
-                          ? 'STEP ${widget.stepNumber} • 📝 Articles'
-                          : '📝 Articles (A, An, The)',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                        letterSpacing: 0.2,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _getLocalizedSubtitle(widget.selectedLanguage),
-                      style: GoogleFonts.inter(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+              // Step & Game Capsule
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFB74D), Color(0xFFFF9800)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  widget.stepNumber.isNotEmpty
+                      ? 'STEP ${widget.stepNumber} • ARTICLES'
+                      : 'ARTICLES GAME',
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
+                  ),
                 ),
               ),
               const SizedBox(width: 8),
+
+              // Drill Counter Capsule
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Text(
+                  'TASK ${_currentExerciseIndex + 1}/${exercises.length}',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFCC80),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              const Spacer(),
+
+              // Quick Side Navigation in HUD
+              InkWell(
+                onTap: _goToPrevious,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Icon(Icons.chevron_left_rounded,
+                      color: Colors.white70, size: 18),
+                ),
+              ),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: _goToNext,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Icon(Icons.chevron_right_rounded,
+                      color: Colors.white70, size: 18),
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // Mark Step Checkbox
               InkWell(
                 onTap: () {
                   HapticFeedback.heavyImpact();
@@ -452,7 +499,7 @@ class _PocketArticlesPracticeCardState
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        widget.isCompleted ? 'DONE ✓' : 'MARK STEP',
+                        widget.isCompleted ? 'DONE ✓' : 'VERIFY',
                         style: GoogleFonts.outfit(
                           color: widget.isCompleted
                               ? const Color(0xFF10B981)
@@ -466,6 +513,28 @@ class _PocketArticlesPracticeCardState
                 ),
               ),
             ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Title & Subtitle
+          Text(
+            'Articles Practice (A, An, The) 📝',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              letterSpacing: 0.2,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            _getLocalizedSubtitle(widget.selectedLanguage),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF38BDF8),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 6),
           Text(

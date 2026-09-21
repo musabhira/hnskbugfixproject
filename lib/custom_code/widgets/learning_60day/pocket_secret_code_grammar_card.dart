@@ -209,55 +209,103 @@ class _PocketSecretCodeGrammarCardState
     ),
   ];
 
+  final Set<int> _fixedCodeIndices = {};
+
+  void _nextCode() {
+    if (_selectedCodeIndex < kCheatCodes.length - 1) {
+      setState(() => _selectedCodeIndex++);
+    }
+  }
+
+  void _prevCode() {
+    if (_selectedCodeIndex > 0) {
+      setState(() => _selectedCodeIndex--);
+    }
+  }
+
+  void _zapGlitch(SecretCodeFormulaItem code) {
+    HapticFeedback.heavyImpact();
+    setState(() {
+      _fixedCodeIndices.add(_selectedCodeIndex);
+    });
+    widget.onSpeak(code.correctExample);
+
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Text('⚡', style: TextStyle(fontSize: 18)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '${code.codeId} Glitch Zapped! Native Formula Compiled ✓',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: const Color(0xFF10B981),
+        duration: const Duration(milliseconds: 1000),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final code = kCheatCodes[_selectedCodeIndex.clamp(0, kCheatCodes.length - 1)];
+    final totalCodes = kCheatCodes.length;
+    final code = kCheatCodes[_selectedCodeIndex.clamp(0, totalCodes - 1)];
     final ruleText = code.getRule(widget.selectedLanguage);
+    final isFixed = _fixedCodeIndices.contains(_selectedCodeIndex);
+    final hasNext = _selectedCodeIndex < totalCodes - 1;
+    final hasPrev = _selectedCodeIndex > 0;
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF0A0E17),
+        borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: widget.isCompleted
               ? const Color(0xFF10B981)
-              : const Color(0xFFFFD700).withValues(alpha: 0.35),
-          width: widget.isCompleted ? 1.5 : 1.0,
+              : code.color.withValues(alpha: 0.4),
+          width: 1.5,
         ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
+          // ── TOP ARCADE STATUS BAR ──
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFFFD700), Color(0xFFFF8C00)],
-                  ),
+                  color: code.color.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: code.color, width: 0.8),
                 ),
                 child: Text(
-                  widget.stepNumber.isNotEmpty
-                      ? 'STEP ${widget.stepNumber}'
-                      : '⚡ CHEAT CODES',
-                  style: const TextStyle(
-                    color: Colors.black,
+                  'STAGE ${_selectedCodeIndex + 1}/$totalCodes',
+                  style: GoogleFonts.firaCode(
+                    color: code.color,
                     fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.5,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              const Text('🔐', style: TextStyle(fontSize: 16)),
+              Text(code.icon, style: const TextStyle(fontSize: 16)),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Secret Code Grammar (കോഡ് ഭാഷാ ഇംഗ്ലീഷ്)',
+                  code.codeName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -265,22 +313,15 @@ class _PocketSecretCodeGrammarCardState
                   ),
                 ),
               ),
-              if (widget.isCompleted)
+              if (isFixed || widget.isCompleted)
                 const Icon(Icons.check_circle_rounded,
                     color: Color(0xFF10B981), size: 18),
             ],
           ),
-          const SizedBox(height: 6),
-          Text(
-            'No-Jargon Cheat Codes to master Tenses & Sentence Order instantly!',
-            style: GoogleFonts.inter(
-              color: Colors.white60,
-              fontSize: 11,
-            ),
-          ),
-          const SizedBox(height: 10),
 
-          // Horizontal Code Selector Chips
+          const SizedBox(height: 12),
+
+          // ── CODE SELECTOR CHIPS ──
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -288,6 +329,7 @@ class _PocketSecretCodeGrammarCardState
                 final idx = entry.key;
                 final item = entry.value;
                 final isSelected = idx == _selectedCodeIndex;
+                final itemFixed = _fixedCodeIndices.contains(idx);
 
                 return Padding(
                   padding: const EdgeInsets.only(right: 6),
@@ -296,25 +338,31 @@ class _PocketSecretCodeGrammarCardState
                       HapticFeedback.selectionClick();
                       setState(() => _selectedCodeIndex = idx);
                     },
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 5),
+                          horizontal: 10, vertical: 6),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? item.color.withValues(alpha: 0.25)
-                            : const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(8),
+                            : (itemFixed
+                                ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                : const Color(0xFF131C2E)),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
-                          color: isSelected ? item.color : Colors.white12,
-                          width: isSelected ? 1.4 : 1.0,
+                          color: isSelected
+                              ? item.color
+                              : (itemFixed
+                                  ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                                  : Colors.white12),
+                          width: isSelected ? 1.5 : 1.0,
                         ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(item.icon, style: const TextStyle(fontSize: 12)),
-                          const SizedBox(width: 4),
+                          const SizedBox(width: 5),
                           Text(
                             item.codeId,
                             style: GoogleFonts.firaCode(
@@ -323,6 +371,11 @@ class _PocketSecretCodeGrammarCardState
                               fontSize: 11,
                             ),
                           ),
+                          if (itemFixed) ...[
+                            const SizedBox(width: 4),
+                            const Icon(Icons.check_rounded,
+                                color: Color(0xFF10B981), size: 12),
+                          ],
                         ],
                       ),
                     ),
@@ -331,18 +384,53 @@ class _PocketSecretCodeGrammarCardState
               }).toList(),
             ),
           ),
-          const SizedBox(height: 12),
 
-          // Code Formula Banner Box
+          const SizedBox(height: 16),
+
+          // ── FORMULA BANNER ──
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
             decoration: BoxDecoration(
-              color: const Color(0xFF070B14),
+              color: const Color(0xFF131C2E),
               borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: code.color.withValues(alpha: 0.4)),
+            ),
+            child: Row(
+              children: [
+                const Text('📐', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    code.formula,
+                    style: GoogleFonts.firaCode(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.4,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // ── INTERACTIVE BUG-ZAPPER ARCADE CARD ──
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isFixed
+                  ? const Color(0xFF06281E).withValues(alpha: 0.6)
+                  : const Color(0xFF280B0F).withValues(alpha: 0.6),
+              borderRadius: BorderRadius.circular(14),
               border: Border.all(
-                color: code.color.withValues(alpha: 0.4),
-                width: 1.2,
+                color: isFixed
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFF43F5E).withValues(alpha: 0.6),
+                width: 1.4,
               ),
             ),
             child: Column(
@@ -350,125 +438,198 @@ class _PocketSecretCodeGrammarCardState
               children: [
                 Row(
                   children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: code.color.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(4),
-                        border: Border.all(color: code.color, width: 0.8),
-                      ),
-                      child: Text(
-                        code.category.toUpperCase(),
-                        style: GoogleFonts.firaCode(
-                          color: code.color,
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    Text(
+                      isFixed ? '✅ NATIVE CODE COMPILED' : '🚨 GRAMMAR GLITCH DETECTED',
+                      style: GoogleFonts.firaCode(
+                        color: isFixed
+                            ? const Color(0xFF10B981)
+                            : const Color(0xFFF43F5E),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                     const Spacer(),
                     IconButton(
                       icon: const Icon(Icons.volume_up_rounded,
-                          color: Color(0xFFFFD700), size: 18),
+                          color: Color(0xFFFFD700), size: 20),
                       onPressed: () => widget.onSpeak(code.correctExample),
-                      tooltip: 'Listen to native code execution',
+                      tooltip: 'Pronounce Correct Sentence',
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
                     ),
                   ],
                 ),
                 const SizedBox(height: 8),
+
+                // Buggy sentence
                 Text(
-                  code.codeName,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 13.5,
+                  code.buggyExample,
+                  style: GoogleFonts.inter(
+                    color: const Color(0xFFFCA5A5),
+                    fontSize: 12.5,
+                    decoration: TextDecoration.lineThrough,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
-                const SizedBox(height: 6),
 
-                // Monospace Formula
+                const SizedBox(height: 8),
+
+                // Correct Sentence (Highlighted when fixed)
                 Container(
                   width: double.infinity,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
+                    color: Colors.black.withValues(alpha: 0.3),
                     borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isFixed
+                          ? const Color(0xFF10B981)
+                          : Colors.white12,
+                    ),
                   ),
                   child: Text(
-                    code.formula,
-                    style: GoogleFonts.firaCode(
-                      color: const Color(0xFFFFD700),
-                      fontSize: 12,
+                    code.correctExample,
+                    style: GoogleFonts.inter(
+                      color: isFixed
+                          ? const Color(0xFF6EE7B7)
+                          : Colors.white70,
+                      fontSize: 13,
                       fontWeight: FontWeight.bold,
-                      letterSpacing: 0.3,
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
 
-                // Localized Secret Explanation
-                Text(
-                  ruleText,
-                  style: GoogleFonts.inter(
-                    color: const Color(0xFFBAE6FD),
-                    fontSize: 11.5,
-                    height: 1.4,
-                  ),
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
 
-                // Buggy vs Correct Side-by-Side
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.03),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        code.buggyExample,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFFFCA5A5),
-                          fontSize: 11,
-                          decoration: TextDecoration.lineThrough,
+                // Zap / Fix Button
+                if (!isFixed)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 44,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _zapGlitch(code),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF43F5E),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 3,
+                      ),
+                      icon: const Icon(Icons.bolt_rounded, size: 18),
+                      label: Text(
+                        '⚡ ZAP BUG & FIX CODE',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12.5,
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        code.correctExample,
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF6EE7B7),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
+                    ),
+                  )
+                else
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF131C2E),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('💡', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            ruleText,
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFFFF8E1),
+                              fontSize: 11.5,
+                              height: 1.35,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
           ),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 14),
 
-          // Completion Button
+          // ── PREV / NEXT CODE NAVIGATION ──
+          Row(
+            children: [
+              if (hasPrev)
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _prevCode,
+                    icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                    label: Text(
+                      'PREV CODE',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      side: const BorderSide(color: Colors.white24),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+              if (hasPrev && hasNext) const SizedBox(width: 10),
+              if (hasNext)
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _nextCode,
+                    icon: const Icon(Icons.arrow_forward_rounded, size: 16),
+                    label: Text(
+                      'NEXT CODE',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: code.color,
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // ── MASTER STEP COMPLETION ACTION ──
           SizedBox(
             width: double.infinity,
+            height: 46,
             child: ElevatedButton.icon(
               onPressed: () {
                 widget.onCompleted(true);
-                HapticFeedback.lightImpact();
+                HapticFeedback.heavyImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                        '⚡ ${code.codeName} Locked into Memory! Zero grammar lag verified (+20 PTS) ✓'),
-                    backgroundColor: const Color(0xFF10B981),
+                  const SnackBar(
+                    content: Row(
+                      children: [
+                        Text('⚡', style: TextStyle(fontSize: 18)),
+                        SizedBox(width: 8),
+                        Text('All Secret Codes Mastered! +20 XP'),
+                      ],
+                    ),
+                    backgroundColor: Color(0xFF10B981),
+                    duration: Duration(seconds: 2),
                   ),
                 );
               },
@@ -477,25 +638,25 @@ class _PocketSecretCodeGrammarCardState
                     ? Icons.check_circle_rounded
                     : Icons.bolt_rounded,
                 color: Colors.black,
-                size: 16,
+                size: 18,
               ),
               label: Text(
                 widget.isCompleted
-                    ? 'ALL CHEAT CODES VERIFIED ✓'
-                    : 'I DRILLED THIS CODE FORMULA ✓',
+                    ? 'SECRET CODES MASTERED ✓'
+                    : 'LOCK ALL CODES INTO MEMORY ⚡',
                 style: GoogleFonts.outfit(
                   color: Colors.black,
                   fontWeight: FontWeight.w900,
-                  fontSize: 11.5,
+                  fontSize: 12.5,
+                  letterSpacing: 0.5,
                 ),
               ),
               style: ElevatedButton.styleFrom(
                 backgroundColor: widget.isCompleted
                     ? const Color(0xFF10B981)
                     : const Color(0xFFFFD700),
-                padding: const EdgeInsets.symmetric(vertical: 12),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),
