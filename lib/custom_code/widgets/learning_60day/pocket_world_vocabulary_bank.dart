@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// 📘 Multilingual Vocabulary Item for Pocket Open World
 class OpenWorldVocabItem {
   final String word;

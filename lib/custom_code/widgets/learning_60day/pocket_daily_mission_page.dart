@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
@@ -133,6 +134,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _pronunciationCompleted = false;
   bool _englishThinkingCompleted = false;
   bool _speakingChallengeCompleted = false;
+  bool _fluencyShortcutCompleted = false;
   bool _wordCatcherCompleted = false;
   bool _careerAdventureCompleted = false;
   bool _cityNavigatorCompleted = false;
@@ -4188,6 +4190,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           prefs.getBool('${dayKey}_english_thinking') ?? false;
       _speakingChallengeCompleted =
           prefs.getBool('${dayKey}_speaking_challenge') ?? false;
+      _fluencyShortcutCompleted =
+          prefs.getBool('${dayKey}_fluency_shortcut') ?? false;
       _secretCodeGrammarCompleted =
           prefs.getBool('${dayKey}_secret_code') ?? false;
       _sentenceBuilderCompleted =
@@ -4267,6 +4271,30 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         break;
       case 'sentence_structure_practice':
         _sentenceStructurePracticeCompleted = value;
+        break;
+      case 'sentence_pattern':
+        _sentencePatternCompleted = value;
+        break;
+      case 'reading':
+        _readingNotesCompleted = value;
+        break;
+      case 'code_english':
+        _codeEnglishCompleted = value;
+        break;
+      case 'pronunciation':
+        _pronunciationCompleted = value;
+        break;
+      case 'english_thinking':
+        _englishThinkingCompleted = value;
+        break;
+      case 'speaking_challenge':
+        _speakingChallengeCompleted = value;
+        break;
+      case 'fluency_shortcut':
+        _fluencyShortcutCompleted = value;
+        break;
+      case 'quiz':
+        _revisionQuizPassed = value;
         break;
     }
     final prefs = await SharedPreferences.getInstance();
@@ -4822,6 +4850,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_hasPronunciationClinic && _pronunciationCompleted) count++;
     if (_hasEnglishThinking && _englishThinkingCompleted) count++;
     if (_hasSpeakingChallenge && _speakingChallengeCompleted) count++;
+    if (_fluencyShortcutCompleted) count++;
     if (_revisionQuizPassed) count++;
     if (_defenseTrapArmed) count++;
     if (widget.day >= 4 && _trialRaidLaunched) count++;
@@ -4848,9 +4877,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int get _stepPeerCall => _stepEnglishHub + 1;
   int get _stepVocab => _stepPeerCall + 1;
   int get _stepAdventureGame => _stepVocab + 1;
-  int get _stepReadingNotes => _stepAdventureGame + 1;
+  int get _stepSentencePattern => _hasSentencePatterns ? _stepAdventureGame + 1 : _stepAdventureGame;
+  int get _stepReadingNotes => _hasSentencePatterns ? _stepSentencePattern + 1 : _stepAdventureGame + 1;
   int get _stepCodeEnglish => _stepReadingNotes + 1;
-  int get _stepQuiz => _stepCodeEnglish + 1;
+  int get _stepPronunciation => _hasPronunciationClinic ? _stepCodeEnglish + 1 : _stepCodeEnglish;
+  int get _stepThinking => _hasEnglishThinking
+      ? (_hasPronunciationClinic ? _stepPronunciation + 1 : _stepCodeEnglish + 1)
+      : (_hasPronunciationClinic ? _stepPronunciation : _stepCodeEnglish);
+  int get _stepSpeakingChallenge => _hasSpeakingChallenge ? _stepThinking + 1 : _stepThinking;
+  int get _stepShortcut => _stepSpeakingChallenge + 1;
+  int get _stepQuiz => _stepShortcut + 1;
   int get _stepDefenseTrap => _stepQuiz + 1;
   int get _stepBattleRaid => _stepDefenseTrap + 1;
 
@@ -5685,6 +5721,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 10),
 
+                      // 🧬 Target Evolution Avatar to Achieve Card
+                      _buildTargetAvatarCard(),
+
+                      const SizedBox(height: 10),
+
                       // 🏆 Final Mission Completion Button
                       _buildFinalClaimButton(),
 
@@ -5945,6 +5986,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             onPressed: () => Navigator.pop(context),
           ),
           const SizedBox(width: 4),
+          // 🧬 Current Level Avatar
+          Container(
+            width: 38,
+            height: 38,
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+              color: const Color(0xFF1E293B),
+            ),
+            child: ClipOval(
+              child: VectorAvatarWidget(
+                config: VectorAvatarConfig.getEvolutionAvatarForStage(widget.day),
+                size: 38,
+              ),
+            ),
+          ),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -6818,6 +6876,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- SUBTASK 3: 🧠 10 VOCABULARY WORDS TO MEMORIZE CARD ---
   Widget _buildVocabDeckCard() {
+    return _buildTopicSubtaskCard(
+      stepNumber: '$_stepVocab',
+      icon: '🧠',
+      title: '10 Core Vocabulary Words',
+      subtitle:
+          'Memorize 10 essential words with definitions, native meanings & audio pronunciation.',
+      isVerified: _vocabMemorized,
+      actionColor: const Color(0xFFFF8906),
+      actionLabel: 'VOCABULARY DECK 🧠',
+      subtaskKey: 'vocab_mem',
+      builder: (ctx, lang, markCompleted) {
+        return _buildVocabDetailContent(lang, markCompleted);
+      },
+    );
+  }
+
+  Widget _buildVocabDetailContent(
+      String lang, void Function(bool) markCompleted) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -6988,6 +7064,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         _isPocketVocabSaved = true;
                       });
                       _saveSubtask('vocab_mem', true);
+                      markCompleted(true);
                       HapticFeedback.mediumImpact();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -7051,6 +7128,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               onPressed: () async {
                 setState(() => _vocabMemorized = true);
                 _saveSubtask('vocab_mem', true);
+                markCompleted(true);
                 // Also auto-save to local pocket vocabulary
                 final wordsMap = _vocabList.map((v) => v.toMap()).toList();
                 await PocketVocabularyService.instance
@@ -7324,6 +7402,28 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         PocketMissionCurriculumRegistry.getSentencePatterns(widget.day);
     if (patterns.isEmpty) return const SizedBox.shrink();
 
+    return _buildTopicSubtaskCard(
+      stepNumber: '$_stepSentencePattern',
+      icon: '📐',
+      title: 'Sentence Pattern Practice',
+      subtitle:
+          'Master structural formulas, core sentence templates, and real-time audio pronunciation drills.',
+      isVerified: _sentencePatternCompleted,
+      actionColor: const Color(0xFF00E5FF),
+      actionLabel: 'SENTENCE PATTERNS 📐',
+      subtaskKey: 'sentence_pattern',
+      builder: (ctx, lang, markCompleted) {
+        return _buildSentencePatternDetailContent(lang, markCompleted);
+      },
+    );
+  }
+
+  Widget _buildSentencePatternDetailContent(
+      String lang, void Function(bool) markCompleted) {
+    final patterns =
+        PocketMissionCurriculumRegistry.getSentencePatterns(widget.day);
+    if (patterns.isEmpty) return const SizedBox.shrink();
+
     final pattern =
         patterns[_selectedPatternIndex.clamp(0, patterns.length - 1)];
 
@@ -7522,6 +7622,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               onPressed: () {
                 setState(() => _sentencePatternCompleted = true);
                 _saveSubtask('sentence_pattern', true);
+                markCompleted(true);
                 HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -7773,27 +7874,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ],
                 ),
               ],
-            ),
-          ),
-          const SizedBox(height: 12),
-
-          // 🏡 Interactive Flame Habit House Engine for Level 1!
-          ClipRRect(
-            borderRadius: BorderRadius.circular(14),
-            child: Container(
-              height: 220,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                  width: 1.2,
-                ),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: const FlameEnglishHouseWidget(
-                currentDay: 1,
-                streak: 1,
-                showTestingControls: false,
-              ),
             ),
           ),
           const SizedBox(height: 12),
@@ -10791,6 +10871,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- SUBTASK 4/5: 📖 CORE NOTES & AUTHENTIC MULTI-PAGE STORY READING CARD ---
   Widget _buildReadingNotesCard() {
+    return _buildTopicSubtaskCard(
+      stepNumber: '$_stepReadingNotes',
+      icon: '📖',
+      title: 'Grammar Notes & Authentic Story Reading',
+      subtitle:
+          'Deep-dive into multi-page authentic stories, grammar breakdowns, voice recordings, and native explanations.',
+      isVerified: _readingNotesCompleted,
+      actionColor: const Color(0xFF60A5FA),
+      actionLabel: 'READING & STORY 📖',
+      subtaskKey: 'reading',
+      builder: (ctx, lang, markCompleted) {
+        return _buildReadingNotesDetailContent(lang, markCompleted);
+      },
+    );
+  }
+
+  Widget _buildReadingNotesDetailContent(
+      String lang, void Function(bool) markCompleted) {
     final storyPages =
         PocketMissionCurriculumRegistry.getStoryPages(widget.day);
     final hasPages = storyPages.isNotEmpty;
@@ -11410,6 +11508,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ? () {
                       setState(() => _readingNotesCompleted = true);
                       _saveSubtask('reading', true);
+                      markCompleted(true);
                       HapticFeedback.heavyImpact();
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -11525,6 +11624,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- SUBTASK 5: ⚡ POCKET CODE ENGLISH DECODER CARD (User Audio Directive: Integrated Step 5) ---
   Widget _buildCodeEnglishDecoderCard() {
+    return _buildTopicSubtaskCard(
+      stepNumber: '$_stepCodeEnglish',
+      icon: '⚡',
+      title: 'Pocket Code English Decoder',
+      subtitle:
+          'Mnemonic Syntax Algorithms: Master formula-based English codes & test with the live syntax compiler.',
+      isVerified: _codeEnglishCompleted,
+      actionColor: const Color(0xFF00FFCC),
+      actionLabel: 'CODE ENGLISH DECODER ⚡',
+      subtaskKey: 'code_english',
+      builder: (ctx, lang, markCompleted) {
+        return _buildCodeEnglishDetailContent(lang, markCompleted);
+      },
+    );
+  }
+
+  Widget _buildCodeEnglishDetailContent(
+      String lang, void Function(bool) markCompleted) {
     final formula = PocketCodeEnglishDecoderModal.getFormulaForDay(widget.day);
 
     return Container(
@@ -11878,6 +11995,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   onPressed: () {
                     setState(() => _codeEnglishCompleted = true);
                     _saveSubtask('code_english', true);
+                    markCompleted(true);
                     HapticFeedback.heavyImpact();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -12357,6 +12475,30 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       return const SizedBox.shrink();
     }
 
+    return _buildTopicSubtaskCard(
+      stepNumber: '$_stepPronunciation',
+      icon: '🗣️',
+      title: 'Dedicated Pronunciation & Sound Clinic',
+      subtitle:
+          'Acoustic contrast drills, minimal pairs discrimination & vocal placement coaching with audio guides.',
+      isVerified: _pronunciationCompleted,
+      actionColor: const Color(0xFFA855F7),
+      actionLabel: 'PRONUNCIATION CLINIC 🗣️',
+      subtaskKey: 'pronunciation',
+      builder: (ctx, lang, markCompleted) {
+        return _buildPronunciationDetailContent(lang, markCompleted);
+      },
+    );
+  }
+
+  Widget _buildPronunciationDetailContent(
+      String lang, void Function(bool) markCompleted) {
+    final clinic =
+        PocketMissionCurriculumRegistry.getPronunciationClinic(widget.day);
+    if (clinic.minimalPairs.isEmpty && clinic.practicePhrases.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -12578,6 +12720,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               onPressed: () {
                 setState(() => _pronunciationCompleted = true);
                 _saveSubtask('pronunciation', true);
+                markCompleted(true);
                 HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -12621,6 +12764,28 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🧠 ENGLISH THINKING WORKOUT / MANGLISH KILLER CARD ---
   Widget _buildEnglishThinkingCard() {
+    final workout =
+        PocketMissionCurriculumRegistry.getEnglishThinkingWorkout(widget.day);
+    if (workout.instantResponses.isEmpty) return const SizedBox.shrink();
+
+    return _buildTopicSubtaskCard(
+      stepNumber: '$_stepThinking',
+      icon: '🧠',
+      title: 'Mental Trap & Direct English Reflex',
+      subtitle:
+          'Eliminate vernacular translation lag (Manglish killer) with rapid subconscious reflex drills.',
+      isVerified: _englishThinkingCompleted,
+      actionColor: const Color(0xFFFF9800),
+      actionLabel: 'ENGLISH REFLEX WORKOUT 🧠',
+      subtaskKey: 'english_thinking',
+      builder: (ctx, lang, markCompleted) {
+        return _buildEnglishThinkingDetailContent(lang, markCompleted);
+      },
+    );
+  }
+
+  Widget _buildEnglishThinkingDetailContent(
+      String lang, void Function(bool) markCompleted) {
     final workout =
         PocketMissionCurriculumRegistry.getEnglishThinkingWorkout(widget.day);
     if (workout.instantResponses.isEmpty) return const SizedBox.shrink();
@@ -12824,6 +12989,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               onPressed: () {
                 setState(() => _englishThinkingCompleted = true);
                 _saveSubtask('english_thinking', true);
+                markCompleted(true);
                 HapticFeedback.lightImpact();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -12867,6 +13033,32 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🎙️ IN-LESSON 30-SECOND SPEAKING CHALLENGE / BOSS BATTLE CARD ---
   Widget _buildSpeakingChallengeCard() {
+    final challenge =
+        PocketMissionCurriculumRegistry.getSpeakingChallenge(widget.day);
+    if (challenge.title.isEmpty) return const SizedBox.shrink();
+
+    final isBossBattle = (widget.day % 15 == 0);
+
+    return _buildTopicSubtaskCard(
+      stepNumber: '$_stepSpeakingChallenge',
+      icon: '🎙️',
+      title: isBossBattle
+          ? 'Weekly Milestone Boss Battle'
+          : '30-Second Speaking Challenge',
+      subtitle: challenge.title,
+      isVerified: _speakingChallengeCompleted,
+      actionColor:
+          isBossBattle ? const Color(0xFFDC2626) : const Color(0xFFF43F5E),
+      actionLabel: isBossBattle ? 'BOSS BATTLE ⚔️' : 'SPEAKING DRILL 🎙️',
+      subtaskKey: 'speaking_challenge',
+      builder: (ctx, lang, markCompleted) {
+        return _buildSpeakingChallengeDetailContent(lang, markCompleted);
+      },
+    );
+  }
+
+  Widget _buildSpeakingChallengeDetailContent(
+      String lang, void Function(bool) markCompleted) {
     final challenge =
         PocketMissionCurriculumRegistry.getSpeakingChallenge(widget.day);
     if (challenge.title.isEmpty) return const SizedBox.shrink();
@@ -13047,6 +13239,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             _speakingChallengeCompleted = true;
                           });
                           _saveSubtask('speaking_challenge', true);
+                          markCompleted(true);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
@@ -13104,6 +13297,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     _speakingChallengeCompleted = true;
                   });
                   _saveSubtask('speaking_challenge', true);
+                  markCompleted(true);
                   HapticFeedback.lightImpact();
                 },
                 style: OutlinedButton.styleFrom(
@@ -13132,6 +13326,27 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- ⚡ SOVEREIGN FLUENCY SHORTCUT / KURUKKUVAZHI CARD ---
   Widget _buildFluencyShortcutCard() {
+    final shortcut =
+        PocketMissionCurriculumRegistry.getFluencyShortcut(widget.day);
+    if (shortcut.title.isEmpty) return const SizedBox.shrink();
+
+    return _buildTopicSubtaskCard(
+      stepNumber: '$_stepShortcut',
+      icon: '⚡',
+      title: 'Sovereign Fluency Shortcut (കുറുക്കുവഴി)',
+      subtitle: '${shortcut.title}: ${shortcut.ruleSummary}',
+      isVerified: _fluencyShortcutCompleted,
+      actionColor: const Color(0xFFFFD700),
+      actionLabel: 'FLUENCY SHORTCUT ⚡',
+      subtaskKey: 'fluency_shortcut',
+      builder: (ctx, lang, markCompleted) {
+        return _buildFluencyShortcutDetailContent(lang, markCompleted);
+      },
+    );
+  }
+
+  Widget _buildFluencyShortcutDetailContent(
+      String lang, void Function(bool) markCompleted) {
     final shortcut =
         PocketMissionCurriculumRegistry.getFluencyShortcut(widget.day);
     if (shortcut.title.isEmpty) return const SizedBox.shrink();
@@ -13230,6 +13445,50 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ],
             ),
           ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                setState(() => _fluencyShortcutCompleted = true);
+                _saveSubtask('fluency_shortcut', true);
+                markCompleted(true);
+                HapticFeedback.lightImpact();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                        '⚡ Fluency Shortcut Mastered! Native hack memorized ✓'),
+                    backgroundColor: Color(0xFF10B981),
+                  ),
+                );
+              },
+              icon: Icon(
+                _fluencyShortcutCompleted
+                    ? Icons.check_circle_rounded
+                    : Icons.bolt_rounded,
+                color: Colors.black,
+                size: 16,
+              ),
+              label: Text(
+                _fluencyShortcutCompleted
+                    ? 'SHORTCUT MASTERED ✓'
+                    : 'I MASTERED THIS SHORTCUT (+20 PTS) ✓',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _fluencyShortcutCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFFFD700),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -13237,6 +13496,24 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- SUBTASK 6: ✍️ QUICK REVISION MINI-QUIZ CARD ---
   Widget _buildRevisionQuizCard() {
+    return _buildTopicSubtaskCard(
+      stepNumber: '$_stepQuiz',
+      icon: '✍️',
+      title: 'Quick Revision Mini-Quiz',
+      subtitle:
+          'Pass the daily 4-question knowledge checkpoint with 100% accuracy to earn mission points & claim your badge.',
+      isVerified: _revisionQuizPassed,
+      actionColor: const Color(0xFF10B981),
+      actionLabel: 'REVISION MINI-QUIZ ✍️',
+      subtaskKey: 'quiz',
+      builder: (ctx, lang, markCompleted) {
+        return _buildRevisionQuizDetailContent(lang, markCompleted);
+      },
+    );
+  }
+
+  Widget _buildRevisionQuizDetailContent(
+      String lang, void Function(bool) markCompleted) {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -13398,6 +13675,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         _revisionQuizPassed = true;
                         _saveSubtask('quiz', true);
                       });
+                      markCompleted(true);
                       HapticFeedback.mediumImpact();
                     },
               style: ElevatedButton.styleFrom(
@@ -13558,6 +13836,106 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 fontWeight: FontWeight.w900,
                 fontSize: 11,
               ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- 🧬 TARGET EVOLUTION AVATAR TO ACHIEVE CARD ---
+  Widget _buildTargetAvatarCard() {
+    final nextStage = widget.day < 90 ? widget.day + 1 : 90;
+    final targetAvatar =
+        VectorAvatarConfig.getEvolutionAvatarForStage(nextStage);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+            width: 1.2),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: const Color(0xFFFFD700), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                  blurRadius: 12,
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: VectorAvatarWidget(
+                config: targetAvatar,
+                size: 52,
+              ),
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      'TARGET AVATAR TO ACHIEVE',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 1.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      child: Text(
+                        widget.day < 90
+                            ? 'STAGE $nextStage UNLOCK'
+                            : 'STAGE 90 MASTER',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF10B981),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  '${targetAvatar.rarityTier} ${targetAvatar.species.replaceAll('_', ' ').toUpperCase()}',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Score 100+ PTS to conquer this level and evolve your character!',
+                  style: GoogleFonts.inter(
+                    color: Colors.white60,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

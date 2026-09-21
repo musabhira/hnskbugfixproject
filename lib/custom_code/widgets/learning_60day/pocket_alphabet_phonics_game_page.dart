@@ -1,233 +1,10 @@
 import 'dart:async';
-import 'dart:math' as math;
-import 'package:flame/events.dart';
-import 'package:flame/game.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'pocket_mission_curriculum_1_18.dart';
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 🔥 FLAME 2D INTERACTIVE LETTER & PARTICLE ARENA
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _FlameParticle {
-  double x;
-  double y;
-  double vx;
-  double vy;
-  double radius;
-  double life;
-  double maxLife;
-  Color color;
-
-  _FlameParticle({
-    required this.x,
-    required this.y,
-    required this.vx,
-    required this.vy,
-    required this.radius,
-    required this.life,
-    required this.maxLife,
-    required this.color,
-  });
-
-  bool update(double dt) {
-    x += vx * dt;
-    y += vy * dt;
-    life -= dt;
-    radius = math.max(0.0, radius - dt * 1.5);
-    return life > 0 && radius > 0;
-  }
-}
-
-class AlphabetFlameGame extends FlameGame with TapCallbacks {
-  String currentLetter = 'A a';
-  VoidCallback? onArenaTap;
-
-  final List<_FlameParticle> _particles = [];
-  final math.Random _rng = math.Random();
-  double _time = 0.0;
-  double _bounceScale = 1.0;
-
-  AlphabetFlameGame({
-    required this.currentLetter,
-    this.onArenaTap,
-  });
-
-  void updateLetter(String letter) {
-    currentLetter = letter;
-    triggerFlameBurst();
-  }
-
-  void triggerFlameBurst() {
-    _bounceScale = 1.35;
-    final cx = size.x / 2;
-    final cy = size.y / 2;
-
-    const colors = [
-      Color(0xFFFF3D00),
-      Color(0xFFFF9100),
-      Color(0xFFFFD700),
-      Color(0xFFFFAB00),
-      Color(0xFFFF6D00),
-      Color(0xFF00E5FF),
-    ];
-
-    for (int i = 0; i < 36; i++) {
-      final angle = _rng.nextDouble() * 2 * math.pi;
-      final speed = 70.0 + _rng.nextDouble() * 160.0;
-      final life = 0.45 + _rng.nextDouble() * 0.55;
-      _particles.add(
-        _FlameParticle(
-          x: cx + math.cos(angle) * 16,
-          y: cy + math.sin(angle) * 16,
-          vx: math.cos(angle) * speed,
-          vy: math.sin(angle) * speed - 25,
-          radius: 3.5 + _rng.nextDouble() * 4.5,
-          life: life,
-          maxLife: life,
-          color: colors[_rng.nextInt(colors.length)],
-        ),
-      );
-    }
-  }
-
-  @override
-  void update(double dt) {
-    super.update(dt);
-    _time += dt;
-
-    if (_bounceScale > 1.0) {
-      _bounceScale = math.max(1.0, _bounceScale - dt * 2.2);
-    }
-
-    // Passive ambient sparks around the letter
-    if (_particles.length < 18 && _rng.nextDouble() < 0.35) {
-      final cx = size.x / 2;
-      final cy = size.y / 2;
-      final offset = (_rng.nextDouble() - 0.5) * 70;
-      _particles.add(
-        _FlameParticle(
-          x: cx + offset,
-          y: cy + 30 + _rng.nextDouble() * 10,
-          vx: (_rng.nextDouble() - 0.5) * 35,
-          vy: -35 - _rng.nextDouble() * 50,
-          radius: 2.0 + _rng.nextDouble() * 2.5,
-          life: 0.7,
-          maxLife: 0.7,
-          color: _rng.nextBool()
-              ? const Color(0xFFFF9100)
-              : const Color(0xFFFFD700),
-        ),
-      );
-    }
-
-    _particles.removeWhere((p) => !p.update(dt));
-  }
-
-  @override
-  void render(Canvas canvas) {
-    super.render(canvas);
-    final cx = size.x / 2;
-    final cy = size.y / 2;
-
-    if (size.x <= 0 || size.y <= 0) return;
-
-    // 1. Sleek Radiant Background Glow
-    final bgPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFFFF6D00).withValues(alpha: 0.28),
-          const Color(0xFFFF9100).withValues(alpha: 0.08),
-          Colors.transparent,
-        ],
-        radius: 0.85,
-      ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: 140));
-    canvas.drawCircle(Offset(cx, cy), 140, bgPaint);
-
-    // 2. Rotating Flame Rings
-    final ringPaint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.2
-      ..color = const Color(0xFFFF9100).withValues(alpha: 0.45);
-
-    final pulseRadius = 56.0 + math.sin(_time * 4.0) * 4.0;
-    canvas.drawCircle(Offset(cx, cy), pulseRadius * _bounceScale, ringPaint);
-
-    final outerRing = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0
-      ..color = const Color(0xFFFFD700).withValues(alpha: 0.25);
-    canvas.drawCircle(
-        Offset(cx, cy), (pulseRadius + 16.0) * _bounceScale, outerRing);
-
-    // 3. Central Glowing Emblem Orb
-    final orbPaint = Paint()
-      ..shader = const RadialGradient(
-        colors: [
-          Color(0xFFFF8500),
-          Color(0xFFE65100),
-          Color(0xFFBF360C),
-        ],
-      ).createShader(Rect.fromCircle(center: Offset(cx, cy), radius: 46));
-
-    canvas.drawCircle(Offset(cx, cy), 46 * _bounceScale, orbPaint);
-
-    // Orb border
-    final orbBorder = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.0
-      ..color = const Color(0xFFFFD700);
-    canvas.drawCircle(Offset(cx, cy), 46 * _bounceScale, orbBorder);
-
-    // 4. Draw Particles
-    for (final p in _particles) {
-      final pAlpha = (p.life / p.maxLife).clamp(0.0, 1.0);
-      final pPaint = Paint()
-        ..color = p.color.withValues(alpha: pAlpha)
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(p.x, p.y), p.radius, pPaint);
-    }
-
-    // 5. Render Centered Letter in Orb
-    final textSpan = TextSpan(
-      text: currentLetter,
-      style: TextStyle(
-        fontFamily: 'Outfit',
-        fontSize: (currentLetter.length > 3 ? 24.0 : 30.0) * _bounceScale,
-        fontWeight: FontWeight.w900,
-        color: Colors.white,
-        shadows: const [
-          Shadow(
-            color: Colors.black54,
-            blurRadius: 8,
-            offset: Offset(0, 3),
-          ),
-        ],
-      ),
-    );
-
-    final textPainter = TextPainter(
-      text: textSpan,
-      textDirection: TextDirection.ltr,
-    );
-    textPainter.layout();
-    textPainter.paint(
-      canvas,
-      Offset(cx - textPainter.width / 2, cy - textPainter.height / 2),
-    );
-  }
-
-  @override
-  void onTapDown(TapDownEvent event) {
-    super.onTapDown(event);
-    triggerFlameBurst();
-    onArenaTap?.call();
-  }
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 🎮 DEDICATED ALPHABET & PHONICS GAME SCREEN (MINIMALIST GAME EDITION)
@@ -254,12 +31,12 @@ class _PocketAlphabetPhonicsGamePageState
     extends State<PocketAlphabetPhonicsGamePage>
     with SingleTickerProviderStateMixin {
   late final FlutterTts _tts;
-  late final AlphabetFlameGame _flameGame;
 
   int _currentIndex = 0;
   bool _isPlayingAudio = false;
   final Set<int> _completedIndices = {};
   late String _activeLanguage;
+  double _letterScale = 1.0;
 
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnimation;
@@ -274,18 +51,6 @@ class _PocketAlphabetPhonicsGamePageState
     _tts = FlutterTts();
     _initTts();
 
-    final initialLetter = widget.phonicsList.isNotEmpty
-        ? widget.phonicsList.first.letter
-        : 'A a';
-
-    _flameGame = AlphabetFlameGame(
-      currentLetter: initialLetter,
-      onArenaTap: () {
-        HapticFeedback.selectionClick();
-        _speakCurrentLetter();
-      },
-    );
-
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
@@ -297,6 +62,13 @@ class _PocketAlphabetPhonicsGamePageState
 
     // Audio directive: DO NOT auto-speak on initial screen open.
     // Audio only triggers when learner explicitly taps the speaker/sound button.
+  }
+
+  void _triggerLetterBounce() {
+    setState(() => _letterScale = 1.15);
+    Future.delayed(const Duration(milliseconds: 140), () {
+      if (mounted) setState(() => _letterScale = 1.0);
+    });
   }
 
   Future<void> _initTts() async {
@@ -337,7 +109,7 @@ class _PocketAlphabetPhonicsGamePageState
     final item = _currentItem;
     try {
       if (mounted) setState(() => _isPlayingAudio = true);
-      _flameGame.triggerFlameBurst();
+      _triggerLetterBounce();
       await _tts.stop();
       await _tts.setLanguage('en-US');
       await _tts.setSpeechRate(0.42);
@@ -355,7 +127,7 @@ class _PocketAlphabetPhonicsGamePageState
 
   Future<void> _speakWordOnly(String word) async {
     try {
-      _flameGame.triggerFlameBurst();
+      _triggerLetterBounce();
       await _tts.stop();
       await _tts.setLanguage('en-US');
       await _tts.setSpeechRate(0.45);
@@ -383,7 +155,7 @@ class _PocketAlphabetPhonicsGamePageState
     setState(() {
       _currentIndex = index;
     });
-    _flameGame.updateLetter(widget.phonicsList[index].letter);
+    _triggerLetterBounce();
     // User Audio Directive: Silent by default; do NOT auto-speak when advancing letters!
   }
 
@@ -392,7 +164,7 @@ class _PocketAlphabetPhonicsGamePageState
     setState(() {
       _completedIndices.add(_currentIndex);
     });
-    _flameGame.triggerFlameBurst();
+    _triggerLetterBounce();
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
@@ -695,11 +467,57 @@ class _PocketAlphabetPhonicsGamePageState
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            // 2D Flame Letter Orb (interactive tap for sparks/burst)
-                            SizedBox(
-                              height: 180,
-                              width: 180,
-                              child: GameWidget(game: _flameGame),
+                            // Cute Circular Letter Badge (Tap to bounce & speak)
+                            GestureDetector(
+                              onTap: () {
+                                _triggerLetterBounce();
+                                _speakCurrentLetter();
+                              },
+                              child: AnimatedScale(
+                                scale: _letterScale,
+                                duration: const Duration(milliseconds: 140),
+                                child: Container(
+                                  width: 140,
+                                  height: 140,
+                                  alignment: Alignment.center,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: const LinearGradient(
+                                      colors: [
+                                        Color(0xFFFFB300),
+                                        Color(0xFFFF8F00),
+                                        Color(0xFFE65100),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFFFFB300)
+                                            .withValues(alpha: 0.35),
+                                        blurRadius: 28,
+                                        spreadRadius: 2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    item.letter,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: item.letter.length > 3 ? 32 : 44,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 1.0,
+                                      shadows: const [
+                                        Shadow(
+                                          color: Colors.black38,
+                                          blurRadius: 8,
+                                          offset: Offset(0, 3),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
                             ),
 
                             const SizedBox(height: 12),

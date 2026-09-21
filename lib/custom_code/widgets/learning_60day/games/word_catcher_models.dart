@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// 🍎 Reusable Vocabulary Item for Word Catcher Games across Levels 1 to 90
 class WordCatcherItem {
   final int id;

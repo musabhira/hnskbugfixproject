@@ -98,8 +98,6 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
   int _bestStreak = 0;
   int _finalChallengeStreak = 0;
   WordCatcherItem? _lastCaughtItem;
-  WordCatcherItem? _failedTargetItem;
-  String? _oopsCaughtWord;
 
   // Character State
   double _characterNormalizedX = 0.5; // 0.0 (left) to 1.0 (right)
@@ -348,8 +346,6 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
       _streak = 0;
       _lives--;
       _animState = CharacterAnimState.oops;
-      _oopsCaughtWord = caught.item.word;
-      _failedTargetItem = _currentTargetWord;
       _spawnSparkles(charX, charY, const Color(0xFFEF4444));
 
       if (_lives <= 0) {
