@@ -48,6 +48,7 @@ import 'daily_vocab_item.dart';
 import 'pocket_mission_curriculum_registry.dart';
 import 'pocket_alphabet_phonics_game_page.dart';
 import 'pocket_mission_topic_detail_page.dart';
+import 'pocket_language_selection_dialog.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'career_adventure/adventure_models.dart';
@@ -195,6 +196,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       PocketDailyMissionPage.kLanguageLabels;
 
   String _selectedLanguage = 'Malayalam';
+  String _selectedCategory = 'all';
   bool _isStorySpeaking = false;
   List<DailyVocabItem> _vocabList = [];
 
@@ -1489,6 +1491,20 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         final prefs = await SharedPreferences.getInstance();
+        final hasChosenLang =
+            prefs.getBool(PocketLanguageSelectionDialog.kHasChosenLangKey) ??
+                false;
+        if (!hasChosenLang && mounted) {
+          final chosen = await PocketLanguageSelectionDialog.show(
+            context,
+            currentLanguage: _selectedLanguage,
+            isFirstLaunch: true,
+          );
+          if (chosen != null && mounted) {
+            _onLanguageSelected(chosen);
+          }
+        }
+
         final hasAccepted =
             prefs.getBool('pocket_world_rules_accepted_v1') ?? false;
         if (!hasAccepted && widget.day == 1 && mounted) {
@@ -1496,6 +1512,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         }
       } catch (_) {}
     });
+  }
+
+  Future<void> _openLanguageDialog() async {
+    HapticFeedback.lightImpact();
+    final chosen = await PocketLanguageSelectionDialog.show(
+      context,
+      currentLanguage: _selectedLanguage,
+      isFirstLaunch: false,
+    );
+    if (chosen != null && mounted) {
+      _onLanguageSelected(chosen);
+    }
   }
 
   void _onTimerStateChanged() {
@@ -1508,7 +1536,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     });
     try {
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('pocket_mission_pref_lang', lang);
+      await prefs.setString(
+          PocketLanguageSelectionDialog.kPrefLangKey, lang);
+      await prefs.setBool(
+          PocketLanguageSelectionDialog.kHasChosenLangKey, true);
     } catch (_) {}
   }
 
@@ -4902,6 +4933,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool get _isTimerCompleted => _timerService.hasReachedTarget;
   bool get _canClaimAndAdvance => _hasPassedToday;
 
+  // 🏷️ Category Filter Getters
+  bool get _showVocab =>
+      _selectedCategory == 'all' || _selectedCategory == 'vocab';
+  bool get _showSpeaking =>
+      _selectedCategory == 'all' || _selectedCategory == 'speaking';
+  bool get _showAdventure =>
+      _selectedCategory == 'all' || _selectedCategory == 'adventure';
+  bool get _showShortcuts =>
+      _selectedCategory == 'all' || _selectedCategory == 'shortcuts';
+  bool get _showCitadel =>
+      _selectedCategory == 'all' || _selectedCategory == 'citadel';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -4927,10 +4970,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 // Top Header Deck
                 _buildHeader(context),
 
-                // 🌐 Top Pinned Global Language Switcher Bar (User Audio Directive: Global Language Filter right at top of target page)
+                // 🏷️ Category Filter Bar (User Audio Directive: Category switcher instead of language bar at top)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
-                  child: _buildLanguageSelectorBar(),
+                  child: _buildCategoryFilterBar(),
                 ),
 
                 // Quick Sovereign Action Bar: Rules & 90d Guarantee, Reading Library, Code English
@@ -4952,104 +4995,108 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         const SizedBox(height: 16),
 
                         // 🔤 Foundation: Alphabet & 44 Phonics Sound System (User Audio Directive)
-                        if (_hasAlphabetPhonics) ...[
+                        if (_showVocab && _hasAlphabetPhonics) ...[
                           _buildAlphabetPhonicsCard(),
                           const SizedBox(height: 14),
                         ],
 
                         // ⚡ Secret Code Grammar Matrix (Audio Directive: Code-Based English Tenses & Rules)
-                        _buildTopicSubtaskCard(
-                          stepNumber: '$_stepSecretCode',
-                          icon: '⚡',
-                          title: 'Secret Code Grammar Matrix',
-                          subtitle:
-                              'Master formula-based English codes & zero-error sentence rules in an interactive practice arena.',
-                          isVerified: _secretCodeGrammarCompleted,
-                          actionColor: const Color(0xFFFFD700),
-                          actionLabel: 'SECRET CODE ARENA ⚡',
-                          subtaskKey: 'secret_code',
-                          builder: (ctx, lang, markCompleted) {
-                            return PocketSecretCodeGrammarCard(
-                              day: widget.day,
-                              selectedLanguage: lang,
-                              isCompleted: _secretCodeGrammarCompleted,
-                              onCompleted: (val) {
-                                markCompleted(val);
-                                _saveSubtask('secret_code', val);
-                              },
-                              onSpeak: _speakWord,
-                              stepNumber: '$_stepSecretCode',
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 14),
+                        if (_showVocab) ...[
+                          _buildTopicSubtaskCard(
+                            stepNumber: '$_stepSecretCode',
+                            icon: '⚡',
+                            title: 'Secret Code Grammar Matrix',
+                            subtitle:
+                                'Master formula-based English codes & zero-error sentence rules in an interactive practice arena.',
+                            isVerified: _secretCodeGrammarCompleted,
+                            actionColor: const Color(0xFFFFD700),
+                            actionLabel: 'SECRET CODE ARENA ⚡',
+                            subtaskKey: 'secret_code',
+                            builder: (ctx, lang, markCompleted) {
+                              return PocketSecretCodeGrammarCard(
+                                day: widget.day,
+                                selectedLanguage: lang,
+                                isCompleted: _secretCodeGrammarCompleted,
+                                onCompleted: (val) {
+                                  markCompleted(val);
+                                  _saveSubtask('secret_code', val);
+                                },
+                                onSpeak: _speakWord,
+                                stepNumber: '$_stepSecretCode',
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 14),
+                        ],
 
                         // 🏗️ Sentence Builder Game (Audio Directive: 1-2-3 Code Block Puzzle)
-                        _buildTopicSubtaskCard(
-                          stepNumber: '$_stepSentenceBuilder',
-                          icon: '🏗️',
-                          title: 'Sentence Builder Puzzle',
-                          subtitle:
-                              'Assemble scrambled word blocks into natural native sentence structures with real-time feedback.',
-                          isVerified: _sentenceBuilderCompleted,
-                          actionColor: const Color(0xFF00E5FF),
-                          actionLabel: 'SENTENCE BUILDER 🏗️',
-                          subtaskKey: 'sentence_builder',
-                          builder: (ctx, lang, markCompleted) {
-                            return PocketSentenceBuilderCard(
-                              day: widget.day,
-                              isCompleted: _sentenceBuilderCompleted,
-                              onCompleted: (val) {
-                                markCompleted(val);
-                                _saveSubtask('sentence_builder', val);
-                              },
-                              onSpeak: _speakWord,
-                              stepNumber: '$_stepSentenceBuilder',
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 14),
+                        if (_showVocab) ...[
+                          _buildTopicSubtaskCard(
+                            stepNumber: '$_stepSentenceBuilder',
+                            icon: '🏗️',
+                            title: 'Sentence Builder Puzzle',
+                            subtitle:
+                                'Assemble scrambled word blocks into natural native sentence structures with real-time feedback.',
+                            isVerified: _sentenceBuilderCompleted,
+                            actionColor: const Color(0xFF00E5FF),
+                            actionLabel: 'SENTENCE BUILDER 🏗️',
+                            subtaskKey: 'sentence_builder',
+                            builder: (ctx, lang, markCompleted) {
+                              return PocketSentenceBuilderCard(
+                                day: widget.day,
+                                isCompleted: _sentenceBuilderCompleted,
+                                onCompleted: (val) {
+                                  markCompleted(val);
+                                  _saveSubtask('sentence_builder', val);
+                                },
+                                onSpeak: _speakWord,
+                                stepNumber: '$_stepSentenceBuilder',
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 14),
+                        ],
 
                         // 💬 Daily Slang to Smart English (Audio Directive: Vernacular talk to native English)
-                        _buildTopicSubtaskCard(
-                          stepNumber: '$_stepSlang',
-                          icon: '💬',
-                          title: 'Daily Slang to Smart English',
-                          subtitle:
-                              'Transform regional vernacular phrases into polished, confident professional English idioms.',
-                          isVerified: _slangSmartEnglishCompleted,
-                          actionColor: const Color(0xFFFF6D00),
-                          actionLabel: 'SMART SLANG ARENA 💬',
-                          subtaskKey: 'slang_smart',
-                          builder: (ctx, lang, markCompleted) {
-                            return PocketSlangSmartEnglishCard(
-                              day: widget.day,
-                              selectedLanguage: lang,
-                              isCompleted: _slangSmartEnglishCompleted,
-                              onCompleted: (val) {
-                                markCompleted(val);
-                                _saveSubtask('slang_smart', val);
-                              },
-                              onSpeak: _speakWord,
-                              stepNumber: '$_stepSlang',
-                            );
-                          },
-                        ),
-
-                        const SizedBox(height: 14),
+                        if (_showVocab) ...[
+                          _buildTopicSubtaskCard(
+                            stepNumber: '$_stepSlang',
+                            icon: '💬',
+                            title: 'Daily Slang to Smart English',
+                            subtitle:
+                                'Transform regional vernacular phrases into polished, confident professional English idioms.',
+                            isVerified: _slangSmartEnglishCompleted,
+                            actionColor: const Color(0xFFFF6D00),
+                            actionLabel: 'SMART SLANG ARENA 💬',
+                            subtaskKey: 'slang_smart',
+                            builder: (ctx, lang, markCompleted) {
+                              return PocketSlangSmartEnglishCard(
+                                day: widget.day,
+                                selectedLanguage: lang,
+                                isCompleted: _slangSmartEnglishCompleted,
+                                onCompleted: (val) {
+                                  markCompleted(val);
+                                  _saveSubtask('slang_smart', val);
+                                },
+                                onSpeak: _speakWord,
+                                stepNumber: '$_stepSlang',
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 14),
+                        ],
 
                         // 🎤 Practice Speaking (SpeakNow-inspired Fill in Blank & Say It Aloud)
-                        _buildTopicSubtaskCard(
-                          stepNumber: '$_stepSpeaking',
-                          icon: '🎤',
-                          title: 'Practice Speaking Aloud',
-                          subtitle:
-                              'SpeakNow-style vocal pronunciation drills. Speak aloud and build unconscious muscle memory.',
-                          isVerified: _practiceSpeakingCompleted,
-                          actionColor: const Color(0xFFE040FB),
-                          actionLabel: 'SPEAKING ARENA 🎤',
+                        if (_showSpeaking) ...[
+                          _buildTopicSubtaskCard(
+                            stepNumber: '$_stepSpeaking',
+                            icon: '🎤',
+                            title: 'Practice Speaking Aloud',
+                            subtitle:
+                                'SpeakNow-style vocal pronunciation drills. Speak aloud and build unconscious muscle memory.',
+                            isVerified: _practiceSpeakingCompleted,
+                            actionColor: const Color(0xFFE040FB),
+                            actionLabel: 'SPEAKING ARENA 🎤',
                           subtaskKey: 'practice_speaking',
                           builder: (ctx, lang, markCompleted) {
                             return PocketPracticeSpeakingCard(
@@ -5065,10 +5112,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             );
                           },
                         ),
-
                         const SizedBox(height: 14),
+                      ],
 
-                        // ⏰ 12 Tenses Speaking Mastery Card (User Audio Directive: 12 Tenses vocal drills)
+                      // ⏰ 12 Tenses Speaking Mastery Card (User Audio Directive: 12 Tenses vocal drills)
+                      if (_showVocab) ...[
                         _buildTopicSubtaskCard(
                           stepNumber: '$_stepTenses',
                           icon: '⏰',
@@ -5345,381 +5393,357 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             );
                           },
                         ),
-
-                        const SizedBox(height: 14),
-
-                      // Subtask: 💬 English Hub Group Practice
-                      _buildSubtaskCard(
-                        stepNumber: '$_stepEnglishHub',
-                        icon: '💬',
-                        title: 'English Hub Group Practice',
-                        description:
-                            'Enter the active English Hub and send at least 15 English messages to fellow learners to build active muscle memory.',
-                        isVerified: _hubChatVerified,
-                        actionLabel: 'OPEN ENGLISH HUB CHAT',
-                        actionColor: const Color(0xFFFFFC00),
-                        onAction: () async {
-                          final currentUserId =
-                              Supabase.instance.client.auth.currentUser?.id;
-                          final nav = Navigator.of(context);
-                          EnglishHubLevelGroup levelGroup;
-                          if (currentUserId != null) {
-                            levelGroup = await EnglishHubLevelGroupService
-                                .ensureUserInLevelGroup(
-                              userLevel: widget.day,
-                              userId: currentUserId,
-                            );
-                          } else {
-                            levelGroup = await EnglishHubLevelGroupService
-                                .getGroupByLevel(widget.day);
-                          }
-                          if (!mounted) return;
-                          await nav.push(
-                            MaterialPageRoute(
-                              builder: (_) => WhatsAppGroupChat(
-                                groupId: levelGroup.groupId,
-                                groupName: levelGroup.groupName,
-                              ),
-                            ),
-                          );
-                          if (mounted) {
-                            _verifyEnglishHubChatWithBackend();
-                          }
-                        },
-                        onVerify: () {
-                          _verifyEnglishHubChatWithBackend();
-                        },
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Subtask: 🎙️ Anonymous Peer Talk / Call
-                      _buildSubtaskCard(
-                        stepNumber: '$_stepPeerCall',
-                        icon: '🎙️',
-                        title: 'Peer Call / 1-on-1 English Talk',
-                        description:
-                            'Connect with at least 3 mates for live conversation practice to conquer speaking hesitation.',
-                        isVerified: _peerCallVerified,
-                        actionLabel: 'FIND 1-ON-1 PEERS',
-                        actionColor: const Color(0xFF00E5FF),
-                        onAction: () async {
-                          // Auto-start 40-min practice timer as instructed in audio
-                          if (!_timerService.isRunning &&
-                              !_timerService.hasReachedTarget) {
-                            _timerService.toggleTimer();
-                          }
-                          await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const StagePeerMatchmakerPage(),
-                            ),
-                          );
-                          if (mounted) {
-                            _verifyPeerTalkWithBackend();
-                          }
-                        },
-                        onVerify: () {
-                          _verifyPeerTalkWithBackend();
-                        },
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Subtask 3: 🧠 10 Vocabulary Words to Memorize
-                      _buildVocabDeckCard(),
-
-                      const SizedBox(height: 14),
-
-                      // Subtask 4: 🏢 Mission 01 – The First Conversation (2D Career Adventure Game)
-                      if (widget.day == 1) ...[
-                        _buildCareerAdventureCard(),
                         const SizedBox(height: 14),
                       ],
 
-                      // Subtask 4: 🏙️ Mission 02 – City Navigator (2D City Navigation Game)
-                      if (widget.day == 2) ...[
-                        _buildCityNavigatorCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 🧠 Mission 03 – Memory Break-In (2D Memory & Vocabulary Game)
-                      if (widget.day == 3) ...[
-                        _buildMemoryBreakInCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 🏭 Mission 04 – Word Factory (2D Language Repair Game)
-                      if (widget.day == 4) ...[
-                        _buildWordFactoryCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 📡 Mission 05 – Signal Hunt (2D Flame Listening Game)
-                      if (widget.day == 5) ...[
-                        _buildSignalHuntCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 📦 Mission 06 – The Lost Package (2D Flame Investigation Game)
-                      if (widget.day == 6) ...[
-                        _buildLostPackageCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 🗓️ Mission 07 – The Busy Day (2D Flame Decision Game)
-                      if (widget.day == 7) ...[
-                        _buildBusyDayCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: ⚡ Mission 08 – Fast Fix (2D Flame Error Repair Game)
-                      if (widget.day == 8) ...[
-                        _buildFastFixCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 🛒 Mission 09 – Market Master (2D Flame Supermarket Shopping Game)
-                      if (widget.day == 9) ...[
-                        _buildMarketMasterCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 🔎 Mission 10 – Word Detective (2D Flame Mystery Investigation Game)
-                      if (widget.day == 10) ...[
-                        _buildWordDetectiveCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 🎤 Mission 11 – Voice Café (2D Flame Speaking Adventure)
-                      if (widget.day == 11) ...[
-                        _buildVoiceCafeCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 📨 Mission 12 – Message Runner (2D Flame Communication Adventure)
-                      if (widget.day == 12) ...[
-                        _buildMessageRunnerCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 🌉 Mission 13 – Bridge Builder (2D Flame Sentence Building Adventure)
-                      if (widget.day == 13) ...[
-                        _buildBridgeBuilderCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: ✈️ Mission 14 – Travel Rush (2D Flame Travel Adventure)
-                      if (widget.day == 14) ...[
-                        _buildTravelRushCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // 📐 Sentence Pattern Practice (User Audio Directive)
-                      if (_hasSentencePatterns) ...[
-                        _buildSentencePatternCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // ⚔️ In-Between Combat Attack Drill (Audio Directive: unlocks on Day 4+)
-                      if (widget.day >= 4) ...[
-                        _buildMidMissionCombatAttackCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // Subtask 4: 📖 Core Notes & Multi-Page Authentic Story Reading
-                      _buildReadingNotesCard(),
-
-                      const SizedBox(height: 14),
-
-                      // Subtask 5: ⚡ Pocket Code English Decoder (User Audio Directive)
-                      _buildCodeEnglishDecoderCard(),
-
-                      const SizedBox(height: 14),
-
-                      // 🗣️ Dedicated Pronunciation & Sound Clinic (User Audio Directive)
-                      if (_hasPronunciationClinic) ...[
-                        _buildPronunciationClinicCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // 🧠 English Thinking Workout (User Audio Directive)
-                      if (_hasEnglishThinking) ...[
-                        _buildEnglishThinkingCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // 🎙️ In-Lesson Speaking Challenge (User Audio Directive)
-                      if (_hasSpeakingChallenge) ...[
-                        _buildSpeakingChallengeCard(),
-                        const SizedBox(height: 14),
-                      ],
-
-                      // ⚡ Sovereign Fluency Shortcut / Kurukkuvazhi (User Audio Directive)
-                      _buildFluencyShortcutCard(),
-
-                      const SizedBox(height: 14),
-
-                      // Subtask 6: ✍️ Quick Revision Mini-Quiz
-                      _buildRevisionQuizCard(),
-
-                      const SizedBox(height: 14),
-
-                      // Subtask 7: 🛡️ Craft Citadel Defense Trap
-                      _buildSubtaskCard(
-                        stepNumber: '$_stepDefenseTrap',
-                        icon: '🛡️',
-                        title: 'Add Day ${widget.day} Home Defense',
-                        description:
-                            'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${math.max(10, widget.day)})',
-                        isVerified: _defenseTrapArmed,
-                        actionLabel: 'ADD HOME DEFENSE 🛡️',
-                        actionColor: const Color(0xFF8B5CF6),
-                        onAction: () async {
-                          await PocketDefenseTrapModal.show(
-                              context, widget.day);
-                          if (mounted) {
-                            setState(() => _defenseTrapArmed = true);
-                            _saveSubtask('defense', true);
-                          }
-                        },
-                        onVerify: () {
-                          setState(() => _defenseTrapArmed = true);
-                          _saveSubtask('defense', true);
-                          HapticFeedback.lightImpact();
-                        },
-                      ),
-
-                      const SizedBox(height: 14),
-
-                      // Subtask 8: ⚔️ Pocket Battle Raid (Audio Directive: Routes directly to Pocket World to select & attack homes)
-                      if (widget.day >= 4) ...[
+                      // Subtask: 💬 English Hub Group Practice & Peer Call
+                      if (_showSpeaking) ...[
                         _buildSubtaskCard(
-                          stepNumber: '$_stepBattleRaid',
-                          icon: '⚔️',
-                          title: 'Day ${widget.day} Pocket Battle Raid',
+                          stepNumber: '$_stepEnglishHub',
+                          icon: '💬',
+                          title: 'English Hub Group Practice',
                           description:
-                              'Enter Pocket World, inspect neighbor houses on the street, and launch an attack to breach their defense gates!',
-                          isVerified: _trialRaidLaunched,
-                          actionLabel: 'LAUNCH POCKET BATTLE ⚔️',
-                          actionColor: const Color(0xFFEF4444),
+                              'Enter the active English Hub and send at least 15 English messages to fellow learners to build active muscle memory.',
+                          isVerified: _hubChatVerified,
+                          actionLabel: 'OPEN ENGLISH HUB CHAT',
+                          actionColor: const Color(0xFFFFFC00),
                           onAction: () async {
-                            final won = await Navigator.push<bool>(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => PocketWorldStreetPage(
-                                  currentDay: widget.day,
-                                  streak: widget.day,
-                                  autoRollRaid: true,
-                                ),
-                              ),
-                            );
-                            if (!mounted || !context.mounted) return;
-                            if (won == true) {
-                              setState(() => _trialRaidLaunched = true);
-                              _saveSubtask('raid', true);
-                              final uid = SupaFlow.client.auth.currentUser?.id;
-                              if (uid != null) {
-                                await Learning60DayService().completeTask(
-                                  userId: uid,
-                                  taskId: 'citadel_raid_attack',
-                                );
-                              }
-                              if (!mounted || !context.mounted) return;
-                              HapticFeedback.heavyImpact();
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      '🏰 House Breached in Pocket World! Day ${widget.day} Pocket Battle verified ✓ +50 Bonus Coins!'),
-                                  backgroundColor: const Color(0xFF10B981),
-                                ),
+                            final currentUserId =
+                                Supabase.instance.client.auth.currentUser?.id;
+                            final nav = Navigator.of(context);
+                            EnglishHubLevelGroup levelGroup;
+                            if (currentUserId != null) {
+                              levelGroup = await EnglishHubLevelGroupService
+                                  .ensureUserInLevelGroup(
+                                userLevel: widget.day,
+                                userId: currentUserId,
                               );
                             } else {
-                              if (!mounted || !context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      '⚠️ Pocket Battle incomplete. Select and breach a house in Pocket World to verify this step!'),
-                                  backgroundColor: Color(0xFFB45309),
+                              levelGroup = await EnglishHubLevelGroupService
+                                  .getGroupByLevel(widget.day);
+                            }
+                            if (!mounted) return;
+                            await nav.push(
+                              MaterialPageRoute(
+                                builder: (_) => WhatsAppGroupChat(
+                                  groupId: levelGroup.groupId,
+                                  groupName: levelGroup.groupName,
                                 ),
-                              );
+                              ),
+                            );
+                            if (mounted) {
+                              _verifyEnglishHubChatWithBackend();
                             }
                           },
                           onVerify: () {
-                            if (_trialRaidLaunched) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                      '✅ Day ${widget.day} Pocket Battle Raid already verified!'),
-                                  backgroundColor: const Color(0xFF10B981),
-                                ),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                      '⚠️ Launch Pocket Battle in Pocket World to verify Subtask 7!'),
-                                  backgroundColor: Color(0xFFB45309),
-                                ),
-                              );
-                            }
+                            _verifyEnglishHubChatWithBackend();
                           },
                         ),
-                        const SizedBox(height: 20),
-                      ] else ...[
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF0F172A),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white12),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.05),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Text('🔒',
-                                    style: TextStyle(fontSize: 20)),
+
+                        const SizedBox(height: 14),
+
+                        // Subtask: 🎙️ Anonymous Peer Talk / Call
+                        _buildSubtaskCard(
+                          stepNumber: '$_stepPeerCall',
+                          icon: '🎙️',
+                          title: 'Peer Call / 1-on-1 English Talk',
+                          description:
+                              'Connect with at least 3 mates for live conversation practice to conquer speaking hesitation.',
+                          isVerified: _peerCallVerified,
+                          actionLabel: 'FIND 1-ON-1 PEERS',
+                          actionColor: const Color(0xFF00E5FF),
+                          onAction: () async {
+                            // Auto-start 40-min practice timer as instructed in audio
+                            if (!_timerService.isRunning &&
+                                !_timerService.hasReachedTarget) {
+                              _timerService.toggleTimer();
+                            }
+                            await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const StagePeerMatchmakerPage(),
                               ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Pocket Battle Raids Unlock at Level 4',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 2),
-                                    Text(
-                                      'Complete Days 1–3 foundational English missions and arm your Home Defense first. Raid warfare unlocks on Day 4!',
-                                      style: GoogleFonts.inter(
-                                        color: Colors.white38,
-                                        fontSize: 11,
-                                        height: 1.3,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
+                            );
+                            if (mounted) {
+                              _verifyPeerTalkWithBackend();
+                            }
+                          },
+                          onVerify: () {
+                            _verifyPeerTalkWithBackend();
+                          },
                         ),
-                        const SizedBox(height: 20),
+
+                        const SizedBox(height: 14),
                       ],
 
-                      // 🛡️ House Defense Shield Banner (Audio Directive: Show right inside Day 1!)
-                      _buildShieldUnlockBanner(),
+                      // Subtask 3: 🧠 10 Vocabulary Words to Memorize
+                      if (_showVocab) ...[
+                        _buildVocabDeckCard(),
+                        const SizedBox(height: 14),
+                      ],
 
-                      const SizedBox(height: 10),
+                      // Subtask 4: 2D Adventure Quests & Combat
+                      if (_showAdventure) ...[
+                        if (widget.day == 1) ...[
+                          _buildCareerAdventureCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 2) ...[
+                          _buildCityNavigatorCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 3) ...[
+                          _buildMemoryBreakInCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 4) ...[
+                          _buildWordFactoryCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 5) ...[
+                          _buildSignalHuntCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 6) ...[
+                          _buildLostPackageCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 7) ...[
+                          _buildBusyDayCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 8) ...[
+                          _buildFastFixCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 9) ...[
+                          _buildMarketMasterCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 10) ...[
+                          _buildWordDetectiveCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 11) ...[
+                          _buildVoiceCafeCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 12) ...[
+                          _buildMessageRunnerCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 13) ...[
+                          _buildBridgeBuilderCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day == 14) ...[
+                          _buildTravelRushCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (widget.day >= 4) ...[
+                          _buildMidMissionCombatAttackCard(),
+                          const SizedBox(height: 14),
+                        ],
+                      ],
+
+                      // 📐 Sentence Patterns & Core Reading Notes
+                      if (_showVocab) ...[
+                        if (_hasSentencePatterns) ...[
+                          _buildSentencePatternCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        _buildReadingNotesCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // ⚡ Shortcuts: Code English Decoder
+                      if (_showShortcuts) ...[
+                        _buildCodeEnglishDecoderCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // 🗣️ Dedicated Speaking Drills (Clinic, Thinking, Challenge)
+                      if (_showSpeaking) ...[
+                        if (_hasPronunciationClinic) ...[
+                          _buildPronunciationClinicCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (_hasEnglishThinking) ...[
+                          _buildEnglishThinkingCard(),
+                          const SizedBox(height: 14),
+                        ],
+                        if (_hasSpeakingChallenge) ...[
+                          _buildSpeakingChallengeCard(),
+                          const SizedBox(height: 14),
+                        ],
+                      ],
+
+                      // ⚡ Shortcuts: Fluency Shortcut & Quick Revision Quiz
+                      if (_showShortcuts) ...[
+                        _buildFluencyShortcutCard(),
+                        const SizedBox(height: 14),
+                        _buildRevisionQuizCard(),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // Subtask 7 & 8: 🛡️ Citadel Home Defense & Battle Raids
+                      if (_showCitadel) ...[
+                        _buildSubtaskCard(
+                          stepNumber: '$_stepDefenseTrap',
+                          icon: '🛡️',
+                          title: 'Add Day ${widget.day} Home Defense',
+                          description:
+                              'Arm your front gate with 1 authentic English challenge to defend your house from raiders. (Shield Slot ${widget.day} of ${math.max(10, widget.day)})',
+                          isVerified: _defenseTrapArmed,
+                          actionLabel: 'ADD HOME DEFENSE 🛡️',
+                          actionColor: const Color(0xFF8B5CF6),
+                          onAction: () async {
+                            await PocketDefenseTrapModal.show(
+                                context, widget.day);
+                            if (mounted) {
+                              setState(() => _defenseTrapArmed = true);
+                              _saveSubtask('defense', true);
+                            }
+                          },
+                          onVerify: () {
+                            setState(() => _defenseTrapArmed = true);
+                            _saveSubtask('defense', true);
+                            HapticFeedback.lightImpact();
+                          },
+                        ),
+
+                        const SizedBox(height: 14),
+
+                        // Subtask 8: ⚔️ Pocket Battle Raid (Audio Directive: Routes directly to Pocket World to select & attack homes)
+                        if (widget.day >= 4) ...[
+                          _buildSubtaskCard(
+                            stepNumber: '$_stepBattleRaid',
+                            icon: '⚔️',
+                            title: 'Day ${widget.day} Pocket Battle Raid',
+                            description:
+                                'Enter Pocket World, inspect neighbor houses on the street, and launch an attack to breach their defense gates!',
+                            isVerified: _trialRaidLaunched,
+                            actionLabel: 'LAUNCH POCKET BATTLE ⚔️',
+                            actionColor: const Color(0xFFEF4444),
+                            onAction: () async {
+                              final won = await Navigator.push<bool>(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => PocketWorldStreetPage(
+                                    currentDay: widget.day,
+                                    streak: widget.day,
+                                    autoRollRaid: true,
+                                  ),
+                                ),
+                              );
+                              if (!mounted || !context.mounted) return;
+                              if (won == true) {
+                                setState(() => _trialRaidLaunched = true);
+                                _saveSubtask('raid', true);
+                                final uid =
+                                    SupaFlow.client.auth.currentUser?.id;
+                                if (uid != null) {
+                                  await Learning60DayService().completeTask(
+                                    userId: uid,
+                                    taskId: 'citadel_raid_attack',
+                                  );
+                                }
+                                if (!mounted || !context.mounted) return;
+                                HapticFeedback.heavyImpact();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        '🏰 House Breached in Pocket World! Day ${widget.day} Pocket Battle verified ✓ +50 Bonus Coins!'),
+                                    backgroundColor: const Color(0xFF10B981),
+                                  ),
+                                );
+                              } else {
+                                if (!mounted || !context.mounted) return;
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        '⚠️ Pocket Battle incomplete. Select and breach a house in Pocket World to verify this step!'),
+                                    backgroundColor: Color(0xFFB45309),
+                                  ),
+                                );
+                              }
+                            },
+                            onVerify: () {
+                              if (_trialRaidLaunched) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                        '✅ Day ${widget.day} Pocket Battle Raid already verified!'),
+                                    backgroundColor: const Color(0xFF10B981),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                        '⚠️ Launch Pocket Battle in Pocket World to verify Subtask 7!'),
+                                    backgroundColor: Color(0xFFB45309),
+                                  ),
+                                );
+                              }
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                        ] else ...[
+                          Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white12),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.05),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Text('🔒',
+                                      style: TextStyle(fontSize: 20)),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Pocket Battle Raids Unlock at Level 4',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white70,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      Text(
+                                        'Complete Days 1–3 foundational English missions and arm your Home Defense first. Raid warfare unlocks on Day 4!',
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white38,
+                                          fontSize: 11,
+                                          height: 1.3,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+
+                        // 🛡️ House Defense Shield Banner (Audio Directive: Show right inside Day 1!)
+                        _buildShieldUnlockBanner(),
+                        const SizedBox(height: 10),
+                      ],
 
                       // 🧬 Target Evolution Avatar to Achieve Card
                       _buildTargetAvatarCard(),
@@ -6107,6 +6131,41 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          // 🌐 Global Language Picker Button
+          InkWell(
+            onTap: _openLanguageDialog,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFF00FFCC).withValues(alpha: 0.4),
+                  width: 1.1,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.translate_rounded,
+                      color: Color(0xFF00FFCC), size: 12),
+                  const SizedBox(width: 4),
+                  Text(
+                    _selectedLanguage,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const Icon(Icons.arrow_drop_down,
+                      color: Colors.white70, size: 14),
+                ],
+              ),
             ),
           ),
         ],
@@ -6757,119 +6816,88 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // 🌐 Language Category Selector Bar (Audio Directive: Prominent Global Language Switcher)
-  Widget _buildLanguageSelectorBar() {
-    final languageFlags = kLanguageLabels;
+  // 🏷️ Category Track Filter Bar (User Audio Directive: Category switcher instead of language bar at top)
+  Widget _buildCategoryFilterBar() {
+    final categories = [
+      {'id': 'all', 'label': 'ALL MISSIONS', 'icon': '🎯'},
+      {'id': 'vocab', 'label': 'VOCAB & GRAMMAR', 'icon': '📖'},
+      {'id': 'speaking', 'label': 'SPEAKING DRILLS', 'icon': '🎙️'},
+      {'id': 'adventure', 'label': '2D QUESTS', 'icon': '🎮'},
+      {'id': 'shortcuts', 'label': 'SHORTCUTS & QUIZ', 'icon': '⚡'},
+      {'id': 'citadel', 'label': 'DEFENSE & RAIDS', 'icon': '🛡️'},
+    ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: const Color(0xFF00FFCC).withValues(alpha: 0.35),
+          color: const Color(0xFFFFD700).withValues(alpha: 0.35),
           width: 1.2,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF00FFCC).withValues(alpha: 0.08),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              const Text('🌐', style: TextStyle(fontSize: 14)),
-              const SizedBox(width: 6),
-              Text(
-                'TARGET EXPLANATION LANGUAGE:',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF00FFCC),
-                  fontSize: 10.5,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
-                  ),
-                ),
-                child: Text(
-                  _selectedLanguage.toUpperCase(),
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 7),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            child: Row(
-              children: kSupportedLanguages.map((lang) {
-                final isSelected = _selectedLanguage == lang;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6),
-                  child: InkWell(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      _onLanguageSelected(lang);
-                    },
-                    borderRadius: BorderRadius.circular(8),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 180),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5.5),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFFFFFC00)
-                            : const Color(0xFF1E293B),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: isSelected
-                              ? const Color(0xFFFFFC00)
-                              : Colors.white24,
-                          width: isSelected ? 1.5 : 1,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          children: categories.map((cat) {
+            final id = cat['id']!;
+            final isSelected = _selectedCategory == id;
+
+            return Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: InkWell(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _selectedCategory = id);
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 180),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFFFFD700)
+                        : const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isSelected
+                          ? const Color(0xFFFFD700)
+                          : Colors.white24,
+                      width: isSelected ? 1.5 : 1,
+                    ),
+                    boxShadow: [
+                      if (isSelected)
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                          blurRadius: 8,
                         ),
-                        boxShadow: [
-                          if (isSelected)
-                            BoxShadow(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
-                              blurRadius: 6,
-                            ),
-                        ],
-                      ),
-                      child: Text(
-                        languageFlags[lang] ?? lang,
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(cat['icon']!, style: const TextStyle(fontSize: 13)),
+                      const SizedBox(width: 5),
+                      Text(
+                        cat['label']!,
                         style: GoogleFonts.outfit(
                           color: isSelected ? Colors.black : Colors.white70,
-                          fontSize: 11.5,
+                          fontSize: 11,
                           fontWeight:
                               isSelected ? FontWeight.w900 : FontWeight.w600,
+                          letterSpacing: 0.3,
                         ),
                       ),
-                    ),
+                    ],
                   ),
-                );
-              }).toList(),
-            ),
-          ),
-        ],
+                ),
+              ),
+            );
+          }).toList(),
+        ),
       ),
     );
   }

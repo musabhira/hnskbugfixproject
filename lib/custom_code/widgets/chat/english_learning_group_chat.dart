@@ -9,6 +9,7 @@ import 'whatsapp_group_chat.dart';
 import 'package:shimmer/shimmer.dart';
 
 import 'english_hub_level_group_service.dart';
+import 'audio_space/pocket_audio_spaces_lobby_page.dart';
 
 class EnglishLearningGroupChatWidget extends ConsumerStatefulWidget {
   final VoidCallback onCancel;
@@ -33,6 +34,7 @@ class _EnglishLearningGroupChatWidgetState
   EnglishHubLevelGroup? _levelGroup;
   String? _currentUserProfileId;
   String? _currentUserId;
+  int _selectedHubTab = 0; // 0 = Chat, 1 = Audio Spaces
 
   @override
   void initState() {
@@ -192,53 +194,153 @@ class _EnglishLearningGroupChatWidgetState
     );
   }
 
+  Widget _buildSegmentedHeader() {
+    return Container(
+      color: const Color(0xFF111726),
+      padding: EdgeInsets.only(
+        top: MediaQuery.of(context).padding.top + 4,
+        bottom: 8,
+        left: 16,
+        right: 16,
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFF334155)),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedHubTab = 0),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  decoration: BoxDecoration(
+                    color: _selectedHubTab == 0
+                        ? const Color(0xFFFFFC00)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '💬 Level Chat',
+                      style: GoogleFonts.outfit(
+                        color: _selectedHubTab == 0
+                            ? Colors.black
+                            : Colors.white70,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() => _selectedHubTab = 1),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  decoration: BoxDecoration(
+                    color: _selectedHubTab == 1
+                        ? const Color(0xFFFFFC00)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        '🎙️ Live Spaces',
+                        style: GoogleFonts.outfit(
+                          color: _selectedHubTab == 1
+                              ? Colors.black
+                              : Colors.white70,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 7,
+                        height: 7,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF10B981),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_currentUserId == null) {
       return _buildGuestLanding(context);
     }
 
-    if (_isLoading) {
-      return _buildShimmerLoading(context);
-    }
-
-    if (_isMember && _groupId != null) {
-      return WhatsAppGroupChat(
-        groupId: _groupId!,
-        groupName: _groupName ?? _levelGroup?.groupName ?? 'English Hub (All Learners • Lvl 1 - 90)',
-        showBackButton: false,
-      );
-    }
-
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.group_off_rounded, color: Colors.white54, size: 48),
-              const SizedBox(height: 16),
-              const Text(
-                'Unable to connect to group right now.',
-                style: TextStyle(color: Colors.white, fontSize: 16),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  setState(() => _isLoading = true);
-                  _initGroupAndMembership();
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFFFC00),
-                  foregroundColor: Colors.black,
-                ),
-                child: const Text('Retry Connection'),
-              ),
-            ],
+      backgroundColor: const Color(0xFF070B0D),
+      body: Column(
+        children: [
+          _buildSegmentedHeader(),
+          Expanded(
+            child: _selectedHubTab == 1
+                ? const PocketAudioSpacesLobbyPage()
+                : (_isLoading
+                    ? _buildShimmerLoading(context)
+                    : (_isMember && _groupId != null
+                        ? WhatsAppGroupChat(
+                            groupId: _groupId!,
+                            groupName: _groupName ??
+                                _levelGroup?.groupName ??
+                                'English Hub (All Learners • Lvl 1 - 90)',
+                            showBackButton: false,
+                          )
+                        : _buildErrorState(context))),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(Icons.group_off_rounded, color: Colors.white54, size: 48),
+            const SizedBox(height: 16),
+            const Text(
+              'Unable to connect to group right now.',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                setState(() => _isLoading = true);
+                _initGroupAndMembership();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+              ),
+              child: const Text('Retry Connection'),
+            ),
+          ],
         ),
       ),
     );

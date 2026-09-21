@@ -26,6 +26,8 @@ import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
 import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/audio_space/pocket_floating_audio_bar.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/audio_space/pocket_coffee_table_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
@@ -1763,6 +1765,117 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
+  Widget _buildCoffeeTableBanner(bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PocketCoffeeTablePage(),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [const Color(0xFF141D2E), const Color(0xFF0C1220)]
+                  : [const Color(0xFFF8FAFC), const Color(0xFFE9F0F7)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFFFFFC00).withValues(alpha: 0.22),
+              width: 1.0,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
+                  border: Border.all(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                      width: 1),
+                ),
+                child: const Center(child: Text('☕', style: TextStyle(fontSize: 15))),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Row(
+                  children: [
+                    Text(
+                      'Coffee Table',
+                      style: GoogleFonts.outfit(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      width: 5,
+                      height: 5,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF10B981),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    const SizedBox(width: 3),
+                    Text(
+                      'OPEN',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFF10B981),
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '4 seats · voice',
+                style: GoogleFonts.outfit(
+                  color: isDark ? Colors.white54 : Colors.black54,
+                  fontSize: 11.5,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.add_rounded, size: 12, color: Colors.black),
+                    const SizedBox(width: 2),
+                    Text(
+                      'Join',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRequestsSubTabToggle(bool isDark) {
     return SliverToBoxAdapter(
       child: Padding(
@@ -3339,10 +3452,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: _buildChatCategoryFilterChips(combined),
               ),
 
-              if (_chatCategoryFilterIndex == 0)
+              if (_chatCategoryFilterIndex == 0) ...[
                 SliverToBoxAdapter(
                   child: _buildAnonymousLiveMatchBanner(isDark),
                 ),
+                SliverToBoxAdapter(
+                  child: _buildCoffeeTableBanner(isDark),
+                ),
+              ],
 
               if (_chatCategoryFilterIndex == 3) ...[
                 // Requests View (Strangers, Marketplace inquiries, Anonymous chat requests)
@@ -3678,6 +3795,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        const PocketFloatingAudioBar(),
         _buildDailyPracticeTimerStrip(context),
         Container(
           height: 65 + bottomPadding,
