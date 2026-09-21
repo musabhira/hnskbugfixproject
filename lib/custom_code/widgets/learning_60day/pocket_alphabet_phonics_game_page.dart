@@ -553,8 +553,20 @@ class _PocketAlphabetPhonicsGamePageState
     final hasPrev = _currentIndex > 0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070B14),
-      body: SafeArea(
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFF0284C7), // Luminous Electric Sky Blue
+              Color(0xFF0369A1), // Rich Vibrant Azure
+              Color(0xFF0B192C), // Deep Gaming Navy Base
+            ],
+            stops: [0.0, 0.45, 1.0],
+          ),
+        ),
+        child: SafeArea(
         child: GestureDetector(
           // Horizontal swipe gestures to glide effortlessly between letters
           onHorizontalDragEnd: (details) {
@@ -707,17 +719,21 @@ class _PocketAlphabetPhonicsGamePageState
                             // IPA Phoneme Tag
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 5),
+                                  horizontal: 16, vertical: 6),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF00E5FF).withValues(alpha: 0.12),
+                                color: const Color(0xFFFFD700),
                                 borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: const Color(0xFF00E5FF).withValues(alpha: 0.5)),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                                    blurRadius: 10,
+                                  ),
+                                ],
                               ),
                               child: Text(
                                 item.phoneme,
                                 style: GoogleFonts.outfit(
-                                  color: const Color(0xFF00E5FF),
+                                  color: Colors.black,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: 1.0,
@@ -736,15 +752,22 @@ class _PocketAlphabetPhonicsGamePageState
                                 final trimmed = w.trim();
                                 return InkWell(
                                   onTap: () => _speakWordOnly(trimmed),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(14),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
-                                        horizontal: 16, vertical: 8),
+                                        horizontal: 18, vertical: 10),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF131C2E),
-                                      borderRadius: BorderRadius.circular(12),
+                                      color: Colors.white,
+                                      borderRadius: BorderRadius.circular(14),
                                       border: Border.all(
-                                          color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                                          color: const Color(0xFFFFD700), width: 2),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.15),
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ],
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -752,16 +775,16 @@ class _PocketAlphabetPhonicsGamePageState
                                         Text(
                                           trimmed,
                                           style: GoogleFonts.outfit(
-                                            color: Colors.white,
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.bold,
+                                            color: const Color(0xFF0F172A),
+                                            fontSize: 17,
+                                            fontWeight: FontWeight.w900,
                                           ),
                                         ),
                                         const SizedBox(width: 8),
                                         const Icon(
                                           Icons.volume_up_rounded,
-                                          color: Color(0xFFFFD700),
-                                          size: 16,
+                                          color: Color(0xFF0284C7),
+                                          size: 18,
                                         ),
                                       ],
                                     ),
@@ -778,24 +801,32 @@ class _PocketAlphabetPhonicsGamePageState
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 10),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1E170A),
-                                borderRadius: BorderRadius.circular(12),
+                                color: const Color(0xFFFFFBEB),
+                                borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
-                                  color: const Color(0xFFFFB300).withValues(alpha: 0.4),
+                                  color: const Color(0xFFF59E0B),
+                                  width: 1.5,
                                 ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.08),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
                               ),
                               child: Row(
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
-                                  const Text('👄', style: TextStyle(fontSize: 18)),
+                                  const Text('👄', style: TextStyle(fontSize: 20)),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: Text(
                                       item.getPronunciationGuide(_activeLanguage),
                                       style: GoogleFonts.inter(
-                                        color: const Color(0xFFFFF8E1),
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF78350F),
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w700,
                                         height: 1.35,
                                       ),
                                     ),
@@ -926,12 +957,12 @@ class _PocketAlphabetPhonicsGamePageState
                         width: 44,
                         height: 72,
                         decoration: BoxDecoration(
-                          color: const Color(0xFF131C2E).withValues(alpha: 0.85),
+                          color: Colors.white.withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: Colors.white12),
+                          border: Border.all(color: Colors.white38),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.3),
+                              color: Colors.black.withValues(alpha: 0.15),
                               blurRadius: 8,
                             ),
                           ],
@@ -994,6 +1025,7 @@ class _PocketAlphabetPhonicsGamePageState
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

@@ -188,8 +188,20 @@ class _PocketMissionTopicDetailPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF080D1A),
-      body: SafeArea(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              widget.accentColor.withValues(alpha: 0.28),
+              const Color(0xFF0F172A),
+              const Color(0xFF070B14),
+            ],
+            stops: const [0.0, 0.45, 1.0],
+          ),
+        ),
+        child: SafeArea(
         child: Column(
           children: [
             // ─────────────────────────────────────────────────────────────
@@ -434,6 +446,7 @@ class _PocketMissionTopicDetailPageState
           ],
         ),
       ),
-    );
+    ),
+  );
   }
 }
