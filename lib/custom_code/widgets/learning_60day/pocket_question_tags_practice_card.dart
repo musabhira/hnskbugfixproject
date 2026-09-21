@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
@@ -877,23 +877,25 @@ class _PocketQuestionTagsPracticeCardState
     final catColor = _categoryColor(ex.category);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF0A0E17),
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: widget.isCompleted
-              ? const Color(0xFF10B981).withValues(alpha: 0.6)
-              : const Color(0xFF818CF8).withValues(alpha: 0.35),
-          width: 1.5,
+              ? const Color(0xFF10B981)
+              : const Color(0xFF818CF8).withValues(alpha: 0.5),
+          width: widget.isCompleted ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: widget.isCompleted
-                ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                : const Color(0xFF818CF8).withValues(alpha: 0.14),
+            color: (widget.isCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF818CF8))
+                .withValues(alpha: 0.12),
             blurRadius: 18,
-            offset: const Offset(0, 8),
+            offset: const Offset(0, 4),
           ),
         ],
       ),

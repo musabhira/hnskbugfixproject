@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 /// 🎮 Dedicated Gamified Detail Page Wrapper for Daily Mission Learning Topics
 class PocketMissionTopicDetailPage extends StatefulWidget {
@@ -50,6 +51,15 @@ class _PocketMissionTopicDetailPageState
         ? 'Malayalam'
         : widget.initialLanguage;
     _isCompleted = widget.isInitiallyCompleted;
+  }
+
+  Future<void> _setLanguage(String lang) async {
+    HapticFeedback.selectionClick();
+    setState(() => _activeLanguage = lang);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('pocket_mission_pref_lang', lang);
+    } catch (_) {}
   }
 
   void _markCompleted([bool completed = true]) {
@@ -255,7 +265,7 @@ class _PocketMissionTopicDetailPageState
                   // Language Selector
                   PopupMenuButton<String>(
                     initialValue: _activeLanguage,
-                    onSelected: (lang) => setState(() => _activeLanguage = lang),
+                    onSelected: (lang) => _setLanguage(lang),
                     color: const Color(0xFF1E293B),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     child: Container(

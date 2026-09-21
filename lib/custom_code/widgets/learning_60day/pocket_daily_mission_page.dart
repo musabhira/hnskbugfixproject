@@ -93,12 +93,12 @@ class PocketDailyMissionPage extends StatefulWidget {
   ];
 
   static const Map<String, String> kLanguageLabels = {
-    'Malayalam': 'മലയാളം',
-    'Tamil': 'தமிழ்',
-    'Hindi': 'हिन्दी',
-    'Telugu': 'తెలుగు',
-    'Kannada': 'ಕನ್ನಡ',
-    'English': 'English',
+    'Malayalam': '🇮🇳 മലയാളം',
+    'Tamil': '🇮🇳 தமிழ்',
+    'Hindi': '🇮🇳 हिन्दी',
+    'Telugu': '🇮🇳 తెలుగు',
+    'Kannada': '🇮🇳 ಕನ್ನಡ',
+    'English': '🇬🇧 English',
   };
 
   const PocketDailyMissionPage({
@@ -4891,6 +4891,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 // Top Header Deck
                 _buildHeader(context),
 
+                // 🌐 Top Pinned Global Language Switcher Bar (User Audio Directive: Global Language Filter right at top of target page)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+                  child: _buildLanguageSelectorBar(),
+                ),
+
                 // Quick Sovereign Action Bar: Rules & 90d Guarantee, Reading Library, Code English
                 _buildSovereignActionBar(),
 
@@ -4901,11 +4907,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       final List<Widget> missionWidgets = [
                         // ⏱️ 60-Min Daily Practice Study Timer Card
                         _buildDailyStudyTimerCard(),
-
-                        const SizedBox(height: 12),
-
-                        // 🌐 Top Multilingual Switcher Bar (Audio Directive: Switch categories/languages at top)
-                        _buildLanguageSelectorBar(),
 
                         const SizedBox(height: 16),
 
@@ -6531,6 +6532,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             ),
           ),
         );
+        // Sync language preference if changed inside topic detail page
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final savedLang = prefs.getString('pocket_mission_pref_lang');
+          if (savedLang != null && savedLang != _selectedLanguage && mounted) {
+            setState(() {
+              _selectedLanguage = savedLang;
+            });
+          }
+        } catch (_) {}
+
         if (res == true && mounted) {
           _saveSubtask(subtaskKey, true);
           HapticFeedback.heavyImpact();
@@ -6687,76 +6699,102 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // 🌐 Language Category Selector Bar (Audio Directive)
+  // 🌐 Language Category Selector Bar (Audio Directive: Prominent Global Language Switcher)
   Widget _buildLanguageSelectorBar() {
     final languageFlags = kLanguageLabels;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white12),
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: const Color(0xFF00FFCC).withValues(alpha: 0.35),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF00FFCC).withValues(alpha: 0.08),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
               const Text('🌐', style: TextStyle(fontSize: 14)),
               const SizedBox(width: 6),
               Text(
-                'Translation Language:',
+                'TARGET EXPLANATION LANGUAGE:',
                 style: GoogleFonts.outfit(
-                  color: Colors.white70,
-                  fontSize: 11.5,
-                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF00FFCC),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
                 ),
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
+                  ),
                 ),
                 child: Text(
-                  _selectedLanguage,
+                  _selectedLanguage.toUpperCase(),
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 7),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             child: Row(
               children: kSupportedLanguages.map((lang) {
                 final isSelected = _selectedLanguage == lang;
                 return Padding(
                   padding: const EdgeInsets.only(right: 6),
                   child: InkWell(
-                    onTap: () => _onLanguageSelected(lang),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      _onLanguageSelected(lang);
+                    },
                     borderRadius: BorderRadius.circular(8),
-                    child: Container(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 5),
+                          horizontal: 10, vertical: 5.5),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? const Color(0xFFFFFC00)
-                            : const Color(0xFF0F172A),
+                            : const Color(0xFF1E293B),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
                           color: isSelected
                               ? const Color(0xFFFFFC00)
                               : Colors.white24,
-                          width: 1,
+                          width: isSelected ? 1.5 : 1,
                         ),
+                        boxShadow: [
+                          if (isSelected)
+                            BoxShadow(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                              blurRadius: 6,
+                            ),
+                        ],
                       ),
                       child: Text(
                         languageFlags[lang] ?? lang,
@@ -6764,7 +6802,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           color: isSelected ? Colors.black : Colors.white70,
                           fontSize: 11.5,
                           fontWeight:
-                              isSelected ? FontWeight.w900 : FontWeight.w500,
+                              isSelected ? FontWeight.w900 : FontWeight.w600,
                         ),
                       ),
                     ),
@@ -6836,12 +6874,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
             'Memorize all 10 words below (definitions, native meanings & audio pronunciation):',
             style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
           ),
-          const SizedBox(height: 10),
-
-          // 🌐 Multilingual Category Switcher Bar (Audio Directive)
-          _buildLanguageSelectorBar(),
-
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
           ListView.separated(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),

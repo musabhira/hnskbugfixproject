@@ -9,15 +9,15 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 class PocketPresidentService {
   static const String presidentId = 'pocket_president';
   static const String presidentName = 'President';
-  static const String presidentBadge = 'Pocket Mates';
-  static const String presidentRole = 'Head of Pocket World';
+  static const String presidentBadge = 'Poket Mates';
+  static const String presidentRole = 'Head of Poket World';
 
-  // High-resolution royal seal avatar representing the President of Pocket World
+  // High-resolution royal seal avatar representing the President of Poket World
   static const String presidentAvatarUrl =
       'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=300&auto=format&fit=crop&q=80';
 
   static const String defaultWelcomeMessage =
-      'Welcome to Pocket Mates! 🌟 I am the President of Pocket World. If you have any questions, doubts, complaints, or need assistance on your learning journey, message me here anytime. You are under presidential care!';
+      'Welcome to Poket Mates! 🌟 I am the President of Poket World. If you have any questions, doubts, complaints, or need assistance on your learning journey, message me here anytime. You are under presidential care!';
 
   // SharedPreferences Keys
   static const String _kPresidentChatPrefix = 'president_chat_';
@@ -580,7 +580,7 @@ class PocketPresidentService {
           'media_type': 'text',
           'media_url': '',
           'caption':
-              '🏛️ Pocket World State Address:\n"English is your passport to the world. Speak with confidence every single day!" — The President 🌟',
+              '🏛️ Poket World State Address:\n"English is your passport to the world. Speak with confidence every single day!" — The President 🌟',
           'duration': 8,
           'created_at': DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(),
           'expires_at': DateTime.now().add(const Duration(hours: 23)).toIso8601String(),

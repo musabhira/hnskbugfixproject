@@ -407,109 +407,160 @@ class _PocketDirectIndirectPracticeCardState
     final ex = exercises[safeIndex];
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF0A0E17), // Minimal, plain dark game canvas
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: widget.isCompleted
-              ? const Color(0xFF10B981).withValues(alpha: 0.6)
-              : const Color(0xFF8B5CF6).withValues(alpha: 0.35),
-          width: 1.5,
+              ? const Color(0xFF10B981)
+              : const Color(0xFFBA68C8).withValues(alpha: 0.4),
+          width: widget.isCompleted ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: widget.isCompleted
-                ? const Color(0xFF10B981).withValues(alpha: 0.12)
-                : const Color(0xFF8B5CF6).withValues(alpha: 0.14),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: (widget.isCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFFBA68C8))
+                .withValues(alpha: 0.08),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ─── RESPONSIVE 2-COLUMN HEADER (No Text Syllable Splitting) ───
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'STEP ${widget.stepNumber} • 💬 Direct & Indirect Speech',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        _getLocalizedSubtitle(widget.selectedLanguage),
-                        style: GoogleFonts.outfit(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFFC084FC),
-                        ),
-                      ),
-                    ],
+          // ── TOP GAME HUD BAR ─────────────────────────────────────────────
+          Row(
+            children: [
+              // Step & Game Capsule
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFBA68C8), Color(0xFF9C27B0)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  widget.stepNumber.isNotEmpty
+                      ? 'STEP ${widget.stepNumber} • SPEECH'
+                      : 'SPEECH GAME',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
                   ),
                 ),
-                const SizedBox(width: 12),
-                InkWell(
-                  onTap: () {
-                    HapticFeedback.mediumImpact();
-                    widget.onCompleted(!widget.isCompleted);
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
+              ),
+              const SizedBox(width: 8),
+
+              // Drill Counter Capsule
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Text(
+                  'TASK ${_currentExerciseIndex + 1}/${exercises.length}',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFE1BEE7),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              const Spacer(),
+
+              // Quick Side Navigation in HUD
+              InkWell(
+                onTap: _goToPrevious,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Icon(Icons.chevron_left_rounded,
+                      color: Colors.white70, size: 18),
+                ),
+              ),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: _goToNext,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Icon(Icons.chevron_right_rounded,
+                      color: Colors.white70, size: 18),
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // Mark Step Checkbox
+              InkWell(
+                onTap: () {
+                  HapticFeedback.heavyImpact();
+                  final nextVal = !widget.isCompleted;
+                  widget.onCompleted(nextVal);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(nextVal
+                          ? '🎉 Reported Speech Completed! (+20 PTS) ✓'
+                          : 'Reported Speech marked as pending'),
+                      backgroundColor: nextVal
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF334155),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: widget.isCompleted
+                        ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                        : const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
                       color: widget.isCompleted
                           ? const Color(0xFF10B981)
-                          : const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
+                          : Colors.white24,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        widget.isCompleted
+                            ? Icons.check_circle_rounded
+                            : Icons.circle_outlined,
                         color: widget.isCompleted
                             ? const Color(0xFF10B981)
-                            : Colors.white24,
-                        width: 1.2,
+                            : Colors.white54,
+                        size: 14,
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          widget.isCompleted
-                              ? Icons.check_circle_rounded
-                              : Icons.radio_button_unchecked_rounded,
-                          size: 14,
+                      const SizedBox(width: 4),
+                      Text(
+                        widget.isCompleted ? 'DONE ✓' : 'VERIFY',
+                        style: GoogleFonts.outfit(
                           color: widget.isCompleted
-                              ? Colors.black
+                              ? const Color(0xFF10B981)
                               : Colors.white70,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          widget.isCompleted ? 'DONE ✓' : 'MARK STEP',
-                          style: GoogleFonts.outfit(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: widget.isCompleted
-                                ? Colors.black
-                                : Colors.white70,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
                 ),
               ],

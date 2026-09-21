@@ -396,112 +396,193 @@ class _PocketActivePassivePracticeCardState
 
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF0A0E17), // Minimal, plain dark game canvas
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: widget.isCompleted
               ? const Color(0xFF10B981)
-              : const Color(0xFF00FFCC).withValues(alpha: 0.35),
-          width: widget.isCompleted ? 2.0 : 1.2,
+              : const Color(0xFF4DD0E1).withValues(alpha: 0.4),
+          width: widget.isCompleted ? 1.5 : 1.0,
         ),
         boxShadow: [
           BoxShadow(
-            color: widget.isCompleted
-                ? const Color(0xFF10B981).withValues(alpha: 0.15)
-                : const Color(0xFF00FFCC).withValues(alpha: 0.08),
-            blurRadius: 18,
+            color: (widget.isCompleted
+                    ? const Color(0xFF10B981)
+                    : const Color(0xFF4DD0E1))
+                .withValues(alpha: 0.08),
+            blurRadius: 20,
             offset: const Offset(0, 4),
           ),
         ],
       ),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ─── MINIMAL RESPONSIVE HEADER ───
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          // ── TOP GAME HUD BAR ─────────────────────────────────────────────
+          Row(
+            children: [
+              // Step & Game Capsule
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF4DD0E1), Color(0xFF00ACC1)],
+                  ),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  widget.stepNumber.isNotEmpty
+                      ? 'STEP ${widget.stepNumber} • VOICE'
+                      : 'VOICE GAME',
+                  style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.6,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // Drill Counter Capsule
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Text(
+                  'TASK ${_currentExerciseIndex + 1}/${exercises.length}',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF80DEEA),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+
+              const Spacer(),
+
+              // Quick Side Navigation in HUD
+              InkWell(
+                onTap: _goToPrevious,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Icon(Icons.chevron_left_rounded,
+                      color: Colors.white70, size: 18),
+                ),
+              ),
+              const SizedBox(width: 4),
+              InkWell(
+                onTap: _goToNext,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: const Icon(Icons.chevron_right_rounded,
+                      color: Colors.white70, size: 18),
+                ),
+              ),
+              const SizedBox(width: 8),
+
+              // Mark Step Checkbox
+              InkWell(
+                onTap: () {
+                  HapticFeedback.heavyImpact();
+                  final nextVal = !widget.isCompleted;
+                  widget.onCompleted(nextVal);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(nextVal
+                          ? '🎉 Voice Practice Completed! (+20 PTS) ✓'
+                          : 'Voice Practice marked as pending'),
+                      backgroundColor: nextVal
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF334155),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: widget.isCompleted
+                        ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                        : const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: widget.isCompleted
+                          ? const Color(0xFF10B981)
+                          : Colors.white24,
+                    ),
+                  ),
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        'STEP ${widget.stepNumber} • 🔄 Active & Passive Voice',
-                        style: GoogleFonts.outfit(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 0.2,
-                        ),
+                      Icon(
+                        widget.isCompleted
+                            ? Icons.check_circle_rounded
+                            : Icons.circle_outlined,
+                        color: widget.isCompleted
+                            ? const Color(0xFF10B981)
+                            : Colors.white54,
+                        size: 14,
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(width: 4),
                       Text(
-                        _getLocalizedSubtitle(widget.selectedLanguage),
+                        widget.isCompleted ? 'DONE ✓' : 'VERIFY',
                         style: GoogleFonts.outfit(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF00FFCC),
+                          color: widget.isCompleted
+                              ? const Color(0xFF10B981)
+                              : Colors.white70,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(width: 12),
-                InkWell(
-                  onTap: () {
-                    HapticFeedback.mediumImpact();
-                    widget.onCompleted(!widget.isCompleted);
-                  },
-                  borderRadius: BorderRadius.circular(8),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: widget.isCompleted
-                          ? const Color(0xFF10B981)
-                          : const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: widget.isCompleted
-                            ? const Color(0xFF10B981)
-                            : Colors.white24,
-                        width: 1.2,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          widget.isCompleted
-                              ? Icons.check_circle_rounded
-                              : Icons.radio_button_unchecked_rounded,
-                          size: 14,
-                          color: widget.isCompleted
-                              ? Colors.black
-                              : Colors.white70,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          widget.isCompleted ? 'DONE ✓' : 'MARK STEP',
-                          style: GoogleFonts.outfit(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w800,
-                            color: widget.isCompleted
-                                ? Colors.black
-                                : Colors.white70,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // Title & Subtitle
+          Text(
+            'Active & Passive Voice 🔄',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              letterSpacing: 0.2,
             ),
           ),
+          const SizedBox(height: 3),
+          Text(
+            _getLocalizedSubtitle(widget.selectedLanguage),
+            style: GoogleFonts.inter(
+              color: const Color(0xFF4DD0E1),
+              fontSize: 11.5,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          const SizedBox(height: 12),
 
           // ─── FILTER TABS (ALL, ACTIVE & PASSIVE, TENSES OF BE, UNKNOWN AGENT) ───
           Padding(
