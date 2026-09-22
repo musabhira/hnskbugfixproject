@@ -372,6 +372,9 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       isValid = false;
       errorMessage =
           'Name contains inappropriate content. Please use appropriate language.';
+    } else if (_phoneNumberController.text.trim().isEmpty) {
+      isValid = false;
+      errorMessage = 'Please enter your phone number to assist and support your account';
     } else if (_bioController.text.isNotEmpty && _containsObjectionableContent(_bioController.text)) {
       isValid = false;
       errorMessage =
@@ -488,6 +491,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       final internalShopName = sanitizedName.toLowerCase().replaceAll(RegExp(r'\s+'), '-');
       final sanitizedBio = _sanitizeContent(_bioController.text);
 
+      // Ensure public.users row exists
+      await _supabase.from('users').upsert({
+        'id': _currentUserId,
+        'email': currentUser.email ?? '',
+      }, onConflict: 'id');
+
       // Update/Insert profile data via atomic upsert
       await _supabase.from('profile').upsert(
         {
@@ -541,7 +550,11 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           ),
         );
 
-        Navigator.of(context).pop(true);
+        if (Navigator.of(context).canPop()) {
+          Navigator.of(context).pop(true);
+        } else {
+          context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+        }
       }
     } catch (error, stackTrace) {
       debugPrint('=== PROFILE SAVE ERROR ===\n$error\n$stackTrace\n===================');
@@ -1126,12 +1139,12 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Optional Phone Number
+                        // Mandatory Phone Number for Support
                         CustomPhoneTextField(
                           width: double.infinity,
                           height: 56.0,
                           controller: _phoneNumberController,
-                          labelText: 'Phone Number (Optional)',
+                          labelText: 'Phone Number (Mandatory) *',
                           hintText: 'Enter your phone number',
                           initialCountryCode: 'IN',
                         ),
@@ -1139,20 +1152,21 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           margin: const EdgeInsets.only(top: 6),
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: theme.primaryBackground,
+                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: theme.alternate),
+                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.shield_outlined, color: theme.secondaryText, size: 16),
+                              const Icon(Icons.support_agent_rounded, color: Color(0xFF10B981), size: 18),
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  '100% Confidential: Phone numbers are never exposed publicly.',
+                                  'Required for Account Support: Used exclusively to assist with recovery and mentor help. Strictly private and never shared publicly.',
                                   style: GoogleFonts.inter(
-                                    color: theme.secondaryText,
+                                    color: Colors.white.withValues(alpha: 0.85),
                                     fontSize: 11,
+                                    height: 1.3,
                                   ),
                                 ),
                               ),

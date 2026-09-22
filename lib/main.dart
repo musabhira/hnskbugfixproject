@@ -74,8 +74,9 @@ void main() {
             await Firebase.initializeApp();
             debugPrint('Main: Firebase core initialized.');
           }
+          await PushNotificationService.initialize();
         } catch (e) {
-          debugPrint('Main: Firebase core initialization error: $e');
+          debugPrint('Main: Firebase/Notification core initialization error: $e');
         }
       }());
     } else {
@@ -160,6 +161,7 @@ class MyAppState extends State<MyApp> {
           _appStateNotifier.stopShowingSplashImage();
           try {
             PushNotificationService.initialize();
+            PushNotificationService.syncCurrentUserToken();
           } catch (e) {
             debugPrint('Main: PushNotificationService error on login: $e');
           }

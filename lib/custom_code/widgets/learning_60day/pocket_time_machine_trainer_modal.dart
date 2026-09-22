@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'pocket_pronunciation_evaluator.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 
 /// ⏳ Model for Past, Present & Future Verb Trio
@@ -222,6 +223,7 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
   String _spokenText = '';
   double _speechAccuracy = 0.0;
   bool _hasSpeechAttempted = false;
+  PronunciationEvaluationResult? _pronunciationResult;
 
   // 60-Second Self-Presentation State
   final TextEditingController _nameController = TextEditingController(text: 'Rahul');
@@ -287,13 +289,19 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
         _isListening = true;
         _spokenText = '';
         _hasSpeechAttempted = true;
+        _pronunciationResult = null;
       });
 
       _speech.listen(
         onResult: (result) {
+          final eval = PocketPronunciationEvaluator.evaluate(
+            targetSentence: targetSentence,
+            spokenText: result.recognizedWords,
+          );
           setState(() {
             _spokenText = result.recognizedWords;
-            _speechAccuracy = _calculateSimilarity(targetSentence, _spokenText);
+            _speechAccuracy = eval.accuracyPercentage / 100.0;
+            _pronunciationResult = eval;
           });
           if (result.finalResult) {
             _handleSpeechComplete();
@@ -319,17 +327,6 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
         ),
       );
     }
-  }
-
-  double _calculateSimilarity(String target, String recognized) {
-    final tWords = target.toLowerCase().replaceAll(RegExp(r'[^a-z0-9 ]'), '').split(' ');
-    final rWords = recognized.toLowerCase().replaceAll(RegExp(r'[^a-z0-9 ]'), '').split(' ');
-    if (tWords.isEmpty || rWords.isEmpty) return 0.0;
-    int matches = 0;
-    for (final w in rWords) {
-      if (tWords.contains(w)) matches++;
-    }
-    return (matches / tWords.length).clamp(0.0, 1.0);
   }
 
   @override
@@ -687,8 +684,15 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
                   ],
                 ),
 
-                // Live speech feedback
-                if (_hasSpeechAttempted) ...[
+                // Live speech feedback & pronunciation accuracy card
+                if (_pronunciationResult != null) ...[
+                  const SizedBox(height: 14),
+                  PocketPronunciationResultCard(
+                    result: _pronunciationResult!,
+                    onRetry: () => _listenAndVerify(activeSentence),
+                    onListenNative: () => _speakSentence(activeSentence),
+                  ),
+                ] else if (_hasSpeechAttempted) ...[
                   const SizedBox(height: 12),
                   Container(
                     width: double.infinity,

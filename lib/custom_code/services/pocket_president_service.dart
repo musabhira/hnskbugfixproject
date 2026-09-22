@@ -309,7 +309,7 @@ class PocketPresidentService {
           'reporter_id': userId,
           'content_type': 'president_inquiry',
           'content_id': messageId,
-          'report_type': _categorizeInquiry(messageText),
+          'report_type': 'other', // President inquiries use 'other' — matches reports_report_type_check constraint
           'description': messageText,
           'additional_info': jsonEncode(additionalData),
           'status': 'pending',

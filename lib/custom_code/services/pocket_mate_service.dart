@@ -86,9 +86,11 @@ class PocketMateService {
       // If sending to a robot, enqueue with human-like response delay
       if (PocketRobotService.isRobotId(receiverId) ||
           !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(receiverId)) {
-        await PocketRobotService.enqueueUserRequestToRobot(userId: senderId, robotId: receiverId);
+        await PocketRobotService.enqueueUserRequestToRobot(
+            userId: senderId, robotId: receiverId);
         final prefs = await SharedPreferences.getInstance();
-        final sentList = prefs.getStringList('sent_mate_requests_$senderId') ?? [];
+        final sentList =
+            prefs.getStringList('sent_mate_requests_$senderId') ?? [];
         if (!sentList.contains(receiverId)) {
           sentList.add(receiverId);
           await prefs.setStringList('sent_mate_requests_$senderId', sentList);
@@ -123,7 +125,8 @@ class PocketMateService {
 
       // Also record in SharedPreferences for rapid local sync
       final prefs = await SharedPreferences.getInstance();
-      final sentList = prefs.getStringList('sent_mate_requests_$senderId') ?? [];
+      final sentList =
+          prefs.getStringList('sent_mate_requests_$senderId') ?? [];
       if (!sentList.contains(receiverId)) {
         sentList.add(receiverId);
         await prefs.setStringList('sent_mate_requests_$senderId', sentList);
@@ -148,24 +151,27 @@ class PocketMateService {
   }) async {
     try {
       if (PocketRobotService.isRobotId(senderId)) {
-        await PocketRobotService.acceptRobotRequest(myId: myId, robotId: senderId);
-        if (notificationId.isNotEmpty && !notificationId.startsWith('local_') && !notificationId.startsWith('robot_')) {
+        await PocketRobotService.acceptRobotRequest(
+            myId: myId, robotId: senderId);
+        if (notificationId.isNotEmpty &&
+            !notificationId.startsWith('local_') &&
+            !notificationId.startsWith('robot_')) {
           try {
             await _supabase
                 .from('notifications')
-                .update({'status': 'accepted', 'is_read': true})
-                .eq('id', notificationId);
+                .update({'status': 'accepted', 'is_read': true}).eq(
+                    'id', notificationId);
           } catch (_) {}
         }
         return true;
       }
 
       // 1. Update notification in DB
-      if (notificationId.isNotEmpty && !notificationId.startsWith('local_') && !notificationId.startsWith('robot_')) {
-        await _supabase
-            .from('notifications')
-            .update({'status': 'accepted', 'is_read': true})
-            .eq('id', notificationId);
+      if (notificationId.isNotEmpty &&
+          !notificationId.startsWith('local_') &&
+          !notificationId.startsWith('robot_')) {
+        await _supabase.from('notifications').update(
+            {'status': 'accepted', 'is_read': true}).eq('id', notificationId);
       }
 
       // 2. Add mutual follows in DB
@@ -196,7 +202,8 @@ class PocketMateService {
           await _supabase.from('conversations').insert({
             'user1_id': myId,
             'user2_id': senderId,
-            'last_message': '🤝 Connected as Pocket Mates! Start snapping & chatting.',
+            'last_message':
+                '🤝 Connected as Pocket Mates! Start snapping & chatting.',
             'last_message_time': DateTime.now().toIso8601String(),
             'updated_at': DateTime.now().toIso8601String(),
             'unread_count': 0,
@@ -228,7 +235,8 @@ class PocketMateService {
           'sender_id': myId,
           'source_id': myId,
           'type': 'mate_accepted',
-          'message': '✨ $myName accepted your Mate Request! You can now snap & chat.',
+          'message':
+              '✨ $myName accepted your Mate Request! You can now snap & chat.',
           'status': 'read',
           'created_at': DateTime.now().toIso8601String(),
         });
@@ -249,23 +257,26 @@ class PocketMateService {
   }) async {
     try {
       if (senderId != null && PocketRobotService.isRobotId(senderId)) {
-        await PocketRobotService.declineRobotRequest(myId: myId, robotId: senderId);
-        if (notificationId.isNotEmpty && !notificationId.startsWith('local_') && !notificationId.startsWith('robot_')) {
+        await PocketRobotService.declineRobotRequest(
+            myId: myId, robotId: senderId);
+        if (notificationId.isNotEmpty &&
+            !notificationId.startsWith('local_') &&
+            !notificationId.startsWith('robot_')) {
           try {
             await _supabase
                 .from('notifications')
-                .update({'status': 'declined', 'is_read': true})
-                .eq('id', notificationId);
+                .update({'status': 'declined', 'is_read': true}).eq(
+                    'id', notificationId);
           } catch (_) {}
         }
         return true;
       }
 
-      if (notificationId.isNotEmpty && !notificationId.startsWith('local_') && !notificationId.startsWith('robot_')) {
-        await _supabase
-            .from('notifications')
-            .update({'status': 'declined', 'is_read': true})
-            .eq('id', notificationId);
+      if (notificationId.isNotEmpty &&
+          !notificationId.startsWith('local_') &&
+          !notificationId.startsWith('robot_')) {
+        await _supabase.from('notifications').update(
+            {'status': 'declined', 'is_read': true}).eq('id', notificationId);
       }
       return true;
     } catch (e) {
@@ -275,11 +286,13 @@ class PocketMateService {
   }
 
   /// Check whether there is an outgoing pending request sent from senderId to receiverId
-  static Future<bool> hasPendingSentRequest(String senderId, String receiverId) async {
+  static Future<bool> hasPendingSentRequest(
+      String senderId, String receiverId) async {
     if (senderId.isEmpty || receiverId.isEmpty) return false;
     try {
       final prefs = await SharedPreferences.getInstance();
-      final sentList = prefs.getStringList('sent_mate_requests_$senderId') ?? [];
+      final sentList =
+          prefs.getStringList('sent_mate_requests_$senderId') ?? [];
       if (sentList.contains(receiverId)) return true;
 
       final res = await _supabase
@@ -303,7 +316,8 @@ class PocketMateService {
   }
 
   /// Get pending incoming request received by receiverId from senderId if any
-  static Future<Map<String, dynamic>?> getPendingIncomingRequest(String receiverId, String senderId) async {
+  static Future<Map<String, dynamic>?> getPendingIncomingRequest(
+      String receiverId, String senderId) async {
     if (receiverId.isEmpty || senderId.isEmpty) return null;
     try {
       final res = await _supabase
@@ -321,7 +335,8 @@ class PocketMateService {
         final prefs = await SharedPreferences.getInstance();
         final localStr = prefs.getString('pending_pocket_requests_$receiverId');
         if (localStr != null && localStr.isNotEmpty) {
-          final localReqs = List<Map<String, dynamic>>.from(json.decode(localStr));
+          final localReqs =
+              List<Map<String, dynamic>>.from(json.decode(localStr));
           final found = localReqs.firstWhere(
             (x) => x['senderId'] == senderId,
             orElse: () => {},
@@ -410,7 +425,8 @@ class PocketMateService {
   }
 
   /// Fetch all pending connection requests for a user (combining Supabase & Local Robot requests)
-  static Future<List<Map<String, dynamic>>> getPendingRequests(String userId) async {
+  static Future<List<Map<String, dynamic>>> getPendingRequests(
+      String userId) async {
     if (userId.isEmpty) return [];
     try {
       final response = await _supabase
@@ -444,9 +460,11 @@ class PocketMateService {
       final localStr = prefs.getString('pending_pocket_requests_$userId');
       if (localStr != null && localStr.isNotEmpty) {
         try {
-          final localReqs = List<Map<String, dynamic>>.from(json.decode(localStr));
+          final localReqs =
+              List<Map<String, dynamic>>.from(json.decode(localStr));
           for (final lr in localReqs) {
-            if (!requests.any((x) => x['id'] == lr['id'] || (x['sender_id'] == lr['senderId']))) {
+            if (!requests.any((x) =>
+                x['id'] == lr['id'] || (x['sender_id'] == lr['senderId']))) {
               requests.add({
                 'id': lr['id'],
                 'sender_id': lr['senderId'],
@@ -469,7 +487,8 @@ class PocketMateService {
   }
 
   /// Toggle Pinned Conversation status
-  static Future<bool> togglePinConversation(String userId, String conversationId) async {
+  static Future<bool> togglePinConversation(
+      String userId, String conversationId) async {
     if (userId.isEmpty || conversationId.isEmpty) return false;
     try {
       final prefs = await SharedPreferences.getInstance();

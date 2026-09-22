@@ -42,6 +42,7 @@ import 'pocket_direct_indirect_practice_card.dart';
 import 'pocket_conditionals_practice_card.dart';
 import 'pocket_question_tags_practice_card.dart';
 import 'pocket_sentence_structure_practice_card.dart';
+import 'pocket_time_machine_practice_card.dart';
 
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
@@ -175,6 +176,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _conditionalsPracticeCompleted = false;
   bool _questionTagsPracticeCompleted = false;
   bool _sentenceStructurePracticeCompleted = false;
+  bool _timeMachinePracticeCompleted = false;
 
   // Story Aloud Reading Recorder
   AudioRecorder? _storyRecorder;
@@ -4251,6 +4253,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           prefs.getBool('${dayKey}_question_tags_practice') ?? false;
       _sentenceStructurePracticeCompleted =
           prefs.getBool('${dayKey}_sentence_structure_practice') ?? false;
+      _timeMachinePracticeCompleted =
+          prefs.getBool('${dayKey}_time_machine_practice') ?? false;
       _storyAudioPath = prefs.getString('${dayKey}_story_recording_path');
       _storyRecordDuration = prefs.getInt('${dayKey}_story_recording_duration') ?? 0;
     });
@@ -4260,6 +4264,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     switch (key) {
       case 'alphabet_phonics':
         _alphabetPhonicsCompleted = value;
+        break;
+      case 'time_machine_practice':
+        _timeMachinePracticeCompleted = value;
         break;
       case 'secret_code':
         _secretCodeGrammarCompleted = value;
@@ -4807,7 +4814,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_hasEnglishThinking) count++;
     if (_hasSpeakingChallenge) count++;
     if (widget.day >= 4) count++;
-    count += 11; // ⚡ Grammar + 🏗️ Builder + 💬 Slang + 🎤 Speaking + ⏰ 12 Tenses + 📝 Articles + 📍 Prepositions + 🎯 Modal Verbs + 🔗 Conjunctions + 🔄 Active/Passive + 💬 Direct/Indirect
+    count += 12; // ⚡ Grammar + 🏗️ Builder + 💬 Slang + 🎤 Speaking + ⏳ Time Machine + ⏰ 12 Tenses + 📝 Articles + 📍 Prepositions + 🎯 Modal Verbs + 🔗 Conjunctions + 🔄 Active/Passive + 💬 Direct/Indirect
     return count;
   }
 
@@ -4819,6 +4826,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_sentenceBuilderCompleted) count++;
     if (_slangSmartEnglishCompleted) count++;
     if (_practiceSpeakingCompleted) count++;
+    if (_timeMachinePracticeCompleted) count++;
     if (_tensesSpeakingCompleted) count++;
     if (_articlesPracticeCompleted) count++;
     if (_prepositionsPracticeCompleted) count++;
@@ -4894,7 +4902,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int get _stepSentenceBuilder => _stepSecretCode + 1;
   int get _stepSlang => _stepSentenceBuilder + 1;
   int get _stepSpeaking => _stepSlang + 1;
-  int get _stepTenses => _stepSpeaking + 1;
+  int get _stepTimeMachine => _stepSpeaking + 1;
+  int get _stepTenses => _stepTimeMachine + 1;
   int get _stepArticles => _stepTenses + 1;
   int get _stepPrepositions => _stepArticles + 1;
   int get _stepModalVerbs => _stepPrepositions + 1;
@@ -5109,6 +5118,35 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                               },
                               onSpeak: _speakWord,
                               stepNumber: '$_stepSpeaking',
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 14),
+                      ],
+
+                      // ⏳ Time Machine Action Verbs Trainer (Audio Directive: Past vs Present vs Future with Pronunciation Accuracy)
+                      if (_showSpeaking || _showVocab) ...[
+                        _buildTopicSubtaskCard(
+                          stepNumber: '$_stepTimeMachine',
+                          icon: '⏳',
+                          title: 'Time Machine Trainer (Past, Present & Future)',
+                          subtitle:
+                              'Master core action verbs across yesterday, today and tomorrow with instant speech accuracy scoring.',
+                          isVerified: _timeMachinePracticeCompleted,
+                          actionColor: const Color(0xFFFFD700),
+                          actionLabel: 'TIME MACHINE ⏳',
+                          subtaskKey: 'time_machine_practice',
+                          builder: (ctx, lang, markCompleted) {
+                            return PocketTimeMachinePracticeCard(
+                              day: widget.day,
+                              selectedLanguage: lang,
+                              isCompleted: _timeMachinePracticeCompleted,
+                              onCompleted: (val) {
+                                markCompleted(val);
+                                _saveSubtask('time_machine_practice', val);
+                              },
+                              onSpeak: _speakWord,
+                              stepNumber: '$_stepTimeMachine',
                             );
                           },
                         ),

@@ -309,10 +309,13 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       _checkAndDeleteExpiredStatuses(); // Run in background to not block loading
 
       // 1. Fetch user's groups to filter group mentions
-      final myGroupsRes = await supabase
-          .from('group_members')
-          .select('group_id, groups(id, name, group_image_url)')
-          .eq('profile_id', widget.currentProfileId);
+      final myGroupsRes = widget.currentProfileId.trim().isNotEmpty &&
+              widget.currentProfileId != 'null'
+          ? await supabase
+              .from('group_members')
+              .select('group_id, groups(id, name, group_image_url)')
+              .eq('profile_id', widget.currentProfileId)
+          : <Map<String, dynamic>>[];
       final myGroupIds =
           List<String>.from(myGroupsRes.map((e) => e['group_id'].toString()));
       final groupsMap = {
@@ -4587,21 +4590,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               maxScale: 3.5,
               boundaryMargin: const EdgeInsets.all(120),
               child: Center(
-                child: isPresident
-                    ? const PresidentialPalaceCastleWidget(
-                        width: 480,
-                        height: 380,
-                        animProg: 0.5,
-                      )
-                    : SizedBox(
-                        width: 360,
-                        height: 320,
-                        child: FlameEnglishHouseWidget(
-                          currentDay: level,
-                          streak: level,
-                          paletteId: paletteId,
-                        ),
-                      ),
+                child: SizedBox(
+                  width: isPresident ? 440 : 360,
+                  height: isPresident ? 380 : 320,
+                  child: FlameEnglishHouseWidget(
+                    currentDay: isPresident ? 90 : level,
+                    streak: isPresident ? 90 : level,
+                    paletteId: isPresident ? (paletteId ?? 'royal_gold') : paletteId,
+                    isPresident: isPresident,
+                  ),
+                ),
               ),
             ),
 

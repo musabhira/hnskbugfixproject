@@ -19,13 +19,21 @@ import UserNotifications
         print("Firebase configuration file not found. Skipping native initialization.")
     }
 
+    // Set notification center delegate BEFORE registering for remote notifications
+    UNUserNotificationCenter.current().delegate = self
+
     // Request notification permissions (for iOS 10+)
     if #available(iOS 10.0, *) {
-      UNUserNotificationCenter.current().delegate = self
       let authOptions: UNAuthorizationOptions = [.alert, .badge, .sound]
       UNUserNotificationCenter.current().requestAuthorization(
         options: authOptions,
-        completionHandler: { _, _ in }
+        completionHandler: { granted, error in
+          if let error = error {
+            print("Notification permission error: \(error.localizedDescription)")
+          } else {
+            print("Notification permission granted: \(granted)")
+          }
+        }
       )
     } else {
       let settings: UIUserNotificationSettings =
@@ -64,5 +72,32 @@ extension AppDelegate: MessagingDelegate {
       object: nil,
       userInfo: dataDict
     )
+  }
+}
+
+// MARK: - UNUserNotificationCenterDelegate
+// This allows notifications to be shown as banners even when the app is in FOREGROUND
+extension AppDelegate: UNUserNotificationCenterDelegate {
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    // Show banner, play sound, update badge even when app is open (foreground)
+    if #available(iOS 14.0, *) {
+      completionHandler([.banner, .badge, .sound])
+    } else {
+      completionHandler([.alert, .badge, .sound])
+    }
+  }
+
+  func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    didReceive response: UNNotificationResponse,
+    withCompletionHandler completionHandler: @escaping () -> Void
+  ) {
+    // Notification was tapped – Flutter side handles routing via getInitialMessage() / onMessageOpenedApp
+    print("Notification tapped: \(response.notification.request.identifier)")
+    completionHandler()
   }
 }

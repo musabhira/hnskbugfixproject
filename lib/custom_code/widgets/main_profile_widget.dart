@@ -101,6 +101,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   int _localUserStage = 1;
 
   int _getEffectiveDay() {
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+    if (isRobot) {
+      final robot = PocketRobotService.getRobotById(userId) ??
+          PocketRobotService.getRobotByLevel(1);
+      return PocketRobotService.getDynamicLevel(robot);
+    }
     if (_pocketScore > 0) {
       return PocketScoreLevelEngine.getLevelFromScore(_pocketScore);
     }
@@ -117,6 +124,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Future<void> _loadLocalUserStage() async {
     try {
+      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+      final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+      if (isRobot) {
+        final robot = PocketRobotService.getRobotById(userId) ??
+            PocketRobotService.getRobotByLevel(1);
+        final dynLvl = PocketRobotService.getDynamicLevel(robot);
+        final robotScore = await PocketFortressDefenseService.getRobotScore(robot.id, dynLvl);
+        if (mounted) {
+          setState(() {
+            _pocketScore = robotScore;
+            _localUserStage = dynLvl;
+          });
+        }
+        return;
+      }
       final score = await PocketFortressDefenseService.getUnifiedScore(userId);
       final prefs = await SharedPreferences.getInstance();
       final stage = prefs.getInt('pocket_learning_user_stage_$userId') ?? prefs.getInt('learning_day_$userId') ?? 1;
@@ -238,11 +260,11 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         final robot = PocketRobotService.getRobotById(userId) ??
             PocketRobotService.getRobotByLevel(1);
         final dynLvl = PocketRobotService.getDynamicLevel(robot);
-        final robotScore = dynLvl * 100;
+        final robotScore = await PocketFortressDefenseService.getRobotScore(robot.id, dynLvl);
         if (mounted) {
           setState(() {
             _pocketScore = robotScore;
-            _localUserStage = PocketScoreLevelEngine.getLevelFromScore(robotScore);
+            _localUserStage = dynLvl;
           });
         }
         return;
@@ -632,6 +654,62 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         // Cache this fresh data
         final prefs = await SharedPreferences.getInstance();
         prefs.setString('profile_cache_$userId', json.encode(data));
+      } else {
+        // Profile record does not exist yet!
+        if (isMe) {
+          try {
+            final email = _supabase.auth.currentUser?.email ?? '';
+            final fallbackName =
+                email.contains('@') ? email.split('@').first : 'Pocket Mate';
+            final cleanSlug = fallbackName
+                .toLowerCase()
+                .replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+            // Ensure public.users row exists
+            await _supabase.from('users').upsert({
+              'id': userId,
+              'email': email,
+            }, onConflict: 'id');
+
+            final fallbackProfile = {
+              'id': userId,
+              'user_id': userId,
+              'name': fallbackName,
+              'shop_name': fallbackName.toLowerCase().replaceAll(' ', '-'),
+              'slug': cleanSlug.isNotEmpty
+                  ? cleanSlug
+                  : 'mate${DateTime.now().millisecondsSinceEpoch % 10000}',
+              'learning_day': 1,
+              'learning_stage': 1,
+              'learning_points': 0,
+              'xp': 0,
+              'native_language': 'Malayalam',
+              'english_level': 'Beginner (A1-A2)',
+              'learning_goal': 'Daily Fluency & Speaking',
+            };
+
+            await _supabase
+                .from('profile')
+                .upsert(fallbackProfile, onConflict: 'user_id');
+
+            if (mounted) {
+              setState(() {
+                _isFollowing = followStatus;
+                _isBlocked = blockStatus;
+                _isRequested = isRequested;
+                _isMate = mateStatus;
+                _isMateRequested = isMateRequested;
+                _applyProfileData(fallbackProfile);
+                _isLoading = false;
+              });
+            }
+          } catch (autoHealErr) {
+            debugPrint('Error auto-healing profile in MainProfileWidget: $autoHealErr');
+            if (mounted) setState(() => _isLoading = false);
+          }
+        } else {
+          if (mounted) setState(() => _isLoading = false);
+        }
       }
 
       // Process Gallery
@@ -1220,12 +1298,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               centerTitle: true,
               actions: [
                 if (isMe) ...[
-                  material.IconButton(
-                    icon: const Icon(material.Icons.switch_account, size: 22),
-                    color: textColor,
-                    onPressed: () => AutoLoginBottomSheet.show(context),
-                    tooltip: 'Switch Account',
-                  ),
+                  // Switch Account icon hidden — feature planned for future release
                   material.IconButton(
                     icon: const Icon(material.Icons.settings_rounded, size: 22),
                     color: textColor,
@@ -2826,7 +2899,41 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ],
                 ),
               ),
-              if (isDay90) ...[
+              () {
+                final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+                final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+                if (!isRobot) return const SizedBox.shrink();
+                final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(activeStage.day);
+                final trophies = PocketRobotService.getTrophiesForRobot(robot) + (isDay90 ? 1 : 0);
+                if (trophies <= 0) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 0.8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🏆', style: TextStyle(fontSize: 10)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'x$trophies TROPHIES',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 9.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }(),
+              if (isDay90 && !PocketRobotService.isRobotId(userId)) ...[
                 const SizedBox(width: 8),
                 GestureDetector(
                   onTap: () {
@@ -4032,6 +4139,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   Widget _buildProfileStageBadge(LearningMilestoneStage stage) {
     final accent = stage.buttonColor;
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+    int trophyCount = 0;
+    if (isRobot) {
+      final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(stage.day);
+      trophyCount = PocketRobotService.getTrophiesForRobot(robot) + (stage.day >= 90 ? 1 : 0);
+    }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
       decoration: BoxDecoration(
@@ -4054,7 +4168,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           Text(stage.emoji, style: const TextStyle(fontSize: 11)),
           const SizedBox(width: 4),
           Text(
-            'STAGE ${stage.stageNumber}/90',
+            trophyCount > 0 ? 'STAGE ${stage.stageNumber}/90 🏆x$trophyCount' : 'STAGE ${stage.stageNumber}/90',
             style: GoogleFonts.outfit(
               color: accent,
               fontWeight: FontWeight.w900,
@@ -4172,9 +4286,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   /// 🪙 Pocket Score Stat Item (Highest Priority Hero Stat on User Profile)
   /// User audio directive: "പോക്കറ്റ് സ്കോർ വെച്ചിട്ടാണ് നമ്മുടെ അക്കൗണ്ടിൽ പോക്കറ്റ് സ്കോർ മേലെ തന്നെ വരണം... പോക്കറ്റ് സ്കോറിനാണ് ഇവിടെ ഹൈ പ്രയോറിറ്റി വരുന്നത്!"
   Widget _buildPocketScoreStatItem(int score, LearningMilestoneStage stage) {
-    final currentLvl = PocketScoreLevelEngine.getLevelFromScore(score);
-    final remainingForNext = PocketScoreLevelEngine.getRemainingScoreForNextLevel(score);
-    final progressLabel = PocketScoreLevelEngine.getProgressLabel(score);
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+    final currentLvl = isRobot ? stage.day : PocketScoreLevelEngine.getLevelFromScore(score);
+    final remainingForNext = isRobot ? 0 : PocketScoreLevelEngine.getRemainingScoreForNextLevel(score);
+    final progressLabel = isRobot
+        ? 'Pocket Robot • Level $currentLvl Fortress'
+        : PocketScoreLevelEngine.getProgressLabel(score);
 
     return GestureDetector(
       onTap: () {
@@ -4259,7 +4377,16 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Widget _buildAchievementsStatItem(Color textColor, LearningMilestoneStage stage, int day) {
-    final unlockedCount = day >= 90 ? 6 : (day >= 60 ? 5 : (day >= 30 ? 4 : (day >= 21 ? 3 : (day >= 15 ? 2 : 1))));
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+    int unlockedCount;
+    if (isRobot) {
+      final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(day);
+      unlockedCount = PocketRobotService.getTrophiesForRobot(robot) + (day >= 90 ? 1 : 0);
+      if (unlockedCount < 1 && day >= 90) unlockedCount = 1;
+    } else {
+      unlockedCount = day >= 90 ? 6 : (day >= 60 ? 5 : (day >= 30 ? 4 : (day >= 21 ? 3 : (day >= 15 ? 2 : 1))));
+    }
     final score = _pocketScore;
 
     Widget content = GestureDetector(

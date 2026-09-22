@@ -2153,7 +2153,7 @@ class PocketOpenWorldGame extends FlameGame {
       ),
       RoamingRobotNpc(
         id: 'robo_prime',
-        name: 'Overlord Prime (Lvl 90)',
+        name: 'Overlord Prime',
         x: 18500,
         y: getGroundY(18500),
         patrolMinX: 17500,

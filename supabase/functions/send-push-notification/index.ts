@@ -102,10 +102,19 @@ serve(async (req) => {
     }
 
     // FCM Send Logic
-    const serviceAccountContent = await Deno.readTextFile('./firebase-auth.json')
-    const serviceAccount = JSON.parse(serviceAccountContent)
-    if (!serviceAccount.project_id) {
-      return new Response(JSON.stringify({ error: 'FIREBASE_SERVICE_ACCOUNT secret not set or invalid' }), {
+    let serviceAccount: any
+    try {
+      const serviceAccountContent = await Deno.readTextFile('./firebase-auth.json')
+      serviceAccount = JSON.parse(serviceAccountContent)
+    } catch (_) {
+      const envContent = Deno.env.get('FIREBASE_SERVICE_ACCOUNT')
+      if (envContent) {
+        serviceAccount = JSON.parse(envContent)
+      }
+    }
+
+    if (!serviceAccount || !serviceAccount.project_id) {
+      return new Response(JSON.stringify({ error: 'FIREBASE_SERVICE_ACCOUNT / firebase-auth.json not set or invalid' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       })
@@ -172,7 +181,7 @@ async function sendFCM(projectId: string, accessToken: string, token: string, ti
             priority: 'high',
             notification: {
               sound: 'default',
-              channel_id: 'chat_messages'
+              channel_id: 'high_importance_channel'
             }
           },
           apns: {

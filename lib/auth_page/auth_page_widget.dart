@@ -111,12 +111,19 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
       );
 
       if (user != null && mounted) {
-        // Automatically initialize default profile record to guarantee instant profile hydration
+        // Automatically ensure public.users row and baseline profile exist
         try {
           final emailPrefix = _emailController.text.trim().split('@').first;
           final displayName = emailPrefix.isNotEmpty ? emailPrefix : 'Pocket Mate';
           final cleanSlug = displayName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+
+          await SupaFlow.client.from('users').upsert({
+            'id': user.uid,
+            'email': _emailController.text.trim(),
+          }, onConflict: 'id');
+
           await SupaFlow.client.from('profile').upsert({
+            'id': user.uid,
             'user_id': user.uid,
             'name': displayName,
             'shop_name': displayName.toLowerCase().replaceAll(' ', '-'),
@@ -134,7 +141,7 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
         }
 
         if (mounted) {
-          context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+          context.goNamedAuth(ProfileCreateCustomWidget.routeName, context.mounted);
         }
       }
     } on AuthException catch (e) {

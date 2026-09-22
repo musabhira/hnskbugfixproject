@@ -234,7 +234,7 @@ class Learning60DayService {
             await prefs.setInt('learning_day_$userId', day);
             await prefs.setInt('pocket_learning_user_stage_$userId', day);
             await prefs.setBool('pocket_day_${userId}_${day}_unlocked', true);
-            PushNotificationService.showMissionUnlockedNotification(day: day);
+            await PushNotificationService.showMissionUnlockedNotification(day: day);
           }
         }
       }
@@ -424,7 +424,7 @@ class Learning60DayService {
 
     // 2. Schedule morning notification for next day (at 8:30 AM)
     final nextDay = (day < 90) ? day + 1 : 90;
-    PushNotificationService.scheduleMorningMissionNotification(day: nextDay);
+    await PushNotificationService.scheduleMorningMissionNotification(day: nextDay);
 
     // If advanceToNextDay is explicitly true (e.g. in developer test / fast forward), unlock nextDay immediately
     if (advanceToNextDay) {

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'pocket_pronunciation_evaluator.dart';
 
 /// Single practice exercise item with multilingual support
 class SpeakingExerciseItem {
@@ -89,6 +90,7 @@ class _PocketPracticeSpeakingCardState
   String _recognizedWords = '';
   bool _isExerciseAnswered = false;
   bool _isCorrect = false;
+  PronunciationEvaluationResult? _pronunciationResult;
   Timer? _listeningTimeoutTimer;
 
   // Animation controller for pulsing mic button
@@ -279,12 +281,18 @@ class _PocketPracticeSpeakingCardState
       }
     }
 
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: ex.fullSentence,
+      spokenText: spokenText,
+    );
+
     setState(() {
       _isExerciseAnswered = true;
-      _isCorrect = matched;
+      _isCorrect = matched || evalResult.accuracyPercentage >= 60;
+      _pronunciationResult = evalResult;
     });
 
-    if (matched) {
+    if (_isCorrect) {
       HapticFeedback.heavyImpact();
       _speakText(ex.fullSentence);
     } else {
@@ -301,6 +309,7 @@ class _PocketPracticeSpeakingCardState
       _isExerciseAnswered = false;
       _isCorrect = false;
       _recognizedWords = '';
+      _pronunciationResult = null;
     });
   }
 
@@ -313,6 +322,7 @@ class _PocketPracticeSpeakingCardState
       _isExerciseAnswered = false;
       _isCorrect = false;
       _recognizedWords = '';
+      _pronunciationResult = null;
     });
   }
 
@@ -324,14 +334,20 @@ class _PocketPracticeSpeakingCardState
       _isExerciseAnswered = false;
       _isCorrect = false;
       _recognizedWords = '';
+      _pronunciationResult = null;
     });
   }
 
   void _bypassForTesting(SpeakingExerciseItem ex) {
+    final evalResult = PocketPronunciationEvaluator.evaluate(
+      targetSentence: ex.fullSentence,
+      spokenText: ex.fullSentence,
+    );
     setState(() {
       _recognizedWords = ex.fullSentence;
       _isExerciseAnswered = true;
       _isCorrect = true;
+      _pronunciationResult = evalResult;
     });
     HapticFeedback.mediumImpact();
     _speakText(ex.fullSentence);
@@ -790,8 +806,15 @@ class _PocketPracticeSpeakingCardState
                   ),
                 ),
 
-                // Immediate Result Feedback & Correct Answer Display
-                if (_isExerciseAnswered) ...[
+                // Immediate Result Feedback & Pronunciation Accuracy Card
+                if (_isExerciseAnswered && _pronunciationResult != null) ...[
+                  const SizedBox(height: 14),
+                  PocketPronunciationResultCard(
+                    result: _pronunciationResult!,
+                    onRetry: _toggleSayIt,
+                    onListenNative: () => _speakText(ex.fullSentence),
+                  ),
+                ] else if (_isExerciseAnswered) ...[
                   const SizedBox(height: 14),
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -807,66 +830,32 @@ class _PocketPracticeSpeakingCardState
                             : const Color(0xFFEF4444),
                       ),
                     ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Row(
-                          children: [
-                            Icon(
-                              _isCorrect
-                                  ? Icons.check_circle_rounded
-                                  : Icons.error_outline_rounded,
-                              color: _isCorrect
-                                  ? const Color(0xFF10B981)
-                                  : const Color(0xFFF87171),
-                              size: 18,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                _isCorrect
-                                    ? '🎉 Correct! Spoken with great clarity!'
-                                    : 'Almost! Target answer: "${ex.targetWord}"',
-                                style: GoogleFonts.inter(
-                                  color: _isCorrect
-                                      ? const Color(0xFF6EE7B7)
-                                      : const Color(0xFFFCA5A5),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+                        Icon(
+                          _isCorrect
+                              ? Icons.check_circle_rounded
+                              : Icons.error_outline_rounded,
+                          color: _isCorrect
+                              ? const Color(0xFF10B981)
+                              : const Color(0xFFF87171),
+                          size: 18,
                         ),
-                        const SizedBox(height: 6),
-                        // Always clearly show the correct sentence
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.black26,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
+                        const SizedBox(width: 8),
+                        Expanded(
                           child: Text(
-                            'Full sentence: "${ex.fullSentence}"',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
+                            _isCorrect
+                                ? '🎉 Correct! Spoken clearly!'
+                                : 'Almost! Target answer: "${ex.targetWord}"',
+                            style: GoogleFonts.inter(
+                              color: _isCorrect
+                                  ? const Color(0xFF6EE7B7)
+                                  : const Color(0xFFFCA5A5),
                               fontSize: 12,
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                        if (_recognizedWords.isNotEmpty) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'You said: "$_recognizedWords"',
-                            style: GoogleFonts.inter(
-                              color: Colors.white70,
-                              fontSize: 10.5,
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ),

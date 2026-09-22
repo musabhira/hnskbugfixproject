@@ -976,37 +976,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             ),
                           ),
 
-                          // 2A. ⚡ Luminous Hexagonal Iron Dome Forcefield Canopy over Palace
-                          if (isPresident)
-                            Positioned(
-                              left: palaceLeft - 80,
-                              top: palaceTop - 70,
-                              width: palaceW + 160,
-                              height: palaceH + 90,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialIronDomeShieldCanopyWidget(
-                                  width: palaceW + 160,
-                                  height: palaceH + 90,
-                                  animProg: _ambientController.value,
-                                  isShieldActive: true,
-                                ),
-                              ),
-                            ),
-
-                          // 2B. Central Estate: Grand Presidential Palace or 2D Flame English House
+                          // 2. Central Estate: Flame English House (Day 90 + Presidential Upgrades for President)
                           if (isPresident)
                             Positioned(
                               left: palaceLeft,
                               top: palaceTop,
                               width: palaceW,
                               height: palaceH,
-                              child: _buildPresidentialPalaceCastle(
-                                palaceLeft,
-                                palaceTop,
-                                palaceW,
-                                palaceH,
-                                groundY,
+                              child: FlameEnglishHouseWidget(
+                                currentDay: 90,
+                                streak: 90,
+                                isDamaged: _isDefenderDamaged,
+                                houseId: 'pocket_president',
+                                paletteId: widget.neighbor.paletteId ?? 'royal_gold',
+                                isPresident: true,
+                                showTestingControls: false,
                               ),
                             )
                           else ...[
@@ -1042,259 +1026,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           if (!isPresident && (_isDefenderDamaged || _isTargetProtected))
                             _buildPostAttackDamageEffects(houseLeft, houseTop, houseW, houseH),
 
-                          // 3B. Presidential Security Layer: Limousine, Armed Guards, Black Cat Commandos & Cordon
-                          if (isPresident || _isDefenderDamaged || _isTargetProtected)
+                          // 3B. Emergency Cordon (only for non-president damaged houses)
+                          if (!isPresident && (_isDefenderDamaged || _isTargetProtected))
                             _buildPresidentialSecurityLayer(houseLeft, houseTop, houseW, houseH, groundY, worldW),
-
-                          // 3C. 🛡️ 🧱 🚧 🚔 🐕 📡 ✈️ 🚁 🚢 🏮 🐬 ⚓ Sovereign Island & Ocean Defenses
-                          if (isPresident) ...[
-                            // 🏮 COASTAL LIGHTHOUSE (West Island Bluff)
-                            Positioned(
-                              left: 10,
-                              top: groundY - 48,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialCoastalLighthouseWidget(
-                                  animProg: _ambientController.value,
-                                  isNight: isNight,
-                                ),
-                              ),
-                            ),
-
-                            // 🧱 WEST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
-                            Positioned(
-                              left: 45,
-                              top: groundY - 95,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialPerimeterWallWidget(
-                                  width: 170,
-                                  height: 95,
-                                  animProg: _ambientController.value,
-                                ),
-                              ),
-                            ),
-
-                            // 🚧 WEST POLICE BARRICADE CHECKPOINT ("Barricadukal")
-                            Positioned(
-                              left: 215,
-                              top: groundY - 48,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialPoliceBarricadeWidget(
-                                  animProg: _ambientController.value,
-                                  width: 75,
-                                  label: 'WEST GATE: POLICE CHECKPOINT 🚧',
-                                ),
-                              ),
-                            ),
-
-                            // 🚔 SWAT ARMORED TACTICAL BEARCAT / STRYKER APC
-                            Positioned(
-                              left: 290,
-                              top: groundY - 58,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialSwatArmoredCarWidget(
-                                  animProg: _ambientController.value,
-                                ),
-                              ),
-                            ),
-
-                            // 🐕 POLICE K9 TACTICAL PATROL UNIT
-                            Positioned(
-                              left: 350,
-                              top: groundY - 32,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialK9PoliceUnitWidget(
-                                  animProg: _ambientController.value,
-                                ),
-                              ),
-                            ),
-
-                            // 🛡️ WEST IRON DOME TAMIR INTERCEPTOR MISSILE BATTERY ("Iron Dome System")
-                            Positioned(
-                              left: 310,
-                              top: groundY - 110,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialIronDomeBatteryWidget(
-                                  animProg: _ambientController.value,
-                                  isLaunching: _isIronDomeFiring,
-                                  onTap: _showPresidentialIronDomeModal,
-                                ),
-                              ),
-                            ),
-
-                            // 📡 EAST IRON DOME PHASED ARRAY RADAR STATION
-                            Positioned(
-                              left: 770,
-                              top: groundY - 105,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialRadarDomeWidget(
-                                  animProg: _ambientController.value,
-                                  onTap: _showPresidentialIronDomeModal,
-                                ),
-                              ),
-                            ),
-
-                            // 🚀 AEROSPACE DEFENSE INTERCEPTOR ROCKET & GANTRY LAUNCHER
-                            Positioned(
-                              left: 850,
-                              top: groundY - 145,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialDefenseRocketWidget(
-                                  animProg: _ambientController.value,
-                                ),
-                              ),
-                            ),
-
-                            // 🛑 EAST POLICE CHECKPOINT WITH BARRICADES
-                            Positioned(
-                              left: 920,
-                              top: groundY - 48,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialPoliceBarricadeWidget(
-                                  animProg: _ambientController.value,
-                                  width: 75,
-                                  label: 'EAST GATE: ARMED PERIMETER 🛑',
-                                ),
-                              ),
-                            ),
-
-                            // 🚓 POLICE INTERCEPTOR CRUISER PATROL CAR
-                            Positioned(
-                              left: 990,
-                              top: groundY - 68,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PoliceInterceptorCarWidget(
-                                  animProg: _ambientController.value,
-                                ),
-                              ),
-                            ),
-
-                            // 🧱 EAST PERIMETER FORTRESS BLAST WALL ("Madhilukal")
-                            Positioned(
-                              left: 985,
-                              top: groundY - 95,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialPerimeterWallWidget(
-                                  width: 170,
-                                  height: 95,
-                                  animProg: _ambientController.value,
-                                ),
-                              ),
-                            ),
-
-                            // ✈️ AIR FORCE SUPERSONIC FIGHTER SQUADRON (V-Formation)
-                            Positioned(
-                              left: 40 + (_ambientController.value * 950),
-                              top: groundY * 0.20,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialAirForceFighterSquadronWidget(
-                                  animProg: _ambientController.value,
-                                  isNight: isNight,
-                                ),
-                              ),
-                            ),
-
-                            // ✈️ AIR FORCE ONE SUPERSONIC VIP JET
-                            Positioned(
-                              left: 100 + (_ambientController.value * 900),
-                              top: groundY * 0.35,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialSupersonicJetWidget(
-                                  animProg: _ambientController.value,
-                                ),
-                              ),
-                            ),
-
-                            // 🚁 MARINE ONE SECURITY HELICOPTER
-                            Positioned(
-                              right: 80,
-                              top: groundY * 0.40,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialHelicopterWidget(
-                                  animProg: _ambientController.value,
-                                ),
-                              ),
-                            ),
-
-                            // ⚓ MASSIVE GUIDED-MISSILE DESTROYER WARSHIP 1 (West Sovereign Waters)
-                            Positioned(
-                              left: 25,
-                              top: groundY + 90,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialNavalWarshipWidget(
-                                  animProg: _ambientController.value,
-                                  isNight: isNight,
-                                  width: 210,
-                                ),
-                              ),
-                            ),
-
-                            // ⚓ MASSIVE GUIDED-MISSILE DESTROYER WARSHIP 2 (East Sovereign Waters)
-                            Positioned(
-                              left: 965,
-                              top: groundY + 105,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialNavalWarshipWidget(
-                                  animProg: (_ambientController.value + 0.35) % 1.0,
-                                  isNight: isNight,
-                                  width: 210,
-                                ),
-                              ),
-                            ),
-
-                            // 🐬 PLAYFUL LEAPING OCEAN DOLPHIN 1
-                            Positioned(
-                              left: 255,
-                              top: groundY + 130,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialLeapingDolphinWidget(
-                                  animProg: _ambientController.value,
-                                  isNight: isNight,
-                                ),
-                              ),
-                            ),
-
-                            // 🐬 PLAYFUL LEAPING OCEAN DOLPHIN 2
-                            Positioned(
-                              left: 890,
-                              top: groundY + 145,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialLeapingDolphinWidget(
-                                  animProg: (_ambientController.value + 0.5) % 1.0,
-                                  isNight: isNight,
-                                ),
-                              ),
-                            ),
-
-                            // 🚢 ARMED NAVAL PATROL GUNBOAT (Center Waters)
-                            Positioned(
-                              left: 540 + (math.sin(_ambientController.value * 2 * math.pi) * 110),
-                              top: groundY + 185,
-                              child: AnimatedBuilder(
-                                animation: _ambientController,
-                                builder: (context, _) => PresidentialNavalPatrolShipWidget(
-                                  animProg: _ambientController.value,
-                                ),
-                              ),
-                            ),
-                          ],
 
                           // 3D. 🛡️ Active Iron Dome Interception Missile & Blast Effect
                           if (isPresident)

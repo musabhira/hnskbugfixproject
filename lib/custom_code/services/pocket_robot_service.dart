@@ -84,6 +84,7 @@ class PocketRobot {
   final String status;
   final String openingMessage;
   final List<String> catchphrases;
+  final int trophies;
 
   const PocketRobot({
     required this.id,
@@ -97,15 +98,18 @@ class PocketRobot {
     required this.status,
     required this.openingMessage,
     required this.catchphrases,
+    this.trophies = 0,
   });
 
-  /// 🏆 Level 90 Grandmaster Trophy milestone
-  bool get hasTrophy => level == 90;
+  /// 🏆 Level 90 Grandmaster Trophy milestone or Prestige loop trophies
+  bool get hasTrophy => trophies > 0 || level == 90;
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
         'level': level,
+        'trophies': trophies,
+        'has_trophy': hasTrophy,
         'archetype': archetype.name,
         'cefrRank': cefrRank,
         'bio': bio,
@@ -122,6 +126,7 @@ class PocketRobot {
       id: json['id'] as String,
       name: json['name'] as String,
       level: json['level'] as int? ?? 1,
+      trophies: json['trophies'] as int? ?? 0,
       archetype: RobotArchetype.values.firstWhere(
         (e) => e.name == json['archetype'],
         orElse: () => RobotArchetype.cheerful,
@@ -263,6 +268,13 @@ class PocketRobotService {
     return ((robot.level - 1 + days) % 90) + 1;
   }
 
+  /// Calculate prestige trophies earned when a robot completes the level 90 loop
+  static int getTrophiesForRobot(PocketRobot robot, {int? daysElapsed}) {
+    final days = daysElapsed ?? _cachedDaysElapsed;
+    final totalSteps = (robot.level - 1 + days);
+    return totalSteps ~/ 90;
+  }
+
   /// Get dynamic CEFR description for a level
   static String getCefrForLevel(int lvl) {
     if (lvl <= 15) return 'A1 Beginner';
@@ -276,16 +288,19 @@ class PocketRobotService {
   /// Get a robot instance reflecting their dynamic looped level
   static PocketRobot getDynamicRobot(PocketRobot base, {int? daysElapsed}) {
     final dynLvl = getDynamicLevel(base, daysElapsed: daysElapsed);
+    final trophyCount = getTrophiesForRobot(base, daysElapsed: daysElapsed);
+    final trophyBadge = trophyCount > 0 ? ' • 🏆x$trophyCount' : '';
     return PocketRobot(
       id: base.id,
       name: base.name,
       level: dynLvl,
+      trophies: trophyCount,
       archetype: base.archetype,
       cefrRank: getCefrForLevel(dynLvl),
       bio: base.bio,
       avatarUrl: base.avatarUrl,
       housePalette: base.housePalette,
-      status: '🤖 Pocket Robot • Active Level $dynLvl (Loop Day)',
+      status: '🤖 Pocket Robot • Active Level $dynLvl$trophyBadge',
       openingMessage: base.openingMessage,
       catchphrases: base.catchphrases,
     );
@@ -2282,7 +2297,7 @@ class PocketRobotService {
       final nameIndex = (lvl - 1) % firstNames.length;
       final archetype = archetypes[(lvl - 1) % archetypes.length];
       final palette = housePalettes[(lvl - 1) % housePalettes.length];
-      final name = lvl == 90 ? 'Overlord Prime (Level 90) 🤖' : '${firstNames[nameIndex]} 🤖';
+      final name = lvl == 90 ? 'Overlord Prime 🤖' : '${firstNames[nameIndex]} 🤖';
 
       // Determine CEFR Rank
       String cefr;

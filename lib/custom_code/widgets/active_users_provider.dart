@@ -52,6 +52,9 @@ class ActiveUsers extends _$ActiveUsers {
 
   Future<void> _joinFriendList() async {
     try {
+      if (_currentProfileId.trim().isEmpty || _currentProfileId == 'null') {
+        return;
+      }
       final user = _supabase.auth.currentUser;
       if (user == null) return;
 
@@ -84,12 +87,17 @@ class ActiveUsers extends _$ActiveUsers {
     // Only fetch friends active in the last 2 minutes to ensure freshness
     final twoMinutesAgo = DateTime.now().subtract(const Duration(minutes: 2));
 
-    final response = await _supabase
+    var query = _supabase
         .from('friendlist')
         .select(
             'profile_id, joined_at, profile(profile_image_url, name, id, phone_no, user_id)')
-        .neq('profile_id', _currentProfileId)
         .gte('joined_at', twoMinutesAgo.toIso8601String());
+
+    if (_currentProfileId.trim().isNotEmpty && _currentProfileId != 'null') {
+      query = query.neq('profile_id', _currentProfileId);
+    }
+
+    final response = await query;
 
     final List<dynamic> data = response as List<dynamic>;
     return data.map((item) {

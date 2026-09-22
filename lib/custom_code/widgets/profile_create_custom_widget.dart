@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pocket_mates_app/custom_code/widgets/profile_custom_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/profile_setup_onboarding_page.dart';
 
 class ProfileCreateCustomWidget extends StatelessWidget {
   final double width;
@@ -15,7 +15,7 @@ class ProfileCreateCustomWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ProfileCustomWidget(
+    return ProfileSetupOnboardingPage(
       width: width,
       height: height,
     );

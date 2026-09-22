@@ -15,7 +15,6 @@ import 'pocket_open_world_game_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_arsenal_store_modal.dart';
-import 'pocket_time_machine_trainer_modal.dart';
 import 'pocket_daily_mission_page.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_world_game_rules_modal.dart';
@@ -1037,19 +1036,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                   );
                                 },
                               ),
-                              const SizedBox(width: 6),
-                              _buildMinimalFloatingPill(
-                                icon: '⏳',
-                                label: 'Time Machine',
-                                highlightColor: const Color(0xFF38BDF8),
-                                onTap: () {
-                                  HapticFeedback.mediumImpact();
-                                  PocketTimeMachineTrainerModal.show(
-                                    context,
-                                    currentDay: prog.currentDay,
-                                  );
-                                },
-                              ),
                             ],
                           ),
                         ),
@@ -1314,41 +1300,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                 ),
                 const SizedBox(width: 8),
-
-                // ⏳ Time Machine Quick Button
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.lightImpact();
-                    PocketTimeMachineTrainerModal.show(
-                      context,
-                      currentDay: prog.currentDay,
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.45)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('⏳', style: TextStyle(fontSize: 11)),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Tenses',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF38BDF8),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
 
                 // 🏪 Minimal Store Button
                 GestureDetector(

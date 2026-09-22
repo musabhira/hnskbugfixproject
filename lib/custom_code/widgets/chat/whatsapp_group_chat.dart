@@ -2046,11 +2046,17 @@ Draft: "$draft"''';
                     final isRobot = PocketRobotService.isRobotId(targetId);
                     if (isRobot) {
                       final robot = PocketRobotService.getRobotById(targetId);
-                      final lvl = robot != null ? 'Lvl ${robot.level}' : '';
+                      final dynLvl = robot != null
+                          ? PocketRobotService.getDynamicLevel(robot)
+                          : 1;
+                      final trophies = robot != null
+                          ? PocketRobotService.getTrophiesForRobot(robot)
+                          : 0;
+                      final trophyBadge = trophies > 0 ? ' • 🏆x$trophies' : '';
                       return Padding(
                         padding: const EdgeInsets.only(top: 1.5),
                         child: Text(
-                          lvl.isNotEmpty ? 'Pocket Robot • $lvl' : 'Pocket Robot',
+                          'Pocket Robot • Lvl $dynLvl$trophyBadge',
                           style: const TextStyle(
                             fontSize: 11,
                             color: Color(0xFF38BDF8),

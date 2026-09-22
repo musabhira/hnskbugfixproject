@@ -148,6 +148,7 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
   int streak;
   HousePalette palette;
   bool isDamaged;
+  bool isPresident;
   Vector2? _cachedSize;
 
   FlameEnglishHouseGame({
@@ -155,6 +156,7 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
     this.streak = 1,
     HousePalette? initialPalette,
     this.isDamaged = false,
+    this.isPresident = false,
   }) : palette = initialPalette ?? HousePalette.presets[0];
 
   late HouseMasterComponent houseComponent;
@@ -170,7 +172,7 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
     final effectiveSize = _cachedSize ?? size;
 
     // 1. Transparent atmosphere with drifting clouds, twinkling stars, & flying birds
-    atmosphereComponent = AtmosphereComponent(day: currentDay);
+    atmosphereComponent = AtmosphereComponent(day: currentDay, isPresident: isPresident);
     atmosphereComponent.size = effectiveSize;
     add(atmosphereComponent);
 
@@ -180,6 +182,7 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
       streak: streak,
       palette: palette,
       isDamaged: isDamaged,
+      isPresident: isPresident,
     );
     houseComponent.resize(effectiveSize);
     add(houseComponent);
@@ -192,6 +195,14 @@ class FlameEnglishHouseGame extends FlameGame with TapCallbacks {
       houseComponent.day = newDay;
       houseComponent.streak = newStreak;
       atmosphereComponent.day = newDay;
+    }
+  }
+
+  void updatePresident(bool val) {
+    isPresident = val;
+    if (isLoaded) {
+      houseComponent.isPresident = val;
+      atmosphereComponent.isPresident = val;
     }
   }
 
@@ -246,7 +257,11 @@ class AtmosphereComponent extends Component {
     _FlyingBird(xRatio: 0.72, yRatio: 0.10, speed: 24, scale: 1.0, phase: 0.6),
   ];
 
-  AtmosphereComponent({required this.day});
+  bool isPresident;
+  double _helicopterXRatio = -0.25;
+  double _rocketTimer = 0.0;
+
+  AtmosphereComponent({required this.day, this.isPresident = false});
 
   @override
   void update(double dt) {
@@ -266,6 +281,20 @@ class AtmosphereComponent extends Component {
       bird.xRatio += (bird.speed * dt) / (size.x > 0 ? size.x : 400);
       if (bird.xRatio > 1.30) {
         bird.xRatio = -0.25;
+      }
+    }
+
+    if (isPresident) {
+      // 🚁 Patrol Helicopter gently crossing airspace
+      _helicopterXRatio += (26.0 * dt) / (size.x > 0 ? size.x : 400);
+      if (_helicopterXRatio > 1.35) {
+        _helicopterXRatio = -0.32;
+      }
+
+      // 🚀 Ascending Rocket loop (launches periodically into the upper atmosphere)
+      _rocketTimer += dt;
+      if (_rocketTimer > 15.0) {
+        _rocketTimer = 0.0;
       }
     }
   }
@@ -303,6 +332,189 @@ class AtmosphereComponent extends Component {
     for (final bird in _birds) {
       _renderBird(canvas, bird.xRatio * size.x, bird.yRatio * size.y, bird.scale, time * 6.5 + bird.phase);
     }
+
+    // 🚀 Presidential Sky Features: Ascending Rocket & Patrol Helicopter
+    if (isPresident) {
+      _renderAscendingRocket(canvas);
+      _renderPatrolHelicopter(canvas);
+    }
+  }
+
+  /// 🚁 Presidential Patrol Helicopter ("ഒരു ഹെലികോപ്റ്റർ പറന്നുപോവുക")
+  void _renderPatrolHelicopter(Canvas canvas) {
+    final hx = _helicopterXRatio * size.x;
+    final hy = size.y * 0.12 + math.sin(time * 3.2) * 3.5;
+    const scale = 0.85;
+
+    // Searchlight beam down towards ground
+    final sweep = math.sin(time * 2.2) * 25.0;
+    final beamPath = Path()
+      ..moveTo(hx + 10 * scale, hy + 8 * scale)
+      ..lineTo(hx - 30 + sweep, hy + 120 * scale)
+      ..lineTo(hx + 30 + sweep, hy + 120 * scale)
+      ..close();
+    final beamPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Colors.amberAccent.withValues(alpha: 0.22),
+          Colors.amberAccent.withValues(alpha: 0.0),
+        ],
+      ).createShader(Rect.fromLTWH(hx - 60, hy, 160, 130));
+    canvas.drawPath(beamPath, beamPaint);
+
+    // Landing skids
+    final skidPaint = Paint()
+      ..color = const Color(0xFF334155)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.8 * scale
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(hx - 8 * scale, hy + 8 * scale), Offset(hx - 12 * scale, hy + 14 * scale), skidPaint);
+    canvas.drawLine(Offset(hx + 8 * scale, hy + 8 * scale), Offset(hx + 6 * scale, hy + 14 * scale), skidPaint);
+    canvas.drawLine(Offset(hx - 20 * scale, hy + 14 * scale), Offset(hx + 18 * scale, hy + 14 * scale), skidPaint);
+
+    // Fuselage (Sleek VIP dark navy/black body)
+    final bodyPaint = Paint()..color = const Color(0xFF0F172A);
+    final bodyPath = Path()
+      ..moveTo(hx - 18 * scale, hy - 4 * scale)
+      ..cubicTo(hx - 20 * scale, hy + 8 * scale, hx + 14 * scale, hy + 10 * scale, hx + 20 * scale, hy + 2 * scale)
+      ..cubicTo(hx + 24 * scale, hy - 6 * scale, hx - 6 * scale, hy - 9 * scale, hx - 18 * scale, hy - 4 * scale)
+      ..close();
+    canvas.drawPath(bodyPath, bodyPaint);
+
+    // Cyan tinted cockpit glass
+    final glassPaint = Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.85);
+    final glassPath = Path()
+      ..moveTo(hx + 6 * scale, hy - 5 * scale)
+      ..cubicTo(hx + 18 * scale, hy - 3 * scale, hx + 20 * scale, hy + 2 * scale, hx + 15 * scale, hy + 5 * scale)
+      ..lineTo(hx + 6 * scale, hy + 5 * scale)
+      ..close();
+    canvas.drawPath(glassPath, glassPaint);
+
+    // VIP Gold stripe along hull
+    final stripePaint = Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.2 * scale;
+    canvas.drawLine(Offset(hx - 12 * scale, hy + 2 * scale), Offset(hx + 12 * scale, hy + 2 * scale), stripePaint);
+
+    // Tail boom
+    final boomPaint = Paint()..color = const Color(0xFF1E293B) ..strokeWidth = 3.0 * scale ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(hx - 16 * scale, hy - 2 * scale), Offset(hx - 42 * scale, hy - 7 * scale), boomPaint);
+
+    // Tail fin
+    final finPath = Path()
+      ..moveTo(hx - 40 * scale, hy - 7 * scale)
+      ..lineTo(hx - 44 * scale, hy - 18 * scale)
+      ..lineTo(hx - 38 * scale, hy - 18 * scale)
+      ..lineTo(hx - 36 * scale, hy - 3 * scale)
+      ..close();
+    canvas.drawPath(finPath, bodyPaint);
+
+    // Spinning tail rotor
+    final trAngle = time * 32.0;
+    canvas.drawLine(
+      Offset(hx - 42 * scale + math.cos(trAngle) * 7 * scale, hy - 16 * scale + math.sin(trAngle) * 7 * scale),
+      Offset(hx - 42 * scale - math.cos(trAngle) * 7 * scale, hy - 16 * scale - math.sin(trAngle) * 7 * scale),
+      Paint()..color = Colors.white70 ..strokeWidth = 1.4 * scale,
+    );
+
+    // Rotor mast & blurred main rotor disc
+    canvas.drawLine(Offset(hx, hy - 7 * scale), Offset(hx, hy - 13 * scale), Paint()..color = const Color(0xFF64748B) ..strokeWidth = 2.2 * scale);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(hx, hy - 13 * scale), width: 68 * scale, height: 7 * scale),
+      Paint()..color = Colors.white.withValues(alpha: 0.20) ..style = PaintingStyle.fill,
+    );
+    final mrAngle = time * 28.0;
+    canvas.drawLine(
+      Offset(hx + math.cos(mrAngle) * 32 * scale, hy - 13 * scale + math.sin(mrAngle) * 2.5 * scale),
+      Offset(hx - math.cos(mrAngle) * 32 * scale, hy - 13 * scale - math.sin(mrAngle) * 2.5 * scale),
+      Paint()..color = const Color(0xFFE2E8F0).withValues(alpha: 0.90) ..strokeWidth = 1.8 * scale ..strokeCap = StrokeCap.round,
+    );
+
+    // Flashing red beacon
+    if (math.sin(time * 9.0) > 0.1) {
+      canvas.drawCircle(Offset(hx - 42 * scale, hy - 18 * scale), 2.2 * scale, Paint()..color = const Color(0xFFEF4444));
+      canvas.drawCircle(Offset(hx, hy + 10 * scale), 1.8 * scale, Paint()..color = const Color(0xFFEF4444));
+    }
+  }
+
+  /// 🚀 Ascending Rocket in Sky ("മേലെ റോക്കറ്റ് പോകുന്ന പോലെ... അത്ര കൊടുത്താൽ മതി")
+  void _renderAscendingRocket(Canvas canvas) {
+    if (_rocketTimer > 5.5) return;
+    final t = _rocketTimer / 5.5; // 0.0 -> 1.0
+
+    final startX = size.x * 0.82;
+    final startY = size.y * 0.72;
+    final targetX = size.x * 0.58;
+    final targetY = -70.0;
+
+    final rx = startX + (targetX - startX) * t;
+    final ry = startY + (targetY - startY) * t;
+    final angle = math.atan2(targetY - startY, targetX - startX);
+
+    canvas.save();
+    canvas.translate(rx, ry);
+    canvas.rotate(angle + math.pi / 2);
+
+    // Smoke trail puffs
+    const trailCount = 9;
+    for (int i = 1; i <= trailCount; i++) {
+      final ty = i * 11.0;
+      final tx = math.sin(time * 12.0 + i) * 2.5;
+      final opacity = (1.0 - (i / trailCount)).clamp(0.0, 0.65);
+      final r = 4.5 + i * 1.6;
+      canvas.drawCircle(Offset(tx, ty), r, Paint()..color = Colors.white.withValues(alpha: opacity * 0.35));
+    }
+
+    // Fiery rocket exhaust flame
+    final flameLen = 20.0 + math.sin(time * 26.0) * 5.0;
+    final flamePath = Path()
+      ..moveTo(-3.5, 9)
+      ..lineTo(0, 9 + flameLen)
+      ..lineTo(3.5, 9)
+      ..close();
+    canvas.drawPath(flamePath, Paint()..color = const Color(0xFFFF5722));
+    final innerFlame = Path()
+      ..moveTo(-2, 9)
+      ..lineTo(0, 9 + flameLen * 0.65)
+      ..lineTo(2, 9)
+      ..close();
+    canvas.drawPath(innerFlame, Paint()..color = const Color(0xFFFFEB3B));
+
+    // Rocket Body (Aerospace White)
+    final bodyRect = RRect.fromRectAndRadius(
+      Rect.fromCenter(center: const Offset(0, 0), width: 9, height: 20),
+      const Radius.circular(2.5),
+    );
+    canvas.drawRRect(bodyRect, Paint()..color = Colors.white);
+    canvas.drawRRect(bodyRect, Paint()..style = PaintingStyle.stroke ..color = const Color(0xFF1E293B) ..strokeWidth = 0.9);
+
+    // Red Nose Cone
+    final conePath = Path()
+      ..moveTo(-4.5, -10)
+      ..lineTo(0, -20)
+      ..lineTo(4.5, -10)
+      ..close();
+    canvas.drawPath(conePath, Paint()..color = const Color(0xFFDC2626));
+
+    // Gold Presidential ring
+    canvas.drawRect(const Rect.fromLTWH(-4.5, -2, 9, 3.0), Paint()..color = const Color(0xFFFFD700));
+
+    // Aerodynamic fins
+    final finPaint = Paint()..color = const Color(0xFF1E293B);
+    final leftFin = Path()
+      ..moveTo(-4.5, 3)
+      ..lineTo(-10, 11)
+      ..lineTo(-4.5, 9)
+      ..close();
+    canvas.drawPath(leftFin, finPaint);
+    final rightFin = Path()
+      ..moveTo(4.5, 3)
+      ..lineTo(10, 11)
+      ..lineTo(4.5, 9)
+      ..close();
+    canvas.drawPath(rightFin, finPaint);
+
+    canvas.restore();
   }
 
   void _renderBird(Canvas canvas, double cx, double cy, double scale, double wingAngle) {
@@ -375,6 +587,7 @@ class HouseMasterComponent extends Component {
   int streak;
   HousePalette palette;
   bool isDamaged;
+  bool isPresident;
 
   Vector2 canvasSize = Vector2.zero();
   double animTimer = 0;
@@ -386,6 +599,7 @@ class HouseMasterComponent extends Component {
     required this.streak,
     required this.palette,
     this.isDamaged = false,
+    this.isPresident = false,
   });
 
   void resize(Vector2 newSize) {
@@ -443,8 +657,8 @@ class HouseMasterComponent extends Component {
 
     if (day >= 71) {
       // 🏛️ Monumental Rajput & Indo-Saracenic Imperial Palace (Images 1 & 2)
-      buildingApexY = groundY - 256.0;
-      totalBuildingW = (day >= 86) ? 420.0 : 392.0;
+      buildingApexY = isPresident ? (groundY - 296.0) : (groundY - 256.0);
+      totalBuildingW = (day >= 86 || isPresident) ? 420.0 : 392.0;
     } else if (day >= 46) {
       // 🏰 Fortified Castle with Bastion Towers
       buildingApexY = groundY - 200.0;
@@ -2005,11 +2219,13 @@ class HouseMasterComponent extends Component {
     }
 
     // Intermediate Rooftop Chhatris (Image 1 & 2):
-    if (day >= 81) {
-      _renderChhatriPavilion(canvas, cx - 85, floor2Top - 6, 24, 28, isOuter: false);
-    }
-    if (day >= 82) {
-      _renderChhatriPavilion(canvas, cx + 85, floor2Top - 6, 24, 28, isOuter: false);
+    if (!isPresident) {
+      if (day >= 81) {
+        _renderChhatriPavilion(canvas, cx - 85, floor2Top - 6, 24, 28, isOuter: false);
+      }
+      if (day >= 82) {
+        _renderChhatriPavilion(canvas, cx + 85, floor2Top - 6, 24, 28, isOuter: false);
+      }
     }
     if (day >= 85) {
       _renderChhatriPavilion(canvas, cx - 130, floor2Top - 6, 24, 28, isOuter: false);
@@ -2024,9 +2240,20 @@ class HouseMasterComponent extends Component {
       _renderCornerChhatriTower(canvas, palaceRight - 24, groundY, isLeft: false);
     }
 
+    // Extra Floor 3 for President ("ആ ഒരു പാലസിന്റെ കൂടെ ഒരു നിലയും കൂടി ബിൽഡ് ചെയ്തിട്ട്")
+    final double apexBaseTop;
+    if (isPresident) {
+      const floor3H = 38.0;
+      final floor3Top = floor2Top - floor3H;
+      _renderPresidentialExtraFloor(canvas, cx, floor2Top, floor3Top, floor3H);
+      apexBaseTop = floor3Top - 28;
+    } else {
+      apexBaseTop = floor2Top - 28;
+    }
+
     // 8. Day 87+: Central Grand Royal Fluted Chhatri Onion Dome (Image 1 & 2)
     if (day >= 87) {
-      _renderApexPalaceGrandDome(canvas, cx, floor2Top - 28);
+      _renderApexPalaceGrandDome(canvas, cx, apexBaseTop);
     }
 
     // 9. Forecourt Features (Steps, Fountains, Lions, Flags, Elephants)
@@ -2041,8 +2268,17 @@ class HouseMasterComponent extends Component {
     if (day >= 88) {
       _renderGuardianLionPedestal(canvas, cx - 52, groundY - 14);
       _renderGuardianLionPedestal(canvas, cx + 52, groundY - 14);
-      _renderCourtyardFountain(canvas, cx - 148, groundY - 6);
-      _renderCourtyardFountain(canvas, cx + 148, groundY - 6);
+      if (!isPresident) {
+        _renderCourtyardFountain(canvas, cx - 148, groundY - 6);
+        _renderCourtyardFountain(canvas, cx + 148, groundY - 6);
+      }
+    }
+
+    // Presidential Vehicles, Helipad & Security Detail
+    if (isPresident) {
+      _renderPresidentialBlackCar(canvas, cx - 126, groundY - 6);
+      _renderPresidentialHelipadAndChopper(canvas, cx + 126, groundY - 8);
+      _renderPresidentialPoliceOfficers(canvas, cx, groundY, floor1Top);
     }
 
     if (day >= 89) {
@@ -2051,8 +2287,272 @@ class HouseMasterComponent extends Component {
 
     // Day 90 Apex: 24K Royal Sovereign Eagle Crown with radiant sunburst corona!
     if (day >= 90) {
-      _renderDay90DomeCrown(canvas, cx, groundY);
+      _renderDay90DomeCrown(canvas, cx, isPresident ? (groundY - 38.0) : groundY);
     }
+  }
+
+  /// 🏛️ Presidential 3rd Floor / Storey ("ആ വീടിന് ഒരു നിലയും കൂടി ബിൽഡ് ചെയ്തിട്ട്")
+  void _renderPresidentialExtraFloor(Canvas canvas, double cx, double floor2Top, double floor3Top, double floor3H) {
+    const floor3W = 230.0;
+    final f3Rect = Rect.fromLTWH(cx - floor3W / 2, floor3Top, floor3W, floor3H);
+
+    // Facade background
+    canvas.drawRect(f3Rect, Paint()..color = palette.wallColor);
+    canvas.drawRect(f3Rect, Paint()..color = palette.wallShade.withValues(alpha: 0.45));
+    canvas.drawRect(f3Rect, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.6);
+
+    // Terrace balustrade separating 2nd and 3rd floors
+    final balY = floor2Top;
+    canvas.drawLine(Offset(cx - 130, balY), Offset(cx + 130, balY), Paint()..color = palette.roofTrim ..strokeWidth = 3.0);
+    for (double bx = cx - 126; bx <= cx + 126; bx += 8.0) {
+      canvas.drawLine(Offset(bx, balY - 5), Offset(bx, balY), Paint()..color = Colors.white70 ..strokeWidth = 1.3);
+    }
+
+    // 5 Classical Cusped Windows across Presidential 3rd Floor
+    const winSpacing = 42.0;
+    for (int i = -2; i <= 2; i++) {
+      final wx = cx + i * winSpacing;
+      if (i.abs() == 0) {
+        // Central Presidential Balcony
+        final pBalcony = Rect.fromCenter(center: Offset(cx, floor3Top + 24), width: 32, height: 16);
+        canvas.drawRect(pBalcony, Paint()..color = palette.wallShade);
+        canvas.drawRect(pBalcony, Paint()..style = PaintingStyle.stroke ..color = palette.accentColor ..strokeWidth = 1.4);
+        // Presidential Official Seal
+        canvas.drawCircle(Offset(cx, floor3Top + 10), 6.0, Paint()..color = const Color(0xFFFFD700));
+        canvas.drawCircle(Offset(cx, floor3Top + 10), 4.0, Paint()..color = const Color(0xFF1E3A8A));
+        canvas.drawCircle(Offset(cx, floor3Top + 10), 1.8, Paint()..color = const Color(0xFFFFD700));
+      } else {
+        _renderCuspedPalaceArch(canvas, wx, floor3Top + 6, 22, floor3H - 12);
+      }
+    }
+
+    // Rooftop Cornice Chhajja for 3rd floor
+    final chhajja = Path()
+      ..moveTo(cx - floor3W / 2 - 4, floor3Top + 2)
+      ..lineTo(cx - floor3W / 2 - 10, floor3Top - 5)
+      ..lineTo(cx + floor3W / 2 + 10, floor3Top - 5)
+      ..lineTo(cx + floor3W / 2 + 4, floor3Top + 2)
+      ..close();
+    canvas.drawPath(chhajja, Paint()..color = palette.roofColor);
+    canvas.drawPath(chhajja, Paint()..style = PaintingStyle.stroke ..color = palette.roofTrim ..strokeWidth = 1.6);
+
+    // Gold Finials Balustrade on 3rd floor roof
+    for (double fx = cx - floor3W / 2 - 2; fx <= cx + floor3W / 2 + 2; fx += 14.0) {
+      canvas.drawLine(Offset(fx, floor3Top - 5), Offset(fx, floor3Top - 11), Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.4);
+      canvas.drawCircle(Offset(fx, floor3Top - 11), 1.6, Paint()..color = const Color(0xFFFFD700));
+    }
+
+    // Flanking pavilions on 3rd floor
+    _renderChhatriPavilion(canvas, cx - 76, floor3Top - 6, 22, 26, isOuter: false);
+    _renderChhatriPavilion(canvas, cx + 76, floor3Top - 6, 22, 26, isOuter: false);
+  }
+
+  /// 👮 4–5 Police Officers / Secret Service Agents ("നാലഞ്ചു പോലീസുകാരെ കൊടുക്കുക")
+  void _renderPresidentialPoliceOfficers(Canvas canvas, double cx, double groundY, double floor1Top) {
+    // 1. Guard 1: Left ceremonial entrance stairs
+    _renderPoliceOfficer(canvas, cx - 36, groundY - 8, isSaluting: true);
+    // 2. Guard 2: Right ceremonial entrance stairs
+    _renderPoliceOfficer(canvas, cx + 36, groundY - 8, isSaluting: false);
+    // 3. Guard 3: Upper viewing balcony overlook
+    _renderPoliceOfficer(canvas, cx, floor1Top - 8, hasBinoculars: true);
+    // 4. Guard 4: Stationed beside the Presidential limousine
+    _renderPoliceOfficer(canvas, cx - 88, groundY - 6, isSaluting: false);
+    // 5. Guard 5: Stationed guarding helipad entrance
+    _renderPoliceOfficer(canvas, cx + 86, groundY - 6, isSaluting: false);
+  }
+
+  /// Single crisp vector Police Officer / Secret Service detail
+  void _renderPoliceOfficer(Canvas canvas, double px, double py, {bool isSaluting = false, bool hasBinoculars = false}) {
+    // Ground shadow
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset(px, py), width: 11, height: 3.5),
+      Paint()..color = Colors.black38,
+    );
+
+    // Uniform trousers (dark navy)
+    final trouserPaint = Paint()..color = const Color(0xFF0F172A) ..strokeWidth = 2.4 ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(px - 2.5, py - 9), Offset(px - 2.5, py), trouserPaint);
+    canvas.drawLine(Offset(px + 2.5, py - 9), Offset(px + 2.5, py), trouserPaint);
+
+    // Polished shoes
+    canvas.drawCircle(Offset(px - 2.5, py), 1.6, Paint()..color = Colors.black);
+    canvas.drawCircle(Offset(px + 2.5, py), 1.6, Paint()..color = Colors.black);
+
+    // Duty belt
+    canvas.drawLine(Offset(px - 4.5, py - 9), Offset(px + 4.5, py - 9), Paint()..color = const Color(0xFF020617) ..strokeWidth = 1.6);
+    canvas.drawCircle(Offset(px, py - 9), 0.9, Paint()..color = const Color(0xFFFFD700)); // gold buckle
+
+    // Uniform Blazer / Jacket
+    final torsoRect = Rect.fromCenter(center: Offset(px, py - 14), width: 9, height: 9);
+    canvas.drawRRect(RRect.fromRectAndRadius(torsoRect, const Radius.circular(1.5)), Paint()..color = const Color(0xFF1E293B));
+
+    // White shirt collar & tie
+    canvas.drawLine(Offset(px, py - 17.5), Offset(px, py - 13), Paint()..color = Colors.black ..strokeWidth = 1.2);
+    // Gold badge on chest
+    canvas.drawCircle(Offset(px - 2.2, py - 15), 1.0, Paint()..color = const Color(0xFFFFD700));
+
+    // Head / Face
+    canvas.drawCircle(Offset(px, py - 20), 2.8, Paint()..color = const Color(0xFFE2B08B));
+    // Sunglasses
+    canvas.drawLine(Offset(px - 2.2, py - 20.2), Offset(px + 2.2, py - 20.2), Paint()..color = Colors.black ..strokeWidth = 1.4);
+
+    // Police Service Cap
+    final capCrown = Path()
+      ..moveTo(px - 4, py - 21.5)
+      ..quadraticBezierTo(px, py - 25, px + 4, py - 21.5)
+      ..close();
+    canvas.drawPath(capCrown, Paint()..color = const Color(0xFF0F172A));
+    // Gold cap band & insignia
+    canvas.drawLine(Offset(px - 3.8, py - 21.5), Offset(px + 3.8, py - 21.5), Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.0);
+    // Visor
+    canvas.drawLine(Offset(px - 3.5, py - 20.8), Offset(px + 3.5, py - 20.8), Paint()..color = Colors.black ..strokeWidth = 1.2);
+
+    // Arms / Hands
+    final armPaint = Paint()..color = const Color(0xFF1E293B) ..strokeWidth = 2.0 ..strokeCap = StrokeCap.round;
+    if (isSaluting) {
+      canvas.drawLine(Offset(px - 4, py - 16), Offset(px - 4.5, py - 10), armPaint);
+      final salutePath = Path()
+        ..moveTo(px + 4, py - 16)
+        ..lineTo(px + 6.5, py - 16)
+        ..lineTo(px + 3.5, py - 21);
+      canvas.drawPath(salutePath, armPaint..style = PaintingStyle.stroke);
+      canvas.drawCircle(Offset(px + 3.5, py - 21), 1.2, Paint()..color = const Color(0xFFE2B08B));
+    } else if (hasBinoculars) {
+      canvas.drawLine(Offset(px - 4, py - 15), Offset(px - 1.5, py - 20), armPaint);
+      canvas.drawLine(Offset(px + 4, py - 15), Offset(px + 1.5, py - 20), armPaint);
+      canvas.drawRect(Rect.fromCenter(center: Offset(px, py - 20), width: 5, height: 2.5), Paint()..color = Colors.black);
+    } else {
+      canvas.drawLine(Offset(px - 4, py - 16), Offset(px - 4.5, py - 11), armPaint);
+      canvas.drawLine(Offset(px + 4, py - 16), Offset(px + 4.5, py - 11), armPaint);
+      canvas.drawCircle(Offset(px - 4.5, py - 10.5), 1.0, Paint()..color = const Color(0xFFE2B08B));
+      canvas.drawCircle(Offset(px + 4.5, py - 10.5), 1.0, Paint()..color = const Color(0xFFE2B08B));
+    }
+  }
+
+  /// 🚗 Sleek Black Presidential Armored State Car ("നല്ലൊരു ബ്ലാക്ക് കാർ കൊടുക്കുക")
+  void _renderPresidentialBlackCar(Canvas canvas, double carX, double carY) {
+    // Shadow under limousine
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(Rect.fromLTWH(carX - 32, carY - 2, 64, 4), const Radius.circular(2)),
+      Paint()..color = Colors.black38,
+    );
+
+    // Wheels
+    for (final wx in [carX - 18.0, carX + 18.0]) {
+      canvas.drawCircle(Offset(wx, carY - 4.5), 5.5, Paint()..color = const Color(0xFF1E293B));
+      canvas.drawCircle(Offset(wx, carY - 4.5), 3.2, Paint()..color = const Color(0xFFE2E8F0));
+      canvas.drawCircle(Offset(wx, carY - 4.5), 1.2, Paint()..color = const Color(0xFF64748B));
+    }
+
+    // Glossy Obsidian Black Armored Body
+    final bodyPath = Path()
+      ..moveTo(carX - 30, carY - 3)
+      ..lineTo(carX + 30, carY - 3)
+      ..lineTo(carX + 30, carY - 9)
+      ..lineTo(carX + 22, carY - 10)
+      ..lineTo(carX + 14, carY - 17)
+      ..lineTo(carX - 14, carY - 17)
+      ..lineTo(carX - 24, carY - 11)
+      ..lineTo(carX - 30, carY - 9)
+      ..close();
+    canvas.drawPath(bodyPath, Paint()..color = const Color(0xFF090D16));
+
+    // Metallic highlight line along roof and waist
+    canvas.drawLine(Offset(carX - 12, carY - 16.5), Offset(carX + 13, carY - 16.5), Paint()..color = const Color(0xFF475569) ..strokeWidth = 1.0);
+    canvas.drawLine(Offset(carX - 28, carY - 3.8), Offset(carX + 28, carY - 3.8), Paint()..color = const Color(0xFFCBD5E1) ..strokeWidth = 1.0);
+
+    // Tinted Privacy Windows
+    final winPath = Path()
+      ..moveTo(carX + 13, carY - 16)
+      ..lineTo(carX + 20, carY - 10.5)
+      ..lineTo(carX - 12, carY - 10.5)
+      ..lineTo(carX - 12, carY - 16)
+      ..close();
+    canvas.drawPath(winPath, Paint()..color = const Color(0xFF1E293B));
+    canvas.drawLine(Offset(carX + 6, carY - 15.5), Offset(carX + 16, carY - 11.5), Paint()..color = const Color(0xFF38BDF8).withValues(alpha: 0.6) ..strokeWidth = 1.0);
+
+    // Rear window
+    final rearWin = Path()
+      ..moveTo(carX - 14, carY - 16)
+      ..lineTo(carX - 14, carY - 10.5)
+      ..lineTo(carX - 22, carY - 10.5)
+      ..close();
+    canvas.drawPath(rearWin, Paint()..color = const Color(0xFF1E293B));
+
+    // Chrome front grille & headlight
+    canvas.drawRect(Rect.fromLTWH(carX + 29, carY - 8.5, 2, 5), Paint()..color = const Color(0xFFE2E8F0));
+    canvas.drawCircle(Offset(carX + 29, carY - 7), 1.8, Paint()..color = const Color(0xFFFEF08A));
+    // Red tail light
+    canvas.drawCircle(Offset(carX - 29, carY - 7), 1.6, Paint()..color = const Color(0xFFEF4444));
+
+    // Dual Presidential Flag Standard on front fender
+    canvas.drawLine(Offset(carX + 26, carY - 9), Offset(carX + 26, carY - 19), Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.2);
+    canvas.drawRect(Rect.fromLTWH(carX + 20, carY - 19, 6, 4.5), Paint()..color = const Color(0xFF1E3A8A));
+    canvas.drawCircle(Offset(carX + 26, carY - 19), 1.2, Paint()..color = const Color(0xFFFFD700));
+  }
+
+  /// 🚁 Circular Helipad & Parked Presidential Helicopter ("ഹെലികോപ്റ്റർ എവിടെയെങ്കിലും ഒന്ന് പാർക്ക് ചെയ്തിടുക")
+  void _renderPresidentialHelipadAndChopper(Canvas canvas, double padX, double padY) {
+    // 1. Helipad Surface (Concrete circular landing pad in perspective)
+    final padRect = Rect.fromCenter(center: Offset(padX, padY), width: 66, height: 22);
+    canvas.drawOval(padRect, Paint()..color = const Color(0xFF334155));
+    canvas.drawOval(padRect, Paint()..style = PaintingStyle.stroke ..color = Colors.white70 ..strokeWidth = 1.8);
+
+    // Amber perimeter guide lights
+    for (double a = 0; a < math.pi * 2; a += math.pi / 3) {
+      final lx = padX + math.cos(a) * 30;
+      final ly = padY + math.sin(a) * 9.5;
+      canvas.drawCircle(Offset(lx, ly), 1.5, Paint()..color = const Color(0xFFFBBF24));
+    }
+
+    // Bold painted white "H"
+    final hPaint = Paint()..color = Colors.white ..strokeWidth = 2.0 ..strokeCap = StrokeCap.square;
+    canvas.drawLine(Offset(padX - 5, padY - 5), Offset(padX - 5, padY + 5), hPaint);
+    canvas.drawLine(Offset(padX + 5, padY - 5), Offset(padX + 5, padY + 5), hPaint);
+    canvas.drawLine(Offset(padX - 5, padY), Offset(padX + 5, padY), hPaint);
+
+    // 2. Parked Presidential Helicopter (Marine One style)
+    // Landing skids on pad
+    final skidPaint = Paint()..color = const Color(0xFF475569) ..strokeWidth = 1.6 ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(padX - 10, padY - 4), Offset(padX - 12, padY), skidPaint);
+    canvas.drawLine(Offset(padX + 8, padY - 4), Offset(padX + 6, padY), skidPaint);
+    canvas.drawLine(Offset(padX - 18, padY), Offset(padX + 16, padY), skidPaint);
+
+    // Fuselage (Executive navy body with white top crown)
+    final chopperBody = Rect.fromCenter(center: Offset(padX, padY - 8), width: 28, height: 9);
+    canvas.drawRRect(RRect.fromRectAndRadius(chopperBody, const Radius.circular(3)), Paint()..color = const Color(0xFF0F172A));
+
+    // White presidential top
+    final whiteTop = Rect.fromCenter(center: Offset(padX - 2, padY - 12.5), width: 20, height: 4.5);
+    canvas.drawRRect(RRect.fromRectAndRadius(whiteTop, const Radius.circular(2)), Paint()..color = Colors.white);
+    // Gold dividing line
+    canvas.drawLine(Offset(padX - 11, padY - 10.5), Offset(padX + 9, padY - 10.5), Paint()..color = const Color(0xFFFFD700) ..strokeWidth = 1.0);
+
+    // Cyan cockpit windshield
+    final cockRect = Rect.fromLTWH(padX - 13, padY - 11, 6, 4);
+    canvas.drawRRect(RRect.fromRectAndRadius(cockRect, const Radius.circular(1.5)), Paint()..color = const Color(0xFF38BDF8));
+
+    // Tail boom extending right
+    final boomPaint = Paint()..color = const Color(0xFF1E293B) ..strokeWidth = 2.4 ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(padX + 12, padY - 8), Offset(padX + 30, padY - 12), boomPaint);
+    // Tail fin
+    final finPath = Path()
+      ..moveTo(padX + 28, padY - 12)
+      ..lineTo(padX + 32, padY - 20)
+      ..lineTo(padX + 34, padY - 12)
+      ..close();
+    canvas.drawPath(finPath, Paint()..color = const Color(0xFF0F172A));
+    // Resting tail rotor
+    canvas.drawLine(Offset(padX + 32, padY - 20), Offset(padX + 32, padY - 10), Paint()..color = Colors.white70 ..strokeWidth = 1.2);
+
+    // Main rotor mast & resting drooping blades
+    canvas.drawLine(Offset(padX - 2, padY - 14), Offset(padX - 2, padY - 18), Paint()..color = const Color(0xFF64748B) ..strokeWidth = 2.0);
+    canvas.drawCircle(Offset(padX - 2, padY - 18), 1.8, Paint()..color = const Color(0xFFFFD700));
+
+    // Resting blades drooping slightly
+    final bladePaint = Paint()..color = const Color(0xFFCBD5E1) ..strokeWidth = 1.5 ..strokeCap = StrokeCap.round;
+    canvas.drawLine(Offset(padX - 2, padY - 18), Offset(padX - 26, padY - 15), bladePaint);
+    canvas.drawLine(Offset(padX - 2, padY - 18), Offset(padX + 22, padY - 15), bladePaint);
   }
 
   void _renderMughalJaliScreen(Canvas canvas, double cx, double topY, double w, double h) {
@@ -3935,6 +4435,7 @@ class FlameEnglishHouseWidget extends StatefulWidget {
   final bool? isDamaged;
   final String? houseId;
   final String? paletteId;
+  final bool isPresident;
   final bool showTestingControls;
 
   const FlameEnglishHouseWidget({
@@ -3944,6 +4445,7 @@ class FlameEnglishHouseWidget extends StatefulWidget {
     this.isDamaged,
     this.houseId,
     this.paletteId,
+    this.isPresident = false,
     this.showTestingControls = false,
   });
 
@@ -3972,11 +4474,14 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
       _loadDefenseStatus();
     }
 
+    final effectiveIsPresident = widget.isPresident || widget.houseId == 'pocket_president';
+
     _game = FlameEnglishHouseGame(
       currentDay: _previewDay,
       streak: widget.streak,
       initialPalette: _currentPalette,
       isDamaged: widget.isDamaged ?? false,
+      isPresident: effectiveIsPresident,
     );
   }
 
@@ -4370,6 +4875,11 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
     if (widget.paletteId != null && widget.paletteId != oldWidget.paletteId) {
       _currentPalette = HousePalette.getById(widget.paletteId!);
       _game.updatePalette(_currentPalette);
+    }
+    final effectiveIsPresident = widget.isPresident || widget.houseId == 'pocket_president';
+    final oldEffectiveIsPresident = oldWidget.isPresident || oldWidget.houseId == 'pocket_president';
+    if (effectiveIsPresident != oldEffectiveIsPresident) {
+      _game.updatePresident(effectiveIsPresident);
     }
   }
 

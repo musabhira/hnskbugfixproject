@@ -1,25 +1,23 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 
-/// 🏛️ Procedural 2D Vector Presidential Palace Castle Painter
-/// Hand-crafted architectural canvas rendering of the Sovereign Citadel:
-/// - Grand Central Clock Belfry with moving hands and golden belfry bell
-/// - Tall soaring turquoise spires with gilded copper ridges and royal finials
-/// - Symmetrical neoclassical/Gothic state wings with arched French windows
-/// - Rusticated ashlar limestone coursing, quoins, corbels, and machicolations
-/// - Portico of 4 fluted marble columns with gold Corinthian capitals
-/// - Cascading white marble steps with rich royal crimson carpet
-/// - Hand-carved Guardian Lion pedestals, wall torches, and waving silk banners
+/// 🏛️ Official Presidential Palace Castle Widget
+/// Seamlessly powered by Flame English House Engine (Day 90 Apex Imperial Palace
+/// with Presidential 3rd Floor, 4-5 Security Officers, Sleek Black Limousine,
+/// Helipad with Helicopter, Sky Patrol Helicopter, and Ascending Rocket).
 class PresidentialPalaceCastleWidget extends StatelessWidget {
   final double width;
   final double height;
   final double animProg;
+  final String? paletteId;
 
   const PresidentialPalaceCastleWidget({
     super.key,
     required this.width,
     required this.height,
     required this.animProg,
+    this.paletteId,
   });
 
   @override
@@ -27,9 +25,12 @@ class PresidentialPalaceCastleWidget extends StatelessWidget {
     return SizedBox(
       width: width,
       height: height,
-      child: CustomPaint(
-        size: Size(width, height),
-        painter: PresidentialPalaceCastlePainter(animProg: animProg),
+      child: FlameEnglishHouseWidget(
+        currentDay: 90,
+        streak: 90,
+        isPresident: true,
+        paletteId: paletteId ?? 'royal_gold',
+        showTestingControls: false,
       ),
     );
   }

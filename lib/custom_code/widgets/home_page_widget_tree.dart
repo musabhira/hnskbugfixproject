@@ -192,6 +192,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Future<void> _checkOnboarding() async {
     final user = supabase.auth.currentUser;
+    if (user != null) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final completed = prefs.getBool('profile_setup_completed_${user.id}') ?? false;
+        final prompted = prefs.getBool('profile_setup_prompted_${user.id}') ?? false;
+        final phone = _preloadedProfile?['phone_no']?.toString().trim();
+        if (!completed && !prompted && (phone == null || phone.isEmpty)) {
+          await prefs.setBool('profile_setup_prompted_${user.id}', true);
+          if (mounted) {
+            context.pushNamed(ProfileCreateCustomWidget.routeName);
+            return;
+          }
+        }
+      } catch (e) {
+        debugPrint('Profile setup check error: $e');
+      }
+    }
+
     if (mounted) {
       await NewUserOnboardingDialog.checkAndShow(
         context,
@@ -501,7 +519,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         supabase.from('profile').select().eq('user_id', userId).maybeSingle(),
         supabase.from('follows').select('id').eq('followed_id', userId),
         supabase.from('follows').select('id').eq('follower_id', userId),
-        supabase.from('users').select('followers').eq('id', userId).single(),
+        supabase.from('users').select('followers').eq('id', userId).maybeSingle(),
         supabase
             .from('threads_view')
             .select()
@@ -509,21 +527,63 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             .order('created_at', ascending: false),
       ]);
 
-      final profileResponse = results[0] as Map<String, dynamic>?;
+      Map<String, dynamic>? profileResponse =
+          results[0] as Map<String, dynamic>?;
       final followers = results[1] as List;
       final following = results[2] as List;
-      final userResponse = results[3] as Map<String, dynamic>;
+      final userResponse = results[3] as Map<String, dynamic>?;
       final threads = results[4] as List;
+
+      // Auto-heal missing users record
+      if (userResponse == null) {
+        async.unawaited(supabase.from('users').upsert({
+          'id': userId,
+          'email': supabase.auth.currentUser?.email ?? '',
+        }, onConflict: 'id'));
+      }
+
+      // Auto-heal missing profile record
+      if (profileResponse == null) {
+        try {
+          final emailPrefix =
+              (supabase.auth.currentUser?.email ?? '').split('@').first;
+          final displayName =
+              emailPrefix.isNotEmpty ? emailPrefix : 'Pocket Mate';
+          final cleanSlug = displayName
+              .toLowerCase()
+              .replaceAll(RegExp(r'[^a-z0-9]'), '');
+          final fallbackProfile = {
+            'id': userId,
+            'user_id': userId,
+            'name': displayName,
+            'shop_name': displayName.toLowerCase().replaceAll(' ', '-'),
+            'slug': cleanSlug.isNotEmpty
+                ? cleanSlug
+                : 'mate${DateTime.now().millisecondsSinceEpoch % 10000}',
+            'learning_day': 1,
+            'learning_stage': 1,
+            'learning_points': 0,
+            'xp': 0,
+            'native_language': 'Malayalam',
+            'english_level': 'Beginner (A1-A2)',
+            'learning_goal': 'Daily Fluency & Speaking',
+          };
+          await supabase
+              .from('profile')
+              .upsert(fallbackProfile, onConflict: 'user_id');
+          profileResponse = fallbackProfile;
+        } catch (healErr) {
+          debugPrint('Profile auto-heal in HomePage error: $healErr');
+        }
+      }
 
       safeSetState(() {
         _preloadedProfile = profileResponse;
-        if (profileResponse != null) {
-          profileId = profileResponse['id']?.toString();
-          _isVerified = profileResponse['verified'] ?? false;
-        }
+        profileId = profileResponse?['id']?.toString() ?? userId;
+        _isVerified = profileResponse?['verified'] ?? false;
 
         final int followersCount = followers.length +
-            ((userResponse['followers'] as num?)?.toInt() ?? 0);
+            ((userResponse?['followers'] as num?)?.toInt() ?? 0);
         _followersCount = _formatCount(followersCount);
         _followingCount = _formatCount(following.length);
 
