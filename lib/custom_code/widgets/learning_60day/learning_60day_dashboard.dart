@@ -8,6 +8,7 @@ import 'learning_service.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_defense_trap_modal.dart';
 import 'pocket_daily_mission_page.dart';
+import 'pocket_day_detail_overview_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -1303,6 +1304,30 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
                     ),
                   ),
                 ] else ...[
+                  if (isUnlocked) ...[
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        PocketDayDetailOverviewPage.show(context, stage.day);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: const Color(0xFF818CF8).withValues(alpha: 0.4),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.menu_book_rounded,
+                          color: Color(0xFFA5B4FC),
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   // Verified Tick Badge Preview for this Stage
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),

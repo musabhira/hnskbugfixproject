@@ -10,6 +10,8 @@ import 'package:shimmer/shimmer.dart';
 
 import 'english_hub_level_group_service.dart';
 import 'audio_space/pocket_audio_spaces_lobby_page.dart';
+import 'pocket_homes_reels_feed_widget.dart';
+import 'package:flutter/services.dart';
 
 class EnglishLearningGroupChatWidget extends ConsumerStatefulWidget {
   final VoidCallback onCancel;
@@ -34,13 +36,22 @@ class _EnglishLearningGroupChatWidgetState
   EnglishHubLevelGroup? _levelGroup;
   String? _currentUserProfileId;
   String? _currentUserId;
-  int _selectedHubTab = 0; // 0 = Chat, 1 = Audio Spaces
+  int _selectedHubTab = 1; // 0 = Spaces (Left), 1 = Chat (Center), 2 = Homes (Right)
+  int _homesEpoch = 0; // Incremented when switching back to Homes tab to auto-refresh seen items
+  late PageController _hubPageController;
 
   @override
   void initState() {
     super.initState();
+    _hubPageController = PageController(initialPage: _selectedHubTab);
     _currentUserId = _supabase.auth.currentUser?.id;
     _initGroupAndMembership();
+  }
+
+  @override
+  void dispose() {
+    _hubPageController.dispose();
+    super.dispose();
   }
 
   Future<void> _initGroupAndMembership() async {
@@ -196,89 +207,132 @@ class _EnglishLearningGroupChatWidgetState
 
   Widget _buildSegmentedHeader() {
     return Container(
-      color: const Color(0xFF111726),
+      color: const Color(0xFF0A0F1D),
       padding: EdgeInsets.only(
-        top: MediaQuery.of(context).padding.top + 4,
-        bottom: 8,
-        left: 16,
-        right: 16,
+        top: MediaQuery.of(context).padding.top + 2,
+        bottom: 4,
+        left: 8,
+        right: 8,
       ),
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: const Color(0xFF1E293B),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFF334155)),
-        ),
-        child: Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedHubTab = 0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 9),
-                  decoration: BoxDecoration(
-                    color: _selectedHubTab == 0
-                        ? const Color(0xFFFFFC00)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(
-                      '💬 Level Chat',
-                      style: GoogleFonts.outfit(
-                        color: _selectedHubTab == 0
-                            ? Colors.black
-                            : Colors.white70,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 13,
+      child: Row(
+        children: [
+          // Back button to exit English Hub
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                color: Colors.white70, size: 16),
+            padding: const EdgeInsets.all(6),
+            constraints: const BoxConstraints(),
+            onPressed: widget.onCancel,
+          ),
+          const SizedBox(width: 6),
+
+          // Ultra-minimal icons-only pill switcher: Spaces (Left) | Chat (Center) | Homes (Right)
+          Expanded(
+            child: Container(
+              height: 38,
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: const Color(0xFF141C2B),
+                borderRadius: BorderRadius.circular(19),
+                border: Border.all(color: const Color(0xFF26334D), width: 0.8),
+              ),
+              child: Row(
+                children: [
+                  // Tab 0 (Left): 🎙️ Spaces
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _hubPageController.animateToPage(
+                          0,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _selectedHubTab == 0
+                              ? const Color(0xFFFFFC00)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Center(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🎙️', style: TextStyle(fontSize: 16)),
+                              if (_selectedHubTab != 0) ...[
+                                const SizedBox(width: 3),
+                                Container(
+                                  width: 5,
+                                  height: 5,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
-            ),
-            const SizedBox(width: 4),
-            Expanded(
-              child: GestureDetector(
-                onTap: () => setState(() => _selectedHubTab = 1),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 9),
-                  decoration: BoxDecoration(
-                    color: _selectedHubTab == 1
-                        ? const Color(0xFFFFFC00)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        '🎙️ Live Spaces',
-                        style: GoogleFonts.outfit(
+
+                  // Tab 1 (Center): 💬 Chat
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _hubPageController.animateToPage(
+                          1,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
                           color: _selectedHubTab == 1
-                              ? Colors.black
-                              : Colors.white70,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                              ? const Color(0xFFFFFC00)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Center(
+                          child: Text('💬', style: TextStyle(fontSize: 16)),
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Container(
-                        width: 7,
-                        height: 7,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF10B981),
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+
+                  // Tab 2 (Right): 🏰 Homes
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        _hubPageController.animateToPage(
+                          2,
+                          duration: const Duration(milliseconds: 250),
+                          curve: Curves.easeOutCubic,
+                        );
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: _selectedHubTab == 2
+                              ? const Color(0xFFFFFC00)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: const Center(
+                          child: Text('🏰', style: TextStyle(fontSize: 16)),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -295,9 +349,26 @@ class _EnglishLearningGroupChatWidgetState
         children: [
           _buildSegmentedHeader(),
           Expanded(
-            child: _selectedHubTab == 1
-                ? const PocketAudioSpacesLobbyPage()
-                : (_isLoading
+            child: PageView(
+              controller: _hubPageController,
+              onPageChanged: (idx) {
+                HapticFeedback.selectionClick();
+                setState(() {
+                  if (idx == 2 && _selectedHubTab != 2) {
+                    _homesEpoch++;
+                  }
+                  _selectedHubTab = idx;
+                });
+              },
+              children: [
+                // 0 (Left): Live Voice Spaces
+                const PocketAudioSpacesLobbyPage(
+                  showHeader: false,
+                  enableSafeArea: false,
+                ),
+
+                // 1 (Center): Level Chat
+                _isLoading
                     ? _buildShimmerLoading(context)
                     : (_isMember && _groupId != null
                         ? WhatsAppGroupChat(
@@ -307,7 +378,22 @@ class _EnglishLearningGroupChatWidgetState
                                 'English Hub (All Learners • Lvl 1 - 90)',
                             showBackButton: false,
                           )
-                        : _buildErrorState(context))),
+                        : _buildErrorState(context)),
+
+                // 2 (Right): Homes (Reels-style Homestead & Attack Feed)
+                PocketHomesReelsFeedWidget(
+                  key: ValueKey('homes_reel_$_homesEpoch'),
+                  userLevel: _levelGroup?.minLevel ?? 1,
+                  onBackToChat: () {
+                    _hubPageController.animateToPage(
+                      1,
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeOutCubic,
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ],
       ),

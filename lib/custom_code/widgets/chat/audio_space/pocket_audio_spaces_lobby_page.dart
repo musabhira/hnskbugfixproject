@@ -10,7 +10,14 @@ import 'pocket_audio_room_sheet.dart';
 /// Clubhouse / Twitter Spaces style live English lobby.
 /// Learners can browse active live rooms, listen, or host their own voice stage.
 class PocketAudioSpacesLobbyPage extends StatefulWidget {
-  const PocketAudioSpacesLobbyPage({super.key});
+  final bool showHeader;
+  final bool enableSafeArea;
+
+  const PocketAudioSpacesLobbyPage({
+    super.key,
+    this.showHeader = true,
+    this.enableSafeArea = true,
+  });
 
   @override
   State<PocketAudioSpacesLobbyPage> createState() =>
@@ -33,25 +40,19 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
 
   @override
   Widget build(BuildContext context) {
+    final content = Column(
+      children: [
+        if (widget.showHeader) _buildTopBar(),
+        _buildCategoryFilters(),
+        Expanded(
+          child: _buildSpacesStreamList(),
+        ),
+      ],
+    );
+
     return Scaffold(
       backgroundColor: const Color(0xFF070B0D), // Deep rich dark
-      body: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            // Top Bar
-            _buildTopBar(),
-
-            // Category Filter Pills
-            _buildCategoryFilters(),
-
-            // Live Audio Spaces List
-            Expanded(
-              child: _buildSpacesStreamList(),
-            ),
-          ],
-        ),
-      ),
+      body: widget.enableSafeArea ? SafeArea(bottom: false, child: content) : content,
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showHostSpaceModal(context),
         backgroundColor: const Color(0xFFFFFC00),
@@ -138,7 +139,7 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
                   ],
                 ),
                 Text(
-                  'Clubhouse-style real peer English speaking',
+                  'Live peer English speaking & voice rooms',
                   style: GoogleFonts.outfit(
                     color: Colors.white70,
                     fontSize: 13,

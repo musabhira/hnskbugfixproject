@@ -192,6 +192,72 @@ class PushNotificationService {
     }
   }
 
+  /// Explicitly requests notification permissions on Android and iOS
+  /// to trigger the native OS permission prompt immediately.
+  static Future<bool> requestPermissionExplicitly() async {
+    // Skip on unsupported desktop platforms
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.windows ||
+            defaultTargetPlatform == TargetPlatform.linux)) {
+      return false;
+    }
+
+    bool granted = false;
+    try {
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp();
+      }
+
+      // Request Firebase Messaging permission (iOS & Android)
+      final settings = await FirebaseMessaging.instance.requestPermission(
+        alert: true,
+        announcement: false,
+        badge: true,
+        carPlay: false,
+        criticalAlert: false,
+        provisional: false,
+        sound: true,
+      );
+      granted = settings.authorizationStatus == AuthorizationStatus.authorized ||
+          settings.authorizationStatus == AuthorizationStatus.provisional;
+      debugPrint('PushNotificationService: FCM permission status: ${settings.authorizationStatus}');
+    } catch (e) {
+      debugPrint('PushNotificationService: FCM explicit permission request error: $e');
+    }
+
+    try {
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        final androidImpl = _localNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
+        final androidGranted = await androidImpl?.requestNotificationsPermission();
+        if (androidGranted != null) granted = androidGranted;
+        debugPrint('PushNotificationService: Android local permission: $androidGranted');
+      } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+        final iosImpl = _localNotificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>();
+        final iosGranted = await iosImpl?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+        if (iosGranted != null) granted = iosGranted;
+        debugPrint('PushNotificationService: iOS local permission: $iosGranted');
+      }
+    } catch (e) {
+      debugPrint('PushNotificationService: Local notification permission request error: $e');
+    }
+
+    // Also ensure full initialization is triggered
+    try {
+      await initialize();
+    } catch (_) {}
+
+    return granted;
+  }
+
+
   /// Configure timezone support safely for repeating daily alarms
   static Future<void> _configureLocalTimeZone() async {
     try {

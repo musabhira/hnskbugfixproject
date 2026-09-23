@@ -43,9 +43,9 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
-import 'package:pocket_mates_app/custom_code/widgets/president/presidential_palace_castle_painter.dart';
 import 'dart:async';
 
 class StatusDisplayWidget extends StatefulWidget {
@@ -4020,7 +4020,514 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               ? thoughtData['content']
               : (status['caption'] ?? status['content'] ?? '');
 
-      content = Container(
+      final rawMetadata = status['metadata'];
+      final Map<String, dynamic>? meta = rawMetadata is Map<String, dynamic>
+          ? rawMetadata
+          : (rawMetadata is Map ? Map<String, dynamic>.from(rawMetadata) : null);
+      final itemType = meta?['item_type']?.toString();
+
+      if (itemType == 'home_showcase') {
+        final residentName = meta?['resident_name']?.toString() ?? 'Learner';
+        final int residentDay = int.tryParse(meta?['resident_day']?.toString() ?? '1') ?? 1;
+        final int residentStreak = int.tryParse(meta?['resident_streak']?.toString() ?? '1') ?? 1;
+        final residentRank = meta?['resident_rank']?.toString() ?? 'Explorer';
+        final houseId = meta?['house_id']?.toString() ?? 'resident';
+        final String? paletteId = meta?['palette_id']?.toString();
+        final isDamaged = meta?['is_damaged'] == true;
+        final isPresident = houseId == 'pocket_president';
+
+        // 🌟 Full-Screen Immersive Citadel Home Story
+        content = Container(
+          width: double.infinity,
+          height: double.infinity,
+          color: const Color(0xFF070B0D),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              _togglePause();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PocketHomesReelsFeedWidget(
+                    initialHouseId: houseId,
+                  ),
+                ),
+              ).then((_) => _togglePause());
+            },
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // 🌄 1. Full-bleed Living Citadel Scenery Backdrop
+                Positioned.fill(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Color(0xFF0F172A), // Deep navy starry sky
+                          Color(0xFF1E293B), // Twilight horizon
+                          Color(0xFF1B4D3E), // Emerald foothills
+                          Color(0xFF0B251E), // Lush lawn ground
+                        ],
+                        stops: [0.0, 0.38, 0.65, 1.0],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 🌿 2. Subtle ambient hills glow at bottom
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: MediaQuery.of(context).size.height * 0.45,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF10B981).withValues(alpha: 0.15),
+                          const Color(0xFF064E3B).withValues(alpha: 0.4),
+                          const Color(0xFF022C22).withValues(alpha: 0.85),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(36),
+                        topRight: Radius.circular(36),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 🏷️ 3. Top Resident Profile Header Pill (Clear of top progress bar)
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 52,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.55),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 14,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 38,
+                          height: 38,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFF0F172A),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(19),
+                            child: VectorAvatarWidget(
+                              config: VectorAvatarConfig.getEvolutionAvatarForStage(residentDay),
+                              size: 38,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '$residentName\'s Citadel',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                '🔥 Day $residentDay • $residentRank',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFFC00),
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.touch_app_rounded, color: Color(0xFFFFFC00), size: 13),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Explore',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFFC00),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                // 🏠 4. Full & Prominent FlameEnglishHouseWidget in screen center
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 105,
+                  bottom: MediaQuery.of(context).padding.bottom + 140,
+                  left: 12,
+                  right: 12,
+                  child: Center(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.94,
+                      child: FlameEnglishHouseWidget(
+                        currentDay: residentDay,
+                        streak: residentStreak,
+                        isDamaged: isDamaged,
+                        houseId: houseId,
+                        paletteId: paletteId,
+                        isPresident: isPresident,
+                      ),
+                    ),
+                  ),
+                ),
+
+                // 📜 5. Bottom Floating Card with Thought Caption & "Visit Home" CTA
+                Positioned(
+                  bottom: MediaQuery.of(context).padding.bottom + 68,
+                  left: 16,
+                  right: 16,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.72),
+                      borderRadius: BorderRadius.circular(22),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 18,
+                          offset: const Offset(0, 6),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (thoughtContent.isNotEmpty) ...[
+                          Text(
+                            thoughtContent,
+                            style: GoogleFonts.inter(
+                              color: Colors.white.withValues(alpha: 0.95),
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w500,
+                              height: 1.35,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                                blurRadius: 12,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.home_work_rounded, color: Colors.black, size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Visit Home',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.2,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      } else if (itemType == 'game_challenge') {
+        final category = meta?['category']?.toString() ?? 'CHALLENGE 🎯';
+        final prompt = meta?['prompt']?.toString() ?? thoughtContent;
+        final gameId = meta?['game_id']?.toString();
+        final rawOptions = meta?['options'];
+        final List<String> options = rawOptions is List
+            ? rawOptions.map((e) => e.toString()).toList()
+            : [];
+
+        // 🎯 Full-Screen Immersive Game Challenge Story
+        content = Container(
+          width: double.infinity,
+          height: double.infinity,
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                Color(0xFF0A0F1E),
+                Color(0xFF131D33),
+                Color(0xFF0F172A),
+                Color(0xFF070B0D),
+              ],
+              stops: [0.0, 0.35, 0.70, 1.0],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              _togglePause();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => PocketHomesReelsFeedWidget(
+                    initialGameId: gameId,
+                  ),
+                ),
+              ).then((_) => _togglePause());
+            },
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                // Ambient Radial Glow
+                Positioned(
+                  top: -80,
+                  right: -80,
+                  child: Container(
+                    width: 260,
+                    height: 260,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.08),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  bottom: 60,
+                  left: -60,
+                  child: Container(
+                    width: 260,
+                    height: 260,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.12),
+                    ),
+                  ),
+                ),
+
+                // Main Game Card Content in Center
+                Center(
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: const EdgeInsets.all(22),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
+                        width: 1.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.65),
+                          blurRadius: 30,
+                          offset: const Offset(0, 14),
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
+                          blurRadius: 20,
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Category Pill
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.sports_esports_rounded,
+                                  color: Color(0xFFFFFC00), size: 15),
+                              const SizedBox(width: 6),
+                              Text(
+                                category,
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFFC00),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 18),
+
+                        // Prompt Container
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.1),
+                            ),
+                          ),
+                          child: Text(
+                            prompt,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16.5,
+                              fontWeight: FontWeight.bold,
+                              height: 1.4,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                        // Options preview if available
+                        if (options.isNotEmpty) ...[
+                          const SizedBox(height: 14),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: options.take(4).map((opt) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF334155).withValues(alpha: 0.6),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                  ),
+                                ),
+                                child: Text(
+                                  opt,
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white.withValues(alpha: 0.9),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+
+                        const SizedBox(height: 20),
+
+                        // Play Game Button
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                                blurRadius: 14,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 20),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Play Challenge',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  letterSpacing: 0.3,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      } else {
+        content = Container(
         width: double.infinity,
         height: double.infinity,
         decoration: const BoxDecoration(
@@ -4187,7 +4694,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         ),
       ),
     );
-    } else if (status['media_type'] == 'course') {
+  }
+} else if (status['media_type'] == 'course') {
       final metadata = status['metadata'] ?? {};
       final title = metadata['course_title'] ?? 'Course';
       final description = metadata['course_description'] ?? '';

@@ -1722,7 +1722,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildAnonymousLiveMatchBanner(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 0, 14, 6),
+      padding: const EdgeInsets.fromLTRB(14, 0, 0, 10),
       child: GestureDetector(
         onTap: () {
           HapticFeedback.selectionClick();
@@ -1827,7 +1827,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   Widget _buildCoffeeTableBanner(bool isDark) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+      padding: const EdgeInsets.fromLTRB(14, 0, 0, 10),
       child: GestureDetector(
         onTap: () {
           HapticFeedback.selectionClick();
@@ -3514,10 +3514,23 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
               if (_chatCategoryFilterIndex == 0) ...[
                 SliverToBoxAdapter(
-                  child: _buildAnonymousLiveMatchBanner(isDark),
-                ),
-                SliverToBoxAdapter(
-                  child: _buildCoffeeTableBanner(isDark),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    physics: const BouncingScrollPhysics(),
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.85,
+                          child: _buildAnonymousLiveMatchBanner(isDark),
+                        ),
+                        SizedBox(
+                          width: MediaQuery.of(context).size.width * 0.85,
+                          child: _buildCoffeeTableBanner(isDark),
+                        ),
+                        const SizedBox(width: 14),
+                      ],
+                    ),
+                  ),
                 ),
               ],
 
