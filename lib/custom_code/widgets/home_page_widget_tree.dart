@@ -195,11 +195,28 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     if (user != null) {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final completed = prefs.getBool('profile_setup_completed_${user.id}') ?? false;
-        final prompted = prefs.getBool('profile_setup_prompted_${user.id}') ?? false;
-        final phone = _preloadedProfile?['phone_no']?.toString().trim();
-        if (!completed && !prompted && (phone == null || phone.isEmpty)) {
+        final completed =
+            prefs.getBool('profile_setup_completed_${user.id}') ?? false;
+        final prompted =
+            prefs.getBool('profile_setup_prompted_${user.id}') ?? false;
+        final justCreated =
+            prefs.getBool('just_created_account_${user.id}') ?? false;
+
+        // If the user already has a valid profile name in Supabase, mark setup as completed
+        final profileName = _preloadedProfile?['name']?.toString().trim();
+        if (profileName != null &&
+            profileName.isNotEmpty &&
+            profileName != 'Pocket Mate') {
+          await prefs.setBool('profile_setup_completed_${user.id}', true);
           await prefs.setBool('profile_setup_prompted_${user.id}', true);
+          await prefs.remove('just_created_account_${user.id}');
+          return;
+        }
+
+        // Only redirect to Profile Create if the user just went through NEW account registration
+        if (justCreated && !completed && !prompted) {
+          await prefs.setBool('profile_setup_prompted_${user.id}', true);
+          await prefs.remove('just_created_account_${user.id}');
           if (mounted) {
             context.pushNamed(ProfileCreateCustomWidget.routeName);
             return;
@@ -484,14 +501,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         });
       }
 
-      final cachedScore = prefs.getInt('user_pocket_score_$userId') ??
-          prefs.getInt('learning_points_$userId');
-      if (cachedScore != null && cachedScore > 0) {
-        safeSetState(() {
-          _userPocketScore = cachedScore;
-          _userPocketStage = PocketScoreLevelEngine.getLevelFromScore(cachedScore);
-        });
-      }
+      final cachedScore = prefs.getInt('user_pocket_score_$userId') ?? 0;
+      safeSetState(() {
+        _userPocketScore = cachedScore;
+        _userPocketStage =
+            PocketScoreLevelEngine.getLevelFromScore(cachedScore);
+      });
 
       if (cachedStats != null) {
         final statsMap = jsonDecode(cachedStats);
@@ -519,7 +534,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         supabase.from('profile').select().eq('user_id', userId).maybeSingle(),
         supabase.from('follows').select('id').eq('followed_id', userId),
         supabase.from('follows').select('id').eq('follower_id', userId),
-        supabase.from('users').select('followers').eq('id', userId).maybeSingle(),
+        supabase
+            .from('users')
+            .select('followers')
+            .eq('id', userId)
+            .maybeSingle(),
         supabase
             .from('threads_view')
             .select()
@@ -549,9 +568,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               (supabase.auth.currentUser?.email ?? '').split('@').first;
           final displayName =
               emailPrefix.isNotEmpty ? emailPrefix : 'Pocket Mate';
-          final cleanSlug = displayName
-              .toLowerCase()
-              .replaceAll(RegExp(r'[^a-z0-9]'), '');
+          final cleanSlug =
+              displayName.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
           final fallbackProfile = {
             'id': userId,
             'user_id': userId,
@@ -597,9 +615,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       if (profileResponse != null) {
         await prefs.setString(
             'cached_profile_$userId', jsonEncode(profileResponse));
-        final day = (profileResponse['learning_day'] as num?)?.toInt() ??
-            (profileResponse['learning_stage'] as num?)?.toInt() ??
-            1;
+        final score = (profileResponse['pocket_score'] as num?)?.toInt() ?? 0;
+        final day = PocketScoreLevelEngine.getLevelFromScore(score);
         PocketMissionTimerService.instance.initForDay(day);
       }
 
@@ -1864,7 +1881,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
                       width: 1),
                 ),
-                child: const Center(child: Text('☕', style: TextStyle(fontSize: 15))),
+                child: const Center(
+                    child: Text('☕', style: TextStyle(fontSize: 15))),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -1908,7 +1926,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
                   color: const Color(0xFFFFFC00),
                   borderRadius: BorderRadius.circular(10),
@@ -1916,7 +1935,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.add_rounded, size: 12, color: Colors.black),
+                    const Icon(Icons.add_rounded,
+                        size: 12, color: Colors.black),
                     const SizedBox(width: 2),
                     Text(
                       'Join',
@@ -2058,7 +2078,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
-                    ? [const Color(0xFF1E1B4B).withValues(alpha: 0.6), const Color(0xFF1E293B)]
+                    ? [
+                        const Color(0xFF1E1B4B).withValues(alpha: 0.6),
+                        const Color(0xFF1E293B)
+                      ]
                     : [const Color(0xFFEEF2FF), Colors.white],
               ),
               borderRadius: BorderRadius.circular(14),
@@ -2117,7 +2140,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                   decoration: BoxDecoration(
                     color: const Color(0xFF6366F1),
                     borderRadius: BorderRadius.circular(20),
@@ -2225,7 +2249,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   ref.read(conversationsProvider.notifier).refreshNow();
                 },
                 child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF1E293B) : Colors.white,
@@ -2390,105 +2415,188 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               },
               child: Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF1E293B) : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.black12,
-                  width: 1,
-                ),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 24,
-                    backgroundColor:
-                        const Color(0xFFFFFC00).withValues(alpha: 0.2),
-                    backgroundImage: req['sender_profile_image'] != null
-                        ? NetworkImage(req['sender_profile_image'])
-                        : null,
-                    child: req['sender_profile_image'] == null
-                        ? Text(
-                            (req['sender_name'] ?? 'M')[0].toUpperCase(),
-                            style: const TextStyle(
-                              color: Color(0xFFFFFC00),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          )
-                        : null,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark ? Colors.white10 : Colors.black12,
+                    width: 1,
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                ),
+                child: Row(
+                  children: [
+                    Builder(
+                      builder: (context) {
+                        final imgUrl =
+                            req['sender_profile_image'] ?? req['avatar_url'];
+                        final isRobot = req['is_robot'] == true ||
+                            PocketRobotService.isRobotId(
+                                req['sender_id']?.toString() ?? '');
+                        VectorAvatarConfig? avatarConfig;
+                        if (req['avatar_config'] != null) {
+                          try {
+                            avatarConfig = VectorAvatarConfig.fromMap(
+                                Map<String, dynamic>.from(
+                                    req['avatar_config']));
+                          } catch (_) {}
+                        }
+
+                        return Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isRobot
+                                  ? const Color(0xFF06B6D4)
+                                  : const Color(0xFFFFFC00),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: ClipOval(
+                            child: (imgUrl != null &&
+                                    imgUrl.toString().isNotEmpty)
+                                ? Image.network(
+                                    imgUrl.toString(),
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (_, __, ___) =>
+                                        avatarConfig != null
+                                            ? VectorAvatarWidget(
+                                                config: avatarConfig, size: 48)
+                                            : Container(
+                                                color: const Color(0xFFFFFC00)
+                                                    .withValues(alpha: 0.2),
+                                                alignment: Alignment.center,
+                                                child: Text(
+                                                  (req['sender_name'] ?? 'M')[0]
+                                                      .toUpperCase(),
+                                                  style: const TextStyle(
+                                                    color: Color(0xFFFFFC00),
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 16,
+                                                  ),
+                                                ),
+                                              ),
+                                  )
+                                : (avatarConfig != null
+                                    ? VectorAvatarWidget(
+                                        config: avatarConfig, size: 48)
+                                    : Container(
+                                        color: const Color(0xFFFFFC00)
+                                            .withValues(alpha: 0.2),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          (req['sender_name'] ?? 'M')[0]
+                                              .toUpperCase(),
+                                          style: const TextStyle(
+                                            color: Color(0xFFFFFC00),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      )),
+                          ),
+                        );
+                      },
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                req['sender_name'] ?? 'Poket Mate',
+                                style: GoogleFonts.outfit(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: isDark ? Colors.white : Colors.black87,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              if (req['is_robot'] == true ||
+                                  PocketRobotService.isRobotId(
+                                      req['sender_id']?.toString() ?? ''))
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 5, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF06B6D4)
+                                        .withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(
+                                        color: const Color(0xFF06B6D4)),
+                                  ),
+                                  child: Text(
+                                    '🤖 Lvl ${req['stage'] ?? 1}',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFF06B6D4),
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 9,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            req['message'] ?? 'wants to connect as a Mate',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              color: isDark ? Colors.white54 : Colors.black54,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          req['sender_name'] ?? 'Poket Mate',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: isDark ? Colors.white : Colors.black87,
+                        // Accept button
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFFC00),
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            minimumSize: const Size(60, 32),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            elevation: 0,
+                          ),
+                          onPressed: () => _acceptMateRequest(req),
+                          child: Text(
+                            'Accept',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          req['message'] ?? 'wants to connect as a Mate',
-                          style: GoogleFonts.inter(
-                            fontSize: 12,
-                            color: isDark ? Colors.white54 : Colors.black54,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        const SizedBox(width: 6),
+                        // Decline button
+                        IconButton(
+                          icon: const Icon(Icons.close_rounded,
+                              size: 18, color: Colors.grey),
+                          constraints:
+                              const BoxConstraints(minWidth: 32, minHeight: 32),
+                          padding: EdgeInsets.zero,
+                          onPressed: () => _declineMateRequest(req),
+                          tooltip: 'Decline',
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Accept button
-                      ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFFFFFC00),
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 12, vertical: 6),
-                          minimumSize: const Size(60, 32),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          elevation: 0,
-                        ),
-                        onPressed: () => _acceptMateRequest(req),
-                        child: Text(
-                          'Accept',
-                          style: GoogleFonts.outfit(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6),
-                      // Decline button
-                      IconButton(
-                        icon: const Icon(Icons.close_rounded,
-                            size: 18, color: Colors.grey),
-                        constraints:
-                            const BoxConstraints(minWidth: 32, minHeight: 32),
-                        padding: EdgeInsets.zero,
-                        onPressed: () => _declineMateRequest(req),
-                        tooltip: 'Decline',
-                      ),
-                    ],
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
-        );
+          );
         },
         childCount: _pendingRequests.length,
         addAutomaticKeepAlives: true,
@@ -2848,7 +2956,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             groupId: 'p:${conversation.id}',
                                             groupName: conversation.name,
                                             groupImage: conversation.imageUrl,
-                                            avatarConfig: conversation.avatarConfig,
+                                            avatarConfig:
+                                                conversation.avatarConfig,
                                           ),
                                         ),
                                       );
@@ -2916,7 +3025,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                             ? conversation.id
                                             : null,
                                         statusIds: conversation.statusData!
-                                            .map((s) => s['id']?.toString() ?? '')
+                                            .map((s) =>
+                                                s['id']?.toString() ?? '')
                                             .where((id) => id.isNotEmpty)
                                             .toList(),
                                       );
@@ -3571,15 +3681,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           .where((c) => c.unreadCount > 0)
                           .toList();
                     } else if (_chatCategoryFilterIndex == 5) {
-                      activeFiltered = activeFiltered
-                          .where((c) {
-                            if (!c.isGroup) return false;
-                            final lowerName = c.name.toLowerCase();
-                            return !lowerName.contains('english hub') &&
-                                !lowerName.contains('english learning') &&
-                                !lowerName.contains('english practice');
-                          })
-                          .toList();
+                      activeFiltered = activeFiltered.where((c) {
+                        if (!c.isGroup) return false;
+                        final lowerName = c.name.toLowerCase();
+                        return !lowerName.contains('english hub') &&
+                            !lowerName.contains('english learning') &&
+                            !lowerName.contains('english practice');
+                      }).toList();
                     }
 
                     if (activeFiltered.isNotEmpty) {
@@ -3642,7 +3750,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           groupId: conversation.id,
                                           groupName: conversation.name,
                                           groupImage: conversation.imageUrl,
-                                          avatarConfig: conversation.avatarConfig,
+                                          avatarConfig:
+                                              conversation.avatarConfig,
                                         ),
                                       ),
                                     );
@@ -3663,7 +3772,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           groupId: 'p:${conversation.id}',
                                           groupName: conversation.name,
                                           groupImage: conversation.imageUrl,
-                                          avatarConfig: conversation.avatarConfig,
+                                          avatarConfig:
+                                              conversation.avatarConfig,
                                         ),
                                       ),
                                     );
@@ -4236,7 +4346,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFF8906).withValues(alpha: 0.45),
+                            color:
+                                const Color(0xFFFF8906).withValues(alpha: 0.45),
                             blurRadius: 8,
                             spreadRadius: 1,
                           ),
@@ -4921,7 +5032,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     ),
                     const SizedBox(width: 6),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 5, vertical: 1.5),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFD700).withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(6),
@@ -4965,7 +5077,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
-                  content: Text('💡 Tip: Type "I am feeling resilient today!" to a friend in chat for +10 score.'),
+                  content: Text(
+                      '💡 Tip: Type "I am feeling resilient today!" to a friend in chat for +10 score.'),
                   behavior: SnackBarBehavior.floating,
                   backgroundColor: Color(0xFF1E2435),
                 ),
@@ -5812,7 +5925,8 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                 Container(
                   height: tabBarHeight,
                   color: headerColor,
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
                   child: Container(
                     decoration: BoxDecoration(
                       color: const Color(0xFF131722),
@@ -5944,7 +6058,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOutCubic,
             decoration: BoxDecoration(
-              color: isSelected ? const Color(0xFF22283A) : material.Colors.transparent,
+              color: isSelected
+                  ? const Color(0xFF22283A)
+                  : material.Colors.transparent,
               borderRadius: BorderRadius.circular(9),
             ),
             alignment: Alignment.center,

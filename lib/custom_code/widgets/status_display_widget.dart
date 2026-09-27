@@ -183,15 +183,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       }
     });
     _loadSeenStatuses();
-    SharedPreferences.getInstance().then((prefs) {
-      final lvl = prefs.getInt('pocket_learning_user_stage_${widget.currentUserId}') ??
-          prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
-      if (mounted) setState(() => _currentUserLevel = lvl);
-      PocketFortressDefenseService.getUnifiedScore(widget.currentUserId).then((score) {
-        if (score > 0 && mounted) {
-          setState(() => _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(score));
-        }
-      });
+    PocketFortressDefenseService.getUnifiedScore(widget.currentUserId).then((score) {
+      if (mounted) {
+        setState(() => _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(score));
+      }
     });
     _loadVibesFilter().then((_) {
       _loadCachedStatuses();
@@ -331,13 +326,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           followingRes.map((e) => e['followed_id'].toString()));
       final prefs = await SharedPreferences.getInstance();
       final myScore = await PocketFortressDefenseService.getUnifiedScore(widget.currentUserId);
-      if (myScore > 0) {
-        _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(myScore);
-      } else {
-        final lvl = prefs.getInt('pocket_learning_user_stage_${widget.currentUserId}') ??
-            prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
-        _currentUserLevel = lvl;
-      }
+      _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(myScore);
       final robotMates = prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? [];
       final Set<String> allFollowingIds = {...followingIds, ...robotMates};
 
@@ -1847,17 +1836,17 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     } else {
       int stage = 1;
       if (profile != null) {
-        final st = profile['learning_day'] ??
-            profile['learning_stage'] ??
-            profile['stage'] ??
-            profile['level'];
-        if (st is num && st > 0) {
-          stage = st.toInt();
+        final ps = (profile['pocket_score'] as num?)?.toInt();
+        if (ps != null && ps > 0) {
+          stage = PocketScoreLevelEngine.getLevelFromScore(ps);
         } else {
-          stage = (name.hashCode.abs() % 90) + 1;
+          final st = profile['learning_day'] ??
+              profile['learning_stage'] ??
+              profile['level'];
+          if (st is num && st > 0) {
+            stage = st.toInt();
+          }
         }
-      } else {
-        stage = (name.hashCode.abs() % 90) + 1;
       }
       displayDay = stage;
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
@@ -2319,23 +2308,17 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     } else {
       int stage = 1;
       if (profile != null) {
-        final ps = (profile['pocket_score'] as num?)?.toInt() ??
-            (profile['learning_points'] as num?)?.toInt();
+        final ps = (profile['pocket_score'] as num?)?.toInt();
         if (ps != null && ps > 0) {
           stage = PocketScoreLevelEngine.getLevelFromScore(ps);
         } else {
           final st = profile['learning_day'] ??
               profile['learning_stage'] ??
-              profile['stage'] ??
               profile['level'];
           if (st is num && st > 0) {
             stage = st.toInt();
-          } else {
-            stage = (name.hashCode.abs() % 90) + 1;
           }
         }
-      } else {
-        stage = (name.hashCode.abs() % 90) + 1;
       }
       displayDay = stage;
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage);
@@ -2473,15 +2456,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       if (mounted) setState(() {});
     });
 
-    SharedPreferences.getInstance().then((prefs) {
-      final lvl = prefs.getInt('pocket_learning_user_stage_${widget.currentUserId}') ??
-          prefs.getInt('learning_day_${widget.currentUserId}') ?? 1;
-      if (mounted) setState(() => _currentUserLevel = lvl);
-      PocketFortressDefenseService.getUnifiedScore(widget.currentUserId).then((score) {
-        if (score > 0 && mounted) {
-          setState(() => _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(score));
-        }
-      });
+    PocketFortressDefenseService.getUnifiedScore(widget.currentUserId).then((score) {
+      if (mounted) {
+        setState(() => _currentUserLevel = PocketScoreLevelEngine.getLevelFromScore(score));
+      }
     });
 
     _initializeViewer();
@@ -4041,22 +4019,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           width: double.infinity,
           height: double.infinity,
           color: const Color(0xFF070B0D),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              _togglePause();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PocketHomesReelsFeedWidget(
-                    initialHouseId: houseId,
-                  ),
-                ),
-              ).then((_) => _togglePause());
-            },
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
                 // 🌄 1. Full-bleed Living Citadel Scenery Backdrop
                 Positioned.fill(
                   child: Container(
@@ -4167,30 +4132,44 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             ],
                           ),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.touch_app_rounded, color: Color(0xFFFFFC00), size: 13),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Explore',
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFFFFFC00),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            _togglePause();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PocketHomesReelsFeedWidget(
+                                  initialHouseId: houseId,
                                 ),
                               ),
-                            ],
+                            ).then((_) => _togglePause());
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.touch_app_rounded, color: Color(0xFFFFFC00), size: 13),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'Explore',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFFC00),
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -4259,36 +4238,50 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           ),
                           const SizedBox(height: 10),
                         ],
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
-                            ),
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
-                                blurRadius: 12,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.home_work_rounded, color: Colors.black, size: 18),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Visit Home',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontSize: 13.5,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.2,
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            _togglePause();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PocketHomesReelsFeedWidget(
+                                  initialHouseId: houseId,
                                 ),
                               ),
-                            ],
+                            ).then((_) => _togglePause());
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.home_work_rounded, color: Colors.black, size: 18),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Visit Home',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -4297,7 +4290,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 ),
               ],
             ),
-          ),
         );
       } else if (itemType == 'game_challenge') {
         final category = meta?['category']?.toString() ?? 'CHALLENGE 🎯';
@@ -4325,22 +4317,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               end: Alignment.bottomCenter,
             ),
           ),
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              _togglePause();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => PocketHomesReelsFeedWidget(
-                    initialGameId: gameId,
-                  ),
-                ),
-              ).then((_) => _togglePause());
-            },
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
                 // Ambient Radial Glow
                 Positioned(
                   top: -80,
@@ -4399,32 +4378,46 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Category Pill
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
-                              width: 1.2,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.sports_esports_rounded,
-                                  color: Color(0xFFFFFC00), size: 15),
-                              const SizedBox(width: 6),
-                              Text(
-                                category,
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFFFFFC00),
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.5,
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            _togglePause();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PocketHomesReelsFeedWidget(
+                                  initialGameId: gameId,
                                 ),
                               ),
-                            ],
+                            ).then((_) => _togglePause());
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                                width: 1.2,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.sports_esports_rounded,
+                                    color: Color(0xFFFFFC00), size: 15),
+                                const SizedBox(width: 6),
+                                Text(
+                                  category,
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFFC00),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
 
@@ -4486,36 +4479,50 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         const SizedBox(height: 20),
 
                         // Play Game Button
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
-                            ),
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
-                                blurRadius: 14,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 20),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Play Challenge',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.3,
+                        GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: () {
+                            _togglePause();
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => PocketHomesReelsFeedWidget(
+                                  initialGameId: gameId,
                                 ),
                               ),
-                            ],
+                            ).then((_) => _togglePause());
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 11),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                                  blurRadius: 14,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 20),
+                                const SizedBox(width: 6),
+                                Text(
+                                  'Play Challenge',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],
@@ -4524,7 +4531,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 ),
               ],
             ),
-          ),
         );
       } else {
         content = Container(

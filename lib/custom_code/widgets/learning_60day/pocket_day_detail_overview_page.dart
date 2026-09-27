@@ -176,6 +176,16 @@ class _PocketDayDetailOverviewPageState
                       const SizedBox(height: 18),
                     ],
 
+                    // Sentence Evolution (Basic -> Intermediate -> Advanced)
+                    if (_dayData.sentenceEvolution.isNotEmpty) ...[
+                      _buildSentenceEvolutionCard(),
+                      const SizedBox(height: 18),
+                    ],
+
+                    // Daily 5-Pillar Target Guide
+                    _buildDailyPillarsCard(),
+                    const SizedBox(height: 18),
+
                     // Today's Vocabulary Bank
                     _buildVocabularySection(),
 
@@ -312,7 +322,8 @@ class _PocketDayDetailOverviewPageState
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF6366F1).withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(8),
@@ -460,7 +471,9 @@ class _PocketDayDetailOverviewPageState
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
           decoration: BoxDecoration(
-            color: isSelected ? color.withValues(alpha: 0.22) : const Color(0xFF1E293B),
+            color: isSelected
+                ? color.withValues(alpha: 0.22)
+                : const Color(0xFF1E293B),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: isSelected ? color : Colors.white10,
@@ -496,11 +509,36 @@ class _PocketDayDetailOverviewPageState
 
   Widget _buildLearningRoadmapCard() {
     final steps = [
-      {'num': '1', 'name': 'Theory & Rules', 'desc': 'Master the concept & avoid common native mistakes', 'icon': '📖'},
-      {'num': '2', 'name': 'Vocabulary Bank', 'desc': 'Listen to phonetics & learn target words', 'icon': '📚'},
-      {'num': '3', 'name': 'Fluency Gym', 'desc': 'Vocal agility, tongue twisters & word stress', 'icon': '🏋️'},
-      {'num': '4', 'name': 'Interactive Quests', 'desc': 'Sentence building & grammar simulator', 'icon': '🎮'},
-      {'num': '5', 'name': 'Peer Speaking', 'desc': 'Live voice practice with your study partner', 'icon': '💬'},
+      {
+        'num': '1',
+        'name': 'Theory & Rules',
+        'desc': 'Master the concept & avoid common native mistakes',
+        'icon': '📖'
+      },
+      {
+        'num': '2',
+        'name': 'Vocabulary Bank',
+        'desc': 'Listen to phonetics & learn target words',
+        'icon': '📚'
+      },
+      {
+        'num': '3',
+        'name': 'Fluency Gym',
+        'desc': 'Vocal agility, tongue twisters & word stress',
+        'icon': '🏋️'
+      },
+      {
+        'num': '4',
+        'name': 'Interactive Quests',
+        'desc': 'Sentence building & grammar simulator',
+        'icon': '🎮'
+      },
+      {
+        'num': '5',
+        'name': 'Peer Speaking',
+        'desc': 'Live voice practice with your study partner',
+        'icon': '💬'
+      },
     ];
 
     return Container(
@@ -564,7 +602,8 @@ class _PocketDayDetailOverviewPageState
                       children: [
                         Row(
                           children: [
-                            Text(st['icon']!, style: const TextStyle(fontSize: 14)),
+                            Text(st['icon']!,
+                                style: const TextStyle(fontSize: 14)),
                             const SizedBox(width: 6),
                             Text(
                               st['name']!,
@@ -818,6 +857,250 @@ class _PocketDayDetailOverviewPageState
     );
   }
 
+  Widget _buildSentenceEvolutionCard() {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF111C35),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('📈', style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'SENTENCE GROWTH & EVOLUTION',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF818CF8),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    Text(
+                      'പഴയ grammar + പുതിയത് ചേർത്ത് വാക്യങ്ങൾ വികസിപ്പിക്കുക',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ..._dayData.sentenceEvolution.map((evo) {
+            final isSpeaking = _currentlySpeakingWord == evo;
+            Color badgeColor = const Color(0xFF34D399);
+            if (evo.contains('Intermediate') || evo.contains('🟡')) {
+              badgeColor = const Color(0xFFFBBF24);
+            } else if (evo.contains('Advanced') || evo.contains('🟣')) {
+              badgeColor = const Color(0xFFA855F7);
+            }
+
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSpeaking
+                      ? const Color(0xFF00FFCC)
+                      : badgeColor.withValues(alpha: 0.25),
+                  width: isSpeaking ? 1.5 : 1,
+                ),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      evo,
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13,
+                        height: 1.4,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: Icon(
+                      isSpeaking
+                          ? Icons.volume_up_rounded
+                          : Icons.volume_down_rounded,
+                      color: isSpeaking ? const Color(0xFF00FFCC) : badgeColor,
+                      size: 20,
+                    ),
+                    onPressed: () => _speak(evo),
+                    constraints: const BoxConstraints(),
+                    padding: const EdgeInsets.all(4),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDailyPillarsCard() {
+    final pillars = [
+      {
+        'title': '1. Grammar Concept (15 min)',
+        'desc': _dayData.grammarConcept,
+        'icon': '📚',
+        'color': const Color(0xFF38BDF8)
+      },
+      {
+        'title': '2. Vocabulary Bank (10 min)',
+        'desc': '5–10 Words + Contextual Sentences',
+        'icon': '🧠',
+        'color': const Color(0xFFFFD700)
+      },
+      {
+        'title': '3. Sentence Building (15 min)',
+        'desc': 'Word → Sentence → Situation flow',
+        'icon': '📝',
+        'color': const Color(0xFF34D399)
+      },
+      {
+        'title': '4. Active Listening (15 min)',
+        'desc': _dayData.listeningGoal.isNotEmpty
+            ? _dayData.listeningGoal
+            : 'Listen to natural English dialogue',
+        'icon': '🎧',
+        'color': const Color(0xFFA855F7)
+      },
+      {
+        'title': '5. Speaking Challenge (15–20 min)',
+        'desc': _dayData.dailyChallenge.isNotEmpty
+            ? _dayData.dailyChallenge
+            : _dayData.speakingDrill,
+        'icon': '🎤',
+        'color': const Color(0xFFFB7185)
+      },
+    ];
+
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131D33),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.3),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('⚡', style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '5 DAILY PILLARS (70–90 MIN TOTAL)',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF34D399),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    Text(
+                      'ദിവസവും ചെയ്യേണ്ട 5 കാര്യങ്ങൾ — Grammar + Vocab + Sentences + Listening + Speaking',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+          ...pillars.map((pil) {
+            final pColor = pil['color'] as Color;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: pColor.withValues(alpha: 0.2)),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(pil['icon'] as String,
+                      style: const TextStyle(fontSize: 16)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          pil['title'] as String,
+                          style: GoogleFonts.outfit(
+                            color: pColor,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          pil['desc'] as String,
+                          style: GoogleFonts.inter(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 12,
+                            height: 1.35,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   Widget _buildVocabularySection() {
     final vocabList = _dayData.vocabulary;
     return Column(
@@ -907,8 +1190,12 @@ class _PocketDayDetailOverviewPageState
               ),
               IconButton(
                 icon: Icon(
-                  isSpeaking ? Icons.volume_up_rounded : Icons.volume_down_rounded,
-                  color: isSpeaking ? const Color(0xFF00FFCC) : const Color(0xFFFFD700),
+                  isSpeaking
+                      ? Icons.volume_up_rounded
+                      : Icons.volume_down_rounded,
+                  color: isSpeaking
+                      ? const Color(0xFF00FFCC)
+                      : const Color(0xFFFFD700),
                   size: 24,
                 ),
                 onPressed: () => _speak(item.word),

@@ -187,7 +187,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   Timer? _qTimer;
   bool _showAntiCheatNotice = false;
 
-  // 💖 Attacker Lifeline states for Level 15+ citadels (User Audio: 1 lifeline per game max, purchased with coins)
+  // 💖 Attacker Lifeline states for Level 28+ citadels (User Audio: Level 1-27 has NO retry; Level 28+ gets One More Chance)
   int _lifelinesRemaining = 0;
   int _initialLifelines = 0;
   int _userPurchasedLifelines = 0;
@@ -220,10 +220,12 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
 
   Future<void> _loadUserLifelines() async {
     final count = await PocketFortressDefenseService.getLifelinesCount();
+    final allowedLifelines = PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(widget.neighbor.day);
     if (mounted) {
       setState(() {
         _userPurchasedLifelines = count;
-        _initialLifelines = widget.neighbor.day >= 15 ? count : 0;
+        // User Audio Directive: Below Level 28 = NO second chance. Level 28+ = One More Chance allowed.
+        _initialLifelines = allowedLifelines > 0 ? math.min(count > 0 ? count : 1, allowedLifelines) : 0;
         _lifelinesRemaining = _initialLifelines;
       });
     }
@@ -315,24 +317,25 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
   }
 
   bool _tryUseLifeline({required String reason}) {
-    // Audio Rule 1: Only available when attacking Level 15+ citadels
-    if (widget.neighbor.day < 15) return false;
+    // Audio Rule 1: Only available when attacking Level 28+ citadels
+    // User Audio Directive: "10 ലെവല് വരെയുള്ള ആൾക്കാർക്ക് അതായത് 10 ക്വസ്റ്റ്യൻസ് വരുന്ന സമയത്ത് ഒരു ക്വസ്റ്റ്യൻ തെറ്റികഴിഞ്ഞിട്ട് വൺ മോർ ചാൻസ് കൊടുക്കരുത്. ഒരു 28 ലെവലിന് ശേഷമുള്ള ആൾക്കാർക്കാണ് വൺ മോർ ചാൻസ് ഉള്ളൂ. 28ആം ലെവലിലുള്ള ആളെ അറ്റാക്ക് ചെയ്യുമ്പോഴാണ് ഒരുവട്ടം തെറ്റികഴിഞ്ഞാൽ ഒരുവട്ടംകൂടി ചെയ്യാനുള്ള ഓപ്ഷൻ കൊടുക്കാൻ പറ്റുള്ളൂ."
+    if (widget.neighbor.day < 28) return false;
 
     // Audio Rule 2: Single use per battle game ("ഒരു ഗെയിമിൽ ഒരുവട്ടമേ യൂസ് ചെയ്യാൻ പറ്റുള്ളൂ, ഒറ്റ ലൈഫ് ലൈനേ ഉള്ളൂ")
     if (_lifelineUsedThisMatch) return false;
 
-    // Audio Rule 3: Must have purchased lifelines in inventory
-    if (_userPurchasedLifelines <= 0) return false;
+    // Audio Rule 3: Must have lifelines remaining
+    if (_userPurchasedLifelines <= 0 && _lifelinesRemaining <= 0) return false;
 
     HapticFeedback.heavyImpact();
     setState(() {
       _lifelineUsedThisMatch = true;
-      _userPurchasedLifelines--;
-      _lifelinesRemaining = _userPurchasedLifelines;
+      if (_userPurchasedLifelines > 0) _userPurchasedLifelines--;
+      if (_lifelinesRemaining > 0) _lifelinesRemaining--;
       _qSecondsLeft = 30;
       _gateScrambleInput = [];
       _gateJigsawSelected = [];
-      _lastDamageText = '💖 COMBAT LIFELINE ACTIVATED! Retry Granted';
+      _lastDamageText = '💖 ONE MORE CHANCE! (Retry)';
     });
     PocketFortressDefenseService.consumeLifeline();
     _startQuestionTimer();
@@ -350,7 +353,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'COMBAT LIFELINE USED! ($reason forgiven) Retry this question now! (1 use per match)',
+                  'ONE MORE CHANCE! ($reason forgiven) Retry this question now! (Level 28+ Citadel Perk)',
                   style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 11.5),
                 ),
               ),
@@ -455,7 +458,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
       _isGameOver = false;
       _isBombExploding = false;
       _lifelineUsedThisMatch = false;
-      _lifelinesRemaining = widget.neighbor.day >= 15 ? _userPurchasedLifelines : 0;
+      _lifelinesRemaining = widget.neighbor.day >= 28 ? _initialLifelines : 0;
     });
 
     if (mode == BattleMode.houseShieldGate) {
@@ -1104,8 +1107,8 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
               ),
             ),
 
-          // 💖 Phoenix Attacker Lifelines HUD (when raiding Level 25+ citadels)
-          if (_initialLifelines > 0)
+          // 💖 Phoenix Attacker Lifelines HUD (when raiding Level 28+ citadels per user directive)
+          if (_initialLifelines > 0 && widget.neighbor.day >= 28)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
               margin: const EdgeInsets.only(bottom: 8),
@@ -1128,7 +1131,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'PHOENIX ATTACKER LIFELINES',
+                          'ONE MORE CHANCE LIFELINE',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFFECDD3),
                             fontSize: 10,
@@ -1137,7 +1140,7 @@ class _PocketBattleArenaPageState extends State<PocketBattleArenaPage>
                           ),
                         ),
                         Text(
-                          'Level ${widget.neighbor.day}+ Citadel • Auto-resets 30s timer on error',
+                          'Level ${widget.neighbor.day} Citadel • One More Chance on mistake',
                           style: TextStyle(
                             color: Colors.white.withValues(alpha: 0.65),
                             fontSize: 9,

@@ -12,6 +12,7 @@ import 'flame_english_house_game.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_world_street_page.dart';
+import 'pocket_defense_trap_modal.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -19,7 +20,6 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_palace_castle_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_security_forces.dart';
-import 'package:pocket_mates_app/custom_code/widgets/president/presidential_citadel_world_props.dart';
 import 'day90_master_certificate_dialog.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
@@ -33,12 +33,14 @@ class PocketCitadelAttackPage extends StatefulWidget {
   final PocketNeighbor neighbor;
   final int attackerDay;
   final int attackerStreak;
+  final bool isDefenseMode;
 
   const PocketCitadelAttackPage({
     super.key,
     required this.neighbor,
     this.attackerDay = 1,
     this.attackerStreak = 0,
+    this.isDefenseMode = false,
   });
 
   /// 🏰 Open Citadel / House Page for any user or robot from anywhere in the app
@@ -48,6 +50,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
     PocketNeighbor? neighbor,
     Map<String, dynamic>? preloadedProfile,
     int attackerDay = 1,
+    bool isDefenseMode = false,
   }) async {
     // 🏛️ If target is The President of Pocket World, open the Sovereign Citadel living world!
     if (PocketPresidentService.isPresidentId(userId) || userId == 'pocket_president') {
@@ -88,6 +91,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
           builder: (context) => PocketCitadelAttackPage(
             neighbor: neighbor,
             attackerDay: attackerDay,
+            isDefenseMode: isDefenseMode,
           ),
         ),
       );
@@ -142,14 +146,17 @@ class PocketCitadelAttackPage extends StatefulWidget {
     }
 
     final p = data ?? {};
+    final currentUserId = SupaFlow.client.auth.currentUser?.id;
+    final isMe = (userId == currentUserId) || isDefenseMode || (neighbor?.isMe ?? false);
+
     final userNeighbor = PocketNeighbor(
       id: userId,
-      name: p['first_name'] ?? p['name'] ?? 'Citadel Defender',
+      name: p['first_name'] ?? p['name'] ?? (isMe ? 'My Fortress' : 'Citadel Defender'),
       day: (p['learning_day'] as num?)?.toInt() ?? 1,
       streak: (p['streak'] as num?)?.toInt() ?? 1,
       rank: p['rank']?.toString() ?? 'Citizen',
       paletteId: p['palette_id']?.toString() ?? 'warm_cottage',
-      isMe: false,
+      isMe: isMe,
       hasActiveShield: true,
       statusMessage: p['bio']?.toString() ?? 'Learning English everyday!',
       isPocketRobo: p['is_pocket_robo'] == true,
@@ -162,8 +169,9 @@ class PocketCitadelAttackPage extends StatefulWidget {
       context,
       MaterialPageRoute(
         builder: (context) => PocketCitadelAttackPage(
-          neighbor: userNeighbor,
+          neighbor: neighbor ?? userNeighbor,
           attackerDay: attackerDay,
+          isDefenseMode: isDefenseMode,
         ),
       ),
     );
@@ -213,6 +221,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   late AnimationController _heroChargeController;
   late AnimationController _ambientController;
   late AnimationController _profileDrawerController;
+  // ignore: unused_field
   bool _isIronDomeFiring = false;
   late AnimationController _ironDomeController;
   late final AnimationController _cameraAnimationController;
@@ -231,6 +240,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     WidgetsBinding.instance.addObserver(this);
     _attackerDay = widget.attackerDay;
     _isDefenderDamaged = widget.neighbor.isDamaged;
+    _retriesRemaining = PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(widget.neighbor.day);
 
     _transformationController = TransformationController();
     _transformationController.addListener(() {
@@ -625,6 +635,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
 
   void _showReportDialog(HouseShieldQuestion currentQ) {
     String selectedReason = 'fake_english';
+    final aiVerdict = PocketFortressDefenseService.validateQuestion(
+      currentQ.question,
+      currentQ.options,
+      currentQ.correctIndex,
+    );
 
     showDialog(
       context: context,
@@ -632,17 +647,31 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         builder: (ctx, setDialogState) => AlertDialog(
           backgroundColor: const Color(0xFF0F172A),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Colors.redAccent),
+            borderRadius: BorderRadius.circular(20),
+            side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
           ),
           title: Row(
-            children: const [
-              Text('🚨', style: TextStyle(fontSize: 22)),
-              SizedBox(width: 8),
+            children: [
+              const Text('🏛️', style: TextStyle(fontSize: 24)),
+              const SizedBox(width: 8),
               Expanded(
-                child: Text(
-                  'Report Fake Defense',
-                  style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'PRESIDENT REPORT',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.1,
+                      ),
+                    ),
+                    Text(
+                      'Report Fake / Invalid Question to The President',
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -652,31 +681,126 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'The President\'s Court and Admin investigate fraudulent defense shields. False questions result in Citadel Penalties.',
-                  style: TextStyle(color: Colors.white70, fontSize: 12),
+                // Question snippet
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'QUESTION UNDER SCRUTINY:',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        currentQ.question,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+
+                // 🤖 Automated AI Scan Result
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: aiVerdict.isApproved
+                        ? const Color(0xFF10B981).withValues(alpha: 0.12)
+                        : (aiVerdict.isBanThreat
+                            ? Colors.redAccent.withValues(alpha: 0.15)
+                            : Colors.amber.withValues(alpha: 0.15)),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: aiVerdict.isApproved
+                          ? const Color(0xFF10B981)
+                          : (aiVerdict.isBanThreat ? Colors.redAccent : Colors.amber),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(aiVerdict.sealIcon, style: const TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'AI SCAN: ${aiVerdict.title}',
+                              style: TextStyle(
+                                color: aiVerdict.isApproved
+                                    ? const Color(0xFF34D399)
+                                    : (aiVerdict.isBanThreat ? Colors.redAccent : Colors.amber),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              aiVerdict.feedback,
+                              style: const TextStyle(color: Colors.white70, fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 12),
+
+                // Violation type selection
+                Text(
+                  'SELECT REPORT REASON:',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 6),
                 DropdownButtonFormField<String>(
                   initialValue: selectedReason,
                   dropdownColor: const Color(0xFF1E293B),
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: const TextStyle(color: Colors.white, fontSize: 12.5),
                   decoration: InputDecoration(
-                    labelText: 'Violation Type',
-                    labelStyle: const TextStyle(color: Colors.white70),
                     filled: true,
                     fillColor: const Color(0xFF1E293B),
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: BorderSide.none,
+                    ),
                   ),
                   items: const [
                     DropdownMenuItem(value: 'fake_english', child: Text('Fake / Gibberish English')),
+                    DropdownMenuItem(value: 'wrong_answer_key', child: Text('Incorrect / Broken Answer Key')),
                     DropdownMenuItem(value: 'impossible_puzzle', child: Text('Unfair / Impossible Puzzle')),
-                    DropdownMenuItem(value: 'abusive_language', child: Text('Inappropriate Language')),
-                    DropdownMenuItem(value: 'unrelated_content', child: Text('Not English Learning')),
+                    DropdownMenuItem(value: 'abusive_language', child: Text('Inappropriate / Abusive Language')),
+                    DropdownMenuItem(value: 'unrelated_content', child: Text('Not Educational English')),
                   ],
                   onChanged: (val) {
                     if (val != null) setDialogState(() => selectedReason = val);
                   },
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'The President and Supreme Court investigate fake questions. Fraudulent traps result in Citadel Demolition and Score Penalties.',
+                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
                 ),
               ],
             ),
@@ -686,8 +810,18 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               onPressed: () => Navigator.pop(ctx),
               child: const Text('Cancel', style: TextStyle(color: Colors.white60)),
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFDC2626),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              icon: const Icon(Icons.shield_rounded, size: 16, color: Color(0xFFFFD700)),
+              label: Text(
+                'SUBMIT TO PRESIDENT 🏛️',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
               onPressed: () {
                 Navigator.pop(ctx);
                 _showPresidentialDispatchOverlay(
@@ -695,7 +829,6 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                   reason: selectedReason,
                 );
               },
-              child: const Text('Submit Report', style: TextStyle(color: Colors.white)),
             ),
           ],
         ),
@@ -988,7 +1121,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 streak: 90,
                                 isDamaged: _isDefenderDamaged,
                                 houseId: 'pocket_president',
-                                paletteId: widget.neighbor.paletteId ?? 'royal_gold',
+                                paletteId: widget.neighbor.paletteId,
                                 isPresident: true,
                                 showTestingControls: false,
                               ),
@@ -1395,6 +1528,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 🏛️ Grand Sovereign Presidential Palace Castle (Flame Living Estate Component)
+  // ignore: unused_element
   Widget _buildPresidentialPalaceCastle(
     double left,
     double top,
@@ -2942,6 +3076,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   }
 
   /// 🛡️ Iron Dome Defense Matrix & Telemetry Modal
+  // ignore: unused_element
   void _showPresidentialIronDomeModal() {
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
@@ -3969,7 +4104,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
           color: const Color(0xFF0F172A).withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: const Color(0xFFEF4444).withValues(alpha: 0.8),
+            color: (widget.neighbor.isMe || widget.isDefenseMode)
+                ? const Color(0xFF10B981).withValues(alpha: 0.8)
+                : const Color(0xFFEF4444).withValues(alpha: 0.8),
             width: 1.4,
           ),
           boxShadow: [
@@ -3979,7 +4116,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               offset: const Offset(0, 4),
             ),
             BoxShadow(
-              color: const Color(0xFFEF4444).withValues(alpha: 0.25),
+              color: (widget.neighbor.isMe || widget.isDefenseMode)
+                  ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                  : const Color(0xFFEF4444).withValues(alpha: 0.25),
               blurRadius: 10,
               spreadRadius: 1,
             ),
@@ -3995,7 +4134,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    'Level ${widget.neighbor.day}',
+                    (widget.neighbor.isMe || widget.isDefenseMode)
+                        ? 'My Fortress • Level ${widget.neighbor.day}'
+                        : 'Level ${widget.neighbor.day}',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontSize: 12,
@@ -4032,8 +4173,58 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
               ),
             ),
             const SizedBox(height: 3),
-            // Minimal Red Attack Button or President Level 90 Gate / Challenge Button
-            if (widget.neighbor.isPresident)
+            // Minimal Red Attack Button or President Level 90 Gate / Challenge Button or Arm Defense
+            if (widget.neighbor.isMe || widget.isDefenseMode)
+              GestureDetector(
+                onTap: () async {
+                  HapticFeedback.heavyImpact();
+                  await PocketDefenseTrapModal.show(
+                    context,
+                    widget.neighbor.day,
+                    isLevelComplete: true,
+                  );
+                  await _loadBattleState();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 7),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF10B981), Color(0xFF047857)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: BorderRadius.circular(11),
+                    border: Border.all(
+                      color: const Color(0xFF34D399),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🛡️', style: TextStyle(fontSize: 13)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'ADD DEFENSE',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            else if (widget.neighbor.isPresident)
               GestureDetector(
                 onTap: _onTapBottomAttack,
                 child: Container(
@@ -4874,7 +5065,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
-                        '🛡️ GATE ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}',
+                        _defenseQuestions.length > 10
+                            ? '🛡️ GAME ${(_currentQIdx ~/ 10) + 1} OF ${((_defenseQuestions.length - 1) ~/ 10) + 1} • Q${(_currentQIdx % 10) + 1}/10 (TOTAL ${_currentQIdx + 1}/${_defenseQuestions.length})'
+                            : '🛡️ GATE ${_currentQIdx + 1} OF ${_defenseQuestions.length}: ${currentQ.trapType.toUpperCase()}',
                         style: const TextStyle(
                           color: Color(0xFF38BDF8),
                           fontSize: 10.5,
@@ -5010,8 +5203,10 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                             _combatTimer?.cancel();
                             if (_selectedOption == currentQ.correctIndex) {
                               if (_currentQIdx + 1 < _defenseQuestions.length) {
-                                final nextGate = _currentQIdx + 2;
-                                final totalGates = _defenseQuestions.length;
+                                final curGate = (_currentQIdx ~/ 10) + 1;
+                                final nextGate = ((_currentQIdx + 1) ~/ 10) + 1;
+                                final isGateClear = nextGate > curGate;
+                                final totalGates = ((_defenseQuestions.length - 1) ~/ 10) + 1;
                                 setState(() {
                                   _currentQIdx++;
                                   _selectedOption = -1;
@@ -5019,7 +5214,9 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                                 HapticFeedback.heavyImpact();
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('🛡️ Gate $_currentQIdx Cleared! Engaging Gate $nextGate of $totalGates...'),
+                                    content: Text(isGateClear
+                                        ? '🎉 GAME $curGate CLEARED! Advancing to Game $nextGate of $totalGates...'
+                                        : '🛡️ Question ${(_currentQIdx % 10)}/10 Cleared! Next challenge...'),
                                     backgroundColor: const Color(0xFF10B981),
                                     duration: const Duration(seconds: 2),
                                     behavior: SnackBarBehavior.floating,
@@ -5060,6 +5257,67 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           ? 'VERIFY GATE CODE 🛡️'
                           : 'BREACH DEFENSE PERIMETER ⚡',
                       style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13.5),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                // 🏛️ PRESIDENT REPORT BUTTON (PROMINENT BOLD LETTERS - വെണ്ടക്ക അക്ഷരത്തിൽ)
+                Container(
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFF7F1D1D),
+                        Color(0xFF31102A),
+                        Color(0xFF0F172A),
+                      ],
+                    ),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700),
+                      width: 1.8,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      borderRadius: BorderRadius.circular(14),
+                      onTap: () => _showReportDialog(currentQ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🏛️', style: TextStyle(fontSize: 20)),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                'PRESIDENT REPORT (ഫേക്ക് ക്വസ്റ്റ്യൻ റിപ്പോർട്ട്)',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 13.5,
+                                  letterSpacing: 1.0,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(
+                              Icons.flag_rounded,
+                              color: Color(0xFFEF4444),
+                              size: 18,
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -5726,6 +5984,17 @@ class _PresidentialDispatchDialogState extends State<_PresidentialDispatchDialog
       reporterName: 'Citadel Raider',
       reason: widget.reason,
       details: 'Reported during live raid blitz combat.',
+    );
+
+    // 2. Direct log to President Desk registry for Admin Panel
+    final uid = SupaFlow.client.auth.currentUser?.id ?? 'attacker_me';
+    await PocketPresidentService.recordQuestionReportToPresident(
+      reporterId: uid,
+      reporterName: 'Citadel Raider',
+      houseId: widget.targetId,
+      houseOwnerName: widget.targetName,
+      questionText: widget.currentQ.question,
+      reason: widget.reason,
     );
 
     await Future.delayed(const Duration(milliseconds: 1400));

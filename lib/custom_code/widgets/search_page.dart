@@ -19,6 +19,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_street_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({
@@ -959,7 +960,8 @@ class _SearchResultsWidgetState extends State<SearchResultsWidget> {
             profile['is_vip'] == true ||
             profile['is_subscribed'] == true;
         final isRobot = !isPresident && profile['is_robot'] == true;
-        final userDay = (profile['learning_day'] as num?)?.toInt() ?? 1;
+        final userScore = (profile['pocket_score'] as num?)?.toInt() ?? 0;
+        final userDay = PocketScoreLevelEngine.getLevelFromScore(userScore);
         final userStage = (isRobot || isPresident)
             ? null
             : LearningMilestoneStage.getStageForDay(userDay);

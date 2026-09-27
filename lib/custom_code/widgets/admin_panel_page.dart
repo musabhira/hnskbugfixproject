@@ -1893,6 +1893,61 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                 ],
                               ),
                             ),
+                            Builder(
+                              builder: (context) {
+                                final aiVerdict = PocketFortressDefenseService.validateQuestion(
+                                  report.questionText,
+                                  report.options,
+                                  report.correctIndex,
+                                );
+                                return Container(
+                                  margin: const EdgeInsets.only(top: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: aiVerdict.isApproved
+                                        ? const Color(0xFF10B981).withValues(alpha: 0.15)
+                                        : (aiVerdict.isBanThreat
+                                            ? Colors.redAccent.withValues(alpha: 0.2)
+                                            : Colors.amber.withValues(alpha: 0.2)),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: aiVerdict.isApproved
+                                          ? const Color(0xFF10B981)
+                                          : (aiVerdict.isBanThreat ? Colors.redAccent : Colors.amber),
+                                      width: 0.8,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(aiVerdict.sealIcon, style: const TextStyle(fontSize: 14)),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              '🤖 AI SCAN: ${aiVerdict.title}',
+                                              style: TextStyle(
+                                                color: aiVerdict.isApproved
+                                                    ? const Color(0xFF34D399)
+                                                    : (aiVerdict.isBanThreat ? Colors.redAccent : Colors.amber),
+                                                fontSize: 10.5,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text(
+                                              aiVerdict.feedback,
+                                              style: const TextStyle(color: Colors.white70, fontSize: 10.5),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
+                            ),
                             if (report.details.isNotEmpty) ...[
                               const SizedBox(height: 6),
                               Text(
@@ -8014,8 +8069,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       if (_presidentInquiryStatusFilter == 2 && inq['status'] != 'resolved') {
         return false;
       }
+      if (_presidentInquiryStatusFilter == 3 &&
+          !text.contains('question report') &&
+          inq['report_type'] != 'fake_citadel_defense' &&
+          inq['content_type'] != 'defense_question') {
+        return false;
+      }
       return true;
     }).toList();
+
+    final reportedQuestionsCount = _presidentInquiries.where((i) {
+      final t = (i['last_message'] ?? '').toString().toLowerCase();
+      return t.contains('question report') ||
+          i['report_type'] == 'fake_citadel_defense' ||
+          i['content_type'] == 'defense_question';
+    }).length;
 
     return Column(
       children: [
@@ -8030,7 +8098,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                       setState(() => _presidentInquirySearchQuery = val),
                   style: const TextStyle(color: Colors.white, fontSize: 13),
                   decoration: InputDecoration(
-                    hintText: 'Search inquiries or citizen names...',
+                    hintText: 'Search inquiries, reports, citizen names...',
                     hintStyle:
                         const TextStyle(color: Colors.white38, fontSize: 12),
                     prefixIcon: const Icon(Icons.search,
@@ -8060,18 +8128,25 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
         // Status Filter Chips
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              _buildInquiryFilterChip('All (${_presidentInquiries.length})', 0),
-              const SizedBox(width: 8),
-              _buildInquiryFilterChip(
-                  'Pending ⏳ (${_presidentInquiries.where((i) => i['status'] == 'pending').length})',
-                  1),
-              const SizedBox(width: 8),
-              _buildInquiryFilterChip(
-                  'Replied ✅ (${_presidentInquiries.where((i) => i['status'] == 'resolved').length})',
-                  2),
-            ],
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildInquiryFilterChip('All (${_presidentInquiries.length})', 0),
+                const SizedBox(width: 8),
+                _buildInquiryFilterChip(
+                    'Pending ⏳ (${_presidentInquiries.where((i) => i['status'] == 'pending').length})',
+                    1),
+                const SizedBox(width: 8),
+                _buildInquiryFilterChip(
+                    'Replied ✅ (${_presidentInquiries.where((i) => i['status'] == 'resolved').length})',
+                    2),
+                const SizedBox(width: 8),
+                _buildInquiryFilterChip(
+                    '🚨 Fake Questions ($reportedQuestionsCount)',
+                    3),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 10),
@@ -8686,7 +8761,6 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                                               ? const Color(0xFFFFD700)
                                                   .withValues(alpha: 0.6)
                                               : Colors.white38,
-                                          fontSize: 9.5,
                                         ),
                                       ),
                                     ],
@@ -8707,6 +8781,31 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
+                        _buildQuickReplyChip(
+                          label: '🤖 AI Robot Auto-Reply',
+                          onTap: () async {
+                            final citizenMsg = messages.reversed.firstWhere(
+                              (m) => m['is_president'] != true && m['sender_id'] != PocketPresidentService.presidentId,
+                              orElse: () => {'text': inquiry['last_message'] ?? 'Hello'},
+                            )['text'] ?? '';
+                            final draft = await PocketPresidentService.generatePresidentRobotReply(
+                              userMessage: citizenMsg.toString(),
+                              userName: name,
+                              currentUserId: targetId,
+                            );
+                            setModalState(() {
+                              replyController.text = draft;
+                            });
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        _buildQuickReplyChip(
+                          label: '🚨 Fake Question Sanctioned',
+                          onTap: () => sendReply(
+                            'CITADEL SANCTION NOTICE ⚖️: The defense question reported from this Citadel has been officially audited by Presidential Court and found non-compliant. Citadel score deductions applied. Fair-play restored!',
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         _buildQuickReplyChip(
                           label: '🛡️ 24h Guard Shield',
                           onTap: () => sendReply(
@@ -8746,6 +8845,27 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                   color: const Color(0xFF111827),
                   child: Row(
                     children: [
+                      // 🤖 Instant Robot Draft Icon Button
+                      IconButton(
+                        icon: const Icon(Icons.smart_toy_rounded,
+                            color: Color(0xFFFFD700), size: 22),
+                        tooltip: 'Draft AI Robot Reply',
+                        onPressed: () async {
+                          final citizenMsg = messages.reversed.firstWhere(
+                            (m) => m['is_president'] != true && m['sender_id'] != PocketPresidentService.presidentId,
+                            orElse: () => {'text': inquiry['last_message'] ?? 'Hello'},
+                          )['text'] ?? '';
+                          final draft = await PocketPresidentService.generatePresidentRobotReply(
+                            userMessage: citizenMsg.toString(),
+                            userName: name,
+                            currentUserId: targetId,
+                          );
+                          setModalState(() {
+                            replyController.text = draft;
+                          });
+                        },
+                      ),
+                      const SizedBox(width: 4),
                       Expanded(
                         child: TextField(
                           controller: replyController,

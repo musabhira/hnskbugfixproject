@@ -6,6 +6,8 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import '../avatar/avatar_game_perk.dart';
 import 'pocket_world_street_page.dart';
 import 'pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'pocket_defense_question_bank.dart';
 
 /// 🎩 President of Pocket World's Official Decree & Anti-Cheat Verdict
 class PresidentVerdict {
@@ -229,12 +231,12 @@ const List<DefenseTrapTemplate> kDefenseTrapTemplates = [
     themeColor: Color(0xFF10B981),
   ),
   DefenseTrapTemplate(
-    id: 'whisper_phantom',
-    title: 'Whisper Phantom',
-    titleMalayalam: 'Acoustic Keep',
-    icon: '👂',
-    description: 'Missing spoken words and live audio-text context deduction.',
-    category: 'listening',
+    id: 'word_scramble',
+    title: 'Word Scramble',
+    titleMalayalam: 'Rune Scramble',
+    icon: '🔠',
+    description: 'Word builder and scrambled alphabet anagrams.',
+    category: 'vocab',
     themeColor: Color(0xFF6366F1),
   ),
   DefenseTrapTemplate(
@@ -486,17 +488,16 @@ class PocketFortressDefenseService {
       try {
         final profile = await SupaFlow.client
             .from('profile')
-            .select('xp, learning_points')
+            .select('pocket_score, xp, learning_points')
             .eq('user_id', myId)
             .maybeSingle();
         if (profile != null) {
-          final xp = (profile['xp'] as num?)?.toInt();
-          final lp = (profile['learning_points'] as num?)?.toInt();
-          userScore = math.max(xp ?? 0, lp ?? 0);
+          final ps = (profile['pocket_score'] as num?)?.toInt();
+          userScore = ps ?? 0;
         }
       } catch (_) {}
 
-      userScore ??= prefs.getInt('learning_points_$myId') ?? 0;
+      userScore ??= 0;
       await prefs.setInt(userScoreKey, userScore);
     }
 
@@ -512,10 +513,17 @@ class PocketFortressDefenseService {
     if (myId != null && myId.isNotEmpty) {
       await prefs.setInt('user_pocket_score_$myId', score);
       await prefs.setInt('learning_points_$myId', score);
+      final newLvl = PocketScoreLevelEngine.getLevelFromScore(score);
+      await prefs.setInt('pocket_learning_user_stage_$myId', newLvl);
+      await prefs.setInt('learning_day_$myId', newLvl);
       try {
         await SupaFlow.client.from('profile').update({
+          'pocket_score': score,
           'learning_points': score,
           'xp': score,
+          'learning_day': newLvl,
+          'learning_stage': newLvl,
+          'level': newLvl,
         }).eq('user_id', myId);
         await SupaFlow.client.from('pocket_homes').update({
           'points': score,
@@ -558,16 +566,19 @@ class PocketFortressDefenseService {
     return math.max(10, stage.clamp(1, 90));
   }
 
-  /// 💖 Attacker Lifelines for Raiding High-Level Citadels (User Audio Request)
-  /// When an attacker sieges a well-fortified neighbor house:
-  /// - Level 1–24: 0 Lifelines
-  /// - Level 25–49: 1 Lifeline (forgiving 1 mistake or timeout, resetting timer)
+  /// 💖 Attacker Lifelines / Second Chances for Raiding High-Level Citadels (User Audio Request):
+  /// "ഒരു 10 ലെവൽ വരെയുള്ള ആൾക്കാരിൽ ഒരു ക്വസ്റ്റ്യൻ തെറ്റി കഴിഞ്ഞാൽ വൺ മോർ ചാൻസ് കൊടുക്കരുത്.
+  ///  ഒരു 28-ന് ശേഷമുള്ള ആൾക്കാർക്കാണ് വൺ മോർ ചാൻസ് ഉള്ളൂ.
+  ///  28-ാമത്തെ ലെവലിലുള്ള ആളെ അറ്റാക്ക് ചെയ്യുമ്പോഴാണ് തെറ്റി കഴിഞ്ഞാൽ ഒരു വട്ടം കൂടി ചെയ്യാനുള്ള ഓപ്ഷൻ കൊടുക്കാൻ പറ്റുകയുള്ളൂ."
+  ///
+  /// - Level 1–27: 0 Second Chances (Strict precision required, no retry on mistake!)
+  /// - Level 28–49: 1 Second Chance (Forgiving 1 mistake or timeout)
   /// - Level 50–79: 2 Lifelines
   /// - Level 80–90: 3 Lifelines
   static int getAttackerLifelinesForNeighborDay(int neighborDay) {
     if (neighborDay >= 80) return 3;
     if (neighborDay >= 50) return 2;
-    if (neighborDay >= 25) return 1;
+    if (neighborDay >= 28) return 1;
     return 0;
   }
 
@@ -589,17 +600,111 @@ class PocketFortressDefenseService {
     return userDay >= 1;
   }
 
-  /// ⚔️ Raid Opponent Target Level Matchmaking Rule:
-  /// - Unlocked from Level 1 onwards!
-  /// - Level 1–19: Matches with higher-level citadels (+1 to +3 Lvls higher) to push rapid English growth.
-  /// - Level 20+ (Days 20–90): Users have proven mastery and can challenge same-level peers or choose freely.
-  static int getRaidTargetDay(int userDay) {
+  /// ⚔️ Raid Opponent Target Level Matchmaking Rule (User Audio Directive):
+  /// "ഫസ്റ്റത്തെ ലെവലിൽ നിൽക്കുന്ന ആൾക്ക് മുതൽ 15-ആമത്തെ ലെവലിലുള്ള യൂസറിനെ വരെ കാണിച്ചു കൊടുക്കുക അറ്റാക്ക് ചെയ്യാൻ.
+  ///  ഫസ്റ്റത്തെ ലെവലിലുള്ള ഒരാൾക്ക് അറ്റാക്ക് ചെയ്യാൻ കിട്ടേണ്ടത് ഒരു 15-16 ആ ലെവലിൽ ഉള്ളതായിരിക്കണം...
+  ///  രണ്ടാമത്തെ ലെവലിൽ നിൽക്കുന്ന ആൾക്ക് 15-16. മൂന്നാമത്തെ ലെവലിൽ നിൽക്കുന്ന ആൾക്ക്...
+  ///  അറ്റാക്ക് ചെയ്യാൻ റോബോട്ട് അല്ലെങ്കിൽ ഹ്യൂമൻ (ഹ്യൂമൻസ് ഇല്ലെങ്കിൽ റോബോട്ടിന്റെ വീടുകൾ കാണിക്കും).
+  ///  പത്താമത്തെ ലെവലിൽ നിൽക്കുന്ന ആൾക്കാർക്കാണെങ്കിൽ അറ്റാക്ക് ചെയ്യാൻ കിട്ടുക ഒരു 30-ആം ലെവൽ ഉള്ള ആളുടെ.
+  ///  50-ആം ലെവലിൽ നിൽക്കുന്നവർക്ക് 80-90 ലെവലിലുള്ള ആൾക്കാരെ അറ്റാക്ക് ചെയ്യാൻ കൊടുക്കുക."
+  /// ⚔️ Raid Opponent Target Level Matchmaking Rule (User Audio Directive):
+  /// - Level 1 User: Target Level 5/6 (Beginner-friendly challenge)
+  /// - Level 2 User: Target Level 6/7
+  /// - Level 3-5 User: Target Level 8-10
+  /// - Level 6-10 User: Target Level 15-20
+  /// - Level 11-20 User: Target Level 25-40
+  /// - Level 21-35 User: Target Level 45-60
+  /// - Level 36-50 User: Target Level 70-85
+  /// - Level 51+ User: Target Level 85-90
+  static int getRecommendedTargetLevel(int userDay) {
     final day = userDay.clamp(1, 90);
-    if (day < 20) {
-      return math.min(90, day + (math.Random().nextInt(3) + 1));
+    if (day == 1) {
+      return 5; // Level 1 beginner attacks Level 5 (balanced, fair challenge)
+    } else if (day == 2) {
+      return 6;
+    } else if (day <= 4) {
+      return 8 + (day % 2); // 8 or 9
+    } else if (day <= 7) {
+      return 10 + (day % 3); // 10 to 12
+    } else if (day <= 10) {
+      return 15 + (day % 4); // 15 to 18
+    } else if (day <= 20) {
+      return 25 + ((day - 10) * 1.5).round().clamp(0, 15); // 25 to 40
+    } else if (day <= 35) {
+      return 45 + ((day - 20) * 1.2).round().clamp(0, 18); // 45 to 63
+    } else if (day <= 50) {
+      return 70 + ((day - 35) * 1.2).round().clamp(0, 20); // 70 to 90
     } else {
-      return day;
+      return math.min(90, 85 + (day % 6)); // 85 to 90
     }
+  }
+
+  static int getRaidTargetDay(int userDay) {
+    return getRecommendedTargetLevel(userDay);
+  }
+
+  /// ⚔️ Get Recommended Rival Target (Searches real human players first, falls back to dynamic AI Robot)
+  static Future<PocketNeighbor> getRecommendedRivalTarget({
+    required int userDay,
+    int? shuffleOffset,
+    bool forceRobot = false,
+  }) async {
+    final baseTargetLevel = getRecommendedTargetLevel(userDay);
+    final targetLevel = (baseTargetLevel + ((shuffleOffset ?? 0) % 5)).clamp(1, 90);
+    final preferRobot = forceRobot || (shuffleOffset != null && shuffleOffset.isOdd);
+
+    // 1. Try finding human player near target level (if not forced to robot)
+    if (!preferRobot) {
+      try {
+        final myId = SupaFlow.client.auth.currentUser?.id;
+        final res = await SupaFlow.client
+            .from('profile')
+            .select('user_id, first_name, name, bio, learning_day, streak, rank, palette_id, is_pocket_robo')
+            .neq('user_id', myId ?? '')
+            .gte('learning_day', math.max(1, targetLevel - 2))
+            .lte('learning_day', math.min(90, targetLevel + 2))
+            .limit(10);
+
+        if (res.isNotEmpty) {
+          final list = res.cast<Map<String, dynamic>>();
+          list.shuffle();
+          final p = list.first;
+          final pDay = (p['learning_day'] as num?)?.toInt() ?? targetLevel;
+          return PocketNeighbor(
+            id: p['user_id']?.toString() ?? 'user_$targetLevel',
+            name: p['first_name'] ?? p['name'] ?? 'Citadel Defender',
+            day: pDay,
+            streak: (p['streak'] as num?)?.toInt() ?? pDay,
+            rank: p['rank']?.toString() ?? 'Knight',
+            paletteId: p['palette_id']?.toString() ?? 'stone_castle',
+            isMe: false,
+            hasActiveShield: true,
+            statusMessage: p['bio']?.toString() ?? 'Guarded Citadel Lvl $pDay',
+            isPocketRobo: false,
+            hp: 100,
+            maxHp: 100,
+          );
+        }
+      } catch (_) {}
+    }
+
+    // 2. Dynamic AI Robot Fortress at target level
+    final robot = PocketRobotService.getRobotByLevel(targetLevel);
+    final dynamicLevel = PocketRobotService.getDynamicLevel(robot);
+    return PocketNeighbor(
+      id: robot.id,
+      name: robot.name,
+      day: dynamicLevel,
+      streak: dynamicLevel,
+      rank: robot.cefrRank,
+      paletteId: robot.housePalette,
+      isMe: false,
+      hasActiveShield: true,
+      statusMessage: robot.bio,
+      isPocketRobo: true,
+      hp: 100,
+      maxHp: 100,
+    );
   }
 
   /// Check whether an attack target is valid for user's level
@@ -2107,36 +2212,16 @@ class PocketFortressDefenseService {
 
   /// Starter default questions (Used strictly for neighbor raids)
   static List<HouseShieldQuestion> _getDefaultQuestions(int count) {
-    final List<HouseShieldQuestion> allCurated = [];
-    for (final template in kDefenseTrapTemplates) {
-      allCurated.addAll(getCuratedQuestionsForTrap(template.id));
-    }
-
-    if (allCurated.isEmpty) {
-      allCurated.add(
-        const HouseShieldQuestion(
-          id: 'q_default_1',
-          question: 'What is the exact synonym for "Ephemeral"?',
-          options: ['Short-lived', 'Permanent', 'Ancient', 'Violent'],
-          correctIndex: 0,
-          explanation: '"Ephemeral" means lasting for a very short time.',
-        ),
-      );
-    }
-
     final List<HouseShieldQuestion> result = [];
+    final gates = ['vocab_gate', 'grammar_defusal', 'speed_blitz', 'idiom_shield', 'riddle_sphinx'];
     int index = 0;
     while (result.length < count) {
-      final base = allCurated[index % allCurated.length];
+      final gateId = gates[index % gates.length];
       result.add(
-        HouseShieldQuestion(
-          id: 'def_${result.length + 1}_${base.id}',
-          question: base.question,
-          options: base.options,
-          correctIndex: base.correctIndex,
-          explanation: base.explanation,
-          category: base.category,
-          trapType: base.trapType,
+        PocketDefenseQuestionBank.getRandomHouseShieldQuestion(
+          gateId,
+          day: (index % 60) + 1,
+          idPrefix: 'def_${result.length + 1}',
         ),
       );
       index++;
@@ -2145,9 +2230,13 @@ class PocketFortressDefenseService {
   }
 
   /// 🛡️ Load sequential defense gauntlet questions for raiding a citadel of a given stage/level.
-  /// Audio Directive:
-  /// "30-ാമത്തെ ലെവലിൽ ഉള്ള ഒരു വീടിനെ അറ്റാക്ക് ചെയ്യുമ്പോൾ 3 ഡിഫെൻസ് ഗെയിമുകൾ ഉണ്ടാവും.
-  /// ഒന്നാമത്തെ ഗെയിം തോൽപ്പിക്കണം, രണ്ടാമത്തെ ഷീൽഡ് തോൽപ്പിക്കണം, മൂന്നാമത്തെ ഷീൽഡ് തോൽപ്പിച്ചാൽ മാത്രമേ അറ്റാക്ക് ചെയ്യാൻ പറ്റൂ."
+  /// User Audio Directive:
+  /// "ഫസ്റ്റത്തെ ലെവലിൽ ഉള്ള 10 ക്വസ്റ്റ്യൻസ് ഉള്ള ലെവൽ ഉണ്ട്, അതാണ് ഫസ്റ്റ് അറ്റാക്ക് ചെയ്യുക...
+  ///  അത് 90 ലെവൽ ആയാലും ആ 90 ക്വസ്റ്റ്യൻസ് അവർക്ക് കാണാൻ കഴിയണം മെയിൻ അക്കൗണ്ടിൽ...
+  ///  അറ്റാക്ക് ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ ഫസ്റ്റത്തെ ലെവലിലുള്ള ഗെയിം... അത് കറക്റ്റ് ആക്കിയതിനു ശേഷം
+  ///  രണ്ടാമത്തെ ഗെയിം (10 ക്വസ്റ്റ്യൻസ്), മൂന്നാമത്തെ ഗെയിം (10 ക്വസ്റ്റ്യൻസ്), നാലാമത്തെ ഗെയിം (10 ക്വസ്റ്റ്യൻസ്)...
+  ///  എട്ടാമത്തെ ഗെയിം ഫുൾ കംപ്ലീറ്റ് ചെയ്യണം... എട്ട് ഗെയിമുകൾ കഴിഞ്ഞു കഴിഞ്ഞാൽ 80-ആം ലെവൽ എത്തിയിട്ടുണ്ടാവും.
+  ///  ഇനി 90-ആമത്തെ അറ്റാക്ക് ചെയ്യാൻ ഒമ്പതാമത്തെ ലെവലും കൂടി കഴിഞ്ഞാലാണ് ആ 90-ആമത്തെ വീട് അറ്റാക്ക് ചെയ്യാൻ പറ്റുക!"
   static Future<List<HouseShieldQuestion>> loadGauntletQuestionsForStage(int stage, {bool isNeighbor = true}) async {
     final gatesCount = PocketScoreLevelEngine.getGatesCountForLevel(stage);
     final trapTypes = [
@@ -2155,10 +2244,10 @@ class PocketFortressDefenseService {
       'collocation_ram',   // Gate 2: Levels 11-20 (Collocations & Words)
       'syntax_wall',       // Gate 3: Levels 21-30 (Sentence Jigsaw & Inverted Syntax)
       'grammar_sentry',    // Gate 4: Levels 31-40 (Grammar Sentry & Spot Error)
-      'whisper_phantom',   // Gate 5: Levels 41-50 (Audio Whisper & Listening)
+      'word_scramble',     // Gate 5: Levels 41-50 (Alphabet Scramble / Builder)
       'idiom_maze',        // Gate 6: Levels 51-60 (Idiom & Slang Labyrinth)
       'tense_fortress',    // Gate 7: Levels 61-70 (Tense & Conditional Fortress)
-      'phonetic_thunder',  // Gate 8: Levels 71-80 (Phonetics & Speed Sentry)
+      'phonetic_thunder',  // Gate 8: Levels 71-80 (Phonetics & Word Stress)
       'riddle_sphinx',     // Gate 9: Levels 81-90 (Grandmaster Riddle & Rhetoric)
     ];
 
@@ -2167,15 +2256,20 @@ class PocketFortressDefenseService {
 
     for (int g = 0; g < gatesCount; g++) {
       final trapType = trapTypes[g % trapTypes.length];
-      final curated = getCuratedQuestionsForTrap(trapType);
+      var curated = getCuratedQuestionsForTrap(trapType);
+      if (curated.isEmpty) {
+        curated = getCuratedQuestionsForTrap('vocab_gate');
+      }
       final gateInfo = PocketScoreLevelEngine.getGateInfo(g + 1);
 
-      if (curated.isNotEmpty) {
-        final base = curated[random.nextInt(curated.length)];
+      // Exactly 10 questions per gate as per user directive!
+      final pool = List<HouseShieldQuestion>.from(curated)..shuffle(random);
+      for (int q = 0; q < 10; q++) {
+        final base = pool[q % pool.length];
         gauntletQuestions.add(
           HouseShieldQuestion(
-            id: 'gate_${g + 1}_${base.id}',
-            question: '[GATE ${g + 1}: ${gateInfo['title']}]\n${base.question}',
+            id: 'gate_${g + 1}_q${q + 1}_${base.id}',
+            question: '[GATE ${g + 1}: ${gateInfo['title']} • Q${q + 1}/10]\n${base.question}',
             options: base.options,
             correctIndex: base.correctIndex,
             explanation: base.explanation,

@@ -5,18 +5,116 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:just_audio/just_audio.dart';
 
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
 import '../learning_60day/flame_english_house_game.dart';
 import '../learning_60day/pocket_citadel_attack_page.dart';
-import '../learning_60day/pocket_fortress_defense_service.dart';
 import '../learning_60day/pocket_world_street_page.dart';
 import 'pocket_feed_vibe_share_sheet.dart';
 import 'pocket_reels_game_engine.dart';
 
 /// Item type for the Reels Feed: either a Homestead or an Interactive English Mini-Game
 enum ReelItemType { home, game }
+
+/// 🎵 Ambient BGM Track for Homes
+class HomeMusicTrack {
+  final String title;
+  final String genre;
+  final String url;
+
+  const HomeMusicTrack({
+    required this.title,
+    required this.genre,
+    required this.url,
+  });
+}
+
+class HomeMusicTracks {
+  static const List<HomeMusicTrack> tracks = [
+    HomeMusicTrack(
+      title: 'Serene Citadel Morning',
+      genre: 'Lofi Acoustic',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Emerald Garden Breeze',
+      genre: 'Calm Piano',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-gentle-reflection-53.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Twilight Fortress Peace',
+      genre: 'Ambient Harp',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-peaceful-landscape-696.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Starry Homestead Lofi',
+      genre: 'Chill Beats',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-relaxing-in-nature-522.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'English Garden Waltz',
+      genre: 'Acoustic Guitar',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-sweet-melody-552.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Valley of Champions',
+      genre: 'Uplifting Folk',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-sunny-day-warm-light-585.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Mystic Citadel Bells',
+      genre: 'Ethereal Zen',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-hazy-afternoon-1126.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Golden Hearth Warmth',
+      genre: 'Fireside Lofi',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-cozy-evening-825.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Village Sunrise Breeze',
+      genre: 'Flute & Strings',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-morning-glory-852.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Study Room Haven',
+      genre: 'Deep Focus Lofi',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-meditation-mind-1200.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Royal Balcony Theme',
+      genre: 'Regal Orchestral',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Breezy Meadow Whispers',
+      genre: 'Nature Strings',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-nature-walk-851.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Night Sky Serenade',
+      genre: 'Celestial Ambient',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-sleepy-cat-135.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Old Town Clocktower',
+      genre: 'Warm Acoustic',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-valley-sunset-127.mp3',
+    ),
+    HomeMusicTrack(
+      title: 'Highlands Meadow Dream',
+      genre: 'Celtic Folk',
+      url: 'https://assets.mixkit.co/music/preview/mixkit-spring-breeze-642.mp3',
+    ),
+  ];
+
+  static HomeMusicTrack getTrackForHouse(String houseId) {
+    final hash = houseId.codeUnits.fold<int>(0, (sum, c) => sum + c);
+    return tracks[hash.abs() % tracks.length];
+  }
+}
 
 class ReelFeedItem {
   final ReelItemType type;
@@ -62,7 +160,7 @@ class PocketHomesReelsFeedWidget extends StatefulWidget {
 }
 
 class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final SupabaseClient _supabase = Supabase.instance.client;
   late PageController _verticalPageController;
   bool _isLoading = true;
@@ -71,6 +169,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   late AnimationController _pulseController;
 
   final Set<String> _viewedHomeIds = {};
+
+  // Audio player for house ambient background music
+  AudioPlayer? _bgmPlayer;
+  bool _isBgmMuted = false;
+  String? _currentlyPlayingHouseId;
 
   // Games state
   final Map<String, int?> _selectedAnswers = {}; // gameId -> selected option index
@@ -93,17 +196,89 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _verticalPageController = PageController();
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
+    _initBgm();
     _initAll();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _pauseBgm();
+    } else if (state == AppLifecycleState.resumed && !_isBgmMuted) {
+      if (_currentlyPlayingHouseId != null) {
+        _playHomeMusic(_currentlyPlayingHouseId!);
+      }
+    }
+  }
+
+  void _initBgm() {
+    try {
+      _bgmPlayer = AudioPlayer();
+      _bgmPlayer!.setLoopMode(LoopMode.one);
+      _bgmPlayer!.setVolume(0.35); // Soft, comfortable ambient level
+    } catch (e) {
+      debugPrint('Error initializing BGM player: $e');
+    }
+  }
+
+  Future<void> _playHomeMusic(String houseId) async {
+    if (_bgmPlayer == null || _isBgmMuted) return;
+    if (_currentlyPlayingHouseId == houseId) {
+      if (_bgmPlayer!.playerState.playing == false) {
+        try {
+          await _bgmPlayer!.play();
+        } catch (_) {}
+      }
+      return;
+    }
+
+    _currentlyPlayingHouseId = houseId;
+    final track = HomeMusicTracks.getTrackForHouse(houseId);
+    try {
+      await _bgmPlayer!.setUrl(track.url);
+      if (!_isBgmMuted && mounted) {
+        await _bgmPlayer!.play();
+      }
+    } catch (e) {
+      debugPrint('Error playing ambient home music: $e');
+    }
+  }
+
+  void _pauseBgm() {
+    try {
+      _bgmPlayer?.pause();
+    } catch (_) {}
+  }
+
+  void _toggleBgmMute() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _isBgmMuted = !_isBgmMuted;
+    });
+
+    if (_isBgmMuted) {
+      _bgmPlayer?.pause();
+    } else {
+      if (_currentlyPlayingHouseId != null) {
+        _playHomeMusic(_currentlyPlayingHouseId!);
+      }
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    try {
+      _bgmPlayer?.stop();
+      _bgmPlayer?.dispose();
+    } catch (_) {}
     _verticalPageController.dispose();
     _pulseController.dispose();
     super.dispose();
@@ -198,11 +373,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       debugPrint('Error fetching real profiles for Homes feed: $e');
     }
 
-    // 2. Add dynamic target bracket robots
-    final dynamicRobots = PocketFortressDefenseService.generateDynamicTargetBracketHomes(
-      widget.userLevel,
-      count: 25,
-    );
+    // 2. Add full-spectrum architectural showcase robots across all 6 tiers (Levels 1 to 90)
+    final dynamicRobots = _generateFullSpectrumHomes(count: 36);
     rawNeighbors.addAll(dynamicRobots);
 
     // 3. Add Sovereign President as supreme Day 90 boss
@@ -217,10 +389,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         .where((n) => _viewedHomeIds.contains(n.id))
         .toList();
 
-    // If unviewed pool is small, generate additional bracket robots dynamically
+    // If unviewed pool is small, generate additional full-spectrum robots dynamically
     if (unviewed.length < 12) {
       _dynamicHomeBatchSeed += 50;
-      final extraRobots = _generateExtraRobots(_dynamicHomeBatchSeed, count: 20);
+      final extraRobots = _generateFullSpectrumHomes(count: 24, seedOffset: _dynamicHomeBatchSeed);
       for (final r in extraRobots) {
         if (!_viewedHomeIds.contains(r.id)) {
           unviewed.add(r);
@@ -228,9 +400,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       }
     }
 
-    // 5. Smart tier distribution on unviewed homes
-    final distributedUnviewed = _distributeLevelsDiversely(unviewed);
-    final distributedSeen = _distributeLevelsDiversely(seen);
+    // 5. Smart level-gap distribution (ensures at least 6 to 15 levels gap between consecutive houses - User Audio Directive)
+    final distributedUnviewed = _distributeWithLevelGap(unviewed, minGap: 6);
+    final distributedSeen = _distributeWithLevelGap(seen, minGap: 6);
 
     // Ordered sequence: Unviewed first, Seen at the very bottom!
     final combinedNeighbors = [...distributedUnviewed, ...distributedSeen];
@@ -278,6 +450,14 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         _feedItems = combinedFeed;
         _isLoading = false;
       });
+
+      // Play music for the first slide if it is a home
+      if (combinedFeed.isNotEmpty) {
+        final firstItem = combinedFeed.first;
+        if (firstItem.type == ReelItemType.home && firstItem.neighbor != null) {
+          _playHomeMusic(firstItem.neighbor!.id);
+        }
+      }
     }
   }
 
@@ -288,8 +468,11 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
     try {
       _dynamicHomeBatchSeed += 30;
-      final newRobots = _generateExtraRobots(_dynamicHomeBatchSeed, count: 12);
-      final unseenNewRobots = newRobots.where((r) => !_viewedHomeIds.contains(r.id)).toList();
+      final newRobots = _generateFullSpectrumHomes(count: 18, seedOffset: _dynamicHomeBatchSeed);
+      final unseenNewRobots = _distributeWithLevelGap(
+        newRobots.where((r) => !_viewedHomeIds.contains(r.id)).toList(),
+        minGap: 6,
+      );
 
       final newGames = PocketReelsGameEngine.getNextGameBatch(count: 6);
       final List<ReelFeedItem> newBatch = [];
@@ -315,74 +498,94 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     }
   }
 
-  List<PocketNeighbor> _generateExtraRobots(int seedOffset, {int count = 15}) {
-    final List<PocketNeighbor> list = [];
-    final names = [
-      'Zenith Explorer', 'Aura Warden', 'Nexus Knight', 'Echo Scholar',
-      'Nova Strategist', 'Solar Citadel', 'Lunar Scribe', 'Vortex Defender',
-      'Phoenix Titan', 'Cyber Sentinel', 'Quantum Speaker', 'Starlight Master'
+  /// 🏰 Generate rich architectural showcase houses spanning all 6 major tiers (Levels 1 to 90)
+  List<PocketNeighbor> _generateFullSpectrumHomes({int count = 30, int seedOffset = 0}) {
+    final List<PocketNeighbor> bots = [];
+    final palettes = [
+      'terracotta', 'emerald', 'royal_gold', 'cyber_yellow',
+      'sakura', 'mirror_glass', 'nordic', 'slate'
+    ];
+    final botNames = [
+      'Zenith Explorer 🌱', 'Aura Warden 🏡', 'Nexus Knight 🏰', 'Echo Scholar 🏛️',
+      'Nova Strategist 💎', 'Solar Citadel 👑', 'Lunar Scribe 🏡', 'Vortex Defender 🏰',
+      'Phoenix Titan 🏛️', 'Cyber Sentinel 💎', 'Quantum Speaker 👑', 'Starlight Master 🏛️',
+      'Breeze Cottage 🌱', 'Brick Haven 🏡', 'Granite Keep 🏰', 'Marble Palace 🏛️'
+    ];
+
+    // Key architectural anchor days representing all 6 visual house evolutions
+    final anchorStages = [
+      1, 3, 5,        // Tier 1: Wooden Cabin 🌱
+      10, 14, 18, 20, // Tier 2: Brick Villa 🏡
+      26, 32, 38, 44, // Tier 3: Stone Fortress 🏰
+      50, 56, 62, 68, // Tier 4: Imperial Manor 🏛️
+      72, 78, 84, 88, // Tier 5: Cyber Citadel 💎
+      90,             // Tier 6: Supreme Empire 👑
     ];
 
     for (int i = 0; i < count; i++) {
-      final day = (seedOffset + (i * 7)) % 90 + 1;
-      final id = 'dyn_bot_${seedOffset}_$i';
-      list.add(
+      final stage = anchorStages[(i + seedOffset) % anchorStages.length];
+      final palette = palettes[(i + stage) % palettes.length];
+      final name = '${botNames[i % botNames.length]} #${seedOffset + i + 1}';
+      final rank = stage >= 71
+          ? 'Cyber Grandmaster'
+          : (stage >= 46 ? 'Imperial Sovereign' : (stage >= 21 ? 'Stone Commander' : (stage >= 8 ? 'Villa Resident' : 'Pioneer Scout')));
+
+      bots.add(
         PocketNeighbor(
-          id: id,
-          name: '${names[i % names.length]} #${seedOffset + i}',
-          day: day,
-          streak: math.max(1, (day * 0.4).round()),
-          rank: day >= 71 ? 'Grandmaster' : (day >= 30 ? 'Scholar' : 'Explorer'),
-          paletteId: _randomPalette(day),
-          statusMessage: _statusQuotes[(seedOffset + i) % _statusQuotes.length],
-          hasActiveShield: true,
+          id: 'full_spec_robot_${seedOffset}_${stage}_$i',
+          name: name,
+          day: stage,
+          streak: math.max(1, (stage * 0.4).round()),
+          rank: rank,
+          paletteId: palette,
+          isMe: false,
+          hasActiveShield: (i % 2 == 0),
+          statusMessage: _statusQuotes[(i + seedOffset) % _statusQuotes.length],
+          isPocketRobo: true,
           hp: 100,
           maxHp: 100,
+          isDamaged: false,
         ),
       );
     }
-    return list;
+    return bots;
   }
 
-  List<PocketNeighbor> _distributeLevelsDiversely(List<PocketNeighbor> source) {
+  /// 🔀 Smart Level-Gap Shuffler: Guarantees a minimum gap of at least 6 to 15 levels
+  /// between any two adjacent houses in the feed (User Audio Directive).
+  /// This ensures that after a Level 1 Wooden Cabin, the next house is a higher tier
+  /// (e.g. Level 18 Brick Villa, Level 52 Imperial Manor, Level 88 Cyber Citadel)
+  /// so each swipe displays fresh, non-repetitive architecture!
+  List<PocketNeighbor> _distributeWithLevelGap(List<PocketNeighbor> source, {int minGap = 6}) {
     if (source.length <= 2) return source;
 
-    final tierNovice = <PocketNeighbor>[];
-    final tierIntermediate = <PocketNeighbor>[];
-    final tierAdvanced = <PocketNeighbor>[];
-    final tierMaster = <PocketNeighbor>[];
-
-    for (final n in source) {
-      if (n.day >= 81) {
-        tierMaster.add(n);
-      } else if (n.day >= 56) {
-        tierAdvanced.add(n);
-      } else if (n.day >= 26) {
-        tierIntermediate.add(n);
-      } else {
-        tierNovice.add(n);
-      }
-    }
-
-    tierNovice.shuffle(math.Random());
-    tierIntermediate.shuffle(math.Random());
-    tierAdvanced.shuffle(math.Random());
-    tierMaster.shuffle(math.Random());
-
+    final pool = List<PocketNeighbor>.from(source)..shuffle(math.Random());
     final List<PocketNeighbor> result = [];
-    final tiers = [tierMaster, tierNovice, tierAdvanced, tierIntermediate];
-    int tierIdx = 0;
-    int emptyTries = 0;
 
-    while (emptyTries < 4) {
-      final currentTier = tiers[tierIdx % 4];
-      if (currentTier.isNotEmpty) {
-        result.add(currentTier.removeAt(0));
-        emptyTries = 0;
+    // Pick first item
+    result.add(pool.removeAt(0));
+
+    while (pool.isNotEmpty) {
+      final lastDay = result.last.day;
+
+      // Find candidates with at least minGap level difference
+      final validIdx = pool.indexWhere((n) => (n.day - lastDay).abs() >= minGap);
+
+      if (validIdx != -1) {
+        result.add(pool.removeAt(validIdx));
       } else {
-        emptyTries++;
+        // Fallback: pick the item in the pool with the largest level distance from lastDay
+        int bestIdx = 0;
+        int maxDist = -1;
+        for (int i = 0; i < pool.length; i++) {
+          final dist = (pool[i].day - lastDay).abs();
+          if (dist > maxDist) {
+            maxDist = dist;
+            bestIdx = i;
+          }
+        }
+        result.add(pool.removeAt(bestIdx));
       }
-      tierIdx++;
     }
 
     return result;
@@ -526,10 +729,14 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             onPageChanged: (index) {
               HapticFeedback.selectionClick();
 
-              // Track viewed homes
+              // Track viewed homes and handle ambient music
               final item = _feedItems[index];
               if (item.type == ReelItemType.home && item.neighbor != null) {
                 _recordHomeViewed(item.neighbor!.id);
+                _playHomeMusic(item.neighbor!.id);
+              } else if (item.type == ReelItemType.game) {
+                // Pause background music during games for focus
+                _pauseBgm();
               }
 
               // Infinite lazy loading when near the end
@@ -585,6 +792,52 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 ),
               ),
             ),
+
+          // 🔊 Ambient Music Mute / Unmute Button (Top Right)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 8,
+            right: 14,
+            child: GestureDetector(
+              onTap: _toggleBgmMute,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  color: Colors.black.withValues(alpha: 0.65),
+                  border: Border.all(
+                    color: _isBgmMuted ? Colors.white24 : const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _isBgmMuted ? Icons.volume_off_rounded : Icons.music_note_rounded,
+                      color: _isBgmMuted ? Colors.white60 : const Color(0xFFFFFC00),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      _isBgmMuted ? 'Muted' : 'Music',
+                      style: GoogleFonts.outfit(
+                        color: _isBgmMuted ? Colors.white60 : const Color(0xFFFFFC00),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -999,7 +1252,44 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              const SizedBox(height: 6),
+              // 🎵 Ambient House Music Track Pill
+              Builder(
+                builder: (context) {
+                  final track = HomeMusicTracks.getTrackForHouse(neighbor.id);
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white12, width: 0.8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.music_note_rounded,
+                          color: Color(0xFFFFFC00),
+                          size: 12,
+                        ),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            '${track.title} • ${track.genre}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
 
               // Swipe Up Hint
               Row(
@@ -1023,7 +1313,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     );
   }
 
-  /// 🎮 Interactive Multi-Type Mini-Game Slide
+  /// 🎮 Interactive Multi-Type Mini-Game Slide (Clean non-blocking parent scrolling - User Audio Directive)
   Widget _buildInteractiveGameSlide(ReelGameCard card, int index) {
     return Stack(
       children: [
@@ -1045,17 +1335,41 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
 
-        // Main Game Content (Centered with balanced symmetric padding)
+        // Main Game Content (Centered, inner scrolling disabled so parent PageView receives 100% of vertical gestures!)
         Positioned.fill(
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Center(
                 child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
+                  physics: const NeverScrollableScrollPhysics(),
                   child: _buildGameContentForType(card),
                 ),
               ),
+            ),
+          ),
+        ),
+
+        // Bottom Centered Subtle Swipe Up Hint
+        Positioned(
+          bottom: 16,
+          left: 0,
+          right: 0,
+          child: Center(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.keyboard_arrow_up_rounded, color: Colors.white24, size: 16),
+                const SizedBox(width: 4),
+                Text(
+                  'Swipe up for next Reel',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white30,
+                    fontSize: 10.5,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -1626,6 +1940,58 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               ),
             ),
           ],
+          const SizedBox(height: 10),
+          // 🚀 Smooth Next Reel Button so user is never stuck
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              if (_verticalPageController.hasClients) {
+                _verticalPageController.nextPage(
+                  duration: const Duration(milliseconds: 320),
+                  curve: Curves.easeOutCubic,
+                );
+              }
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 9),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                ),
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'CONTINUE TO NEXT HOME',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 11.5,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(
+                    Icons.arrow_forward_rounded,
+                    color: Colors.black,
+                    size: 14,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );

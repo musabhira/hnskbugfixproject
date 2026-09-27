@@ -16,6 +16,7 @@ import 'flutter_flow/flutter_flow_util.dart';
 import 'custom_code/services/local_sync_server.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/push_notification_service.dart';
+import 'custom_code/services/pocket_robot_service.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -29,7 +30,8 @@ void main() {
 
     // Catch asynchronous uncaught errors and prevent process termination
     PlatformDispatcher.instance.onError = (error, stack) {
-      debugPrint('Main: PlatformDispatcher caught uncaught error: $error\n$stack');
+      debugPrint(
+          'Main: PlatformDispatcher caught uncaught error: $error\n$stack');
       return true; // Mark as handled to prevent native app crash dialog
     };
 
@@ -41,31 +43,42 @@ void main() {
     try {
       debugPrint('Main: Starting core service initialization...');
       // 1. SupaFlow MUST be initialized first before anything accesses Supabase
-      await SupaFlow.initialize().then((_) => debugPrint('Main: SupaFlow initialized.'));
-      
+      await SupaFlow.initialize()
+          .then((_) => debugPrint('Main: SupaFlow initialized.'));
+
       // 2. Initialize Theme
-      await FlutterFlowTheme.initialize().then((_) => debugPrint('Main: FlutterFlowTheme initialized.'));
+      await FlutterFlowTheme.initialize()
+          .then((_) => debugPrint('Main: FlutterFlowTheme initialized.'));
 
       // 3. Initialize LocalSyncServer safely
       try {
-        await LocalSyncServer().initialize().then((_) => debugPrint('Main: LocalSyncServer initialized.'));
+        await LocalSyncServer()
+            .initialize()
+            .then((_) => debugPrint('Main: LocalSyncServer initialized.'));
       } catch (e) {
         debugPrint('Main: LocalSyncServer initialization error: $e');
       }
 
+      // 4. Initialize Pocket Robot progression epoch
+      try {
+        await PocketRobotService.getGlobalElapsedDays();
+      } catch (e) {
+        debugPrint('Main: PocketRobotService initialization error: $e');
+      }
+
       // Shorebird code push disabled per user requirement to prevent native startup crashes
       // await ShorebirdService().initialize();
-      
+
       debugPrint('Main: Core service initialization complete.');
     } catch (e) {
       debugPrint('Core service initialization error: $e');
     }
 
     // Initialize Firebase in the background safely without blocking the UI
-    final isFirebaseSupported = !kIsWeb && 
-        (defaultTargetPlatform == TargetPlatform.android || 
-         defaultTargetPlatform == TargetPlatform.iOS || 
-         defaultTargetPlatform == TargetPlatform.macOS);
+    final isFirebaseSupported = !kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS ||
+            defaultTargetPlatform == TargetPlatform.macOS);
 
     if (isFirebaseSupported) {
       unawaited(() async {
@@ -76,16 +89,19 @@ void main() {
           }
           await PushNotificationService.initialize();
         } catch (e) {
-          debugPrint('Main: Firebase/Notification core initialization error: $e');
+          debugPrint(
+              'Main: Firebase/Notification core initialization error: $e');
         }
       }());
     } else {
-      debugPrint('Firebase is not supported on this platform ($defaultTargetPlatform). Skipping initialization.');
+      debugPrint(
+          'Firebase is not supported on this platform ($defaultTargetPlatform). Skipping initialization.');
     }
 
     runApp(const MyApp());
   }, (error, stackTrace) {
-    debugPrint('Main: Global runZonedGuarded caught unhandled error: $error\n$stackTrace');
+    debugPrint(
+        'Main: Global runZonedGuarded caught unhandled error: $error\n$stackTrace');
   });
 }
 
@@ -153,9 +169,7 @@ class MyAppState extends State<MyApp> {
       ..listen((user) {
         debugPrint('Main: Auth state update. Logged in: ${user.loggedIn}');
         _appStateNotifier.update(user);
-        
-        // Only stop showing splash if we are logged in, 
-        // OR if we've waited long enough to be sure the user is actually logged out.
+
         if (user.loggedIn) {
           debugPrint('Main: User is logged in. Dismissing splash.');
           _appStateNotifier.stopShowingSplashImage();
@@ -166,11 +180,11 @@ class MyAppState extends State<MyApp> {
             debugPrint('Main: PushNotificationService error on login: $e');
           }
         } else {
-          // If not logged in, we give Supabase a tiny bit more time (500ms) 
-          // to ensure it wasn't just a slow initial storage read.
           Future.delayed(const Duration(milliseconds: 500), () {
-            if (!_appStateNotifier.loggedIn && _appStateNotifier.showSplashImage) {
-              debugPrint('Main: User is confirmed logged out. Dismissing splash.');
+            if (!_appStateNotifier.loggedIn &&
+                _appStateNotifier.showSplashImage) {
+              debugPrint(
+                  'Main: User is confirmed logged out. Dismissing splash.');
               _appStateNotifier.stopShowingSplashImage();
             }
           });

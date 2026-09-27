@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 
 /// 🌐 Model representing a configured English Hub level bracket group
 class EnglishHubLevelGroup {
@@ -64,6 +65,31 @@ class EnglishHubLevelGroup {
 /// Auto-transition/graduation, and Custom Admin configurations.
 class EnglishHubLevelGroupService {
   static final SupabaseClient _supabase = Supabase.instance.client;
+
+  /// 🎯 Resolves the target avatar level according to the highest level of the bracket:
+  /// - If 1-90 (all learners) -> Level 90
+  /// - If 1-5 -> Level 5
+  /// - If 6-11 -> Level 11
+  /// - If 6-90 -> Level 90
+  /// Whatever the group's maxLevel is, use that level's evolution avatar.
+  static int getEnglishHubTargetLevel(String groupName, [int? explicitMaxLevel]) {
+    if (explicitMaxLevel != null && explicitMaxLevel > 0) {
+      return explicitMaxLevel.clamp(1, 90);
+    }
+    final match = RegExp(r'Lvl\s*(\d+)\s*[-–to\s]+\s*(\d+)', caseSensitive: false)
+        .firstMatch(groupName);
+    if (match != null) {
+      final max = int.tryParse(match.group(2) ?? '90') ?? 90;
+      return max.clamp(1, 90);
+    }
+    return 90;
+  }
+
+  /// 🌟 Returns the VectorAvatarConfig corresponding to the group's highest level.
+  static VectorAvatarConfig getEnglishHubAvatarConfig(String groupName, [int? explicitMaxLevel]) {
+    final targetLevel = getEnglishHubTargetLevel(groupName, explicitMaxLevel);
+    return VectorAvatarConfig.getEvolutionAvatarForStage(targetLevel);
+  }
 
   /// Default bracket specifications as defined in user audio directives:
   /// - Level 1 to 6

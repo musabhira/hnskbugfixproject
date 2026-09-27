@@ -15,6 +15,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -471,7 +472,9 @@ class _ConversationTileState extends State<ConversationTile> {
                                               .withValues(alpha: 0.1)),
                               width: widget.conversation.isTool ? 1.5 : 1.2,
                             ),
-                            image: (_getStoryThumbnailUrl() != null)
+                            image: (_getStoryThumbnailUrl() != null ||
+                                    widget.conversation.name.toLowerCase().contains('english hub') ||
+                                    widget.conversation.toolTitle == 'English Hub')
                                 ? null
                                 : ((_showRealPhoto &&
                                         widget.conversation.imageUrl != null)
@@ -530,30 +533,39 @@ class _ConversationTileState extends State<ConversationTile> {
                                     ),
                                   ),
                                 )
-                              : ((!_showRealPhoto ||
-                                      widget.conversation.imageUrl == null)
-                                  ? (!widget.conversation.isGroup &&
-                                          !widget.conversation.isTool &&
-                                          !widget.conversation.isNotification &&
-                                          !widget.conversation.isActiveTimer)
-                                      ? (PocketPresidentService.isPresidentId(
-                                              widget.conversation.id)
-                                          ? const PresidentAvatarWidget(size: 48)
-                                          : VectorAvatarWidget(
-                                              config: _cachedAvatarConfig,
-                                              size: 48,
-                                              showAura: true,
-                                            ))
-                                      : (widget.conversation.imageUrl == null
-                                          ? Center(
-                                              child: Icon(
-                                                _getIconData(),
-                                                color: _getIconColor(isDark),
-                                                size: 24,
-                                              ),
-                                            )
-                                          : null)
-                                  : null),
+                              : ((widget.conversation.name.toLowerCase().contains('english hub') ||
+                                      widget.conversation.toolTitle == 'English Hub')
+                                  ? ClipOval(
+                                      child: VectorAvatarWidget(
+                                        config: EnglishHubLevelGroupService.getEnglishHubAvatarConfig(widget.conversation.name),
+                                        size: 48,
+                                        showAura: true,
+                                      ),
+                                    )
+                                  : ((!_showRealPhoto ||
+                                          widget.conversation.imageUrl == null)
+                                      ? (!widget.conversation.isGroup &&
+                                              !widget.conversation.isTool &&
+                                              !widget.conversation.isNotification &&
+                                              !widget.conversation.isActiveTimer)
+                                          ? (PocketPresidentService.isPresidentId(
+                                                  widget.conversation.id)
+                                              ? const PresidentAvatarWidget(size: 48)
+                                              : VectorAvatarWidget(
+                                                  config: _cachedAvatarConfig,
+                                                  size: 48,
+                                                  showAura: true,
+                                                ))
+                                          : (widget.conversation.imageUrl == null
+                                              ? Center(
+                                                  child: Icon(
+                                                    _getIconData(),
+                                                    color: _getIconColor(isDark),
+                                                    size: 24,
+                                                  ),
+                                                )
+                                              : null)
+                                      : null)),
                         ),
                       ),
                       if (widget.conversation.isOnline &&

@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -9,7 +10,6 @@ import '../avatar/vector_avatar_widget.dart';
 import '../learning_60day/pocket_world_street_page.dart';
 import 'pocket_reels_game_engine.dart';
 
-/// 🌟 Modal bottom sheet to Share Homes or Learning Games to Vibes (Story), Chats, & Outside
 class PocketFeedVibeShareSheet extends StatefulWidget {
   final PocketNeighbor? neighbor;
   final ReelGameCard? gameCard;
@@ -20,7 +20,8 @@ class PocketFeedVibeShareSheet extends StatefulWidget {
     this.neighbor,
     this.gameCard,
     this.onSharedSuccessfully,
-  }) : assert(neighbor != null || gameCard != null, 'Either neighbor or gameCard must be provided');
+  }) : assert(neighbor != null || gameCard != null,
+            'Either neighbor or gameCard must be provided');
 
   static Future<void> show(
     BuildContext context, {
@@ -42,19 +43,79 @@ class PocketFeedVibeShareSheet extends StatefulWidget {
   }
 
   @override
-  State<PocketFeedVibeShareSheet> createState() => _PocketFeedVibeShareSheetState();
+  State<PocketFeedVibeShareSheet> createState() =>
+      _PocketFeedVibeShareSheetState();
 }
 
 class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
   final SupabaseClient _supabase = Supabase.instance.client;
   bool _isPostingVibe = false;
   List<Map<String, dynamic>> _userGroups = [];
+  List<Map<String, dynamic>> _recentMates = [];
   bool _isLoadingGroups = true;
+  bool _isLoadingMates = true;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
     _fetchUserGroups();
+    _fetchRecentMates();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _fetchRecentMates() async {
+    try {
+      final currentUserId = _supabase.auth.currentUser?.id;
+      if (currentUserId == null) {
+        if (mounted) setState(() => _isLoadingMates = false);
+        return;
+      }
+
+      final conversations = await _supabase
+          .from('conversations')
+          .select('user1_id, user2_id, updated_at')
+          .or('user1_id.eq.$currentUserId,user2_id.eq.$currentUserId')
+          .order('updated_at', ascending: false)
+          .limit(25);
+
+      final userIds = <String>{};
+      for (final conv in (conversations as List)) {
+        final u1 = conv['user1_id']?.toString();
+        final u2 = conv['user2_id']?.toString();
+        if (u1 != null && u1 != currentUserId && u1.isNotEmpty) {
+          userIds.add(u1);
+        }
+        if (u2 != null && u2 != currentUserId && u2.isNotEmpty) {
+          userIds.add(u2);
+        }
+      }
+
+      if (userIds.isNotEmpty) {
+        final profiles = await _supabase
+            .from('profile')
+            .select('user_id, name, display_name, profile_image_url')
+            .inFilter('user_id', userIds.toList());
+
+        if (mounted) {
+          setState(() {
+            _recentMates = List<Map<String, dynamic>>.from(profiles as List);
+            _isLoadingMates = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoadingMates = false);
+      }
+    } catch (e) {
+      debugPrint('Error fetching mates for share sheet: $e');
+      if (mounted) setState(() => _isLoadingMates = false);
+    }
   }
 
   Future<void> _fetchUserGroups() async {
@@ -65,16 +126,49 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
         return;
       }
 
-      // Fetch top 5 active English learning groups
+      // Fetch user groups
+      try {
+        final membersResponse = await _supabase.from('group_members').select('''
+              group_id,
+              groups!inner (
+                id,
+                name,
+                group_name,
+                icon_url,
+                group_image_url
+              )
+            ''').eq('user_id', currentUserId).eq('is_active', true).limit(10);
+
+        if (membersResponse.isNotEmpty) {
+          final loaded = (membersResponse as List).map((item) {
+            final group = item['groups'];
+            return {
+              'id': group['id'],
+              'group_name': group['name'] ?? group['group_name'] ?? 'Group',
+              'icon_url': group['group_image_url'] ?? group['icon_url'],
+            };
+          }).toList();
+
+          if (mounted) {
+            setState(() {
+              _userGroups = List<Map<String, dynamic>>.from(loaded);
+              _isLoadingGroups = false;
+            });
+            return;
+          }
+        }
+      } catch (_) {}
+
+      // Fallback: active groups
       final groups = await _supabase
           .from('groups')
           .select('id, group_name, icon_url, member_count')
           .order('updated_at', ascending: false)
-          .limit(6);
+          .limit(8);
 
       if (mounted) {
         setState(() {
-          _userGroups = List<Map<String, dynamic>>.from(groups);
+          _userGroups = List<Map<String, dynamic>>.from(groups as List);
           _isLoadingGroups = false;
         });
       }
@@ -119,7 +213,9 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
           .maybeSingle();
 
       final profileId = profileRes?['id']?.toString() ?? currentUserId;
-      final userName = profileRes?['name']?.toString() ?? profileRes?['display_name']?.toString() ?? 'Learner';
+      final userName = profileRes?['name']?.toString() ??
+          profileRes?['display_name']?.toString() ??
+          'Learner';
 
       final Map<String, dynamic> metadata = {
         'source': 'homes_reels_feed',
@@ -139,7 +235,8 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
         metadata['palette_id'] = n.paletteId;
         metadata['is_damaged'] = n.isDamaged;
         metadata['status_message'] = n.statusMessage;
-        captionText = '🏰 Exploring ${n.name}\'s Citadel (Day ${n.day})!\n"${n.statusMessage}"';
+        captionText =
+            '🏰 Exploring ${n.name}\'s Citadel (Day ${n.day})!\n"${n.statusMessage}"';
       } else {
         final g = widget.gameCard!;
         metadata['item_type'] = 'game_challenge';
@@ -147,7 +244,8 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
         metadata['category'] = g.category;
         metadata['prompt'] = g.prompt;
         metadata['options'] = g.options;
-        captionText = '🎯 English Challenge of the Day!\n${g.category}: ${g.prompt}';
+        captionText =
+            '🎯 English Challenge of the Day!\n${g.category}: ${g.prompt}';
       }
 
       final now = DateTime.now();
@@ -177,7 +275,77 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
     }
   }
 
+  /// 💬 Share directly into a Personal Chat / Mate
+  Future<void> _shareToMate(String mateUserId, String mateName) async {
+    final currentUserId = _supabase.auth.currentUser?.id;
+    if (currentUserId == null) return;
 
+    HapticFeedback.mediumImpact();
+    Navigator.pop(context);
+
+    try {
+      final Map<String, dynamic> metadata = {
+        'shared_from': 'homes_feed',
+      };
+
+      if (widget.neighbor != null) {
+        metadata['type'] = 'home_preview';
+        metadata['neighbor_id'] = widget.neighbor!.id;
+        metadata['neighbor_name'] = widget.neighbor!.name;
+        metadata['day'] = widget.neighbor!.day;
+      } else {
+        metadata['type'] = 'game_challenge';
+        metadata['category'] = widget.gameCard!.category;
+        metadata['prompt'] = widget.gameCard!.prompt;
+      }
+
+      final nowStr = DateTime.now().toIso8601String();
+      await _supabase.from('messages').insert({
+        'sender_id': currentUserId,
+        'receiver_id': mateUserId,
+        'content': _shareText,
+        'message_text': _shareText,
+        'message_type': 'thought',
+        'is_read': false,
+        'metadata': metadata,
+        'updated_at': nowStr,
+      });
+
+      // Update or create conversation
+      final existingConv = await _supabase
+          .from('conversations')
+          .select('id, unread_count')
+          .or('and(user1_id.eq.$currentUserId,user2_id.eq.$mateUserId),and(user1_id.eq.$mateUserId,user2_id.eq.$currentUserId)')
+          .maybeSingle();
+
+      if (existingConv != null) {
+        await _supabase.from('conversations').update({
+          'last_message': _shareText,
+          'last_message_time': nowStr,
+          'last_sender_id': currentUserId,
+          'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+          'updated_at': nowStr,
+        }).eq('id', existingConv['id']);
+      } else {
+        await _supabase.from('conversations').insert({
+          'user1_id': currentUserId,
+          'user2_id': mateUserId,
+          'last_message': _shareText,
+          'last_message_time': nowStr,
+          'last_sender_id': currentUserId,
+          'unread_count': 1,
+          'is_group': false,
+          'updated_at': nowStr,
+        });
+      }
+
+      _showSuccessToast('Sent to $mateName! 💬');
+      widget.onSharedSuccessfully?.call();
+    } catch (e) {
+      debugPrint('Error sharing to mate: $e');
+      _showToast('Failed to send to mate: $e');
+    }
+  }
 
   /// 💬 Share directly into a Chat Group
   Future<void> _shareToGroup(String groupId, String groupName) async {
@@ -248,9 +416,12 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle_rounded, color: Colors.greenAccent, size: 20),
+            const Icon(Icons.check_circle_rounded,
+                color: Colors.greenAccent, size: 20),
             const SizedBox(width: 8),
-            Expanded(child: Text(message, style: GoogleFonts.outfit(color: Colors.white))),
+            Expanded(
+                child: Text(message,
+                    style: GoogleFonts.outfit(color: Colors.white))),
           ],
         ),
         backgroundColor: const Color(0xFF1E293B),
@@ -261,8 +432,31 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final query = _searchQuery.trim().toLowerCase();
+    final filteredMates = _recentMates.where((m) {
+      if (query.isEmpty) return true;
+      final name =
+          (m['name'] ?? m['display_name'] ?? '').toString().toLowerCase();
+      return name.contains(query);
+    }).toList();
+
+    final filteredGroups = _userGroups.where((g) {
+      if (query.isEmpty) return true;
+      final name =
+          (g['group_name'] ?? g['name'] ?? '').toString().toLowerCase();
+      return name.contains(query);
+    }).toList();
+
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.88,
+      ),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 16,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 28,
+      ),
       decoration: const BoxDecoration(
         color: Color(0xFF0F172A),
         borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -277,204 +471,401 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              width: 44,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          // Header
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Drag handle
+            Center(
+              child: Container(
+                width: 44,
+                height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                child: const Text('✨', style: TextStyle(fontSize: 18)),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  _title,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            ),
+            const SizedBox(height: 16),
+
+            // Header
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
                   ),
+                  child: const Text('✨', style: TextStyle(fontSize: 18)),
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 22),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-
-          // 🎴 Preview Card
-          _buildSharePreviewCard(),
-          const SizedBox(height: 20),
-
-          // ⚡ PRIMARY ACTION: ADD TO VIBES
-          GestureDetector(
-            onTap: _isPostingVibe ? null : _instantAddToVibes,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
-              ),
-              child: Center(
-                child: _isPostingVibe
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2.2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
-                        ),
-                      )
-                    : Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.auto_awesome_rounded, color: Colors.black, size: 19),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Add to Vibes',
-                            style: GoogleFonts.outfit(
-                              color: Colors.black,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          // SECONDARY ACTION: Share Outside
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _shareExternal,
-              icon: const Icon(Icons.share_outlined, size: 18, color: Colors.white70),
-              label: Text(
-                'Share Outside',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
-              ),
-              style: OutlinedButton.styleFrom(
-                side: const BorderSide(color: Colors.white24),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // 💬 SEND TO CHAT / GROUPS SECTION
-          Text(
-            'SEND TO GROUP CHAT',
-            style: GoogleFonts.outfit(
-              color: Colors.white54,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 1.1,
-            ),
-          ),
-          const SizedBox(height: 10),
-
-          if (_isLoadingGroups)
-            const Center(
-              child: Padding(
-                padding: EdgeInsets.all(12.0),
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-            )
-          else if (_userGroups.isEmpty)
-            Text(
-              'No active groups found. Join an English study group to share!',
-              style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
-            )
-          else
-            SizedBox(
-              height: 82,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: _userGroups.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, idx) {
-                  final grp = _userGroups[idx];
-                  final gId = grp['id']?.toString() ?? '';
-                  final gName = grp['group_name']?.toString() ?? 'Group';
-
-                  return GestureDetector(
-                    onTap: () => _shareToGroup(gId, gName),
-                    child: SizedBox(
-                      width: 68,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFF38BDF8), Color(0xFF6366F1)],
-                              ),
-                              border: Border.all(color: Colors.white24, width: 1.2),
-                            ),
-                            child: const Center(
-                              child: Text('💬', style: TextStyle(fontSize: 20)),
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            gName,
-                            style: GoogleFonts.outfit(
-                              color: Colors.white70,
-                              fontSize: 11,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
-                      ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    _title,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
                     ),
-                  );
-                },
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close_rounded,
+                      color: Colors.white54, size: 22),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+            const SizedBox(height: 14),
+
+            // 🎴 Preview Card
+            _buildSharePreviewCard(),
+            const SizedBox(height: 18),
+
+            // ⚡ PRIMARY ACTION: ADD TO VIBES
+            GestureDetector(
+              onTap: _isPostingVibe ? null : _instantAddToVibes,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 13),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: _isPostingVibe
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.2,
+                            valueColor:
+                                AlwaysStoppedAnimation<Color>(Colors.black),
+                          ),
+                        )
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.auto_awesome_rounded,
+                                color: Colors.black, size: 19),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Add to Vibes',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
               ),
             ),
-        ],
+            const SizedBox(height: 10),
+
+            // SECONDARY ACTION: Share Outside
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: _shareExternal,
+                icon: const Icon(Icons.share_outlined,
+                    size: 18, color: Colors.white70),
+                label: Text(
+                  'Share Outside',
+                  style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: const BorderSide(color: Colors.white24),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // 🔍 SEARCH INPUT
+            Container(
+              height: 44,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (val) => setState(() => _searchQuery = val),
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                decoration: InputDecoration(
+                  hintText: 'Search mates or groups...',
+                  hintStyle:
+                      GoogleFonts.inter(color: Colors.white38, fontSize: 13),
+                  prefixIcon: const Icon(Icons.search_rounded,
+                      color: Colors.white38, size: 19),
+                  suffixIcon: _searchQuery.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.close_rounded,
+                              color: Colors.white38, size: 18),
+                          onPressed: () {
+                            _searchController.clear();
+                            setState(() => _searchQuery = '');
+                          },
+                        )
+                      : null,
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+
+            // 💬 SECTION 1: MATES / CHATS
+            Row(
+              children: [
+                const Icon(Icons.person_rounded,
+                    size: 15, color: Color(0xFFFFFC00)),
+                const SizedBox(width: 6),
+                Text(
+                  'SEND TO MATES',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            if (_isLoadingMates)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else if (filteredMates.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Text(
+                  _searchQuery.isNotEmpty
+                      ? 'No mates found matching "$_searchQuery"'
+                      : 'Connect with mates to share directly!',
+                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                ),
+              )
+            else
+              SizedBox(
+                height: 84,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: filteredMates.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 14),
+                  itemBuilder: (context, idx) {
+                    final mate = filteredMates[idx];
+                    final mateId = mate['user_id']?.toString() ?? '';
+                    final mateName = mate['name']?.toString() ??
+                        mate['display_name']?.toString() ??
+                        'Mate';
+                    final avatarUrl = mate['profile_image_url']?.toString();
+
+                    return GestureDetector(
+                      onTap: () => _shareToMate(mateId, mateName),
+                      child: SizedBox(
+                        width: 68,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                    color: const Color(0xFFFFFC00)
+                                        .withValues(alpha: 0.6),
+                                    width: 1.5),
+                                color: const Color(0xFF1E293B),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(24),
+                                child: avatarUrl != null && avatarUrl.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: avatarUrl,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (_, __, ___) => Center(
+                                          child: Text(
+                                            mateName.isNotEmpty
+                                                ? mateName[0].toUpperCase()
+                                                : '?',
+                                            style: GoogleFonts.outfit(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                      )
+                                    : Center(
+                                        child: Text(
+                                          mateName.isNotEmpty
+                                              ? mateName[0].toUpperCase()
+                                              : '?',
+                                          style: GoogleFonts.outfit(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              mateName,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            const SizedBox(height: 16),
+
+            // 👥 SECTION 2: GROUPS
+            Row(
+              children: [
+                const Icon(Icons.group_rounded,
+                    size: 15, color: Color(0xFF38BDF8)),
+                const SizedBox(width: 6),
+                Text(
+                  'SEND TO GROUP CHAT',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.1,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            if (_isLoadingGroups)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(12.0),
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else if (filteredGroups.isEmpty)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  _searchQuery.isNotEmpty
+                      ? 'No groups found matching "$_searchQuery"'
+                      : 'No active groups found.',
+                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
+                ),
+              )
+            else
+              SizedBox(
+                height: 84,
+                child: ListView.separated(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: filteredGroups.length,
+                  separatorBuilder: (_, __) => const SizedBox(width: 14),
+                  itemBuilder: (context, idx) {
+                    final grp = filteredGroups[idx];
+                    final gId = grp['id']?.toString() ?? '';
+                    final gName = grp['group_name']?.toString() ??
+                        grp['name']?.toString() ??
+                        'Group';
+                    final iconUrl = grp['icon_url']?.toString();
+
+                    return GestureDetector(
+                      onTap: () => _shareToGroup(gId, gName),
+                      child: SizedBox(
+                        width: 68,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 48,
+                              height: 48,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: const LinearGradient(
+                                  colors: [
+                                    Color(0xFF38BDF8),
+                                    Color(0xFF6366F1)
+                                  ],
+                                ),
+                                border: Border.all(
+                                    color: Colors.white24, width: 1.2),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(24),
+                                child: iconUrl != null && iconUrl.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: iconUrl,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (_, __, ___) =>
+                                            const Center(
+                                          child: Text('💬',
+                                              style: TextStyle(fontSize: 20)),
+                                        ),
+                                      )
+                                    : const Center(
+                                        child: Text('💬',
+                                            style: TextStyle(fontSize: 20)),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              gName,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white70,
+                                fontSize: 11,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -531,7 +922,8 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
                   const SizedBox(height: 2),
                   Text(
                     n.statusMessage,
-                    style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                    style:
+                        GoogleFonts.inter(color: Colors.white60, fontSize: 11),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -549,7 +941,8 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
         decoration: BoxDecoration(
           color: const Color(0xFF1E293B),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+          border:
+              Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -557,7 +950,8 @@ class _PocketFeedVibeShareSheetState extends State<PocketFeedVibeShareSheet> {
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),

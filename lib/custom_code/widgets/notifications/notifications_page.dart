@@ -57,6 +57,9 @@ class _NotificationsPageState extends State<NotificationsPage> {
           'time': r['created_at'] ?? DateTime.now().toIso8601String(),
           'isRobot': r['is_robot'] == true || PocketRobotService.isRobotId(r['sender_id']?.toString() ?? ''),
           'archetype': r['archetype'],
+          'avatarUrl': r['avatar_url'] ?? r['sender_profile_image'],
+          'avatarConfig': r['avatar_config'],
+          'sender_profile_image': r['sender_profile_image'] ?? r['avatar_url'],
         });
       }
 
@@ -304,7 +307,23 @@ class _NotificationsPageState extends State<NotificationsPage> {
                         children: [
                           Row(
                             children: [
-                              VectorAvatarWidget(config: avatarConfig, size: 42),
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(22),
+                                child: (req['avatarUrl'] != null &&
+                                        (req['avatarUrl'] as String).isNotEmpty)
+                                    ? Image.network(
+                                        req['avatarUrl'],
+                                        width: 44,
+                                        height: 44,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            VectorAvatarWidget(
+                                                config: avatarConfig!,
+                                                size: 44),
+                                      )
+                                    : VectorAvatarWidget(
+                                        config: avatarConfig, size: 44),
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Column(

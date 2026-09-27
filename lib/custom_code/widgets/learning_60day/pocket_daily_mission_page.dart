@@ -15,12 +15,15 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 // Redirected battle raids directly to PocketWorldStreetPage
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_vocabulary_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_game_rules_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
 import 'package:record/record.dart';
 import 'package:just_audio/just_audio.dart';
@@ -118,6 +121,9 @@ class PocketDailyMissionPage extends StatefulWidget {
 
 class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   final FlutterTts _tts = FlutterTts();
+
+  /// 🔐 Master Admin Bypass (musabthonippadam@gmail.com)
+  bool get _isMasterAdmin => AdminAuthService.isCurrentMasterAdmin();
 
   // ⏱️ Shared 60-Minute Daily Practice Timer Service
   final PocketMissionTimerService _timerService =
@@ -1589,6 +1595,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   void _loadVocabForDay() {
+    final tailored = Pocket90DayVocabCurriculum.getVocabForDay(widget.day);
+    if (tailored.isNotEmpty) {
+      _vocabList = tailored;
+      return;
+    }
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
       final regVocab =
           PocketMissionCurriculumRegistry.getVocabItems(widget.day);
@@ -5707,8 +5718,18 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                           actionLabel: 'ADD HOME DEFENSE 🛡️',
                           actionColor: const Color(0xFF8B5CF6),
                           onAction: () async {
-                            await PocketDefenseTrapModal.show(
-                                context, widget.day);
+                            final uid = SupaFlow.client.auth.currentUser?.id;
+                            if (uid != null) {
+                              await PocketCitadelAttackPage.openForUser(
+                                context,
+                                userId: uid,
+                                attackerDay: widget.day,
+                                isDefenseMode: true,
+                              );
+                            } else {
+                              await PocketDefenseTrapModal.show(
+                                  context, widget.day);
+                            }
                             if (mounted) {
                               setState(() => _defenseTrapArmed = true);
                               _saveSubtask('defense', true);
@@ -5864,8 +5885,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                       const SizedBox(height: 14),
 
-                      // 🧪 DEV TEST: Complete & Advance to Next Day
-                      _buildDevAdvanceButton(),
+                      // 🧪 DEV TEST: Complete & Advance to Next Day (Only visible to musabthonippadam@gmail.com)
+                      if (_isMasterAdmin) _buildDevAdvanceButton(),
                     ];
 
                     return ListView.builder(
@@ -5889,13 +5910,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     return _buildSubtaskCard(
       stepNumber: '$_stepTheory',
       icon: '📖',
-      title: 'Linguistic Theory & Speech Architecture',
+      title: 'Day ${widget.day} English Theory Guide',
       description:
-          'Deep neuro-linguistic breakdown for Day ${widget.day}, master speech rules, native mother-tongue common error fixes, and vocabulary fundamentals.',
+          'Master the core grammatical theory breakdown, native speech patterns, common mother-tongue mistakes, and speaking rules for Day ${widget.day}.',
       isVerified: _dailyRuleCompleted,
       actionLabel: _dailyRuleCompleted
-          ? 'REVIEW THEORY GUIDE 📖'
-          : 'READ THEORY GUIDE 📖',
+          ? 'REVIEW THEORY 📖'
+          : 'READ THEORY 📖',
       actionColor: const Color(0xFFA855F7),
       onAction: () async {
         HapticFeedback.lightImpact();
@@ -6072,124 +6093,239 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // --- 🧪 DEV TEST: FAST ADVANCE BUTTON ---
+  // --- 🧪 DEV TEST: ADMIN TESTING CONTROLS (Only visible to musabthonippadam@gmail.com) ---
   Widget _buildDevAdvanceButton() {
+    if (!_isMasterAdmin) return const SizedBox.shrink();
+
     return Container(
-      margin: const EdgeInsets.only(top: 4),
-      child: OutlinedButton(
-        onPressed: () async {
-          final nextDay = (widget.day < 90) ? widget.day + 1 : 90;
-          try {
-            final myId = SupaFlow.client.auth.currentUser?.id;
-            final prefs = await SharedPreferences.getInstance();
-            if (myId != null) {
-              await prefs.setInt('pocket_learning_user_stage_$myId', nextDay);
-              await prefs.setBool('pocket_day_${myId}_${widget.day}_completed', true);
-              await prefs.setBool('pocket_day_${myId}_${nextDay}_unlocked', true);
-              await prefs.setString(
-                'learning_day_${myId}_${widget.day}_completed_date',
-                '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}',
-              );
-              await prefs.setString(
-                  'last_learning_date', DateTime.now().toIso8601String());
-              await prefs.setInt('learning_last_completed_day_$myId', widget.day);
-              await prefs.setBool('pocket_world_rules_accepted_${myId}_v1', true);
-            }
-
-            // 🪙 Award full 200 PTS to unified Pocket Score
-            await PocketFortressDefenseService.awardPoints(200);
-
-            // 🧬 Evolve Avatar for next stage and persist to profile
-            final evolvedAvatar =
-                VectorAvatarConfig.getEvolutionAvatarForStage(nextDay);
-            if (myId != null) {
-              await prefs.setString('user_avatar_config_$myId',
-                  jsonEncode(evolvedAvatar.toMap()));
-              await prefs.setInt('learning_day_$myId', nextDay);
-              await prefs.setInt('learning_stage_$myId', nextDay);
-
-              try {
-                await SupaFlow.client.from('profile').update({
-                  'learning_day': nextDay,
-                  'learning_stage': nextDay,
-                  'avatar_config': evolvedAvatar.toMap(),
-                  'last_learning_date': DateTime.now().toIso8601String(),
-                  'updated_at': DateTime.now().toIso8601String(),
-                }).eq('user_id', myId);
-
-                await EnglishHubLevelGroupService.ensureUserInLevelGroup(
-                  userLevel: nextDay,
-                  userId: myId,
-                  forceLevelMatch: true,
-                );
-              } catch (e) {
-                debugPrint('Dev advance Supabase profile error: $e');
-              }
-            }
-          } catch (e) {
-            debugPrint('Dev advance error: $e');
-          }
-
-          widget.onMissionCompleted?.call();
-          if (mounted) {
-            if (widget.day == 90 && mounted) {
-              final prefs = await SharedPreferences.getInstance();
-              final userName = prefs.getString('user_name') ?? 'Pocket Scholar';
-              if (mounted) {
-                await Day90MasterCertificateDialog.show(
-                  context,
-                  userName: userName,
-                  userDay: 90,
-                );
-              }
-            }
-            if (!mounted) return;
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                backgroundColor: const Color(0xFF10B981),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
-                content: Text(
-                  '🧪 DEV: Day ${widget.day} completed (+200 PTS)! Evolved avatar & advancing to Day $nextDay...',
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E242B),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.amber.withValues(alpha: 0.6), width: 1.5),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🧪', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'MASTER ADMIN TEST SUITE',
                   style: GoogleFonts.firaCode(
-                      fontSize: 12, fontWeight: FontWeight.bold),
+                    color: Colors.amber,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11.5,
+                    letterSpacing: 0.5,
+                  ),
                 ),
               ),
-            );
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => PocketDailyMissionPage(
-                  day: nextDay,
-                  onMissionCompleted: widget.onMissionCompleted,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.amber.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  'musabthonippadam@gmail.com',
+                  style: GoogleFonts.firaCode(
+                    color: Colors.amber,
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
-            );
-          }
-        },
-        style: OutlinedButton.styleFrom(
-          side: BorderSide(color: Colors.amber.withValues(alpha: 0.5)),
-          backgroundColor: Colors.amber.withValues(alpha: 0.08),
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('🧪', style: TextStyle(fontSize: 14)),
-            const SizedBox(width: 8),
-            Text(
-              'DEV TEST: COMPLETE & ADVANCE TO DAY ${widget.day < 90 ? widget.day + 1 : 90}',
-              style: GoogleFonts.firaCode(
-                color: Colors.amber,
-                fontSize: 11,
-                fontWeight: FontWeight.bold,
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Fast Advance Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                final nextDay = (widget.day < 90) ? widget.day + 1 : 90;
+                try {
+                  final myId = SupaFlow.client.auth.currentUser?.id;
+                  final prefs = await SharedPreferences.getInstance();
+                  if (myId != null) {
+                    await prefs.setInt('pocket_learning_user_stage_$myId', nextDay);
+                    await prefs.setBool('pocket_day_${myId}_${widget.day}_completed', true);
+                    await prefs.setBool('pocket_day_${myId}_${nextDay}_unlocked', true);
+                    await prefs.setString(
+                      'learning_day_${myId}_${widget.day}_completed_date',
+                      '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}',
+                    );
+                    await prefs.setString(
+                        'last_learning_date', DateTime.now().toIso8601String());
+                    await prefs.setInt('learning_last_completed_day_$myId', widget.day);
+                    await prefs.setBool('pocket_world_rules_accepted_${myId}_v1', true);
+                  }
+
+                  // 🪙 Award full 200 PTS to unified Pocket Score
+                  await PocketFortressDefenseService.awardPoints(200);
+
+                  // 🧬 Evolve Avatar for next stage and persist to profile
+                  final evolvedAvatar =
+                      VectorAvatarConfig.getEvolutionAvatarForStage(nextDay);
+                  if (myId != null) {
+                    await prefs.setString('user_avatar_config_$myId',
+                        jsonEncode(evolvedAvatar.toMap()));
+                    await prefs.setInt('learning_day_$myId', nextDay);
+                    await prefs.setInt('learning_stage_$myId', nextDay);
+
+                    try {
+                      await SupaFlow.client.from('profile').update({
+                        'learning_day': nextDay,
+                        'learning_stage': nextDay,
+                        'avatar_config': evolvedAvatar.toMap(),
+                        'last_learning_date': DateTime.now().toIso8601String(),
+                        'updated_at': DateTime.now().toIso8601String(),
+                      }).eq('user_id', myId);
+
+                      await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+                        userLevel: nextDay,
+                        userId: myId,
+                        forceLevelMatch: true,
+                      );
+                    } catch (e) {
+                      debugPrint('Dev advance Supabase profile error: $e');
+                    }
+                  }
+                } catch (e) {
+                  debugPrint('Dev advance error: $e');
+                }
+
+                widget.onMissionCompleted?.call();
+                if (mounted) {
+                  if (widget.day == 90 && mounted) {
+                    final prefs = await SharedPreferences.getInstance();
+                    final userName = prefs.getString('user_name') ?? 'Pocket Scholar';
+                    if (mounted) {
+                      await Day90MasterCertificateDialog.show(
+                        context,
+                        userName: userName,
+                        userDay: 90,
+                      );
+                    }
+                  }
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: const Color(0xFF10B981),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      content: Text(
+                        '🧪 DEV: Day ${widget.day} completed (+200 PTS)! Advancing to Day $nextDay...',
+                        style: GoogleFonts.firaCode(
+                            fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  );
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PocketDailyMissionPage(
+                        day: nextDay,
+                        onMissionCompleted: widget.onMissionCompleted,
+                      ),
+                    ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.fast_forward_rounded, color: Colors.black, size: 16),
+              label: Text(
+                'DEV: COMPLETE & ADVANCE TO DAY ${widget.day < 90 ? widget.day + 1 : 90} (+200 PTS)',
+                style: GoogleFonts.firaCode(
+                  color: Colors.black,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.amber,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
             ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 8),
+          // 🪙 Audio Requirement: Admin Score Increase/Decrease Controls & Day Jump
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () async {
+                    await PocketFortressDefenseService.awardPoints(-100);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('⚡ Admin: Pocket Score decreased by 100 PTS!'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                    setState(() {});
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Colors.redAccent),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: Text('-100 PTS', style: GoogleFonts.firaCode(color: Colors.redAccent, fontSize: 11)),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () async {
+                    await PocketFortressDefenseService.awardPoints(100);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('⚡ Admin: Pocket Score increased by +100 PTS!'),
+                        duration: Duration(seconds: 1),
+                      ),
+                    );
+                    setState(() {});
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF10B981)),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: Text('+100 PTS', style: GoogleFonts.firaCode(color: const Color(0xFF10B981), fontSize: 11)),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () async {
+                    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(widget.day);
+                    await PocketFortressDefenseService.setUnifiedScore(reqScore);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('⚡ Admin: Score set to Level ${widget.day} requirement (PS $reqScore)'),
+                        duration: const Duration(seconds: 1),
+                      ),
+                    );
+                    setState(() {});
+                  },
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFF38BDF8)),
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: Text('Set PS Req', style: GoogleFonts.firaCode(color: const Color(0xFF38BDF8), fontSize: 10)),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -6369,41 +6505,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ),
                   const Icon(Icons.arrow_drop_down,
                       color: Colors.white70, size: 14),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-          // 📖 Day Detail Overview Page Button
-          InkWell(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              PocketDayDetailOverviewPage.show(context, widget.day);
-            },
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4.5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFF818CF8).withValues(alpha: 0.5),
-                  width: 1.1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('📖', style: TextStyle(fontSize: 12)),
-                  const SizedBox(width: 3),
-                  Text(
-                    'THEORY',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFA5B4FC),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -14077,11 +14178,23 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           ),
           const SizedBox(width: 8),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.lightImpact();
-              PocketDefenseTrapModal.show(context, widget.day);
-              setState(() => _defenseTrapArmed = true);
-              _saveSubtask('defense', true);
+              final uid = SupaFlow.client.auth.currentUser?.id;
+              if (uid != null) {
+                await PocketCitadelAttackPage.openForUser(
+                  context,
+                  userId: uid,
+                  attackerDay: widget.day,
+                  isDefenseMode: true,
+                );
+              } else {
+                await PocketDefenseTrapModal.show(context, widget.day);
+              }
+              if (mounted) {
+                setState(() => _defenseTrapArmed = true);
+                _saveSubtask('defense', true);
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: _defenseTrapArmed
@@ -14282,9 +14395,21 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ? () async {
                       HapticFeedback.heavyImpact();
                       if (!_defenseTrapArmed) {
-                        PocketDefenseTrapModal.show(context, widget.day);
-                        setState(() => _defenseTrapArmed = true);
-                        _saveSubtask('defense', true);
+                        final uid = SupaFlow.client.auth.currentUser?.id;
+                        if (uid != null) {
+                          await PocketCitadelAttackPage.openForUser(
+                            context,
+                            userId: uid,
+                            attackerDay: widget.day,
+                            isDefenseMode: true,
+                          );
+                        } else {
+                          await PocketDefenseTrapModal.show(context, widget.day);
+                        }
+                        if (mounted) {
+                          setState(() => _defenseTrapArmed = true);
+                          _saveSubtask('defense', true);
+                        }
                       }
                       final uid = SupaFlow.client.auth.currentUser?.id;
                       final nextDay = (widget.day < 90) ? widget.day + 1 : 90;

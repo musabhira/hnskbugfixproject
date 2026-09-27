@@ -9,6 +9,7 @@ import 'pocket_mission_curriculum_63_70.dart';
 import 'pocket_mission_curriculum_69_75.dart';
 import 'pocket_mission_curriculum_76_82.dart';
 import 'pocket_mission_curriculum_83_90.dart';
+import 'pocket_90day_vocab_curriculum.dart';
 
 export 'pocket_mission_curriculum_1_18.dart';
 
@@ -434,8 +435,13 @@ class PocketMissionCurriculumRegistry {
     return '';
   }
 
-  /// 10 High-impact vocabulary items for the day
+  /// 10 High-impact vocabulary items for the day (Tiered progressively from Simple to Advanced)
   static List<DailyVocabItem> getVocabItems(int day) {
+    final tailored = Pocket90DayVocabCurriculum.getVocabForDay(day);
+    if (tailored.isNotEmpty) {
+      return tailored;
+    }
+
     if (PocketCurriculum19To28.handles(day)) {
       return PocketCurriculum19To28.getVocabItems(day);
     }

@@ -176,6 +176,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   int _lastCompletedDay = 0;
   String? _lastCompletedDateStr;
   final Set<int> _completedDays = {};
+  int _levelRivalShuffleSeed = 0;
 
   // Spacing & node dimensions
   static const double _nodeSpacingY = 140.0;
@@ -446,13 +447,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         ),
       );
 
-      // Prompt to craft Day's Defense Shield immediately
+      // Prompt to craft Day's Defense Shield immediately in Citadel View
       Future.delayed(const Duration(milliseconds: 700), () {
         if (mounted) {
-          PocketDefenseTrapModal.show(
-            context,
-            _progress?.currentDay ?? 1,
-          );
+          final myId = _supabase.auth.currentUser?.id;
+          if (myId != null && myId.isNotEmpty) {
+            PocketCitadelAttackPage.openForUser(
+              context,
+              userId: myId,
+              attackerDay: _progress?.currentDay ?? 1,
+              isDefenseMode: true,
+            );
+          } else {
+            PocketDefenseTrapModal.show(
+              context,
+              _progress?.currentDay ?? 1,
+              isLevelComplete: true,
+            );
+          }
         }
       });
     }
@@ -695,7 +707,144 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 12),
+
+                // ⚔️ Direct Citadel Attack Action (User Audio Directive: Matchmaking + Shuffle + Direct Attack)
+                StatefulBuilder(
+                  builder: (context, setModalState) {
+                    return FutureBuilder<PocketNeighbor>(
+                      future: PocketFortressDefenseService.getRecommendedRivalTarget(
+                        userDay: day,
+                        shuffleOffset: _levelRivalShuffleSeed,
+                      ),
+                      builder: (context, snapshot) {
+                        final rival = snapshot.data;
+                        final targetLevel = rival?.day ?? PocketFortressDefenseService.getRecommendedTargetLevel(day);
+                        final rivalName = rival?.name ?? 'Challenger Lvl $targetLevel';
+                        final isRobo = rival?.isPocketRobo ?? false;
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF881337).withValues(alpha: 0.35),
+                                const Color(0xFF4C0519).withValues(alpha: 0.5),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: const Color(0xFFFB7185).withValues(alpha: 0.4), width: 1.2),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFE11D48).withValues(alpha: 0.25),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(isRobo ? '🤖' : '⚔️', style: const TextStyle(fontSize: 18)),
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          'CITADEL RAID CHALLENGE',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFECDD3),
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w900,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 6),
+                                        InkWell(
+                                          onTap: () {
+                                            HapticFeedback.selectionClick();
+                                            setModalState(() {
+                                              _levelRivalShuffleSeed++;
+                                            });
+                                          },
+                                          borderRadius: BorderRadius.circular(6),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withValues(alpha: 0.12),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: const [
+                                                Icon(Icons.shuffle_rounded, size: 10, color: Color(0xFFFDA4AF)),
+                                                SizedBox(width: 2),
+                                                Text('Reroll 🎲', style: TextStyle(color: Color(0xFFFDA4AF), fontSize: 8.5, fontWeight: FontWeight.bold)),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Text(
+                                      '$rivalName (Lvl $targetLevel)',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 12.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      isRobo ? '🤖 AI Robot Citadel • Balanced Fair Defense' : '👤 Real Human House • Higher Loot',
+                                      style: const TextStyle(
+                                        color: Colors.white60,
+                                        fontSize: 9.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final hubContext = context;
+                                  Navigator.pop(ctx);
+                                  HapticFeedback.heavyImpact();
+                                  final activeRival = rival ?? await PocketFortressDefenseService.getRecommendedRivalTarget(userDay: day);
+                                  if (!mounted || !hubContext.mounted) return;
+                                  PocketCitadelAttackPage.openForUser(
+                                    hubContext,
+                                    userId: activeRival.id,
+                                    neighbor: activeRival,
+                                    attackerDay: day,
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFE11D48),
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                  elevation: 0,
+                                ),
+                                child: Text(
+                                  'ATTACK ⚔️',
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
 
                 // Action Buttons
                 if (isCurrent || isUnlocked) ...[
@@ -1557,14 +1706,31 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           ],
         ),
         actions: [
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: item.themeColor,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+          TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('GOT IT', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+            child: const Text('CLOSE', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE11D48),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            ),
+            icon: const Text('⚔️', style: TextStyle(fontSize: 14)),
+            label: Text('ATTACK TARGET CITADEL', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              HapticFeedback.heavyImpact();
+              final rival = await PocketFortressDefenseService.getRecommendedRivalTarget(userDay: item.targetDay);
+              if (!mounted) return;
+              PocketCitadelAttackPage.openForUser(
+                context,
+                userId: rival.id,
+                neighbor: rival,
+                attackerDay: currentDay,
+              );
+            },
           ),
         ],
       ),

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 
 /// 🏛️ Official President of Pocket World & Pocket Mates Service
 /// Handles the official Presidential Desk, user inquiries, 24-hour protection alerts,
@@ -427,6 +428,77 @@ class PocketPresidentService {
       targetUserId: targetUserId,
       replyText: protectionMessage,
       adminName: 'Presidential Automated Defense',
+    );
+  }
+
+  /// 🤖 Autonomous Robot / AI Presidential Response Generator
+  /// Formulates official, dignified, and helpful replies to citizen doubts, app questions,
+  /// complaints, and greetings.
+  static Future<String> generatePresidentRobotReply({
+    required String userMessage,
+    String? userName,
+    String? currentUserId,
+  }) async {
+    final clean = userMessage.trim().toLowerCase();
+    final citizen = (userName != null && userName.isNotEmpty && userName != 'Citizen') ? userName : 'Citizen';
+
+    // 0. Language Check: If user wrote in Malayalam or Manglish, gently guide them in English
+    if (PocketRobotService.isMalayalamOrManglish(userMessage)) {
+      return "Greetings $citizen! 🌟 As President of Pocket World, I warmly encourage you to express your thoughts in English so we can build fluency together. How can the Presidential Office assist you today?";
+    }
+
+    // 1. Complaints & Reports
+    if (clean.contains('complaint') || clean.contains('cheat') || clean.contains('fake question') || clean.contains('report') || clean.contains('bug') || clean.contains('issue') || clean.contains('hacker')) {
+      return "Thank you for bringing this to my desk, $citizen. 🏛️ Your report has been officially logged in our Presidential Oversight registry. Our administration takes all violations and technical issues very seriously. We are actively inspecting it to safeguard Pocket World's integrity! ⚖️";
+    }
+
+    // 2. Citadel Attacks & Defense questions
+    if (clean.contains('attack') || clean.contains('citadel') || clean.contains('shield') || clean.contains('gate') || clean.contains('defense') || clean.contains('protect')) {
+      return "Greetings $citizen! In Pocket World, every day of completed English study arms your Citadel with defense questions. If you encounter any unfair or fake question during an attack, remember to use the PRESIDENT REPORT button — our court will audit and sanction the offender immediately! 🛡️";
+    }
+
+    // 3. App doubts & How to use
+    if (clean.contains('how to') || clean.contains('doubt') || clean.contains('what is') || clean.contains('help') || clean.contains('guide')) {
+      if (clean.contains('level') || clean.contains('score') || clean.contains('points') || clean.contains('rank')) {
+        return "Excellent question, $citizen! Your Pocket Score and CEFR rank advance as you solve daily missions, engage in voice speaking sprints, and defend your Citadel. Consistency is the secret to mastery! 🌟";
+      }
+      if (clean.contains('mate') || clean.contains('friend') || clean.contains('chat')) {
+        return "As President, I am connected as a Mate to every citizen of Pocket World! You can also search for learning partners, snap progress updates, or join your level bracket's English Hub for live conversation! 🤝";
+      }
+      return "I am delighted to assist you, $citizen! 🏛️ Pocket World is built to make English your natural second language through daily speaking sprints, Citadel challenges, and immersive peer conversations. Feel free to ask any specific doubts anytime!";
+    }
+
+    // 4. Greetings
+    if (clean.contains('hi') || clean.contains('hello') || clean.contains('hey') || clean.contains('morning') || clean.contains('evening')) {
+      return "Greetings, $citizen! 🏛️ I am honored to welcome you to the Presidential Desk. How is your English learning journey progressing today?";
+    }
+
+    // 5. Thanks & Appreciation
+    if (clean.contains('thank') || clean.contains('thx') || clean.contains('super') || clean.contains('great')) {
+      return "You are most welcome, $citizen! 🌟 The Presidential Office is always in your corner. Keep speaking with courage and curiosity every day!";
+    }
+
+    // 6. General encouraging reply
+    return "Greetings $citizen! 🏛️ I have received your message at the Presidential Desk. Remember: every word you speak in English today builds your confidence for tomorrow! If this is an administrative inquiry, our team is monitoring it closely.";
+  }
+
+  /// Log a reported defense question directly to the President Desk registry
+  static Future<void> recordQuestionReportToPresident({
+    required String reporterId,
+    required String reporterName,
+    required String houseId,
+    required String houseOwnerName,
+    required String questionText,
+    required String reason,
+    String? aiVerdictSummary,
+  }) async {
+    final now = DateTime.now();
+    final reportSummary = '🚨 CITADEL DEFENSE QUESTION REPORT: "$questionText" from $houseOwnerName\'s Citadel ($houseId). Reason: $reason. ${aiVerdictSummary ?? ''}';
+
+    await _recordMasterInquiry(
+      userId: reporterId,
+      lastMessage: reportSummary,
+      timestamp: now,
     );
   }
 

@@ -4,9 +4,10 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 
 /// 🤝 PocketMateService: Central service for managing Snapchat-style Mates,
-/// connection requests, conversation pinning, and 100% private interactions.
+/// connection requests, connection pinning, and 100% private interactions.
 class PocketMateService {
   static final PocketMateService _instance = PocketMateService._internal();
   factory PocketMateService() => _instance;
@@ -17,6 +18,13 @@ class PocketMateService {
   /// Check if two users are mutual Mates
   static Future<bool> isMate(String myId, String otherUserId) async {
     if (myId.isEmpty || otherUserId.isEmpty || myId == otherUserId) return true;
+    // 🏛️ The President is an official Mate of every citizen in Pocket World
+    if (PocketPresidentService.isPresidentId(otherUserId) ||
+        otherUserId == 'pocket_president' ||
+        PocketPresidentService.isPresidentId(myId) ||
+        myId == 'pocket_president') {
+      return true;
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
       final list = prefs.getStringList('pocket_mates_$myId') ?? [];
@@ -440,16 +448,40 @@ class PocketMateService {
       final List<Map<String, dynamic>> requests = [];
       for (final item in (response as List)) {
         final map = Map<String, dynamic>.from(item);
-        if (map['sender_name'] == null && map['sender_id'] != null) {
+        final senderId = map['sender_id']?.toString() ?? '';
+
+        if (senderId.isNotEmpty && PocketRobotService.isRobotId(senderId)) {
+          final robot = PocketRobotService.getRobotById(senderId) ??
+              PocketRobotService.getRobotByLevel(1);
+          map['sender_name'] = robot.name;
+          map['sender_profile_image'] = robot.avatarUrl;
+          map['avatar_url'] = robot.avatarUrl;
+          map['is_robot'] = true;
+          map['stage'] = robot.level;
+          map['archetype'] = robot.archetype.name;
+        } else if (senderId.isNotEmpty) {
           try {
             final prof = await _supabase
                 .from('profile')
-                .select('name')
-                .eq('user_id', map['sender_id'])
+                .select(
+                    'name, display_name, profile_picture_url, avatar_url, avatar_config, learning_day, level')
+                .eq('user_id', senderId)
                 .maybeSingle();
-            map['sender_name'] = prof?['name'] ?? 'Pocket Mate';
+            if (prof != null) {
+              map['sender_name'] = prof['display_name'] ??
+                  prof['name'] ??
+                  map['sender_name'] ??
+                  'Pocket Mate';
+              map['sender_profile_image'] =
+                  prof['profile_picture_url'] ?? prof['avatar_url'];
+              map['avatar_url'] =
+                  prof['avatar_url'] ?? prof['profile_picture_url'];
+              map['avatar_config'] = prof['avatar_config'];
+              map['stage'] =
+                  prof['learning_day'] ?? prof['level'] ?? map['stage'] ?? 1;
+            }
           } catch (_) {
-            map['sender_name'] = 'Pocket Mate';
+            map['sender_name'] ??= 'Pocket Mate';
           }
         }
         requests.add(map);
@@ -463,16 +495,24 @@ class PocketMateService {
           final localReqs =
               List<Map<String, dynamic>>.from(json.decode(localStr));
           for (final lr in localReqs) {
+            final senderId =
+                lr['senderId']?.toString() ?? lr['id']?.toString() ?? '';
+            final robot = PocketRobotService.getRobotById(senderId) ??
+                PocketRobotService.getRobotByLevel(1);
             if (!requests.any((x) =>
-                x['id'] == lr['id'] || (x['sender_id'] == lr['senderId']))) {
+                x['id'] == lr['id'] || (x['sender_id'] == senderId))) {
               requests.add({
                 'id': lr['id'],
-                'sender_id': lr['senderId'],
-                'sender_name': lr['senderName'],
+                'sender_id': senderId,
+                'sender_name': lr['senderName'] ?? robot.name,
+                'sender_profile_image': robot.avatarUrl,
+                'avatar_url': robot.avatarUrl,
+                'avatar_config': lr['avatarConfig'],
                 'message': lr['message'],
                 'created_at': lr['time'] ?? DateTime.now().toIso8601String(),
-                'is_robot': lr['isRobot'] ?? true,
-                'archetype': lr['archetype'],
+                'is_robot': true,
+                'stage': robot.level,
+                'archetype': lr['archetype'] ?? robot.archetype.name,
               });
             }
           }
@@ -523,14 +563,19 @@ class PocketMateService {
     }
   }
 
-  /// Get list of all local Mate IDs
+  /// Get list of all local Mate IDs (President is always present for all citizens)
   static Future<List<String>> getMatesList(String userId) async {
-    if (userId.isEmpty) return [];
+    if (userId.isEmpty) return [PocketPresidentService.presidentId];
     try {
       final prefs = await SharedPreferences.getInstance();
-      return prefs.getStringList('pocket_mates_$userId') ?? [];
+      final list = prefs.getStringList('pocket_mates_$userId') ?? [];
+      if (!list.contains(PocketPresidentService.presidentId)) {
+        list.insert(0, PocketPresidentService.presidentId);
+        await prefs.setStringList('pocket_mates_$userId', list);
+      }
+      return list;
     } catch (_) {
-      return [];
+      return [PocketPresidentService.presidentId];
     }
   }
 

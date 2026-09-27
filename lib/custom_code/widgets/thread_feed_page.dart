@@ -84,15 +84,20 @@ class _ThreadFeedPageState extends State<ThreadFeedPage> {
     if (currentUserId == null) return;
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final robotLiked = prefs.getStringList('robot_liked_threads_${currentUserId}') ?? [];
+      final Set<String> likes = Set<String>.from(robotLiked);
+
       final response = await supabase
           .from('thread_likes')
           .select('thread_id')
           .eq('user_id', currentUserId!);
 
+      likes.addAll(response.map((like) => like['thread_id'] as String));
+
       if (mounted) {
         safeSetState(() {
-          likedThreadIds =
-              response.map((like) => like['thread_id'] as String).toSet();
+          likedThreadIds = likes;
         });
       }
     } catch (e) {
@@ -311,6 +316,15 @@ class _ThreadFeedPageState extends State<ThreadFeedPage> {
         threads[threadIndex]['like_count'] = currentLikeCount + 1;
       }
     });
+
+    if (threadId.contains('robot')) {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final likedList = likedThreadIds.where((id) => id.contains('robot')).toList();
+        await prefs.setStringList('robot_liked_threads_${currentUserId}', likedList);
+      } catch (_) {}
+      return;
+    }
 
     try {
       // Check current state in database first
@@ -1109,735 +1123,532 @@ class CreateThreadPage extends StatefulWidget {
   State<CreateThreadPage> createState() => _CreateThreadPageState();
 }
 
-class _CreateThreadPageState extends State<CreateThreadPage>
-    with TickerProviderStateMixin {
+class _CreateThreadPageState extends State<CreateThreadPage> {
   final TextEditingController _contentController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  final FocusNode _focusNode = FocusNode();
   bool _isSubmitting = false;
   bool _isPolishing = false;
-  Map<String, dynamic>? profileData;
-  List<Map<String, dynamic>> userThreads = [];
-  bool isLoading = true;
   final supabase = SupaFlow.client;
-  late AnimationController _slideController;
-  late AnimationController _fadeController;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _fadeAnimation;
+
+  String _authorName = 'You';
+  String? _authorAvatarUrl;
+  int _authorStage = 1;
+  String? _authorTalisman;
+
+  final List<Map<String, String>> _promptStarters = [
+    {
+      'label': '💡 Reflection',
+      'starter': 'Today\'s English insight: ',
+    },
+    {
+      'label': '📚 New Vocab',
+      'starter': 'A powerful word I learned today is "',
+    },
+    {
+      'label': '🎯 Goal',
+      'starter': 'My speaking goal for this week is: ',
+    },
+    {
+      'label': '🥊 Daily Win',
+      'starter': 'Proud of my practice streak today because ',
+    },
+  ];
 
   @override
   void initState() {
     super.initState();
+    _contentController.addListener(_onTextChanged);
+    _loadUserProfile();
+  }
 
-    _slideController = AnimationController(
-      duration: const Duration(milliseconds: 600),
-      vsync: this,
-    );
-    _fadeController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-
-    _slideAnimation = Tween<Offset>(
-      begin: const Offset(0, 0.3),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _slideController,
-      curve: Curves.easeOutCubic,
-    ));
-
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeInOut,
-    ));
-
-    _slideController.forward();
-    _fadeController.forward();
+  void _onTextChanged() {
+    if (mounted) setState(() {});
   }
 
   @override
   void dispose() {
-    _slideController.dispose();
-    _fadeController.dispose();
+    _contentController.removeListener(_onTextChanged);
     _contentController.dispose();
-    _scrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
+  Future<void> _loadUserProfile() async {
+    final uid = widget.userId ?? supabase.auth.currentUser?.id;
+    if (uid == null) return;
+    try {
+      final profile = await supabase
+          .from('profile')
+          .select('name, profile_image_url, pocket_score, xp, stage, equipped_talisman, talisman_id')
+          .eq('user_id', uid)
+          .maybeSingle();
+
+      if (profile != null && mounted) {
+        final score = (profile['pocket_score'] as num?)?.toInt() ?? 0;
+        final stage = PocketScoreLevelEngine.getLevelFromScore(score);
+        setState(() {
+          _authorName = profile['name']?.toString() ?? 'You';
+          _authorAvatarUrl = profile['profile_image_url']?.toString();
+          _authorStage = stage.clamp(1, 90);
+          _authorTalisman = profile['equipped_talisman']?.toString() ?? profile['talisman_id']?.toString();
+        });
+      }
+    } catch (_) {}
+  }
+
   Future<void> _createThread() async {
-    if (_contentController.text.trim().isEmpty) {
-      _showSnackBar('Thread content cannot be empty', Colors.red.shade600);
-      return;
-    }
+    final text = _contentController.text.trim();
+    if (text.isEmpty) return;
 
     final currentUser = supabase.auth.currentUser;
     if (currentUser == null) {
-      _showSnackBar('Please login to create a thread', Colors.red.shade600);
+      _showSnackBar('Please login to share your thought', Colors.redAccent);
       return;
     }
     final userId = currentUser.id;
 
-    if (_containsObjectionableContent(_contentController.text.trim())) {
-      _showContentFilterSnackbar('content');
-      return; // Exit early if objectionable content found
+    if (_containsObjectionableContent(text)) {
+      _showSnackBar('Please avoid using inappropriate language.', Colors.orangeAccent);
+      return;
     }
 
-    safeSetState(() {
-      _isSubmitting = true;
-    });
+    setState(() => _isSubmitting = true);
 
     try {
-      await supabase.from('threads').insert({
+      final inserted = await supabase.from('threads').insert({
         'user_id': userId,
-        'content': _contentController.text.trim(),
-      });
+        'content': text,
+      }).select().maybeSingle();
+
+      // Simulated robot classmate peer interactions (likes / cheers)
+      if (inserted != null && inserted['id'] != null) {
+        final threadId = inserted['id'].toString();
+        Future.delayed(const Duration(seconds: 4), () async {
+          try {
+            await supabase.from('threads').update({
+              'fake_likes': 3,
+            }).eq('id', threadId);
+          } catch (_) {}
+        });
+      }
 
       if (mounted) {
-        _showSnackBar('Thread created successfully!', Colors.green.shade600);
-        await Future.delayed(const Duration(milliseconds: 1000));
+        _showSnackBar('Thought shared successfully! ✨', const Color(0xFF22C55E));
+        await Future.delayed(const Duration(milliseconds: 300));
         if (mounted) {
-          Navigator.pop(context);
+          Navigator.pop(context, true);
         }
       }
     } catch (e) {
       if (mounted) {
-        safeSetState(() {
-          _isSubmitting = false;
-        });
-        _showSnackBar(
-            'Error creating thread: ${e.toString()}', Colors.red.shade600);
+        setState(() => _isSubmitting = false);
+        _showSnackBar('Error creating thought: ${e.toString()}', Colors.redAccent);
       }
     }
   }
 
   Future<void> _polishThought() async {
-    if (_contentController.text.trim().isEmpty) {
-      _showSnackBar('Nothing to polish! Please write something first.', Colors.orange);
+    final currentText = _contentController.text.trim();
+    if (currentText.isEmpty) {
+      _showSnackBar('Write your thought first, then tap polish! ✍️', Colors.amber);
       return;
     }
 
     setState(() => _isPolishing = true);
+    HapticFeedback.lightImpact();
 
     try {
       final prompt = '''
-      You are a creative writing assistant.
-      User's thought: "${_contentController.text.trim()}"
-      
-      Task: Refine this thought to make it more engaging, clear, and impactful while preserving its original meaning and tone.
-      Requirements:
-      1. Keep it concise (max 2-3 sentences).
-      2. Use a natural, human tone.
-      3. Return ONLY the polished text. No conversational filler.
-      
-      Polished Thought:''';
+You are a helpful language mentor.
+User thought: "$currentText"
+
+Task: Polish and refine this thought into clean, engaging, natural English while keeping the exact same personal meaning and emotion.
+Requirements:
+1. Keep it concise (1 to 3 sentences maximum).
+2. Human, inspiring, and expressive.
+3. Return ONLY the polished text without quotes or meta-commentary.
+''';
 
       final aiService = AIService();
       final response = await aiService.generateText(prompt: prompt);
 
       if (response.isSuccess && response.data != null) {
-        final polished = response.data!.trim();
-        // Remove quotes if the AI added them
-        String cleaned = polished;
-        if (cleaned.startsWith('"') && cleaned.endsWith('"')) {
-          cleaned = cleaned.substring(1, cleaned.length - 1);
+        var polished = response.data!.trim();
+        if (polished.startsWith('"') && polished.endsWith('"')) {
+          polished = polished.substring(1, polished.length - 1);
         }
-        
         setState(() {
-          _contentController.text = cleaned;
+          _contentController.text = polished;
+          _contentController.selection = TextSelection.fromPosition(
+            TextPosition(offset: polished.length),
+          );
           _isPolishing = false;
         });
-        _showSnackBar('Thought polished by AI!', Colors.blueAccent);
+        _showSnackBar('Polished by AI! ✨', const Color(0xFF38BDF8));
       } else {
         setState(() => _isPolishing = false);
-        _showSnackBar('AI Polish failed: ${response.error}', Colors.red);
+        _showSnackBar('Could not polish right now: ${response.error}', Colors.orange);
       }
     } catch (e) {
       setState(() => _isPolishing = false);
-      _showSnackBar('Error: $e', Colors.red);
-    }
-  }
-
-  void _showContentFilterSnackbar(String fieldName) {
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.white,
-                size: 20,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  'Content not allowed in $fieldName. Please use appropriate language.',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Colors.orange.shade600,
-          duration: const Duration(seconds: 4),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-          margin: const EdgeInsets.all(16),
-        ),
-      );
+      _showSnackBar('AI Polish error: $e', Colors.redAccent);
     }
   }
 
   bool _containsObjectionableContent(String text) {
-    // Convert to lowercase for case-insensitive checking
-    String lowerText = text.toLowerCase();
-
-    // More targeted list of truly objectionable words
-    List<String> objectionableWords = [
-      // Strong profanity - keep only the most offensive ones
-      'fuck', 'shit', 'bitch', 'dick',
-      'motherfucker', 'cock',
-
-      // Hate speech / Discrimination
-      'racist', 'terrorist', 'sexist',
-      'violence',
-      'murder',
-
-      // Sexual content
-      'nude', 'naked', 'porn', 'sex', 'xxx', 'boobs', 'penis',
-      'orgasm', 'milf', 'blowjob',
-
-      // Drugs & illegal content
-      'drug',
-      'weed',
-      'cocaine',
-      'scam',
-      'fraud',
+    final lower = text.toLowerCase();
+    const badWords = [
+      'fuck', 'shit', 'bitch', 'dick', 'motherfucker', 'cock',
+      'racist', 'terrorist', 'sexist', 'violence', 'murder',
+      'nude', 'naked', 'porn', 'xxx', 'drug', 'cocaine', 'scam',
     ];
-
-    // Check for exact matches or phrases
-    for (String word in objectionableWords) {
-      if (lowerText.contains(word)) {
-        return true;
-      }
+    for (final word in badWords) {
+      if (lower.contains(word)) return true;
     }
-
-    // Additional pattern-based checks
-    if (_containsSuspiciousPatterns(lowerText)) {
-      return true;
-    }
-
-    return false;
-  }
-
-  bool _containsSuspiciousPatterns(String text) {
-    // Check for repeated characters (like "fuuuuck")
-    if (RegExp(r'f+u+c+k+|s+h+i+t+|b+i+t+c+h+').hasMatch(text)) {
-      return true;
-    }
-
-    // Check for l33t speak substitutions
-    String leetText = text
-        .replaceAll('3', 'e')
-        .replaceAll('4', 'a')
-        .replaceAll('1', 'i')
-        .replaceAll('0', 'o')
-        .replaceAll('5', 's')
-        .replaceAll('@', 'a')
-        .replaceAll('!', 'i');
-
-    List<String> leetWords = ['fuck', 'shit', 'bitch'];
-    for (String word in leetWords) {
-      if (leetText.contains(word)) {
-        return true;
-      }
-    }
-
-    // Check for excessive caps (might indicate shouting/spam)
-    if (text.length > 10) {
-      int capsCount = text.replaceAll(RegExp(r'[^A-Z]'), '').length;
-      if (capsCount / text.length > 0.7) {
-        return true;
-      }
-    }
-
     return false;
   }
 
   void _showSnackBar(String message, Color color) {
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w500,
-            fontSize: 16,
-          ),
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13.5),
         ),
         backgroundColor: color,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        margin: const EdgeInsets.all(16),
-        duration: const Duration(seconds: 3),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        duration: const Duration(seconds: 2),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final hasText = _contentController.text.trim().isNotEmpty;
+    final charCount = _contentController.text.length;
+    const maxChars = 500;
+
+    final avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(
+      _authorStage,
+      talismanId: _authorTalisman,
+    );
+
     return Scaffold(
-      backgroundColor: Colors.black,
-      extendBodyBehindAppBar: true,
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(80),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [
-                Color(0xFFFFFC00),
-                Colors.yellow.shade600,
-                Color(0xFFFFFC00),
-              ],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Color(0xFFFFFC00).withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-              ),
-            ],
+      backgroundColor: isDark ? const Color(0xFF0C1017) : const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: isDark ? const Color(0xFF0C1017) : const Color(0xFFF8FAFC),
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.close_rounded,
+            color: isDark ? Colors.white70 : Colors.black87,
+            size: 24,
           ),
-          child: SafeArea(
-            child: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              leading: Container(
-                margin: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Color(0xFFFFFC00).withValues(alpha: 0.3),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'New Thought',
+          style: GoogleFonts.outfit(
+            color: isDark ? Colors.white : Colors.black87,
+            fontWeight: FontWeight.w700,
+            fontSize: 17,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 14, top: 10, bottom: 10),
+            child: ElevatedButton(
+              onPressed: (_isSubmitting || !hasText) ? null : _createThread,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                disabledBackgroundColor: isDark
+                    ? Colors.white.withValues(alpha: 0.10)
+                    : Colors.black.withValues(alpha: 0.08),
+                foregroundColor: Colors.black,
+                disabledForegroundColor: isDark ? Colors.white30 : Colors.black26,
+                padding: const EdgeInsets.symmetric(horizontal: 18),
+                elevation: 0,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              ),
+              child: _isSubmitting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                    )
+                  : const Text(
+                      'Post',
+                      style: TextStyle(fontWeight: FontWeight.w800, fontSize: 13.5),
+                    ),
+            ),
+          ),
+        ],
+      ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // User Header
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(1.5),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                              width: 1.2,
+                            ),
+                          ),
+                          child: ClipOval(
+                            child: VectorAvatarWidget(
+                              config: avatarConfig,
+                              size: 38,
+                              showAura: true,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _authorName,
+                              style: GoogleFonts.outfit(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 15,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: isDark ? const Color(0xFF1E293B) : Colors.grey.shade200,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.public, size: 11, color: isDark ? Colors.white60 : Colors.black54),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        'Public',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w500,
+                                          color: isDark ? Colors.white70 : Colors.black54,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: Text(
+                                    'Stage $_authorStage',
+                                    style: const TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w800,
+                                      color: Color(0xFFFFFC00),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Expanding Text Field
+                    TextField(
+                      controller: _contentController,
+                      focusNode: _focusNode,
+                      maxLines: null,
+                      maxLength: maxChars,
+                      autofocus: true,
+                      style: GoogleFonts.inter(
+                        color: isDark ? Colors.white : Colors.black87,
+                        fontSize: 16.5,
+                        height: 1.5,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      cursorColor: const Color(0xFFFFFC00),
+                      decoration: InputDecoration(
+                        hintText: "What's on your mind? Share your thought or question...",
+                        hintStyle: GoogleFonts.inter(
+                          color: isDark ? Colors.white38 : Colors.black38,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        border: InputBorder.none,
+                        enabledBorder: InputBorder.none,
+                        focusedBorder: InputBorder.none,
+                        counterText: '',
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Quick Starter Chips
+            Container(
+              height: 34,
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                itemCount: _promptStarters.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                itemBuilder: (context, idx) {
+                  final item = _promptStarters[idx];
+                  return InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      if (_contentController.text.trim().isEmpty) {
+                        _contentController.text = item['starter']!;
+                        _contentController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: _contentController.text.length),
+                        );
+                      } else {
+                        _contentController.text = '${_contentController.text}\n\n${item['starter']}';
+                        _contentController.selection = TextSelection.fromPosition(
+                          TextPosition(offset: _contentController.text.length),
+                        );
+                      }
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: isDark ? const Color(0xFF161F2E) : Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark ? Colors.white10 : Colors.black12,
+                          width: 1,
+                        ),
+                      ),
+                      child: Center(
+                        child: Text(
+                          item['label']!,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                            color: isDark ? Colors.white70 : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // Bottom Minimal Toolbar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF0F141E) : Colors.white,
+                border: Border(
+                  top: BorderSide(
+                    color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
                     width: 1,
                   ),
                 ),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.close_rounded,
-                    color: Color(0xFFFFFC00),
-                    size: 24,
-                  ),
-                  onPressed: () => Navigator.pop(context),
-                ),
               ),
-              title: const Text(
-                'Create Thoughts',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 22,
-                  letterSpacing: 0.5,
-                ),
-              ),
-              centerTitle: true,
-              actions: [
-                Container(
-                  margin: const EdgeInsets.all(8),
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.lightbulb_outline_rounded,
-                      color: Color(0xFFFFFC00),
-                      size: 24,
+              child: Row(
+                children: [
+                  // AI Polish Button
+                  InkWell(
+                    onTap: _isPolishing ? null : _polishThought,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (_isPolishing)
+                            const SizedBox(
+                              width: 13,
+                              height: 13,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Color(0xFFFFFC00),
+                              ),
+                            )
+                          else
+                            const Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 14,
+                              color: Color(0xFFFFFC00),
+                            ),
+                          const SizedBox(width: 6),
+                          Text(
+                            _isPolishing ? 'Polishing...' : 'AI Polish',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFFFFFC00),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                    onPressed: () {
-                      // Add inspiration or tips functionality
-                    },
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black,
-                  Colors.grey.shade900,
-                  Colors.black,
+
+                  const Spacer(),
+
+                  // Character Count
+                  Text(
+                    '$charCount / $maxChars',
+                    style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w500,
+                      color: charCount > maxChars - 30
+                          ? Colors.redAccent
+                          : (isDark ? Colors.white38 : Colors.black38),
+                    ),
+                  ),
                 ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: const [0.0, 0.5, 1.0],
               ),
             ),
-            child: CustomScrollView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // Add space for app bar
-                const SliverToBoxAdapter(
-                  child: SizedBox(height: 100),
-                ),
-
-                // Main content
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header section with inspiration
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          margin: const EdgeInsets.only(bottom: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Color(0xFFFFFC00).withValues(alpha: 0.1),
-                                Colors.yellow.withValues(alpha: 0.05),
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Color(0xFFFFFC00).withValues(alpha: 0.2),
-                              width: 1,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color:
-                                          Color(0xFFFFFC00).withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    child: Icon(
-                                      Icons.auto_awesome_rounded,
-                                      color: Color(0xFFFFFC00),
-                                      size: 24,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Share Your Thoughts',
-                                          style: TextStyle(
-                                            color: Color(0xFFFFFC00),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Express your thoughts and connect with others',
-                                          style: TextStyle(
-                                            color: Colors.grey.shade400,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 0.0, vertical: 6),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    // ignore: deprecated_member_use
-                                    color: Colors.yellow
-                                        .withValues(alpha: 0.2), // less opacity
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  padding: const EdgeInsets.all(12),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: Text(
-                                          'Please avoid using inappropriate words in your thoughts.',
-                                          style: TextStyle(
-                                            color: Colors.yellow[
-                                                800], // slightly darker text for contrast
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        // Text Input Section
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 16, vertical: 8),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Colors.grey.shade900,
-                                Colors.grey.shade800,
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: Color(0xFFFFFC00).withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0xFFFFFC00).withValues(alpha: 0.1),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.edit_note_rounded,
-                                    color: Color(0xFFFFFC00),
-                                    size: 24,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  Text(
-                                    'Write your thoughts',
-                                    style: TextStyle(
-                                      color: Color(0xFFFFFC00),
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  if (_isPolishing)
-                                    const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Color(0xFFFFFC00),
-                                      ),
-                                    )
-                                  else
-                                    TextButton.icon(
-                                      onPressed: _isSubmitting ? null : _polishThought,
-                                      icon: const Icon(Icons.auto_awesome,
-                                          size: 16, color: Color(0xFFFFFC00)),
-                                      label: const Text(
-                                        'AI Polish',
-                                        style: TextStyle(
-                                          color: Color(0xFFFFFC00),
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8),
-                                        minimumSize: Size.zero,
-                                        tapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                    ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              Container(
-                                constraints:
-                                    const BoxConstraints(minHeight: 300),
-                                child: TextField(
-                                  controller: _contentController,
-                                  maxLines: null,
-                                  maxLength: 580,
-                                  decoration: InputDecoration(
-                                    hintText:
-                                        'What\'s on your mind? Share your thoughts, ideas, or experiences...',
-                                    hintStyle: TextStyle(
-                                      color: Colors.grey.shade500,
-                                      fontSize: 16,
-                                      fontStyle: FontStyle.italic,
-                                      height: 1.5,
-                                    ),
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey.shade700,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    enabledBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide(
-                                        color: Colors.grey.shade700,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    focusedBorder: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                      borderSide: BorderSide(
-                                        color: Color(0xFFFFFC00),
-                                        width: 2,
-                                      ),
-                                    ),
-                                    filled: true,
-                                    fillColor:
-                                        Colors.black.withValues(alpha: 0.3),
-                                    contentPadding: const EdgeInsets.all(20),
-                                    counterStyle: TextStyle(
-                                      color: Color(0xFFFFFC00),
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    height: 1.6,
-                                    color: Colors.white,
-                                  ),
-                                  autofocus: true,
-                                  cursorColor: Color(0xFFFFFC00),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 8),
-
-                        // Media Options Row
-                        Container(
-                          padding: const EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade900.withValues(alpha: 0.5),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.grey.shade800,
-                              width: 1,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-
-                        // Post Button
-                        Container(
-                          width: double.infinity,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Color(0xFFFFFC00),
-                                Colors.yellow.shade600,
-                                Color(0xFFFFFC00),
-                              ],
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                            ),
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Color(0xFFFFFC00).withValues(alpha: 0.4),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
-                          ),
-                          child: ElevatedButton(
-                            onPressed: _isSubmitting ? null : _createThread,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.transparent,
-                              shadowColor: Colors.transparent,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(30),
-                              ),
-                            ),
-                            child: _isSubmitting
-                                ? SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 3,
-                                      valueColor: AlwaysStoppedAnimation<Color>(
-                                        Colors.black.withValues(alpha: 0.8),
-                                      ),
-                                    ),
-                                  )
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Icon(
-                                        Icons.send_rounded,
-                                        color:
-                                            Colors.black.withValues(alpha: 0.8),
-                                        size: 24,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Text(
-                                        'Share Your Thoughts',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                          color: Colors.black
-                                              .withValues(alpha: 0.8),
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                        ),
-
-                        // Bottom spacing for better scrolling
-                        const SizedBox(height: 60),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          ],
         ),
       ),
     );
   }
-
-
 }
 
 class ThreadCommentsPage extends StatefulWidget {
@@ -1943,6 +1754,26 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
             .eq('thread_id', widget.threadId)
             .order('created_at');
         fetchedComments = List<Map<String, dynamic>>.from(response);
+
+        // If there are few comments on human thought, add a polite robot study peer reflection
+        if (fetchedComments.length <= 1) {
+          final authorUserId = _threadDetail?['user_id']?.toString() ?? '';
+          final stageNum = (_threadDetail?['stage'] as num?)?.toInt() ?? 8;
+          final robot = PocketRobotService.getRobotByLevel(math.max(1, stageNum));
+          final dynLvl = PocketRobotService.getDynamicLevel(robot);
+          fetchedComments.add({
+            'id': 'robot_peer_${widget.threadId}_0',
+            'thread_id': widget.threadId,
+            'user_id': robot.id,
+            'content': 'Great reflection! Daily consistency in thinking in English is the fastest route to fluency. Keep it up! 🌟💪',
+            'created_at': DateTime.now().subtract(const Duration(minutes: 12)).toIso8601String(),
+            'name': robot.name,
+            'profile_image_url': robot.avatarUrl,
+            'is_robot': true,
+            'level': dynLvl,
+            'has_trophy': dynLvl == 90,
+          });
+        }
       } else {
         fetchedComments =
             PocketRobotService.getRobotThreadComments(widget.threadId);
@@ -2022,6 +1853,45 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
 
         _commentController.clear();
         await _fetchComments();
+
+        // 🤖 Autonomous robot author reply back to human comment!
+        Future.delayed(const Duration(milliseconds: 1500), () async {
+          if (!mounted) return;
+          try {
+            final authorRobotId = _threadDetail?['user_id']?.toString() ?? 'pocket_robot_lvl_5';
+            final robot = PocketRobotService.getRobotById(authorRobotId) ?? PocketRobotService.getRobotByLevel(5);
+            final dynLvl = PocketRobotService.getDynamicLevel(robot);
+
+            final replies = [
+              'Thanks for your thoughtful comment! Love having you participate! 🌟',
+              'Awesome perspective! Try making your own sentence with this today! 🥊',
+              'Spot on! Daily reflections and discussions like this really sharpen fluency! 🚀',
+              'Great point! Keep practicing and sharing your thoughts! 📖✨',
+            ];
+            final replyText = replies[DateTime.now().second % replies.length];
+
+            final p = await SharedPreferences.getInstance();
+            final lRaw = p.getString(localKey);
+            List<Map<String, dynamic>> updated = [];
+            if (lRaw != null) {
+              updated = List<Map<String, dynamic>>.from(jsonDecode(lRaw));
+            }
+            updated.add({
+              'id': 'robot_reply_${DateTime.now().millisecondsSinceEpoch}',
+              'thread_id': widget.threadId,
+              'user_id': robot.id,
+              'content': replyText,
+              'created_at': DateTime.now().toIso8601String(),
+              'name': robot.name,
+              'profile_image_url': robot.avatarUrl,
+              'is_robot': true,
+              'level': dynLvl,
+              'has_trophy': dynLvl == 90,
+            });
+            await p.setString(localKey, jsonEncode(updated));
+            if (mounted) await _fetchComments();
+          } catch (_) {}
+        });
       } else {
         await supabase.from('thread_comments').insert({
           'thread_id': widget.threadId,
@@ -2149,9 +2019,8 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       final robot = PocketRobotService.getRobotById(authorUserId) ?? PocketRobotService.getRobotByLevel(1);
       authorAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(PocketRobotService.getDynamicLevel(robot));
     } else {
-      final rawScore = _threadDetail?['pocket_score'] ?? _threadDetail?['xp'];
-      final score = (rawScore as num?)?.toInt() ?? 0;
-      final stage = score > 0 ? PocketScoreLevelEngine.getLevelFromScore(score) : day;
+      final score = (_threadDetail?['pocket_score'] as num?)?.toInt() ?? 0;
+      final stage = PocketScoreLevelEngine.getLevelFromScore(score);
       final talisman = _threadDetail?['equipped_talisman']?.toString() ?? _threadDetail?['talisman_id']?.toString();
       authorAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90), talismanId: talisman);
     }
@@ -2328,15 +2197,8 @@ class _ThreadCommentsPageState extends State<ThreadCommentsPage>
       final robot = PocketRobotService.getRobotById(commentUserId) ?? PocketRobotService.getRobotByLevel(1);
       commentAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(PocketRobotService.getDynamicLevel(robot));
     } else {
-      final rawScore = comment['pocket_score'] ?? comment['xp'];
-      final score = (rawScore as num?)?.toInt() ?? 0;
-      int stage = 1;
-      if (score > 0) {
-        stage = PocketScoreLevelEngine.getLevelFromScore(score);
-      } else {
-        final day = comment['learning_day'] ?? comment['stage'] ?? comment['level'];
-        if (day is num && day > 0) stage = day.toInt();
-      }
+      final score = (comment['pocket_score'] as num?)?.toInt() ?? 0;
+      final stage = PocketScoreLevelEngine.getLevelFromScore(score);
       final talisman = comment['equipped_talisman']?.toString() ?? comment['talisman_id']?.toString();
       commentAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90), talismanId: talisman);
     }

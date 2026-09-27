@@ -7,6 +7,8 @@ import 'package:http/http.dart' as http;
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart';
 import 'pocket_fortress_defense_service.dart';
+import 'pocket_house_evolution_dialog.dart';
+import 'pocket_defense_question_bank.dart';
 
 /// 🛡️ Direct & Minimal Defense Shield Creation, Editing & Interactive Demo Modal
 /// User Directives (Audio 13, 14, & 16):
@@ -271,16 +273,16 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
               {
                 'role': 'system',
                 'content':
-                    'You are an English language testing expert. Create one multiple-choice question for English defense trap challenge "$gateTitle" (Day ${widget.userDay}). Output JSON only with keys: question (string), options (array of 4 strings), correctIndex (0-3 integer), explanation (string).'
+                    'You are an English language testing expert for everyday English learners. Create one SIMPLE, PRACTICAL, and natural multiple-choice question for defense trap challenge "$gateTitle" (Day ${widget.userDay}). Keep the vocabulary and grammar accessible and practical for everyday communication, not obscure GRE words. Randomize the correct option so it is not always index 0. Do not repeat demo examples. Output JSON only with keys: question (string), options (array of 4 strings), correctIndex (0-3 integer), explanation (string).'
               },
               {
                 'role': 'user',
-                'content': 'Generate a single high quality $gateTitle challenge in JSON format.'
+                'content': 'Generate a single simple, high quality $gateTitle challenge in JSON format.'
               }
             ],
             'max_tokens': 300,
           }),
-        ).timeout(const Duration(seconds: 4));
+        ).timeout(const Duration(milliseconds: 3500));
 
         if (res.statusCode == 200) {
           final data = jsonDecode(res.body);
@@ -300,7 +302,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
         debugPrint('OpenRouter free AI call notice: $e');
       }
 
-      // Reliable curated AI bank fallback
+      // Reliable curated AI bank fallback from PocketDefenseQuestionBank
       aiResult ??= _getCuratedAiChallenge(gateId, widget.userDay);
 
       if (mounted) {
@@ -318,7 +320,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('✨ Free AI generated a $gateTitle challenge! Review or edit below.'),
+            content: Text('✨ Free AI generated a simple $gateTitle challenge! Review or edit below.'),
             backgroundColor: const Color(0xFF0284C7),
             behavior: SnackBarBehavior.floating,
           ),
@@ -332,106 +334,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   }
 
   Map<String, dynamic> _getCuratedAiChallenge(String gateId, int day) {
-    final Map<String, List<Map<String, dynamic>>> bank = {
-      'vocab_gate': [
-        {
-          'question': 'What is the closest synonym for the word "Tenacious"?',
-          'options': ['Persistent', 'Careless', 'Fragile', 'Hesitant'],
-          'correctIndex': 0,
-          'explanation': '"Tenacious" means holding firmly to a purpose or opinion.',
-        },
-        {
-          'question': 'Which word means "to make something bad or unsatisfactory better"?',
-          'options': ['Ameliorate', 'Deteriorate', 'Aggravate', 'Obliterate'],
-          'correctIndex': 0,
-          'explanation': '"Ameliorate" means to improve or make more tolerable.',
-        },
-        {
-          'question': 'Choose the antonym for "Lugubrious":',
-          'options': ['Joyful', 'Mournful', 'Gloomy', 'Melancholy'],
-          'correctIndex': 0,
-          'explanation': '"Lugubrious" means looking or sounding sad and dismal.',
-        },
-      ],
-      'grammar_defusal': [
-        {
-          'question': 'Identify the correct conditional sentence:',
-          'options': [
-            'If she had practiced, she would have won.',
-            'If she practiced, she would had won.',
-            'If she has practiced, she will won.',
-            'If she would practice, she had won.'
-          ],
-          'correctIndex': 0,
-          'explanation': 'Third conditional uses "If + past perfect, ... would have + past participle".',
-        },
-        {
-          'question': 'Choose the grammatically flawless sentence:',
-          'options': [
-            'Neither the teacher nor the students were present.',
-            'Neither the teacher nor the students was present.',
-            'Neither the teacher or the students are present.',
-            'Neither the teacher nor students is present.'
-          ],
-          'correctIndex': 0,
-          'explanation': 'With "neither... nor", the verb agrees with the closer subject ("students were").',
-        },
-      ],
-      'speed_blitz': [
-        {
-          'question': 'Fill in the correct preposition: "He is adept ___ solving puzzles."',
-          'options': ['at', 'in', 'with', 'for'],
-          'correctIndex': 0,
-          'explanation': 'The adjective "adept" takes the preposition "at".',
-        },
-        {
-          'question': 'Complete the syntax: "Hardly ___ entered the room when the lights went out."',
-          'options': ['had he', 'he had', 'did he', 'he has'],
-          'correctIndex': 0,
-          'explanation': 'Negative inversion: "Hardly had [subject] [past participle]...".',
-        },
-      ],
-      'idiom_shield': [
-        {
-          'question': 'What is the true meaning of "Bite the bullet"?',
-          'options': [
-            'Face a difficult situation with courage',
-            'Eat metallic food',
-            'Start an unnecessary fight',
-            'Avoid making a decision'
-          ],
-          'correctIndex': 0,
-          'explanation': '"Bite the bullet" means accepting a harsh or difficult situation bravely.',
-        },
-        {
-          'question': 'What does "Barking up the wrong tree" signify?',
-          'options': [
-            'Pursuing a mistaken line of thought',
-            'Shouting at stray animals',
-            'Climbing without safety gear',
-            'Making loud forest noises'
-          ],
-          'correctIndex': 0,
-          'explanation': 'It means pursuing a misguided course of action.',
-        },
-      ],
-      'riddle_sphinx': [
-        {
-          'question': 'Detect the sentence with the misplaced modifier:',
-          'options': [
-            'Walking to the store, the rain soaked my jacket.',
-            'While I was walking to the store, rain soaked my jacket.',
-            'The rain soaked my jacket while I walked to the store.',
-            'Walking to the store, I was soaked by rain.'
-          ],
-          'correctIndex': 0,
-          'explanation': 'In option A, the dangling participle implies the rain was walking to the store.',
-        },
-      ],
-    };
-
-    final list = bank[gateId] ?? bank['vocab_gate']!;
-    return list[day % list.length];
+    return PocketDefenseQuestionBank.getRandomChallenge(gateId, day: day);
   }
 
   Future<void> _deployShieldQuestion() async {
@@ -593,6 +496,21 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
           behavior: SnackBarBehavior.floating,
         ),
       );
+
+      // User Audio Directive: If arming defense on level completion, trigger animated house evolution!
+      if (widget.isLevelComplete) {
+        Future.delayed(const Duration(milliseconds: 650), () {
+          if (mounted) {
+            Navigator.pop(context);
+            PocketHouseEvolutionDialog.show(
+              context,
+              fromLevel: widget.userDay,
+              toLevel: widget.userDay + 1,
+            );
+          }
+        });
+        return;
+      }
 
       // Switch to Demo tab or My Shields tab
       _tabController.animateTo(1);

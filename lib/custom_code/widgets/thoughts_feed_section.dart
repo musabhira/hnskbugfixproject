@@ -266,10 +266,10 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
     });
 
     // Handle robot posts locally with persistent preferences
-    if (threadId.startsWith('robot_thread_')) {
+    if (threadId.contains('robot')) {
       try {
         final prefs = await SharedPreferences.getInstance();
-        final likedList = _likedThreadIds.where((id) => id.startsWith('robot_thread_')).toList();
+        final likedList = _likedThreadIds.where((id) => id.contains('robot')).toList();
         await prefs.setStringList('robot_liked_threads_${widget.currentUserId}', likedList);
 
         final threads =
@@ -581,17 +581,9 @@ class _TwitterThreadCardState extends State<TwitterThreadCard> {
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(dynLvl);
     } else {
       final profile = widget.thread['profile'] is Map ? widget.thread['profile'] : null;
-      final rawScore = widget.thread['pocket_score'] ?? profile?['pocket_score'] ?? widget.thread['xp'] ?? profile?['xp'];
+      final rawScore = widget.thread['pocket_score'] ?? profile?['pocket_score'];
       final score = (rawScore as num?)?.toInt() ?? 0;
-      int stage = 1;
-      if (score > 0) {
-        stage = PocketScoreLevelEngine.getLevelFromScore(score);
-      } else {
-        final day = widget.thread['learning_day'] ?? profile?['learning_day'] ?? widget.thread['stage'] ?? profile?['stage'] ?? widget.thread['level'];
-        if (day is num && day > 0) {
-          stage = day.toInt();
-        }
-      }
+      final stage = PocketScoreLevelEngine.getLevelFromScore(score);
       final talisman = widget.thread['equipped_talisman']?.toString() ?? profile?['equipped_talisman']?.toString() ?? profile?['talisman_id']?.toString();
       avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90), talismanId: talisman);
     }

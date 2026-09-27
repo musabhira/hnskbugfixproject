@@ -108,18 +108,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           PocketRobotService.getRobotByLevel(1);
       return PocketRobotService.getDynamicLevel(robot);
     }
-    if (_pocketScore > 0) {
-      return PocketScoreLevelEngine.getLevelFromScore(_pocketScore);
-    }
-    if (isMe) {
-      return _localUserStage;
-    }
-    final profScore = (_profileData?['pocket_score'] as num?)?.toInt() ??
-        (_profileData?['learning_points'] as num?)?.toInt();
-    if (profScore != null && profScore > 0) {
-      return PocketScoreLevelEngine.getLevelFromScore(profScore);
-    }
-    return (_profileData?['learning_day'] as num?)?.toInt() ?? _localUserStage;
+    // 🪙 AUDIO DIRECTIVE: User Level / Stage is strictly and non-negotiably derived from Pocket Score!
+    // A user with 0 Pocket Score can ONLY be Level 1 / Stage 1.
+    final profScore = _pocketScore > 0
+        ? _pocketScore
+        : ((_profileData?['pocket_score'] as num?)?.toInt() ?? 0);
+    final scoreLvl = PocketScoreLevelEngine.getLevelFromScore(profScore);
+    return scoreLvl.clamp(1, 90);
   }
 
   Future<void> _loadLocalUserStage() async {
@@ -140,13 +135,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         return;
       }
       final score = await PocketFortressDefenseService.getUnifiedScore(userId);
+      final scoreLvl = PocketScoreLevelEngine.getLevelFromScore(score);
       final prefs = await SharedPreferences.getInstance();
-      final stage = prefs.getInt('pocket_learning_user_stage_$userId') ?? prefs.getInt('learning_day_$userId') ?? 1;
-      final calculatedStage = score > 0 ? PocketScoreLevelEngine.getLevelFromScore(score) : stage;
+      await prefs.setInt('pocket_learning_user_stage_$userId', scoreLvl);
+      await prefs.setInt('learning_day_$userId', scoreLvl);
       if (mounted) {
         setState(() {
-          if (score > 0) _pocketScore = score;
-          _localUserStage = calculatedStage;
+          _pocketScore = score;
+          _localUserStage = scoreLvl;
         });
       }
     } catch (_) {}
@@ -273,9 +269,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       if (mounted) {
         setState(() {
           _pocketScore = score;
-          if (score > 0) {
-            _localUserStage = PocketScoreLevelEngine.getLevelFromScore(score);
-          }
+          final scoreLvl = PocketScoreLevelEngine.getLevelFromScore(score);
+          _localUserStage = scoreLvl;
         });
       }
     } catch (_) {}
@@ -503,14 +498,21 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   void _applyProfileData(Map<String, dynamic> data) {
     _profileData = data;
-    final day = (data['learning_day'] as num?)?.toInt() ?? 1;
-    final stage = LearningMilestoneStage.getStageForDay(day);
-    _testStageIndex = (stage.stageNumber - 1).clamp(0, LearningMilestoneStage.allStages.length - 1);
-
-    final fromProfile = (data['learning_points'] as num?)?.toInt() ?? (data['xp'] as num?)?.toInt();
-    if (fromProfile != null) {
-      _pocketScore = fromProfile;
+    final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+    final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+    int effectiveStage;
+    if (isRobot) {
+      final robot = PocketRobotService.getRobotById(userId) ??
+          PocketRobotService.getRobotByLevel(1);
+      effectiveStage = PocketRobotService.getDynamicLevel(robot);
+    } else {
+      final score = (data['pocket_score'] as num?)?.toInt() ?? 0;
+      _pocketScore = score;
+      effectiveStage = PocketScoreLevelEngine.getLevelFromScore(score);
     }
+    _localUserStage = effectiveStage;
+    final stage = LearningMilestoneStage.getStageForDay(effectiveStage);
+    _testStageIndex = (stage.stageNumber - 1).clamp(0, LearningMilestoneStage.allStages.length - 1);
 
     // Dynamic Level-Based Theme Colors
     _bgColor = stage.bgColor;
@@ -1757,8 +1759,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              q.question,
-                              style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w500),
+                              isMe ? q.question : 'Guarded Defense Question #${index + 1} 🔒',
+                              style: TextStyle(
+                                color: isMe ? Colors.white : Colors.white70,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                fontStyle: isMe ? FontStyle.normal : FontStyle.italic,
+                              ),
                             ),
                             if (isMe && q.options.isNotEmpty && q.correctIndex < q.options.length) ...[
                               const SizedBox(height: 2),
@@ -1768,9 +1775,19 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                               ),
                             ] else if (!isMe) ...[
                               const SizedBox(height: 2),
-                              Text(
-                                '${q.options.length} guarded options 🛡️',
-                                style: const TextStyle(color: Colors.white54, fontSize: 11.5, fontWeight: FontWeight.w500),
+                              Row(
+                                children: [
+                                  const Icon(Icons.lock_rounded, color: Color(0xFFFFFC00), size: 12),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Encrypted Defense • Revealed only during Citadel Raid',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFFFFFC00).withValues(alpha: 0.8),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ],
@@ -1793,9 +1810,24 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           },
                         )
                       else
-                        const Padding(
-                          padding: EdgeInsets.only(top: 2),
-                          child: Icon(Icons.lock_rounded, color: Colors.white30, size: 16),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.white10,
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.white24, width: 0.8),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.shield_rounded, color: Color(0xFF38BDF8), size: 13),
+                              SizedBox(width: 3),
+                              Text(
+                                'Armed',
+                                style: TextStyle(color: Color(0xFF38BDF8), fontSize: 10, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
                         ),
                     ],
                   );

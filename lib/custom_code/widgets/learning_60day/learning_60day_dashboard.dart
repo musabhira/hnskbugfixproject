@@ -12,6 +12,7 @@ import 'pocket_day_detail_overview_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'pocket_citadel_attack_page.dart';
 
 /// Interactive Sheet & Dashboard for the 90-Day English Transformation & Profile Palette System
@@ -1118,7 +1119,8 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
       itemBuilder: (context, index) {
         final stage = LearningMilestoneStage.allStages[index];
         final isStage91 = stage.day == 91;
-        final isUnlocked = isStage91 ? (currentDay >= 90) : (currentDay >= stage.day);
+        final isMasterAdmin = AdminAuthService.isCurrentMasterAdmin();
+        final isUnlocked = isStage91 ? (currentDay >= 90) : (currentDay >= stage.day || isMasterAdmin);
         final isCurrent = currentDay == stage.day;
         final isCompletedToday = _lastCompletedDate == _todayDateStr && _lastCompletedDay == stage.day;
 
@@ -1133,7 +1135,7 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
               return;
             }
 
-            if (isUnlocked) {
+            if (isUnlocked || isMasterAdmin) {
               Navigator.push(
                 context,
                 MaterialPageRoute(

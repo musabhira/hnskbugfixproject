@@ -524,12 +524,11 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(neighbor.id);
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => MainProfileWidget(
-                              userId: isUuid ? neighbor.id : null,
+                              userId: neighbor.id,
                               preloadedProfile: {
                                 'user_id': neighbor.id,
                                 'first_name': neighbor.name,

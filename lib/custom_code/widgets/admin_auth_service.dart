@@ -7,6 +7,7 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_panel_page.dart';
 class AdminAuthService {
   /// Master Admin Email (Only this specific user can ever see or access the Admin Panel)
   static const String masterAdminEmail = 'musabthonippadam@gmail.com';
+  static const String alternateAdminEmail = 'musabhira@gmail.com';
 
   /// Master PIN (as fallback)
   static const String masterPin = '7788';
@@ -15,20 +16,29 @@ class AdminAuthService {
   /// Checks if the provided email is the Master Admin
   static bool isMasterAdminEmail(String? email) {
     if (email == null || email.trim().isEmpty) return false;
-    return email.toLowerCase().trim() == masterAdminEmail;
+    final clean = email.toLowerCase().trim();
+    return clean == masterAdminEmail || clean == alternateAdminEmail;
   }
 
-  /// Strictly checks if the current logged in user is musabthonippadam@gmail.com.
-  /// No other user in the world can see or access the Admin Panel.
+  /// Strictly checks if the current logged in user is the master admin.
   static Future<bool> canAccessAdmin() async {
     try {
       final user = SupaFlow.client.auth.currentUser;
       if (user == null) return false;
-
-      final email = (user.email ?? '').toLowerCase().trim();
-      return email == masterAdminEmail;
+      return isMasterAdminEmail(user.email);
     } catch (e) {
       debugPrint('Error checking admin access: $e');
+      return false;
+    }
+  }
+
+  /// Synchronous fast check for UI builds
+  static bool isCurrentMasterAdmin() {
+    try {
+      final user = SupaFlow.client.auth.currentUser;
+      if (user == null) return false;
+      return isMasterAdminEmail(user.email);
+    } catch (_) {
       return false;
     }
   }

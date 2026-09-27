@@ -519,6 +519,17 @@ class ChatMessages extends _$ChatMessages {
     }
   }
 
+  /// 💬 Public helper to safely append an incoming message (e.g. from English Hub robot or real-time)
+  void addIncomingMessage(ChatMessage message) {
+    state.whenData((current) {
+      if (!current.any((m) => m.id == message.id)) {
+        final updated = [message, ...current];
+        state = AsyncData(updated);
+        _saveToCache(updated);
+      }
+    });
+  }
+
   Future<ChatMessage?> sendMessage({
     required String text,
     required String messageType,
@@ -573,6 +584,54 @@ class ChatMessages extends _$ChatMessages {
         time: DateTime.now(),
         senderId: uid,
       );
+
+      // 🤖 Trigger Autonomous President Robot / AI Response for citizen questions & doubts
+      PocketRobotService.typingStatusNotifier.value = {
+        ...PocketRobotService.typingStatusNotifier.value,
+        PocketPresidentService.presidentId: true,
+      };
+
+      Future.delayed(const Duration(milliseconds: 1800), () async {
+        try {
+          final replyText = await PocketPresidentService.generatePresidentRobotReply(
+            userMessage: text,
+            currentUserId: uid,
+          );
+
+          await PocketPresidentService.sendPresidentReplyToUser(
+            targetUserId: uid,
+            replyText: replyText,
+            adminName: 'Presidential AI Desk',
+          );
+
+          final replyMsg = ChatMessage(
+            id: 'pres_reply_${DateTime.now().millisecondsSinceEpoch}',
+            receiverId: uid,
+            senderId: PocketPresidentService.presidentId,
+            messageText: replyText,
+            messageType: 'text',
+            createdAt: DateTime.now(),
+            isOptimistic: false,
+            isRead: false,
+          );
+
+          addIncomingMessage(replyMsg);
+
+          ref.read(conversationsProvider.notifier).updateLastMessage(
+            conversationId: PocketPresidentService.presidentId,
+            message: replyText,
+            time: DateTime.now(),
+            senderId: PocketPresidentService.presidentId,
+          );
+        } catch (e) {
+          debugPrint('Error generating President robot reply: $e');
+        } finally {
+          PocketRobotService.typingStatusNotifier.value = {
+            ...PocketRobotService.typingStatusNotifier.value,
+            PocketPresidentService.presidentId: false,
+          };
+        }
+      });
 
       return userMessage;
     }
@@ -864,6 +923,9 @@ class ChatMessages extends _$ChatMessages {
     required String robotId,
     bool replyAsVoice = false,
   }) async {
+    // 💬 Set live typing indicator on for this robot
+    PocketRobotService.setTyping(robotId, true);
+
     try {
       final history = await PocketRobotService.getRobotChatHistory(uid, robotId);
       final aiReply = await PocketRobotService.generateRobotReply(
@@ -907,6 +969,9 @@ class ChatMessages extends _$ChatMessages {
       } catch (_) {}
     } catch (e) {
       debugPrint('Error triggering robot AI reply: $e');
+    } finally {
+      // 💬 Turn off typing indicator
+      PocketRobotService.setTyping(robotId, false);
     }
   }
 

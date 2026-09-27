@@ -10,6 +10,9 @@ enum ReelGameType {
   spotTheError,      // Find the faulty word in the sentence
   vocabularyMatch,   // Synonym / Antonym / Meaning challenge
   idiomDecrypter,    // Pro idiom / everyday slang in real context
+  collocationClash,  // Natural English pairings (Make vs Do, Heavy vs Strong)
+  phonicsRiddle,     // Silent letters & pronunciation traps
+  tenseShift,        // Fast past-tense / irregular verb blitz
 }
 
 /// 🎯 Model for any Reel English Mini-Game Card
@@ -205,6 +208,92 @@ class PocketReelsGameEngine {
             'English': '"Benevolent" means well-meaning, kindly, and charitable. 💖',
           },
           contextHint: 'Think of "benefit" and "benefactor"',
+        );
+
+      case ReelGameType.collocationClash:
+        return ReelGameCard(
+          id: dynId,
+          gameType: ReelGameType.collocationClash,
+          category: 'NATURAL COLLOCATION ⚔️',
+          prompt: 'Which phrase is natural and grammatically correct?',
+          options: [
+            'Make a decision ✅',
+            'Do a decision ❌',
+            'Take a decision ❌',
+            'Build a decision ❌',
+          ],
+          correctOptionIndex: 0,
+          nativeExplanations: {
+            'Malayalam': 'ഇംഗ്ലീഷിൽ "Make a decision" എന്നാണ് പറയുക ("Do a decision" എന്ന് പറയരുത്)! 🎯',
+            'Tamil': 'ஆங்கிலத்தில் "Make a decision" என்பதே சரியான பயன்பாடு! 🎯',
+            'Hindi': 'अंग्रेजी में "Make a decision" कहा जाता है ("Do a decision" नहीं)! 🎯',
+            'English': 'Standard collocation: we "make a decision" or "reach a decision", never "do a decision". 🎯',
+          },
+          contextHint: 'Common "Make vs Do" trap for non-native speakers',
+          funnyNote: 'You make coffee, and you make decisions! ☕',
+        );
+
+      case ReelGameType.phonicsRiddle:
+        return ReelGameCard(
+          id: dynId,
+          gameType: ReelGameType.phonicsRiddle,
+          category: 'SILENT LETTER TRAP 🤫',
+          prompt: 'Which word has a SILENT letter that is NOT pronounced?',
+          options: [
+            'DOUBT (Silent B) 🤫',
+            'CABIN 🏡',
+            'ROBOT 🤖',
+            'PLANT 🌱',
+          ],
+          correctOptionIndex: 0,
+          nativeExplanations: {
+            'Malayalam': '"DOUBT" എന്ന വാക്കിലെ "B" ഉച്ചരിക്കാറില്ല (Silent B). "ഡൗട്ട്" (/daʊt/) എന്നാണ് പറയേണ്ടത്! 🤫',
+            'Tamil': '"DOUBT" என்பதில் "B" உச்சரிக்கப்படுவதில்லை! /daʊt/ 🤫',
+            'Hindi': '"DOUBT" में "B" साइलेंट होता है, इसे "डाउट" बोलते हैं! 🤫',
+            'English': 'The letter "B" is completely silent in "doubt", "debt", and "subtle"! 🤫',
+          },
+          contextHint: 'Look for the silent consonant',
+          funnyNote: 'English spelling loves sneaking in silent letters! 🕵️',
+        );
+
+      case ReelGameType.tenseShift:
+        return ReelGameCard(
+          id: dynId,
+          gameType: ReelGameType.tenseShift,
+          category: 'PAST TENSE BLITZ ⏳',
+          prompt: 'What is the past tense (V2) of "CHOOSE"?',
+          options: ['Chose 🎯', 'Choosed ❌', 'Chosen ❌', 'Choosen ❌'],
+          correctOptionIndex: 0,
+          nativeExplanations: {
+            'Malayalam': '"Choose" എന്ന വാക്കിന്റെ ഭൂതകാല രൂപം (Past tense) "Chose" ആണ്. "Chosen" എന്നത് V3 (Past Participle) ആണ്! ⏳',
+            'Tamil': '"Choose" என்பதன் இறந்த காலம் "Chose"! ⏳',
+            'Hindi': '"Choose" का past tense "Chose" होता है! ⏳',
+            'English': 'Irregular verb: Choose (V1) -> Chose (V2) -> Chosen (V3). ⏳',
+          },
+          contextHint: 'Single "o" in simple past',
+        );
+
+      case ReelGameType.idiomDecrypter:
+        return ReelGameCard(
+          id: dynId,
+          gameType: ReelGameType.idiomDecrypter,
+          category: 'NATIVE SLANG 🎭',
+          prompt: 'What does "Piece of cake" mean in conversation?',
+          contextSituation: '"Don\'t worry about the interview, it will be a piece of cake!"',
+          options: [
+            'Very easy and simple to do 🍰',
+            'A sweet dessert for lunch 🧁',
+            'A difficult math exam 📚',
+            'A birthday celebration 🎈',
+          ],
+          correctOptionIndex: 0,
+          nativeExplanations: {
+            'Malayalam': '"Piece of cake" എന്നാൽ വളരെ എളുപ്പമുള്ള കാര്യം (Very easy) എന്നാണ് അർത്ഥം! 🍰',
+            'Tamil': '"Piece of cake" என்றால் மிக எளிதான விஷயம்! 🍰',
+            'Hindi': '"Piece of cake" का अर्थ है बहुत आसान काम! 🍰',
+            'English': '"Piece of cake" is a classic idiom meaning something is effortless or very easy to accomplish. 🍰',
+          },
+          contextHint: 'Think of how effortless it is to eat a piece of cake!',
         );
 
       default:
@@ -558,6 +647,198 @@ class PocketReelsGameEngine {
         'English': '"Make yourself at home" is the customary welcoming phrase meaning relax as if you were in your own house. 🏡',
       },
       contextHint: 'Friendly hospitality phrase for visitors',
+    ),
+
+    // -------------------------------------------------------------
+    // 7. COLLOCATION CLASH (Category: collocationClash)
+    // -------------------------------------------------------------
+    ReelGameCard(
+      id: 'game_colloc_1',
+      gameType: ReelGameType.collocationClash,
+      category: 'NATURAL ENGLISH ⚔️',
+      prompt: 'Which phrase is 100% natural and correct?',
+      options: [
+        'Make a mistake 🎯',
+        'Do a mistake ❌',
+        'Have a mistake ❌',
+        'Build a mistake ❌',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ഇംഗ്ലീഷിൽ "Make a mistake" എന്നാണ് പറയുക ("Do a mistake" തെറ്റാണ്)! 🎯',
+        'Tamil': 'ஆங்கிலத்தில் "Make a mistake" என்பதே சரியானது! 🎯',
+        'Hindi': 'अंग्रेजी में "Make a mistake" कहा जाता है! 🎯',
+        'English': 'Standard collocation: we always "make a mistake", never "do a mistake". 🎯',
+      },
+      contextHint: 'Classic Make vs Do pairing',
+    ),
+    ReelGameCard(
+      id: 'game_colloc_2',
+      gameType: ReelGameType.collocationClash,
+      category: 'NATURAL ENGLISH ⚔️',
+      prompt: 'How do native speakers describe very bad traffic?',
+      options: [
+        'Heavy traffic 🚗',
+        'Strong traffic ❌',
+        'Big traffic ❌',
+        'Thick traffic ❌',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ട്രാഫിക്കിനെ കുറിച്ച് പറയുമ്പോൾ "Heavy traffic" എന്നാണ് നാച്ചുറൽ ഇംഗ്ലീഷ്! 🚗',
+        'Tamil': 'அதிக வாகன நெரிசலுக்கு "Heavy traffic" என்று கூறுவர்! 🚗',
+        'Hindi': 'भारी जाम के लिए "Heavy traffic" का प्रयोग होता है! 🚗',
+        'English': 'Traffic collocates with "heavy" or "light", not "strong" or "big". 🚗',
+      },
+      contextHint: 'Think of "heavy rain" and "heavy traffic"',
+    ),
+    ReelGameCard(
+      id: 'game_colloc_3',
+      gameType: ReelGameType.collocationClash,
+      category: 'NATURAL ENGLISH ⚔️',
+      prompt: 'Which request is spoken naturally worldwide?',
+      options: [
+        'Can you take a photo of us? 📸',
+        'Can you click a photo of us? ❌',
+        'Can you catch a photo of us? ❌',
+        'Can you pull a photo of us? ❌',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': 'ആഗോളതലത്തിൽ ഫോട്ടോ എടുക്കാൻ ആവശ്യപ്പെടുമ്പോൾ "Take a photo" (അല്ലെങ്കിൽ Take a picture) എന്നാണ് പറയേണ്ടത്! 📸',
+        'Tamil': 'புகைப்படம் எடுக்க "Take a photo" என்றே உலகளவில் சொல்வார்கள்! 📸',
+        'Hindi': 'ग्लोबल इंग्लिश में "Take a photo" ही सही बोला जाता है! 📸',
+        'English': 'Internationally, native speakers always say "take a photo/picture", whereas "click a photo" is regional Indian English. 📸',
+      },
+      contextHint: 'Standard international photographic collocation',
+    ),
+
+    // -------------------------------------------------------------
+    // 8. PHONICS & SILENT LETTER TRAPS (Category: phonicsRiddle)
+    // -------------------------------------------------------------
+    ReelGameCard(
+      id: 'game_phonics_1',
+      gameType: ReelGameType.phonicsRiddle,
+      category: 'SILENT LETTER TRAP 🤫',
+      prompt: 'In which word is the letter "K" completely SILENT?',
+      options: [
+        'KNIFE 🔪',
+        'KITCHEN 🍳',
+        'KANGAROO 🦘',
+        'KINGDOM 👑',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"KNIFE" എന്ന വാക്ക് "നൈഫ്" (/naɪf/) എന്നാണ് ഉച്ചരിക്കുന്നത്; "K" ശബ്ദമില്ലാത്ത സൈലന്റ് ലെറ്ററാണ്! 🔪',
+        'Tamil': '"KNIFE" என்பதில் "K" உச்சரிக்கப்படுவதில்லை (நைஃப்)! 🔪',
+        'Hindi': '"KNIFE" में "K" साइलेंट होता है, इसे "नाइफ" बोलते हैं! 🔪',
+        'English': 'Whenever "K" precedes "N" at the start of a word (knife, knee, know, knot), the "K" is completely silent. 🔪',
+      },
+      contextHint: 'K + N combination at start of word',
+    ),
+    ReelGameCard(
+      id: 'game_phonics_2',
+      gameType: ReelGameType.phonicsRiddle,
+      category: 'PRONUNCIATION RIDDLE 🎵',
+      prompt: 'Which word perfectly RHYMES with "GREAT"?',
+      options: [
+        'EIGHT (Same /eɪt/ sound) 🎯',
+        'MEAT (/iːt/) ❌',
+        'SEAT (/iːt/) ❌',
+        'BEAT (/iːt/) ❌',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"Great" (/ɡreɪt/) എന്ന വാക്കിന്റെ അതേ സ്വരമാണ് "Eight" (/eɪt/) എന്ന വാക്കിന്. Meat, Seat എന്നിവ വ്യത്യസ്ത സ്വരങ്ങളാണ്! 🎵',
+        'Tamil': '"Great" மற்றும் "Eight" இரண்டும் ஒரே ஓசையைக் கொண்டவை (/eɪt/)! 🎵',
+        'Hindi': '"Great" और "Eight" की ध्वनि एक जैसी (/eɪt/) होती है! 🎵',
+        'English': '"Great" and "Eight" share the /eɪt/ vowel sound, while meat/seat/beat use the /iː/ vowel! 🎵',
+      },
+      contextHint: 'Listen carefully to the vowel sound /eɪt/',
+    ),
+    ReelGameCard(
+      id: 'game_phonics_3',
+      gameType: ReelGameType.phonicsRiddle,
+      category: 'SILENT LETTER TRAP 🤫',
+      prompt: 'Which word has a SILENT letter "W"?',
+      options: [
+        'WRIST (Silent W) ⌚',
+        'WATER 💧',
+        'WINTER ❄️',
+        'WINDOW 🪟',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"WRIST" എന്ന വാക്ക് "റിസ്റ്റ്" (/rɪst/) എന്നാണ് പറയുന്നത്. "W" സൈലന്റാണ്! ⌚',
+        'Tamil': '"WRIST" என்பதில் "W" அமைதியாக இருக்கும் (ரிஸ்ட்)! ⌚',
+        'Hindi': '"WRIST" में "W" साइलेंट होता है (रिस्ट)! ⌚',
+        'English': 'In English, "WR" at the beginning of words (wrist, write, wrong, wrap) always drops the "W" sound. ⌚',
+      },
+      contextHint: 'WR combination rule',
+    ),
+
+    // -------------------------------------------------------------
+    // 9. PAST TENSE SPEED BLITZ (Category: tenseShift)
+    // -------------------------------------------------------------
+    ReelGameCard(
+      id: 'game_tense_1',
+      gameType: ReelGameType.tenseShift,
+      category: 'PAST TENSE BLITZ ⏳',
+      prompt: 'What is the past tense (V2) of "FLY"?',
+      options: [
+        'Flew 🦅',
+        'Flied ❌',
+        'Flown (That is V3) ❌',
+        'Flyed ❌',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"Fly" എന്നതിന്റെ ഭൂതകാലം (Past tense) "Flew" ആണ്. "Flown" എന്നത് V3 (Past Participle) ആണ്! 🦅',
+        'Tamil': '"Fly" என்பதன் இறந்த காலம் "Flew"! 🦅',
+        'Hindi': '"Fly" का past tense "Flew" होता है! 🦅',
+        'English': 'Irregular verb pattern: Fly (V1) -> Flew (V2) -> Flown (V3). 🦅',
+      },
+      contextHint: 'Irregular vowel shift to "-ew"',
+    ),
+    ReelGameCard(
+      id: 'game_tense_2',
+      gameType: ReelGameType.tenseShift,
+      category: 'PAST TENSE BLITZ ⏳',
+      prompt: 'What is the past tense (V2) of "BRING"?',
+      options: [
+        'Brought 📦',
+        'Bought (That means Buy!) ❌',
+        'Brang ❌',
+        'Bringed ❌',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"Bring" (കൊണ്ടുവരിക) എന്നതിന്റെ ഭൂതകാലം "Brought" ആണ്. "Bought" എന്നാൽ "Buy" (വാങ്ങി) എന്നാണർത്ഥം! 📦',
+        'Tamil': '"Bring" என்பதன் இறந்த காலம் "Brought"! (Bought என்பது Buy-ன் இறந்த காலம்) 📦',
+        'Hindi': '"Bring" का past tense "Brought" होता है ("Bought" Buy का होता है)! 📦',
+        'English': 'Bring -> Brought. Watch out: "Bought" is the past of "Buy"! 📦',
+      },
+      contextHint: 'Don\'t confuse Bring (Brought) with Buy (Bought)',
+    ),
+    ReelGameCard(
+      id: 'game_tense_3',
+      gameType: ReelGameType.tenseShift,
+      category: 'PAST TENSE BLITZ ⏳',
+      prompt: 'What is the past tense (V2) of "WEAR"?',
+      options: [
+        'Wore 👔',
+        'Weared ❌',
+        'Worn (That is V3) ❌',
+        'Ware ❌',
+      ],
+      correctOptionIndex: 0,
+      nativeExplanations: {
+        'Malayalam': '"Wear" (ധരിക്കുക) എന്നതിന്റെ ഭൂതകാലം "Wore" ആണ്! 👔',
+        'Tamil': '"Wear" என்பதன் இறந்த காலம் "Wore"! 👔',
+        'Hindi': '"Wear" का past tense "Wore" होता है! 👔',
+        'English': 'Wear (V1) -> Wore (V2) -> Worn (V3). Never say "weared"! 👔',
+      },
+      contextHint: 'Irregular past: Wear -> Wore',
     ),
   ];
 }

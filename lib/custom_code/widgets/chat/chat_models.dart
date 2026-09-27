@@ -65,11 +65,34 @@ class ChatMessage {
       } catch (_) {}
     }
 
+    Map<String, dynamic>? senderProfile = _safeMap(json['sender_profile']);
+    String senderId = json['sender_id']?.toString() ?? '';
+    if ((senderProfile == null || senderProfile.isEmpty) &&
+        parsedMetadata != null &&
+        (parsedMetadata['is_robot'] == true ||
+            parsedMetadata['robot_id'] != null)) {
+      final rId = parsedMetadata['robot_id']?.toString() ?? '';
+      final rName = parsedMetadata['robot_name']?.toString() ??
+          parsedMetadata['sender_name']?.toString() ??
+          'AI Mate';
+      final rAvatar = parsedMetadata['robot_avatar']?.toString() ?? '';
+      final rLevel = (parsedMetadata['robot_level'] as num?)?.toInt() ?? 1;
+      senderProfile = {
+        'name': rName,
+        'profile_image_url': rAvatar,
+        'is_robot': true,
+        'level': rLevel,
+      };
+      if (senderId.isEmpty && rId.isNotEmpty) {
+        senderId = rId;
+      }
+    }
+
     return ChatMessage(
       id: json['id']?.toString() ?? '',
       groupId: json['group_id']?.toString(),
       receiverId: json['receiver_id']?.toString(),
-      senderId: json['sender_id']?.toString() ?? '',
+      senderId: senderId,
       messageText: json['message_text'] ?? json['content'],
       messageType: json['message_type'] ?? 'text',
       fileUrl: json['file_url'],
@@ -78,7 +101,7 @@ class ChatMessage {
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
-      senderProfile: _safeMap(json['sender_profile']),
+      senderProfile: senderProfile,
       replyToMessage: _safeMap(json['reply_to']),
       isOptimistic: json['isOptimistic'] ?? false,
       isPending: json['isPending'] ?? false,

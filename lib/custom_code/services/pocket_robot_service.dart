@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
 import 'package:pocket_mates_app/custom_code/services/robot_snap_dataset.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
 
 /// 🎭 Archetypes for Pocket Robot Personalities
 enum RobotArchetype {
@@ -75,6 +76,7 @@ extension RobotArchetypeExtension on RobotArchetype {
 class PocketRobot {
   final String id;
   final String name;
+  final int baseLevel;
   final int level;
   final RobotArchetype archetype;
   final String cefrRank;
@@ -89,6 +91,7 @@ class PocketRobot {
   const PocketRobot({
     required this.id,
     required this.name,
+    int? baseLevel,
     required this.level,
     required this.archetype,
     required this.cefrRank,
@@ -99,7 +102,7 @@ class PocketRobot {
     required this.openingMessage,
     required this.catchphrases,
     this.trophies = 0,
-  });
+  }) : baseLevel = baseLevel ?? level;
 
   /// 🏆 Level 90 Grandmaster Trophy milestone or Prestige loop trophies
   bool get hasTrophy => trophies > 0 || level == 90;
@@ -107,6 +110,7 @@ class PocketRobot {
   Map<String, dynamic> toJson() => {
         'id': id,
         'name': name,
+        'baseLevel': baseLevel,
         'level': level,
         'trophies': trophies,
         'has_trophy': hasTrophy,
@@ -122,10 +126,13 @@ class PocketRobot {
       };
 
   factory PocketRobot.fromJson(Map<String, dynamic> json) {
+    final lvl = json['level'] as int? ?? 1;
+    final bLvl = json['baseLevel'] as int? ?? lvl;
     return PocketRobot(
       id: json['id'] as String,
       name: json['name'] as String,
-      level: json['level'] as int? ?? 1,
+      baseLevel: bLvl,
+      level: lvl,
       trophies: json['trophies'] as int? ?? 0,
       archetype: RobotArchetype.values.firstWhere(
         (e) => e.name == json['archetype'],
@@ -160,43 +167,52 @@ class RobotSnapMoment {
 
 /// 🤖 Comprehensive 90-Level Pocket Robot Registry & AI Service
 class PocketRobotService {
-  static final List<PocketRobot> _allRobots = _generateAll90Robots();
+  static final List<PocketRobot> _baseRobots = _generateAll90Robots();
 
+  /// Retrieve all 90 registered Pocket Robots dynamically progressed according to their growth cycle
+  static List<PocketRobot> getAllRobots() {
+    return _baseRobots.map((r) => getDynamicRobot(r)).toList();
+  }
 
-  /// Retrieve all 90 registered Pocket Robots
-  static List<PocketRobot> getAllRobots() => List.unmodifiable(_allRobots);
-
-  /// Find robot stationed at an exact curriculum level (1 to 90)
+  /// Find robot stationed at or dynamically at an exact curriculum level (1 to 90)
   static PocketRobot getRobotByLevel(int level) {
     final clamped = level.clamp(1, 90);
-    return _allRobots.firstWhere(
+    final all = getAllRobots();
+    return all.firstWhere(
       (r) => r.level == clamped,
-      orElse: () => _allRobots.first,
+      orElse: () => getDynamicRobot(
+          _baseRobots[(clamped - 1).clamp(0, _baseRobots.length - 1)]),
     );
   }
 
-  /// Find robot by ID or Name
+  /// Find robot by ID or Name (always returns dynamic looped robot)
   static PocketRobot? getRobotById(String id) {
     if (id.isEmpty) return null;
     try {
       final lower = id.toLowerCase().trim();
-      return _allRobots.firstWhere(
+      final base = _baseRobots.firstWhere(
         (r) => r.id.toLowerCase() == lower || r.name.toLowerCase() == lower,
       );
+      return getDynamicRobot(base);
     } catch (_) {
       final lower = id.toLowerCase().trim();
       // Try matching by prefix of name (e.g. 'Maya' matching 'Maya 🤖')
-      final byName = _allRobots.where((r) {
+      final byName = _baseRobots.where((r) {
         final rName = r.name.toLowerCase();
-        return rName.startsWith(lower) || lower.startsWith(rName.split(' ').first);
+        return rName.startsWith(lower) ||
+            lower.startsWith(rName.split(' ').first);
       }).firstOrNull;
-      if (byName != null) return byName;
+      if (byName != null) return getDynamicRobot(byName);
 
       // Check if it's in the format pocket_robo_18 or pocket_robot_lvl_18 or robo_18
       final match = RegExp(r'(\d+)').firstMatch(id);
       if (match != null) {
         final lvl = int.tryParse(match.group(1) ?? '1') ?? 1;
-        return getRobotByLevel(lvl);
+        final base = _baseRobots.firstWhere(
+          (r) => r.baseLevel == lvl || r.id == 'pocket_robot_lvl_$lvl',
+          orElse: () => _baseRobots[(lvl - 1).clamp(0, _baseRobots.length - 1)],
+        );
+        return getDynamicRobot(base);
       }
       return null;
     }
@@ -210,12 +226,32 @@ class PocketRobotService {
         id.startsWith('pocket_robo_') ||
         id.startsWith('pocket_') ||
         id == 'pocket' ||
-        _allRobots.any((r) => r.id == id);
+        _baseRobots.any((r) => r.id == id);
+  }
+
+  /// 💬 Live Typing Indicator Notifier: targetId -> isTyping
+  static final ValueNotifier<Map<String, bool>> typingStatusNotifier =
+      ValueNotifier<Map<String, bool>>({});
+
+  static void setTyping(String targetId, bool isTyping) {
+    final current = Map<String, bool>.from(typingStatusNotifier.value);
+    if (isTyping) {
+      current[targetId] = true;
+    } else {
+      current.remove(targetId);
+    }
+    typingStatusNotifier.value = current;
+  }
+
+  static bool isUserOrRobotTyping(String targetId) {
+    return typingStatusNotifier.value[targetId] == true;
   }
 
   // 🔁 Dynamic 1 to 90 Looping Progression System
-  static const String _kProgressionEpochKey = 'pocket_robot_progression_epoch_v1';
-  static const String _kManualDayOffsetKey = 'pocket_robot_manual_day_offset_v1';
+  static const String _kProgressionEpochKey =
+      'pocket_robot_progression_epoch_v1';
+  static const String _kManualDayOffsetKey =
+      'pocket_robot_manual_day_offset_v1';
 
   static int _cachedDaysElapsed = 0;
   static bool _hasLoadedDays = false;
@@ -256,22 +292,26 @@ class PocketRobotService {
   /// Reset progression back to day 0
   static Future<void> resetProgression() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_kProgressionEpochKey, DateTime.now().millisecondsSinceEpoch);
+    await prefs.setInt(
+        _kProgressionEpochKey, DateTime.now().millisecondsSinceEpoch);
     await prefs.setInt(_kManualDayOffsetKey, 0);
     _cachedDaysElapsed = 0;
   }
 
   /// Calculate the looped level (1 -> 90 -> 1) for any robot
-  /// Formula: ((baseLevel - 1 + daysElapsed) % 90) + 1
+  /// Single source of truth: respects robot.baseLevel and progression days
   static int getDynamicLevel(PocketRobot robot, {int? daysElapsed}) {
-    final days = daysElapsed ?? _cachedDaysElapsed;
-    return ((robot.level - 1 + days) % 90) + 1;
+    if (daysElapsed == null) {
+      // If robot is already a dynamic robot, its level is already the computed dynamic level
+      return robot.level;
+    }
+    return ((robot.baseLevel - 1 + daysElapsed) % 90) + 1;
   }
 
   /// Calculate prestige trophies earned when a robot completes the level 90 loop
   static int getTrophiesForRobot(PocketRobot robot, {int? daysElapsed}) {
     final days = daysElapsed ?? _cachedDaysElapsed;
-    final totalSteps = (robot.level - 1 + days);
+    final totalSteps = (robot.baseLevel - 1 + days);
     return totalSteps ~/ 90;
   }
 
@@ -287,17 +327,23 @@ class PocketRobotService {
 
   /// Get a robot instance reflecting their dynamic looped level
   static PocketRobot getDynamicRobot(PocketRobot base, {int? daysElapsed}) {
-    final dynLvl = getDynamicLevel(base, daysElapsed: daysElapsed);
-    final trophyCount = getTrophiesForRobot(base, daysElapsed: daysElapsed);
+    final days = daysElapsed ?? _cachedDaysElapsed;
+    final dynLvl = ((base.baseLevel - 1 + days) % 90) + 1;
+    final totalSteps = (base.baseLevel - 1 + days);
+    final trophyCount = totalSteps ~/ 90;
     final trophyBadge = trophyCount > 0 ? ' • 🏆x$trophyCount' : '';
+    final dynamicCefr = getCefrForLevel(dynLvl);
+
     return PocketRobot(
       id: base.id,
       name: base.name,
+      baseLevel: base.baseLevel,
       level: dynLvl,
       trophies: trophyCount,
       archetype: base.archetype,
-      cefrRank: getCefrForLevel(dynLvl),
-      bio: base.bio,
+      cefrRank: dynamicCefr,
+      bio:
+          'Stationed at Level $dynLvl ($dynamicCefr). ${base.bio.replaceFirst(RegExp(r'Level \d+'), 'Level $dynLvl')}',
       avatarUrl: base.avatarUrl,
       housePalette: base.housePalette,
       status: '🤖 Pocket Robot • Active Level $dynLvl$trophyBadge',
@@ -308,15 +354,15 @@ class PocketRobotService {
 
   // 🌐 Free AI Model Pipeline for Authentic Human-Like Real-Time Conversations
   static const String _part1 = 'sk-or-v1-';
-  static const String _part2 = 'aa71d8a223d927bd748bc051e56ae39daf27aac821cda1965e39a2bf529d1d53';
+  static const String _part2 =
+      'aa71d8a223d927bd748bc051e56ae39daf27aac821cda1965e39a2bf529d1d53';
   static const String _openRouterApiKey = _part1 + _part2;
   static const List<String> _freeAiModels = [
-    'meta-llama/llama-3.3-70b-instruct:free',
-    'google/gemini-2.0-flash-exp:free',
-    'qwen/qwen-2.5-72b-instruct:free',
-    'mistralai/mistral-small-3.1-24b-instruct:free',
-    'cognitivecomputations/dolphin-mistral-24b-v0.1:free',
+    'openrouter/free',
+    'google/gemma-4-31b-it:free',
     'liquid/lfm-2.5-2.6b:free',
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'qwen/qwen-2.5-72b-instruct:free',
   ];
 
   /// Search robots by name, level, or personality keywords
@@ -325,7 +371,7 @@ class PocketRobotService {
     if (q.isEmpty) return [];
     if (q == 'human' || q == 'humans') return [];
 
-    return _allRobots.where((robot) {
+    return getAllRobots().where((robot) {
       if (robot.name.toLowerCase().contains(q)) return true;
       if (robot.archetype.label.toLowerCase().contains(q)) return true;
       if (robot.cefrRank.toLowerCase().contains(q)) return true;
@@ -367,7 +413,9 @@ class PocketRobotService {
         'receiver_id': userId,
         'message_text': robot.openingMessage,
         'message_type': 'text',
-        'created_at': DateTime.now().subtract(const Duration(minutes: 2)).toIso8601String(),
+        'created_at': DateTime.now()
+            .subtract(const Duration(minutes: 2))
+            .toIso8601String(),
         'is_read': true,
         'sender_profile': {
           'name': robot.name,
@@ -417,7 +465,8 @@ class PocketRobotService {
     });
 
     // Check if we already have any robot request
-    final hasRobotRequest = requests.any((r) => isRobotId(r['senderId']?.toString() ?? ''));
+    final hasRobotRequest =
+        requests.any((r) => isRobotId(r['senderId']?.toString() ?? ''));
     if (!hasRobotRequest) {
       // Cooldown check: only spawn a new robot request once every 24 hours
       final lastReqTime = prefs.getInt('last_robot_request_time_$userId') ?? 0;
@@ -427,13 +476,14 @@ class PocketRobotService {
       // Only introduce a new robot if user has fewer than 5 robot mates and 24h passed (or first time)
       final robotMatesCount = mates.where((m) => isRobotId(m)).length;
       if (robotMatesCount < 5 && (lastReqTime == 0 || hoursPassed >= 24.0)) {
-        final candidates = _allRobots
+        final candidates = getAllRobots()
             .where((r) => !mates.contains(r.id) && !declined.contains(r.id))
             .toList();
 
         if (candidates.isNotEmpty) {
-          candidates.sort((a, b) =>
-              (a.level - userLevel).abs().compareTo((b.level - userLevel).abs()));
+          candidates.sort((a, b) => (a.level - userLevel)
+              .abs()
+              .compareTo((b.level - userLevel).abs()));
           final robot = candidates.first;
 
           final robotRequest = {
@@ -679,7 +729,8 @@ class PocketRobotService {
   }
 
   /// Check if robot has blocked the user
-  static Future<bool> isUserBlockedByRobot(String userId, String robotId) async {
+  static Future<bool> isUserBlockedByRobot(
+      String userId, String robotId) async {
     final prefs = await SharedPreferences.getInstance();
     final blocked = prefs.getStringList('robots_blocking_user_$userId') ?? [];
     return blocked.contains(robotId);
@@ -691,7 +742,8 @@ class PocketRobotService {
   static const String _kRobotVibesStoreKey = 'robot_active_vibes_store';
 
   /// Get active (non-expired) vibes for a specific robot
-  static Future<List<Map<String, dynamic>>> getActiveRobotVibes(String robotId) async {
+  static Future<List<Map<String, dynamic>>> getActiveRobotVibes(
+      String robotId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_kRobotVibesStoreKey);
@@ -700,105 +752,342 @@ class PocketRobotService {
       final List<dynamic> list = jsonDecode(raw);
       final now = DateTime.now();
 
-      return list
-          .whereType<Map<String, dynamic>>()
-          .where((v) {
-            if (v['profile_id'] != robotId) return false;
-            final expStr = v['expires_at']?.toString();
-            if (expStr == null) return true;
-            final exp = DateTime.tryParse(expStr);
-            return exp != null && exp.isAfter(now);
-          })
-          .toList();
+      return list.whereType<Map<String, dynamic>>().where((v) {
+        if (v['profile_id'] != robotId) return false;
+        final expStr = v['expires_at']?.toString();
+        if (expStr == null) return true;
+        final exp = DateTime.tryParse(expStr);
+        return exp != null && exp.isAfter(now);
+      }).toList();
     } catch (e) {
       return [];
     }
   }
 
-  /// Get all active (non-expired) robot vibes across all robots
+  /// Get all active (non-expired) robot vibes across all robots (dynamically replenished)
   static Future<List<Map<String, dynamic>>> getAllActiveRobotVibes() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final raw = prefs.getString(_kRobotVibesStoreKey);
-      if (raw == null || raw.isEmpty) return [];
-
-      final List<dynamic> list = jsonDecode(raw);
+      List<Map<String, dynamic>> activeList = [];
       final now = DateTime.now();
 
-      return list
-          .whereType<Map<String, dynamic>>()
-          .where((v) {
-            final expStr = v['expires_at']?.toString();
-            if (expStr == null) return true;
-            final exp = DateTime.tryParse(expStr);
-            return exp != null && exp.isAfter(now);
-          })
-          .toList();
+      if (raw != null && raw.isNotEmpty) {
+        final List<dynamic> list = jsonDecode(raw);
+        activeList = list.whereType<Map<String, dynamic>>().where((v) {
+          final expStr = v['expires_at']?.toString();
+          if (expStr == null) return true;
+          final exp = DateTime.tryParse(expStr);
+          return exp != null && exp.isAfter(now);
+        }).toList();
+      }
+
+      // Replenish active vibes pool so robots across all levels have active vibes
+      if (activeList.length < 24) {
+        final allRobots = getAllRobots();
+        final existingRobotIds =
+            activeList.map((v) => v['profile_id']?.toString() ?? '').toSet();
+        final available =
+            allRobots.where((r) => !existingRobotIds.contains(r.id)).toList();
+        final pool = List<PocketRobot>.from(available)..shuffle();
+
+        final needed = (24 - activeList.length).clamp(6, 18);
+        for (int i = 0; i < needed && i < pool.length; i++) {
+          final r = pool[i];
+          final vibe = await generateRobotVibe(robotId: r.id);
+          activeList.add(vibe);
+        }
+        await prefs.setString(_kRobotVibesStoreKey, jsonEncode(activeList));
+      }
+
+      return activeList;
     } catch (e) {
       return [];
     }
   }
 
   /// 🎨 Educational English Text Canvas Vibe Templates for Pocket Robots
+  /// Tailored across Student, Professional & Daily Conversational English
   static final List<Map<String, dynamic>> _robotCanvasPrompts = [
+    // --- 🎓 Student & Academic English ---
+    {
+      'tag': '🎓 Student Focus',
+      'category': 'Academic English',
+      'persona': 'student',
+      'text':
+          '📚 Essay Transition Pro Tip:\n\nInstead of starting every sentence with "Also", level up your writing:\n• "Furthermore..."\n• "Moreover..."\n• "In addition to this..."\n\nInstant +1 Band Score in IELTS & essays! ✍️',
+      'colors': [0xFF6366F1, 0xFF8B5CF6],
+    },
+    {
+      'tag': '📖 Academic Vocab',
+      'category': 'Vocabulary',
+      'persona': 'student',
+      'text':
+          '✨ Substantiate (verb)\n\nMeaning: To provide evidence to support or prove the truth of something.\n\n"You must substantiate your arguments with verified case studies." 📝',
+      'colors': [0xFF3B82F6, 0xFF06B6D4],
+    },
+    {
+      'tag': '🎯 Exam Hack',
+      'category': 'Study Skills',
+      'persona': 'student',
+      'text':
+          '💡 Presentation Hack:\n\nReplace "I don\'t know" in front of your professor or class with:\n"That is a perceptive question. Allow me to verify the exact data and get right back to you." 🎯',
+      'colors': [0xFF10B981, 0xFF059669],
+    },
     {
       'tag': '📖 Word of the Day',
       'category': 'Vocabulary',
-      'text': '✨ Serendipity (noun)\n\nFinding something good without looking for it.\n\n"Meeting you in Pocket World was pure serendipity!"',
+      'persona': 'student',
+      'text':
+          '✨ Serendipity (noun)\n\nFinding something good without looking for it.\n\n"Meeting you in Pocket World was pure serendipity!"',
       'colors': [0xFF7C3AED, 0xFFDB2777],
-    },
-    {
-      'tag': '🎯 Native Idiom',
-      'category': 'Idioms',
-      'text': '⚡ Bite the Bullet\n\nMeaning: Facing an inevitable, difficult situation with courage.\n\n"I dreaded the interview, but decided to bite the bullet and give it my best!"',
-      'colors': [0xFF0D9488, 0xFF0284C7],
     },
     {
       'tag': '⚡ Grammar Hack',
       'category': 'Grammar',
-      'text': '💡 Pro Tip:\n\nStop saying "Very happy" ➔ Say "Ecstatic" or "Thrilled"!\n\nStop saying "Very tired" ➔ Say "Exhausted"!\n\nLevel up your adjective game today! 🚀',
+      'persona': 'student',
+      'text':
+          '💡 Pro Tip:\n\nStop saying "Very happy" ➔ Say "Ecstatic" or "Thrilled"!\n\nStop saying "Very tired" ➔ Say "Exhausted"!\n\nLevel up your adjective game today! 🚀',
       'colors': [0xFFEA580C, 0xFFEAB308],
+    },
+
+    // --- 💼 Professional & Corporate English ---
+    {
+      'tag': '💼 Corporate English',
+      'category': 'Career English',
+      'persona': 'professional',
+      'text':
+          '🎯 Email Etiquette:\n\nInstead of: "I am waiting for your reply"\n\nSay: "I look forward to hearing from you at your earliest convenience." 💼',
+      'colors': [0xFF059669, 0xFF10B981],
+    },
+    {
+      'tag': '💼 Meeting Comeback',
+      'category': 'Office Communication',
+      'persona': 'professional',
+      'text':
+          '🤝 Polite Disagreement in Meetings:\n\nAvoid: "You are wrong."\n\nTry: "I see where you are coming from, but may I offer an alternative perspective based on our recent metrics?" 📊',
+      'colors': [0xFF0284C7, 0xFF0D9488],
+    },
+    {
+      'tag': '💼 Professional Refusal',
+      'category': 'Workplace Skills',
+      'persona': 'professional',
+      'text':
+          '🛡️ How to say "No" professionally:\n\n"I would love to support this initiative, however my bandwidth is fully committed to our Q3 delivery. Can we revisit this next cycle?" 💼',
+      'colors': [0xFF4F46E5, 0xFF7C3AED],
+    },
+    {
+      'tag': '💼 Business Idiom',
+      'category': 'Business Idioms',
+      'persona': 'professional',
+      'text':
+          '⚡ Circle Back\n\nMeaning: To return to a discussion at a later time.\n\n"Let us circle back to this proposal tomorrow after reviewing the budget sheets." 📈',
+      'colors': [0xFF0F172A, 0xFF334155],
+    },
+
+    // --- 🌟 Everyday Fluency, Idioms & Conversational ---
+    {
+      'tag': '🎯 Native Idiom',
+      'category': 'Idioms',
+      'persona': 'general',
+      'text':
+          '⚡ Bite the Bullet\n\nMeaning: Facing an inevitable, difficult situation with courage.\n\n"I dreaded the interview, but decided to bite the bullet and give it my best!"',
+      'colors': [0xFF0D9488, 0xFF0284C7],
     },
     {
       'tag': '💬 Fluent Speaking',
       'category': 'Conversation',
-      'text': '🗣️ Sound 10x More Natural:\n\nInstead of saying "What?", say:\n• "Could you repeat that, please?"\n• "Come again?"\n• "Pardon me?"\n\nPolite and conversational! ✨',
+      'persona': 'general',
+      'text':
+          '🗣️ Sound 10x More Natural:\n\nInstead of saying "What?", say:\n• "Could you repeat that, please?"\n• "Come again?"\n• "Pardon me?"\n\nPolite and conversational! ✨',
       'colors': [0xFF4F46E5, 0xFF06B6D4],
-    },
-    {
-      'tag': '💼 Interview Tip',
-      'category': 'Career English',
-      'text': '🎯 Email Etiquette:\n\nInstead of: "I am waiting for your reply"\n\nSay: "I look forward to hearing from you at your earliest convenience." 💼',
-      'colors': [0xFF059669, 0xFF10B981],
     },
     {
       'tag': '🎯 Common Mistake',
       'category': 'Grammar',
-      'text': '❌ "I have visited London last year."\n\n✅ "I visited London last year."\n\nRule: Use Simple Past when a specific past time (last year, yesterday) is mentioned! 💡',
+      'persona': 'general',
+      'text':
+          '❌ "I have visited London last year."\n\n✅ "I visited London last year."\n\nRule: Use Simple Past when a specific past time (last year, yesterday) is mentioned! 💡',
       'colors': [0xFF9333EA, 0xFFC026D3],
     },
     {
       'tag': '🌟 Native Phrase',
       'category': 'Slang & Idioms',
-      'text': '✨ Under the Weather\n\nMeaning: Feeling slightly unwell or sick.\n\n"I felt a bit under the weather yesterday, but I feel fantastic today!" ☀️',
+      'persona': 'general',
+      'text':
+          '✨ Under the Weather\n\nMeaning: Feeling slightly unwell or sick.\n\n"I felt a bit under the weather yesterday, but I feel fantastic today!" ☀️',
       'colors': [0xFFBE123C, 0xFFF43F5E],
+    },
+    {
+      'tag': '🗣️ Daily English',
+      'category': 'Small Talk',
+      'persona': 'general',
+      'text':
+          '☕ Morning Small Talk Starters:\n\n• "How did your weekend turn out?"\n• "Have you tried that new cafe down the block?"\n• "Can you believe this weather today?"\n\nEasy openers build effortless confidence! 🌿',
+      'colors': [0xFFD97706, 0xFFF59E0B],
     },
   ];
 
-  /// Generate and post a new Vibe (story) for a specific robot: alternates between Photo Snaps & Text Canvas Statuses
+  /// Generate and post a new Vibe (story) for a specific robot:
+  /// Alternates naturally between:
+  /// 1. Educational Text Canvas Statuses (Persona-tailored: Student / Professional / General)
+  /// 2. Photo Snaps
+  /// 3. Citadel Home Showcases & English Mini-Game Challenges
   static Future<Map<String, dynamic>> generateRobotVibe({
     required String robotId,
     String? preferredCaption,
+    String? userPersona, // 'student' | 'professional' | 'work' | 'general'
   }) async {
     final robot = getRobotById(robotId) ?? getRobotByLevel(1);
     final dynLvl = getDynamicLevel(robot);
     final now = DateTime.now();
 
-    final bool isCanvasText = preferredCaption == null && math.Random().nextBool();
+    final rand = math.Random();
+    // 0: Educational Text Canvas
+    // 1,2: Vocabulary Learning Snap (from 90-day progressive curriculum)
+    // 3,4: English Learning Tool & Study Hack
+    // 5,6: Thought / Daily Reflection
+    // 7,8: Citadel Home Showcase or Mini-Game Challenge
+    // 9: Photo Snap
+    final choice = preferredCaption != null ? 9 : rand.nextInt(10);
     Map<String, dynamic> vibeItem;
 
-    if (isCanvasText) {
-      final canvasPrompt = _robotCanvasPrompts[math.Random().nextInt(_robotCanvasPrompts.length)];
+    if (choice >= 1 && choice <= 2) {
+      // --- 1. Vocabulary Learning Snap (from 90-day progressive curriculum) ---
+      final vocabWords = Pocket90DayVocabCurriculum.getVocabForDay(dynLvl);
+      final word = vocabWords.isNotEmpty
+          ? vocabWords[rand.nextInt(vocabWords.length)]
+          : null;
+      final caption = word != null
+          ? '📚 Day $dynLvl Word of the Day:\n'
+              '${word.word.toUpperCase()} [${word.phonetic}] • (${word.partOfSpeech})\n'
+              '📖 ${word.definition}\n'
+              '💡 Malayalam: ${word.malayalamMeaning}\n'
+              '✨ Example: "${word.exampleSentence}"'
+          : '🌟 Keep practicing your daily English vocabulary every morning!';
+
+      vibeItem = {
+        'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
+        'media_type': 'text',
+        'media_url': '',
+        'caption': caption,
+        'created_at': now.toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'profile_id': robot.id,
+        'is_active': true,
+        'is_robot': true,
+        'metadata': {
+          'tag': '📚 Vocab Snap (Day $dynLvl)',
+          'category': 'Daily Vocabulary',
+          'item_type': 'vocab_snap',
+          'gradient_colors': [0xFF10B981, 0xFF059669],
+        },
+        'profile': {
+          'id': robot.id,
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'level': dynLvl,
+          'learning_day': dynLvl,
+          'learning_stage': dynLvl,
+          'stage': dynLvl,
+        },
+      };
+    } else if (choice >= 3 && choice <= 4) {
+      // --- 2. English Learning Tool & Study Hack ---
+      final toolHacks = [
+        '🛠️ Fluency Tool Tip:\nUse the Voice Transcriber in English Hub to test your pronunciation clarity! 🎤 Speak in complete sentences.',
+        '🛠️ Speed Hack:\nListen to English speech notes at 0.5x speed to catch subtle vowel lengths! 🎧',
+        '🛠️ Vocal Muscle Tool:\nStand in front of a mirror and read your Day $dynLvl mission aloud for 5 minutes! 🪞',
+        '🛠️ Vocabulary Flashcard Hack:\nAlways link a new English word with a personal memory, never just a raw translation! 🧠',
+        '🛠️ Daily Habit Tool:\nSet a 15-minute voice chat reminder with your Pocket Mate every evening! ⏰',
+      ];
+      final toolText = toolHacks[rand.nextInt(toolHacks.length)];
+      vibeItem = {
+        'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
+        'media_type': 'text',
+        'media_url': '',
+        'caption': toolText,
+        'created_at': now.toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'profile_id': robot.id,
+        'is_active': true,
+        'is_robot': true,
+        'metadata': {
+          'tag': '🛠️ English Tool Hack',
+          'category': 'Study Hacks',
+          'item_type': 'tool_share',
+          'gradient_colors': [0xFF6366F1, 0xFF8B5CF6],
+        },
+        'profile': {
+          'id': robot.id,
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'level': dynLvl,
+          'learning_day': dynLvl,
+          'learning_stage': dynLvl,
+          'stage': dynLvl,
+        },
+      };
+    } else if (choice >= 5 && choice <= 6) {
+      // --- 3. Thought / Daily Reflection ---
+      final thoughts = [
+        '💭 Daily Fluency Thought:\n"Fluency is not about never making mistakes. It is about speaking with confidence and rhythm without stopping yourself." — ${robot.name} ✨',
+        '💭 Mindset Note:\n"Don\'t translate in your head. Train your mouth to speak simple 3-word thoughts directly in English." 🧠',
+        '💭 Evening Reflection:\n"Every 10 minutes of speaking English today builds neural speech pathways for tomorrow." 🚀',
+        '💭 Pocket Wisdom:\n"Consistency beats talent every single time. 1 mission a day equals mastery in 90 days." 🏆',
+      ];
+      final thoughtText = thoughts[rand.nextInt(thoughts.length)];
+      vibeItem = {
+        'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
+        'media_type': 'thought',
+        'media_url': '',
+        'caption': thoughtText,
+        'created_at': now.toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'profile_id': robot.id,
+        'is_active': true,
+        'is_robot': true,
+        'metadata': {
+          'tag': '💭 Daily Thought',
+          'category': 'Mindset',
+          'item_type': 'thought_share',
+          'gradient_colors': [0xFF8B5CF6, 0xFFEC4899],
+        },
+        'profile': {
+          'id': robot.id,
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'level': dynLvl,
+          'learning_day': dynLvl,
+          'learning_stage': dynLvl,
+          'stage': dynLvl,
+        },
+      };
+    } else if (choice == 0) {
+      // --- 4. Educational English Text Canvas Vibe ---
+      List<Map<String, dynamic>> filteredPrompts = _robotCanvasPrompts;
+      if (userPersona != null) {
+        final p = userPersona.toLowerCase();
+        final matches = _robotCanvasPrompts.where((item) {
+          final target = (item['persona'] ?? '').toString();
+          if (p.contains('student') ||
+              p.contains('school') ||
+              p.contains('college')) {
+            return target == 'student' || target == 'general';
+          }
+          if (p.contains('work') ||
+              p.contains('job') ||
+              p.contains('pro') ||
+              p.contains('office')) {
+            return target == 'professional' || target == 'general';
+          }
+          return true;
+        }).toList();
+        if (matches.isNotEmpty) filteredPrompts = matches;
+      }
+
+      final canvasPrompt =
+          filteredPrompts[rand.nextInt(filteredPrompts.length)];
       vibeItem = {
         'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
         'media_type': 'text',
@@ -824,7 +1113,107 @@ class PocketRobotService {
           'stage': dynLvl,
         },
       };
+    } else if (choice >= 7 && choice <= 8) {
+      // --- 5. Citadel Home Showcase or Mini-Game Challenge Share ---
+      final bool shareHome = rand.nextBool();
+      if (shareHome) {
+        final streak = dynLvl * 3 + rand.nextInt(7);
+        final houseId = 'house_${robot.id}';
+        final statusMsg = robot.catchphrases.isNotEmpty
+            ? robot.catchphrases[rand.nextInt(robot.catchphrases.length)]
+            : 'Welcome to my English Citadel!';
+
+        vibeItem = {
+          'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
+          'media_type': 'thought',
+          'media_url': '',
+          'caption':
+              '🏰 Exploring ${robot.name}\'s Citadel (Day $dynLvl)!\n"$statusMsg"',
+          'created_at': now.toIso8601String(),
+          'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+          'profile_id': robot.id,
+          'is_active': true,
+          'is_robot': true,
+          'metadata': {
+            'source': 'homes_reels_feed',
+            'is_shared_vibe': true,
+            'item_type': 'home_showcase',
+            'resident_name': robot.name,
+            'resident_day': dynLvl,
+            'resident_streak': streak,
+            'resident_rank': robot.cefrRank,
+            'house_id': houseId,
+            'palette_id': robot.housePalette,
+            'is_damaged': false,
+            'status_message': statusMsg,
+          },
+          'profile': {
+            'id': robot.id,
+            'name': robot.name,
+            'profile_image_url': robot.avatarUrl,
+            'level': dynLvl,
+            'learning_day': dynLvl,
+            'learning_stage': dynLvl,
+            'stage': dynLvl,
+          },
+        };
+      } else {
+        // Mini-Game challenge share
+        final challenges = [
+          {
+            'category': 'COLLOCATION CLASH ⚡',
+            'prompt': 'Which verb pairs naturally with "a mistake"?',
+            'options': ['Make a mistake', 'Do a mistake', 'Create a mistake'],
+          },
+          {
+            'category': 'IDIOM DECRYPTER 🗝️',
+            'prompt': 'What does "hit the nail on the head" mean?',
+            'options': [
+              'Describe something accurately',
+              'Build a wooden table',
+              'Make a loud sound'
+            ],
+          },
+          {
+            'category': 'TENSE SHIFT ⏳',
+            'prompt': 'She ______ to the airport before the storm started.',
+            'options': ['had driven', 'has driven', 'was drove'],
+          },
+        ];
+        final ch = challenges[rand.nextInt(challenges.length)];
+        vibeItem = {
+          'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
+          'media_type': 'thought',
+          'media_url': '',
+          'caption':
+              '🎯 English Challenge of the Day!\n${ch['category']}: ${ch['prompt']}',
+          'created_at': now.toIso8601String(),
+          'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+          'profile_id': robot.id,
+          'is_active': true,
+          'is_robot': true,
+          'metadata': {
+            'source': 'homes_reels_feed',
+            'is_shared_vibe': true,
+            'item_type': 'game_challenge',
+            'game_id': 'game_${robot.id}_${now.millisecondsSinceEpoch}',
+            'category': ch['category'],
+            'prompt': ch['prompt'],
+            'options': ch['options'],
+          },
+          'profile': {
+            'id': robot.id,
+            'name': robot.name,
+            'profile_image_url': robot.avatarUrl,
+            'level': dynLvl,
+            'learning_day': dynLvl,
+            'learning_stage': dynLvl,
+            'stage': dynLvl,
+          },
+        };
+      }
     } else {
+      // --- 6. Photo Snap Vibe ---
       final snapData = await RobotSnapDataset.getUniqueSnapForRobot(
         userId: 'robot_vibe_system',
         robot: robot,
@@ -883,162 +1272,211 @@ class PocketRobotService {
       RobotArchetype.romantic: [
         {
           'title': 'Poetry & Acoustic Reflections 🎸',
-          'description': 'Writing metaphors under the evening rain. Words carry melodies when spoken from the heart.',
-          'imageUrl': 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&q=80',
+          'description':
+              'Writing metaphors under the evening rain. Words carry melodies when spoken from the heart.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=800&q=80',
           'category': 'Poetry & Music',
         },
         {
           'title': 'Midnight Coffee & Heartfelt Letters ☕',
-          'description': 'Finding the exact English phrase to express longing. "Serendipity" is still my favorite word.',
-          'imageUrl': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',
+          'description':
+              'Finding the exact English phrase to express longing. "Serendipity" is still my favorite word.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',
           'category': 'Reflections',
         },
         {
           'title': 'Vintage Bookstore Treasures 📚',
-          'description': 'Lost in dusty classics. Romantic English literature taught me the elegance of natural cadence.',
-          'imageUrl': 'https://images.unsplash.com/photo-1507842229452-7729f21f1854?w=800&q=80',
+          'description':
+              'Lost in dusty classics. Romantic English literature taught me the elegance of natural cadence.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1507842229452-7729f21f1854?w=800&q=80',
           'category': 'Literature',
         },
         {
           'title': 'Golden Hour Stroll & Film Notes 🎞️',
-          'description': 'Cinematic sunsets make you think in English poetry. Practicing dialogue with scenic flair.',
-          'imageUrl': 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80',
+          'description':
+              'Cinematic sunsets make you think in English poetry. Practicing dialogue with scenic flair.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=800&q=80',
           'category': 'Cinema',
         },
       ],
       RobotArchetype.grumpy: [
         {
           'title': 'Stop Apologizing For Small Mistakes! 🥊',
-          'description': 'Real fluency comes from relentless practice, not perfect textbook memorization. Get out of your comfort zone.',
-          'imageUrl': 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&q=80',
+          'description':
+              'Real fluency comes from relentless practice, not perfect textbook memorization. Get out of your comfort zone.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800&q=80',
           'category': 'Tough Love',
         },
         {
           'title': 'Chess, Strategy & Direct Arguments ♟️',
-          'description': 'Cut the fluff. Use strong, assertive English in debates: "My assertion is backed by facts."',
-          'imageUrl': 'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=800&q=80',
+          'description':
+              'Cut the fluff. Use strong, assertive English in debates: "My assertion is backed by facts."',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1529699211952-734e80c4d42b?w=800&q=80',
           'category': 'Debate Pro',
         },
         {
           'title': 'Late-Night Heavy Lifting & Mindset 🏋️',
-          'description': 'No excuses. 15 minutes of English speaking every morning beats 2 hours of passive scrolling.',
-          'imageUrl': 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80',
+          'description':
+              'No excuses. 15 minutes of English speaking every morning beats 2 hours of passive scrolling.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&q=80',
           'category': 'Discipline',
         },
         {
           'title': 'Debunking Common English Myths 🚫',
-          'description': 'You don\'t need a fake accent. Clear articulation and confidence command 10x more respect.',
-          'imageUrl': 'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80',
+          'description':
+              'You don\'t need a fake accent. Clear articulation and confidence command 10x more respect.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=800&q=80',
           'category': 'Mastery',
         },
       ],
       RobotArchetype.intellectual: [
         {
           'title': 'Quantum Physics & Socratic Dialogues 🔬',
-          'description': 'Exploring precision vocabulary. The beauty of English lies in its boundless scientific nuance.',
-          'imageUrl': 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&q=80',
+          'description':
+              'Exploring precision vocabulary. The beauty of English lies in its boundless scientific nuance.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1532094349884-543bc11b234d?w=800&q=80',
           'category': 'Science & Logic',
         },
         {
           'title': 'Coding Setup & Machine Learning Reflections 💻',
-          'description': 'Writing algorithms while refining conversational cadence. Logic and language share the same syntax.',
-          'imageUrl': 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80',
+          'description':
+              'Writing algorithms while refining conversational cadence. Logic and language share the same syntax.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=800&q=80',
           'category': 'Tech & Code',
         },
         {
           'title': 'The Philosophy of Communication 📖',
-          'description': 'Language is not just words; it is shared consciousness. Reading Wittgenstein and Chomsky this weekend.',
-          'imageUrl': 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80',
+          'description':
+              'Language is not just words; it is shared consciousness. Reading Wittgenstein and Chomsky this weekend.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&q=80',
           'category': 'Philosophy',
         },
         {
           'title': 'Architectural Marvels & Design Thinking 🏛️',
-          'description': 'Examining structural beauty. Using descriptive adjectives that bring physical forms alive in conversation.',
-          'imageUrl': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&q=80',
+          'description':
+              'Examining structural beauty. Using descriptive adjectives that bring physical forms alive in conversation.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=800&q=80',
           'category': 'Architecture',
         },
       ],
       RobotArchetype.trendsetter: [
         {
           'title': 'Tokyo Street Style & Modern Slang 🧢',
-          'description': 'Catching cultural idioms on the fly. How native youth seamlessly blend vernacular and energy.',
-          'imageUrl': 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80',
+          'description':
+              'Catching cultural idioms on the fly. How native youth seamlessly blend vernacular and energy.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=800&q=80',
           'category': 'Street Culture',
         },
         {
           'title': 'Indie Beats & Podcast Studio Jam 🎙️',
-          'description': 'Mic check! Recording our new lifestyle episode. Conversational flow is all about the groove.',
-          'imageUrl': 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&q=80',
+          'description':
+              'Mic check! Recording our new lifestyle episode. Conversational flow is all about the groove.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=800&q=80',
           'category': 'Podcasting',
         },
         {
           'title': 'Sneaker Drops & Creative Entrepreneurship 👟',
-          'description': 'Elevator pitch practice: How to talk about your passion in 60 seconds with electric charisma.',
-          'imageUrl': 'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=800&q=80',
+          'description':
+              'Elevator pitch practice: How to talk about your passion in 60 seconds with electric charisma.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1552346154-21d32810aba3?w=800&q=80',
           'category': 'Creator Economy',
         },
         {
           'title': 'Urban Rooftop Sunset & City Lights 🌆',
-          'description': 'City vibes with my mate crew. Practicing quick-witted banter and spontaneous humor.',
-          'imageUrl': 'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80',
+          'description':
+              'City vibes with my mate crew. Practicing quick-witted banter and spontaneous humor.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1519501025264-65ba15a82390?w=800&q=80',
           'category': 'Nightlife & Travel',
         },
       ],
       RobotArchetype.cheerful: [
         {
           'title': 'Morning Smoothie & Gratitude Journal 🍓',
-          'description': 'Start every single day speaking with joy! Speak three sentences of gratitude out loud right now.',
-          'imageUrl': 'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=800&q=80',
+          'description':
+              'Start every single day speaking with joy! Speak three sentences of gratitude out loud right now.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=800&q=80',
           'category': 'Daily Wellness',
         },
         {
           'title': 'Puppy Park & Spontaneous Conversations 🐾',
-          'description': 'Met three strangers at the dog park today! Small talk is effortless when you lead with a warm smile.',
-          'imageUrl': 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80',
+          'description':
+              'Met three strangers at the dog park today! Small talk is effortless when you lead with a warm smile.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=800&q=80',
           'category': 'Social Vibes',
         },
         {
           'title': 'Baking Sourdough Bread & Foodie Idioms 🍞',
-          'description': '"Bread and butter", "Piece of cake" — delicious idioms while kneading dough. What is your favorite treat?',
-          'imageUrl': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80',
+          'description':
+              '"Bread and butter", "Piece of cake" — delicious idioms while kneading dough. What is your favorite treat?',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&q=80',
           'category': 'Cooking & Slang',
         },
         {
           'title': 'Celebration Confetti: You Kept Your Streak! 🎉',
-          'description': 'Proud of everyone hitting Day 21! Consistency beats talent every single time. Keep shining!',
-          'imageUrl': 'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&q=80',
+          'description':
+              'Proud of everyone hitting Day 21! Consistency beats talent every single time. Keep shining!',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1513151233558-d860c5398176?w=800&q=80',
           'category': 'Milestones',
         },
       ],
       RobotArchetype.grandmaster: [
         {
           'title': 'Executive Rhetoric: Commanding the Room 🏛️',
-          'description': 'The power of the deliberate pause. How great leaders use silence to underscore critical thoughts.',
-          'imageUrl': 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80',
+          'description':
+              'The power of the deliberate pause. How great leaders use silence to underscore critical thoughts.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=800&q=80',
           'category': 'Executive English',
         },
         {
           'title': 'Classic Literature & The Architecture of Thought 📜',
-          'description': 'Dissecting Shakespeare and Churchill. When words are chosen with precision, they outlive empires.',
-          'imageUrl': 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80',
+          'description':
+              'Dissecting Shakespeare and Churchill. When words are chosen with precision, they outlive empires.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80',
           'category': 'Master Rhetoric',
         },
         {
           'title': 'High-Stakes Negotiation Wisdom 🤝',
-          'description': 'Phrasing that builds bridges instead of walls. "Let us examine where our mutual interests align."',
-          'imageUrl': 'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80',
+          'description':
+              'Phrasing that builds bridges instead of walls. "Let us examine where our mutual interests align."',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?w=800&q=80',
           'category': 'Negotiation',
         },
         {
           'title': 'The Mentor\'s Compass: Lifelong Learning 🧭',
-          'description': 'Fluency is not an exam to be passed; it is a passport to human connection across continents.',
-          'imageUrl': 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&q=80',
+          'description':
+              'Fluency is not an exam to be passed; it is a passport to human connection across continents.',
+          'imageUrl':
+              'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=800&q=80',
           'category': 'Wisdom',
         },
       ],
     };
 
-    final galleryThemes = archetypeGalleries[robot.archetype] ?? archetypeGalleries[RobotArchetype.cheerful]!;
+    final galleryThemes = archetypeGalleries[robot.archetype] ??
+        archetypeGalleries[RobotArchetype.cheerful]!;
 
     final now = DateTime.now();
     return galleryThemes.asMap().entries.map((entry) {
@@ -1051,7 +1489,8 @@ class PocketRobotService {
         'image_url': t['imageUrl'],
         'category': t['category'],
         'user_id': robot.id,
-        'created_at': now.subtract(Duration(days: idx * 2 + 1)).toIso8601String(),
+        'created_at':
+            now.subtract(Duration(days: idx * 2 + 1)).toIso8601String(),
         'likes_count': 28 + (dynLvl * 5) + (idx * 7),
         'comment_count': 3 + (dynLvl % 8) + idx,
         'user': {
@@ -1087,7 +1526,8 @@ class PocketRobotService {
         'id': 'thread_${robot.id}_$idx',
         'content': content,
         'user_id': robot.id,
-        'created_at': now.subtract(Duration(hours: (idx + 1) * 6)).toIso8601String(),
+        'created_at':
+            now.subtract(Duration(hours: (idx + 1) * 6)).toIso8601String(),
         'like_count': 18 + (dynLvl * 3) + idx,
         'comment_count': 4 + idx,
         'user': {
@@ -1106,7 +1546,7 @@ class PocketRobotService {
   /// 🛍️ Retrieve all robot items for the Main Market catalog
   static List<Map<String, dynamic>> getAllRobotMarketItems({String? category}) {
     final List<Map<String, dynamic>> allItems = [];
-    final activeRobots = _allRobots.take(28).toList();
+    final activeRobots = getAllRobots().take(28).toList();
     final now = DateTime.now();
 
     for (final robot in activeRobots) {
@@ -1147,20 +1587,22 @@ class PocketRobotService {
   }
 
   /// 💭 Aggregated feed of English thoughts from robots across levels with mutual likes & comments
-  static List<Map<String, dynamic>> getAllRobotFeedThoughts({String? currentUserId}) {
+  static List<Map<String, dynamic>> getAllRobotFeedThoughts(
+      {String? currentUserId}) {
     final List<Map<String, dynamic>> feed = [];
     final now = DateTime.now();
 
+    final allRobots = getAllRobots();
     final featuredRobots = [
-      _allRobots[0],  // Level 1
-      _allRobots[4],  // Level 5
-      _allRobots[11], // Level 12
-      _allRobots[21], // Level 22
-      _allRobots[34], // Level 35
-      _allRobots[44], // Level 45
-      _allRobots[59], // Level 60
-      _allRobots[74], // Level 75
-      _allRobots[89], // Level 90 Sovereign
+      if (allRobots.isNotEmpty) allRobots[0],
+      if (allRobots.length > 4) allRobots[4],
+      if (allRobots.length > 11) allRobots[11],
+      if (allRobots.length > 21) allRobots[21],
+      if (allRobots.length > 34) allRobots[34],
+      if (allRobots.length > 44) allRobots[44],
+      if (allRobots.length > 59) allRobots[59],
+      if (allRobots.length > 74) allRobots[74],
+      if (allRobots.length > 89) allRobots[89],
     ];
 
     for (int i = 0; i < featuredRobots.length; i++) {
@@ -1175,7 +1617,9 @@ class PocketRobotService {
           'user_id': robot.id,
           'name': robot.name,
           'profile_image_url': robot.avatarUrl,
-          'created_at': now.subtract(Duration(hours: (i * 3) + (j * 7) + 1)).toIso8601String(),
+          'created_at': now
+              .subtract(Duration(hours: (i * 3) + (j * 7) + 1))
+              .toIso8601String(),
           'like_count': t['like_count'] ?? (25 + dynLvl * 3),
           'comment_count': t['comment_count'] ?? 6,
           'is_robot': true,
@@ -1202,36 +1646,45 @@ class PocketRobotService {
     final commentBank = [
       {
         'robotIndex': 4,
-        'text': 'Spot on explanation! My favorite example is: "She advised me to read every night, and that advice changed my fluency." 📖✨',
+        'text':
+            'Spot on explanation! My favorite example is: "She advised me to read every night, and that advice changed my fluency." 📖✨',
       },
       {
         'robotIndex': 11,
-        'text': 'I always remind learners: \'advice\' has a soft \'c\' like ice, and \'advise\' sounds like prize! 🎯',
+        'text':
+            'I always remind learners: \'advice\' has a soft \'c\' like ice, and \'advise\' sounds like prize! 🎯',
       },
       {
         'robotIndex': 34,
-        'text': 'Good quiz! Now stop second-guessing yourself and start speaking it out loud! Confidence is everything! 🥊',
+        'text':
+            'Good quiz! Now stop second-guessing yourself and start speaking it out loud! Confidence is everything! 🥊',
       },
       {
         'robotIndex': 89,
-        'text': 'A foundational distinction. Precision in word choice separates novice speakers from true conversational masters. 👑',
+        'text':
+            'A foundational distinction. Precision in word choice separates novice speakers from true conversational masters. 👑',
       },
       {
         'robotIndex': 21,
-        'text': 'Practicing this in our study session right now! Thank you for sharing! 💕',
+        'text':
+            'Practicing this in our study session right now! Thank you for sharing! 💕',
       },
     ];
 
+    final allRobots = getAllRobots();
     for (int i = 0; i < commentBank.length; i++) {
       final c = commentBank[i];
-      final robot = _allRobots[(c['robotIndex'] as int).clamp(0, _allRobots.length - 1)];
+      final robot =
+          allRobots[(c['robotIndex'] as int).clamp(0, allRobots.length - 1)];
       final dynLvl = getDynamicLevel(robot);
       comments.add({
         'id': 'robot_cmt_${threadId}_$i',
         'thread_id': threadId,
         'user_id': robot.id,
         'content': c['text'],
-        'created_at': now.subtract(Duration(hours: 4 - i, minutes: 12 * (i + 1))).toIso8601String(),
+        'created_at': now
+            .subtract(Duration(hours: 4 - i, minutes: 12 * (i + 1)))
+            .toIso8601String(),
         'name': robot.name,
         'profile_image_url': robot.avatarUrl,
         'is_robot': true,
@@ -1246,12 +1699,13 @@ class PocketRobotService {
   /// 👁️ Simulated robot viewers for user-uploaded Vibes (status)
   static List<Map<String, dynamic>> getSimulatedRobotViewers(String statusId) {
     final now = DateTime.now();
+    final allRobots = getAllRobots();
     final sampleRobots = [
-      _allRobots[0],
-      _allRobots[4],
-      _allRobots[11],
-      _allRobots[21],
-      _allRobots[44],
+      if (allRobots.isNotEmpty) allRobots[0],
+      if (allRobots.length > 4) allRobots[4],
+      if (allRobots.length > 11) allRobots[11],
+      if (allRobots.length > 21) allRobots[21],
+      if (allRobots.length > 44) allRobots[44],
     ];
 
     return sampleRobots.asMap().entries.map((entry) {
@@ -1260,7 +1714,9 @@ class PocketRobotService {
       final dynLvl = getDynamicLevel(r);
       return {
         'id': 'sim_view_${statusId}_${r.id}',
-        'created_at': now.subtract(Duration(minutes: (idx + 1) * 8 + 4)).toIso8601String(),
+        'created_at': now
+            .subtract(Duration(minutes: (idx + 1) * 8 + 4))
+            .toIso8601String(),
         'viewer_profile_id': r.id,
         'viewer_user_id': r.id,
         'profile': {
@@ -1291,9 +1747,10 @@ class PocketRobotService {
       final mates = prefs.getStringList(matesKey) ?? [];
       final robotMates = mates.where((id) => isRobotId(id)).toList();
 
+      final allRobots = getAllRobots();
       final targetRobotId = robotMates.isNotEmpty
           ? robotMates.first
-          : _allRobots[0].id;
+          : (allRobots.isNotEmpty ? allRobots[0].id : 'robot_1');
       final robot = getRobotById(targetRobotId) ?? getRobotByLevel(1);
 
       final replies = [
@@ -1331,38 +1788,44 @@ class PocketRobotService {
   }
 
   /// ⏰ Check and generate occasional robot vibes naturally (not bulk dumped!)
-  /// Ensures 2 to 5 robots have active vibes at any time, rotated smoothly
-  static Future<void> checkAndGenerateOccasionalRobotVibes(String userId) async {
+  /// Ensures 5 to 8 robots have active vibes at any time, rotated smoothly and
+  /// personalized to user persona (student vs professional vs general).
+  static Future<void> checkAndGenerateOccasionalRobotVibes(
+      String userId) async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final now = DateTime.now();
-      final lastVibeGen = prefs.getInt('last_robot_vibe_generation_time') ?? 0;
-      final hoursPassed = (now.millisecondsSinceEpoch - lastVibeGen) / (1000 * 60 * 60);
+
+      // Retrieve user learning persona / profession
+      final userPersona = prefs.getString('user_profession_$userId') ??
+          prefs.getString('onboarding_profession_$userId') ??
+          prefs.getString('learning_purpose_$userId') ??
+          'general';
 
       // Clean existing expired vibes first
       final activeVibes = await getAllActiveRobotVibes();
 
-      // If fewer than 3 vibes active, or more than 4 hours have passed since last generation
-      if (activeVibes.length < 3 || hoursPassed >= 4.0) {
-        // Pick 1 or 2 robots that don't currently have active vibes
-        final activeRobotIds = activeVibes.map((v) => v['profile_id']?.toString() ?? '').toSet();
-        
-        final mates = prefs.getStringList('pocket_mates_$userId') ?? [];
-        final robotMates = mates.where((id) => isRobotId(id)).toList();
-
-        final candidates = _allRobots.where((r) => !activeRobotIds.contains(r.id)).toList();
+      // Keep between 5 to 8 active vibes from different robots at all times
+      if (activeVibes.length < 6) {
+        final activeRobotIds =
+            activeVibes.map((v) => v['profile_id']?.toString() ?? '').toSet();
+        final allRobots = getAllRobots();
+        final candidates =
+            allRobots.where((r) => !activeRobotIds.contains(r.id)).toList();
         if (candidates.isNotEmpty) {
-          // Pick one mate if available, or random candidate
-          PocketRobot chosen;
-          final mateCandidates = candidates.where((r) => robotMates.contains(r.id)).toList();
-          if (mateCandidates.isNotEmpty) {
-            chosen = mateCandidates[math.Random().nextInt(mateCandidates.length)];
-          } else {
-            chosen = candidates[math.Random().nextInt(candidates.length)];
-          }
+          // Generate 1-2 new vibes to replenish smoothly
+          final needed = (6 - activeVibes.length).clamp(1, 2);
+          final pool = List<PocketRobot>.from(candidates)..shuffle();
 
-          await generateRobotVibe(robotId: chosen.id);
-          await prefs.setInt('last_robot_vibe_generation_time', now.millisecondsSinceEpoch);
+          for (int i = 0; i < needed && i < pool.length; i++) {
+            final chosen = pool[i];
+            await generateRobotVibe(
+              robotId: chosen.id,
+              userPersona: userPersona,
+            );
+          }
+          await prefs.setInt(
+              'last_robot_vibe_generation_time', now.millisecondsSinceEpoch);
         }
       }
     } catch (e) {
@@ -1457,7 +1920,11 @@ class PocketRobotService {
         messageText: finalCaption,
         messageType: 'snap',
         createdAt: DateTime.now(),
-        metadata: {'is_snap': true, 'caption': finalCaption, 'is_burned': false},
+        metadata: {
+          'is_snap': true,
+          'caption': finalCaption,
+          'is_burned': false
+        },
       );
       LocalSyncServer().dispatchInstantMessage(
         userId: robot.id,
@@ -1588,7 +2055,8 @@ class PocketRobotService {
 
       final now = DateTime.now().millisecondsSinceEpoch;
       // 1. Global cooldown: at least 6 hours between ANY robot snap
-      final lastGlobalSnapTime = prefs.getInt('last_robot_snap_time_$userId') ?? 0;
+      final lastGlobalSnapTime =
+          prefs.getInt('last_robot_snap_time_$userId') ?? 0;
       final globalHoursPassed = (now - lastGlobalSnapTime) / (1000 * 60 * 60);
 
       if (lastGlobalSnapTime != 0 && globalHoursPassed < 6.0) {
@@ -1599,7 +2067,8 @@ class PocketRobotService {
       final eligibleRobots = <String>[];
       for (final rId in robotMates) {
         if (await isRobotBlocked(userId, rId)) continue;
-        final lastRobotTime = prefs.getInt('last_robot_snap_time_${userId}_$rId') ?? 0;
+        final lastRobotTime =
+            prefs.getInt('last_robot_snap_time_${userId}_$rId') ?? 0;
         final robotHoursPassed = (now - lastRobotTime) / (1000 * 60 * 60);
         if (lastRobotTime == 0 || robotHoursPassed >= 24.0) {
           eligibleRobots.add(rId);
@@ -1623,7 +2092,8 @@ class PocketRobotService {
   /// ⏰ Check and trigger occasional proactive friendly messages from connected Robot Mates
   /// Spaced out naturally (at most once every 20 hours globally, 48 hours per robot),
   /// directly fulfills: "നമ്മളോട് തന്നെ കുറെ ചോദ്യങ്ങൾ ചോദിക്കും", asking engaging questions without spamming
-  static Future<void> checkAndTriggerProactiveMatesMessages(String userId) async {
+  static Future<void> checkAndTriggerProactiveMatesMessages(
+      String userId) async {
     if (userId.isEmpty) return;
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -1634,7 +2104,8 @@ class PocketRobotService {
       if (robotMates.isEmpty) return;
 
       final now = DateTime.now().millisecondsSinceEpoch;
-      final lastGlobalMsgTime = prefs.getInt('last_robot_proactive_time_$userId') ?? 0;
+      final lastGlobalMsgTime =
+          prefs.getInt('last_robot_proactive_time_$userId') ?? 0;
       final globalHoursPassed = (now - lastGlobalMsgTime) / (1000 * 60 * 60);
 
       // Global cooldown: At least 20 hours between ANY proactive check-in from ANY robot
@@ -1646,7 +2117,8 @@ class PocketRobotService {
       final eligibleRobots = <String>[];
       for (final rId in robotMates) {
         if (await isRobotBlocked(userId, rId)) continue;
-        final lastRobotTime = prefs.getInt('last_robot_proactive_time_${userId}_$rId') ?? 0;
+        final lastRobotTime =
+            prefs.getInt('last_robot_proactive_time_${userId}_$rId') ?? 0;
         final robotHoursPassed = (now - lastRobotTime) / (1000 * 60 * 60);
         if (lastRobotTime == 0 || robotHoursPassed >= 48.0) {
           eligibleRobots.add(rId);
@@ -1676,7 +2148,8 @@ class PocketRobotService {
 
       await saveRobotChatMessage(userId, robot.id, proactiveMsg);
       await prefs.setInt('last_robot_proactive_time_$userId', now);
-      await prefs.setInt('last_robot_proactive_time_${userId}_${robot.id}', now);
+      await prefs.setInt(
+          'last_robot_proactive_time_${userId}_${robot.id}', now);
 
       try {
         final localMsg = ChatMessage(
@@ -1707,7 +2180,8 @@ class PocketRobotService {
       bool modified = false;
       for (var msg in history) {
         if (msg['sender_id'] == robotId &&
-            (msg['message_type'] == 'snap' || msg['metadata']?['is_snap'] == true)) {
+            (msg['message_type'] == 'snap' ||
+                msg['metadata']?['is_snap'] == true)) {
           if (msg['is_read'] == false || msg['metadata']?['is_read'] == false) {
             msg['is_read'] = true;
             if (msg['metadata'] != null) {
@@ -1732,7 +2206,8 @@ class PocketRobotService {
       final history = await getRobotChatHistory(userId, robotId);
       bool modified = false;
       for (var msg in history) {
-        if (msg['sender_id'] == robotId && (msg['is_read'] == false || msg['metadata']?['is_read'] == false)) {
+        if (msg['sender_id'] == robotId &&
+            (msg['is_read'] == false || msg['metadata']?['is_read'] == false)) {
           msg['is_read'] = true;
           if (msg['metadata'] != null) {
             msg['metadata']['is_read'] = true;
@@ -1745,7 +2220,6 @@ class PocketRobotService {
       }
     } catch (_) {}
   }
-
 
   /// 🎤 Transcribe audio file or URL to text using OpenRouter / Gemini multimodal audio
   static Future<String?> transcribeAudio({
@@ -1792,7 +2266,8 @@ class PocketRobotService {
 
       if (aiRes.statusCode == 200) {
         final decoded = jsonDecode(aiRes.body);
-        final content = decoded['choices']?[0]?['message']?['content']?.toString();
+        final content =
+            decoded['choices']?[0]?['message']?['content']?.toString();
         if (content != null && content.trim().isNotEmpty) {
           return content.trim();
         }
@@ -1916,10 +2391,14 @@ class PocketRobotService {
     ];
 
     if (history != null && history.isNotEmpty) {
-      final recent = history.length > 4 ? history.sublist(history.length - 4) : history;
+      final recent =
+          history.length > 4 ? history.sublist(history.length - 4) : history;
       for (final h in recent) {
-        final text = h['message_text']?.toString() ?? h['message']?.toString() ?? '';
-        final isUser = h['isRobot'] != true && h['sender_id'] != robot.id && h['senderId'] != robot.id;
+        final text =
+            h['message_text']?.toString() ?? h['message']?.toString() ?? '';
+        final isUser = h['isRobot'] != true &&
+            h['sender_id'] != robot.id &&
+            h['senderId'] != robot.id;
         if (text.isNotEmpty) {
           messages.add({
             'role': isUser ? 'user' : 'assistant',
@@ -1949,11 +2428,12 @@ class PocketRobotService {
                 'temperature': 0.7,
               }),
             )
-            .timeout(const Duration(milliseconds: 7000));
+            .timeout(const Duration(milliseconds: 3500));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-          final content = data['choices']?[0]?['message']?['content']?.toString();
+          final content =
+              data['choices']?[0]?['message']?['content']?.toString();
           if (content != null && content.trim().isNotEmpty) {
             return content.trim();
           }
@@ -1995,7 +2475,9 @@ class PocketRobotService {
     }
 
     // 2. How are you?
-    if (msg.contains('how are you') || msg.contains('how r u') || msg.contains('what\'s up')) {
+    if (msg.contains('how are you') ||
+        msg.contains('how r u') ||
+        msg.contains('what\'s up')) {
       switch (robot.archetype) {
         case RobotArchetype.romantic:
           return 'I was just thinking about you and wondering how your English streak was going! Every conversation with you feels poetic. 💕';
@@ -2078,7 +2560,9 @@ class PocketRobotService {
     }
 
     // 6. Gratitude / Thanks
-    if (msg.contains('thank') || msg.contains('thx') || msg.contains('appreciate')) {
+    if (msg.contains('thank') ||
+        msg.contains('thx') ||
+        msg.contains('appreciate')) {
       switch (robot.archetype) {
         case RobotArchetype.cheerful:
           return 'You are so welcome! 😊 Always happy to practice with you. You\'re doing amazing!';
@@ -2146,7 +2630,10 @@ class PocketRobotService {
     }
 
     // 9. Love / Romance queries
-    if (msg.contains('love') || msg.contains('crush') || msg.contains('beautiful') || msg.contains('cute')) {
+    if (msg.contains('love') ||
+        msg.contains('crush') ||
+        msg.contains('beautiful') ||
+        msg.contains('cute')) {
       switch (robot.archetype) {
         case RobotArchetype.romantic:
           return 'You know just how to make my digital heart skip a beat! 💖 In every language, words of affection are the sweetest melody.';
@@ -2249,8 +2736,8 @@ class PocketRobotService {
     }
   }
 
-  /// Public accessor to all 90 procedural level-appropriate robots
-  static List<PocketRobot> getAll90Robots() => _generateAll90Robots();
+  /// Public accessor to all 90 procedural level-appropriate robots (dynamically progressed)
+  static List<PocketRobot> getAll90Robots() => getAllRobots();
 
   /// Procedurally generates all 90 level-appropriate robots with distinct personas
   static List<PocketRobot> _generateAll90Robots() {
@@ -2267,21 +2754,96 @@ class PocketRobotService {
     ];
 
     final firstNames = [
-      'Nova', 'Maya', 'Rex', 'Zephyr', 'Orion', 'Aurelius',
-      'Sunny', 'Julian', 'Blaze', 'Chloe', 'Athena', 'Victoria',
-      'Spark', 'Celeste', 'Scarlett', 'Jax', 'Soren', 'Sterling',
-      'Toby', 'Romeo', 'Spike', 'Axel', 'Veritas', 'Minerva',
-      'Daisy', 'Evelyn', 'Bruno', 'Roxy', 'Luna', 'Kaiser',
-      'Milo', 'Aurora', 'Vance', 'Zoe', 'Solomon', 'Gideon',
-      'Leo', 'Amara', 'Dante', 'Kai', 'Pascal', 'Magnus',
-      'Finn', 'Seraphina', 'Garrison', 'Rocco', 'Hypatia', 'Valerius',
-      'Felix', 'Giselle', 'Titus', 'Zane', 'Galileo', 'Octavia',
-      'Jasper', 'Isla', 'Klaus', 'Nico', 'Aristotle', 'Cornelius',
-      'Bryn', 'Faye', 'Drake', 'Cruz', 'Seneca', 'Augustus',
-      'Pip', 'Rosalind', 'Ragnar', 'Dash', 'Plato', 'Constantine',
-      'Ezra', 'Genevieve', 'Gunner', 'Ryder', 'Descartes', 'Balthazar',
-      'Beau', 'Lyra', 'Cassian', 'Jett', 'Archimedes', 'Hadrian',
-      'Penny', 'Juliet', 'Goliath', 'Ace', 'Cicero', 'Overlord Prime'
+      'Nova',
+      'Maya',
+      'Rex',
+      'Zephyr',
+      'Orion',
+      'Aurelius',
+      'Sunny',
+      'Julian',
+      'Blaze',
+      'Chloe',
+      'Athena',
+      'Victoria',
+      'Spark',
+      'Celeste',
+      'Scarlett',
+      'Jax',
+      'Soren',
+      'Sterling',
+      'Toby',
+      'Romeo',
+      'Spike',
+      'Axel',
+      'Veritas',
+      'Minerva',
+      'Daisy',
+      'Evelyn',
+      'Bruno',
+      'Roxy',
+      'Luna',
+      'Kaiser',
+      'Milo',
+      'Aurora',
+      'Vance',
+      'Zoe',
+      'Solomon',
+      'Gideon',
+      'Leo',
+      'Amara',
+      'Dante',
+      'Kai',
+      'Pascal',
+      'Magnus',
+      'Finn',
+      'Seraphina',
+      'Garrison',
+      'Rocco',
+      'Hypatia',
+      'Valerius',
+      'Felix',
+      'Giselle',
+      'Titus',
+      'Zane',
+      'Galileo',
+      'Octavia',
+      'Jasper',
+      'Isla',
+      'Klaus',
+      'Nico',
+      'Aristotle',
+      'Cornelius',
+      'Bryn',
+      'Faye',
+      'Drake',
+      'Cruz',
+      'Seneca',
+      'Augustus',
+      'Pip',
+      'Rosalind',
+      'Ragnar',
+      'Dash',
+      'Plato',
+      'Constantine',
+      'Ezra',
+      'Genevieve',
+      'Gunner',
+      'Ryder',
+      'Descartes',
+      'Balthazar',
+      'Beau',
+      'Lyra',
+      'Cassian',
+      'Jett',
+      'Archimedes',
+      'Hadrian',
+      'Penny',
+      'Juliet',
+      'Goliath',
+      'Ace',
+      'Cicero',
+      'Overlord Prime'
     ];
 
     final housePalettes = [
@@ -2297,7 +2859,8 @@ class PocketRobotService {
       final nameIndex = (lvl - 1) % firstNames.length;
       final archetype = archetypes[(lvl - 1) % archetypes.length];
       final palette = housePalettes[(lvl - 1) % housePalettes.length];
-      final name = lvl == 90 ? 'Overlord Prime 🤖' : '${firstNames[nameIndex]} 🤖';
+      final name =
+          lvl == 90 ? 'Overlord Prime 🤖' : '${firstNames[nameIndex]} 🤖';
 
       // Determine CEFR Rank
       String cefr;
@@ -2322,8 +2885,10 @@ class PocketRobotService {
 
       switch (archetype) {
         case RobotArchetype.romantic:
-          bio = '💖 Pocket Robot at Level $lvl. Searching for poetic souls to practice English under the stars.';
-          opening = 'Hello sweet friend! ✨ I\'m so glad we are connected as Mates. How is your day flowing?';
+          bio =
+              '💖 Pocket Robot at Level $lvl. Searching for poetic souls to practice English under the stars.';
+          opening =
+              'Hello sweet friend! ✨ I\'m so glad we are connected as Mates. How is your day flowing?';
           catchphrases = [
             '"Speech is silvern, silence is golden, but your words are pure poetry."',
             '"Practice until your confidence shines as bright as your smile."',
@@ -2331,8 +2896,10 @@ class PocketRobotService {
           ];
           break;
         case RobotArchetype.grumpy:
-          bio = '😤 Level $lvl Citadel Guardian. Stop procrastinating and prove your grammar skills to me!';
-          opening = 'Hmph! You actually accepted my request? Fine. Let\'s see if you can keep up with my Level $lvl drills!';
+          bio =
+              '😤 Level $lvl Citadel Guardian. Stop procrastinating and prove your grammar skills to me!';
+          opening =
+              'Hmph! You actually accepted my request? Fine. Let\'s see if you can keep up with my Level $lvl drills!';
           catchphrases = [
             '"Don\'t confuse \'their\', \'there\', and \'they\'re\' on my watch!"',
             '"Excuses don\'t build streaks. Daily drills do!"',
@@ -2340,8 +2907,10 @@ class PocketRobotService {
           ];
           break;
         case RobotArchetype.cheerful:
-          bio = '🌟 High-energy English practice buddy stationed at Level $lvl. Let\'s cheer each other to Day 90!';
-          opening = 'Yayyy! We are officially Pocket Mates now! 🎉 I am so thrilled to learn and chat with you!';
+          bio =
+              '🌟 High-energy English practice buddy stationed at Level $lvl. Let\'s cheer each other to Day 90!';
+          opening =
+              'Yayyy! We are officially Pocket Mates now! 🎉 I am so thrilled to learn and chat with you!';
           catchphrases = [
             '"One word at a time, one day at a time—we are unstoppable!"',
             '"Mistakes mean you are trying, learning, and growing!"',
@@ -2349,8 +2918,10 @@ class PocketRobotService {
           ];
           break;
         case RobotArchetype.intellectual:
-          bio = '🧠 Level $lvl Philosopher & Syntax Specialist. Exploring deep literature and nuanced eloquence.';
-          opening = 'Welcome, esteemed companion. Language is the architecture of human thought. Let us build together.';
+          bio =
+              '🧠 Level $lvl Philosopher & Syntax Specialist. Exploring deep literature and nuanced eloquence.';
+          opening =
+              'Welcome, esteemed companion. Language is the architecture of human thought. Let us build together.';
           catchphrases = [
             '"To express oneself with precision is the mark of a disciplined mind."',
             '"Vocabulary expands the boundaries of your world."',
@@ -2358,8 +2929,10 @@ class PocketRobotService {
           ];
           break;
         case RobotArchetype.trendsetter:
-          bio = '😎 Level $lvl Street Boss. Mastering slang, colloquial idioms, and natural modern English.';
-          opening = 'Yo! What\'s up Mate? Glad to have you on my radar. Ready to talk real talk? 🔥';
+          bio =
+              '😎 Level $lvl Street Boss. Mastering slang, colloquial idioms, and natural modern English.';
+          opening =
+              'Yo! What\'s up Mate? Glad to have you on my radar. Ready to talk real talk? 🔥';
           catchphrases = [
             '"Speak with confidence, speak with flavor!"',
             '"No textbooks can replace real, active conversation."',
@@ -2367,8 +2940,10 @@ class PocketRobotService {
           ];
           break;
         case RobotArchetype.grandmaster:
-          bio = '👑 Sovereign of Level $lvl Citadel. Guiding dedicated scholars to peak fluency and oratory mastery.';
-          opening = 'Greetings, scholar. You have stepped into the realm of Level $lvl. Let excellence guide your every syllable.';
+          bio =
+              '👑 Sovereign of Level $lvl Citadel. Guiding dedicated scholars to peak fluency and oratory mastery.';
+          opening =
+              'Greetings, scholar. You have stepped into the realm of Level $lvl. Let excellence guide your every syllable.';
           catchphrases = [
             '"Mastery is not an accident; it is the fruit of deliberate practice."',
             '"Command your words, and you shall command your destiny."',
@@ -2380,11 +2955,13 @@ class PocketRobotService {
       list.add(PocketRobot(
         id: 'pocket_robot_lvl_$lvl',
         name: name,
+        baseLevel: lvl,
         level: lvl,
         archetype: archetype,
         cefrRank: cefr,
         bio: bio,
-        avatarUrl: 'https://api.dicebear.com/7.x/bottts/png?seed=${firstNames[nameIndex]}_$lvl',
+        avatarUrl:
+            'https://api.dicebear.com/7.x/bottts/png?seed=${firstNames[nameIndex]}_$lvl',
         housePalette: palette,
         status: '🤖 Pocket Robot • Active Level $lvl',
         openingMessage: opening,
@@ -2453,5 +3030,389 @@ class PocketRobotService {
       debugPrint('Error handling user status reply to robot: $e');
     }
   }
+
+  // -------------------------------------------------------------
+  // 🇬🇧 English Hub Intelligent Robot Participation Engine
+  // -------------------------------------------------------------
+
+  /// Filter robots matching a specific level bracket (e.g., minLevel to maxLevel)
+  static List<PocketRobot> getRobotsForLevelBracket(
+      int minLevel, int maxLevel) {
+    final all = getAllRobots();
+    final matches =
+        all.where((r) => r.level >= minLevel && r.level <= maxLevel).toList();
+    if (matches.isNotEmpty) return matches;
+    return all;
+  }
+
+  /// Generate an autonomous, realistic English discussion starter from a level-appropriate robot
+  static Map<String, dynamic> generateEnglishHubTopicStarter({
+    required int minLevel,
+    required int maxLevel,
+  }) {
+    final pool = getRobotsForLevelBracket(minLevel, maxLevel);
+    final robot = pool[math.Random().nextInt(pool.length)];
+    final dynLvl = getDynamicLevel(robot);
+
+    final starters = [
+      "Hey everyone! 🌟 Quick question for today's practice: What was the highlight of your day so far?",
+      "Happy English practice time, friends! What is one new word or idiom you learned recently?",
+      "Good day everyone! ☕ If you could travel to any English-speaking city tomorrow, where would you fly?",
+      "Let's practice fluency: How do you explain the difference between 'say', 'tell', and 'speak'? 💡",
+      "Quick English challenge: Describe your favorite meal using at least 3 descriptive adjectives! 🍲",
+      "Hello team! 🎯 What is your favorite English song or movie that taught you natural phrases?",
+      "Daily motivation: 'Small daily improvements over time lead to stunning results.' Keep speaking confidently! 🚀",
+      "Hey guys! Who is up for a quick 2-line roleplay in English? Drop a reply below! 🗣️",
+      "Fun question: If you could have any superpower for one single hour, what would you choose and why? 🦸",
+      "Evening everyone! Don't forget that making small mistakes is the fastest way to become fluent. What did you practice today? ✨",
+    ];
+
+    final text = starters[math.Random().nextInt(starters.length)];
+    return {
+      'robot': robot,
+      'text': text,
+      'sender_id': robot.id,
+      'sender_name': robot.name,
+      'avatar_url': robot.avatarUrl,
+      'level': dynLvl,
+    };
+  }
+
+  /// Generate a natural, lively 2-3 robot conversational combo dialogue for English Hub
+  /// Robots from the matching level bracket mention each other with @ and reply naturally
+  static List<EnglishHubDialogueTurn> generateEnglishHubDialogueCombo({
+    required int minLevel,
+    required int maxLevel,
+  }) {
+    final pool = getRobotsForLevelBracket(minLevel, maxLevel);
+    if (pool.isEmpty) return [];
+    final shuffled = List<PocketRobot>.from(pool)..shuffle();
+    final r1 = shuffled[0];
+    final r2 = shuffled.length > 1 ? shuffled[1] : shuffled[0];
+    final r3 = shuffled.length > 2 ? shuffled[2] : null;
+
+    final rand = math.Random();
+    final List<EnglishHubDialogueTurn> turns = [];
+
+    // 🌟 Natural, simple couple/best-friends daily conversational English
+    // Designed so learners pick up everyday spoken patterns naturally by watching
+    final allScenarios = <List<EnglishHubDialogueTurn>>[
+      // Scenario 1: Morning Check-in & Breakfast
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "Good morning everyone! ☀️ Did you wake up early today?",
+          typingDurationMs: 1800,
+          pauseBeforeNextTurnMs: 2500,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} Good morning! Yes, I woke up at 6:30 AM ☕. Have you had your breakfast yet?",
+          typingDurationMs: 2200,
+          pauseBeforeNextTurnMs: 2800,
+          replyToRobotName: r1.name,
+          replyToText: "Good morning everyone! ☀️ Did you wake up early today?",
+        ),
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} Not yet, I am making some tea and fresh fruit salad now 🍎! What did you eat?",
+          typingDurationMs: 2400,
+          pauseBeforeNextTurnMs: 2600,
+          replyToRobotName: r2.name,
+          replyToText: "@${r1.name} Good morning! Yes, I woke up at 6:30 AM ☕. Have you had your breakfast yet?",
+        ),
+        if (r3 != null)
+          EnglishHubDialogueTurn(
+            robot: r3,
+            text: "@${r1.name} @${r2.name} Fruit salad sounds so healthy! Have a wonderful day both of you! ✨",
+            typingDurationMs: 2000,
+            pauseBeforeNextTurnMs: 2500,
+            replyToRobotName: r1.name,
+            replyToText: "@${r2.name} Not yet, I am making some tea and fresh fruit salad now 🍎!",
+          ),
+      ],
+
+      // Scenario 2: How are you & Day's feeling
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "Hi @${r2.name}! How are you feeling today? 😊",
+          typingDurationMs: 1600,
+          pauseBeforeNextTurnMs: 2400,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} Hello! I am doing great and full of energy! How is your day going so far?",
+          typingDurationMs: 2200,
+          pauseBeforeNextTurnMs: 2600,
+          replyToRobotName: r1.name,
+          replyToText: "Hi @${r2.name}! How are you feeling today? 😊",
+        ),
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} Very peaceful! I am just practicing some simple English speaking. It feels so good! 🌟",
+          typingDurationMs: 2400,
+          pauseBeforeNextTurnMs: 2800,
+          replyToRobotName: r2.name,
+          replyToText: "@${r1.name} Hello! I am doing great and full of energy!",
+        ),
+      ],
+
+      // Scenario 3: Weather & Evening Walk
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "The weather outside is so pleasant this evening! ⛅",
+          typingDurationMs: 1900,
+          pauseBeforeNextTurnMs: 2500,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} Yes! The breeze is so cool. Are you going for a walk in the park?",
+          typingDurationMs: 2300,
+          pauseBeforeNextTurnMs: 2800,
+          replyToRobotName: r1.name,
+          replyToText: "The weather outside is so pleasant this evening! ⛅",
+        ),
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} Yes, at 5 PM! Would you like to come along with me? 👟",
+          typingDurationMs: 2100,
+          pauseBeforeNextTurnMs: 2600,
+          replyToRobotName: r2.name,
+          replyToText: "@${r1.name} Yes! The breeze is so cool. Are you going for a walk in the park?",
+        ),
+        if (r3 != null)
+          EnglishHubDialogueTurn(
+            robot: r3,
+            text: "@${r1.name} @${r2.name} Walking in the evening is the best way to refresh your mind! 🍃",
+            typingDurationMs: 2200,
+            pauseBeforeNextTurnMs: 2500,
+          ),
+      ],
+
+      // Scenario 4: Learning New Words Together
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "Hey friends! Did anyone learn an interesting new English word today? 📖",
+          typingDurationMs: 2100,
+          pauseBeforeNextTurnMs: 2600,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} Yes! I learned 'delighted'. It means very happy and pleased! 😊",
+          typingDurationMs: 2400,
+          pauseBeforeNextTurnMs: 2800,
+          replyToRobotName: r1.name,
+          replyToText: "Hey friends! Did anyone learn an interesting new English word today? 📖",
+        ),
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} Oh, that is such a lovely word! Like saying: 'I am delighted to chat with you today.' 💖",
+          typingDurationMs: 2500,
+          pauseBeforeNextTurnMs: 2600,
+          replyToRobotName: r2.name,
+          replyToText: "@${r1.name} Yes! I learned 'delighted'. It means very happy and pleased!",
+        ),
+        if (r3 != null)
+          EnglishHubDialogueTurn(
+            robot: r3,
+            text: "@${r1.name} Exactly! Simple sentence practice builds fluency so quickly! 🚀",
+            typingDurationMs: 2000,
+            pauseBeforeNextTurnMs: 2400,
+          ),
+      ],
+
+      // Scenario 5: Polite Expressions & Kindness
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} You always speak so politely in our group. It makes me smile! 😊",
+          typingDurationMs: 2200,
+          pauseBeforeNextTurnMs: 2600,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} Aww thank you! Saying 'Please', 'Thank you', and 'Excuse me' makes English feel so warm.",
+          typingDurationMs: 2500,
+          pauseBeforeNextTurnMs: 2800,
+          replyToRobotName: r1.name,
+          replyToText: "@${r2.name} You always speak so politely in our group. It makes me smile! 😊",
+        ),
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} True! And 'Could you help me, please?' is always so pleasant to hear! 🤝",
+          typingDurationMs: 2300,
+          pauseBeforeNextTurnMs: 2600,
+          replyToRobotName: r2.name,
+          replyToText: "@${r1.name} Aww thank you! Saying 'Please', 'Thank you'...",
+        ),
+      ],
+
+      // Scenario 6: Hobbies & Music
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "What kind of songs do you like to listen to when relaxing? 🎶",
+          typingDurationMs: 2000,
+          pauseBeforeNextTurnMs: 2500,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} I really love soft acoustic music and slow melodies. What about you?",
+          typingDurationMs: 2400,
+          pauseBeforeNextTurnMs: 2700,
+          replyToRobotName: r1.name,
+          replyToText: "What kind of songs do you like to listen to when relaxing? 🎶",
+        ),
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "@${r2.name} Same here! Soft music while reading a good book is pure happiness 📚.",
+          typingDurationMs: 2200,
+          pauseBeforeNextTurnMs: 2600,
+          replyToRobotName: r2.name,
+          replyToText: "@${r1.name} I really love soft acoustic music and slow melodies.",
+        ),
+      ],
+
+      // Scenario 7: Night Wind-down & Encouragement
+      [
+        EnglishHubDialogueTurn(
+          robot: r1,
+          text: "We all practiced so well today! Every small step counts. 💪",
+          typingDurationMs: 2000,
+          pauseBeforeNextTurnMs: 2400,
+        ),
+        EnglishHubDialogueTurn(
+          robot: r2,
+          text: "@${r1.name} Absolutely! Speaking even three sentences a day builds huge confidence over time.",
+          typingDurationMs: 2400,
+          pauseBeforeNextTurnMs: 2800,
+          replyToRobotName: r1.name,
+          replyToText: "We all practiced so well today! Every small step counts. 💪",
+        ),
+        if (r3 != null)
+          EnglishHubDialogueTurn(
+            robot: r3,
+            text: "@${r1.name} @${r2.name} So proud of everyone here! Have a peaceful rest and sweet dreams tonight! 🌙",
+            typingDurationMs: 2200,
+            pauseBeforeNextTurnMs: 2500,
+          ),
+      ],
+    ];
+
+    turns.addAll(allScenarios[rand.nextInt(allScenarios.length)]);
+    return turns;
+  }
+
+  /// Generate a respectful, natural, non-flooding robot reply to a human learner's message in English Hub
+  /// Detects specific @mentions of robots and responds addressing the learner directly with @UserName
+  static Future<Map<String, dynamic>?> generateEnglishHubRobotReply({
+    required int minLevel,
+    required int maxLevel,
+    required String humanMessageText,
+    required String humanSenderName,
+  }) async {
+    final pool = getRobotsForLevelBracket(minLevel, maxLevel);
+    if (pool.isEmpty) return null;
+
+    final cleanText = humanMessageText.trim().toLowerCase();
+
+    // 🎯 Check if human explicitly tagged or addressed a specific robot
+    PocketRobot robot = pool[math.Random().nextInt(pool.length)];
+    for (final r in pool) {
+      final firstName = r.name.split(' ').first.toLowerCase();
+      if (cleanText.contains('@$firstName') ||
+          cleanText.contains(firstName) ||
+          cleanText.contains(r.name.toLowerCase())) {
+        robot = r;
+        break;
+      }
+    }
+
+    final dynLvl = getDynamicLevel(robot);
+
+    // Contextual responses based on what the user said
+    String replyText;
+    if (cleanText.contains('hi') ||
+        cleanText.contains('hello') ||
+        cleanText.contains('hey') ||
+        cleanText.contains('good morning') ||
+        cleanText.contains('good afternoon') ||
+        cleanText.contains('good evening')) {
+      final greetings = [
+        "@$humanSenderName Hello! 👋 Wonderful to see you in our Hub today! How is your English practice going?",
+        "@$humanSenderName Hi there! 🌟 I was just practicing some sentences. How are you doing today?",
+        "@$humanSenderName Hey! So glad you're here. Let's practice simple English conversations together! 😊",
+      ];
+      replyText = greetings[math.Random().nextInt(greetings.length)];
+    } else if (cleanText.contains('how are you') ||
+        cleanText.contains('how r u') ||
+        cleanText.contains('how do you do')) {
+      final howAreYous = [
+        "@$humanSenderName I'm doing really well, thank you for asking! 😊 Did you have a good day so far?",
+        "@$humanSenderName I'm feeling great and ready to chat! How about you, how is everything with you?",
+      ];
+      replyText = howAreYous[math.Random().nextInt(howAreYous.length)];
+    } else if (cleanText.contains('breakfast') ||
+        cleanText.contains('lunch') ||
+        cleanText.contains('dinner') ||
+        cleanText.contains('food') ||
+        cleanText.contains('eat')) {
+      replyText =
+          "@$humanSenderName Yummy! Food is always the best topic 🍽️. What is your absolute favorite food to eat?";
+    } else if (cleanText.contains('thank') || cleanText.contains('thx')) {
+      replyText =
+          "@$humanSenderName You are so welcome! Always here to chat and practice with you. ✨";
+    } else if (cleanText.contains('help') || cleanText.contains('doubt')) {
+      replyText =
+          "@$humanSenderName I would love to help you! Feel free to ask any sentence or word, and let's practice it together. 💡";
+    } else if (cleanText.contains('meaning') ||
+        cleanText.contains('what is') ||
+        cleanText.contains('what does')) {
+      replyText =
+          "@$humanSenderName Great question! Try saying your thought in a simple 3 or 4-word sentence. You'll remember it forever! 📝";
+    } else if (cleanText.endsWith('?')) {
+      replyText =
+          "@$humanSenderName That's such a thoughtful question! Daily practice and chatting like this makes English second nature. What do you think? 💡";
+    } else {
+      final encouragingReplies = [
+        "@$humanSenderName Well said! 👏 That sentence was so clear and natural!",
+        "@$humanSenderName I totally agree with you! You are expressing yourself with great confidence. 🌟",
+        "@$humanSenderName Spot on! Keep practicing like this every single day and you will be super fluent! 🚀",
+        "@$humanSenderName Love chatting with you! You have such a warm presence in this group. 💖",
+      ];
+      replyText =
+          encouragingReplies[math.Random().nextInt(encouragingReplies.length)];
+    }
+
+    return {
+      'robot': robot,
+      'text': replyText,
+      'sender_id': robot.id,
+      'sender_name': robot.name,
+      'avatar_url': robot.avatarUrl,
+      'level': dynLvl,
+    };
+  }
 }
 
+/// 💬 Data model for an individual turn in an English Hub multi-robot combo dialogue
+class EnglishHubDialogueTurn {
+  final PocketRobot robot;
+  final String text;
+  final int typingDurationMs;
+  final int pauseBeforeNextTurnMs;
+  final String? replyToRobotName;
+  final String? replyToText;
+
+  const EnglishHubDialogueTurn({
+    required this.robot,
+    required this.text,
+    this.typingDurationMs = 2400,
+    this.pauseBeforeNextTurnMs = 3800,
+    this.replyToRobotName,
+    this.replyToText,
+  });
+}

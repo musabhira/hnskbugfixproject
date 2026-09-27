@@ -13,6 +13,7 @@ import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/pages/home_page/home_page_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/profile_create_custom_widget.dart';
 import 'package:pocket_mates_app/services/push_notification_service.dart';
 import 'learning_60day/flame_english_house_game.dart';
 import 'learning_60day/pocket_citadel_attack_page.dart';
@@ -98,6 +99,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   // Auth & Form State
   bool _isLoading = false;
+  String? _loadingMessage;
   String? _errorMessage;
   final _loginFormKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
@@ -116,7 +118,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   String _selectedNativeLanguage = 'Malayalam';
   final String _selectedTargetLanguage = 'English';
   String _selectedReferralSource = 'Instagram / Reels';
-  String _selectedEnglishLevel = 'Beginner (Starting Fresh)';
+  String _selectedEnglishLevel = 'Beginner (Starting fresh)';
   String _selectedLearningGoal = 'Daily Fluency & Speaking';
   int _selectedDailyGoalMins = 30;
   String _selectedPlan = 'free'; // 'free' or 'super'
@@ -128,7 +130,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   TimeOfDay? _customStudyTimeOfDay;
   int _routineVariationIndex = 0;
   List<OnboardingRoutineItem> _onboardingRoutineItems = [];
-
 
   // Placement Quiz State
   int _quizStep = 0;
@@ -245,9 +246,17 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   final List<Map<String, dynamic>> _occupations = [
     {'title': 'Student', 'icon': Icons.school_rounded, 'emoji': '🎓'},
-    {'title': 'Working Professional', 'icon': Icons.work_rounded, 'emoji': '💼'},
+    {
+      'title': 'Working Professional',
+      'icon': Icons.work_rounded,
+      'emoji': '💼'
+    },
     {'title': 'Homemaker', 'icon': Icons.home_rounded, 'emoji': '🏡'},
-    {'title': 'Freelancer / Self-Employed', 'icon': Icons.laptop_mac_rounded, 'emoji': '💻'},
+    {
+      'title': 'Freelancer / Self-Employed',
+      'icon': Icons.laptop_mac_rounded,
+      'emoji': '💻'
+    },
   ];
 
   final List<Map<String, dynamic>> _studyTimeSlots = [
@@ -369,13 +378,15 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     }
 
     final studyStartDT = makeTime(studyStartHour, studyStartMin);
-    final studyEndDT = studyStartDT.add(Duration(minutes: _selectedDailyGoalMins));
+    final studyEndDT =
+        studyStartDT.add(Duration(minutes: _selectedDailyGoalMins));
 
     // Study slot (Alarm ALWAYS ON by default as requested!)
     final studyItem = OnboardingRoutineItem(
       id: 'onboarding_study_slot',
       title: 'English Speaking & Practice 🗣️',
-      description: 'Daily speaking sprint & voice coffee table with peers (${_selectedDailyGoalMins}m)',
+      description:
+          'Daily speaking sprint & voice coffee table with peers (${_selectedDailyGoalMins}m)',
       startTime: studyStartDT,
       endTime: studyEndDT,
       color: const Color(0xFF10B981),
@@ -408,7 +419,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           OnboardingRoutineItem(
             id: 'routine_classes',
             title: 'School / College Classes 📚',
-            description: 'Core lectures, notes, lab work & active participation',
+            description:
+                'Core lectures, notes, lab work & active participation',
             startTime: makeTime(8, 30),
             endTime: makeTime(16, 0),
             color: const Color(0xFF818CF8),
@@ -416,7 +428,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           OnboardingRoutineItem(
             id: 'routine_play',
             title: 'Sports, Play & Refreshment ⚽',
-            description: 'Outdoor play, evening snack, tea & unwind with friends',
+            description:
+                'Outdoor play, evening snack, tea & unwind with friends',
             startTime: makeTime(16, 30),
             endTime: makeTime(18, 0),
             color: const Color(0xFF10B981),
@@ -441,7 +454,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           OnboardingRoutineItem(
             id: 'routine_sleep',
             title: 'Night Sleep & Recovery 🌙',
-            description: 'No screens, restful 8 hours of sleep for a fresh brain',
+            description:
+                'No screens, restful 8 hours of sleep for a fresh brain',
             startTime: makeTime(22, 45),
             endTime: makeTime(6, 30),
             color: const Color(0xFF64748B),
@@ -582,7 +596,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           OnboardingRoutineItem(
             id: 'routine_work_morn',
             title: 'Work Sprint & Team Standup 💼',
-            description: 'High-focus work tasks, project deliverables & meetings',
+            description:
+                'High-focus work tasks, project deliverables & meetings',
             startTime: makeTime(9, 0),
             endTime: makeTime(13, 0),
             color: const Color(0xFF3B82F6),
@@ -695,7 +710,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         OnboardingRoutineItem(
           id: 'routine_breakfast',
           title: 'Breakfast Preparation & Family Routine 🍳',
-          description: 'Nutritious cooking, packing lunches & family morning start',
+          description:
+              'Nutritious cooking, packing lunches & family morning start',
           startTime: makeTime(6, 45),
           endTime: makeTime(8, 30),
           color: const Color(0xFF38BDF8),
@@ -703,7 +719,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         OnboardingRoutineItem(
           id: 'routine_chores',
           title: 'Home Care, Organizing & Lunch Prep 🥗',
-          description: 'Household tidying, grocery arrangements & delicious lunch',
+          description:
+              'Household tidying, grocery arrangements & delicious lunch',
           startTime: makeTime(9, 30),
           endTime: makeTime(13, 0),
           color: const Color(0xFF10B981),
@@ -719,7 +736,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         OnboardingRoutineItem(
           id: 'routine_play',
           title: 'Evening Tea & Family Catch-up ☕',
-          description: 'Snacks, talking with family, neighborly chats & walking',
+          description:
+              'Snacks, talking with family, neighborly chats & walking',
           startTime: makeTime(16, 30),
           endTime: makeTime(18, 0),
           color: const Color(0xFFEC4899),
@@ -877,7 +895,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       await _bgmPlayer!.play(UrlSource(
         'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3',
       ));
-
     } catch (e) {
       debugPrint('Non-critical BGM note: $e');
     }
@@ -908,7 +925,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     _pageController.dispose();
     super.dispose();
   }
-
 
   void _nextStep() {
     HapticFeedback.mediumImpact();
@@ -951,7 +967,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     final maxTx = 0.0;
     final minTx = -((worldW * defaultScale) - w);
     final safeMinTx = minTx < maxTx ? minTx : maxTx;
-    final tx = ((w / 2) - (houseCenterX * defaultScale)).clamp(safeMinTx, maxTx);
+    final tx =
+        ((w / 2) - (houseCenterX * defaultScale)).clamp(safeMinTx, maxTx);
 
     final maxTy = 0.0;
     final minTy = -((worldH * defaultScale) - h);
@@ -1038,7 +1055,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           'start_time': s.startTime.toIso8601String(),
                           'end_time': s.endTime.toIso8601String(),
                           'color':
-                              '0x${s.color.value.toRadixString(16).padLeft(8, '0')}',
+                              '0x${s.color.toARGB32().toRadixString(16).padLeft(8, '0')}',
                           'is_completed': s.isCompleted,
                           'source': s.source.index,
                         })
@@ -1063,23 +1080,22 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       } else {
         // If first time, include the standard starters + Schedule at top!
         favTools = [
-          {
-            'title': 'Schedule',
-            'timeAdded': DateTime.now().toIso8601String()
-          },
+          {'title': 'Schedule', 'timeAdded': DateTime.now().toIso8601String()},
           {
             'title': '90-Day English Tasks',
             'timeAdded': DateTime.now().toIso8601String()
           },
           {
             'title': '1-on-1 English Match',
-            'timeAdded':
-                DateTime.now().subtract(const Duration(minutes: 1)).toIso8601String()
+            'timeAdded': DateTime.now()
+                .subtract(const Duration(minutes: 1))
+                .toIso8601String()
           },
           {
             'title': 'Voice Speaking Sprint',
-            'timeAdded':
-                DateTime.now().subtract(const Duration(minutes: 2)).toIso8601String()
+            'timeAdded': DateTime.now()
+                .subtract(const Duration(minutes: 2))
+                .toIso8601String()
           },
         ];
       }
@@ -1121,10 +1137,19 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   Future<void> _handleGoogleSignIn() async {
     setState(() {
       _isLoading = true;
+      _loadingMessage = _isSignUpMode
+          ? 'Connecting with Google...'
+          : 'Signing into PoketMates with Google...';
       _errorMessage = null;
     });
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      if (_isSignUpMode) {
+        await prefs.setBool('pending_signup_flow', true);
+      } else {
+        await prefs.setBool('pending_signup_flow', false);
+      }
       setState(() => _isQuestionSheetMinimized = true);
       await _houseRiseController.forward();
       await _saveOnboardingChoicesLocally();
@@ -1132,9 +1157,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       GoRouter.of(context).prepareAuthEvent();
       await SupaFlow.client.auth.signInWithOAuth(
         OAuthProvider.google,
-        redirectTo: kIsWeb
-            ? null
-            : 'pocketmatesapp://pocketmatesapp.com/auth-callback',
+        redirectTo:
+            kIsWeb ? null : 'pocketmatesapp://pocketmatesapp.com/auth-callback',
       );
     } on AuthException catch (e) {
       if (mounted) setState(() => _errorMessage = e.message);
@@ -1149,12 +1173,16 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     if (!_loginFormKey.currentState!.validate()) return;
     if (_isSignUpMode && !_agreedToTerms) {
       setState(() {
-        _errorMessage = 'Please accept the Terms of Service & Privacy Policy to continue.';
+        _errorMessage =
+            'Please accept the Terms of Service & Privacy Policy to continue.';
       });
       return;
     }
     setState(() {
       _isLoading = true;
+      _loadingMessage = _isSignUpMode
+          ? 'Creating your account...'
+          : 'Signing into PoketMates...';
       _errorMessage = null;
     });
 
@@ -1169,7 +1197,16 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           _passwordController.text,
         );
         if (user != null && mounted) {
-          context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('just_created_account_${user.uid}', true);
+          setState(() {
+            _loadingMessage = 'Account created! Starting profile setup...';
+          });
+          await Future.delayed(const Duration(milliseconds: 300));
+          if (mounted) {
+            context.goNamedAuth(
+                ProfileCreateCustomWidget.routeName, context.mounted);
+          }
         }
       } else {
         final user = await authManager.signInWithEmail(
@@ -1178,7 +1215,17 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           _passwordController.text,
         );
         if (user != null && mounted) {
-          context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('profile_setup_completed_${user.uid}', true);
+          await prefs.setBool('profile_setup_prompted_${user.uid}', true);
+          await prefs.remove('just_created_account_${user.uid}');
+          setState(() {
+            _loadingMessage = 'Welcome back! Opening your home...';
+          });
+          await Future.delayed(const Duration(milliseconds: 350));
+          if (mounted) {
+            context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+          }
         }
       }
     } on AuthException catch (e) {
@@ -1209,13 +1256,80 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           ? const Color(0xFF0F172A)
           : const Color(0xFF0284C7),
       resizeToAvoidBottomInset: false,
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        child: _buildCurrentModeWidget(),
+      body: Stack(
+        children: [
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            child: _buildCurrentModeWidget(),
+          ),
+          if (_isLoading)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withValues(alpha: 0.75),
+                child: BackdropFilter(
+                  filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Center(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 36),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 28, vertical: 26),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(
+                          color:
+                              const Color(0xFF10B981).withValues(alpha: 0.35),
+                          width: 1.5,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.5),
+                            blurRadius: 24,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(
+                            width: 38,
+                            height: 38,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3.0,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                  Color(0xFF10B981)),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text(
+                            _loadingMessage ?? 'Connecting to Pocket Mates...',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'Please wait a moment...',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF94A3B8),
+                              fontSize: 12.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
-
 
   Widget _buildCurrentModeWidget() {
     switch (_mode) {
@@ -1264,8 +1378,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               child: IconButton(
                 onPressed: _toggleAudioMute,
                 icon: Icon(
-                  _isAudioMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                  color: _isAudioMuted ? Colors.white38 : const Color(0xFFFACC15),
+                  _isAudioMuted
+                      ? Icons.volume_off_rounded
+                      : Icons.volume_up_rounded,
+                  color:
+                      _isAudioMuted ? Colors.white38 : const Color(0xFFFACC15),
                   size: 22,
                 ),
                 tooltip: _isAudioMuted ? 'Unmute BGM' : 'Mute BGM',
@@ -1276,7 +1393,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           // Main Center Content
           Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 20.0),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 28.0, vertical: 20.0),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 420),
                 child: Column(
@@ -1363,7 +1481,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       label: 'I ALREADY HAVE AN ACCOUNT',
                       onPressed: () {
                         HapticFeedback.lightImpact();
-                        setState(() => _mode = WelcomeMode.signIn);
+                        setState(() {
+                          _isSignUpMode = false;
+                          _errorMessage = null;
+                          _mode = WelcomeMode.signIn;
+                        });
                       },
                     ),
 
@@ -1430,7 +1552,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               child: SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     children: [
                       Container(
@@ -1451,7 +1574,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           child: LinearProgressIndicator(
                             value: progress,
                             minHeight: 12,
-                            backgroundColor: const Color(0xFF27272A).withValues(alpha: 0.8),
+                            backgroundColor:
+                                const Color(0xFF27272A).withValues(alpha: 0.8),
                             valueColor: const AlwaysStoppedAnimation<Color>(
                               Color(0xFF58CC02),
                             ),
@@ -1485,8 +1609,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                         child: IconButton(
                           onPressed: _toggleAudioMute,
                           icon: Icon(
-                            _isAudioMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                            color: _isAudioMuted ? Colors.white38 : const Color(0xFFFACC15),
+                            _isAudioMuted
+                                ? Icons.volume_off_rounded
+                                : Icons.volume_up_rounded,
+                            color: _isAudioMuted
+                                ? Colors.white38
+                                : const Color(0xFFFACC15),
                             size: 20,
                           ),
                         ),
@@ -1643,19 +1771,23 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               GestureDetector(
                 onTap: () {
                   HapticFeedback.selectionClick();
-                  setState(() => _isQuestionSheetMinimized = !_isQuestionSheetMinimized);
+                  setState(() =>
+                      _isQuestionSheetMinimized = !_isQuestionSheetMinimized);
                 },
                 behavior: HitTestBehavior.opaque,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 14.0, vertical: 8.0),
                   child: Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2.5),
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.08)),
                         ),
                         child: Text(
                           '${_currentStep + 1}/$_totalSteps',
@@ -1743,7 +1875,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                 AnimatedBuilder(
                   animation: _ambientController,
                   builder: (context, _) {
-                    final floatY = math.sin(_ambientController.value * 2 * math.pi) * 8.0;
+                    final floatY =
+                        math.sin(_ambientController.value * 2 * math.pi) * 8.0;
 
                     return Stack(
                       children: [
@@ -1778,11 +1911,13 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                   Center(
                     child: Container(
                       margin: EdgeInsets.only(bottom: h * 0.25),
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 10),
                       decoration: BoxDecoration(
                         color: Colors.black.withValues(alpha: 0.6),
                         borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+                        border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.25)),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withValues(alpha: 0.3),
@@ -1814,7 +1949,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       },
     );
   }
-
 
   Widget _buildChimneySmoke() {
     return AnimatedBuilder(
@@ -1899,10 +2033,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               color: const Color(0xFF1E293B),
               border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
             ),
-            child: const Icon(Icons.tune_rounded, color: Color(0xFF38BDF8), size: 30),
+            child: const Icon(Icons.tune_rounded,
+                color: Color(0xFF38BDF8), size: 30),
           ),
           const SizedBox(height: 16),
-          _buildMascotSpeechBubble("5 quick questions to personalize your plan 🎯"),
+          _buildMascotSpeechBubble(
+              "5 quick questions to personalize your plan 🎯"),
           const SizedBox(height: 14),
           Text(
             "We'll tune your daily topics, high-impact vocabulary, and speaking level.",
@@ -1924,7 +2060,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   Widget _buildStep2NativeLanguage() {
     return _buildStepContainer(
       title: 'What is your native language?',
-      mascotHint: 'Select your native tongue so we can guide your practice comfortably.',
+      mascotHint:
+          'Select your native tongue so we can guide your practice comfortably.',
       child: ListView.separated(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
@@ -1968,7 +2105,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             isSelected: isSelected,
             onTap: () {
               HapticFeedback.selectionClick();
-              setState(() => _selectedReferralSource = source['title'] as String);
+              setState(
+                  () => _selectedReferralSource = source['title'] as String);
             },
           );
         },
@@ -2040,7 +2178,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   Widget _buildStepOccupation() {
     return _buildStepContainer(
       title: 'What is your current role?',
-      mascotHint: 'Tell us your daily routine style so we can shape your schedule perfectly.',
+      mascotHint:
+          'Tell us your daily routine style so we can shape your schedule perfectly.',
       child: ListView.separated(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
@@ -2124,10 +2263,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           GestureDetector(
             onTap: () async {
               HapticFeedback.selectionClick();
-              final now = TimeOfDay.now();
               final picked = await showTimePicker(
                 context: context,
-                initialTime: _customStudyTimeOfDay ?? const TimeOfDay(hour: 20, minute: 0),
+                initialTime: _customStudyTimeOfDay ??
+                    const TimeOfDay(hour: 20, minute: 0),
                 builder: (context, child) {
                   return Theme(
                     data: Theme.of(context).copyWith(
@@ -2213,8 +2352,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1E293B),
                       borderRadius: BorderRadius.circular(8),
@@ -2250,7 +2389,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   Widget _buildStepDailyCommitment() {
     return _buildStepContainer(
       title: 'Daily Language Learning Commitment',
-      mascotHint: 'How much time can you comfortably dedicate to English speaking daily?',
+      mascotHint:
+          'How much time can you comfortably dedicate to English speaking daily?',
       child: ListView.separated(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
@@ -2287,7 +2427,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   Widget _buildStepScheduleReview() {
     return _buildStepContainer(
       title: 'Schedule',
-      mascotHint: 'Here is your balanced full-day plan from wake-up to sleep. Daily study alarm is set!',
+      mascotHint:
+          'Here is your balanced full-day plan from wake-up to sleep. Daily study alarm is set!',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -2314,7 +2455,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                   });
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
                     borderRadius: BorderRadius.circular(16),
@@ -2387,9 +2529,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: isStudy
-            ? const Color(0xFF0F231C)
-            : const Color(0xFF131722),
+        color: isStudy ? const Color(0xFF0F231C) : const Color(0xFF131722),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isStudy
@@ -2485,8 +2625,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981)
-                                .withValues(alpha: 0.25),
+                            color:
+                                const Color(0xFF10B981).withValues(alpha: 0.25),
                             borderRadius: BorderRadius.circular(6),
                             border: Border.all(
                                 color: const Color(0xFF10B981), width: 0.8),
@@ -2671,7 +2811,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: const Color(0xFFF97316).withValues(alpha: 0.35)),
+              border: Border.all(
+                  color: const Color(0xFFF97316).withValues(alpha: 0.35)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withValues(alpha: 0.4),
@@ -2718,17 +2859,20 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           const SizedBox(height: 14),
           _buildWidgetInstructionItem(
             stepNumber: '1',
-            text: 'Bite-sized practice: $_selectedDailyGoalMins minutes a day builds lasting English fluency.',
+            text:
+                'Bite-sized practice: $_selectedDailyGoalMins minutes a day builds lasting English fluency.',
           ),
           const SizedBox(height: 10),
           _buildWidgetInstructionItem(
             stepNumber: '2',
-            text: 'Live speaking: Practice immediately in friendly voice rooms.',
+            text:
+                'Live speaking: Practice immediately in friendly voice rooms.',
           ),
           const SizedBox(height: 10),
           _buildWidgetInstructionItem(
             stepNumber: '3',
-            text: 'Streak rewards: Keep your streak alive to unlock rooms & items!',
+            text:
+                'Streak rewards: Keep your streak alive to unlock rooms & items!',
           ),
         ],
       ),
@@ -2737,18 +2881,19 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
-
   // --- Step 8: 3-Month Achievement Promise ---
   Widget _buildStep8ThreeMonthPromise() {
     return _buildStepContainer(
       title: "What you will achieve in 3 months:",
-      mascotHint: "Every feature in PoketMates is designed to make you speak fluently.",
+      mascotHint:
+          "Every feature in PoketMates is designed to make you speak fluently.",
       child: Column(
         children: [
           _buildPromiseCard(
             emoji: '🎓',
             title: 'Official PoketMates Certificate',
-            desc: 'Earn a verified Certificate of English Spoken Fluency upon graduation.',
+            desc:
+                'Earn a verified Certificate of English Spoken Fluency upon graduation.',
             badge: 'CERTIFIED',
             badgeColor: const Color(0xFFFACC15),
           ),
@@ -2756,7 +2901,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           _buildPromiseCard(
             emoji: '⚔️',
             title: 'Pocket Citadel Battles & Defense',
-            desc: 'Gamified learning: attack, defend, and master vocabulary through tactical battles.',
+            desc:
+                'Gamified learning: attack, defend, and master vocabulary through tactical battles.',
             badge: 'GAMIFIED',
             badgeColor: const Color(0xFFEF4444),
           ),
@@ -2764,7 +2910,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           _buildPromiseCard(
             emoji: '👥',
             title: 'Lifelong Friends & Live Lounges',
-            desc: 'Connect with conversation buddies in real-time coffee tables & voice chat rooms.',
+            desc:
+                'Connect with conversation buddies in real-time coffee tables & voice chat rooms.',
             badge: 'COMMUNITY',
             badgeColor: const Color(0xFF38BDF8),
           ),
@@ -2772,7 +2919,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           _buildPromiseCard(
             emoji: '🗣️',
             title: 'Confident Conversational Fluency',
-            desc: 'Overcome speaking fear and master 500+ everyday practical idioms & phrases.',
+            desc:
+                'Overcome speaking fear and master 500+ everyday practical idioms & phrases.',
             badge: 'FLUENCY',
             badgeColor: const Color(0xFF10B981),
           ),
@@ -2780,7 +2928,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           _buildPromiseCard(
             emoji: '👑',
             title: 'Crowns, Ranks & Citadel Growth',
-            desc: 'Collect crowns, level up your avatar, and upgrade your house to a Grand Citadel.',
+            desc:
+                'Collect crowns, level up your avatar, and upgrade your house to a Grand Citadel.',
             badge: 'REWARDS',
             badgeColor: const Color(0xFFA855F7),
           ),
@@ -2790,7 +2939,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       buttonText: 'CONTINUE',
     );
   }
-
 
   // --- Step 9: Plan Choice (Super vs Free) ---
   Widget _buildStep9PlanChoice() {
@@ -2859,7 +3007,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           // Find my level
           _buildOptionCard(
             title: 'Find my level',
-            subtitle: 'Take a quick 2-minute check to find your starting level.',
+            subtitle:
+                'Take a quick 2-minute check to find your starting level.',
             leadingEmoji: '🔵',
             badge: '2-MIN QUIZ',
             badgeColor: const Color(0xFF818CF8),
@@ -2919,7 +3068,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       onContinue: () {
         if (_selectedQuizAnswer == null) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Please select an answer to continue')),
+            const SnackBar(
+                content: Text('Please select an answer to continue')),
           );
           return;
         }
@@ -2941,7 +3091,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           _nextStep();
         }
       },
-      buttonText: _quizStep == _placementQuestions.length - 1 ? 'FINISH CHECK' : 'NEXT',
+      buttonText:
+          _quizStep == _placementQuestions.length - 1 ? 'FINISH CHECK' : 'NEXT',
     );
   }
 
@@ -2969,7 +3120,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           // Google 1-Tap Button
           _buildSocialButton(
             label: 'Save with Google',
-            iconWidget: const FaIcon(FontAwesomeIcons.google, color: Color(0xFFDB4437), size: 19),
+            iconWidget: const FaIcon(FontAwesomeIcons.google,
+                color: Color(0xFFDB4437), size: 19),
             backgroundColor: Colors.white,
             textColor: Colors.black87,
             onPressed: _handleGoogleSignIn,
@@ -3008,7 +3160,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       showDefaultButton: false,
     );
   }
-
 
   // =========================================================================
   // 3. SIGN IN / SIGN UP SCREEN ("I ALREADY HAVE AN ACCOUNT")
@@ -3080,7 +3231,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 440),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 24.0),
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 22.0, vertical: 24.0),
                   decoration: BoxDecoration(
                     color: const Color(0xE80F172A),
                     borderRadius: BorderRadius.circular(24),
@@ -3163,9 +3315,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                             const SizedBox(height: 18),
                             Row(
                               children: [
-                                const Expanded(child: Divider(color: Color(0xFF27272A))),
+                                const Expanded(
+                                    child: Divider(color: Color(0xFF27272A))),
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
                                   child: Text(
                                     'OR WITH EMAIL',
                                     style: GoogleFonts.inter(
@@ -3176,7 +3330,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                     ),
                                   ),
                                 ),
-                                const Expanded(child: Divider(color: Color(0xFF27272A))),
+                                const Expanded(
+                                    child: Divider(color: Color(0xFF27272A))),
                               ],
                             ),
                             const SizedBox(height: 18),
@@ -3184,11 +3339,14 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                             // Error Message Banner
                             if (_errorMessage != null) ...[
                               Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 14, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF7F1D1D).withValues(alpha: 0.6),
+                                  color: const Color(0xFF7F1D1D)
+                                      .withValues(alpha: 0.6),
                                   borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: const Color(0xFFEF4444)),
+                                  border: Border.all(
+                                      color: const Color(0xFFEF4444)),
                                 ),
                                 child: Row(
                                   children: [
@@ -3216,13 +3374,16 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                               focusNode: _emailFocusNode,
                               keyboardType: TextInputType.emailAddress,
                               textInputAction: TextInputAction.next,
-                              style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+                              style: GoogleFonts.inter(
+                                  color: Colors.white, fontSize: 14),
                               decoration: _inputDecoration(
                                 hint: 'name@example.com',
                                 icon: Icons.mail_outline_rounded,
                               ),
                               validator: (val) =>
-                                  (val == null || !val.contains('@')) ? 'Valid email required' : null,
+                                  (val == null || !val.contains('@'))
+                                      ? 'Valid email required'
+                                      : null,
                             ),
                             const SizedBox(height: 12),
 
@@ -3233,21 +3394,27 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                               obscureText: _obscurePassword,
                               textInputAction: TextInputAction.done,
                               onFieldSubmitted: (_) => _handleEmailAuth(),
-                              style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+                              style: GoogleFonts.inter(
+                                  color: Colors.white, fontSize: 14),
                               decoration: _inputDecoration(
                                 hint: 'Password (min 6 characters)',
                                 icon: Icons.lock_outline_rounded,
                                 suffixIcon: IconButton(
                                   icon: Icon(
-                                    _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                                    _obscurePassword
+                                        ? Icons.visibility_off
+                                        : Icons.visibility,
                                     color: const Color(0xFFA1A1AA),
                                     size: 19,
                                   ),
-                                  onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                                  onPressed: () => setState(() =>
+                                      _obscurePassword = !_obscurePassword),
                                 ),
                               ),
                               validator: (val) =>
-                                  (val == null || val.length < 6) ? 'Password must be 6+ chars' : null,
+                                  (val == null || val.length < 6)
+                                      ? 'Password must be 6+ chars'
+                                      : null,
                             ),
 
                             // 📜 Terms & Conditions Checkbox (App Store & Play Store mandatory)
@@ -3256,17 +3423,20 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                               GestureDetector(
                                 onTap: () {
                                   HapticFeedback.selectionClick();
-                                  setState(() => _agreedToTerms = !_agreedToTerms);
+                                  setState(
+                                      () => _agreedToTerms = !_agreedToTerms);
                                 },
                                 behavior: HitTestBehavior.opaque,
                                 child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     AnimatedContainer(
-                                      duration: const Duration(milliseconds: 180),
+                                      duration:
+                                          const Duration(milliseconds: 180),
                                       width: 20,
                                       height: 20,
-                                      margin: const EdgeInsets.only(top: 2, right: 10),
+                                      margin: const EdgeInsets.only(
+                                          top: 2, right: 10),
                                       decoration: BoxDecoration(
                                         color: _agreedToTerms
                                             ? const Color(0xFF10B981)
@@ -3281,14 +3451,16 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                         boxShadow: _agreedToTerms
                                             ? [
                                                 BoxShadow(
-                                                  color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                                                  color: const Color(0xFF10B981)
+                                                      .withValues(alpha: 0.35),
                                                   blurRadius: 6,
                                                 ),
                                               ]
                                             : null,
                                       ),
                                       child: _agreedToTerms
-                                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 15)
+                                          ? const Icon(Icons.check_rounded,
+                                              color: Colors.white, size: 15)
                                           : null,
                                     ),
                                     Expanded(
@@ -3307,10 +3479,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                                 color: const Color(0xFF38BDF8),
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w600,
-                                                decoration: TextDecoration.underline,
+                                                decoration:
+                                                    TextDecoration.underline,
                                               ),
                                               recognizer: TapGestureRecognizer()
-                                                ..onTap = () => _showTermsSheet(isPrivacy: false),
+                                                ..onTap = () => _showTermsSheet(
+                                                    isPrivacy: false),
                                             ),
                                             const TextSpan(text: ' and '),
                                             TextSpan(
@@ -3319,10 +3493,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                                 color: const Color(0xFF38BDF8),
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.w600,
-                                                decoration: TextDecoration.underline,
+                                                decoration:
+                                                    TextDecoration.underline,
                                               ),
                                               recognizer: TapGestureRecognizer()
-                                                ..onTap = () => _showTermsSheet(isPrivacy: true),
+                                                ..onTap = () => _showTermsSheet(
+                                                    isPrivacy: true),
                                             ),
                                           ],
                                         ),
@@ -3337,10 +3513,16 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
                             // Submit Button
                             _buildDuolingoButton(
-                              label: _isSignUpMode ? 'CREATE ACCOUNT' : 'LOG IN',
-                              backgroundColor: _isSignUpMode ? const Color(0xFF10B981) : const Color(0xFFFACC15),
-                              shadowColor: _isSignUpMode ? const Color(0xFF059669) : const Color(0xFFCA8A04),
-                              textColor: _isSignUpMode ? Colors.white : Colors.black,
+                              label:
+                                  _isSignUpMode ? 'CREATE ACCOUNT' : 'LOG IN',
+                              backgroundColor: _isSignUpMode
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFFFACC15),
+                              shadowColor: _isSignUpMode
+                                  ? const Color(0xFF059669)
+                                  : const Color(0xFFCA8A04),
+                              textColor:
+                                  _isSignUpMode ? Colors.white : Colors.black,
                               onPressed: _isLoading ? null : _handleEmailAuth,
                             ),
 
@@ -3410,7 +3592,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: const Color(0xFF1E293B).withValues(alpha: 0.85),
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                    border:
+                        Border.all(color: Colors.white.withValues(alpha: 0.15)),
                   ),
                   child: const Icon(
                     Icons.arrow_back_ios_new_rounded,
@@ -3421,11 +3604,13 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               ),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B).withValues(alpha: 0.85),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.35)),
+                  border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.35)),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -3469,7 +3654,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                 Row(
                   children: [
                     Icon(
-                      isPrivacy ? Icons.privacy_tip_rounded : Icons.gavel_rounded,
+                      isPrivacy
+                          ? Icons.privacy_tip_rounded
+                          : Icons.gavel_rounded,
                       color: const Color(0xFF10B981),
                       size: 22,
                     ),
@@ -3485,7 +3672,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       ),
                     ),
                     IconButton(
-                      icon: const Icon(Icons.close_rounded, color: Colors.white60),
+                      icon: const Icon(Icons.close_rounded,
+                          color: Colors.white60),
                       onPressed: () => Navigator.pop(ctx),
                     ),
                   ],
@@ -3519,7 +3707,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       },
     );
   }
-
 
   // =========================================================================
   // REUSABLE UI BUILDERS
@@ -3598,7 +3785,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFFACC15), width: size > 40 ? 1.8 : 1.2),
+        border: Border.all(
+            color: const Color(0xFFFACC15), width: size > 40 ? 1.8 : 1.2),
         boxShadow: [
           BoxShadow(
             color: const Color(0xFFFACC15).withValues(alpha: 0.25),
@@ -3623,7 +3811,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       decoration: BoxDecoration(
         color: const Color(0xFF1E293B).withValues(alpha: 0.9),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1.2),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.3),
@@ -3661,10 +3850,13 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         duration: const Duration(milliseconds: 160),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF1E293B) : const Color(0xFF141416).withValues(alpha: 0.9),
+          color: isSelected
+              ? const Color(0xFF1E293B)
+              : const Color(0xFF141416).withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? const Color(0xFF10B981) : const Color(0xFF27272A),
+            color:
+                isSelected ? const Color(0xFF10B981) : const Color(0xFF27272A),
             width: isSelected ? 1.8 : 1.0,
           ),
           boxShadow: isSelected
@@ -3684,7 +3876,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               const SizedBox(width: 12),
             ] else if (leadingIcon != null) ...[
               Icon(leadingIcon,
-                  color: isSelected ? const Color(0xFF10B981) : const Color(0xFFA1A1AA),
+                  color: isSelected
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFFA1A1AA),
                   size: 20),
               const SizedBox(width: 12),
             ],
@@ -3701,15 +3895,18 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           style: GoogleFonts.inter(
                             color: Colors.white,
                             fontSize: 14,
-                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            fontWeight:
+                                isSelected ? FontWeight.w700 : FontWeight.w500,
                           ),
                         ),
                       ),
                       if (badge != null) ...[
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
-                            color: (badgeColor ?? const Color(0xFF10B981)).withValues(alpha: 0.18),
+                            color: (badgeColor ?? const Color(0xFF10B981))
+                                .withValues(alpha: 0.18),
                             borderRadius: BorderRadius.circular(8),
                             border: Border.all(
                               color: badgeColor ?? const Color(0xFF10B981),
@@ -3748,9 +3945,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               height: 19,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
+                color:
+                    isSelected ? const Color(0xFF10B981) : Colors.transparent,
                 border: Border.all(
-                  color: isSelected ? const Color(0xFF10B981) : const Color(0xFF52525B),
+                  color: isSelected
+                      ? const Color(0xFF10B981)
+                      : const Color(0xFF52525B),
                   width: 1.6,
                 ),
               ),
@@ -3847,7 +4047,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   Widget _buildSocialButton({
     required String label,
     required Widget iconWidget,
-
     required Color backgroundColor,
     required Color textColor,
     required VoidCallback onPressed,
@@ -3857,7 +4056,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       decoration: BoxDecoration(
         color: backgroundColor,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFE4E4E7).withValues(alpha: 0.2)),
+        border:
+            Border.all(color: const Color(0xFFE4E4E7).withValues(alpha: 0.2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.25),
@@ -3968,9 +4168,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     ),
                     if (badge != null) ...[
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: (badgeColor ?? const Color(0xFF10B981)).withValues(alpha: 0.15),
+                          color: (badgeColor ?? const Color(0xFF10B981))
+                              .withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(6),
                           border: Border.all(
                             color: badgeColor ?? const Color(0xFF10B981),
@@ -4006,9 +4208,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
-
-
-
   InputDecoration _inputDecoration({
     required String hint,
     required IconData icon,
@@ -4016,7 +4215,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   }) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 13.5),
+      hintStyle:
+          GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 13.5),
       filled: true,
       fillColor: const Color(0xFF1E293B).withValues(alpha: 0.65),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -4024,7 +4224,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       suffixIcon: suffixIcon,
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.12), width: 1.2),
+        borderSide:
+            BorderSide(color: Colors.white.withValues(alpha: 0.12), width: 1.2),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
@@ -4040,7 +4241,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       ),
     );
   }
-
 }
 
 /// ☁️ Soft, Puffy Dreamy Cumulus Cloud Clusters for Onboarding House Reveal
@@ -4085,7 +4285,8 @@ class FluffyCloudClusterPainter extends CustomPainter {
     final radii = [95.0, 115.0, 105.0, 120.0, 110.0, 90.0, 105.0, 100.0];
 
     for (int i = 0; i < centers.length; i++) {
-      canvas.drawCircle(Offset(centers[i].dx, centers[i].dy + 8), radii[i], shadowPaint);
+      canvas.drawCircle(
+          Offset(centers[i].dx, centers[i].dy + 8), radii[i], shadowPaint);
     }
     for (int i = 0; i < centers.length; i++) {
       canvas.drawCircle(centers[i], radii[i], paint);

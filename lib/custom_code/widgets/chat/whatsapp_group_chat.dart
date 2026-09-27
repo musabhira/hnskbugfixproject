@@ -8,7 +8,8 @@ import 'chat_models.dart';
 import 'voice_player.dart';
 import 'voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart' hide supabaseClientProvider;
+import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart'
+    hide supabaseClientProvider;
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
@@ -17,6 +18,8 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
 
+import 'dart:async';
+import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:google_fonts/google_fonts.dart' hide Config;
@@ -38,7 +41,8 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import '../image_viewer.dart';
-import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart' show AIService;
+import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart'
+    show AIService;
 import 'package:pocket_mates_app/custom_code/widgets/gallery_search_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
@@ -56,6 +60,7 @@ import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_learning_hub_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import 'package:pocket_mates_app/auth/auth_helper.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
@@ -129,7 +134,23 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   final Set<String> _loadingAnalysisMessageIds = {};
 
   bool _isAdminBlockedFromHub = false;
-  bool get _isEnglishHubGroup => widget.groupName.contains('English Hub');
+  bool get _isEnglishHubGroup {
+    final name = widget.groupName.toLowerCase();
+    final id = widget.groupId.toLowerCase();
+    return name.contains('english hub') ||
+        name.contains('english learning') ||
+        name.contains('english practice') ||
+        name.contains('english') ||
+        id.contains('english') ||
+        id.contains('hub');
+  }
+
+  // 🤖 English Hub Autonomous Robot Simulation Timers & Rate Limiters
+  Timer? _hubRobotIdleConversationTimer;
+  Timer? _hubRobotReplyCooldownTimer;
+  bool _isRobotReplyingToHuman = false;
+  int _hubMinLevel = 1;
+  int _hubMaxLevel = 90;
 
   // Instagram-style Mate Request & Inquiry state
   bool _isMate = false;
@@ -213,7 +234,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               child: Container(
                 width: 38,
                 height: 4,
-                decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2)),
               ),
             ),
             const SizedBox(height: 12),
@@ -233,7 +256,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                 const Spacer(),
                 Text(
                   'Tap to insert',
-                  style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
+                  style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
                 ),
               ],
             ),
@@ -275,7 +299,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             ),
                           ),
                           const SizedBox(width: 8),
-                          const Icon(Icons.arrow_forward_ios_rounded, color: Colors.amberAccent, size: 12),
+                          const Icon(Icons.arrow_forward_ios_rounded,
+                              color: Colors.amberAccent, size: 12),
                         ],
                       ),
                     ),
@@ -310,7 +335,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             decoration: BoxDecoration(
               color: const Color(0xFFFFD700).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(5),
-              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 0.8),
+              border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                  width: 0.8),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -361,9 +388,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   ),
                   const SizedBox(width: 5),
                   _buildHubRibbonChip(
-                    icon: _isSttListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                    icon: _isSttListening
+                        ? Icons.mic_rounded
+                        : Icons.mic_none_rounded,
                     label: _isSttListening ? 'Listening...' : 'Dictate',
-                    color: _isSttListening ? Colors.redAccent : const Color(0xFF10B981),
+                    color: _isSttListening
+                        ? Colors.redAccent
+                        : const Color(0xFF10B981),
                     onTap: _toggleEnglishSpeechDictation,
                   ),
                   const SizedBox(width: 5),
@@ -374,7 +405,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const EnglishLearningHubPage()),
+                        MaterialPageRoute(
+                            builder: (_) => const EnglishLearningHubPage()),
                       );
                     },
                   ),
@@ -457,7 +489,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final stage = cfg['stage'] ?? cfg['learning_day'] ?? cfg['level'];
       final talisman = cfg['talismanId']?.toString();
       if (stage != null && stage is num && stage > 0) {
-        _userAvatarConfigCache[targetId] = VectorAvatarConfig.getEvolutionAvatarForStage(
+        _userAvatarConfigCache[targetId] =
+            VectorAvatarConfig.getEvolutionAvatarForStage(
           stage.toInt().clamp(1, 90),
           talismanId: talisman,
         );
@@ -482,8 +515,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
         // Pagination Trigger: Call loadMoreMessages when reaching the top of scrollable area
         // In reverse: true, maxScrollExtent is the "top" (older messages)
-        if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 250) {
-          final notifier = ref.read(chatMessagesProvider(widget.groupId).notifier);
+        if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 250) {
+          final notifier =
+              ref.read(chatMessagesProvider(widget.groupId).notifier);
           if (notifier.hasMoreMessages && !notifier.isLoadingMore) {
             notifier.loadMoreMessages();
           }
@@ -510,6 +545,269 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     Future.microtask(() => ref
         .read(chatMessagesProvider(widget.groupId).notifier)
         .cleanupOldMessages());
+
+    // 🤖 Initialize English Hub Autonomous Robot Participation
+    if (_isEnglishHubGroup) {
+      _initEnglishHubRobotParticipation();
+    }
+  }
+
+  void _initEnglishHubRobotParticipation() {
+    // 1. Resolve level bracket from groupName e.g., 'English Hub (Lvl 6 - 11)'
+    final bracketMatch =
+        RegExp(r'lvl\s*(\d+)\s*-\s*(\d+)', caseSensitive: false)
+            .firstMatch(widget.groupName);
+    if (bracketMatch != null) {
+      _hubMinLevel = int.tryParse(bracketMatch.group(1) ?? '1') ?? 1;
+      _hubMaxLevel = int.tryParse(bracketMatch.group(2) ?? '90') ?? 90;
+    }
+
+    // 2. Schedule natural multi-robot combo dialogues at a comfortable, medium cadence
+    _scheduleEnglishHubIdleRobotCheck(initial: true);
+  }
+
+  void _scheduleEnglishHubIdleRobotCheck({bool initial = false}) {
+    _hubRobotIdleConversationTimer?.cancel();
+    // Fast initial check: 2-3s so users immediately see lively conversation upon entering
+    final delaySeconds = initial
+        ? (2 + math.Random().nextInt(2))
+        : (14 + math.Random().nextInt(10));
+    _hubRobotIdleConversationTimer =
+        Timer(Duration(seconds: delaySeconds), () async {
+      if (!mounted || !_isEnglishHubGroup) return;
+      await _postAutonomousRobotComboDialogueIfIdle();
+      if (mounted && _isEnglishHubGroup) {
+        _scheduleEnglishHubIdleRobotCheck(initial: false);
+      }
+    });
+  }
+
+  /// 🤖 Posts a natural 2 or 3 robot conversational combo dialogue with real typing indicators
+  Future<void> _postAutonomousRobotComboDialogueIfIdle() async {
+    try {
+      if (!mounted || !_isEnglishHubGroup) return;
+      final messages =
+          ref.read(chatMessagesProvider(widget.groupId)).value ?? [];
+      final now = DateTime.now();
+
+      // If a human just messaged in the last 15 seconds, yield floor to the human
+      if (messages.isNotEmpty) {
+        final lastMsg = messages.first;
+        if (!PocketRobotService.isRobotId(lastMsg.senderId) &&
+            now.difference(lastMsg.createdAt).inSeconds < 15) {
+          return;
+        }
+      }
+
+      final turns = PocketRobotService.generateEnglishHubDialogueCombo(
+        minLevel: _hubMinLevel,
+        maxLevel: _hubMaxLevel,
+      );
+      if (turns.isEmpty) return;
+
+      // Deliver each turn sequentially with a visible typing indicator
+      for (int i = 0; i < turns.length; i++) {
+        if (!mounted || !_isEnglishHubGroup) break;
+        final turn = turns[i];
+
+        // 1. Show live typing indicator for this specific robot
+        PocketRobotService.setTyping(turn.robot.id, true);
+        await Future.delayed(Duration(milliseconds: turn.typingDurationMs));
+        if (!mounted || !_isEnglishHubGroup) {
+          PocketRobotService.setTyping(turn.robot.id, false);
+          break;
+        }
+        PocketRobotService.setTyping(turn.robot.id, false);
+
+        // 2. Deliver message
+        final msgTime = DateTime.now();
+        final robotMsg = ChatMessage(
+          id: 'hub_robot_${turn.robot.id}_${msgTime.millisecondsSinceEpoch}',
+          groupId: widget.groupId,
+          senderId: turn.robot.id,
+          messageText: turn.text,
+          messageType: 'text',
+          createdAt: msgTime,
+          isRead: true,
+          senderProfile: {
+            'name': turn.robot.name,
+            'profile_image_url': turn.robot.avatarUrl,
+            'is_robot': true,
+            'level': turn.robot.level,
+          },
+          replyToMessage: turn.replyToRobotName != null
+              ? {
+                  'sender_name': turn.replyToRobotName,
+                  'message_text': turn.replyToText ?? '',
+                }
+              : null,
+          metadata: {
+            'is_robot': true,
+            'robot_id': turn.robot.id,
+            'robot_name': turn.robot.name,
+            'robot_avatar': turn.robot.avatarUrl,
+            'robot_level': turn.robot.level,
+            'sender_name': turn.robot.name,
+            if (turn.replyToRobotName != null) ...{
+              'reply_to': {
+                'sender_name': turn.replyToRobotName,
+                'message_text': turn.replyToText ?? '',
+              },
+            },
+          },
+        );
+
+        // Persist to Supabase group_messages so it syncs across users
+        // NOTE: sender_id must be null because sender_id in group_messages is a UUID referencing users(id)
+        try {
+          await _supabase.from('group_messages').insert({
+            'group_id': widget.groupId,
+            'sender_id': null,
+            'message_text': turn.text,
+            'message_type': 'text',
+            'created_at': msgTime.toIso8601String(),
+            'metadata': {
+              'is_robot': true,
+              'robot_id': turn.robot.id,
+              'robot_name': turn.robot.name,
+              'robot_avatar': turn.robot.avatarUrl,
+              'robot_level': turn.robot.level,
+              'sender_name': turn.robot.name,
+              if (turn.replyToRobotName != null) ...{
+                'reply_to': {
+                  'sender_name': turn.replyToRobotName,
+                  'message_text': turn.replyToText ?? '',
+                },
+              },
+            },
+          });
+        } catch (e) {
+          debugPrint('Error persisting robot dialogue to Supabase: $e');
+        }
+
+        // Add to local chat provider state
+        ref
+            .read(chatMessagesProvider(widget.groupId).notifier)
+            .addIncomingMessage(robotMsg);
+
+        // Natural pause before next robot chimes in
+        if (i < turns.length - 1) {
+          await Future.delayed(
+              Duration(milliseconds: turn.pauseBeforeNextTurnMs));
+        }
+      }
+    } catch (e) {
+      debugPrint('Error posting autonomous hub dialogue combo: $e');
+    }
+  }
+
+  /// 🤝 When a human learner speaks in English Hub, allow a relevant robot to respond
+  /// politely after a natural delay (with live typing indicator), directly answering their input!
+  void _triggerPoliteRobotReplyToHuman({
+    required String humanText,
+    required String senderName,
+  }) {
+    if (!_isEnglishHubGroup || _isRobotReplyingToHuman) return;
+
+    _isRobotReplyingToHuman = true;
+    _hubRobotReplyCooldownTimer?.cancel();
+
+    // Natural human reading & thinking delay: 1.8 seconds before robot starts typing
+    Timer(const Duration(milliseconds: 1800), () async {
+      try {
+        if (!mounted) return;
+
+        final reply = await PocketRobotService.generateEnglishHubRobotReply(
+          minLevel: _hubMinLevel,
+          maxLevel: _hubMaxLevel,
+          humanMessageText: humanText,
+          humanSenderName: senderName,
+        );
+
+        if (reply == null || !mounted) return;
+
+        final robot = reply['robot'] as PocketRobot;
+
+        // Show live typing indicator for the replying robot
+        PocketRobotService.setTyping(robot.id, true);
+        await Future.delayed(const Duration(milliseconds: 2400));
+        if (!mounted) {
+          PocketRobotService.setTyping(robot.id, false);
+          return;
+        }
+        PocketRobotService.setTyping(robot.id, false);
+
+        final now = DateTime.now();
+        final robotReplyMsg = ChatMessage(
+          id: 'hub_reply_${robot.id}_${now.millisecondsSinceEpoch}',
+          groupId: widget.groupId,
+          senderId: robot.id,
+          messageText: reply['text'] as String,
+          messageType: 'text',
+          createdAt: now,
+          isRead: true,
+          senderProfile: {
+            'name': robot.name,
+            'profile_image_url': robot.avatarUrl,
+            'is_robot': true,
+            'level': robot.level,
+          },
+          replyToMessage: {
+            'sender_name': senderName,
+            'message_text': humanText,
+          },
+          metadata: {
+            'is_robot': true,
+            'robot_id': robot.id,
+            'robot_name': robot.name,
+            'robot_avatar': robot.avatarUrl,
+            'robot_level': robot.level,
+            'sender_name': robot.name,
+            'reply_to': {
+              'sender_name': senderName,
+              'message_text': humanText,
+            },
+          },
+        );
+
+        // Persist to Supabase group_messages with null sender_id so UUID constraint passes
+        try {
+          await _supabase.from('group_messages').insert({
+            'group_id': widget.groupId,
+            'sender_id': null,
+            'message_text': reply['text'],
+            'message_type': 'text',
+            'created_at': now.toIso8601String(),
+            'metadata': {
+              'is_robot': true,
+              'robot_id': robot.id,
+              'robot_name': robot.name,
+              'robot_avatar': robot.avatarUrl,
+              'robot_level': robot.level,
+              'sender_name': robot.name,
+              'reply_to': {
+                'sender_name': senderName,
+                'message_text': humanText,
+              },
+            },
+          });
+        } catch (e) {
+          debugPrint('Error persisting robot reply to Supabase: $e');
+        }
+
+        // Add to local state cleanly
+        ref
+            .read(chatMessagesProvider(widget.groupId).notifier)
+            .addIncomingMessage(robotReplyMsg);
+      } catch (e) {
+        debugPrint('Error generating polite robot reply in hub: $e');
+      } finally {
+        // Enforce 14-second cooldown so robots never flood the chat
+        _hubRobotReplyCooldownTimer = Timer(const Duration(seconds: 14), () {
+          _isRobotReplyingToHuman = false;
+        });
+      }
+    });
   }
 
   void _onMessageChanged() {
@@ -533,12 +831,14 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     } else {
       safeSetState(() => _showMentionSuggestions = false);
     }
-    
+
     // Note: Rebuild swap was moved to ValueListenableBuilder in _buildInputArea
   }
 
   @override
   void dispose() {
+    _hubRobotIdleConversationTimer?.cancel();
+    _hubRobotReplyCooldownTimer?.cancel();
     _messageController.removeListener(_onMessageChanged);
     _messageController.dispose();
     _scrollController.dispose();
@@ -579,28 +879,33 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final cachedScore = prefs.getInt('user_pocket_score_$targetId');
       final cachedStage = prefs.getInt('user_pocket_stage_$targetId');
       if (cachedScore != null && cachedScore > 0) {
-        final stage = cachedStage ?? PocketScoreLevelEngine.getLevelFromScore(cachedScore);
-        final cfg = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90));
+        final stage = cachedStage ??
+            PocketScoreLevelEngine.getLevelFromScore(cachedScore);
+        final cfg =
+            VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90));
         _userAvatarConfigCache[targetId] = cfg;
         if (mounted) safeSetState(() {});
       }
 
       final profileRes = await _supabase
           .from('profile')
-          .select('pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id')
+          .select(
+              'pocket_score, learning_points, xp, learning_day, learning_stage, stage, level, avatar_config, equipped_talisman, talisman_id')
           .eq('user_id', targetId)
           .maybeSingle();
 
       if (profileRes != null) {
         final score = (profileRes['pocket_score'] as num?)?.toInt() ??
             (profileRes['learning_points'] as num?)?.toInt() ??
-            (profileRes['xp'] as num?)?.toInt() ?? 0;
+            (profileRes['xp'] as num?)?.toInt() ??
+            0;
         final stage = score > 0
             ? PocketScoreLevelEngine.getLevelFromScore(score)
             : ((profileRes['learning_day'] as num?)?.toInt() ??
-               (profileRes['learning_stage'] as num?)?.toInt() ??
-               (profileRes['stage'] as num?)?.toInt() ??
-               (profileRes['level'] as num?)?.toInt() ?? 1);
+                (profileRes['learning_stage'] as num?)?.toInt() ??
+                (profileRes['stage'] as num?)?.toInt() ??
+                (profileRes['level'] as num?)?.toInt() ??
+                1);
         final talismanId = profileRes['equipped_talisman']?.toString() ??
             profileRes['talisman_id']?.toString();
 
@@ -650,13 +955,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     if (profile != null) {
       final score = (profile['pocket_score'] as num?)?.toInt() ??
           (profile['learning_points'] as num?)?.toInt() ??
-          (profile['xp'] as num?)?.toInt() ?? 0;
+          (profile['xp'] as num?)?.toInt() ??
+          0;
       final lvl = score > 0
           ? PocketScoreLevelEngine.getLevelFromScore(score)
           : ((profile['learning_day'] as num?)?.toInt() ??
-             (profile['learning_stage'] as num?)?.toInt() ??
-             (profile['stage'] as num?)?.toInt() ??
-             (profile['level'] as num?)?.toInt() ?? 1);
+              (profile['learning_stage'] as num?)?.toInt() ??
+              (profile['stage'] as num?)?.toInt() ??
+              (profile['level'] as num?)?.toInt() ??
+              1);
       final talismanId = profile['equipped_talisman']?.toString() ??
           profile['talisman_id']?.toString();
       final cfg = VectorAvatarConfig.getEvolutionAvatarForStage(
@@ -743,16 +1050,19 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       final cachedScore = prefs.getInt('user_pocket_score_$mateUserId');
       final cachedStage = prefs.getInt('user_pocket_stage_$mateUserId');
       if (cachedScore != null && cachedScore > 0) {
-        final stage = cachedStage ?? PocketScoreLevelEngine.getLevelFromScore(cachedScore);
+        final stage = cachedStage ??
+            PocketScoreLevelEngine.getLevelFromScore(cachedScore);
         _userPocketScoreCache[mateUserId] = cachedScore;
         _userPocketStageCache[mateUserId] = stage;
-        _userAvatarConfigCache[mateUserId] = VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90));
+        _userAvatarConfigCache[mateUserId] =
+            VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90));
         safeSetState(() {});
       }
 
       final profileRes = await _supabase
           .from('profile')
-          .select('daily_streak, learning_day, learning_stage, stage, level, pocket_score, learning_points, xp, avatar_config, equipped_talisman, talisman_id')
+          .select(
+              'daily_streak, learning_day, learning_stage, stage, level, pocket_score, learning_points, xp, avatar_config, equipped_talisman, talisman_id')
           .eq('user_id', mateUserId)
           .maybeSingle();
 
@@ -762,14 +1072,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
         final score = (profileRes['pocket_score'] as num?)?.toInt() ??
             (profileRes['learning_points'] as num?)?.toInt() ??
-            (profileRes['xp'] as num?)?.toInt() ?? 0;
+            (profileRes['xp'] as num?)?.toInt() ??
+            0;
 
         final stage = score > 0
             ? PocketScoreLevelEngine.getLevelFromScore(score)
             : ((profileRes['learning_day'] as num?)?.toInt() ??
-               (profileRes['learning_stage'] as num?)?.toInt() ??
-               (profileRes['stage'] as num?)?.toInt() ??
-               (profileRes['level'] as num?)?.toInt() ?? 1);
+                (profileRes['learning_stage'] as num?)?.toInt() ??
+                (profileRes['stage'] as num?)?.toInt() ??
+                (profileRes['level'] as num?)?.toInt() ??
+                1);
 
         final talismanId = profileRes['equipped_talisman']?.toString() ??
             profileRes['talisman_id']?.toString();
@@ -814,8 +1126,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         return;
       }
 
-      final outgoing = await PocketMateService.hasPendingSentRequest(uid, otherUserId);
-      final incoming = await PocketMateService.getPendingIncomingRequest(uid, otherUserId);
+      final outgoing =
+          await PocketMateService.hasPendingSentRequest(uid, otherUserId);
+      final incoming =
+          await PocketMateService.getPendingIncomingRequest(uid, otherUserId);
 
       if (mounted) {
         safeSetState(() {
@@ -860,7 +1174,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
               Expanded(
                 child: Text(
                   'You and ${widget.groupName} are now Poket Mates! Chat unlocked.',
-                  style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.black),
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, color: Colors.black),
                 ),
               ),
             ],
@@ -905,7 +1220,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           decoration: BoxDecoration(
             color: const Color(0xFF0F172A),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border.all(color: const Color(0xFFFF8A00).withValues(alpha: 0.3)),
+            border: Border.all(
+                color: const Color(0xFFFF8A00).withValues(alpha: 0.3)),
             boxShadow: [
               BoxShadow(
                 color: const Color(0xFFFF8A00).withValues(alpha: 0.15),
@@ -972,7 +1288,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.check_circle_rounded, color: Color(0xFF22C55E), size: 20),
+                        const Icon(Icons.check_circle_rounded,
+                            color: Color(0xFF22C55E), size: 20),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -989,7 +1306,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     const Divider(color: Colors.white10, height: 20),
                     Row(
                       children: [
-                        const Icon(Icons.shield_rounded, color: Color(0xFF38BDF8), size: 20),
+                        const Icon(Icons.shield_rounded,
+                            color: Color(0xFF38BDF8), size: 20),
                         const SizedBox(width: 10),
                         Expanded(
                           child: Text(
@@ -1013,7 +1331,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFFC00),
                     foregroundColor: Colors.black,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                   child: Text(
@@ -1036,37 +1355,43 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     {
       'cat': '🧠 Deep & Fun',
       'emoji': '✨',
-      'en': 'If you could travel anywhere in the world tomorrow, which destination would you pick and why?',
+      'en':
+          'If you could travel anywhere in the world tomorrow, which destination would you pick and why?',
       'hint': 'Talk about places you have always dreamed of visiting.'
     },
     {
       'cat': '🎬 Entertainment',
       'emoji': '🍿',
-      'en': 'What is the most memorable movie or show you have watched recently? What made it so good?',
+      'en':
+          'What is the most memorable movie or show you have watched recently? What made it so good?',
       'hint': 'Describe the story or your favorite character.'
     },
     {
       'cat': '🚀 Ambition',
       'emoji': '🎯',
-      'en': 'What is one major skill or habit you are determined to master this year?',
+      'en':
+          'What is one major skill or habit you are determined to master this year?',
       'hint': 'Share your learning or career goal.'
     },
     {
       'cat': '🍕 Food & Taste',
       'emoji': '🍳',
-      'en': 'If you could only eat one cuisine or favorite comfort food forever, what would it be?',
+      'en':
+          'If you could only eat one cuisine or favorite comfort food forever, what would it be?',
       'hint': 'Describe the taste and why it is special to you.'
     },
     {
       'cat': '⚡ Fast Debate',
       'emoji': '🔥',
-      'en': 'Do you prefer early mornings with quiet peace or late nights with high focus?',
+      'en':
+          'Do you prefer early mornings with quiet peace or late nights with high focus?',
       'hint': 'Explain when you feel most productive and creative.'
     },
     {
       'cat': '💡 Inspiration',
       'emoji': '🌟',
-      'en': 'What is the most useful piece of advice someone has ever given you?',
+      'en':
+          'What is the most useful piece of advice someone has ever given you?',
       'hint': 'Explain how that advice helped you in life.'
     },
     {
@@ -1078,7 +1403,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     {
       'cat': '🏰 Superpowers',
       'emoji': '🦸',
-      'en': 'If you could have any superpower for 24 hours, how would you spend that day?',
+      'en':
+          'If you could have any superpower for 24 hours, how would you spend that day?',
       'hint': 'Think about flying, teleportation, or invisibility!'
     },
   ];
@@ -1094,13 +1420,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       builder: (ctx) {
         return StatefulBuilder(
           builder: (context, setModalState) {
-            final topic = _icebreakerTopics[currentIndex % _icebreakerTopics.length];
+            final topic =
+                _icebreakerTopics[currentIndex % _icebreakerTopics.length];
             return Container(
               padding: const EdgeInsets.all(22),
               decoration: BoxDecoration(
                 color: const Color(0xFF0F172A),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border.all(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.7),
@@ -1124,11 +1453,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                          color:
+                              const Color(0xFFFFFC00).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.4)),
+                          border: Border.all(
+                              color: const Color(0xFFFFFC00)
+                                  .withValues(alpha: 0.4)),
                         ),
                         child: Text(
                           '${topic['emoji']} ${topic['cat']}',
@@ -1141,11 +1474,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                       ),
                       IconButton(
                         tooltip: 'Shuffle Topic 🎲',
-                        icon: const Icon(Icons.shuffle_rounded, color: Color(0xFFFFFC00)),
+                        icon: const Icon(Icons.shuffle_rounded,
+                            color: Color(0xFFFFFC00)),
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           setModalState(() {
-                            currentIndex = (currentIndex + 1) % _icebreakerTopics.length;
+                            currentIndex =
+                                (currentIndex + 1) % _icebreakerTopics.length;
                             _selectedTopicIndex = currentIndex;
                           });
                         },
@@ -1166,7 +1501,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                      border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.08)),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1183,7 +1519,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         const SizedBox(height: 10),
                         Row(
                           children: [
-                            const Icon(Icons.lightbulb_outline, color: Color(0xFFFFD600), size: 14),
+                            const Icon(Icons.lightbulb_outline,
+                                color: Color(0xFFFFD600), size: 14),
                             const SizedBox(width: 6),
                             Expanded(
                               child: Text(
@@ -1208,7 +1545,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                           onPressed: () {
                             HapticFeedback.lightImpact();
                             setModalState(() {
-                              currentIndex = (currentIndex + 1) % _icebreakerTopics.length;
+                              currentIndex =
+                                  (currentIndex + 1) % _icebreakerTopics.length;
                               _selectedTopicIndex = currentIndex;
                             });
                           },
@@ -1218,7 +1556,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             foregroundColor: Colors.white,
                             side: const BorderSide(color: Colors.white24),
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
                           ),
                         ),
                       ),
@@ -1230,8 +1569,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             HapticFeedback.mediumImpact();
                             Navigator.pop(ctx);
                             _messageController.text = topic['en']!;
-                            _messageController.selection = TextSelection.fromPosition(
-                              TextPosition(offset: _messageController.text.length),
+                            _messageController.selection =
+                                TextSelection.fromPosition(
+                              TextPosition(
+                                  offset: _messageController.text.length),
                             );
                             _focusNode.requestFocus();
                           },
@@ -1241,7 +1582,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                             backgroundColor: const Color(0xFFFFFC00),
                             foregroundColor: Colors.black,
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
                           ),
                         ),
                       ),
@@ -1277,7 +1619,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           decoration: BoxDecoration(
             color: const Color(0xFF0F172A),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
+            border: Border.all(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.3)),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -1315,14 +1658,16 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                         HapticFeedback.lightImpact();
                         Navigator.pop(ctx);
                         _messageController.text = s;
-                        _messageController.selection = TextSelection.fromPosition(
+                        _messageController.selection =
+                            TextSelection.fromPosition(
                           TextPosition(offset: _messageController.text.length),
                         );
                         _focusNode.requestFocus();
                       },
                       borderRadius: BorderRadius.circular(12),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 12),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(12),
@@ -1369,7 +1714,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     HapticFeedback.lightImpact();
 
     try {
-      final prompt = '''You are an elite English fluency and communication assistant.
+      final prompt =
+          '''You are an elite English fluency and communication assistant.
 Transform the following draft message into natural, friendly, confident native English suitable for chatting with a friend or mate.
 Keep the original meaning, intent, and casual/friendly tone intact.
 Output ONLY the final polished sentence with NO explanations, NO markdown quotes, NO introductory greetings, and NO filler text.
@@ -1401,7 +1747,8 @@ Draft: "$draft"''';
               backgroundColor: const Color(0xFF14532D),
               duration: const Duration(seconds: 2),
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
             ),
           );
         }
@@ -1422,7 +1769,6 @@ Draft: "$draft"''';
       safeSetState(() => _isCorrectingText = false);
     }
   }
-
 
   Future<void> _explainOrCorrectMessage(ChatMessage message) async {
     final textToAnalyze = message.messageText;
@@ -1449,7 +1795,8 @@ Draft: "$draft"''';
 
     try {
       final response = await AIService().generateText(
-        prompt: 'Analyze the following sentence written by a user learning English: "$textToAnalyze".\n'
+        prompt:
+            'Analyze the following sentence written by a user learning English: "$textToAnalyze".\n'
             '1. Check for grammar, spelling, and phrasing errors.\n'
             '2. Provide the corrected sentence.\n'
             '3. Briefly explain the correction or suggest a better/more natural way to phrase it.\n'
@@ -1491,7 +1838,8 @@ Draft: "$draft"''';
       if (!_isEnglishOnly(text)) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('⚠️ Only English messages are allowed in this group!'),
+            content:
+                Text('⚠️ Only English messages are allowed in this group!'),
             backgroundColor: Colors.redAccent,
           ),
         );
@@ -1523,7 +1871,9 @@ Draft: "$draft"''';
     _scrollToBottom();
 
     try {
-      final message = await ref.read(chatMessagesProvider(widget.groupId).notifier).sendMessage(
+      final message = await ref
+          .read(chatMessagesProvider(widget.groupId).notifier)
+          .sendMessage(
             text: text ?? '',
             messageType: messageType,
             fileUrl: fileUrl,
@@ -1542,12 +1892,27 @@ Draft: "$draft"''';
 
         // 📝 Track daily message count for 15-message verification
         final now = DateTime.now();
-        final key = 'english_hub_msgs_${_currentUserId}_${now.year}_${now.month}_${now.day}';
+        final key =
+            'english_hub_msgs_${_currentUserId}_${now.year}_${now.month}_${now.day}';
         int count = prefs.getInt(key) ?? 0;
         await prefs.setInt(key, count + 1);
 
         // Award unified Pocket Score for English group conversation
         await PocketFortressDefenseService.awardPoints(pointsToAdd);
+
+        // 🤖 When human learner posts in English Hub, invite 1 level-bracket robot to reply politely
+        if (text != null && text.trim().isNotEmpty) {
+          final myMember = _groupMembers.firstWhere(
+            (m) => m['user_id'] == _currentUserId,
+            orElse: () => {},
+          );
+          final myProfile = _safeGet(myMember['profile']);
+          final senderName = (myProfile?['name'] ?? 'Friend').toString();
+          _triggerPoliteRobotReplyToHuman(
+            humanText: text.trim(),
+            senderName: senderName,
+          );
+        }
       }
 
       if (message != null) {
@@ -1582,7 +1947,8 @@ Draft: "$draft"''';
       builder: (context) => AlertDialog(
         backgroundColor: const Color(0xFF1F2C34),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Delete Message', style: TextStyle(color: Colors.white, fontSize: 18)),
+        title: const Text('Delete Message',
+            style: TextStyle(color: Colors.white, fontSize: 18)),
         content: const Text('Are you sure you want to delete this message?',
             style: TextStyle(color: Colors.white70)),
         actions: [
@@ -1597,7 +1963,9 @@ Draft: "$draft"''';
                   .read(chatMessagesProvider(widget.groupId).notifier)
                   .deleteMessage(messageId);
             },
-            child: const Text('Delete', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: const Text('Delete',
+                style: TextStyle(
+                    color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1627,7 +1995,8 @@ Draft: "$draft"''';
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: Text('Block $otherUserName?', style: const TextStyle(color: Colors.white)),
+        title: Text('Block $otherUserName?',
+            style: const TextStyle(color: Colors.white)),
         content: Text(
           'Are you sure you want to block $otherUserName? They will no longer be able to message you, and you will not see their content.',
           style: const TextStyle(color: Colors.white70),
@@ -1642,7 +2011,8 @@ Draft: "$draft"''';
               Navigator.pop(context);
               await _blockUser(otherUserId);
             },
-            child: const Text('Block', style: TextStyle(color: Colors.redAccent)),
+            child:
+                const Text('Block', style: TextStyle(color: Colors.redAccent)),
           ),
         ],
       ),
@@ -1671,11 +2041,16 @@ Draft: "$draft"''';
             ),
           ),
           const SizedBox(height: 16),
-          Text(name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+          Text(name,
+              style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18)),
           const SizedBox(height: 24),
           ListTile(
             leading: const Icon(Icons.person_outline, color: Colors.blue),
-            title: const Text('View Profile', style: TextStyle(color: Colors.white)),
+            title: const Text('View Profile',
+                style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
               PocketCitadelAttackPage.openForUser(context, userId: userId);
@@ -1683,7 +2058,8 @@ Draft: "$draft"''';
           ),
           ListTile(
             leading: const Icon(Icons.flag_outlined, color: Colors.orange),
-            title: const Text('Report User', style: TextStyle(color: Colors.white)),
+            title: const Text('Report User',
+                style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
               ReportHelper.showReportDialog(
@@ -1696,7 +2072,8 @@ Draft: "$draft"''';
           ),
           ListTile(
             leading: const Icon(Icons.block, color: Colors.red),
-            title: const Text('Block User', style: TextStyle(color: Colors.white)),
+            title:
+                const Text('Block User', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
               _showBlockUserDialog(userId, name);
@@ -1735,7 +2112,8 @@ Draft: "$draft"''';
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: Colors.grey[900],
-        title: Text('Admin Block: $otherUserName', style: const TextStyle(color: Colors.redAccent)),
+        title: Text('Admin Block: $otherUserName',
+            style: const TextStyle(color: Colors.redAccent)),
         content: const Text(
           'Block this user from sending messages in the English Hub?',
           style: TextStyle(color: Colors.white70),
@@ -1750,7 +2128,9 @@ Draft: "$draft"''';
               Navigator.pop(context);
               await _adminBlockUserFromHub(otherUserId);
             },
-            child: const Text('Block User', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            child: const Text('Block User',
+                style: TextStyle(
+                    color: Colors.redAccent, fontWeight: FontWeight.bold)),
           ),
         ],
       ),
@@ -1767,13 +2147,17 @@ Draft: "$draft"''';
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User successfully blocked from English Hub.'), backgroundColor: Colors.green),
+          const SnackBar(
+              content: Text('User successfully blocked from English Hub.'),
+              backgroundColor: Colors.green),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error blocking user: $e'), backgroundColor: Colors.red),
+          SnackBar(
+              content: Text('Error blocking user: $e'),
+              backgroundColor: Colors.red),
         );
       }
     }
@@ -1812,14 +2196,24 @@ Draft: "$draft"''';
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         itemBuilder: (context, index) {
           final isMe = index % 2 == 0;
-          final bubbleWidths = [170.0, 240.0, 130.0, 210.0, 280.0, 150.0, 220.0];
+          final bubbleWidths = [
+            170.0,
+            240.0,
+            130.0,
+            210.0,
+            280.0,
+            150.0,
+            220.0
+          ];
           final bubbleWidth = bubbleWidths[index % bubbleWidths.length];
-          final bubbleHeight = (index % 3 == 0) ? 56.0 : ((index % 3 == 1) ? 40.0 : 48.0);
+          final bubbleHeight =
+              (index % 3 == 0) ? 56.0 : ((index % 3 == 1) ? 40.0 : 48.0);
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 5),
             child: Row(
-              mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+              mainAxisAlignment:
+                  isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 if (!isMe) ...[
@@ -1841,8 +2235,12 @@ Draft: "$draft"''';
                     borderRadius: BorderRadius.only(
                       topLeft: const Radius.circular(16),
                       topRight: const Radius.circular(16),
-                      bottomLeft: isMe ? const Radius.circular(16) : const Radius.circular(4),
-                      bottomRight: isMe ? const Radius.circular(4) : const Radius.circular(16),
+                      bottomLeft: isMe
+                          ? const Radius.circular(16)
+                          : const Radius.circular(4),
+                      bottomRight: isMe
+                          ? const Radius.circular(4)
+                          : const Radius.circular(16),
                     ),
                   ),
                 ),
@@ -1885,7 +2283,8 @@ Draft: "$draft"''';
                   onTap: () => Navigator.pop(context),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 2),
-                    child: Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                    child:
+                        Icon(Icons.arrow_back, color: Colors.white, size: 20),
                   ),
                 ),
               ],
@@ -1910,7 +2309,8 @@ Draft: "$draft"''';
                 child: Hero(
                   tag: 'group_avatar_${widget.groupId}',
                   child: widget.groupId.startsWith('p:')
-                      ? (PocketPresidentService.isPresidentId(widget.groupId.substring(2))
+                      ? (PocketPresidentService.isPresidentId(
+                              widget.groupId.substring(2))
                           ? const PresidentAvatarWidget(size: 34)
                           : Stack(
                               clipBehavior: Clip.none,
@@ -1948,25 +2348,51 @@ Draft: "$draft"''';
                                 ),
                               ],
                             ))
-                      : (widget.groupImage != null
-                          ? CircleAvatar(
-                              radius: 17,
-                              backgroundColor: Colors.grey[800],
-                              backgroundImage: NetworkImage(widget.groupImage!),
-                            )
-                          : Container(
+                      : (_isEnglishHubGroup
+                          ? Container(
                               width: 34,
                               height: 34,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                gradient: LinearGradient(
-                                  colors: [Color(0xFF4F46E5), Color(0xFF7C3AED)],
+                                border: Border.all(
+                                  color: const Color(0xFFFFD600),
+                                  width: 1.2,
                                 ),
                               ),
-                              child: const Center(
-                                child: Icon(Icons.groups_rounded, color: Colors.white, size: 18),
+                              child: ClipOval(
+                                child: VectorAvatarWidget(
+                                  config: EnglishHubLevelGroupService
+                                      .getEnglishHubAvatarConfig(
+                                          widget.groupName),
+                                  size: 34,
+                                  showAura: true,
+                                ),
                               ),
-                            )),
+                            )
+                          : (widget.groupImage != null
+                              ? CircleAvatar(
+                                  radius: 17,
+                                  backgroundColor: Colors.grey[800],
+                                  backgroundImage:
+                                      NetworkImage(widget.groupImage!),
+                                )
+                              : Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Color(0xFF4F46E5),
+                                        Color(0xFF7C3AED)
+                                      ],
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Icon(Icons.groups_rounded,
+                                        color: Colors.white, size: 18),
+                                  ),
+                                ))),
                 ),
               ),
             ],
@@ -2022,12 +2448,66 @@ Draft: "$draft"''';
                     );
                   },
                 ),
-                Builder(
-                  builder: (context) {
+                ValueListenableBuilder<Map<String, bool>>(
+                  valueListenable: PocketRobotService.typingStatusNotifier,
+                  builder: (context, typingMap, _) {
                     final targetId = widget.groupId.startsWith('p:')
                         ? widget.groupId.substring(2)
                         : widget.groupId;
-                    final isPresident = PocketPresidentService.isPresidentId(targetId);
+                    String? activeTypingId;
+                    if (widget.groupId.startsWith('p:')) {
+                      if (typingMap[targetId] == true)
+                        activeTypingId = targetId;
+                    } else {
+                      if (typingMap[widget.groupId] == true) {
+                        activeTypingId = widget.groupId;
+                      } else {
+                        for (final entry in typingMap.entries) {
+                          if (entry.value == true &&
+                              PocketRobotService.isRobotId(entry.key)) {
+                            activeTypingId = entry.key;
+                            break;
+                          }
+                        }
+                      }
+                    }
+
+                    if (activeTypingId != null) {
+                      final isRobot =
+                          PocketRobotService.isRobotId(activeTypingId);
+                      final robot = isRobot
+                          ? PocketRobotService.getRobotById(activeTypingId)
+                          : null;
+                      final namePrefix = robot != null
+                          ? '🤖 ${robot.name}'
+                          : (isRobot
+                              ? (PocketRobotService.getRobotById(activeTypingId)
+                                      ?.name ??
+                                  widget.groupName)
+                              : widget.groupName);
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 1.5),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '$namePrefix is typing...',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF25D366),
+                                fontWeight: FontWeight.bold,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    final isPresident =
+                        PocketPresidentService.isPresidentId(targetId);
                     if (isPresident) {
                       return const Padding(
                         padding: EdgeInsets.only(top: 1.5),
@@ -2068,7 +2548,22 @@ Draft: "$draft"''';
                       );
                     }
                     if (widget.groupId.startsWith('p:')) {
-                      return const SizedBox.shrink();
+                      final stage = _userPocketStageCache[targetId];
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 1.5),
+                        child: Text(
+                          stage != null && stage > 0
+                              ? 'Stage $stage • Pocket Mate'
+                              : 'Pocket Mate',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: Color(0xFF38BDF8),
+                            fontWeight: FontWeight.w500,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      );
                     }
                     final count = _groupMembers.length;
                     return Padding(
@@ -2095,8 +2590,10 @@ Draft: "$draft"''';
                 onTap: () => _showMateFluencyStreakSheet(context),
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  margin: const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
                       colors: [Color(0xFFFF8A00), Color(0xFFE52E71)],
@@ -2133,13 +2630,15 @@ Draft: "$draft"''';
                     ? widget.groupId.substring(2)
                     : widget.groupId))
               IconButton(
-                icon: const Icon(Icons.casino_outlined, color: Color(0xFFFFFC00), size: 21),
+                icon: const Icon(Icons.casino_outlined,
+                    color: Color(0xFFFFFC00), size: 21),
                 tooltip: 'Daily Topic 🎲',
                 onPressed: _showDailyIcebreakerModal,
               ),
             if (_isEnglishHubGroup) ...[
               IconButton(
-                icon: const Icon(Icons.hub_outlined, color: Colors.lightBlueAccent),
+                icon: const Icon(Icons.hub_outlined,
+                    color: Colors.lightBlueAccent),
                 tooltip: 'English Hub',
                 onPressed: () {
                   Navigator.push(
@@ -2151,7 +2650,8 @@ Draft: "$draft"''';
                 },
               ),
               IconButton(
-                icon: const Icon(Icons.psychology_alt_rounded, color: Color(0xFFFFD600)),
+                icon: const Icon(Icons.psychology_alt_rounded,
+                    color: Color(0xFFFFD600)),
                 tooltip: 'AI English Tutor',
                 onPressed: () {
                   showModalBottomSheet(
@@ -2159,7 +2659,8 @@ Draft: "$draft"''';
                     isScrollControlled: true,
                     backgroundColor: const Color(0xFF0B0D13),
                     shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(20)),
                     ),
                     builder: (context) {
                       return const AIEnglishTutorSheet();
@@ -2179,12 +2680,16 @@ Draft: "$draft"''';
                   ReportHelper.showReportDialog(
                     context: context,
                     contentType: 'user',
-                    contentId: widget.groupId.startsWith('p:') ? widget.groupId.substring(2) : widget.groupId,
+                    contentId: widget.groupId.startsWith('p:')
+                        ? widget.groupId.substring(2)
+                        : widget.groupId,
                     contentTitle: widget.groupName,
                   );
                 }
                 if (value == 'block') {
-                  final otherUserId = widget.groupId.startsWith('p:') ? widget.groupId.substring(2) : '';
+                  final otherUserId = widget.groupId.startsWith('p:')
+                      ? widget.groupId.substring(2)
+                      : '';
                   if (otherUserId.isNotEmpty) {
                     _showBlockUserDialog(otherUserId, widget.groupName);
                   }
@@ -2199,29 +2704,35 @@ Draft: "$draft"''';
                   if (!isPersonalChat)
                     const PopupMenuItem(
                       value: 'info',
-                      child: Text('Group Info', style: TextStyle(color: Colors.white)),
+                      child: Text('Group Info',
+                          style: TextStyle(color: Colors.white)),
                     ),
                   const PopupMenuItem(
                     value: 'refresh',
-                    child: Text('Refresh', style: TextStyle(color: Colors.white)),
+                    child:
+                        Text('Refresh', style: TextStyle(color: Colors.white)),
                   ),
                   if (!isPersonalChat && !_isEnglishHub)
                     const PopupMenuItem(
                       value: 'leave',
-                      child: Text('Leave Group', style: TextStyle(color: Colors.red)),
+                      child: Text('Leave Group',
+                          style: TextStyle(color: Colors.red)),
                     ),
                   if (isPersonalChat) ...[
                     const PopupMenuItem(
                       value: 'clear',
-                      child: Text('Clear Chat', style: TextStyle(color: Colors.red)),
+                      child: Text('Clear Chat',
+                          style: TextStyle(color: Colors.red)),
                     ),
                     const PopupMenuItem(
                       value: 'report',
-                      child: Text('Report User', style: TextStyle(color: Colors.orange)),
+                      child: Text('Report User',
+                          style: TextStyle(color: Colors.orange)),
                     ),
                     const PopupMenuItem(
                       value: 'block',
-                      child: Text('Block User', style: TextStyle(color: Colors.red)),
+                      child: Text('Block User',
+                          style: TextStyle(color: Colors.red)),
                     ),
                   ],
                 ];
@@ -2254,194 +2765,254 @@ Draft: "$draft"''';
                 ),
                 Column(
                   children: [
-                  if (_isEnglishHubGroup)
-                    _buildEnglishHubHeaderRibbon()
-                  else if (!widget.groupId.startsWith('p:'))
-                    Container(
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            const Color(0xFFFFFC00).withValues(alpha: 0.15),
-                            const Color(0xFFFFD600).withValues(alpha: 0.08),
+                    if (_isEnglishHubGroup)
+                      _buildEnglishHubHeaderRibbon()
+                    else if (!widget.groupId.startsWith('p:'))
+                      Container(
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                              const Color(0xFFFFD600).withValues(alpha: 0.08),
+                            ],
+                          ),
+                          border: Border(
+                            bottom: BorderSide(
+                              color: const Color(0xFFFFFC00)
+                                  .withValues(alpha: 0.2),
+                              width: 1,
+                            ),
+                          ),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 6, horizontal: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Text('🇬🇧', style: TextStyle(fontSize: 14)),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Group Rule: English Only • Keep the chat in English',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFFC00),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
                           ],
                         ),
-                        border: Border(
-                          bottom: BorderSide(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
-                            width: 1,
-                          ),
-                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text('🇬🇧', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Group Rule: English Only • Keep the chat in English',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFFC00),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 0.3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  LiveTaskTile(service: _teamsService),
-                  Expanded(
-                    child: Builder(
-                      builder: (context) {
-                        final messages = chatMessagesAsync.value ?? [];
-                        final isLoadingInitial = chatMessagesAsync.isLoading &&
-                            !chatMessagesAsync.hasValue;
-                        final isErrorInitial = chatMessagesAsync.hasError &&
-                            !chatMessagesAsync.hasValue;
+                    LiveTaskTile(service: _teamsService),
+                    Expanded(
+                      child: Builder(
+                        builder: (context) {
+                          final messages = chatMessagesAsync.value ?? [];
+                          final isLoadingInitial =
+                              chatMessagesAsync.isLoading &&
+                                  !chatMessagesAsync.hasValue;
+                          final isErrorInitial = chatMessagesAsync.hasError &&
+                              !chatMessagesAsync.hasValue;
 
-                        if (isLoadingInitial) return _buildShimmerLoading();
+                          if (isLoadingInitial) return _buildShimmerLoading();
 
-                        if (isErrorInitial) {
-                          return Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(Icons.error_outline,
-                                    color: Colors.red, size: 48),
-                                const SizedBox(height: 16),
-                                Text('Error: ${chatMessagesAsync.error}',
-                                    style: const TextStyle(color: Colors.white)),
-                                TextButton(
-                                  onPressed: () {
-                                    ref.invalidate(
-                                        chatMessagesProvider(widget.groupId));
-                                  },
-                                  child: const Text('Retry'),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                          if (isErrorInitial) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.error_outline,
+                                      color: Colors.red, size: 48),
+                                  const SizedBox(height: 16),
+                                  Text('Error: ${chatMessagesAsync.error}',
+                                      style:
+                                          const TextStyle(color: Colors.white)),
+                                  TextButton(
+                                    onPressed: () {
+                                      ref.invalidate(
+                                          chatMessagesProvider(widget.groupId));
+                                    },
+                                    child: const Text('Retry'),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
 
-                        final filteredMessages = messages.where((m) {
-                          return m.isOptimistic ||
-                              (m.messageText != null &&
-                                  m.messageText!.isNotEmpty) ||
-                              (m.fileUrl != null && m.fileUrl!.isNotEmpty) ||
-                              (m.messageType != 'text' &&
-                                  m.messageType != 'system');
-                        }).toList();
+                          final filteredMessages = messages.where((m) {
+                            return m.isOptimistic ||
+                                (m.messageText != null &&
+                                    m.messageText!.isNotEmpty) ||
+                                (m.fileUrl != null && m.fileUrl!.isNotEmpty) ||
+                                (m.messageType != 'text' &&
+                                    m.messageType != 'system');
+                          }).toList();
 
-                        if (filteredMessages.isEmpty) {
-                          return const Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.chat_bubble_outline,
-                                    color: Colors.white12, size: 64),
-                                SizedBox(height: 16),
-                                Text(
-                                  'No messages yet',
-                                  style: TextStyle(color: Colors.white38),
-                                ),
-                              ],
-                            ),
-                          );
-                        }
+                          if (filteredMessages.isEmpty) {
+                            return const Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.chat_bubble_outline,
+                                      color: Colors.white12, size: 64),
+                                  SizedBox(height: 16),
+                                  Text(
+                                    'No messages yet',
+                                    style: TextStyle(color: Colors.white38),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
 
-                        return RefreshIndicator(
-                          onRefresh: _handleRefresh,
-                          color: accentColor,
-                          backgroundColor: appBarColor,
-                          child: ListView.builder(
-                            controller: _scrollController,
-                            physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
-                            reverse: true,
-                            cacheExtent: 400,
-                            addAutomaticKeepAlives: true,
-                            addRepaintBoundaries: true,
-                            padding: const EdgeInsets.only(bottom: 8, top: 8),
-                            itemCount: filteredMessages.length + 1,
-                            itemBuilder: (context, index) {
-                              if (index == filteredMessages.length) {
-                                  return chatMessagesAsync.isLoading ? 
-                                    const Padding(
-                                      padding: EdgeInsets.symmetric(vertical: 20),
-                                      child: Center(child: CircularProgressIndicator(color: Colors.yellow, strokeWidth: 2)),
-                                    ) : const SizedBox(height: 20);
+                          return ValueListenableBuilder<Map<String, bool>>(
+                            valueListenable:
+                                PocketRobotService.typingStatusNotifier,
+                            builder: (context, typingMap, _) {
+                              String? activeTypingId;
+                              if (widget.groupId.startsWith('p:')) {
+                                final targetId = widget.groupId.substring(2);
+                                if (typingMap[targetId] == true)
+                                  activeTypingId = targetId;
+                              } else {
+                                if (typingMap[widget.groupId] == true) {
+                                  activeTypingId = widget.groupId;
+                                } else {
+                                  for (final entry in typingMap.entries) {
+                                    if (entry.value == true &&
+                                        PocketRobotService.isRobotId(
+                                            entry.key)) {
+                                      activeTypingId = entry.key;
+                                      break;
+                                    }
+                                  }
+                                }
                               }
 
-                              final message = filteredMessages[index];
-                              final isMe = message.senderId == _currentUserId;
+                              final isTyping = activeTypingId != null;
+                              final extraCount = isTyping ? 2 : 1;
 
-                              bool showDate = true;
-                              if (index < filteredMessages.length - 1) {
-                                final nextMessage = filteredMessages[index + 1];
-                                showDate = !_isSameDay(
-                                    message.createdAt, nextMessage.createdAt);
-                              }
+                              return RefreshIndicator(
+                                onRefresh: _handleRefresh,
+                                color: accentColor,
+                                backgroundColor: appBarColor,
+                                child: ListView.builder(
+                                  controller: _scrollController,
+                                  physics: const AlwaysScrollableScrollPhysics(
+                                      parent: BouncingScrollPhysics()),
+                                  reverse: true,
+                                  cacheExtent: 400,
+                                  addAutomaticKeepAlives: true,
+                                  addRepaintBoundaries: true,
+                                  padding:
+                                      const EdgeInsets.only(bottom: 8, top: 8),
+                                  itemCount:
+                                      filteredMessages.length + extraCount,
+                                  itemBuilder: (context, index) {
+                                    // Typing indicator bubble at index 0 (bottom of reversed list)
+                                    if (isTyping && index == 0) {
+                                      return _buildTypingBubble(
+                                          activeTypingId!);
+                                    }
 
-                              final showNativeAd = index > 0 && index % 12 == 0;
+                                    final msgIndex =
+                                        isTyping ? index - 1 : index;
 
-                              return RepaintBoundary(
-                                key: ValueKey('msg_bubble_${message.id}'),
-                                child: Column(
-                                  children: [
-                                    if (showDate)
-                                      _buildDateSeparator(message.createdAt),
-                                    _buildMessageTile(message, isMe),
-                                    if (showNativeAd)
-                                      const PocketNativeAdWidget(
-                                        category: 'English & Business',
-                                        margin: EdgeInsets.symmetric(vertical: 6, horizontal: 16),
+                                    if (msgIndex == filteredMessages.length) {
+                                      return chatMessagesAsync.isLoading
+                                          ? const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  vertical: 20),
+                                              child: Center(
+                                                child:
+                                                    CircularProgressIndicator(
+                                                  color: Colors.yellow,
+                                                  strokeWidth: 2,
+                                                ),
+                                              ),
+                                            )
+                                          : const SizedBox(height: 20);
+                                    }
+
+                                    final message = filteredMessages[msgIndex];
+                                    final isMe =
+                                        message.senderId == _currentUserId;
+
+                                    bool showDate = true;
+                                    if (msgIndex <
+                                        filteredMessages.length - 1) {
+                                      final nextMessage =
+                                          filteredMessages[msgIndex + 1];
+                                      showDate = !_isSameDay(message.createdAt,
+                                          nextMessage.createdAt);
+                                    }
+
+                                    final showNativeAd =
+                                        msgIndex > 0 && msgIndex % 12 == 0;
+
+                                    return RepaintBoundary(
+                                      key: ValueKey('msg_bubble_${message.id}'),
+                                      child: Column(
+                                        children: [
+                                          if (showDate)
+                                            _buildDateSeparator(
+                                                message.createdAt),
+                                          _buildMessageTile(message, isMe),
+                                          if (showNativeAd)
+                                            const PocketNativeAdWidget(
+                                              category: 'English & Business',
+                                              margin: EdgeInsets.symmetric(
+                                                  vertical: 6, horizontal: 16),
+                                            ),
+                                        ],
                                       ),
-                                  ],
+                                    );
+                                  },
                                 ),
                               );
                             },
-                          ),
-                        );
+                          );
+                        },
+                      ),
+                    ),
+                    if (_replyMessage != null)
+                      _buildReplyPreview(_replyMessage!),
+                    if (_isEditing) _buildEditPreview(),
+                    if (_stagedGalleryId != null ||
+                        _stagedThoughtId != null ||
+                        _stagedTool != null ||
+                        _stagedVideoPath != null ||
+                        _stagedDocumentPath != null ||
+                        _stagedAudioPath != null)
+                      _buildStagedPreview(),
+                    if (_showMentionSuggestions) _buildMentionSuggestions(),
+                    ValueListenableBuilder<TextEditingValue>(
+                      valueListenable: _messageController,
+                      builder: (context, value, child) {
+                        if (value.text.trim().isNotEmpty) {
+                          return _buildAIHelperPill();
+                        }
+                        return const SizedBox.shrink();
                       },
                     ),
-                  ),
-                  if (_replyMessage != null) _buildReplyPreview(_replyMessage!),
-                  if (_isEditing) _buildEditPreview(),
-                  if (_stagedGalleryId != null ||
-                      _stagedThoughtId != null ||
-                      _stagedTool != null ||
-                      _stagedVideoPath != null ||
-                      _stagedDocumentPath != null ||
-                      _stagedAudioPath != null)
-                    _buildStagedPreview(),
-                  if (_showMentionSuggestions) _buildMentionSuggestions(),
-                  ValueListenableBuilder<TextEditingValue>(
-                    valueListenable: _messageController,
-                    builder: (context, value, child) {
-                      if (value.text.trim().isNotEmpty) {
-                        return _buildAIHelperPill();
-                      }
-                      return const SizedBox.shrink();
-                    },
-                  ),
-                  _buildInputArea(),
-                  if (_showEmojiPicker) _buildEmojiPicker(),
-                ],
-              ),
-              if (_showScrollToBottom)
-                Positioned(
-                  bottom: 90,
-                  right: 16,
-                  child: FloatingActionButton.small(
-                    onPressed: _scrollToBottom,
-                    backgroundColor: const Color(0xFF1F2C34),
-                    foregroundColor: accentColor,
-                    child: const Icon(Icons.keyboard_arrow_down),
-                  ),
+                    _buildInputArea(),
+                    if (_showEmojiPicker) _buildEmojiPicker(),
+                  ],
                 ),
-            ],
-          ),
+                if (_showScrollToBottom)
+                  Positioned(
+                    bottom: 90,
+                    right: 16,
+                    child: FloatingActionButton.small(
+                      onPressed: _scrollToBottom,
+                      backgroundColor: const Color(0xFF1F2C34),
+                      foregroundColor: accentColor,
+                      child: const Icon(Icons.keyboard_arrow_down),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -2450,6 +3021,74 @@ Draft: "$draft"''';
 
   bool _isSameDay(DateTime d1, DateTime d2) {
     return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+  }
+
+  Widget _buildTypingBubble(String targetId) {
+    final isRobot = PocketRobotService.isRobotId(targetId);
+    final robot = isRobot ? PocketRobotService.getRobotById(targetId) : null;
+    final name = robot?.name ??
+        (widget.groupId.startsWith('p:') ? widget.groupName : 'Friend');
+
+    return Padding(
+      padding: const EdgeInsets.only(left: 12, bottom: 8, top: 4),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: isRobot
+                  ? [
+                      BoxShadow(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                        blurRadius: 6,
+                      )
+                    ]
+                  : null,
+            ),
+            child: VectorAvatarWidget(
+              config: _getPersonalAvatarConfig(targetId),
+              size: 28,
+              showAura: isRobot,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1F2C34),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+                bottomLeft: Radius.circular(4),
+              ),
+              border: Border.all(
+                color: isRobot
+                    ? const Color(0xFF38BDF8).withValues(alpha: 0.3)
+                    : Colors.white10,
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  '$name is typing',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 12,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                _AnimatedTypingDots(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildDateSeparator(DateTime date) {
@@ -2502,82 +3141,84 @@ Draft: "$draft"''';
     }
 
     return Row(
-        mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (isMe && message.messageType == 'text') ...[
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6, right: 3),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  borderRadius: BorderRadius.circular(12),
-                  onTap: () => _explainOrCorrectMessage(message),
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Icon(
-                      Icons.auto_awesome,
-                      color: _aiAnalyses.containsKey(message.id)
-                          ? const Color(0xFFFFFC00)
-                          : const Color(0xFFFFFC00).withValues(alpha: 0.65),
-                      size: 15,
-                    ),
+      mainAxisAlignment: isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        if (isMe && message.messageType == 'text') ...[
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6, right: 3),
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () => _explainOrCorrectMessage(message),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Icon(
+                    Icons.auto_awesome,
+                    color: _aiAnalyses.containsKey(message.id)
+                        ? const Color(0xFFFFFC00)
+                        : const Color(0xFFFFFC00).withValues(alpha: 0.65),
+                    size: 15,
                   ),
                 ),
               ),
             ),
-          ],
-          if (!isMe)
-            GestureDetector(
-              onTap: () {
-                final isPres = PocketPresidentService.isPresidentId(message.senderId) ||
-                    (widget.groupId.startsWith('p:') &&
-                        PocketPresidentService.isPresidentId(
-                            widget.groupId.substring(2)));
-                if (isPres) {
-                  PocketCitadelAttackPage.openForUser(
-                    context,
-                    userId: PocketPresidentService.presidentId,
-                  );
-                  return;
-                }
-                _showUserOptionsDialog(
-                    message.senderId, message.senderName ?? 'User');
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 6, bottom: 4, right: 4),
-                child: () {
-                  final isPres = PocketPresidentService.isPresidentId(message.senderId) ||
+          ),
+        ],
+        if (!isMe)
+          GestureDetector(
+            onTap: () {
+              final isPres =
+                  PocketPresidentService.isPresidentId(message.senderId) ||
                       (widget.groupId.startsWith('p:') &&
                           PocketPresidentService.isPresidentId(
                               widget.groupId.substring(2)));
-                  if (isPres) {
-                    return const PresidentAvatarWidget(size: 28, showGlow: true);
-                  }
-                  final isRobot = PocketRobotService.isRobotId(message.senderId);
-                  return Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      boxShadow: isRobot
-                          ? [
-                              BoxShadow(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
-                                blurRadius: 6,
-                              )
-                            ]
-                          : null,
-                    ),
-                    child: VectorAvatarWidget(
-                      config: _getPersonalAvatarConfig(message.senderId),
-                      size: 28,
-                      showAura: isRobot,
-                    ),
-                  );
-                }(),
-              ),
+              if (isPres) {
+                PocketCitadelAttackPage.openForUser(
+                  context,
+                  userId: PocketPresidentService.presidentId,
+                );
+                return;
+              }
+              _showUserOptionsDialog(
+                  message.senderId, message.senderName ?? 'User');
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(left: 6, bottom: 4, right: 4),
+              child: () {
+                final isPres =
+                    PocketPresidentService.isPresidentId(message.senderId) ||
+                        (widget.groupId.startsWith('p:') &&
+                            PocketPresidentService.isPresidentId(
+                                widget.groupId.substring(2)));
+                if (isPres) {
+                  return const PresidentAvatarWidget(size: 28, showGlow: true);
+                }
+                final isRobot = PocketRobotService.isRobotId(message.senderId);
+                return Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    boxShadow: isRobot
+                        ? [
+                            BoxShadow(
+                              color: const Color(0xFFFFFC00)
+                                  .withValues(alpha: 0.35),
+                              blurRadius: 6,
+                            )
+                          ]
+                        : null,
+                  ),
+                  child: VectorAvatarWidget(
+                    config: _getPersonalAvatarConfig(message.senderId),
+                    size: 28,
+                    showAura: isRobot,
+                  ),
+                );
+              }(),
             ),
-
-          Flexible(
+          ),
+        Flexible(
           child: Container(
             margin: EdgeInsets.only(
               top: 2,
@@ -2591,7 +3232,8 @@ Draft: "$draft"''';
               children: [
                 if (!isMe && !widget.groupId.startsWith('p:'))
                   GestureDetector(
-                    onTap: () => _showUserOptionsDialog(message.senderId, message.senderName ?? 'User'),
+                    onTap: () => _showUserOptionsDialog(
+                        message.senderId, message.senderName ?? 'User'),
                     child: Padding(
                       padding: const EdgeInsets.only(left: 4, bottom: 2),
                       child: Row(
@@ -2611,15 +3253,18 @@ Draft: "$draft"''';
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 5, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                                color: const Color(0xFFFFFC00)
+                                    .withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(4),
-                                border:
-                                    Border.all(color: const Color(0xFFFFFC00), width: 0.5),
+                                border: Border.all(
+                                    color: const Color(0xFFFFFC00), width: 0.5),
                               ),
                               child: const Text(
                                 'Admin',
-                                style:
-                                    TextStyle(color: Color(0xFFFFFC00), fontSize: 9.5, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    color: Color(0xFFFFFC00),
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                           ],
@@ -2628,22 +3273,30 @@ Draft: "$draft"''';
                     ),
                   ),
                 GestureDetector(
-                  onLongPress: () => _showMessageContextMenu(message, isMe),
+                  onLongPress: () {
+                    HapticFeedback.mediumImpact();
+                    _showMessageContextMenu(message, isMe);
+                  },
                   child: Container(
                     decoration: BoxDecoration(
                       color: isMe
                           ? const Color(0xFF005C4B)
                           : const Color(0xFF1F2C34),
                       borderRadius: BorderRadius.circular(12).copyWith(
-                        bottomRight: isMe ? const Radius.circular(2) : const Radius.circular(12),
-                        bottomLeft: !isMe ? const Radius.circular(2) : const Radius.circular(12),
+                        bottomRight: isMe
+                            ? const Radius.circular(2)
+                            : const Radius.circular(12),
+                        bottomLeft: !isMe
+                            ? const Radius.circular(2)
+                            : const Radius.circular(12),
                       ),
                       border: Border.all(
                         color: Colors.white.withValues(alpha: 0.05),
                         width: 0.8,
                       ),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                     child: Stack(
                       children: [
                         Padding(
@@ -2652,8 +3305,10 @@ Draft: "$draft"''';
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              if (message.replyToMessage != null || 
-                                  message.metadata?['reply_type'] == 'status_reply')
+                              if (message.replyToMessage != null ||
+                                  message.metadata?['reply_type'] ==
+                                      'status_reply' ||
+                                  message.metadata?['reply_to'] != null)
                                 _buildReplyInBubble(message, isMe),
                               if (message.messageType == 'image')
                                 _buildImageMessage(message),
@@ -2668,18 +3323,32 @@ Draft: "$draft"''';
                                   message.thought != null)
                                 _buildThoughtMessage(message.thought!, isMe),
                               if (message.messageType == 'gallery' ||
-                                  message.metadata?['source'] == 'gallery_market' ||
-                                  message.metadata?['gallery_title'] != null) ...[
+                                  message.metadata?['source'] ==
+                                      'gallery_market' ||
+                                  message.metadata?['gallery_title'] !=
+                                      null) ...[
                                 if (message.gallery != null)
                                   _buildGalleryMessage(message.gallery!, isMe)
                                 else if (message.metadata != null)
                                   _buildGalleryMessage({
-                                    'id': message.metadata!['gallery_id'] ?? message.metadata!['id'],
-                                    'title': message.metadata!['gallery_title'] ?? message.metadata!['title'],
-                                    'price': message.metadata!['gallery_price'] ?? message.metadata!['price'],
-                                    'image_url': message.metadata!['gallery_image_url'] ?? message.metadata!['image_url'],
-                                    'description': message.metadata!['gallery_description'] ?? message.metadata!['description'],
-                                    'category': message.metadata!['gallery_category'] ?? message.metadata!['category'] ?? 'MARKET',
+                                    'id': message.metadata!['gallery_id'] ??
+                                        message.metadata!['id'],
+                                    'title':
+                                        message.metadata!['gallery_title'] ??
+                                            message.metadata!['title'],
+                                    'price':
+                                        message.metadata!['gallery_price'] ??
+                                            message.metadata!['price'],
+                                    'image_url': message
+                                            .metadata!['gallery_image_url'] ??
+                                        message.metadata!['image_url'],
+                                    'description': message
+                                            .metadata!['gallery_description'] ??
+                                        message.metadata!['description'],
+                                    'category':
+                                        message.metadata!['gallery_category'] ??
+                                            message.metadata!['category'] ??
+                                            'MARKET',
                                     'user_id': message.senderId,
                                     'name': message.senderName,
                                   }, isMe),
@@ -2705,62 +3374,80 @@ Draft: "$draft"''';
                                   padding: const EdgeInsets.only(
                                       left: 8, right: 8, top: 4, bottom: 4),
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
-                                       Text(
-                                         message.messageText!,
-                                         style: GoogleFonts.inter(
-                                           color: Colors.white,
-                                           fontSize: 14.5,
-                                           fontWeight: FontWeight.w400,
-                                           height: 1.35,
-                                           letterSpacing: 0.1,
-                                         ),
-                                       ),
-                                      if (_loadingAnalysisMessageIds.contains(message.id))
+                                      Text(
+                                        message.messageText!,
+                                        style: GoogleFonts.inter(
+                                          color: Colors.white,
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.w400,
+                                          height: 1.35,
+                                          letterSpacing: 0.1,
+                                        ),
+                                      ),
+                                      if (_loadingAnalysisMessageIds
+                                          .contains(message.id))
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 8.0),
+                                          padding:
+                                              const EdgeInsets.only(top: 8.0),
                                           child: SizedBox(
                                             width: 14,
                                             height: 14,
                                             child: CircularProgressIndicator(
                                               strokeWidth: 2,
-                                              color: isMe ? Colors.black87 : const Color(0xFFFFFC00),
+                                              color: isMe
+                                                  ? Colors.black87
+                                                  : const Color(0xFFFFFC00),
                                             ),
                                           ),
                                         )
-                                      else if (_aiAnalyses.containsKey(message.id)) ...[
+                                      else if (_aiAnalyses
+                                          .containsKey(message.id)) ...[
                                         Container(
                                           margin: const EdgeInsets.only(top: 8),
                                           padding: const EdgeInsets.all(10),
                                           decoration: BoxDecoration(
                                             color: isMe
-                                                ? Colors.black.withValues(alpha: 0.08)
+                                                ? Colors.black
+                                                    .withValues(alpha: 0.08)
                                                 : const Color(0xFF131722),
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                             border: Border.all(
                                               color: isMe
-                                                  ? Colors.black.withValues(alpha: 0.15)
-                                                  : const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                                                  ? Colors.black
+                                                      .withValues(alpha: 0.15)
+                                                  : const Color(0xFFFFFC00)
+                                                      .withValues(alpha: 0.25),
                                             ),
                                           ),
                                           child: Column(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Row(
                                                 children: [
                                                   Icon(
                                                     Icons.psychology,
-                                                    color: isMe ? Colors.black87 : const Color(0xFFFFFC00),
+                                                    color: isMe
+                                                        ? Colors.black87
+                                                        : const Color(
+                                                            0xFFFFFC00),
                                                     size: 16,
                                                   ),
                                                   const SizedBox(width: 6),
                                                   Text(
                                                     'AI Tutor Feedback',
                                                     style: GoogleFonts.outfit(
-                                                      color: isMe ? Colors.black87 : const Color(0xFFFFFC00),
+                                                      color: isMe
+                                                          ? Colors.black87
+                                                          : const Color(
+                                                              0xFFFFFC00),
                                                       fontSize: 12,
-                                                      fontWeight: FontWeight.bold,
+                                                      fontWeight:
+                                                          FontWeight.bold,
                                                     ),
                                                   ),
                                                 ],
@@ -2769,7 +3456,9 @@ Draft: "$draft"''';
                                               SelectableText(
                                                 _aiAnalyses[message.id]!,
                                                 style: GoogleFonts.outfit(
-                                                  color: isMe ? Colors.black87 : Colors.white,
+                                                  color: isMe
+                                                      ? Colors.black87
+                                                      : Colors.white,
                                                   fontSize: 13,
                                                   height: 1.35,
                                                 ),
@@ -2780,11 +3469,14 @@ Draft: "$draft"''';
                                       ],
                                       if (message.isEdited)
                                         Padding(
-                                          padding: const EdgeInsets.only(top: 2),
+                                          padding:
+                                              const EdgeInsets.only(top: 2),
                                           child: Text(
                                             'edited',
                                             style: TextStyle(
-                                              color: (isMe ? Colors.black54 : Colors.white54),
+                                              color: (isMe
+                                                  ? Colors.black54
+                                                  : Colors.white54),
                                               fontSize: 9,
                                               fontStyle: FontStyle.italic,
                                             ),
@@ -2833,9 +3525,14 @@ Draft: "$draft"''';
                                       ? Icons.access_time
                                       : Icons.done_all,
                                   size: 13,
-                                  color: (message.isOptimistic || message.isPending)
-                                      ? const Color(0xFF0F172A).withValues(alpha: 0.4)
-                                      : (message.isRead ? const Color(0xFF0284C7) : const Color(0xFF0F172A).withValues(alpha: 0.6)),
+                                  color: (message.isOptimistic ||
+                                          message.isPending)
+                                      ? const Color(0xFF0F172A)
+                                          .withValues(alpha: 0.4)
+                                      : (message.isRead
+                                          ? const Color(0xFF0284C7)
+                                          : const Color(0xFF0F172A)
+                                              .withValues(alpha: 0.6)),
                                 ),
                               ]
                             ],
@@ -3036,8 +3733,10 @@ Draft: "$draft"''';
     final String? avatar = profile['profile_image_url'];
 
     final mainTextTheme = isMe ? Colors.black87 : Colors.white;
-    final subTextTheme = isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.7);
-    final linkTheme = isMe ? Colors.black : const Color(0xFFFFFC00).withValues(alpha: 0.9);
+    final subTextTheme =
+        isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.7);
+    final linkTheme =
+        isMe ? Colors.black : const Color(0xFFFFFC00).withValues(alpha: 0.9);
     final iconTheme = isMe ? Colors.black87 : const Color(0xFFFFFC00);
 
     return GestureDetector(
@@ -3135,8 +3834,10 @@ Draft: "$draft"''';
     final galleryItem = {
       'gallery_id': galleryData['id'] ?? galleryData['gallery_id'],
       'gallery_title': galleryData['title'] ?? galleryData['gallery_title'],
-      'gallery_description': galleryData['description'] ?? galleryData['gallery_description'],
-      'gallery_image_url': galleryData['image_url'] ?? galleryData['gallery_image_url'],
+      'gallery_description':
+          galleryData['description'] ?? galleryData['gallery_description'],
+      'gallery_image_url':
+          galleryData['image_url'] ?? galleryData['gallery_image_url'],
       'gallery_price': galleryData['price'] ?? galleryData['gallery_price'],
       'price': galleryData['price'] ?? galleryData['gallery_price'],
       'user_id': galleryData['user_id'],
@@ -3171,8 +3872,8 @@ Draft: "$draft"''';
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           color: FlutterFlowTheme.of(context).secondaryBackground,
-          border:
-              Border.all(color: FlutterFlowTheme.of(context).alternate, width: 1),
+          border: Border.all(
+              color: FlutterFlowTheme.of(context).alternate, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(alpha: 0.3),
@@ -3211,8 +3912,11 @@ Draft: "$draft"''';
                         backgroundColor: Colors.grey[800],
                         backgroundImage: () {
                           if (galleryData['profile_image_url'] != null &&
-                              galleryData['profile_image_url'].toString().isNotEmpty) {
-                            return NetworkImage(galleryData['profile_image_url'].toString());
+                              galleryData['profile_image_url']
+                                  .toString()
+                                  .isNotEmpty) {
+                            return NetworkImage(
+                                galleryData['profile_image_url'].toString());
                           }
                           final profileList = galleryData['user']?['profile'];
                           if (profileList is List && profileList.isNotEmpty) {
@@ -3257,7 +3961,9 @@ Draft: "$draft"''';
                             overflow: TextOverflow.ellipsis,
                           ),
                           Text(
-                            galleryData['price'] != null ? 'Marketplace Product' : 'Shared a gallery',
+                            galleryData['price'] != null
+                                ? 'Marketplace Product'
+                                : 'Shared a gallery',
                             style: const TextStyle(
                               color: Colors.white54,
                               fontSize: 10,
@@ -3272,7 +3978,6 @@ Draft: "$draft"''';
                 ),
               ),
             ),
-
             Stack(
               children: [
                 if (galleryData['image_url'] != null)
@@ -3298,7 +4003,6 @@ Draft: "$draft"''';
                           color: Colors.white24, size: 40),
                     ),
                   ),
-
                 if (galleryData['price'] != null)
                   Positioned(
                     bottom: 8,
@@ -3323,7 +4027,6 @@ Draft: "$draft"''';
                   ),
               ],
             ),
-
             Padding(
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -3409,7 +4112,8 @@ Draft: "$draft"''';
             child: Stack(
               children: [
                 if (localPath != null && File(localPath).existsSync())
-                  Image.file(File(localPath), fit: BoxFit.cover, width: double.infinity, height: 200)
+                  Image.file(File(localPath),
+                      fit: BoxFit.cover, width: double.infinity, height: 200)
                 else if (url != null)
                   CachedNetworkImage(
                     imageUrl: url,
@@ -3418,12 +4122,17 @@ Draft: "$draft"''';
                         height: 200,
                         width: 200,
                         color: Colors.black12,
-                        child: const Center(child: CircularProgressIndicator())),
-                    errorWidget: (context, url, error) => const Icon(Icons.error),
+                        child:
+                            const Center(child: CircularProgressIndicator())),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error),
                   )
                 else
-                  Container(height: 200, width: 200, color: Colors.black12, child: const Icon(Icons.image, color: Colors.white24)),
-                
+                  Container(
+                      height: 200,
+                      width: 200,
+                      color: Colors.black12,
+                      child: const Icon(Icons.image, color: Colors.white24)),
                 if (message.isOptimistic)
                   const Positioned.fill(
                     child: Center(
@@ -3460,8 +4169,7 @@ Draft: "$draft"''';
                     updatedMeta['is_burned'] = true;
                     await _supabase
                         .from('messages')
-                        .update({'metadata': updatedMeta})
-                        .eq('id', message.id);
+                        .update({'metadata': updatedMeta}).eq('id', message.id);
                   } catch (e) {
                     debugPrint('Error burning snap: $e');
                   }
@@ -3494,7 +4202,9 @@ Draft: "$draft"''';
                 color: isBurned ? Colors.white10 : const Color(0xFFFFFC00),
               ),
               child: Icon(
-                isBurned ? Icons.lock_clock : Icons.local_fire_department_rounded,
+                isBurned
+                    ? Icons.lock_clock
+                    : Icons.local_fire_department_rounded,
                 size: 18,
                 color: isBurned ? Colors.white38 : Colors.black,
               ),
@@ -3522,11 +4232,18 @@ Draft: "$draft"''';
                       ),
                       const SizedBox(width: 6),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 5, vertical: 1.5),
                         decoration: BoxDecoration(
-                          color: isBurned ? Colors.transparent : Colors.redAccent.withValues(alpha: 0.2),
+                          color: isBurned
+                              ? Colors.transparent
+                              : Colors.redAccent.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(6),
-                          border: isBurned ? null : Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                          border: isBurned
+                              ? null
+                              : Border.all(
+                                  color:
+                                      Colors.redAccent.withValues(alpha: 0.5)),
                         ),
                         child: Text(
                           isBurned ? 'EXPIRED' : 'VIEW ONCE',
@@ -3540,7 +4257,9 @@ Draft: "$draft"''';
                     ],
                   ),
                   Text(
-                    isBurned ? 'Burned permanently' : 'Tap to view (Self-destructs)',
+                    isBurned
+                        ? 'Burned permanently'
+                        : 'Tap to view (Self-destructs)',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
@@ -3562,9 +4281,13 @@ Draft: "$draft"''';
     final localPath = message.metadata?['local_path'];
     final mainColor = isMe ? Colors.black87 : const Color(0xFFFFFC00);
     final subColor = isMe ? Colors.black54 : Colors.grey;
-    final borderColor = isMe ? Colors.black.withValues(alpha: 0.1) : const Color(0xFFFFFC00).withValues(alpha: 0.2);
-    final iconBgColor = isMe ? Colors.white.withValues(alpha: 0.4) : const Color(0xFFFFFC00).withValues(alpha: 0.2);
-    
+    final borderColor = isMe
+        ? Colors.black.withValues(alpha: 0.1)
+        : const Color(0xFFFFFC00).withValues(alpha: 0.2);
+    final iconBgColor = isMe
+        ? Colors.white.withValues(alpha: 0.4)
+        : const Color(0xFFFFFC00).withValues(alpha: 0.2);
+
     return GestureDetector(
       onTap: () {
         if (url != null) {
@@ -3615,7 +4338,11 @@ Draft: "$draft"''';
               ),
             ),
             if (message.isOptimistic)
-              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.yellow))
+              const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2, color: Colors.yellow))
             else
               Icon(Icons.open_in_new, color: mainColor, size: 20),
           ],
@@ -3650,22 +4377,36 @@ Draft: "$draft"''';
             alignment: Alignment.center,
             children: [
               ConstrainedBox(
-                constraints: const BoxConstraints(maxHeight: 300, minHeight: 150),
+                constraints:
+                    const BoxConstraints(maxHeight: 300, minHeight: 150),
                 child: localPath != null && File(localPath).existsSync()
-                  ? FutureBuilder<String?>(
-                      future: VideoCompress.getFileThumbnail(localPath).then((f) => f.path),
-                      builder: (context, snapshot) {
-                        return snapshot.hasData ? Image.file(File(snapshot.data!), fit: BoxFit.cover) : Container(color: Colors.black26);
-                      })
-                  : (url != null ? FutureBuilder<String?>(
-                      future: VideoCompress.getFileThumbnail(url).then((f) => f.path),
-                      builder: (context, snapshot) {
-                        if (snapshot.hasData && snapshot.data != null) {
-                          return Image.file(File(snapshot.data!), fit: BoxFit.cover);
-                        }
-                        return Container(height: 200, width: 200, color: Colors.black12, child: const Icon(Icons.videocam, color: Colors.white24, size: 40));
-                      },
-                    ) : Container(color: Colors.black26)),
+                    ? FutureBuilder<String?>(
+                        future: VideoCompress.getFileThumbnail(localPath)
+                            .then((f) => f.path),
+                        builder: (context, snapshot) {
+                          return snapshot.hasData
+                              ? Image.file(File(snapshot.data!),
+                                  fit: BoxFit.cover)
+                              : Container(color: Colors.black26);
+                        })
+                    : (url != null
+                        ? FutureBuilder<String?>(
+                            future: VideoCompress.getFileThumbnail(url)
+                                .then((f) => f.path),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData && snapshot.data != null) {
+                                return Image.file(File(snapshot.data!),
+                                    fit: BoxFit.cover);
+                              }
+                              return Container(
+                                  height: 200,
+                                  width: 200,
+                                  color: Colors.black12,
+                                  child: const Icon(Icons.videocam,
+                                      color: Colors.white24, size: 40));
+                            },
+                          )
+                        : Container(color: Colors.black26)),
               ),
               if (message.isOptimistic)
                 const CircularProgressIndicator(color: Colors.yellow)
@@ -3687,9 +4428,14 @@ Draft: "$draft"''';
     final String? description = metadata['description'];
 
     final titleColor = isMe ? Colors.black87 : Colors.white;
-    final subColor = isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.6);
-    final bgColor = isMe ? Colors.black.withValues(alpha: 0.05) : Colors.white.withValues(alpha: 0.05);
-    final borderColor = isMe ? Colors.black.withValues(alpha: 0.1) : Colors.yellow.withValues(alpha: 0.3);
+    final subColor =
+        isMe ? Colors.black54 : Colors.white.withValues(alpha: 0.6);
+    final bgColor = isMe
+        ? Colors.black.withValues(alpha: 0.05)
+        : Colors.white.withValues(alpha: 0.05);
+    final borderColor = isMe
+        ? Colors.black.withValues(alpha: 0.1)
+        : Colors.yellow.withValues(alpha: 0.3);
     final iconColor = isMe ? Colors.black : Colors.yellow;
 
     return GestureDetector(
@@ -3915,11 +4661,12 @@ Draft: "$draft"''';
     );
   }
 
-  void _showErrorSnackBar(String message) => _showSnackBar(message, isError: true);
+  void _showErrorSnackBar(String message) =>
+      _showSnackBar(message, isError: true);
 
   void _showMessageContextMenu(ChatMessage message, bool isMe) {
     if (message.isOptimistic || message.isPending) return;
-    
+
     final canDelete = isMe || _userRole == 'admin';
     final canEdit = isMe && message.messageType == 'text';
 
@@ -3949,7 +4696,8 @@ Draft: "$draft"''';
             decoration: BoxDecoration(
               color: const Color(0xFF131A21),
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: const Color(0xFFFFFC00).withValues(alpha: 0.2)),
+              border: Border.all(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.2)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -3974,7 +4722,8 @@ Draft: "$draft"''';
                     );
                   },
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
                     child: Text(
                       emoji,
                       style: const TextStyle(fontSize: 21),
@@ -3986,44 +4735,65 @@ Draft: "$draft"''';
           ),
           const SizedBox(height: 6),
           ListTile(
-            leading: const Icon(Icons.reply, color: Colors.blue),
-            title: const Text('Reply', style: TextStyle(color: Colors.white)),
+            leading: const Icon(Icons.reply, color: Color(0xFF38BDF8)),
+            title: const Text('Reply',
+                style: TextStyle(
+                    color: Colors.white, fontWeight: FontWeight.w600)),
             onTap: () {
               Navigator.pop(context);
+              HapticFeedback.selectionClick();
+              final senderDisplayName = message.senderName ??
+                  (message.senderProfile?['name'] ??
+                      (message.metadata?['robot_name'] ??
+                          (message.metadata?['sender_name'] ?? 'Mate')));
               safeSetState(() {
                 _replyMessage = {
                   'id': message.id,
-                  'message_text': message.messageText,
+                  'message_text': message.messageText ??
+                      (message.messageType == 'voice'
+                          ? '🎤 Voice note'
+                          : '📷 Media'),
                   'sender_id': message.senderId,
-                  'sender_name': message.senderName,
+                  'sender_name': senderDisplayName,
                   'metadata': message.metadata,
                   'message_type': message.messageType,
                   'file_url': message.fileUrl,
                 };
               });
+              _focusNode.requestFocus();
+              if (_messageController.text.trim().isEmpty) {
+                _messageController.text = '@$senderDisplayName ';
+                _messageController.selection = TextSelection.fromPosition(
+                  TextPosition(offset: _messageController.text.length),
+                );
+              }
             },
           ),
           if (message.messageText != null)
             ListTile(
               leading: const Icon(Icons.copy, color: Colors.green),
-              title: const Text('Copy Text', style: TextStyle(color: Colors.white)),
+              title: const Text('Copy Text',
+                  style: TextStyle(color: Colors.white)),
               onTap: () async {
                 Navigator.pop(context);
-                await Clipboard.setData(ClipboardData(text: message.messageText!));
+                await Clipboard.setData(
+                    ClipboardData(text: message.messageText!));
                 _showSnackBar('Copied to clipboard');
               },
             ),
           if (canEdit)
             ListTile(
               leading: const Icon(Icons.edit, color: Colors.orange),
-              title: const Text('Edit Message', style: TextStyle(color: Colors.white)),
+              title: const Text('Edit Message',
+                  style: TextStyle(color: Colors.white)),
               onTap: () {
                 Navigator.pop(context);
                 _handleEditAction(message);
               },
             ),
           ListTile(
-            leading: const Icon(Icons.flag_outlined, color: Colors.orangeAccent),
+            leading:
+                const Icon(Icons.flag_outlined, color: Colors.orangeAccent),
             title: const Text('Report', style: TextStyle(color: Colors.white)),
             onTap: () {
               Navigator.pop(context);
@@ -4037,8 +4807,10 @@ Draft: "$draft"''';
           ),
           if (canDelete)
             ListTile(
-              leading: const Icon(Icons.delete_outline, color: Colors.redAccent),
-              title: const Text('Delete Message', style: TextStyle(color: Colors.redAccent)),
+              leading:
+                  const Icon(Icons.delete_outline, color: Colors.redAccent),
+              title: const Text('Delete Message',
+                  style: TextStyle(color: Colors.redAccent)),
               onTap: () {
                 Navigator.pop(context);
                 _confirmDelete(message.id);
@@ -4047,10 +4819,13 @@ Draft: "$draft"''';
           if (widget.isAdminView)
             ListTile(
               leading: const Icon(Icons.gavel, color: Colors.redAccent),
-              title: const Text('Admin: Block User', style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+              title: const Text('Admin: Block User',
+                  style: TextStyle(
+                      color: Colors.redAccent, fontWeight: FontWeight.bold)),
               onTap: () {
                 Navigator.pop(context);
-                _showAdminHubBlockDialog(message.senderId, message.senderName ?? 'User');
+                _showAdminHubBlockDialog(
+                    message.senderId, message.senderName ?? 'User');
               },
             ),
           const SizedBox(height: 16),
@@ -4070,7 +4845,10 @@ Draft: "$draft"''';
           const Expanded(
             child: Text(
               'Editing message',
-              style: TextStyle(color: Colors.yellow, fontWeight: FontWeight.bold, fontSize: 13),
+              style: TextStyle(
+                  color: Colors.yellow,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13),
             ),
           ),
           IconButton(
@@ -4099,7 +4877,6 @@ Draft: "$draft"''';
     );
   }
 
-
   Widget _buildAIHelperPill() {
     return Container(
       alignment: Alignment.centerRight,
@@ -4122,11 +4899,13 @@ Draft: "$draft"''';
                     height: 12,
                     child: CircularProgressIndicator(
                       strokeWidth: 1.5,
-                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(Color(0xFFFFFC00)),
                     ),
                   )
                 else
-                  const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 14),
+                  const Icon(Icons.auto_awesome,
+                      color: Color(0xFFFFFC00), size: 14),
                 const SizedBox(width: 5),
                 Text(
                   _isCorrectingText ? 'Polishing...' : '✨ Polish My English',
@@ -4153,11 +4932,12 @@ Draft: "$draft"''';
         child: const Text(
           'Admin View (Read-Only)',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white54, fontSize: 16, fontStyle: FontStyle.italic),
+          style: TextStyle(
+              color: Colors.white54, fontSize: 16, fontStyle: FontStyle.italic),
         ),
       );
     }
-    
+
     if (_isAdminBlockedFromHub) {
       return Container(
         width: double.infinity,
@@ -4166,7 +4946,10 @@ Draft: "$draft"''';
         child: const Text(
           'You have been blocked from sending messages in this group.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.redAccent, fontSize: 16, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.redAccent,
+              fontSize: 16,
+              fontWeight: FontWeight.bold),
         ),
       );
     }
@@ -4306,7 +5089,9 @@ Draft: "$draft"''';
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
         color: const Color(0xFF070B0D),
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.05), width: 1)),
+        border: Border(
+            top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.05), width: 1)),
       ),
       child: Row(
         children: [
@@ -4315,13 +5100,15 @@ Draft: "$draft"''';
               decoration: BoxDecoration(
                 color: const Color(0xFF121B22),
                 borderRadius: BorderRadius.circular(22),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 0.5),
+                border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08), width: 0.5),
               ),
               child: Row(
                 children: [
                   IconButton(
                     iconSize: 20,
-                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+                    constraints:
+                        const BoxConstraints(minWidth: 36, minHeight: 36),
                     icon: Icon(
                         _showEmojiPicker
                             ? Icons.keyboard
@@ -4336,15 +5123,17 @@ Draft: "$draft"''';
                     child: TextField(
                       controller: _messageController,
                       focusNode: _focusNode,
-                      style: const TextStyle(color: Colors.white, fontSize: 14.5),
+                      style:
+                          const TextStyle(color: Colors.white, fontSize: 14.5),
                       decoration: InputDecoration(
                         hintText: !widget.groupId.startsWith('p:')
                             ? 'Type in English only... 🇬🇧'
                             : 'Type a message...',
-                        hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
+                        hintStyle: const TextStyle(
+                            color: Colors.white38, fontSize: 14),
                         border: InputBorder.none,
-                        contentPadding:
-                            const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                        contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 8),
                       ),
                       minLines: 1,
                       maxLines: 5,
@@ -4359,54 +5148,65 @@ Draft: "$draft"''';
                           children: [
                             IconButton(
                               iconSize: 20,
-                              constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
+                              constraints: const BoxConstraints(
+                                  minWidth: 32, minHeight: 36),
                               padding: EdgeInsets.zero,
                               tooltip: 'Attach file',
-                              icon: const Icon(Icons.attach_file, color: Colors.white70),
+                              icon: const Icon(Icons.attach_file,
+                                  color: Colors.white70),
                               onPressed: () => _showAttachmentBottomSheet(),
                             ),
                             IconButton(
                               iconSize: 20,
-                              constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
+                              constraints: const BoxConstraints(
+                                  minWidth: 32, minHeight: 36),
                               padding: EdgeInsets.zero,
                               tooltip: 'Send 24h Snap 🔥',
-                              icon: const Icon(Icons.local_fire_department_rounded, color: Color(0xFFFF8A00)),
+                              icon: const Icon(
+                                  Icons.local_fire_department_rounded,
+                                  color: Color(0xFFFF8A00)),
                               onPressed: () => _pickAndSendSnap(),
                             ),
                             const SizedBox(width: 4),
                           ],
                         );
                       } else if (!_isRecording) {
-                         return Row(
-                           mainAxisSize: MainAxisSize.min,
-                           children: [
-                             IconButton(
-                               iconSize: 20,
-                               constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
-                               padding: EdgeInsets.zero,
-                               tooltip: 'Polish My English ✨',
-                               icon: _isCorrectingText
-                                   ? const SizedBox(
-                                       width: 14,
-                                       height: 14,
-                                       child: CircularProgressIndicator(
-                                         strokeWidth: 1.5,
-                                         color: Color(0xFFFFFC00),
-                                       ),
-                                     )
-                                   : const Icon(Icons.auto_awesome, color: Color(0xFFFFFC00), size: 19),
-                               onPressed: _isCorrectingText ? null : _polishEnglishDraft,
-                             ),
-                             IconButton(
-                               iconSize: 20,
-                               constraints: const BoxConstraints(minWidth: 32, minHeight: 36),
-                               padding: EdgeInsets.zero,
-                               icon: const Icon(Icons.attach_file, color: Colors.white70),
-                               onPressed: () => _showAttachmentBottomSheet(),
-                             ),
-                             const SizedBox(width: 4),
-                           ],
-                         );
+                        return Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              iconSize: 20,
+                              constraints: const BoxConstraints(
+                                  minWidth: 32, minHeight: 36),
+                              padding: EdgeInsets.zero,
+                              tooltip: 'Polish My English ✨',
+                              icon: _isCorrectingText
+                                  ? const SizedBox(
+                                      width: 14,
+                                      height: 14,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 1.5,
+                                        color: Color(0xFFFFFC00),
+                                      ),
+                                    )
+                                  : const Icon(Icons.auto_awesome,
+                                      color: Color(0xFFFFFC00), size: 19),
+                              onPressed: _isCorrectingText
+                                  ? null
+                                  : _polishEnglishDraft,
+                            ),
+                            IconButton(
+                              iconSize: 20,
+                              constraints: const BoxConstraints(
+                                  minWidth: 32, minHeight: 36),
+                              padding: EdgeInsets.zero,
+                              icon: const Icon(Icons.attach_file,
+                                  color: Colors.white70),
+                              onPressed: () => _showAttachmentBottomSheet(),
+                            ),
+                            const SizedBox(width: 4),
+                          ],
+                        );
                       }
                       return const SizedBox.shrink();
                     },
@@ -4449,13 +5249,18 @@ Draft: "$draft"''';
                       gradient: LinearGradient(
                         colors: _isSttListening
                             ? [const Color(0xFFEF4444), const Color(0xFFFF8906)]
-                            : [const Color(0xFF10B981), const Color(0xFFFFD700)],
+                            : [
+                                const Color(0xFF10B981),
+                                const Color(0xFFFFD700)
+                              ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: (_isSttListening ? Colors.redAccent : const Color(0xFF10B981))
+                          color: (_isSttListening
+                                  ? Colors.redAccent
+                                  : const Color(0xFF10B981))
                               .withValues(alpha: 0.5),
                           blurRadius: _isSttListening ? 12 : 6,
                           spreadRadius: _isSttListening ? 2 : 0,
@@ -4463,7 +5268,9 @@ Draft: "$draft"''';
                       ],
                     ),
                     child: Icon(
-                      _isSttListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                      _isSttListening
+                          ? Icons.mic_rounded
+                          : Icons.mic_none_rounded,
                       color: Colors.black,
                       size: 20,
                     ),
@@ -4554,17 +5361,19 @@ Draft: "$draft"''';
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  _buildAttachOption(Icons.local_fire_department_rounded, const Color(0xFFFFFC00),
-                      'Snap 🔥', () {
+                  _buildAttachOption(Icons.local_fire_department_rounded,
+                      const Color(0xFFFFFC00), 'Snap 🔥', () {
                     Navigator.pop(ctx);
                     _pickAndSendSnap();
                   }),
-                  _buildAttachOption(Icons.photo_library_rounded, Colors.purple, 'Gallery', () {
+                  _buildAttachOption(
+                      Icons.photo_library_rounded, Colors.purple, 'Gallery',
+                      () {
                     Navigator.pop(context);
                     _pickAndUploadImage(ImageSource.gallery);
                   }),
-                  _buildAttachOption(Icons.insert_drive_file, Colors.blue,
-                      'Document', () {
+                  _buildAttachOption(
+                      Icons.insert_drive_file, Colors.blue, 'Document', () {
                     Navigator.pop(ctx);
                     _pickAndStageDocument();
                   }),
@@ -4583,8 +5392,9 @@ Draft: "$draft"''';
                     Navigator.pop(context);
                     _pickAndStageVideo();
                   }),
-                  _buildAttachOption(Icons.construction_rounded,
-                      Colors.deepOrange, 'Tool', () {
+                  _buildAttachOption(
+                      Icons.construction_rounded, Colors.deepOrange, 'Tool',
+                      () {
                     Navigator.pop(context);
                     _showToolPicker();
                   }),
@@ -4693,8 +5503,8 @@ Draft: "$draft"''';
           metadata: galleryMetadata);
     } else if (_stagedThoughtId != null) {
       await _sendMessage(
-          text: text, 
-          messageType: 'thought', 
+          text: text,
+          messageType: 'thought',
           thoughtId: _stagedThoughtId,
           metadata: metadata);
     } else if (_stagedTool != null) {
@@ -4703,7 +5513,8 @@ Draft: "$draft"''';
       await _sendMessage(
           text: text, messageType: 'tool', metadata: toolMetadata);
     } else if (_stagedVideoPath != null) {
-      await _uploadStagedVideo(text); // This also needs to handle metadata if we want
+      await _uploadStagedVideo(
+          text); // This also needs to handle metadata if we want
     } else if (_stagedDocumentPath != null) {
       await _uploadStagedFile(text, _stagedDocumentPath!, 'document');
     } else if (_stagedAudioPath != null) {
@@ -4736,15 +5547,17 @@ Draft: "$draft"''';
     try {
       final msgId = _editingMessageId!;
       _cancelEditing();
-      await ref.read(chatMessagesProvider(widget.groupId).notifier).editMessage(msgId, newText);
+      await ref
+          .read(chatMessagesProvider(widget.groupId).notifier)
+          .editMessage(msgId, newText);
       _showSnackBar('Message updated');
     } catch (e) {
       _showErrorSnackBar('Failed to update: $e');
     }
   }
 
-
-  Future<void> _uploadStagedFile(String? caption, String path, String type) async {
+  Future<void> _uploadStagedFile(
+      String? caption, String path, String type) async {
     // 1. Immediate optimistic send
     final messageId = await _sendMessage(
       text: caption ?? (type == 'document' ? 'Document 📁' : 'Audio 🎵'),
@@ -4754,13 +5567,12 @@ Draft: "$draft"''';
 
     // 2. Perform upload in background
     _performBackgroundUpload(messageId, path, type, caption);
-    
+
     safeSetState(() {
       _stagedDocumentPath = null;
       _stagedAudioPath = null;
     });
   }
-
 
   Future<File?> _compressVideo(String path) async {
     try {
@@ -4803,26 +5615,32 @@ Draft: "$draft"''';
     if (messageId == null) return;
     try {
       File file = File(path);
-      final String bucket = type == 'voice' ? 'voice-messages' : 'ephemeral_media';
+      final String bucket =
+          type == 'voice' ? 'voice-messages' : 'ephemeral_media';
       final extension = path.split('.').last;
-      final fileName = '${type}_${DateTime.now().millisecondsSinceEpoch}.$extension';
+      final fileName =
+          '${type}_${DateTime.now().millisecondsSinceEpoch}.$extension';
       final storagePath = '${widget.groupId}/$fileName';
 
       if (type == 'image') {
         final compressedBytes = await _compressImage(path);
         if (compressedBytes != null) {
-          await _supabase.storage.from(bucket).uploadBinary(storagePath, compressedBytes);
+          await _supabase.storage
+              .from(bucket)
+              .uploadBinary(storagePath, compressedBytes);
         } else {
           await _supabase.storage.from(bucket).upload(storagePath, file);
         }
       } else {
         await _supabase.storage.from(bucket).upload(storagePath, file);
       }
-      
+
       final url = _supabase.storage.from(bucket).getPublicUrl(storagePath);
 
       // Update the EXISTING record instead of sending a new one
-      await ref.read(chatMessagesProvider(widget.groupId).notifier).updateMessageFileUrl(
+      await ref
+          .read(chatMessagesProvider(widget.groupId).notifier)
+          .updateMessageFileUrl(
             messageId,
             url,
           );
@@ -4847,7 +5665,8 @@ Draft: "$draft"''';
 
   Future<void> _pickAndStageAudio() async {
     try {
-      FilePickerResult? result = await FilePicker.pickFiles(type: FileType.audio);
+      FilePickerResult? result =
+          await FilePicker.pickFiles(type: FileType.audio);
       if (result != null && result.files.single.path != null) {
         safeSetState(() {
           _stagedAudioPath = result.files.single.path;
@@ -4864,24 +5683,30 @@ Draft: "$draft"''';
       if (!status.isGranted && !status.isLimited) {
         final status2 = await Permission.storage.request();
         if (!status2.isGranted) {
-           if (!mounted) return;
-           showDialog(
-             context: context,
-             builder: (context) => AlertDialog(
-               backgroundColor: const Color(0xFF1F2C34),
-               title: const Text('Access Required', style: TextStyle(color: Colors.white)),
-               content: const Text('We need video access to share videos. Please enable it in settings.',
-                   style: TextStyle(color: Colors.white70)),
-               actions: [
-                 TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-                 TextButton(onPressed: () {
-                   Navigator.pop(context);
-                   openAppSettings();
-                 }, child: const Text('Settings')),
-               ],
-             ),
-           );
-           return;
+          if (!mounted) return;
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              backgroundColor: const Color(0xFF1F2C34),
+              title: const Text('Access Required',
+                  style: TextStyle(color: Colors.white)),
+              content: const Text(
+                  'We need video access to share videos. Please enable it in settings.',
+                  style: TextStyle(color: Colors.white70)),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Cancel')),
+                TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      openAppSettings();
+                    },
+                    child: const Text('Settings')),
+              ],
+            ),
+          );
+          return;
         }
       }
 
@@ -4899,7 +5724,7 @@ Draft: "$draft"''';
   Future<void> _uploadStagedVideo(String? caption) async {
     if (_stagedVideoPath == null) return;
     final path = _stagedVideoPath!;
-    
+
     // 1. Immediate optimistic send
     final messageId = await _sendMessage(
       text: caption ?? 'Video 📹',
@@ -4914,11 +5739,12 @@ Draft: "$draft"''';
     _performBackgroundVideoUpload(messageId, path, caption);
   }
 
-  Future<void> _performBackgroundVideoUpload(String? messageId, String path, String? caption) async {
+  Future<void> _performBackgroundVideoUpload(
+      String? messageId, String path, String? caption) async {
     if (messageId == null) return;
     try {
       File fileToUpload = File(path);
-      
+
       // Video Compression
       final compressed = await _compressVideo(path);
       if (compressed != null) {
@@ -4929,11 +5755,16 @@ Draft: "$draft"''';
       final fileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
       final storagePath = '${widget.groupId}/$fileName';
 
-      await _supabase.storage.from('ephemeral_media').upload(storagePath, fileToUpload);
-      final url = _supabase.storage.from('ephemeral_media').getPublicUrl(storagePath);
+      await _supabase.storage
+          .from('ephemeral_media')
+          .upload(storagePath, fileToUpload);
+      final url =
+          _supabase.storage.from('ephemeral_media').getPublicUrl(storagePath);
 
       // Update the EXISTING record instead of sending a new one
-      await ref.read(chatMessagesProvider(widget.groupId).notifier).updateMessageFileUrl(
+      await ref
+          .read(chatMessagesProvider(widget.groupId).notifier)
+          .updateMessageFileUrl(
             messageId,
             url,
           );
@@ -4946,10 +5777,6 @@ Draft: "$draft"''';
       _showErrorSnackBar('Failed to deliver video: $e');
     }
   }
-
-
-
-
 
   void _showToolPicker() {
     final tools = [
@@ -4996,7 +5823,8 @@ Draft: "$draft"''';
   Future<void> _pickAndUploadImage(ImageSource source) async {
     try {
       XFile? image;
-      final isDesktop = !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
+      final isDesktop = !kIsWeb &&
+          (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
       if (source == ImageSource.camera && isDesktop) {
         image = await _imagePicker.pickImage(
           source: ImageSource.gallery,
@@ -5032,7 +5860,7 @@ Draft: "$draft"''';
 
       // 1. Immediate optimistic send
       final messageId = await _sendMessage(
-        text: '', 
+        text: '',
         messageType: type,
         metadata: {'local_path': path},
       );
@@ -5052,7 +5880,8 @@ Draft: "$draft"''';
   Future<void> _pickAndSendSnap() async {
     try {
       XFile? image;
-      final isDesktop = !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
+      final isDesktop = !kIsWeb &&
+          (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
       if (isDesktop) {
         // Desktop does not implement CameraDelegate, pick from files/gallery cleanly
         image = await _imagePicker.pickImage(
@@ -5070,7 +5899,8 @@ Draft: "$draft"''';
             imageQuality: 80,
           );
         } catch (camErr) {
-          debugPrint('Camera delegate unavailable, falling back to gallery: $camErr');
+          debugPrint(
+              'Camera delegate unavailable, falling back to gallery: $camErr');
           image = await _imagePicker.pickImage(
             source: ImageSource.gallery,
             maxWidth: 1080,
@@ -5093,7 +5923,8 @@ Draft: "$draft"''';
           'is_burned': false,
           'view_once': true,
           'disappearing_24h': true,
-          'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+          'expires_at':
+              DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
         },
       );
 
@@ -5132,7 +5963,7 @@ Draft: "$draft"''';
 
   Widget _buildReplyInBubble(ChatMessage message, bool isMe) {
     // Check if it's a message reply or a status reply
-    final reply = message.replyToMessage;
+    final reply = message.replyToMessage ?? message.metadata?['reply_to'];
     final metadata = message.metadata;
     final isStatusReply = metadata?['reply_type'] == 'status_reply';
 
@@ -5144,7 +5975,9 @@ Draft: "$draft"''';
         margin: const EdgeInsets.fromLTRB(4, 4, 4, 8),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isMe ? Colors.black.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
+          color: isMe
+              ? Colors.black.withValues(alpha: 0.1)
+              : Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(8),
           border: Border(
             left: BorderSide(
@@ -5195,7 +6028,8 @@ Draft: "$draft"''';
                               ),
                             ),
                             alignment: Alignment.center,
-                            child: const Icon(Icons.text_fields, color: Colors.white, size: 14),
+                            child: const Icon(Icons.text_fields,
+                                color: Colors.white, size: 14),
                           )
                         : CachedNetworkImage(
                             imageUrl: statusMediaUrl,
@@ -5224,13 +6058,19 @@ Draft: "$draft"''';
     final profile = senderProfile is List
         ? (senderProfile.isNotEmpty ? senderProfile.first : null)
         : senderProfile;
-    final senderName = profile?['name']?.toString() ?? 'User';
+    final senderName = profile?['name']?.toString() ??
+        reply['sender_name']?.toString() ??
+        replyMetadata?['robot_name']?.toString() ??
+        replyMetadata?['sender_name']?.toString() ??
+        'User';
 
     return Container(
       margin: const EdgeInsets.fromLTRB(4, 4, 4, 8),
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: isMe ? Colors.black.withValues(alpha: 0.1) : Colors.white.withValues(alpha: 0.05),
+        color: isMe
+            ? Colors.black.withValues(alpha: 0.1)
+            : Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
         border: Border(
           left: BorderSide(
@@ -5283,7 +6123,8 @@ Draft: "$draft"''';
                             ),
                           ),
                           alignment: Alignment.center,
-                          child: const Icon(Icons.text_fields, color: Colors.white, size: 14),
+                          child: const Icon(Icons.text_fields,
+                              color: Colors.white, size: 14),
                         )
                       : CachedNetworkImage(
                           imageUrl: replyStatusMediaUrl,
@@ -5345,7 +6186,9 @@ Draft: "$draft"''';
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      isStatusReply ? 'Replying to Vibe' : (message['sender_name'] ?? 'Message'),
+                      isStatusReply
+                          ? 'Replying to Vibe'
+                          : (message['sender_name'] ?? 'Message'),
                       style: const TextStyle(
                         color: Colors.yellow,
                         fontSize: 12,
@@ -5354,8 +6197,10 @@ Draft: "$draft"''';
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      message['message_text'] ?? (isStatusReply ? 'Vibe Reaction' : 'Media'),
-                      style: const TextStyle(color: Colors.white70, fontSize: 12),
+                      message['message_text'] ??
+                          (isStatusReply ? 'Vibe Reaction' : 'Media'),
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 12),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -5404,6 +6249,44 @@ Draft: "$draft"''';
     );
   }
 
+  Widget _buildParticipantAvatar(Map<String, dynamic>? profile,
+      {double size = 44}) {
+    final avatarConfigMap = profile?['avatar_config'];
+    final profileImgUrl = profile?['profile_image_url']?.toString();
+    final stage = (profile?['learning_day'] ??
+            profile?['stage'] ??
+            profile?['learning_stage'] ??
+            profile?['level'] as num?)
+        ?.toInt() ??
+        1;
+
+    VectorAvatarConfig config;
+    if (avatarConfigMap is Map<String, dynamic>) {
+      config = VectorAvatarConfig.fromMap(avatarConfigMap);
+    } else if (avatarConfigMap is Map) {
+      config = VectorAvatarConfig.fromMap(
+          Map<String, dynamic>.from(avatarConfigMap));
+    } else if (avatarConfigMap is String && avatarConfigMap.isNotEmpty) {
+      config = VectorAvatarConfig.fromJson(avatarConfigMap);
+    } else if (profileImgUrl != null && profileImgUrl.isNotEmpty) {
+      config = VectorAvatarConfig(imageUrl: profileImgUrl);
+    } else {
+      config =
+          VectorAvatarConfig.getEvolutionAvatarForStage(stage.clamp(1, 90));
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: VectorAvatarWidget(
+        config: config,
+        size: size,
+        showAura: false,
+        useFlame: false,
+      ),
+    );
+  }
+
   // ... (Keep existing helper methods like _showGroupInfo, _pickAndSendImage)
   void _showGroupInfo() {
     if (widget.groupId.startsWith('p:')) {
@@ -5421,25 +6304,31 @@ Draft: "$draft"''';
         );
         return;
       }
-      
+
       // Only split if it's a composite 2-UUID string (e.g. uuid1_uuid2)
       if (rawTarget.contains('_') && !PocketRobotService.isRobotId(rawTarget)) {
         final parts = rawTarget.split('_');
-        if (parts.length == 2 && parts[0].length >= 32 && parts[1].length >= 32) {
-          targetId = parts.firstWhere((id) => id != _currentUserId, orElse: () => rawTarget);
+        if (parts.length == 2 &&
+            parts[0].length >= 32 &&
+            parts[1].length >= 32) {
+          targetId = parts.firstWhere((id) => id != _currentUserId,
+              orElse: () => rawTarget);
         }
       }
 
       // If this is a robot or matches robot name, ensure exact robot ID resolution
-      if (PocketRobotService.isRobotId(targetId) || PocketRobotService.isRobotId(rawTarget)) {
+      if (PocketRobotService.isRobotId(targetId) ||
+          PocketRobotService.isRobotId(rawTarget)) {
         final robot = PocketRobotService.getRobotById(targetId) ??
             PocketRobotService.getRobotById(rawTarget) ??
-            PocketRobotService.getAllRobots().where((r) => widget.groupName.contains(r.name)).firstOrNull;
+            PocketRobotService.getAllRobots()
+                .where((r) => widget.groupName.contains(r.name))
+                .firstOrNull;
         if (robot != null) {
           targetId = robot.id;
         }
       }
-      
+
       if (targetId.isNotEmpty) {
         PocketCitadelAttackPage.openForUser(context, userId: targetId);
       }
@@ -5506,104 +6395,239 @@ Draft: "$draft"''';
                                 fontWeight: FontWeight.bold),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            'Group · ${_groupMembers.length} members',
-                            style: const TextStyle(color: Colors.white60),
-                          ),
+                          Builder(builder: (context) {
+                            final hubRobots = _isEnglishHubGroup
+                                ? PocketRobotService.getRobotsForLevelBracket(
+                                    _hubMinLevel, _hubMaxLevel)
+                                : <PocketRobot>[];
+                            final totalCount =
+                                _groupMembers.length + hubRobots.length;
+                            return Text(
+                              'Group · $totalCount members${hubRobots.isNotEmpty ? ' (${_groupMembers.length} Learners · ${hubRobots.length} AI Mates)' : ''}',
+                              style: const TextStyle(color: Colors.white60),
+                            );
+                          }),
                         ],
                       ),
                     ),
                     const SizedBox(height: 32),
 
                     // Participants Section
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${_groupMembers.length} members',
-                          style: const TextStyle(
-                              color: Colors.grey, fontWeight: FontWeight.bold),
-                        ),
-                        if (_userRole == 'admin')
-                          IconButton(
-                            icon: const Icon(Icons.search, color: Colors.grey),
-                            onPressed: () {}, // TODO: Member search
-                          ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    if (_userRole == 'admin')
-                      ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: const CircleAvatar(
-                          backgroundColor: Colors.yellow,
-                          child: Icon(Icons.person_add, color: Colors.black),
-                        ),
-                        title: const Text('Add members',
-                            style: TextStyle(color: Colors.white)),
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showAddMemberDialog();
-                        },
-                      ),
-                    ..._groupMembers.map((member) {
-                      final profile = member['profile'];
-                      final isMemberAdmin = member['role'] == 'admin';
-                      final isMe = member['user_id'] == _currentUserId;
-
-                      return ListTile(
-                        contentPadding: EdgeInsets.zero,
-                        leading: CircleAvatar(
-                          backgroundImage: profile?['profile_image_url'] != null
-                              ? NetworkImage(profile['profile_image_url'])
-                              : null,
-                          child: profile?['profile_image_url'] == null
-                              ? const Icon(Icons.person)
-                              : null,
-                        ),
-                        title: Text(
-                          isMe ? 'You' : (profile?['name'] ?? 'Unknown'),
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                        subtitle: Text(
-                          profile?['bio'] ?? 'Busy', // Or role if needed
-                          style: const TextStyle(color: Colors.grey),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        trailing: isMemberAdmin
-                            ? Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 2),
-                                decoration: BoxDecoration(
-                                  border: Border.all(color: Colors.yellow),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text('Group Admin',
-                                    style: TextStyle(
-                                        color: Colors.yellow, fontSize: 10)),
-                              )
-                            : (_userRole == 'admin'
-                                ? IconButton(
-                                    icon: const Icon(
-                                        Icons.remove_circle_outline,
-                                        color: Colors.red),
-                                    onPressed: () =>
-                                        _removeMember(member['user_id']),
-                                  )
-                                : null),
-                        onTap: () {
-                          if (member['user_id'] != null) {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => VerfiedSwitchPage(
-                                  userId: member['user_id'].toString(),
-                                ),
+                    Builder(builder: (context) {
+                      final hubRobots = _isEnglishHubGroup
+                          ? PocketRobotService.getRobotsForLevelBracket(
+                              _hubMinLevel, _hubMaxLevel)
+                          : <PocketRobot>[];
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                hubRobots.isNotEmpty
+                                    ? 'Learners (${_groupMembers.length})'
+                                    : '${_groupMembers.length} members',
+                                style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontWeight: FontWeight.bold),
                               ),
+                              if (_userRole == 'admin')
+                                IconButton(
+                                  icon: const Icon(Icons.search,
+                                      color: Colors.grey),
+                                  onPressed: () {}, // TODO: Member search
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          if (_userRole == 'admin')
+                            ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: const CircleAvatar(
+                                backgroundColor: Colors.yellow,
+                                child:
+                                    Icon(Icons.person_add, color: Colors.black),
+                              ),
+                              title: const Text('Add members',
+                                  style: TextStyle(color: Colors.white)),
+                              onTap: () {
+                                Navigator.pop(context);
+                                _showAddMemberDialog();
+                              },
+                            ),
+                          ..._groupMembers.map((member) {
+                            final profile = member['profile'];
+                            final isMemberAdmin = member['role'] == 'admin';
+                            final isMe = member['user_id'] == _currentUserId;
+
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: _buildParticipantAvatar(profile, size: 44),
+                              title: Text(
+                                isMe ? 'You' : (profile?['name'] ?? 'Unknown'),
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                profile?['bio'] ?? 'Active in Pocket World',
+                                style: const TextStyle(color: Colors.grey),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              trailing: isMemberAdmin
+                                  ? Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        border:
+                                            Border.all(color: Colors.yellow),
+                                        borderRadius: BorderRadius.circular(4),
+                                      ),
+                                      child: const Text('Group Admin',
+                                          style: TextStyle(
+                                              color: Colors.yellow,
+                                              fontSize: 10)),
+                                    )
+                                  : (_userRole == 'admin'
+                                      ? IconButton(
+                                          icon: const Icon(
+                                              Icons.remove_circle_outline,
+                                              color: Colors.red),
+                                          onPressed: () => _removeMember(
+                                              member['user_id']),
+                                        )
+                                      : null),
+                              onTap: () {
+                                if (member['user_id'] != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => VerfiedSwitchPage(
+                                        userId: member['user_id'].toString(),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
                             );
-                          }
-                        },
+                          }),
+
+                          // 🤖 AI Mates Section for English Hub
+                          if (hubRobots.isNotEmpty) ...[
+                            const SizedBox(height: 24),
+                            Row(
+                              children: [
+                                const Icon(Icons.smart_toy_rounded,
+                                    color: Color(0xFF38BDF8), size: 18),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'AI Mates · ${hubRobots.length} (Level $_hubMinLevel - $_hubMaxLevel)',
+                                  style: const TextStyle(
+                                    color: Color(0xFF38BDF8),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            ...hubRobots.map((robot) {
+                              return ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: robot.archetype.color, width: 2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: robot.archetype.color
+                                            .withValues(alpha: 0.3),
+                                        blurRadius: 6,
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipOval(
+                                    child: robot.avatarUrl.isNotEmpty
+                                        ? CachedNetworkImage(
+                                            imageUrl: robot.avatarUrl,
+                                            fit: BoxFit.cover,
+                                            placeholder: (_, __) => Center(
+                                              child: Text(
+                                                robot.archetype.icon,
+                                                style: const TextStyle(
+                                                    fontSize: 20),
+                                              ),
+                                            ),
+                                            errorWidget: (_, __, ___) => Center(
+                                              child: Text(
+                                                robot.archetype.icon,
+                                                style: const TextStyle(
+                                                    fontSize: 20),
+                                              ),
+                                            ),
+                                          )
+                                        : Center(
+                                            child: Text(
+                                              robot.archetype.icon,
+                                              style:
+                                                  const TextStyle(fontSize: 20),
+                                            ),
+                                          ),
+                                  ),
+                                ),
+                                title: Row(
+                                  children: [
+                                    Text(
+                                      robot.name,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(robot.archetype.icon,
+                                        style: const TextStyle(fontSize: 13)),
+                                  ],
+                                ),
+                                subtitle: Text(
+                                  'Level ${robot.level} · ${robot.cefrRank} · ${robot.archetype.label}',
+                                  style: const TextStyle(
+                                      color: Colors.white70, fontSize: 12),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                trailing: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 8, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: robot.archetype.color
+                                        .withValues(alpha: 0.15),
+                                    border: Border.all(
+                                        color: robot.archetype.color, width: 1),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    'Lvl ${robot.level}',
+                                    style: TextStyle(
+                                      color: robot.archetype.color,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  PocketCitadelAttackPage.openForUser(context,
+                                      userId: robot.id);
+                                },
+                              );
+                            }),
+                          ],
+                        ],
                       );
                     }),
                     const SizedBox(height: 32),
@@ -5634,8 +6658,8 @@ Draft: "$draft"''';
                         ),
                         ListTile(
                           contentPadding: EdgeInsets.zero,
-                          leading:
-                              const Icon(Icons.delete_forever, color: Colors.red),
+                          leading: const Icon(Icons.delete_forever,
+                              color: Colors.red),
                           title: const Text('Delete group',
                               style: TextStyle(color: Colors.red)),
                           onTap: () {
@@ -5780,7 +6804,8 @@ Draft: "$draft"''';
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white70)),
+            child:
+                const Text('Cancel', style: TextStyle(color: Colors.white70)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, true),
@@ -5930,16 +6955,15 @@ Draft: "$draft"''';
               final text = _messageController.text;
               final selection = _messageController.selection;
               final lastAtPos = text.lastIndexOf('@', selection.baseOffset - 1);
-              
+
               if (lastAtPos != -1) {
                 final newText = text.replaceRange(
-                  lastAtPos, 
-                  selection.baseOffset, 
-                  '@${profile?['name']} '
-                );
+                    lastAtPos, selection.baseOffset, '@${profile?['name']} ');
                 _messageController.value = TextEditingValue(
                   text: newText,
-                  selection: TextSelection.collapsed(offset: lastAtPos + (profile?['name'] as String).length + 2),
+                  selection: TextSelection.collapsed(
+                      offset:
+                          lastAtPos + (profile?['name'] as String).length + 2),
                 );
               }
               safeSetState(() => _showMentionSuggestions = false);
@@ -6045,7 +7069,8 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
   final List<Map<String, String>> _messages = [
     {
       'role': 'assistant',
-      'content': 'Hello! I am your AI English Tutor. How can I help you practice your English today? You can ask me grammar questions, request translations, or practice conversation templates!'
+      'content':
+          'Hello! I am your AI English Tutor. How can I help you practice your English today? You can ask me grammar questions, request translations, or practice conversation templates!'
     }
   ];
   bool _isTyping = false;
@@ -6073,8 +7098,9 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
     _scrollToBottom();
 
     try {
-      final systemInstruction = 'You are a friendly, encouraging, and expert English Tutor in the PoketMates app. The user is learning English. Note: The app name is PoketMates (or Poket Mates, never spelled with a "c"). Explain concepts clearly, correct errors in their messages politely, and provide helpful examples. Format grammar explanations with bullet points. Keep answers engaging but clear.';
-      
+      final systemInstruction =
+          'You are a friendly, encouraging, and expert English Tutor in the PoketMates app. The user is learning English. Note: The app name is PoketMates (or Poket Mates, never spelled with a "c"). Explain concepts clearly, correct errors in their messages politely, and provide helpful examples. Format grammar explanations with bullet points. Keep answers engaging but clear.';
+
       final buffer = StringBuffer();
       buffer.writeln(systemInstruction);
       buffer.writeln();
@@ -6091,7 +7117,8 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
 
       if (response.isSuccess && response.data != null) {
         setState(() {
-          _messages.add({'role': 'assistant', 'content': response.data!.trim()});
+          _messages
+              .add({'role': 'assistant', 'content': response.data!.trim()});
           _isTyping = false;
         });
         _scrollToBottom();
@@ -6102,7 +7129,8 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
       setState(() {
         _messages.add({
           'role': 'assistant',
-          'content': '⚠️ Failed to connect to AI. Please check your internet connection.'
+          'content':
+              '⚠️ Failed to connect to AI. Please check your internet connection.'
         });
         _isTyping = false;
       });
@@ -6208,7 +7236,8 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
                 final isMe = msg['role'] == 'user';
 
                 return Align(
-                  alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment:
+                      isMe ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.symmetric(vertical: 4),
@@ -6220,13 +7249,14 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
                       borderRadius: BorderRadius.only(
                         topLeft: const Radius.circular(12),
                         topRight: const Radius.circular(12),
-                        bottomLeft: isMe ? const Radius.circular(12) : Radius.zero,
-                        bottomRight: isMe ? Radius.zero : const Radius.circular(12),
+                        bottomLeft:
+                            isMe ? const Radius.circular(12) : Radius.zero,
+                        bottomRight:
+                            isMe ? Radius.zero : const Radius.circular(12),
                       ),
                       border: Border.all(
-                        color: isMe
-                            ? Colors.transparent
-                            : const Color(0xFF1E2430),
+                        color:
+                            isMe ? Colors.transparent : const Color(0xFF1E2430),
                       ),
                     ),
                     child: Text(
@@ -6288,7 +7318,8 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
 
   Widget _buildChip(String text) {
     return ActionChip(
-      label: Text(text, style: GoogleFonts.outfit(fontSize: 12, color: Colors.white)),
+      label: Text(text,
+          style: GoogleFonts.outfit(fontSize: 12, color: Colors.white)),
       backgroundColor: const Color(0xFF131722),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -6299,3 +7330,61 @@ class _AIEnglishTutorSheetState extends State<AIEnglishTutorSheet> {
   }
 }
 
+/// 💬 Animated Typing Dots (Rolling / Jumping effect)
+class _AnimatedTypingDots extends StatefulWidget {
+  const _AnimatedTypingDots();
+
+  @override
+  State<_AnimatedTypingDots> createState() => _AnimatedTypingDotsState();
+}
+
+class _AnimatedTypingDotsState extends State<_AnimatedTypingDots>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(3, (index) {
+            final delay = index * 0.2;
+            final progress = (_controller.value - delay) % 1.0;
+            final double bounce =
+                progress < 0.5 ? math.sin(progress * math.pi) * -4.0 : 0.0;
+
+            return Transform.translate(
+              offset: Offset(0, bounce),
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                width: 5,
+                height: 5,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFF25D366),
+                ),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
+}

@@ -149,11 +149,11 @@ class PocketScoreLevelEngine {
     {
       'gate': 5,
       'levels': 'Levels 41–50',
-      'formatId': 'listening_whisper',
-      'title': 'Audio Whisper',
-      'icon': '👂',
-      'desc': 'Listen to spoken English & fill blanks',
-      'skill': 'Listening Comprehension',
+      'formatId': 'collocation_ram',
+      'title': 'Collocation Ram',
+      'icon': '🔨',
+      'desc': 'Pair natural collocations & phrasal verbs',
+      'skill': 'Collocations & Phrasals',
     },
     {
       'gate': 6,

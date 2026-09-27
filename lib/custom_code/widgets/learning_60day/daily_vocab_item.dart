@@ -24,6 +24,10 @@ class DailyVocabItem {
     required this.phonetic,
   });
 
+  /// Convenience getters for backward compatibility
+  String get definitionMl => malayalamMeaning;
+  String get example => exampleSentence;
+
   Map<String, dynamic> toMap() => {
         'word': word,
         'partOfSpeech': partOfSpeech,

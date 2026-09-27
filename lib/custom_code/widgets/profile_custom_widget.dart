@@ -23,6 +23,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_network_explorer_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_60day_dashboard.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
 
 // Begin custom action code
@@ -115,12 +116,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         if (_currentUserId == null) return;
       }
 
-      // Fetch profile data
-      int userDay = 1;
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        userDay = prefs.getInt('pocket_learning_user_stage_$_currentUserId') ?? prefs.getInt('learning_day_$_currentUserId') ?? 1;
-      } catch (_) {}
+
 
       final profileResponse = await _supabase
           .from('profile')
@@ -139,11 +135,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           selectedState = profileResponse['state'] ?? '';
           selectedCity = profileResponse['city'] ?? '';
           
-          final rawDay = (profileResponse['learning_day'] as num?)?.toInt();
-          if (rawDay != null && rawDay > userDay) {
-            userDay = rawDay;
-          }
-          _learningDay = userDay;
+          final rawScore = (profileResponse['pocket_score'] as num?)?.toInt() ?? 0;
+          _learningDay = PocketScoreLevelEngine.getLevelFromScore(rawScore);
           final stage = LearningMilestoneStage.getStageForDay(_learningDay);
           
           _colorCode = stage.bgHex;

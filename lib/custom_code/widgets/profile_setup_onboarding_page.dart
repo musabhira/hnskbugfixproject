@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io' as io;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,24 +8,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:audioplayers/audioplayers.dart';
 
 import '/backend/supabase/supabase.dart';
-import '/flutter_flow/flutter_flow_theme.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
-/// 🌟 7-Step Duolingo-Style Personalized Onboarding with Background Music
+/// 🌟 Clean Step-by-Step Profile Creation Flow
 ///
 /// Features:
-/// 1. 7 Clean & Simple Steps:
-///    - Step 1: Mother Tongue / Native Language
-///    - Step 2: Target Language (English live, Arabic/German/Hindi/French islands preview)
-///    - Step 3: Discovery Source (Instagram, Friends, YouTube, Play Store)
-///    - Step 4: Current Proficiency Level
-///    - Step 5: Motivation & Primary Goal
-///    - Step 6: Daily Learning Routine (5m, 10m [25 words/wk], 15m)
-///    - Step 7: Habit Lock-in, Name, Phone & Avatar setup
-/// 2. Gentle Ambient Background Audio with Mute/Unmute toggle
-/// 3. Zero-Breakage Database schema mappings for future Language Islands
+/// 1. 3 Clean, Step-by-Step Profile Steps (No repeated language questions):
+///    - Step 1: Your Name & Identity (Name input with encouragement)
+///    - Step 2: Phone Number (CustomPhoneTextField for support & recovery)
+///    - Step 3: Profile Photo / Avatar & Launch (Upload/avatar selection, Day 1 streak activation)
+/// 2. Matches the first onboarding aesthetic with clean progress bar & animations
+/// 3. Preserves gentle ambient audio, Supabase profile upsert, and smooth navigation to HomePage
 class ProfileSetupOnboardingPage extends StatefulWidget {
   final double width;
   final double height;
@@ -47,23 +41,35 @@ class _ProfileSetupOnboardingPageState
   final _supabase = SupaFlow.client;
   final _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 7;
+  static const int _totalSteps = 3;
   bool _isLoading = false;
+  bool _isRedirectingHome = false;
 
   // Background Audio
   AudioPlayer? _bgmPlayer;
   bool _isAudioMuted = false;
-  bool _isAudioPlaying = false;
 
-  // Controllers for Final Step
+  // Form Controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
 
-  // Media
+  // Media & Preset Avatars
   Uint8List? _selectedImageBytes;
+  String? _selectedPresetAvatar;
   final ImagePicker _picker = ImagePicker();
 
-  // Onboarding Answers State
+  final List<String> _presetAvatars = [
+    '🦁',
+    '🦊',
+    '🐼',
+    '🐯',
+    '🚀',
+    '🌟',
+    '🎧',
+    '🦉',
+  ];
+
+  // Retrieved user preferences from welcome onboarding
   String _selectedNativeLanguage = 'Malayalam';
   String _selectedTargetLanguage = 'English';
   String _selectedReferralSource = 'Instagram / Reels';
@@ -71,175 +77,10 @@ class _ProfileSetupOnboardingPageState
   String _selectedLearningGoal = 'Daily Fluency & Speaking';
   int _selectedDailyGoalMins = 10;
 
-  // --- Step 1: Native Languages ---
-  final List<Map<String, String>> _nativeLanguages = [
-    {'code': 'Malayalam', 'name': 'മലയാളം (Malayalam)', 'flag': '🌴'},
-    {'code': 'Tamil', 'name': 'தமிழ் (Tamil)', 'flag': '🦚'},
-    {'code': 'Hindi', 'name': 'हिन्दी (Hindi)', 'flag': '🇮🇳'},
-    {'code': 'Kannada', 'name': 'ಕನ್ನಡ (Kannada)', 'flag': '🌸'},
-    {'code': 'Telugu', 'name': 'తెలుగు (Telugu)', 'flag': '🌺'},
-    {'code': 'English', 'name': 'English', 'flag': '🌐'},
-    {'code': 'Arabic', 'name': 'العربية (Arabic)', 'flag': '🇸🇦'},
-    {'code': 'Bengali', 'name': 'বাংলা (Bengali)', 'flag': '🌊'},
-    {'code': 'Other', 'name': 'Other Language', 'flag': '✨'},
-  ];
-
-  // --- Step 2: Target Languages (Future Islands) ---
-  final List<Map<String, dynamic>> _targetLanguages = [
-    {
-      'code': 'English',
-      'title': 'English 🇬🇧',
-      'desc': 'Pocket World Island, live voice calls, citadel battles & AI coach active!',
-      'isAvailable': true,
-      'badge': 'READY TO EXPLORE',
-      'color': Color(0xFFFFD700),
-    },
-    {
-      'code': 'Arabic',
-      'title': 'Arabic 🇸🇦 (العربية)',
-      'desc': 'Arabic Island & Desert Citadel realm in active preparation.',
-      'isAvailable': false,
-      'badge': '🚀 COMING SOON',
-      'color': Color(0xFF10B981),
-    },
-    {
-      'code': 'German',
-      'title': 'German 🇩🇪 (Deutsch)',
-      'desc': 'Alpine Fortress Island and European vocabulary tracks arriving soon.',
-      'isAvailable': false,
-      'badge': '🚀 COMING SOON',
-      'color': Color(0xFF6366F1),
-    },
-    {
-      'code': 'Hindi',
-      'title': 'Hindi 🇮🇳 (हिन्दी)',
-      'desc': 'Heritage Island & spoken fluency missions launching next.',
-      'isAvailable': false,
-      'badge': '🚀 COMING SOON',
-      'color': Color(0xFFF59E0B),
-    },
-    {
-      'code': 'French',
-      'title': 'French 🇫🇷 (Français)',
-      'desc': 'Riviera Island spoken coaching coming in future updates.',
-      'isAvailable': false,
-      'badge': '🚀 COMING SOON',
-      'color': Color(0xFFEC4899),
-    },
-  ];
-
-  // --- Step 3: Referral / Discovery Source ---
-  final List<Map<String, dynamic>> _referralSources = [
-    {
-      'title': 'Instagram / Reels',
-      'icon': Icons.camera_alt_outlined,
-      'desc': 'Saw a reel, viral post, or creator spotlight',
-    },
-    {
-      'title': 'Friends & Family',
-      'icon': Icons.people_outline_rounded,
-      'desc': 'Recommended by someone practicing English',
-    },
-    {
-      'title': 'YouTube Shorts & Videos',
-      'icon': Icons.play_circle_outline_rounded,
-      'desc': 'Found tutorials, reviews, or spoken drills',
-    },
-    {
-      'title': 'Google Play Store / Search',
-      'icon': Icons.search_rounded,
-      'desc': 'Searched for English speaking & practice apps',
-    },
-    {
-      'title': 'College & Campus Community',
-      'icon': Icons.school_outlined,
-      'desc': 'Recommended in study group or campus club',
-    },
-  ];
-
-  // --- Step 4: Current Proficiency ---
-  final List<Map<String, String>> _englishLevels = [
-    {
-      'title': 'Beginner (Starting Scratch)',
-      'desc': 'I know a few basic words, but cannot form sentences confidently.',
-      'emoji': '🌱',
-    },
-    {
-      'title': 'Basic Conversations (A2)',
-      'desc': 'I understand basic sentences, but hesitate and pause when replying.',
-      'emoji': '💬',
-    },
-    {
-      'title': 'Intermediate (B1-B2)',
-      'desc': 'I can converse casually, looking for natural speed and fluency.',
-      'emoji': '🗣️',
-    },
-    {
-      'title': 'Advanced & Polished (C1)',
-      'desc': 'Fluent speaker aiming for executive vocabulary, debates & accent coach.',
-      'emoji': '👑',
-    },
-  ];
-
-  // --- Step 5: Learning Goals ---
-  final List<Map<String, dynamic>> _learningGoals = [
-    {
-      'title': 'Daily Fluency & Speaking',
-      'desc': 'Chat with peers, friends, and strangers without fear',
-      'icon': Icons.chat_bubble_outline_rounded,
-    },
-    {
-      'title': 'Job Interview & Career',
-      'desc': 'Excel in corporate discussions, MNC rounds, and presentations',
-      'icon': Icons.work_outline_rounded,
-    },
-    {
-      'title': 'Travel & Global Friends',
-      'desc': 'Communicate seamlessly while traveling abroad or meeting travelers',
-      'icon': Icons.flight_takeoff_rounded,
-    },
-    {
-      'title': 'IELTS / OET Exam Prep',
-      'desc': 'Structured practice for band score speaking and grammar drills',
-      'icon': Icons.school_outlined,
-    },
-  ];
-
-  // --- Step 6: Daily Routine Goals ---
-  final List<Map<String, dynamic>> _routineGoals = [
-    {
-      'mins': 5,
-      'title': 'Casual',
-      'time': '5 mins / day',
-      'target': '15 words in your first week',
-      'badge': 'LOW PRESSURE',
-      'icon': Icons.flash_on_rounded,
-      'color': Color(0xFF38BDF8),
-    },
-    {
-      'mins': 10,
-      'title': 'Regular',
-      'time': '10 mins / day',
-      'target': '25 words in your first week! 🎯',
-      'badge': 'RECOMMENDED',
-      'icon': Icons.local_fire_department_rounded,
-      'color': Color(0xFFFFD700),
-    },
-    {
-      'mins': 15,
-      'title': 'Serious',
-      'time': '15 mins / day',
-      'target': '40 words in your first week',
-      'badge': 'FAST-TRACK',
-      'icon': Icons.rocket_launch_rounded,
-      'color': Color(0xFF10B981),
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
-    _prefillFromAuth();
+    _loadPreferencesAndPrefill();
     _initBgm();
   }
 
@@ -247,14 +88,10 @@ class _ProfileSetupOnboardingPageState
     try {
       _bgmPlayer = AudioPlayer();
       await _bgmPlayer!.setReleaseMode(ReleaseMode.loop);
-      await _bgmPlayer!.setVolume(0.18); // Soft, gentle ambient volume
-      // Soft gentle lo-fi ambient chime loop
+      await _bgmPlayer!.setVolume(0.18);
       await _bgmPlayer!.play(UrlSource(
         'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3',
       ));
-      if (mounted) {
-        setState(() => _isAudioPlaying = true);
-      }
     } catch (e) {
       debugPrint('Non-critical BGM initialization notice: $e');
     }
@@ -270,8 +107,21 @@ class _ProfileSetupOnboardingPageState
     }
   }
 
-  Future<void> _prefillFromAuth() async {
+  Future<void> _loadPreferencesAndPrefill() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      _selectedNativeLanguage =
+          prefs.getString('pm_native_language') ?? 'Malayalam';
+      _selectedTargetLanguage =
+          prefs.getString('pm_target_language') ?? 'English';
+      _selectedReferralSource =
+          prefs.getString('pm_referral_source') ?? 'Instagram / Reels';
+      _selectedEnglishLevel =
+          prefs.getString('pm_english_level') ?? 'Intermediate (B1-B2)';
+      _selectedLearningGoal =
+          prefs.getString('pm_learning_goal') ?? 'Daily Fluency & Speaking';
+      _selectedDailyGoalMins = prefs.getInt('pm_daily_goal_mins') ?? 10;
+
       final user = _supabase.auth.currentUser;
       if (user != null) {
         final emailPrefix = (user.email ?? '').split('@').first;
@@ -284,6 +134,28 @@ class _ProfileSetupOnboardingPageState
             .select()
             .eq('user_id', user.id)
             .maybeSingle();
+
+        final hasExistingProfile = existing != null &&
+            (existing['name']?.toString().trim().isNotEmpty ?? false) &&
+            existing['name'] != 'Pocket Mate';
+
+        final justCreated =
+            prefs.getBool('just_created_account_${user.id}') ?? false;
+
+        // If user already has an existing profile and didn't just perform a fresh Sign Up:
+        if (hasExistingProfile && !justCreated && mounted) {
+          setState(() {
+            _isRedirectingHome = true;
+          });
+          await prefs.setBool('profile_setup_completed_${user.id}', true);
+          await prefs.setBool('profile_setup_prompted_${user.id}', true);
+          await _bgmPlayer?.stop();
+          await Future.delayed(const Duration(milliseconds: 350));
+          if (mounted) {
+            context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+            return;
+          }
+        }
 
         if (existing != null && mounted) {
           setState(() {
@@ -342,6 +214,7 @@ class _ProfileSetupOnboardingPageState
       if (mounted) {
         setState(() {
           _selectedImageBytes = bytes;
+          _selectedPresetAvatar = null;
         });
       }
     } catch (e) {
@@ -355,7 +228,8 @@ class _ProfileSetupOnboardingPageState
       SnackBar(
         content: Text(
           message,
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style:
+              const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
         backgroundColor: Colors.redAccent,
         behavior: SnackBarBehavior.floating,
@@ -368,22 +242,30 @@ class _ProfileSetupOnboardingPageState
     HapticFeedback.lightImpact();
     FocusScope.of(context).unfocus();
 
-    if (_currentStep < _totalSteps - 1) {
+    if (_currentStep == 0) {
+      // Step 1: Validate Name
+      if (_nameController.text.trim().isEmpty) {
+        _showError('Please enter your name to proceed');
+        return;
+      }
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeInOutCubic,
+      );
+    } else if (_currentStep == 1) {
+      // Step 2: Validate Phone Number
+      final phone = _phoneController.text.trim();
+      if (phone.isEmpty || phone.replaceAll(RegExp(r'\D'), '').length < 7) {
+        _showError(
+            'Please enter your phone number to assist & support your account');
+        return;
+      }
       _pageController.nextPage(
         duration: const Duration(milliseconds: 320),
         curve: Curves.easeInOutCubic,
       );
     } else {
-      // Step 7: Validate Name & Phone before finishing
-      if (_nameController.text.trim().isEmpty) {
-        _showError('Please enter your name to complete setup');
-        return;
-      }
-      final phone = _phoneController.text.trim();
-      if (phone.isEmpty || phone.replaceAll(RegExp(r'\D'), '').length < 7) {
-        _showError('Please enter your phone number to assist and support your account');
-        return;
-      }
+      // Step 3: Final Launch & Complete Profile
       _saveProfileAndComplete();
     }
   }
@@ -403,8 +285,7 @@ class _ProfileSetupOnboardingPageState
           ? _nameController.text.trim()
           : 'Pocket Mate';
       final phone = _phoneController.text.trim();
-      final cleanSlug =
-          name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
+      final cleanSlug = name.toLowerCase().replaceAll(RegExp(r'[^a-z0-9]'), '');
 
       // 1. Guarantee public.users record
       await _supabase.from('users').upsert({
@@ -430,7 +311,7 @@ class _ProfileSetupOnboardingPageState
         }
       }
 
-      // 3. Upsert profile safely with Multi-Language Island default values
+      // 3. Upsert profile safely
       final profilePayload = <String, dynamic>{
         'id': userId,
         'user_id': userId,
@@ -459,17 +340,24 @@ class _ProfileSetupOnboardingPageState
             onConflict: 'user_id',
           );
 
-      // 4. Cache state and Onboarding answers locally
+      // 4. Cache state and flags locally so onboarding is never shown again
       final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('cached_profile_$userId', jsonEncode(profilePayload));
-      await prefs.setString('profile_cache_$userId', jsonEncode(profilePayload));
+      await prefs.setString(
+          'cached_profile_$userId', jsonEncode(profilePayload));
+      await prefs.setString(
+          'profile_cache_$userId', jsonEncode(profilePayload));
       await prefs.setBool('profile_setup_completed_$userId', true);
+      await prefs.setBool('profile_setup_prompted_$userId', true);
       await prefs.setBool('pm_onboarding_seen_$userId', true);
+      await prefs.setBool('pm_onboarding_completed', true);
 
-      // Save onboarding answers for future Island expansion
-      await prefs.setString('pm_native_language_$userId', _selectedNativeLanguage);
-      await prefs.setString('pm_target_language_$userId', _selectedTargetLanguage);
-      await prefs.setString('pm_referral_source_$userId', _selectedReferralSource);
+      // Save onboarding answers
+      await prefs.setString(
+          'pm_native_language_$userId', _selectedNativeLanguage);
+      await prefs.setString(
+          'pm_target_language_$userId', _selectedTargetLanguage);
+      await prefs.setString(
+          'pm_referral_source_$userId', _selectedReferralSource);
       await prefs.setString('pm_english_level_$userId', _selectedEnglishLevel);
       await prefs.setString('pm_learning_goal_$userId', _selectedLearningGoal);
       await prefs.setInt('pm_daily_goal_mins_$userId', _selectedDailyGoalMins);
@@ -482,12 +370,14 @@ class _ProfileSetupOnboardingPageState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              'Welcome $name! Day 1 Streak Started! 🔥 25 Words First-Week Goal Active.',
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              'Welcome $name! Day 1 Streak Started! 🔥',
+              style: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.bold),
             ),
             backgroundColor: const Color(0xFF10B981),
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
         );
 
@@ -506,6 +396,67 @@ class _ProfileSetupOnboardingPageState
 
   @override
   Widget build(BuildContext context) {
+    if (_isRedirectingHome) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0F111A),
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 76,
+                height: 76,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFF1E293B),
+                  border: Border.all(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                    width: 2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.25),
+                      blurRadius: 20,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text('🏡', style: TextStyle(fontSize: 34)),
+                ),
+              ),
+              const SizedBox(height: 24),
+              const SizedBox(
+                width: 28,
+                height: 28,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Welcome back!',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Loading your learning home...',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF94A3B8),
+                  fontSize: 13.5,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: const Color(0xFF0F111A),
       body: SafeArea(
@@ -521,13 +472,9 @@ class _ProfileSetupOnboardingPageState
                   physics: const NeverScrollableScrollPhysics(),
                   onPageChanged: (page) => setState(() => _currentStep = page),
                   children: [
-                    _buildStep1NativeLanguage(),
-                    _buildStep2TargetLanguage(),
-                    _buildStep3DiscoverySource(),
-                    _buildStep4EnglishLevel(),
-                    _buildStep5LearningGoal(),
-                    _buildStep6DailyRoutine(),
-                    _buildStep7HabitAndProfile(),
+                    _buildStep1Name(),
+                    _buildStep2Phone(),
+                    _buildStep3PhotoAndReady(),
                   ],
                 ),
               ),
@@ -565,11 +512,13 @@ class _ProfileSetupOnboardingPageState
                 const SizedBox(width: 44),
               const Spacer(),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+                  border:
+                      Border.all(color: Colors.white.withValues(alpha: 0.12)),
                 ),
                 child: Text(
                   'Step ${_currentStep + 1} of $_totalSteps',
@@ -582,22 +531,22 @@ class _ProfileSetupOnboardingPageState
                 ),
               ),
               const Spacer(),
-              // Ambient Audio Toggle Button
               IconButton(
-                tooltip: _isAudioMuted ? 'Unmute Ambient Sound' : 'Mute Sound',
+                tooltip: _isAudioMuted ? 'Unmute Sound' : 'Mute Sound',
                 icon: Icon(
                   _isAudioMuted
                       ? Icons.volume_off_rounded
                       : Icons.volume_up_rounded,
-                  color: _isAudioMuted ? Colors.white38 : const Color(0xFFFFD700),
+                  color:
+                      _isAudioMuted ? Colors.white38 : const Color(0xFFFFD700),
                   size: 22,
                 ),
                 onPressed: _toggleAudioMute,
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          // Segmented Progress Bar (Duolingo style)
+          const SizedBox(height: 12),
+          // Segmented Progress Bar
           Row(
             children: List.generate(_totalSteps, (index) {
               final isCompleted = index < _currentStep;
@@ -605,7 +554,7 @@ class _ProfileSetupOnboardingPageState
               return Expanded(
                 child: Container(
                   height: 5,
-                  margin: EdgeInsets.symmetric(horizontal: index == 0 ? 0 : 2.5),
+                  margin: EdgeInsets.symmetric(horizontal: index == 0 ? 0 : 3),
                   decoration: BoxDecoration(
                     color: isCompleted
                         ? const Color(0xFF10B981)
@@ -616,7 +565,8 @@ class _ProfileSetupOnboardingPageState
                     boxShadow: isCurrent
                         ? [
                             BoxShadow(
-                              color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                              color: const Color(0xFFFFD700)
+                                  .withValues(alpha: 0.4),
                               blurRadius: 6,
                             )
                           ]
@@ -632,669 +582,205 @@ class _ProfileSetupOnboardingPageState
   }
 
   // ==========================================
-  // STEP 1: What language do you speak? (Mother Tongue)
+  // STEP 1: What should we call you? (Name)
   // ==========================================
-  Widget _buildStep1NativeLanguage() {
+  Widget _buildStep1Name() {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            'What language do you speak? 🗣️',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'We will customize definitions and explanations for you.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 13.5,
-            ),
-          ),
-          const SizedBox(height: 22),
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: 2.1,
-            ),
-            itemCount: _nativeLanguages.length,
-            itemBuilder: (context, index) {
-              final item = _nativeLanguages[index];
-              final isSelected = _selectedNativeLanguage == item['code'];
-              return GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() => _selectedNativeLanguage = item['code']!);
-                },
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFFFFD700).withValues(alpha: 0.16)
-                        : const Color(0xFF18181B),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFFFFD700)
-                          : Colors.white.withValues(alpha: 0.12),
-                      width: isSelected ? 2 : 1,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Text(item['flag']!, style: const TextStyle(fontSize: 22)),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          item['name']!,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: GoogleFonts.outfit(
-                            color: isSelected ? const Color(0xFFFFD700) : Colors.white,
-                            fontSize: 13.5,
-                            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // STEP 2: What would you like to learn? (Target Language & Islands)
-  // ==========================================
-  Widget _buildStep2TargetLanguage() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            'What would you like to learn? 🌍',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Explore language islands in Pocket World. Switch anytime!',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 13.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ..._targetLanguages.map((lang) {
-            final isAvailable = lang['isAvailable'] as bool;
-            final isSelected = _selectedTargetLanguage == lang['code'];
-            final color = lang['color'] as Color;
-
-            return GestureDetector(
-              onTap: () {
-                if (isAvailable) {
-                  HapticFeedback.selectionClick();
-                  setState(() => _selectedTargetLanguage = lang['code'] as String);
-                } else {
-                  HapticFeedback.mediumImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        '${lang['title']} Island is currently in preparation and will open soon! 🏝️',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      backgroundColor: color,
-                      duration: const Duration(seconds: 2),
-                      behavior: SnackBarBehavior.floating,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                    ),
-                  );
-                }
-              },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? color.withValues(alpha: 0.16)
-                      : const Color(0xFF18181B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? color
-                        : Colors.white.withValues(alpha: 0.12),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                lang['title'] as String,
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 16.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: isAvailable
-                                      ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                                      : Colors.white.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  lang['badge'] as String,
-                                  style: GoogleFonts.inter(
-                                    color: isAvailable
-                                        ? const Color(0xFF10B981)
-                                        : Colors.white60,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            lang['desc'] as String,
-                            style: GoogleFonts.inter(
-                              color: Colors.white60,
-                              fontSize: 12,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // STEP 3: How did you hear about Pocket Mates?
-  // ==========================================
-  Widget _buildStep3DiscoverySource() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            'How did you hear about us? 🔍',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Help us know how language learners discover Pocket Mates.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 13.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ..._referralSources.map((source) {
-            final isSelected = _selectedReferralSource == source['title'];
-            return GestureDetector(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                setState(() => _selectedReferralSource = source['title'] as String);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFFFFD700).withValues(alpha: 0.14)
-                      : const Color(0xFF18181B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFFFFD700)
-                        : Colors.white.withValues(alpha: 0.12),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFFFFD700).withValues(alpha: 0.2)
-                            : Colors.white.withValues(alpha: 0.06),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        source['icon'] as IconData,
-                        color: isSelected ? const Color(0xFFFFD700) : Colors.white70,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            source['title'] as String,
-                            style: GoogleFonts.outfit(
-                              color: isSelected ? const Color(0xFFFFD700) : Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            source['desc'] as String,
-                            style: GoogleFonts.inter(
-                              color: Colors.white54,
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      isSelected
-                          ? Icons.check_circle_rounded
-                          : Icons.radio_button_unchecked_rounded,
-                      color: isSelected ? const Color(0xFFFFD700) : Colors.white24,
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // STEP 4: How much English do you know?
-  // ==========================================
-  Widget _buildStep4EnglishLevel() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            'How much English do you know? 📈',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'We will calibrate daily missions and battle challenges to your level.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 13.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ..._englishLevels.map((lvl) {
-            final isSelected = _selectedEnglishLevel == lvl['title'];
-            return GestureDetector(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                setState(() => _selectedEnglishLevel = lvl['title']!);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFFFFD700).withValues(alpha: 0.14)
-                      : const Color(0xFF18181B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFFFFD700)
-                        : Colors.white.withValues(alpha: 0.12),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Text(lvl['emoji']!, style: const TextStyle(fontSize: 24)),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            lvl['title']!,
-                            style: GoogleFonts.outfit(
-                              color: isSelected ? const Color(0xFFFFD700) : Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            lvl['desc']!,
-                            style: GoogleFonts.inter(
-                              color: Colors.white60,
-                              fontSize: 12,
-                              height: 1.35,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      isSelected
-                          ? Icons.check_circle_rounded
-                          : Icons.radio_button_unchecked_rounded,
-                      color: isSelected ? const Color(0xFFFFD700) : Colors.white24,
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // STEP 5: Why are you learning English?
-  // ==========================================
-  Widget _buildStep5LearningGoal() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            'Why are you learning English? 🎯',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'We will match you with mates sharing the same motivation.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 13.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ..._learningGoals.map((g) {
-            final isSelected = _selectedLearningGoal == g['title'];
-            return GestureDetector(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                setState(() => _selectedLearningGoal = g['title'] as String);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF6366F1).withValues(alpha: 0.18)
-                      : const Color(0xFF18181B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected
-                        ? const Color(0xFF6366F1)
-                        : Colors.white.withValues(alpha: 0.12),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF6366F1).withValues(alpha: 0.25)
-                            : Colors.white.withValues(alpha: 0.06),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        g['icon'] as IconData,
-                        color: isSelected ? const Color(0xFF818CF8) : Colors.white70,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            g['title'] as String,
-                            style: GoogleFonts.outfit(
-                              color: isSelected ? const Color(0xFF818CF8) : Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            g['desc'] as String,
-                            style: GoogleFonts.inter(
-                              color: Colors.white60,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Icon(
-                      isSelected
-                          ? Icons.check_circle_rounded
-                          : Icons.radio_button_unchecked_rounded,
-                      color: isSelected ? const Color(0xFF818CF8) : Colors.white24,
-                      size: 20,
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // STEP 6: Daily Learning Routine & Habit Commitment
-  // ==========================================
-  Widget _buildStep6DailyRoutine() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        children: [
-          const SizedBox(height: 8),
-          Text(
-            'What is your daily learning goal? ⏱️',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 23,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Small daily habits yield massive conversational fluency.',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 13.5,
-            ),
-          ),
-          const SizedBox(height: 20),
-          ..._routineGoals.map((r) {
-            final isSelected = _selectedDailyGoalMins == r['mins'];
-            final color = r['color'] as Color;
-            return GestureDetector(
-              onTap: () {
-                HapticFeedback.selectionClick();
-                setState(() => _selectedDailyGoalMins = r['mins'] as int);
-              },
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                margin: const EdgeInsets.only(bottom: 14),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? color.withValues(alpha: 0.16)
-                      : const Color(0xFF18181B),
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: isSelected ? color : Colors.white.withValues(alpha: 0.12),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(r['icon'] as IconData, color: color, size: 22),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Text(
-                                '${r['title']} • ${r['time']}',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 15.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Spacer(),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 8, vertical: 3),
-                                decoration: BoxDecoration(
-                                  color: color.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Text(
-                                  r['badge'] as String,
-                                  style: GoogleFonts.inter(
-                                    color: color,
-                                    fontSize: 10.5,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            r['target'] as String,
-                            style: GoogleFonts.inter(
-                              color: isSelected ? color : Colors.white70,
-                              fontSize: 12.5,
-                              fontWeight:
-                                  isSelected ? FontWeight.w600 : FontWeight.normal,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }),
-        ],
-      ),
-    );
-  }
-
-  // ==========================================
-  // STEP 7: Habit Lock-in & Profile Identity Completion
-  // ==========================================
-  Widget _buildStep7HabitAndProfile() {
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Motivation Habit Card (Duolingo style)
+          const SizedBox(height: 12),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+              border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                  width: 2),
+            ),
+            child: const Center(
+              child: Text('👋', style: TextStyle(fontSize: 34)),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'What should we call you?',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Your practice partners and AI coaches will greet you with this name.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Your Name or Nickname *',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFF18181B),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.18),
+              ),
+            ),
+            child: TextField(
+              controller: _nameController,
+              autofocus: true,
+              textCapitalization: TextCapitalization.words,
+              style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500),
+              decoration: InputDecoration(
+                hintText: 'e.g. Rahul, Sneha, Alex',
+                hintStyle:
+                    GoogleFonts.inter(color: Colors.white38, fontSize: 14),
+                prefixIcon: const Icon(
+                  Icons.person_outline_rounded,
+                  color: Color(0xFFFFD700),
+                  size: 22,
+                ),
+                border: InputBorder.none,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+          Row(
+            children: [
+              const Icon(Icons.check_circle_outline_rounded,
+                  color: Color(0xFF10B981), size: 16),
+              const SizedBox(width: 6),
+              Text(
+                'Visible to your spoken practice partners in rooms',
+                style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // STEP 2: Phone Number (Support & Recovery)
+  // ==========================================
+  Widget _buildStep2Phone() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 12),
+          Container(
+            width: 72,
+            height: 72,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+              border: Border.all(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+                  width: 2),
+            ),
+            child: const Center(
+              child: Text('📱', style: TextStyle(fontSize: 34)),
+            ),
+          ),
+          const SizedBox(height: 18),
+          Text(
+            'Add your phone number',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Used exclusively for account assistance, quick recovery, and verified community badge.',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 14,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 32),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Phone Number *',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          CustomPhoneTextField(
+            width: double.infinity,
+            height: 52.0,
+            controller: _phoneController,
+            labelText: 'Phone Number *',
+            hintText: 'Enter phone number',
+            initialCountryCode: 'IN',
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              const Icon(Icons.lock_rounded, color: Colors.white54, size: 14),
+              const SizedBox(width: 6),
+              Text(
+                '100% Private • Exclusively for support & account security',
+                style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ==========================================
+  // STEP 3: Profile Photo / Avatar & Launch
+  // ==========================================
+  Widget _buildStep3PhotoAndReady() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          const SizedBox(height: 8),
+          // Habit Motivational Streak Card
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -1320,19 +806,19 @@ class _ProfileSetupOnboardingPageState
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '25 words in your first week!',
+                        'Day 1 Streak Ready! 🚀',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
-                          fontSize: 15,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Practice daily to make it an automatic habit. Widgets will cheer you on right from your screen!',
+                        '25 words target set for your first week. Your learning journey is locked in!',
                         style: GoogleFonts.inter(
                           color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 11.5,
+                          fontSize: 12,
                           height: 1.35,
                         ),
                       ),
@@ -1342,27 +828,47 @@ class _ProfileSetupOnboardingPageState
               ],
             ),
           ),
+          const SizedBox(height: 24),
+
+          Text(
+            'Choose your profile photo',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Upload a photo or pick an avatar (optional).',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 13.5,
+            ),
+          ),
           const SizedBox(height: 20),
 
-          // Profile Image Picker
+          // Photo Upload or Emoji Avatar
           GestureDetector(
             onTap: _pickImage,
             child: Stack(
               alignment: Alignment.bottomRight,
               children: [
                 Container(
-                  width: 95,
-                  height: 95,
+                  width: 105,
+                  height: 105,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: const Color(0xFFFFD700),
-                      width: 2.2,
+                      width: 2.5,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-                        blurRadius: 14,
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                        blurRadius: 16,
                       ),
                     ],
                   ),
@@ -1374,108 +880,87 @@ class _ProfileSetupOnboardingPageState
                           )
                         : Container(
                             color: const Color(0xFF1E2230),
-                            child: const Center(
-                              child: Icon(
-                                Icons.person_rounded,
-                                size: 50,
-                                color: Colors.white54,
-                              ),
+                            child: Center(
+                              child: _selectedPresetAvatar != null
+                                  ? Text(
+                                      _selectedPresetAvatar!,
+                                      style: const TextStyle(fontSize: 48),
+                                    )
+                                  : const Icon(
+                                      Icons.person_rounded,
+                                      size: 54,
+                                      color: Colors.white54,
+                                    ),
                             ),
                           ),
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.all(6),
+                  padding: const EdgeInsets.all(7),
                   decoration: const BoxDecoration(
                     color: Color(0xFFFFD700),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.camera_alt_rounded,
-                    size: 16,
+                    size: 18,
                     color: Colors.black,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           Text(
-            'Photo (Optional)',
-            style: GoogleFonts.inter(color: Colors.white54, fontSize: 11.5),
+            'Tap circle to upload from Gallery',
+            style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
 
-          // Name Field
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Your Name *',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+          // Preset Avatars Row
+          Text(
+            'Or pick an avatar:',
+            style: GoogleFonts.outfit(
+                color: Colors.white70,
+                fontSize: 13,
+                fontWeight: FontWeight.w600),
           ),
-          const SizedBox(height: 6),
-          Container(
-            decoration: BoxDecoration(
-              color: const Color(0xFF18181B),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
-            ),
-            child: TextField(
-              controller: _nameController,
-              style: GoogleFonts.inter(color: Colors.white, fontSize: 14.5),
-              decoration: InputDecoration(
-                hintText: 'Enter your name or nickname',
-                hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 13.5),
-                prefixIcon: const Icon(
-                  Icons.person_outline_rounded,
-                  color: Color(0xFFFFD700),
-                  size: 20,
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 12,
+            runSpacing: 10,
+            alignment: WrapAlignment.center,
+            children: _presetAvatars.map((avatar) {
+              final isSelected = _selectedPresetAvatar == avatar &&
+                  _selectedImageBytes == null;
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() {
+                    _selectedPresetAvatar = avatar;
+                    _selectedImageBytes = null;
+                  });
+                },
+                child: Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? const Color(0xFFFFD700).withValues(alpha: 0.25)
+                        : const Color(0xFF1E2230),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color:
+                          isSelected ? const Color(0xFFFFD700) : Colors.white12,
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(avatar, style: const TextStyle(fontSize: 22)),
+                  ),
                 ),
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-              ),
-            ),
-          ),
-          const SizedBox(height: 14),
-
-          // Phone Field
-          Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              'Phone Number (For Account Support & Recovery) *',
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 13.5,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const SizedBox(height: 6),
-          CustomPhoneTextField(
-            width: double.infinity,
-            height: 52.0,
-            controller: _phoneController,
-            labelText: 'Phone Number *',
-            hintText: 'Enter phone number',
-            initialCountryCode: 'IN',
-          ),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              const Icon(Icons.lock_rounded, color: Colors.white54, size: 13),
-              const SizedBox(width: 5),
-              Text(
-                '100% Private • Exclusively for support & account recovery',
-                style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
-              ),
-            ],
+              );
+            }).toList(),
           ),
           const SizedBox(height: 20),
         ],

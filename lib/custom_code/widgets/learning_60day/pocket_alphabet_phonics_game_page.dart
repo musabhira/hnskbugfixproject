@@ -112,14 +112,11 @@ class _PocketAlphabetPhonicsGamePageState
       _triggerLetterBounce();
       await _tts.stop();
       await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.42);
+      await _tts.setSpeechRate(0.38);
 
-      // Play audio prompt (e.g. "A is for Apple, /æ/")
-      final textToSpeak = item.audioPrompt.isNotEmpty
-          ? item.audioPrompt
-          : '${item.letter}, ${item.exampleWord}';
-
-      await _tts.speak(textToSpeak);
+      // User Audio Directive: Only speak the clean letter (e.g. "A"), NEVER pronounce slashes like "/a/" (slash a slash)
+      final cleanLetter = item.letter.split(' ').first.replaceAll('/', '').trim();
+      await _tts.speak(cleanLetter);
     } catch (_) {
       if (mounted) setState(() => _isPlayingAudio = false);
     }
@@ -130,8 +127,9 @@ class _PocketAlphabetPhonicsGamePageState
       _triggerLetterBounce();
       await _tts.stop();
       await _tts.setLanguage('en-US');
-      await _tts.setSpeechRate(0.45);
-      await _tts.speak(word);
+      await _tts.setSpeechRate(0.42);
+      final cleanWord = word.replaceAll('/', '').trim();
+      await _tts.speak(cleanWord);
     } catch (_) {}
   }
 
