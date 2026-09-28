@@ -9,6 +9,7 @@ import 'package:pocket_mates_app/custom_code/widgets/verified_switch_page.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart'; // Import for Gallery Detail Page
 import 'package:video_compress/video_compress.dart';
@@ -2868,9 +2869,19 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         final videoUrl = status['media_url']?.toString() ?? '';
         if (videoUrl.isNotEmpty) {
           try {
-            _currentVideoController = VideoPlayerController.networkUrl(
-              Uri.parse(videoUrl),
-            );
+            // Check local disk cache for instant zero-buffering playback at original heavy clarity
+            final fileInfo = await DefaultCacheManager().getFileFromCache(videoUrl);
+            if (fileInfo != null && await fileInfo.file.exists()) {
+              _currentVideoController = VideoPlayerController.file(fileInfo.file);
+            } else {
+              _currentVideoController = VideoPlayerController.networkUrl(
+                Uri.parse(videoUrl),
+              );
+              // Asynchronously download into local cache for repeated views
+              unawaited(DefaultCacheManager().downloadFile(videoUrl).then((_) {}, onError: (e) {
+                debugPrint('Background video cache error: $e');
+              }));
+            }
             await _currentVideoController!.initialize();
             if (mounted) {
               setState(() {
@@ -2955,9 +2966,15 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         final nextVideoUrl = nextStatus['media_url']?.toString() ?? '';
         if (nextVideoUrl.isNotEmpty) {
           try {
-            _preloadedVideoController = VideoPlayerController.networkUrl(
-              Uri.parse(nextVideoUrl),
-            );
+            final fileInfo = await DefaultCacheManager().getFileFromCache(nextVideoUrl);
+            if (fileInfo != null && await fileInfo.file.exists()) {
+              _preloadedVideoController = VideoPlayerController.file(fileInfo.file);
+            } else {
+              _preloadedVideoController = VideoPlayerController.networkUrl(
+                Uri.parse(nextVideoUrl),
+              );
+              unawaited(DefaultCacheManager().downloadFile(nextVideoUrl).then((_) {}, onError: (_) {}));
+            }
             await _preloadedVideoController!.initialize();
             _isPreloadedVideoReady = true;
           } catch (e) {
@@ -7620,6 +7637,13 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         );
 
     final url = supabase.storage.from('statuses').getPublicUrl(fileName);
+    // Cache original raw bytes locally for instant zero-buffering repeat playback at heavy clarity
+    try {
+      final ext = fileName.contains('.') ? fileName.split('.').last : 'mp4';
+      await DefaultCacheManager().putFile(url, bytes, fileExtension: ext);
+    } catch (e) {
+      debugPrint('Local disk cache putFile warning: $e');
+    }
     return url;
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image/image.dart' as img;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
@@ -597,6 +598,9 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
               ).timeout(const Duration(seconds: 15));
 
           mediaUrl = supabase.storage.from('statuses').getPublicUrl(fileName);
+          try {
+            await DefaultCacheManager().putFile(mediaUrl, bytesToUpload, fileExtension: 'jpg');
+          } catch (_) {}
         } catch (storageErr) {
           debugPrint('Storage upload error: $storageErr');
           // If storage fails, fallback to base64 or continue
@@ -634,7 +638,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         'caption': finalCaption,
         'metadata': metadata,
         'duration': _storyDuration,
-        'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at': DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
         'mentioned_profile_id': _selectedProfileId,
         'is_active': true,
@@ -1516,7 +1520,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        _isPrivateStory ? 'Send to Mates' : 'Post to Vibe',
+                                        _isPrivateStory ? 'Mates' : 'Post',
                                         style: GoogleFonts.outfit(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,

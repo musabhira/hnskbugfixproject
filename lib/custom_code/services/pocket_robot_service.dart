@@ -7,8 +7,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
 import 'package:pocket_mates_app/custom_code/services/robot_snap_dataset.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_reels_game_engine.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 
 /// 🎭 Archetypes for Pocket Robot Personalities
 enum RobotArchetype {
@@ -1034,7 +1036,7 @@ class PocketRobotService {
         'media_url': '',
         'caption': caption,
         'created_at': now.toIso8601String(),
-        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
         'profile_id': robot.id,
         'is_active': true,
         'is_robot': true,
@@ -1070,7 +1072,7 @@ class PocketRobotService {
         'media_url': '',
         'caption': toolText,
         'created_at': now.toIso8601String(),
-        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
         'profile_id': robot.id,
         'is_active': true,
         'is_robot': true,
@@ -1105,7 +1107,7 @@ class PocketRobotService {
         'media_url': '',
         'caption': thoughtText,
         'created_at': now.toIso8601String(),
-        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
         'profile_id': robot.id,
         'is_active': true,
         'is_robot': true,
@@ -1156,7 +1158,7 @@ class PocketRobotService {
         'media_url': '',
         'caption': canvasPrompt['text'],
         'created_at': now.toIso8601String(),
-        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
         'profile_id': robot.id,
         'is_active': true,
         'is_robot': true,
@@ -1192,7 +1194,7 @@ class PocketRobotService {
           'caption':
               '🏰 Exploring ${robot.name}\'s Citadel (Day $dynLvl)!\n"$statusMsg"',
           'created_at': now.toIso8601String(),
-          'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+          'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
           'profile_id': robot.id,
           'is_active': true,
           'is_robot': true,
@@ -1250,7 +1252,7 @@ class PocketRobotService {
           'caption':
               '🎯 English Challenge of the Day!\n${ch['category']}: ${ch['prompt']}',
           'created_at': now.toIso8601String(),
-          'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+          'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
           'profile_id': robot.id,
           'is_active': true,
           'is_robot': true,
@@ -1288,7 +1290,7 @@ class PocketRobotService {
         'media_url': snapData['imageUrl'],
         'caption': snapData['caption'],
         'created_at': now.toIso8601String(),
-        'expires_at': now.add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
         'profile_id': robot.id,
         'is_active': true,
         'is_robot': true,
@@ -1680,6 +1682,11 @@ class PocketRobotService {
       final thoughts = getRobotThreads(robot.id);
       for (int j = 0; j < thoughts.length; j++) {
         final t = thoughts[j];
+        final bool isGame = (j % 2 == 1) || (i % 3 == 1 && j == 0);
+        final ReelGameCard? gameCard = isGame
+            ? PocketReelsGameEngine.getGameByIndex((i * 5) + j)
+            : null;
+
         feed.add({
           'id': t['id'],
           'content': t['content'],
@@ -1694,6 +1701,8 @@ class PocketRobotService {
           'is_robot': true,
           'level': dynLvl,
           'has_trophy': dynLvl == 90,
+          'is_game': isGame && gameCard != null,
+          'game_card': gameCard,
         });
       }
     }
@@ -2050,6 +2059,15 @@ class PocketRobotService {
     Future.delayed(const Duration(milliseconds: 2500), () async {
       // Check if robot was blocked in the interim
       if (await isRobotBlocked(userId, robot.id)) return;
+
+      // ⚡ Robot views user snap: immediately burn and purge binary from cloud storage
+      await PocketSnapService.burnSnapMessage(
+        messageId: 'user_snap_$timestamp',
+        mediaUrl: userSnapUrl,
+        currentMetadata: userSnapMessage['metadata'] as Map<String, dynamic>?,
+        currentUserId: userId,
+        chatId: robot.id,
+      );
 
       final replyText = _generateSnapAppreciationReply(robot);
       final textMessage = {

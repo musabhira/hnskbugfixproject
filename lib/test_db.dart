@@ -13,7 +13,7 @@ void main() async {
         'thumbnail_url': null,
         'caption': 'test',
         'duration': 5,
-        'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at': DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         'mentioned_group_id': null,
         'mentioned_profile_id': null,
         'is_active': true,

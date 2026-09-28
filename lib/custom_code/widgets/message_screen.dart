@@ -28,12 +28,14 @@ import 'package:gal/gal.dart';
 import 'package:dio/dio.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
+import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import '/auth/auth_helper.dart';
 import 'index.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/snap/snap_view_dialog.dart';
 
 class MessageScreen extends StatefulWidget {
   final String receiverId;
@@ -86,6 +88,7 @@ class _MessageScreenState extends State<MessageScreen> {
   @override
   void initState() {
     super.initState();
+    InAppNotificationService.currentActiveChatId = widget.receiverId;
     // Audio Directive: 1-on-1 chats should be quiet (no game BGM)
     PocketGameAudioService.instance.pause();
     _senderId = _supabase.auth.currentUser!.id;
@@ -922,7 +925,7 @@ class _MessageScreenState extends State<MessageScreen> {
         'media_url': mediaUrl,
         'created_at': DateTime.now().toIso8601String(),
         'expires_at':
-            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+            DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         'is_sending': true,
       };
 
@@ -940,7 +943,7 @@ class _MessageScreenState extends State<MessageScreen> {
               'message_type': type,
               'media_url': mediaUrl,
               'expires_at': DateTime.now()
-                  .add(const Duration(hours: 24))
+                  .add(const Duration(hours: 12))
                   .toIso8601String(),
             })
             .select()
@@ -1024,8 +1027,8 @@ class _MessageScreenState extends State<MessageScreen> {
     // Cancel any existing timer for this message
     _scheduledDeletions[messageId]?.cancel();
 
-    // Schedule deletion after 24 hours
-    final timer = Timer(const Duration(hours: 24), () async {
+    // Schedule deletion after 12 hours
+    final timer = Timer(const Duration(hours: 12), () async {
       try {
         debugPrint('Auto-deleting ephemeral message: $messageId');
 
@@ -1430,6 +1433,9 @@ class _MessageScreenState extends State<MessageScreen> {
 
   @override
   void dispose() {
+    if (InAppNotificationService.currentActiveChatId == widget.receiverId) {
+      InAppNotificationService.currentActiveChatId = null;
+    }
     _messageController.dispose();
     _scrollController.dispose();
     _messageRefreshTimer?.cancel();
@@ -2241,119 +2247,138 @@ class _MessageScreenState extends State<MessageScreen> {
           ),
         );
       case 'snap':
-        final snapUrl = message['content'] ?? message['media_url'] ?? '';
-        final caption = message['message_text'] ?? message['caption'] ?? '';
-        return Container(
-          width: 230,
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: const Color(0xFF131622),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-                color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
-                width: 1.5),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFFFFC00),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.flash_on_rounded,
-                        color: Colors.black, size: 14),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text(
-                    '⚡ Pocket Snap',
-                    style: TextStyle(
-                      color: Color(0xFFFFFC00),
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+        final snapUrl = message['content'] ?? message['media_url'] ?? message['file_url'] ?? '';
+        final metadata = message['metadata'] is Map ? Map<String, dynamic>.from(message['metadata']) : <String, dynamic>{};
+        final isBurned = metadata['is_burned'] == true;
+        final messageId = message['id']?.toString() ?? '';
+        final currentUid = SupaFlow.client.auth.currentUser?.id;
+        final Color snapAccentColor = isMe ? const Color(0xFFF43F5E) : const Color(0xFFFFFC00);
+
+        return GestureDetector(
+          onTap: isBurned || snapUrl.toString().isEmpty
+              ? null
+              : () {
+                  HapticFeedback.lightImpact();
+                  SnapViewDialog.show(
+                    context: context,
+                    mediaUrl: snapUrl.toString(),
+                    senderName: widget.receiverName,
+                    isMe: isMe,
+                    onBurned: () async {
+                      if (messageId.isNotEmpty) {
+                        await PocketSnapService.burnSnapMessage(
+                          messageId: messageId,
+                          mediaUrl: snapUrl.toString(),
+                          currentMetadata: metadata,
+                          currentUserId: currentUid,
+                          chatId: widget.receiverId,
+                        );
+                        if (mounted) setState(() {});
+                      }
+                    },
+                  );
+                },
+          child: Container(
+            width: 230,
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              color: isBurned
+                  ? Colors.white.withValues(alpha: 0.04)
+                  : const Color(0xFF131622),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isBurned
+                    ? Colors.white12
+                    : snapAccentColor.withValues(alpha: 0.4),
+                width: 1.5,
               ),
-              const SizedBox(height: 8),
-              if (snapUrl.toString().isNotEmpty)
-                GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ImageViewer(
-                          imageUrl: snapUrl.toString(),
-                          title: '⚡ Pocket Snap',
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 34,
+                  height: 34,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: isBurned
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : snapAccentColor.withValues(alpha: 0.2),
+                    border: Border.all(
+                      color: isBurned ? Colors.white30 : snapAccentColor,
+                      width: isBurned ? 1.5 : 2.0,
+                    ),
+                  ),
+                  child: Icon(
+                    isBurned
+                        ? Icons.crop_square_rounded
+                        : (isMe ? Icons.arrow_outward_rounded : Icons.flash_on_rounded),
+                    color: isBurned
+                        ? Colors.white54
+                        : (isMe ? Colors.white : Colors.yellow),
+                    size: 18,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              isBurned ? 'Opened' : (isMe ? 'Delivered Snap' : '⚡ Pocket Snap'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: isBurned ? Colors.white54 : snapAccentColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: isBurned
+                                  ? Colors.transparent
+                                  : Colors.redAccent.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(4),
+                              border: isBurned
+                                  ? null
+                                  : Border.all(color: Colors.redAccent.withValues(alpha: 0.5)),
+                            ),
+                            child: Text(
+                              isBurned ? 'OPENED' : 'VIEW ONCE',
+                              style: TextStyle(
+                                color: isBurned ? Colors.white30 : Colors.redAccent,
+                                fontSize: 8,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        isBurned
+                            ? 'Opened • Storage purged'
+                            : (isMe ? 'Tap to view • Self-destructs' : 'Tap to view (Burns on seen)'),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: isBurned ? Colors.white30 : Colors.white70,
+                          fontSize: 10.5,
                         ),
                       ),
-                    );
-                  },
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: snapUrl.toString(),
-                          height: 180,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          placeholder: (c, u) => Container(
-                            height: 180,
-                            color: Colors.black26,
-                            child: const Center(
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Color(0xFFFFFC00)),
-                            ),
-                          ),
-                          errorWidget: (c, u, e) => const Icon(
-                              Icons.broken_image,
-                              color: Colors.white54),
-                        ),
-                        Positioned(
-                          bottom: 8,
-                          right: 8,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.black87,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.visibility,
-                                    color: Color(0xFFFFFC00), size: 12),
-                                SizedBox(width: 4),
-                                Text(
-                                  'View Snap',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
                 ),
-              if (caption.toString().isNotEmpty &&
-                  caption != '🔥 Pocket Snap') ...[
-                const SizedBox(height: 6),
-                Text(
-                  caption.toString(),
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                ),
               ],
-            ],
+            ),
           ),
         );
       case 'image':

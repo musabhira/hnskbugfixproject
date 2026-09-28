@@ -911,7 +911,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
         'thumbnail_url': null,
         'caption': caption,
         'duration': 10,
-        'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+        'expires_at': DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         'is_active': true,
       });
 

@@ -17,6 +17,7 @@ import 'custom_code/services/local_sync_server.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'services/push_notification_service.dart';
 import 'custom_code/services/pocket_robot_service.dart';
+import 'custom_code/services/in_app_notification_service.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -55,6 +56,7 @@ void main() {
         await LocalSyncServer()
             .initialize()
             .then((_) => debugPrint('Main: LocalSyncServer initialized.'));
+        InAppNotificationService.startListening();
       } catch (e) {
         debugPrint('Main: LocalSyncServer initialization error: $e');
       }
@@ -173,6 +175,7 @@ class MyAppState extends State<MyApp> {
         if (user.loggedIn) {
           debugPrint('Main: User is logged in. Dismissing splash.');
           _appStateNotifier.stopShowingSplashImage();
+          InAppNotificationService.startListening();
           try {
             PushNotificationService.initialize();
             PushNotificationService.syncCurrentUserToken();
@@ -180,6 +183,7 @@ class MyAppState extends State<MyApp> {
             debugPrint('Main: PushNotificationService error on login: $e');
           }
         } else {
+          InAppNotificationService.stopListening();
           Future.delayed(const Duration(milliseconds: 500), () {
             if (!_appStateNotifier.loggedIn &&
                 _appStateNotifier.showSplashImage) {

@@ -102,7 +102,7 @@ class ChatMessage {
           ? DateTime.parse(json['created_at'])
           : DateTime.now(),
       senderProfile: senderProfile,
-      replyToMessage: _safeMap(json['reply_to']),
+      replyToMessage: _safeMap(json['reply_to']) ?? _safeMap(parsedMetadata?['reply_to']),
       isOptimistic: json['isOptimistic'] ?? false,
       isPending: json['isPending'] ?? false,
       isEdited: json['is_edited'] ?? false,

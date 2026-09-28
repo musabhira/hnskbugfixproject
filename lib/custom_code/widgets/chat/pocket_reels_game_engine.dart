@@ -316,6 +316,10 @@ class PocketReelsGameEngine {
   }
 
   /// 📚 Rich Master Curated Library of Diverse Mini-Games
+  static List<ReelGameCard> get curatedGameCards => _curatedGameCards;
+  static ReelGameCard getGameByIndex(int index) =>
+      _curatedGameCards[index.abs() % _curatedGameCards.length];
+
   static const List<ReelGameCard> _curatedGameCards = [
     // -------------------------------------------------------------
     // 1. SMART COMEBACK & FUNNY CONVERSATION REPLIES (Category: smartReply)

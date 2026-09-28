@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 
 /// Snapchat-style Ephemeral Snap Viewer Dialog
 /// Provides high security:
@@ -89,6 +90,8 @@ class _SnapViewDialogState extends State<SnapViewDialog> with SingleTickerProvid
     if (_hasBurned) return;
     _hasBurned = true;
     _countdownTimer?.cancel();
+    // ⚡ On Seen: immediately remove image file from Supabase storage on the spot
+    unawaited(PocketSnapService.purgeSnapStorage(widget.mediaUrl));
     widget.onBurned();
     if (mounted) {
       Navigator.of(context).pop();

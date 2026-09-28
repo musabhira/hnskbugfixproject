@@ -20,6 +20,7 @@ import 'learning_60day/pocket_citadel_attack_page.dart';
 import 'avatar/vector_avatar_widget.dart';
 import 'avatar/vector_avatar_config.dart';
 import 'tools_page.dart';
+import '../services/pocket_game_audio_service.dart';
 
 enum WelcomeMode {
   welcome,
@@ -889,12 +890,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   Future<void> _initBgm() async {
     try {
-      _bgmPlayer = AudioPlayer();
-      await _bgmPlayer!.setReleaseMode(ReleaseMode.loop);
-      await _bgmPlayer!.setVolume(0.15);
-      await _bgmPlayer!.play(UrlSource(
-        'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3',
-      ));
+      _isAudioMuted = PocketGameAudioService.instance.isMutedNotifier.value;
+      await PocketGameAudioService.instance.playAmbientAppTheme();
     } catch (e) {
       debugPrint('Non-critical BGM note: $e');
     }
@@ -902,8 +899,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   void _toggleAudioMute() {
     HapticFeedback.lightImpact();
-    setState(() => _isAudioMuted = !_isAudioMuted);
-    _bgmPlayer?.setVolume(_isAudioMuted ? 0.0 : 0.15);
+    PocketGameAudioService.instance.toggleMute();
+    setState(() => _isAudioMuted = PocketGameAudioService.instance.isMutedNotifier.value);
   }
 
   @override

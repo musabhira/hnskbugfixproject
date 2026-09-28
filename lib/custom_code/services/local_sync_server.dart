@@ -189,13 +189,53 @@ class LocalSyncServer {
     });
   }
 
+  /// 🔄 Update a specific cached message in hot memory & persistent Hive storage
+  void updateCachedMessage({
+    required String userId,
+    required String chatOrGroupId,
+    required String messageId,
+    required Map<String, dynamic> updates,
+  }) {
+    final key = '${userId}_$chatOrGroupId';
+    final current = getCachedMessages(userId, chatOrGroupId);
+    bool modified = false;
+    final updatedList = current.map((item) {
+      final map = Map<String, dynamic>.from(item is ChatMessage ? item.toJson() : item);
+      if (map['id']?.toString() == messageId) {
+        modified = true;
+        map.addAll(updates);
+      }
+      return map;
+    }).toList();
+
+    if (modified) {
+      _memoryMessageCache[key] = updatedList;
+      saveMessages(userId, chatOrGroupId, updatedList);
+      _liveMessageController.add({
+        'chatId': chatOrGroupId,
+        'message_id': messageId,
+        'updates': updates,
+        'is_update': true,
+      });
+    }
+  }
+
   void _handleGlobalMessageUpdate(PostgresChangePayload payload) {
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) return;
 
     if (payload.eventType == PostgresChangeEvent.delete) {
-      final oldId = payload.oldRecord['id']?.toString();
-      if (oldId != null) _removeMessageFromCache(currentUserId, oldId);
+      final oldRecord = payload.oldRecord;
+      // Only remove from local cache if this is an explicit user retraction ("unsend/delete for everyone")
+      // Do NOT delete for routine server-side ephemeral TTL cleanups, preserving client-side offline history.
+      final bool isExplicitUserRetract =
+          oldRecord['is_retracted'] == true ||
+          oldRecord['metadata']?['user_retracted'] == true ||
+          oldRecord['event'] == 'retract';
+      if (isExplicitUserRetract) {
+        final oldId = oldRecord['id']?.toString();
+        if (oldId != null) _removeMessageFromCache(currentUserId, oldId);
+      }
       return;
     }
 
@@ -240,8 +280,16 @@ class LocalSyncServer {
     if (currentUserId == null) return;
 
     if (payload.eventType == PostgresChangeEvent.delete) {
-      final oldId = payload.oldRecord['id']?.toString();
-      if (oldId != null) _removeMessageFromCache(currentUserId, oldId);
+      final oldRecord = payload.oldRecord;
+      // Preserve local Hive cache across server TTL cleanups
+      final bool isExplicitUserRetract =
+          oldRecord['is_retracted'] == true ||
+          oldRecord['metadata']?['user_retracted'] == true ||
+          oldRecord['event'] == 'retract';
+      if (isExplicitUserRetract) {
+        final oldId = oldRecord['id']?.toString();
+        if (oldId != null) _removeMessageFromCache(currentUserId, oldId);
+      }
       return;
     }
 

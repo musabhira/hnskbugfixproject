@@ -96,6 +96,21 @@ class ChatMessages extends _$ChatMessages {
             .eq('receiver_id', uid)
             .eq('sender_id', actualId)
             .eq('is_read', false);
+
+        // 🧹 Ephemeral 1-to-1 Cloud Sync: Purge read messages from Supabase cloud database
+        // Preserving local client Hive cache for complete offline history
+        Future.delayed(const Duration(seconds: 4), () async {
+          try {
+            await _supabase
+                .from('messages')
+                .delete()
+                .eq('receiver_id', uid)
+                .eq('sender_id', actualId)
+                .eq('is_read', true);
+          } catch (e) {
+            debugPrint('Ephemeral personal cloud purge note: $e');
+          }
+        });
       } else {
         await _supabase
             .from('group_messages')
@@ -298,20 +313,44 @@ class ChatMessages extends _$ChatMessages {
             _saveToCache(updated);
           }
         });
+
+        // 🧹 If personal chat and sender receives confirmed seen receipt:
+        // Purge read message row from Supabase after 4s grace window
+        if (isPersonal && isRead) {
+          Future.delayed(const Duration(seconds: 4), () async {
+            try {
+              await _supabase
+                  .from('messages')
+                  .delete()
+                  .eq('id', updatedId)
+                  .eq('is_read', true);
+            } catch (e) {
+              debugPrint('Ephemeral personal cloud purge on read receipt: $e');
+            }
+          });
+        }
       }
     } else if (eventType == PostgresChangeEvent.delete) {
       final oldData = payload.oldRecord as Map<String, dynamic>;
       final deletedId = oldData['id']?.toString();
 
-      if (deletedId != null) {
-        state.whenData((messages) {
-          final updatedMessages =
-              messages.where((m) => m.id != deletedId).toList();
-          if (updatedMessages.length < messages.length) {
-            state = AsyncData(updatedMessages);
-            _saveToCache(updatedMessages);
-          }
-        });
+      // Only delete from UI & Hive if this was an explicit user retraction ("unsend/delete for everyone")
+      // Preserving local Hive persistence for ephemeral cloud-purged 1-to-1 personal messages
+      final bool isExplicitRetract = oldData['is_retracted'] == true ||
+          oldData['metadata']?['user_retracted'] == true ||
+          oldData['event'] == 'retract';
+
+      if (!isPersonal || isExplicitRetract) {
+        if (deletedId != null) {
+          state.whenData((messages) {
+            final updatedMessages =
+                messages.where((m) => m.id != deletedId).toList();
+            if (updatedMessages.length < messages.length) {
+              state = AsyncData(updatedMessages);
+              _saveToCache(updatedMessages);
+            }
+          });
+        }
       }
     }
   }
@@ -398,10 +437,35 @@ class ChatMessages extends _$ChatMessages {
       if (!forceLatest) {
         _hasMoreMessages = responseList.length >= _pageSize;
       }
+      final List<ChatMessage> cachedMessages = await _loadFromCache();
+
       final remoteMessages = responseList.map((data) {
         final sender = _safeGet(data['sender']);
         final senderProfile = _safeGet(sender?['profile']);
-        final replyTo = _safeGet(data['reply_to']);
+        dynamic replyTo = _safeGet(data['reply_to']) ?? _safeGet(data['metadata']?['reply_to']);
+
+        // If parent message was purged from Supabase, lookup in local cached Hive messages
+        if (replyTo == null && data['reply_to_message_id'] != null) {
+          final pId = data['reply_to_message_id'].toString();
+          for (final cm in cachedMessages) {
+            if (cm.id == pId) {
+              replyTo = {
+                'id': cm.id,
+                'message_text': cm.messageText,
+                'message_type': cm.messageType,
+                'file_url': cm.fileUrl,
+                'sender_id': cm.senderId,
+                'sender': {
+                  'profile': {
+                    'name': cm.senderName ?? 'Mate',
+                    'profile_image_url': cm.senderProfile?['profile_image_url'],
+                  }
+                }
+              };
+              break;
+            }
+          }
+        }
 
         return ChatMessage.fromJson({
           ...data,
@@ -412,7 +476,6 @@ class ChatMessages extends _$ChatMessages {
         });
       }).toList();
 
-      final List<ChatMessage> cachedMessages = await _loadFromCache();
       final List<ChatMessage> existingMessages = state.hasValue ? (state.value ?? []) : [];
 
       // Combine unique messages (favor remote/fresh data, preserve already paged messages)
@@ -445,8 +508,8 @@ class ChatMessages extends _$ChatMessages {
     final uid = ref.read(currentUserIdProvider);
 
     try {
-      // Delete from Supabase messages older than 24 hours
-      final cutoffTime = DateTime.now().subtract(const Duration(hours: 24));
+      // Delete from Supabase messages older than 12 hours
+      final cutoffTime = DateTime.now().subtract(const Duration(hours: 12));
 
       if (isPersonal) {
         if (!RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(actualId) || PocketRobotService.isRobotId(actualId)) {
@@ -466,7 +529,7 @@ class ChatMessages extends _$ChatMessages {
             .lt('created_at', cutoffTime.toIso8601String());
       }
 
-      debugPrint('Supabase 24h cleanup completed for: $groupId');
+      debugPrint('Supabase 12h cleanup completed for: $groupId');
     } catch (e) {
       debugPrint('Error during database cleanup: $e');
     }
@@ -706,6 +769,47 @@ class ChatMessages extends _$ChatMessages {
       return userMessage;
     }
 
+    // Build self-contained snapshot for replied message so quote previews never break
+    final Map<String, dynamic> enrichedMetadata = Map<String, dynamic>.from(metadata ?? {});
+    Map<String, dynamic>? quotedSnapshot;
+    if (replyToId != null && replyToId.isNotEmpty) {
+      ChatMessage? quoted;
+      final currentList = state.value ?? [];
+      for (final m in currentList) {
+        if (m.id == replyToId) {
+          quoted = m;
+          break;
+        }
+      }
+      if (quoted == null) {
+        final cached = LocalSyncServer().getCachedMessages(uid, actualId);
+        for (final item in cached) {
+          final map = Map<String, dynamic>.from(item is ChatMessage ? item.toJson() : item);
+          if (map['id']?.toString() == replyToId) {
+            quoted = ChatMessage.fromJson(map);
+            break;
+          }
+        }
+      }
+      if (quoted != null) {
+        quotedSnapshot = {
+          'id': quoted.id,
+          'message_text': quoted.messageText,
+          'message_type': quoted.messageType,
+          'file_url': quoted.fileUrl,
+          'sender_id': quoted.senderId,
+          'sender_name': quoted.senderName ?? 'Mate',
+          'sender': {
+            'profile': {
+              'name': quoted.senderName ?? 'Mate',
+              'profile_image_url': quoted.senderProfile?['profile_image_url'],
+            }
+          }
+        };
+        enrichedMetadata['reply_to'] = quotedSnapshot;
+      }
+    }
+
     // Create optimistic message
     final optimisticMessage = ChatMessage(
       id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
@@ -717,9 +821,10 @@ class ChatMessages extends _$ChatMessages {
       fileUrl: fileUrl,
       voiceDuration: voiceDuration,
       replyToMessageId: replyToId,
+      replyToMessage: quotedSnapshot,
       createdAt: DateTime.now(),
       isOptimistic: true,
-      metadata: metadata,
+      metadata: enrichedMetadata,
     );
 
     // Add optimistically to UI immediately
@@ -728,9 +833,9 @@ class ChatMessages extends _$ChatMessages {
     state = AsyncValue.data([optimisticMessage, ...currentList]);
 
     String finalContent = text;
-    if (isPersonal && metadata != null) {
+    if (isPersonal && enrichedMetadata.isNotEmpty) {
       try {
-        finalContent = jsonEncode(metadata);
+        finalContent = jsonEncode(enrichedMetadata);
       } catch (_) {}
     }
 
@@ -743,7 +848,7 @@ class ChatMessages extends _$ChatMessages {
       'reply_to_message_id': replyToId,
       'gallery_id': galleryId,
       'thought_id': thoughtId,
-      'metadata': metadata,
+      'metadata': enrichedMetadata,
     };
 
     if (isPersonal) {
@@ -795,7 +900,7 @@ class ChatMessages extends _$ChatMessages {
 
       final sender = _safeGet(response['sender']);
       final senderProfile = _safeGet(sender?['profile']);
-      final replyTo = _safeGet(response['reply_to']);
+      final replyTo = _safeGet(response['reply_to']) ?? quotedSnapshot ?? _safeGet(enrichedMetadata['reply_to']);
 
       final fullMessage = ChatMessage.fromJson({
         ...response,

@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/widgets/conversation_tile.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/audio_space/pocket_floating_audio_bar.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/audio_space/pocket_coffee_table_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_timer_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
@@ -187,6 +188,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       _checkEulaAndRedirect();
       _loadVibesFilterInitial();
       _checkOnboarding();
+      PocketGameAudioService.instance.playAmbientAppTheme();
     });
   }
 
@@ -3622,27 +3624,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: _buildChatCategoryFilterChips(combined),
               ),
 
-              if (_chatCategoryFilterIndex == 0) ...[
-                SliverToBoxAdapter(
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    physics: const BouncingScrollPhysics(),
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.85,
-                          child: _buildAnonymousLiveMatchBanner(isDark),
-                        ),
-                        SizedBox(
-                          width: MediaQuery.of(context).size.width * 0.85,
-                          child: _buildCoffeeTableBanner(isDark),
-                        ),
-                        const SizedBox(width: 14),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
 
               if (_chatCategoryFilterIndex == 3) ...[
                 // Requests View (Strangers, Marketplace inquiries, Anonymous chat requests)
@@ -5838,6 +5819,9 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 iconColor: const Color(0xFFFFFC00),
                                 onTap: onTapFriends,
                               ),
+                              const SizedBox(width: 6),
+                              // 🎵 Music BGM Sound Control Toggle
+                              const PocketSoundToggleWidget(compact: true),
                               const SizedBox(width: 6),
                               // Search
                               _buildHeaderIconButton(

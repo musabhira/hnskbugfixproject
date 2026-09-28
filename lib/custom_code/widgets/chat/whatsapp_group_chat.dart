@@ -15,6 +15,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -482,6 +484,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   @override
   void initState() {
     super.initState();
+    InAppNotificationService.currentActiveChatId = widget.groupId;
     // Audio Directive: Chat conversations should be silent (no game BGM)
     PocketGameAudioService.instance.pause();
     _currentUserId = _supabase.auth.currentUser?.id ?? ''; // Original line
@@ -840,6 +843,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
 
   @override
   void dispose() {
+    if (InAppNotificationService.currentActiveChatId == widget.groupId) {
+      InAppNotificationService.currentActiveChatId = null;
+    }
     _hubRobotIdleConversationTimer?.cancel();
     _hubRobotReplyCooldownTimer?.cancel();
     _messageController.removeListener(_onMessageChanged);
@@ -3058,11 +3064,13 @@ Draft: "$draft"''';
                     ]
                   : null,
             ),
-            child: VectorAvatarWidget(
-              config: _getPersonalAvatarConfig(targetId),
-              size: 28,
-              showAura: isRobot,
-            ),
+            child: PocketPresidentService.isPresidentId(targetId)
+                ? const PresidentAvatarWidget(size: 28, showGlow: true)
+                : VectorAvatarWidget(
+                    config: _getPersonalAvatarConfig(targetId),
+                    size: 28,
+                    showAura: isRobot,
+                  ),
           ),
           const SizedBox(width: 8),
           Container(
@@ -4164,6 +4172,8 @@ Draft: "$draft"''';
     final metadata = message.metadata ?? {};
     final isBurned = metadata['is_burned'] == true;
 
+    final Color snapAccentColor = isMe ? const Color(0xFFF43F5E) : const Color(0xFFFFFC00);
+
     return InkWell(
       onTap: isBurned || url == null
           ? null
@@ -4175,32 +4185,31 @@ Draft: "$draft"''';
                 senderName: message.senderName ?? 'Mate',
                 isMe: isMe,
                 onBurned: () async {
-                  try {
-                    // Burn metadata update in supabase
-                    final updatedMeta = Map<String, dynamic>.from(metadata);
-                    updatedMeta['is_burned'] = true;
-                    await _supabase
-                        .from('messages')
-                        .update({'metadata': updatedMeta}).eq('id', message.id);
-                  } catch (e) {
-                    debugPrint('Error burning snap: $e');
-                  }
+                  await PocketSnapService.burnSnapMessage(
+                    messageId: message.id,
+                    mediaUrl: url,
+                    currentMetadata: metadata,
+                    currentUserId: _currentUserId,
+                    chatId: widget.groupId.startsWith('p:')
+                        ? widget.groupId.substring(2)
+                        : widget.groupId,
+                  );
                 },
               );
             },
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(14),
       child: Container(
         margin: const EdgeInsets.symmetric(vertical: 4),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           color: isBurned
               ? Colors.white.withValues(alpha: 0.04)
-              : const Color(0xFFFFFC00).withValues(alpha: 0.12),
+              : snapAccentColor.withValues(alpha: 0.12),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isBurned
                 ? Colors.white12
-                : const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                : snapAccentColor.withValues(alpha: 0.5),
             width: 1.2,
           ),
         ),
@@ -4208,17 +4217,27 @@ Draft: "$draft"''';
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              width: 32,
+              height: 32,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isBurned ? Colors.white10 : const Color(0xFFFFFC00),
+                shape: BoxShape.rectangle,
+                borderRadius: BorderRadius.circular(8),
+                color: isBurned
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : snapAccentColor.withValues(alpha: 0.2),
+                border: Border.all(
+                  color: isBurned
+                      ? Colors.white30
+                      : snapAccentColor,
+                  width: isBurned ? 1.5 : 2.0,
+                ),
               ),
               child: Icon(
                 isBurned
-                    ? Icons.lock_clock
-                    : Icons.local_fire_department_rounded,
-                size: 18,
-                color: isBurned ? Colors.white38 : Colors.black,
+                    ? Icons.crop_square_rounded // Classic Snapchat hollow square for Opened
+                    : (isMe ? Icons.arrow_outward_rounded : Icons.local_fire_department_rounded),
+                size: 16,
+                color: isBurned ? Colors.white54 : (isMe ? Colors.white : Colors.black),
               ),
             ),
             const SizedBox(width: 10),
@@ -4232,7 +4251,9 @@ Draft: "$draft"''';
                     children: [
                       Flexible(
                         child: Text(
-                          isBurned ? 'Opened Snap' : 'Snap 🔥',
+                          isBurned
+                              ? 'Opened'
+                              : (isMe ? 'Delivered Snap' : 'Snap 🔥'),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: GoogleFonts.outfit(
@@ -4254,13 +4275,12 @@ Draft: "$draft"''';
                           border: isBurned
                               ? null
                               : Border.all(
-                                  color:
-                                      Colors.redAccent.withValues(alpha: 0.5)),
+                                  color: Colors.redAccent.withValues(alpha: 0.5)),
                         ),
                         child: Text(
-                          isBurned ? 'EXPIRED' : 'VIEW ONCE',
+                          isBurned ? 'OPENED' : 'VIEW ONCE',
                           style: GoogleFonts.inter(
-                            color: isBurned ? Colors.white30 : Colors.redAccent,
+                            color: isBurned ? Colors.white38 : Colors.redAccent,
                             fontSize: 8,
                             fontWeight: FontWeight.w800,
                           ),
@@ -4270,12 +4290,12 @@ Draft: "$draft"''';
                   ),
                   Text(
                     isBurned
-                        ? 'Burned permanently'
-                        : 'Tap to view (Self-destructs)',
+                        ? 'Opened • Storage purged'
+                        : (isMe ? 'Tap to view • Self-destructs' : 'Tap to view (Burns on seen)'),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.inter(
-                      color: isBurned ? Colors.white30 : Colors.white70,
+                      color: isBurned ? Colors.white38 : Colors.white70,
                       fontSize: 11,
                     ),
                   ),
@@ -5928,15 +5948,15 @@ Draft: "$draft"''';
 
       // 1. Immediate optimistic send
       final messageId = await _sendMessage(
-        text: '🔥 24h Disappearing Snap',
+        text: '🔥 12h Disappearing Snap',
         messageType: type,
         metadata: {
           'local_path': path,
           'is_burned': false,
           'view_once': true,
-          'disappearing_24h': true,
+          'disappearing_12h': true,
           'expires_at':
-              DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+              DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         },
       );
 
@@ -5946,7 +5966,7 @@ Draft: "$draft"''';
       safeSetState(() {
         _showEmojiPicker = false;
       });
-      _showSnackBar('Snap sent! 🔥 (24h Disappearing)');
+      _showSnackBar('Snap sent! 🔥 (12h Disappearing)');
     } catch (e) {
       debugPrint('Error capturing snap: $e');
       _showErrorSnackBar('Error capturing snap: $e');
@@ -6078,93 +6098,112 @@ Draft: "$draft"''';
         replyMetadata?['sender_name']?.toString() ??
         'User';
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(4, 4, 4, 8),
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: isMe
-            ? Colors.black.withValues(alpha: 0.2)
-            : Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(8),
-        border: Border(
-          left: BorderSide(
-            color: isMe ? const Color(0xFF25D366) : const Color(0xFFFFD200),
-            width: 3.5,
+    final targetId = reply['id']?.toString() ?? message.replyToMessageId;
+
+    return GestureDetector(
+      onTap: targetId != null && targetId.isNotEmpty
+          ? () {
+              HapticFeedback.selectionClick();
+              final messages = ref.read(chatMessagesProvider(widget.groupId)).value ?? [];
+              final index = messages.indexWhere((m) => m.id == targetId);
+              if (index != -1 && _scrollController.hasClients) {
+                final targetOffset = (index * 72.0).clamp(0.0, _scrollController.position.maxScrollExtent);
+                _scrollController.animateTo(
+                  targetOffset,
+                  duration: const Duration(milliseconds: 320),
+                  curve: Curves.easeOutCubic,
+                );
+              }
+            }
+          : null,
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: isMe
+              ? Colors.black.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(8),
+          border: Border(
+            left: BorderSide(
+              color: isMe ? const Color(0xFF25D366) : const Color(0xFFFFD200),
+              width: 3.5,
+            ),
           ),
         ),
-      ),
-      child: IntrinsicHeight(
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    isReplyToStatus ? 'Replied to Vibe' : senderName,
-                    style: TextStyle(
-                      color: isMe
-                          ? const Color(0xFF25D366)
-                          : const Color(0xFFFFD200),
-                      fontSize: 11.5,
-                      fontWeight: FontWeight.bold,
+        child: IntrinsicHeight(
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      isReplyToStatus ? 'Replied to Vibe' : senderName,
+                      style: TextStyle(
+                        color: isMe
+                            ? const Color(0xFF25D366)
+                            : const Color(0xFFFFD200),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    replyText,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.9),
-                      fontSize: 12,
-                      height: 1.25,
+                    const SizedBox(height: 2),
+                    Text(
+                      replyText,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        fontSize: 12,
+                        height: 1.25,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            if (isReplyToStatus && replyStatusMediaUrl != null)
-              Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: replyStatusMediaType == 'text'
-                      ? Container(
-                          width: 34,
-                          height: 34,
-                          decoration: const BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+              if (isReplyToStatus && replyStatusMediaUrl != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: replyStatusMediaType == 'text'
+                        ? Container(
+                            width: 34,
+                            height: 34,
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
+                              ),
                             ),
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.text_fields,
+                                color: Colors.white, size: 14),
+                          )
+                        : CachedNetworkImage(
+                            imageUrl: replyStatusMediaUrl,
+                            width: 34,
+                            height: 34,
+                            fit: BoxFit.cover,
                           ),
-                          alignment: Alignment.center,
-                          child: const Icon(Icons.text_fields,
-                              color: Colors.white, size: 14),
-                        )
-                      : CachedNetworkImage(
-                          imageUrl: replyStatusMediaUrl,
-                          width: 34,
-                          height: 34,
-                          fit: BoxFit.cover,
-                        ),
-                ),
-              ),
-            if (reply['message_type'] == 'image' && reply['file_url'] != null)
-              Padding(
-                padding: const EdgeInsets.only(left: 8),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4),
-                  child: CachedNetworkImage(
-                    imageUrl: reply['file_url'],
-                    width: 34,
-                    height: 34,
-                    fit: BoxFit.cover,
                   ),
                 ),
-              ),
-          ],
+              if (reply['message_type'] == 'image' && reply['file_url'] != null)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: CachedNetworkImage(
+                      imageUrl: reply['file_url'],
+                      width: 34,
+                      height: 34,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

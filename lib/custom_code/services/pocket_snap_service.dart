@@ -109,15 +109,22 @@ class PocketSnapService {
       }
     }
 
-    // 2. Upload to Supabase storage
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final fileName = 'snap_${senderId}_$timestamp.jpg';
-    await _supabase.storage.from('statuses').uploadBinary(
-          fileName,
-          bytesToUpload,
-          fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
-        );
-    final mediaUrl = _supabase.storage.from('statuses').getPublicUrl(fileName);
+    // 2. Upload to Supabase storage (if binary image present)
+    String mediaUrl = '';
+    if (bytesToUpload.isNotEmpty) {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final fileName = 'snap_${senderId}_$timestamp.jpg';
+      try {
+        await _supabase.storage.from('statuses').uploadBinary(
+              fileName,
+              bytesToUpload,
+              fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
+            );
+        mediaUrl = _supabase.storage.from('statuses').getPublicUrl(fileName);
+      } catch (uploadErr) {
+        debugPrint('PocketSnapService storage upload warning: $uploadErr');
+      }
+    }
 
     // 3. Dispatch to selected recipients as high-speed direct Snaps
     for (final recipientId in recipientIds) {
@@ -138,6 +145,7 @@ class PocketSnapService {
 
       // 4. Update local Dart sync server for 0ms perceptible latency
       try {
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
         final localMsg = ChatMessage(
           id: 'snap_$timestamp',
           senderId: senderId,
@@ -176,7 +184,7 @@ class PocketSnapService {
           'media_url': mediaUrl,
           'caption': caption,
           'duration': 5,
-          'expires_at': DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+          'expires_at': DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
           'is_active': true,
         });
       } catch (e) {
@@ -219,6 +227,82 @@ class PocketSnapService {
     } catch (e) {
       debugPrint('Error getting pocket mates: $e');
       return [];
+    }
+  }
+
+  /// 🗑️ Permanently delete a snap image from Supabase storage on the spot
+  static Future<void> purgeSnapStorage(String? mediaUrl) async {
+    if (mediaUrl == null || mediaUrl.isEmpty) return;
+    try {
+      final uri = Uri.tryParse(mediaUrl);
+      if (uri == null) return;
+
+      final segments = uri.pathSegments;
+      final objectIdx = segments.indexOf('object');
+      if (objectIdx != -1 && segments.length > objectIdx + 2) {
+        final bucket = segments[objectIdx + 2];
+        final relativePath = segments.sublist(objectIdx + 3).join('/');
+        if (bucket.isNotEmpty && relativePath.isNotEmpty) {
+          final decodedPath = Uri.decodeComponent(relativePath);
+          await _supabase.storage.from(bucket).remove([decodedPath]);
+          debugPrint('PocketSnapService: Purged snap from bucket "$bucket": $decodedPath');
+          return;
+        }
+      }
+
+      // Fallback: decode filename and check standard buckets
+      final fileName = segments.isNotEmpty ? segments.last : '';
+      if (fileName.isNotEmpty) {
+        final decodedName = Uri.decodeComponent(fileName);
+        await _supabase.storage.from('statuses').remove([decodedName]);
+        await _supabase.storage.from('ephemeral_media').remove([decodedName]);
+        debugPrint('PocketSnapService: Purged snap fallback: $decodedName');
+      }
+    } catch (e) {
+      debugPrint('PocketSnapService purge warning: $e');
+    }
+  }
+
+  /// 🔥 Burn snap on seen: immediately deletes binary from cloud storage & updates state to "Opened"
+  static Future<void> burnSnapMessage({
+    required String messageId,
+    required String? mediaUrl,
+    Map<String, dynamic>? currentMetadata,
+    String? currentUserId,
+    String? chatId,
+  }) async {
+    // 1. Instantly purge cloud storage file
+    if (mediaUrl != null && mediaUrl.isNotEmpty) {
+      unawaited(purgeSnapStorage(mediaUrl));
+    }
+
+    // 2. Mark burned in Supabase
+    final updatedMeta = Map<String, dynamic>.from(currentMetadata ?? {});
+    updatedMeta['is_burned'] = true;
+    updatedMeta['burned_at'] = DateTime.now().toIso8601String();
+
+    try {
+      await _supabase.from('messages').update({
+        'metadata': updatedMeta,
+        'is_read': true,
+      }).eq('id', messageId);
+    } catch (e) {
+      debugPrint('PocketSnapService burn DB update note: $e');
+    }
+
+    // 3. Update local Hive & hot memory cache for 0ms UI update to "Opened"
+    if (currentUserId != null && chatId != null) {
+      try {
+        LocalSyncServer().updateCachedMessage(
+          userId: currentUserId,
+          chatOrGroupId: chatId,
+          messageId: messageId,
+          updates: {
+            'metadata': updatedMeta,
+            'is_read': true,
+          },
+        );
+      } catch (_) {}
     }
   }
 }
