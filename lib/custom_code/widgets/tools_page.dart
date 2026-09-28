@@ -330,35 +330,57 @@ class _TaskManagerScreenState extends State<ToolsPage> {
   Future<void> _loadFavoritedTools() async {
     final prefs = await SharedPreferences.getInstance();
     final userId = SupaFlow.client.auth.currentUser?.id ?? '';
-    final favoritedToolsJson = prefs.getString('favorited_tools_$userId');
+    var favoritedToolsJson = prefs.getString('favorited_tools_$userId');
+    if (favoritedToolsJson == null || favoritedToolsJson == '[]') {
+      favoritedToolsJson = prefs.getString('favorited_tools_guest');
+    }
     if (favoritedToolsJson != null) {
       final favoritedToolsList = jsonDecode(favoritedToolsJson) as List;
       final titles =
           favoritedToolsList.map((e) => e['title'] as String).toList();
-      if (!titles.contains('English Learning Tasks')) {
-        titles.insert(0, 'English Learning Tasks');
+      bool modified = false;
+      if (!titles.contains('Schedule')) {
+        titles.insert(0, 'Schedule');
         favoritedToolsList.insert(0, {
+          'title': 'Schedule',
+          'timeAdded': DateTime.now().toIso8601String(),
+        });
+        modified = true;
+      }
+      if (!titles.contains('English Learning Tasks')) {
+        titles.add('English Learning Tasks');
+        favoritedToolsList.add({
           'title': 'English Learning Tasks',
           'timeAdded': DateTime.now().toIso8601String(),
         });
+        modified = true;
+      }
+      if (modified) {
         await prefs.setString(
             'favorited_tools_$userId', jsonEncode(favoritedToolsList));
+        await prefs.setString(
+            'favorited_tools_guest', jsonEncode(favoritedToolsList));
       }
       setState(() {
         _favoritedTools = titles;
       });
     } else {
-      // Default pinned tool on first signup: English Learning Tasks
+      // Default pinned tools: Schedule + English Learning Tasks
       setState(() {
-        _favoritedTools = ['English Learning Tasks'];
+        _favoritedTools = ['Schedule', 'English Learning Tasks'];
       });
       final defaultList = [
         {
+          'title': 'Schedule',
+          'timeAdded': DateTime.now().toIso8601String(),
+        },
+        {
           'title': 'English Learning Tasks',
-          'timeAdded': DateTime.now().toIso8601String()
+          'timeAdded': DateTime.now().toIso8601String(),
         }
       ];
       await prefs.setString('favorited_tools_$userId', jsonEncode(defaultList));
+      await prefs.setString('favorited_tools_guest', jsonEncode(defaultList));
     }
   }
 
@@ -458,12 +480,57 @@ class _TaskManagerScreenState extends State<ToolsPage> {
               ))
           .toList();
 
+      final now = DateTime.now();
       dailySchedule = allSchedules
           .where((item) =>
-              item.startTime.year == DateTime.now().year &&
-              item.startTime.month == DateTime.now().month &&
-              item.startTime.day == DateTime.now().day)
+              item.startTime.year == now.year &&
+              item.startTime.month == now.month &&
+              item.startTime.day == now.day)
           .toList();
+
+      if (dailySchedule.isEmpty && allSchedules.isNotEmpty) {
+        dailySchedule = allSchedules.map((item) {
+          final sTime = DateTime(now.year, now.month, now.day, item.startTime.hour, item.startTime.minute);
+          final eTime = DateTime(now.year, now.month, now.day, item.endTime.hour, item.endTime.minute);
+          return ScheduleItem(
+            id: item.id,
+            title: item.title,
+            startTime: sTime,
+            endTime: eTime,
+            color: item.color,
+            description: item.description,
+            isCompleted: item.isCompleted,
+            source: item.source,
+          );
+        }).toList();
+      }
+
+      if (dailySchedule.isEmpty) {
+        String? scheduleJson = prefs.getString('schedule_$userId');
+        if (scheduleJson == null || scheduleJson == '[]') {
+          scheduleJson = prefs.getString('schedule_guest') ??
+              prefs.getString('schedule_default');
+        }
+        if (scheduleJson != null && scheduleJson != '[]') {
+          final localItems = (jsonDecode(scheduleJson) as List)
+              .map((item) => ScheduleItem.fromJson(item))
+              .toList();
+          dailySchedule = localItems.map((item) {
+            final sTime = DateTime(now.year, now.month, now.day, item.startTime.hour, item.startTime.minute);
+            final eTime = DateTime(now.year, now.month, now.day, item.endTime.hour, item.endTime.minute);
+            return ScheduleItem(
+              id: item.id,
+              title: item.title,
+              startTime: sTime,
+              endTime: eTime,
+              color: item.color,
+              description: item.description,
+              isCompleted: item.isCompleted,
+              source: item.source,
+            );
+          }).toList();
+        }
+      }
     } catch (e) {
       debugPrint('Error loading from Supabase, falling back to local: $e');
       // Fallback
@@ -477,15 +544,42 @@ class _TaskManagerScreenState extends State<ToolsPage> {
           .map((challenge) => Challenge.fromJson(challenge))
           .toList();
 
-      final scheduleJson = prefs.getString('schedule_$userId') ?? '[]';
-      final todaySchedule = (jsonDecode(scheduleJson) as List)
+      String? scheduleJson = prefs.getString('schedule_$userId');
+      if (scheduleJson == null || scheduleJson == '[]') {
+        scheduleJson = prefs.getString('schedule_guest') ??
+            prefs.getString('schedule_default') ??
+            '[]';
+      }
+      final rawItems = (jsonDecode(scheduleJson) as List)
           .map((item) => ScheduleItem.fromJson(item))
-          .where((item) =>
-              item.startTime.year == DateTime.now().year &&
-              item.startTime.month == DateTime.now().month &&
-              item.startTime.day == DateTime.now().day)
           .toList();
-      dailySchedule = todaySchedule;
+      final now = DateTime.now();
+      final todaySchedule = rawItems
+          .where((item) =>
+              item.startTime.year == now.year &&
+              item.startTime.month == now.month &&
+              item.startTime.day == now.day)
+          .toList();
+      if (todaySchedule.isNotEmpty) {
+        dailySchedule = todaySchedule;
+      } else if (rawItems.isNotEmpty) {
+        dailySchedule = rawItems.map((item) {
+          final sTime = DateTime(now.year, now.month, now.day, item.startTime.hour, item.startTime.minute);
+          final eTime = DateTime(now.year, now.month, now.day, item.endTime.hour, item.endTime.minute);
+          return ScheduleItem(
+            id: item.id,
+            title: item.title,
+            startTime: sTime,
+            endTime: eTime,
+            color: item.color,
+            description: item.description,
+            isCompleted: item.isCompleted,
+            source: item.source,
+          );
+        }).toList();
+      } else {
+        dailySchedule = [];
+      }
     }
 
     _calculateStats();

@@ -127,8 +127,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   // ⏰ Schedule & Routine Planner State
   String _selectedOccupation = 'Student';
-  String _selectedStudyTimeSlot = 'Evening';
-  TimeOfDay? _customStudyTimeOfDay;
+  String _selectedStudyTimeSlot = 'Custom';
+  TimeOfDay? _customStudyTimeOfDay = const TimeOfDay(hour: 20, minute: 0);
   int _routineVariationIndex = 0;
   List<OnboardingRoutineItem> _onboardingRoutineItems = [];
 
@@ -1110,21 +1110,25 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       // Also set for guest fallback
       await prefs.setString('favorited_tools_guest', jsonEncode(favTools));
 
-      // 🔔 3. Schedule Recurring Study Notification Alarm if enabled
-      final studySlotItem = _onboardingRoutineItems.firstWhere(
-        (i) => i.isStudySlot,
-        orElse: () => _onboardingRoutineItems.first,
-      );
-      if (studySlotItem.hasAlarm) {
-        await PushNotificationService.scheduleDailyNotification(
-          id: 7777,
-          title: '⏰ English Speaking Practice Time!',
-          body:
-              'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥',
-          hour: studySlotItem.startTime.hour,
-          minute: studySlotItem.startTime.minute,
-          payload: 'tool_Schedule',
-        );
+      // 🔔 3. Schedule Recurring Study Notification Alarm for all active alarms
+      for (int i = 0; i < _onboardingRoutineItems.length; i++) {
+        final item = _onboardingRoutineItems[i];
+        if (item.hasAlarm) {
+          final notifId = item.isStudySlot ? 7777 : (8000 + i);
+          await PushNotificationService.scheduleDailyNotification(
+            id: notifId,
+            title: item.isStudySlot
+                ? '⏰ English Speaking Practice Time!'
+                : '⏰ ${item.title}',
+            body: item.isStudySlot
+                ? 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥'
+                : (item.description ?? 'Scheduled routine reminder'),
+            hour: item.startTime.hour,
+            minute: item.startTime.minute,
+            payload: 'tool_Schedule',
+            isAlarm: true,
+          );
+        }
       }
     } catch (e) {
       debugPrint('Cache onboarding note: $e');
@@ -2205,180 +2209,670 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
-  // --- Step 7: Preferred Study Time Slot (+ Custom Time Picker) ---
+  // --- Step 7: Preferred Study Time Slot (+ Custom Clock UI as First Priority) ---
   Widget _buildStepPreferredStudyTime() {
-    String customTimeLabel = 'Pick custom time';
-    if (_customStudyTimeOfDay != null) {
-      final hour = _customStudyTimeOfDay!.hour;
-      final min = _customStudyTimeOfDay!.minute;
-      final period = hour >= 12 ? 'PM' : 'AM';
-      final hour12 = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-      customTimeLabel =
-          '${hour12.toString().padLeft(2, '0')}:${min.toString().padLeft(2, '0')} $period';
+    final currentTOD =
+        _customStudyTimeOfDay ?? const TimeOfDay(hour: 20, minute: 0);
+    final rawHour = currentTOD.hour;
+    final rawMinute = currentTOD.minute;
+    final isPM = rawHour >= 12;
+    final displayHour12 =
+        rawHour == 0 ? 12 : (rawHour > 12 ? rawHour - 12 : rawHour);
+    final hourStr = displayHour12.toString().padLeft(2, '0');
+    final minStr = rawMinute.toString().padLeft(2, '0');
+    final periodStr = isPM ? 'PM' : 'AM';
+    final formattedTime = '$hourStr:$minStr $periodStr';
+
+    void updateTime(int newHour24, int newMin) {
+      HapticFeedback.selectionClick();
+      final clampedMin = (newMin % 60 + 60) % 60;
+      final clampedHour = (newHour24 % 24 + 24) % 24;
+      setState(() {
+        _customStudyTimeOfDay =
+            TimeOfDay(hour: clampedHour, minute: clampedMin);
+        _selectedStudyTimeSlot = 'Custom';
+        _generateOnboardingRoutine();
+      });
     }
 
-    final isCustomSelected = _selectedStudyTimeSlot == 'Custom';
+    void stepHour(int delta) {
+      updateTime(rawHour + delta, rawMinute);
+    }
+
+    void stepMinute(int delta) {
+      updateTime(rawHour, rawMinute + delta);
+    }
+
+    void togglePeriod(bool toPM) {
+      if (toPM && !isPM) {
+        updateTime(rawHour + 12, rawMinute);
+      } else if (!toPM && isPM) {
+        updateTime(rawHour - 12, rawMinute);
+      }
+    }
 
     return _buildStepContainer(
       title: 'When do you prefer to practice?',
       mascotHint:
-          'Choose the time slot when you are most free to speak English daily.',
+          'Set your ideal daily English speaking time. Tap the clock steppers or presets below to customize!',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _studyTimeSlots.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final slot = _studyTimeSlots[index];
-              final title = slot['title'] as String;
-              final isSelected =
-                  !isCustomSelected && _selectedStudyTimeSlot == title;
-
-              return _buildOptionCard(
-                title: title,
-                subtitle: slot['range'] as String,
-                leadingIcon: slot['icon'] as IconData,
-                badgeColor: slot['color'] as Color,
-                isSelected: isSelected,
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() {
-                    _customStudyTimeOfDay = null;
-                    _selectedStudyTimeSlot = title;
-                    _generateOnboardingRoutine();
-                  });
-                },
-              );
-            },
-          ),
-          const SizedBox(height: 12),
-
-          // Custom Time Picker Card
-          GestureDetector(
-            onTap: () async {
-              HapticFeedback.selectionClick();
-              final picked = await showTimePicker(
-                context: context,
-                initialTime: _customStudyTimeOfDay ??
-                    const TimeOfDay(hour: 20, minute: 0),
-                builder: (context, child) {
-                  return Theme(
-                    data: Theme.of(context).copyWith(
-                      colorScheme: const ColorScheme.dark(
-                        primary: Color(0xFF10B981),
-                        surface: Color(0xFF1E293B),
-                        onSurface: Colors.white,
-                      ),
-                    ),
-                    child: child!,
-                  );
-                },
-              );
-              if (picked != null) {
-                setState(() {
-                  _customStudyTimeOfDay = picked;
-                  _selectedStudyTimeSlot = 'Custom';
-                  _generateOnboardingRoutine();
-                });
-              }
-            },
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 160),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              decoration: BoxDecoration(
-                color: isCustomSelected
-                    ? const Color(0xFF1E293B)
-                    : const Color(0xFF141416).withValues(alpha: 0.9),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: isCustomSelected
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFF27272A),
-                  width: isCustomSelected ? 1.8 : 1.0,
-                ),
-                boxShadow: isCustomSelected
-                    ? [
-                        BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                          blurRadius: 10,
-                          spreadRadius: 1,
-                        ),
-                      ]
-                    : null,
+          // ⏰ Main Interactive Clock Card (First Priority!)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF131D2E)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.access_time_rounded,
-                    color: isCustomSelected
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFA1A1AA),
-                    size: 20,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: const Color(0xFF10B981).withValues(alpha: 0.5),
+                width: 1.6,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                  blurRadius: 18,
+                  offset: const Offset(0, 6),
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  blurRadius: 10,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                // Top Tag
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
                       children: [
+                        const Icon(Icons.alarm_on_rounded,
+                            color: Color(0xFF10B981), size: 18),
+                        const SizedBox(width: 6),
                         Text(
-                          'Custom Time',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: isCustomSelected
-                                ? FontWeight.w700
-                                : FontWeight.w500,
+                          'PRACTICE CLOCK',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF10B981),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.0,
                           ),
                         ),
-                        const SizedBox(height: 2),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Text(
+                        'DAILY ALARM ACTIVE',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF10B981),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+
+                // Digital Clock Display with Stepper Taps
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Hour Stepper
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => stepHour(1),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.1),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.keyboard_arrow_up_rounded,
+                              color: Color(0xFF10B981),
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        GestureDetector(
+                          onTap: () async {
+                            HapticFeedback.selectionClick();
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: currentTOD,
+                              builder: (context, child) => Theme(
+                                data: Theme.of(context).copyWith(
+                                  colorScheme: const ColorScheme.dark(
+                                    primary: Color(0xFF10B981),
+                                    surface: Color(0xFF1E293B),
+                                    onSurface: Colors.white,
+                                  ),
+                                ),
+                                child: child!,
+                              ),
+                            );
+                            if (picked != null) {
+                              setState(() {
+                                _customStudyTimeOfDay = picked;
+                                _selectedStudyTimeSlot = 'Custom';
+                                _generateOnboardingRoutine();
+                              });
+                            }
+                          },
+                          child: Container(
+                            width: 66,
+                            height: 64,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0B111E),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFF10B981)
+                                    .withValues(alpha: 0.6),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.15),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              hourStr,
+                              style: GoogleFonts.outfit(
+                                fontSize: 34,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => stepHour(-1),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.1),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Color(0xFF10B981),
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // Colon Divider
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        ':',
+                        style: GoogleFonts.outfit(
+                          fontSize: 34,
+                          fontWeight: FontWeight.w900,
+                          color: const Color(0xFF10B981),
+                        ),
+                      ),
+                    ),
+
+                    // Minute Stepper
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => stepMinute(5),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.1),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.keyboard_arrow_up_rounded,
+                              color: Color(0xFF10B981),
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        GestureDetector(
+                          onTap: () async {
+                            HapticFeedback.selectionClick();
+                            final picked = await showTimePicker(
+                              context: context,
+                              initialTime: currentTOD,
+                              builder: (context, child) => Theme(
+                                data: Theme.of(context).copyWith(
+                                  colorScheme: const ColorScheme.dark(
+                                    primary: Color(0xFF10B981),
+                                    surface: Color(0xFF1E293B),
+                                    onSurface: Colors.white,
+                                  ),
+                                ),
+                                child: child!,
+                              ),
+                            );
+                            if (picked != null) {
+                              setState(() {
+                                _customStudyTimeOfDay = picked;
+                                _selectedStudyTimeSlot = 'Custom';
+                                _generateOnboardingRoutine();
+                              });
+                            }
+                          },
+                          child: Container(
+                            width: 66,
+                            height: 64,
+                            alignment: Alignment.center,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0B111E),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFF10B981)
+                                    .withValues(alpha: 0.6),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF10B981)
+                                      .withValues(alpha: 0.15),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: Text(
+                              minStr,
+                              style: GoogleFonts.outfit(
+                                fontSize: 34,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        InkWell(
+                          borderRadius: BorderRadius.circular(8),
+                          onTap: () => stepMinute(-5),
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: Colors.white.withValues(alpha: 0.1),
+                              ),
+                            ),
+                            child: const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Color(0xFF10B981),
+                              size: 22,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(width: 14),
+
+                    // AM / PM Segmented Switch
+                    Container(
+                      padding: const EdgeInsets.all(3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0B111E),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.12),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          InkWell(
+                            borderRadius: BorderRadius.circular(10),
+                            onTap: () => togglePeriod(false),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: !isPM
+                                    ? const Color(0xFF10B981)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'AM',
+                                style: GoogleFonts.inter(
+                                  color: !isPM ? Colors.black : Colors.white60,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          InkWell(
+                            borderRadius: BorderRadius.circular(10),
+                            onTap: () => togglePeriod(true),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: isPM
+                                    ? const Color(0xFF10B981)
+                                    : Colors.transparent,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Text(
+                                'PM',
+                                style: GoogleFonts.inter(
+                                  color: isPM ? Colors.black : Colors.white60,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Quick minute nudges
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildTimeNudgeChip('-15m', () => stepMinute(-15)),
+                    const SizedBox(width: 8),
+                    _buildTimeNudgeChip('-5m', () => stepMinute(-5)),
+                    const SizedBox(width: 8),
+                    _buildTimeNudgeChip('+5m', () => stepMinute(5)),
+                    const SizedBox(width: 8),
+                    _buildTimeNudgeChip('+15m', () => stepMinute(15)),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Direct Dial Helper
+                InkWell(
+                  onTap: () async {
+                    HapticFeedback.selectionClick();
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: currentTOD,
+                      builder: (context, child) => Theme(
+                        data: Theme.of(context).copyWith(
+                          colorScheme: const ColorScheme.dark(
+                            primary: Color(0xFF10B981),
+                            surface: Color(0xFF1E293B),
+                            onSurface: Colors.white,
+                          ),
+                        ),
+                        child: child!,
+                      ),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _customStudyTimeOfDay = picked;
+                        _selectedStudyTimeSlot = 'Custom';
+                        _generateOnboardingRoutine();
+                      });
+                    }
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.touch_app_rounded,
+                            color: Color(0xFF38BDF8), size: 14),
+                        const SizedBox(width: 5),
                         Text(
-                          isCustomSelected
-                              ? 'Selected: $customTimeLabel'
-                              : 'Tap to select any custom hour',
+                          'Tap here to pick from full visual clock dial 🕒',
                           style: GoogleFonts.inter(
-                            color: isCustomSelected
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFFA1A1AA),
-                            fontSize: 12,
+                            color: const Color(0xFF38BDF8),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1E293B),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isCustomSelected
-                            ? const Color(0xFF10B981)
-                            : Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                    child: Text(
-                      isCustomSelected ? customTimeLabel : 'Select ⏰',
-                      style: GoogleFonts.inter(
-                        color: isCustomSelected
-                            ? const Color(0xFF10B981)
-                            : Colors.white70,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Preset Routine Slots Header
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 8),
+            child: Text(
+              'OR TAP A POPULAR TIME PRESET',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF94A3B8),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 0.8,
+              ),
+            ),
+          ),
+
+          // Quick preset buttons
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildPresetSlotChip(
+                label: 'Morning Focus',
+                time: '7:30 AM',
+                hour: 7,
+                min: 30,
+                icon: Icons.wb_sunny_rounded,
+                color: const Color(0xFFF59E0B),
+                currentHour: rawHour,
+                currentMin: rawMinute,
+              ),
+              _buildPresetSlotChip(
+                label: 'After Lunch',
+                time: '1:30 PM',
+                hour: 13,
+                min: 30,
+                icon: Icons.light_mode_rounded,
+                color: const Color(0xFF06B6D4),
+                currentHour: rawHour,
+                currentMin: rawMinute,
+              ),
+              _buildPresetSlotChip(
+                label: 'Evening Tea',
+                time: '6:30 PM',
+                hour: 18,
+                min: 30,
+                icon: Icons.coffee_rounded,
+                color: const Color(0xFFEC4899),
+                currentHour: rawHour,
+                currentMin: rawMinute,
+              ),
+              _buildPresetSlotChip(
+                label: 'Prime Night',
+                time: '8:00 PM',
+                hour: 20,
+                min: 0,
+                icon: Icons.nights_stay_rounded,
+                color: const Color(0xFF10B981),
+                currentHour: rawHour,
+                currentMin: rawMinute,
+              ),
+              _buildPresetSlotChip(
+                label: 'Late Night',
+                time: '10:00 PM',
+                hour: 22,
+                min: 0,
+                icon: Icons.bedtime_rounded,
+                color: const Color(0xFFA855F7),
+                currentHour: rawHour,
+                currentMin: rawMinute,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Active Schedule Banner
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: const Color(0xFF10B981).withValues(alpha: 0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Daily Speaking Session: $formattedTime ($_selectedDailyGoalMins mins)',
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
       ),
       onContinue: _nextStep,
       buttonText: 'CONTINUE',
+    );
+  }
+
+  Widget _buildTimeNudgeChip(String label, VoidCallback onTap) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(10),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            color: Colors.white.withValues(alpha: 0.1),
+          ),
+        ),
+        child: Text(
+          label,
+          style: GoogleFonts.inter(
+            color: const Color(0xFF94A3B8),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPresetSlotChip({
+    required String label,
+    required String time,
+    required int hour,
+    required int min,
+    required IconData icon,
+    required Color color,
+    required int currentHour,
+    required int currentMin,
+  }) {
+    final isSelected = currentHour == hour && currentMin == min;
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: () {
+        HapticFeedback.selectionClick();
+        setState(() {
+          _customStudyTimeOfDay = TimeOfDay(hour: hour, minute: min);
+          _selectedStudyTimeSlot = 'Custom';
+          _generateOnboardingRoutine();
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? color.withValues(alpha: 0.22)
+              : const Color(0xFF141416),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? color : const Color(0xFF27272A),
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: isSelected ? color : Colors.white54, size: 15),
+            const SizedBox(width: 6),
+            Text(
+              '$label ($time)',
+              style: GoogleFonts.inter(
+                color: isSelected ? Colors.white : Colors.white70,
+                fontSize: 11.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -2421,15 +2915,16 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   }
 
   // --- Step 9: Schedule Screen (Full Day Routine Review) ---
+  // --- Step 9: Schedule Screen (Full Day Routine Review) ---
   Widget _buildStepScheduleReview() {
     return _buildStepContainer(
-      title: 'Schedule',
+      title: 'Full-Day Routine Schedule',
       mascotHint:
-          'Here is your balanced full-day plan from wake-up to sleep. Daily study alarm is set!',
+          'Tap any routine activity or ✏️ to customize its time, name, or alarm. Alarms sync directly to your Schedule Tool!',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Minimal Top Action Row
+          // Top Action Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -2442,43 +2937,88 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                   letterSpacing: 0.8,
                 ),
               ),
-              InkWell(
-                borderRadius: BorderRadius.circular(16),
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  setState(() {
-                    _routineVariationIndex++;
-                    _generateOnboardingRoutine();
-                  });
-                },
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // + Add Slot button
+                  InkWell(
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(Icons.shuffle_rounded,
-                          color: Color(0xFF38BDF8), size: 13),
-                      const SizedBox(width: 4),
-                      Text(
-                        'Shuffle',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF38BDF8),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      _showEditRoutineItemModal(context, null, -1);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color:
+                            const Color(0xFF10B981).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                          width: 1,
                         ),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.add_rounded,
+                              color: Color(0xFF10B981), size: 14),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Add Slot',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF10B981),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 6),
+                  // Shuffle Preset button
+                  InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      setState(() {
+                        _routineVariationIndex++;
+                        _generateOnboardingRoutine();
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 9, vertical: 4),
+                      decoration: BoxDecoration(
+                        color:
+                            const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.shuffle_rounded,
+                              color: Color(0xFF38BDF8), size: 13),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Shuffle',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -2491,18 +3031,515 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             itemCount: _onboardingRoutineItems.length,
             itemBuilder: (context, index) {
               final item = _onboardingRoutineItems[index];
-              return _buildOnboardingScheduleCard(item);
+              return _buildOnboardingScheduleCard(item, index);
             },
           ),
         ],
       ),
-      onContinue: _nextStep,
+      onContinue: _handleConfirmSchedule,
       buttonText: 'CONFIRM SCHEDULE',
     );
   }
 
-  // 📇 Sleek dark schedule card matching ToolsPage design
-  Widget _buildOnboardingScheduleCard(OnboardingRoutineItem item) {
+  // 💾 Handle schedule confirmation: syncs to Schedule Tool & pins favorite on Chat & Home!
+  Future<void> _handleConfirmSchedule() async {
+    HapticFeedback.mediumImpact();
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final user = SupaFlow.client.auth.currentUser;
+      final scheduleItems =
+          _onboardingRoutineItems.map((e) => e.toScheduleItem()).toList();
+      final scheduleJson =
+          jsonEncode(scheduleItems.map((item) => item.toJson()).toList());
+
+      // 1. Save schedule for user and guest fallbacks
+      if (user != null) {
+        await prefs.setString('schedule_${user.id}', scheduleJson);
+      }
+      await prefs.setString('schedule_guest', scheduleJson);
+      await prefs.setString('schedule_default', scheduleJson);
+
+      // 2. Sync to Supabase user_schedules
+      if (user != null && scheduleItems.isNotEmpty) {
+        try {
+          await SupaFlow.client.from('user_schedules').upsert(
+                scheduleItems
+                    .map((s) => {
+                          'id': s.id,
+                          'user_id': user.id,
+                          'title': s.title,
+                          'start_time': s.startTime.toIso8601String(),
+                          'end_time': s.endTime.toIso8601String(),
+                          'color':
+                              '0x${s.color.toARGB32().toRadixString(16).padLeft(8, '0')}',
+                          'is_completed': s.isCompleted,
+                          'source': s.source.index,
+                        })
+                    .toList(),
+              );
+        } catch (dbError) {
+          debugPrint('user_schedules sync note: $dbError');
+        }
+      }
+
+      // 3. Pin "Schedule" to Favorited Tools list for user and guest fallbacks
+      final targetUserId = user?.id ?? 'guest';
+      final favKey = 'favorited_tools_$targetUserId';
+      final existingFavRaw =
+          prefs.getString(favKey) ?? prefs.getString('favorited_tools_guest');
+      List<dynamic> favTools = [];
+      if (existingFavRaw != null) {
+        try {
+          favTools = jsonDecode(existingFavRaw) as List<dynamic>;
+        } catch (_) {
+          favTools = [];
+        }
+      } else {
+        favTools = [
+          {'title': 'Schedule', 'timeAdded': DateTime.now().toIso8601String()},
+          {'title': '90-Day English Tasks', 'timeAdded': DateTime.now().toIso8601String()},
+          {'title': '1-on-1 English Match', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 1)).toIso8601String()},
+          {'title': 'Voice Speaking Sprint', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 2)).toIso8601String()},
+        ];
+      }
+
+      final alreadyContainsSchedule =
+          favTools.any((t) => t is Map && t['title'] == 'Schedule');
+      if (!alreadyContainsSchedule) {
+        favTools.insert(0, {
+          'title': 'Schedule',
+          'timeAdded': DateTime.now().toIso8601String(),
+        });
+      }
+      await prefs.setString(favKey, jsonEncode(favTools));
+      await prefs.setString('favorited_tools_guest', jsonEncode(favTools));
+      if (user != null) {
+        await prefs.setString('favorited_tools_${user.id}', jsonEncode(favTools));
+      }
+
+      // 4. Schedule Alarms for all routine items where hasAlarm == true!
+      for (int i = 0; i < _onboardingRoutineItems.length; i++) {
+        final item = _onboardingRoutineItems[i];
+        if (item.hasAlarm) {
+          final notifId = item.isStudySlot ? 7777 : (8000 + i);
+          await PushNotificationService.scheduleDailyNotification(
+            id: notifId,
+            title: item.isStudySlot
+                ? '⏰ English Speaking Practice Time!'
+                : '⏰ ${item.title}',
+            body: item.isStudySlot
+                ? 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥'
+                : (item.description ?? 'Scheduled routine reminder'),
+            hour: item.startTime.hour,
+            minute: item.startTime.minute,
+            payload: 'tool_Schedule',
+            isAlarm: true,
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error confirming schedule: $e');
+    }
+
+    _nextStep();
+  }
+
+  // ✏️ Edit or Add Routine Activity Modal Bottom Sheet
+  void _showEditRoutineItemModal(
+      BuildContext context, OnboardingRoutineItem? existingItem, int index) {
+    HapticFeedback.mediumImpact();
+    final isNew = existingItem == null;
+    final titleController =
+        TextEditingController(text: isNew ? '' : existingItem.title);
+    final descController = TextEditingController(
+        text: isNew ? '' : (existingItem.description ?? ''));
+
+    final now = DateTime.now();
+    DateTime startDT = isNew
+        ? DateTime(now.year, now.month, now.day, 17, 0)
+        : existingItem.startTime;
+    DateTime endDT = isNew
+        ? DateTime(now.year, now.month, now.day, 18, 0)
+        : existingItem.endTime;
+    bool hasAlarm = isNew ? true : existingItem.hasAlarm;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF131722),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (modalContext, setModalState) {
+            String formatDT(DateTime dt) {
+              final h = dt.hour;
+              final m = dt.minute;
+              final p = h >= 12 ? 'PM' : 'AM';
+              final h12 = h == 0 ? 12 : (h > 12 ? h - 12 : h);
+              return '${h12.toString().padLeft(2, '0')}:${m.toString().padLeft(2, '0')} $p';
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(modalContext).viewInsets.bottom + 24,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Handle Bar
+                    Center(
+                      child: Container(
+                        width: 40,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Header
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          isNew
+                              ? 'Add Routine Activity ➕'
+                              : 'Edit Routine Activity ✏️',
+                          style: GoogleFonts.outfit(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.white70),
+                          onPressed: () => Navigator.pop(modalContext),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Title Field
+                    TextField(
+                      controller: titleController,
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        labelText: 'Activity Name',
+                        labelStyle:
+                            GoogleFonts.inter(color: const Color(0xFF94A3B8)),
+                        hintText: 'e.g., Morning Workout, Study, Dinner',
+                        hintStyle: GoogleFonts.inter(color: Colors.white38),
+                        filled: true,
+                        fillColor: const Color(0xFF1E2333),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Description Field
+                    TextField(
+                      controller: descController,
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        labelText: 'Description / Notes (Optional)',
+                        labelStyle:
+                            GoogleFonts.inter(color: const Color(0xFF94A3B8)),
+                        hintText: 'e.g., Hydrate, notes & 30 min focus',
+                        hintStyle: GoogleFonts.inter(color: Colors.white38),
+                        filled: true,
+                        fillColor: const Color(0xFF1E2333),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Start Time & End Time Picker Row
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
+                              final picked = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.fromDateTime(startDT),
+                                builder: (context, child) => Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: const ColorScheme.dark(
+                                      primary: Color(0xFF10B981),
+                                      surface: Color(0xFF1E293B),
+                                      onSurface: Colors.white,
+                                    ),
+                                  ),
+                                  child: child!,
+                                ),
+                              );
+                              if (picked != null) {
+                                setModalState(() {
+                                  startDT = DateTime(now.year, now.month,
+                                      now.day, picked.hour, picked.minute);
+                                  if (endDT.isBefore(startDT)) {
+                                    endDT = startDT.add(const Duration(minutes: 30));
+                                  }
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E2333),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'START TIME',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.access_time_rounded,
+                                          color: Color(0xFF10B981), size: 16),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        formatDT(startDT),
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(12),
+                            onTap: () async {
+                              final picked = await showTimePicker(
+                                context: context,
+                                initialTime: TimeOfDay.fromDateTime(endDT),
+                                builder: (context, child) => Theme(
+                                  data: Theme.of(context).copyWith(
+                                    colorScheme: const ColorScheme.dark(
+                                      primary: Color(0xFF10B981),
+                                      surface: Color(0xFF1E293B),
+                                      onSurface: Colors.white,
+                                    ),
+                                  ),
+                                  child: child!,
+                                ),
+                              );
+                              if (picked != null) {
+                                setModalState(() {
+                                  endDT = DateTime(now.year, now.month,
+                                      now.day, picked.hour, picked.minute);
+                                });
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 12, vertical: 12),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF1E2333),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                ),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'END TIME',
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w700,
+                                      color: const Color(0xFF94A3B8),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      const Icon(Icons.access_time_rounded,
+                                          color: Color(0xFF38BDF8), size: 16),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        formatDT(endDT),
+                                        style: GoogleFonts.outfit(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Alarm Toggle Switch
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E2333),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                hasAlarm
+                                    ? Icons.notifications_active_rounded
+                                    : Icons.notifications_none_rounded,
+                                color: hasAlarm
+                                    ? const Color(0xFFFACC15)
+                                    : const Color(0xFF71717A),
+                                size: 20,
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                'Daily Alarm for this activity',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Switch(
+                            value: hasAlarm,
+                            activeThumbColor: const Color(0xFF10B981),
+                            onChanged: (val) {
+                              setModalState(() {
+                                hasAlarm = val;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // Save Button
+                    ElevatedButton(
+                      onPressed: () {
+                        final title = titleController.text.trim();
+                        if (title.isEmpty) return;
+                        HapticFeedback.mediumImpact();
+                        setState(() {
+                          if (isNew) {
+                            _onboardingRoutineItems.add(OnboardingRoutineItem(
+                              id: 'routine_${DateTime.now().millisecondsSinceEpoch}',
+                              title: title,
+                              description: descController.text.trim(),
+                              startTime: startDT,
+                              endTime: endDT,
+                              hasAlarm: hasAlarm,
+                              color: const Color(0xFF38BDF8),
+                            ));
+                          } else {
+                            existingItem.title = title;
+                            existingItem.description =
+                                descController.text.trim();
+                            existingItem.startTime = startDT;
+                            existingItem.endTime = endDT;
+                            existingItem.hasAlarm = hasAlarm;
+                          }
+                          _onboardingRoutineItems.sort(
+                              (a, b) => a.startTime.compareTo(b.startTime));
+                        });
+                        Navigator.pop(modalContext);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Text(
+                        isNew ? 'Add to Schedule' : 'Save Changes',
+                        style: GoogleFonts.outfit(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    // Delete Button (if editing an existing item)
+                    if (!isNew && !existingItem.isStudySlot) ...[
+                      const SizedBox(height: 8),
+                      TextButton(
+                        onPressed: () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _onboardingRoutineItems.removeAt(index);
+                          });
+                          Navigator.pop(modalContext);
+                        },
+                        child: Text(
+                          'Delete Activity',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFEF4444),
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // 📇 Sleek dark schedule card with tap-to-edit, alarm bell, and checkmark
+  Widget _buildOnboardingScheduleCard(OnboardingRoutineItem item, int index) {
     final startHour = item.startTime.hour;
     final startMin = item.startTime.minute;
     final endHour = item.endTime.hour;
@@ -2546,181 +3583,204 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           ),
         ],
       ),
-      child: Row(
-        children: [
-          // Time Column with vertical accent line
-          Container(
-            width: 78,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  startStr,
-                  style: GoogleFonts.outfit(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Container(
-                  width: 2,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: isStudy
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFFFFC00),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  endStr,
-                  style: GoogleFonts.outfit(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white54,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 1,
-            height: 64,
-            color: const Color(0xFF1E2333),
-          ),
-
-          // Title & Description
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.title,
-                          style: GoogleFonts.inter(
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            decoration: item.isCompleted
-                                ? TextDecoration.lineThrough
-                                : null,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showEditRoutineItemModal(context, item, index),
+          child: Row(
+            children: [
+              // Time Column with vertical accent line
+              Container(
+                width: 78,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      startStr,
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
                       ),
-                      if (isStudy) ...[
-                        const SizedBox(width: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color:
-                                const Color(0xFF10B981).withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                                color: const Color(0xFF10B981), width: 0.8),
-                          ),
-                          child: Text(
-                            'STUDY SLOT',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF10B981),
-                              fontSize: 9,
-                              fontWeight: FontWeight.bold,
+                    ),
+                    const SizedBox(height: 3),
+                    Container(
+                      width: 2,
+                      height: 16,
+                      decoration: BoxDecoration(
+                        color: isStudy
+                            ? const Color(0xFF10B981)
+                            : item.color,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      endStr,
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                width: 1,
+                height: 64,
+                color: const Color(0xFF1E2333),
+              ),
+
+              // Title & Description
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 10),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              item.title,
+                              style: GoogleFonts.inter(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                                decoration: item.isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          if (isStudy) ...[
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF10B981)
+                                    .withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                    color: const Color(0xFF10B981), width: 0.8),
+                              ),
+                              child: Text(
+                                'STUDY SLOT',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF10B981),
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                      if (item.description != null &&
+                          item.description!.isNotEmpty) ...[
+                        const SizedBox(height: 3),
+                        Text(
+                          item.description!,
+                          style: GoogleFonts.inter(
+                            fontSize: 11.5,
+                            color: const Color(0xFF94A3B8),
+                            height: 1.25,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ],
                   ),
-                  if (item.description != null &&
-                      item.description!.isNotEmpty) ...[
-                    const SizedBox(height: 3),
-                    Text(
-                      item.description!,
-                      style: GoogleFonts.inter(
-                        fontSize: 11.5,
-                        color: const Color(0xFF94A3B8),
-                        height: 1.25,
+                ),
+              ),
+
+              // Action Controls: Edit, Alarm Bell, Checkmark
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // ✏️ Edit Button
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 30, minHeight: 30),
+                      icon: const Icon(
+                        Icons.edit_outlined,
+                        color: Color(0xFF38BDF8),
+                        size: 18,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      tooltip: 'Edit routine item',
+                      onPressed: () =>
+                          _showEditRoutineItemModal(context, item, index),
+                    ),
+
+                    // 🔔 Alarm Toggle
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints:
+                          const BoxConstraints(minWidth: 30, minHeight: 30),
+                      icon: Icon(
+                        item.hasAlarm
+                            ? Icons.notifications_active_rounded
+                            : Icons.notifications_none_rounded,
+                        color: item.hasAlarm
+                            ? const Color(0xFFFACC15)
+                            : const Color(0xFF52525B),
+                        size: 19,
+                      ),
+                      tooltip: item.hasAlarm ? 'Alarm Active' : 'Enable Alarm',
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          item.hasAlarm = !item.hasAlarm;
+                        });
+                      },
+                    ),
+
+                    // ✅ Checkmark Circle
+                    InkWell(
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          item.isCompleted = !item.isCompleted;
+                        });
+                      },
+                      child: Container(
+                        width: 22,
+                        height: 22,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: item.isCompleted
+                              ? const Color(0xFF10B981)
+                              : Colors.transparent,
+                          border: Border.all(
+                            color: item.isCompleted
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF52525B),
+                            width: 1.8,
+                          ),
+                        ),
+                        child: item.isCompleted
+                            ? const Icon(Icons.check,
+                                color: Colors.white, size: 13)
+                            : null,
+                      ),
                     ),
                   ],
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-
-          // Action Controls: Checkmark & Alarm Bell
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // 🔔 Alarm Toggle
-                IconButton(
-                  padding: EdgeInsets.zero,
-                  constraints:
-                      const BoxConstraints(minWidth: 32, minHeight: 32),
-                  icon: Icon(
-                    item.hasAlarm
-                        ? Icons.notifications_active_rounded
-                        : Icons.notifications_none_rounded,
-                    color: item.hasAlarm
-                        ? const Color(0xFFFACC15)
-                        : const Color(0xFF52525B),
-                    size: 19,
-                  ),
-                  tooltip: item.hasAlarm ? 'Alarm Active' : 'Enable Alarm',
-                  onPressed: () {
-                    HapticFeedback.selectionClick();
-                    setState(() {
-                      item.hasAlarm = !item.hasAlarm;
-                    });
-                  },
-                ),
-                const SizedBox(width: 4),
-
-                // ✅ Checkmark Circle
-                InkWell(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() {
-                      item.isCompleted = !item.isCompleted;
-                    });
-                  },
-                  child: Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: item.isCompleted
-                          ? const Color(0xFF10B981)
-                          : Colors.transparent,
-                      border: Border.all(
-                        color: item.isCompleted
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFF52525B),
-                        width: 1.8,
-                      ),
-                    ),
-                    child: item.isCompleted
-                        ? const Icon(Icons.check, color: Colors.white, size: 13)
-                        : null,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -2769,7 +3829,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             textColor: Colors.white,
             onPressed: () async {
               try {
-                await PushNotificationService.requestPermissionExplicitly();
+                final granted =
+                    await PushNotificationService.requestPermissionExplicitly();
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setBool('pm_notifications_enabled', granted);
               } catch (_) {}
               _nextStep();
             },

@@ -525,19 +525,40 @@ class Conversations extends _$Conversations {
       final pinnedIds =
           prefs.getStringList('pinned_conversations_$userId') ?? [];
 
-      // Load Favorited Tools (Initialize with 4 Default Starter Tools for new users)
-      final favoritedToolsRaw = prefs.getString('favorited_tools_$userId');
+      // Load Favorited Tools (Ensure Schedule is at top for all users)
+      var favoritedToolsRaw = prefs.getString('favorited_tools_$userId');
+      if (favoritedToolsRaw == null || favoritedToolsRaw == '[]') {
+        favoritedToolsRaw = prefs.getString('favorited_tools_guest');
+      }
       List favoritedTools;
-      if (favoritedToolsRaw == null) {
+      if (favoritedToolsRaw == null || favoritedToolsRaw == '[]') {
         favoritedTools = [
+          {'title': 'Schedule', 'timeAdded': DateTime.now().toIso8601String()},
           {'title': '90-Day English Tasks', 'timeAdded': DateTime.now().toIso8601String()},
           {'title': '1-on-1 English Match', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 1)).toIso8601String()},
           {'title': 'Voice Speaking Sprint', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 2)).toIso8601String()},
           {'title': 'Diagrams', 'timeAdded': DateTime.now().subtract(const Duration(minutes: 3)).toIso8601String()},
         ];
         await prefs.setString('favorited_tools_$userId', jsonEncode(favoritedTools));
+        await prefs.setString('favorited_tools_guest', jsonEncode(favoritedTools));
       } else {
-        favoritedTools = jsonDecode(favoritedToolsRaw) as List;
+        try {
+          favoritedTools = jsonDecode(favoritedToolsRaw) as List;
+        } catch (_) {
+          favoritedTools = [];
+        }
+        final hasSchedule =
+            favoritedTools.any((t) => t is Map && t['title'] == 'Schedule');
+        if (!hasSchedule) {
+          favoritedTools.insert(0, {
+            'title': 'Schedule',
+            'timeAdded': DateTime.now().toIso8601String(),
+          });
+          await prefs.setString(
+              'favorited_tools_$userId', jsonEncode(favoritedTools));
+          await prefs.setString(
+              'favorited_tools_guest', jsonEncode(favoritedTools));
+        }
       }
 
       final toolChats = favoritedTools.map((t) {

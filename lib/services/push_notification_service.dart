@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -28,6 +29,16 @@ class PushNotificationService {
     enableVibration: true,
   );
 
+  static const AndroidNotificationChannel _alarmChannel =
+      AndroidNotificationChannel(
+    'alarm_reminder_channel',
+    'Study Alarms & Reminders',
+    description: 'Daily study alarms and scheduled learning reminders',
+    importance: Importance.max,
+    playSound: true,
+    enableVibration: true,
+  );
+
   static const AndroidNotificationDetails _androidNotificationDetails =
       AndroidNotificationDetails(
     channelId,
@@ -38,6 +49,21 @@ class PushNotificationService {
     priority: Priority.high,
     playSound: true,
     enableVibration: true,
+  );
+
+  static const AndroidNotificationDetails _androidAlarmNotificationDetails =
+      AndroidNotificationDetails(
+    'alarm_reminder_channel',
+    'Study Alarms & Reminders',
+    channelDescription: 'Daily study alarms and scheduled learning reminders',
+    icon: '@mipmap/launcher_icon',
+    importance: Importance.max,
+    priority: Priority.max,
+    playSound: true,
+    enableVibration: true,
+    audioAttributesUsage: AudioAttributesUsage.alarm,
+    category: AndroidNotificationCategory.alarm,
+    fullScreenIntent: true,
   );
 
   static bool _isInitialized = false;
@@ -91,13 +117,14 @@ class PushNotificationService {
         debugPrint('PushNotificationService: Local notifications init error: $localInitError');
       }
 
-      // 4. Create Android High Importance Notification Channel
+      // 4. Create Android High Importance & Alarm Notification Channels
       if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
         try {
-          await _localNotificationsPlugin
+          final androidImpl = _localNotificationsPlugin
               .resolvePlatformSpecificImplementation<
-                  AndroidFlutterLocalNotificationsPlugin>()
-              ?.createNotificationChannel(_androidChannel);
+                  AndroidFlutterLocalNotificationsPlugin>();
+          await androidImpl?.createNotificationChannel(_androidChannel);
+          await androidImpl?.createNotificationChannel(_alarmChannel);
         } catch (channelError) {
           debugPrint('PushNotificationService: Channel creation error: $channelError');
         }
@@ -219,35 +246,30 @@ class PushNotificationService {
     }
 
     bool granted = false;
-    try {
-      if (Firebase.apps.isEmpty) {
-        await Firebase.initializeApp();
-      }
 
-      // Request Firebase Messaging permission (iOS & Android)
-      final settings = await FirebaseMessaging.instance.requestPermission(
-        alert: true,
-        announcement: false,
-        badge: true,
-        carPlay: false,
-        criticalAlert: false,
-        provisional: false,
-        sound: true,
-      );
-      granted = settings.authorizationStatus == AuthorizationStatus.authorized ||
-          settings.authorizationStatus == AuthorizationStatus.provisional;
-      debugPrint('PushNotificationService: FCM permission status: ${settings.authorizationStatus}');
+    // 1. Directly invoke the native system permission dialog via permission_handler.
+    // This triggers the native Android 13+ POST_NOTIFICATIONS dialog & iOS alert prompt reliably!
+    try {
+      final status = await Permission.notification.request();
+      if (status.isGranted || status.isLimited) {
+        granted = true;
+      }
+      debugPrint('PushNotificationService: Permission.notification result: $status');
     } catch (e) {
-      debugPrint('PushNotificationService: FCM explicit permission request error: $e');
+      debugPrint('PushNotificationService: Permission.notification error: $e');
     }
 
+    // 2. Also request via FlutterLocalNotificationsPlugin platform implementations
     try {
       if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
         final androidImpl = _localNotificationsPlugin
             .resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin>();
         final androidGranted = await androidImpl?.requestNotificationsPermission();
-        if (androidGranted != null) granted = androidGranted;
+        if (androidGranted == true) granted = true;
+        try {
+          await androidImpl?.requestExactAlarmsPermission();
+        } catch (_) {}
         debugPrint('PushNotificationService: Android local permission: $androidGranted');
       } else if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
         final iosImpl = _localNotificationsPlugin
@@ -258,14 +280,36 @@ class PushNotificationService {
           badge: true,
           sound: true,
         );
-        if (iosGranted != null) granted = iosGranted;
+        if (iosGranted == true) granted = true;
         debugPrint('PushNotificationService: iOS local permission: $iosGranted');
       }
     } catch (e) {
-      debugPrint('PushNotificationService: Local notification permission request error: $e');
+      debugPrint('PushNotificationService: Local notification permission error: $e');
     }
 
-    // Also ensure full initialization is triggered
+    // 3. Request Firebase Messaging permission (iOS & Android)
+    try {
+      if (Firebase.apps.isNotEmpty) {
+        final settings = await FirebaseMessaging.instance.requestPermission(
+          alert: true,
+          announcement: false,
+          badge: true,
+          carPlay: false,
+          criticalAlert: false,
+          provisional: false,
+          sound: true,
+        );
+        if (settings.authorizationStatus == AuthorizationStatus.authorized ||
+            settings.authorizationStatus == AuthorizationStatus.provisional) {
+          granted = true;
+        }
+        debugPrint('PushNotificationService: FCM permission status: ${settings.authorizationStatus}');
+      }
+    } catch (e) {
+      debugPrint('PushNotificationService: FCM explicit permission request error: $e');
+    }
+
+    // 4. Ensure service is initialized
     try {
       await initialize();
     } catch (_) {}
@@ -382,6 +426,7 @@ class PushNotificationService {
     required int hour,
     required int minute,
     String? payload,
+    bool isAlarm = true,
   }) async {
     if (kIsWeb) return;
     try {
@@ -408,12 +453,15 @@ class PushNotificationService {
         title: title,
         body: body,
         scheduledDate: scheduledDate,
-        notificationDetails: const NotificationDetails(
-          android: _androidNotificationDetails,
-          iOS: DarwinNotificationDetails(
+        notificationDetails: NotificationDetails(
+          android: isAlarm
+              ? _androidAlarmNotificationDetails
+              : _androidNotificationDetails,
+          iOS: const DarwinNotificationDetails(
             presentAlert: true,
             presentBadge: true,
             presentSound: true,
+            interruptionLevel: InterruptionLevel.timeSensitive,
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
