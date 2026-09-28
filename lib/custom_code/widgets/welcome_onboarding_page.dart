@@ -19,6 +19,8 @@ import 'learning_60day/flame_english_house_game.dart';
 import 'learning_60day/pocket_citadel_attack_page.dart';
 import 'avatar/vector_avatar_widget.dart';
 import 'avatar/vector_avatar_config.dart';
+import 'learning_60day/pocket_syllabus_repository.dart';
+import 'learning_60day/pocket_generating_syllabus_page.dart';
 import 'tools_page.dart';
 import '../services/pocket_game_audio_service.dart';
 
@@ -139,29 +141,32 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   final List<Map<String, dynamic>> _placementQuestions = [
     {
+      'question': 'What is the English word for "വെള്ളം" (Water)?',
+      'options': [
+        'Paper',
+        'Water',
+        'Sleep',
+        'I do not know / അറിയില്ല',
+      ],
+      'correct': 1,
+    },
+    {
+      'question': 'How do you say "എനിക്ക് ചായ വേണം" (I want tea)?',
+      'options': [
+        'Me tea give',
+        'I want tea',
+        'Tea want I',
+        'I do not know / അറിയില്ല',
+      ],
+      'correct': 1,
+    },
+    {
       'question': 'Which sentence is grammatically correct?',
       'options': [
         'She go to the office every day.',
         'She goes to the office every day.',
         'She going to the office every day.',
-      ],
-      'correct': 1,
-    },
-    {
-      'question': "What is the best response to: 'How do you do?'",
-      'options': [
-        'I am doing cooking.',
-        'How do you do? Pleased to meet you.',
-        'Yes, I can do it.',
-      ],
-      'correct': 1,
-    },
-    {
-      'question': 'Complete the phrase: I look forward to ___ you.',
-      'options': [
-        'meet',
-        'meeting',
-        'met',
+        'I do not know / അറിയില്ല',
       ],
       'correct': 1,
     },
@@ -205,19 +210,23 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   final List<Map<String, String>> _englishLevels = [
     {
-      'title': 'Beginner (Starting fresh)',
+      'title': 'Level 0: Zero Foundation (ABC അറിയില്ല)',
+      'subtitle': 'Absolute zero - learn from sounds & voice',
       'emoji': '🌱',
     },
     {
-      'title': 'Know common words & basic phrases',
+      'title': 'Level 1: Beginner (Common words & basic phrases)',
+      'subtitle': 'Know some words, but cannot speak sentences',
       'emoji': '💬',
     },
     {
-      'title': 'Can hold simple conversations',
+      'title': 'Level 2: Intermediate (Simple conversations)',
+      'subtitle': 'Can converse, want fluency & zero hesitation',
       'emoji': '🗣️',
     },
     {
-      'title': 'Intermediate to advanced speaker',
+      'title': 'Level 3: Peak Fluency & Career Mastery',
+      'subtitle': 'Fluent speaker targeting job interviews & leadership',
       'emoji': '👑',
     },
   ];
@@ -1004,6 +1013,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       await prefs.setString('pm_target_language', _selectedTargetLanguage);
       await prefs.setString('pm_referral_source', _selectedReferralSource);
       await prefs.setString('pm_english_level', _selectedEnglishLevel);
+      final resolvedLvl =
+          PocketSyllabusRepository.resolveLevelFromText(_selectedEnglishLevel);
+      await prefs.setString(
+          PocketSyllabusRepository.kPrefsLearnerLevel, resolvedLvl.name);
       await prefs.setString('pm_learning_goal', _selectedLearningGoal);
       await prefs.setInt('pm_daily_goal_mins', _selectedDailyGoalMins);
       await prefs.setString('pm_plan_type', _selectedPlan);
@@ -1246,7 +1259,22 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     await _saveOnboardingChoicesLocally();
     _bgmPlayer?.stop();
     if (mounted) {
-      context.goNamed(HomePageWidget.routeName);
+      final lvl =
+          PocketSyllabusRepository.resolveLevelFromText(_selectedEnglishLevel);
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (ctx) => PocketGeneratingSyllabusPage(
+            level: lvl,
+            nativeLanguage: _selectedNativeLanguage,
+            onContinue: () {
+              Navigator.of(ctx).pop();
+              if (mounted) {
+                context.goNamed(HomePageWidget.routeName);
+              }
+            },
+          ),
+        ),
+      );
     }
   }
 
@@ -2060,9 +2088,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   // --- Step 2: Native Language ---
   Widget _buildStep2NativeLanguage() {
     return _buildStepContainer(
-      title: 'What is your native language?',
+      title: 'What is your native language?\nനിങ്ങളുടെ മാതൃഭാഷ ഏതാണ്?',
       mascotHint:
-          'Select your native tongue so we can guide your practice comfortably.',
+          'Select your native tongue so we can guide your practice comfortably. (നിങ്ങൾ സംസാരിക്കുന്ന ഭാഷ തിരഞ്ഞെടുക്കുക)',
       child: ListView.separated(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
@@ -2132,6 +2160,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           final isSelected = _selectedEnglishLevel == level['title'];
           return _buildOptionCard(
             title: level['title']!,
+            subtitle: level['subtitle'],
             leadingEmoji: level['emoji'],
             isSelected: isSelected,
             onTap: () {
@@ -4144,8 +4173,17 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             _selectedQuizAnswer = null;
           });
         } else {
-          if (_quizScore >= 2) {
-            _selectedEnglishLevel = 'Intermediate (B1-B2)';
+          if (_quizScore == 0) {
+            _selectedEnglishLevel = 'Level 0: Zero Foundation (ABC അറിയില്ല)';
+          } else if (_quizScore == 1) {
+            _selectedEnglishLevel =
+                'Level 1: Beginner (Common words & basic phrases)';
+          } else if (_quizScore == 2) {
+            _selectedEnglishLevel =
+                'Level 2: Intermediate (Simple conversations)';
+          } else {
+            _selectedEnglishLevel =
+                'Level 3: Peak Fluency & Career Mastery';
           }
           setState(() => _selectedPath = 'scratch');
           _nextStep();

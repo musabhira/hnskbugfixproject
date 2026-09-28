@@ -22,6 +22,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_vocab
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_game_rules_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_master_syllabus_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
@@ -6008,6 +6009,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     _saveSubtask('fluency_gym', val);
                   },
                 );
+              },
+            ),
+            const SizedBox(width: 8),
+            _buildActionPill(
+              icon: '📘',
+              label: 'YOUR 90-DAY SYLLABUS',
+              color: const Color(0xFFFFD700),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                PocketMasterSyllabusModal.show(context, currentDay: widget.day);
               },
             ),
             const SizedBox(width: 8),
