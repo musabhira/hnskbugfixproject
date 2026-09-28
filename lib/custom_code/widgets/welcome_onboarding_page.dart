@@ -220,17 +220,22 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       'emoji': '💬',
     },
     {
-      'title': 'Level 2: Middle (Simple conversations / മിഡിൽ)',
+      'title': 'Level 2: Elementary (ഏകദേശ ജ്ഞാനം, മടിയുള്ളവർ)',
+      'subtitle': 'Know basic phrases, has hesitation & needs speech habits',
+      'emoji': '🧭',
+    },
+    {
+      'title': 'Level 3: Middle (Simple conversations / മിഡിൽ)',
       'subtitle': 'Can converse, want fluency & zero hesitation',
       'emoji': '🗣️',
     },
     {
-      'title': 'Level 3: Advanced (Workplace & Career)',
+      'title': 'Level 4: Advanced (Workplace & Career)',
       'subtitle': 'Fluent speaker targeting job interviews & leadership',
       'emoji': '💼',
     },
     {
-      'title': 'Level 4: Expert (Peak Fluency & Oratory)',
+      'title': 'Level 5: Expert (Peak Fluency & Oratory)',
       'subtitle': 'Master eloquence, public speaking & international wit',
       'emoji': '👑',
     },
@@ -4185,10 +4190,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                 'Level 1: Beginner (നിത്യോപയോഗ വാക്കുകൾ)';
           } else if (_quizScore == 2) {
             _selectedEnglishLevel =
-                'Level 2: Middle (Simple conversations / മിഡിൽ)';
+                'Level 2: Elementary (ഏകദേശ ജ്ഞാനം, മടിയുള്ളവർ)';
           } else {
             _selectedEnglishLevel =
-                'Level 3: Advanced (Workplace & Career)';
+                'Level 3: Middle (Simple conversations / മിഡിൽ)';
           }
           setState(() => _selectedPath = 'scratch');
           _nextStep();

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 🎯 Represents the learner's determined starting proficiency level (5 Distinct Tracks).
+/// 🎯 6 Distinct Learner Tracks matching the 90-Day Cyber Cat journey.
+/// Every user starts on Day 1 / Level 1 of Cyber Cat, but the 90-day syllabus & contents
+/// adapt completely to their determined ability track.
 enum LearnerLevel {
   zero, // 1. Zero: Absolute beginner (doesn't know ABC / letter sounds)
-  beginner, // 2. Beginner: Knows basic everyday words
-  middle, // 3. Middle (Intermediate): Simple conversations, needs fluency
-  advanced, // 4. Advanced: Fluent, job & workplace English
-  expert, // 5. Expert: Executive leadership, international debate & public speaking
+  beginner, // 2. Beginner: Knows some basic words, cannot frame sentences
+  elementary, // 3. Elementary: Knows basic phrases, has hesitation & needs speech habits
+  middle, // 4. Middle: Simple conversations, wants faster fluency & sentence connectors
+  advanced, // 5. Advanced: Good speaker, needs corporate, interview & professional finesse
+  expert, // 6. Expert: Fluent speaker, wants high-level public speaking, debate & native wit
 }
 
 /// 📚 Model for a structured Syllabus Track Milestone
@@ -62,25 +65,25 @@ class SyllabusTrack {
   });
 }
 
-/// 🏛️ Central Repository of all 90-Day Syllabus Tracks for PoketMates
+/// 🏛️ Central Repository of all 6 Definitive 90-Day Syllabus Tracks for PoketMates
 class PocketSyllabusRepository {
   static const String kPrefsLearnerLevel = 'pm_user_learner_level';
   static const String kPrefsGeneratedSyllabus = 'pm_generated_syllabus_v1';
 
   static final Map<LearnerLevel, SyllabusTrack> tracks = {
     // -------------------------------------------------------------
-    // TRACK 0: Zero Foundation (Audio-First, for Absolute Beginners)
+    // TRACK 1: Zero Foundation (Audio-First, for Absolute Beginners)
     // -------------------------------------------------------------
     LearnerLevel.zero: const SyllabusTrack(
       level: LearnerLevel.zero,
       code: 'zero_foundation',
       nameEn: 'Zero Foundation Track',
-      nameNative: 'ശൂന്യത്തിൽ നിന്നുള്ള അടിത്തറ (Zero to Hero)',
+      nameNative: 'ശൂന്യത്തിൽ നിന്നുള്ള അടിത്തറ (Zero Foundation)',
       targetAudienceEn:
-          'Absolute beginners starting from zero. No reading or spelling required — pure voice and sound.',
+          'Absolute beginners starting from scratch. No reading or spelling pressure — pure voice, sounds, and listening.',
       targetAudienceNative:
-          'ഇംഗ്ലീഷിൽ ABC അക്ഷരങ്ങളോ വാക്കുകളോ അറിയാത്തവർക്ക്. കേട്ടു പറഞ്ഞ് ശീലിക്കുന്ന ലളിതമായ വോയ്‌സ് രീതി.',
-      badgeText: '🌱 LEVEL 0: ZERO FOUNDATION',
+          'ഇംഗ്ലീഷിൽ ABC അക്ഷരങ്ങളോ ശബ്ദങ്ങളോ അറിയാത്തവർക്ക് (ഉപ്പയെപ്പോലെയുള്ളവർ). കേട്ടു പറഞ്ഞ് ശീലിക്കുന്ന ലളിതമായ വോയ്‌സ് രീതി.',
+      badgeText: '🌱 1. ZERO FOUNDATION',
       primaryColor: Color(0xFF10B981),
       icon: Icons.record_voice_over_rounded,
       milestones: [
@@ -140,25 +143,25 @@ class PocketSyllabusRepository {
     ),
 
     // -------------------------------------------------------------
-    // TRACK 1: Daily Conversational Fluency (Beginner)
+    // TRACK 2: Beginner Track (Common Words Known)
     // -------------------------------------------------------------
     LearnerLevel.beginner: const SyllabusTrack(
       level: LearnerLevel.beginner,
-      code: 'daily_fluency',
-      nameEn: 'Daily Conversational Track',
-      nameNative: 'ദൈനംദിന സംഭാഷണ പാത (Daily Fluency)',
+      code: 'beginner_track',
+      nameEn: 'Beginner Daily Conversational Track',
+      nameNative: 'ബിഗിനർ സംഭാഷണ പാത (Beginner Track)',
       targetAudienceEn:
-          'Learners who know words and basic phrases, but struggle to frame sentences quickly.',
+          'Learners who recognize basic words, but cannot frame spoken sentences smoothly.',
       targetAudienceNative:
-          'ചെറിയ വാക്കുകൾ അറിയാം, പക്ഷേ പെട്ടെന്ന് വാചകം ഉണ്ടാക്കാനും മറ്റുള്ളവരോട് മറുപടി പറയാനും ബുദ്ധിമുട്ടുള്ളവർക്ക്.',
-      badgeText: '💬 LEVEL 1: BEGINNER',
+          'ചെറിയ വാക്കുകൾ അറിയാം, പക്ഷേ വാചകം ഉണ്ടാക്കാനും പെട്ടെന്ന് മറുപടി പറയാനും ബുദ്ധിമുട്ടുള്ളവർക്ക്.',
+      badgeText: '💬 2. BEGINNER',
       primaryColor: Color(0xFF38BDF8),
       icon: Icons.forum_rounded,
       milestones: [
         SyllabusMilestone(
           dayRange: 'Day 1 - 20',
-          titleEn: 'Everyday Situation Frameworks',
-          titleNative: 'നിത്യജീവിത സാഹചര്യങ്ങൾ (Real Scenarios)',
+          titleEn: 'Real Scenario Dialogues (Shops, Doctors, Travel)',
+          titleNative: 'നിത്യജീവിത സാഹചര്യങ്ങൾ (Everyday Situations)',
           descriptionEn:
               'Master conversations in Restaurants, Shopping Malls, Cabs, Doctors, and Supermarkets without hesitation.',
           descriptionNative:
@@ -171,7 +174,7 @@ class PocketSyllabusRepository {
         SyllabusMilestone(
           dayRange: 'Day 21 - 45',
           titleEn: 'Natural Tense Shifting without Grammar Fatigue',
-          titleNative: 'ടെൻസുകൾ സംസാരിച്ചു പഠിക്കൽ (Effortless Tenses)',
+          titleNative: 'ടെൻസുകൾ സംസാരിച്ചു പഠിക്കൽ (Spoken Tenses)',
           descriptionEn:
               'Express Past, Present, and Future events naturally using Time Machine exercises instead of dry grammar rules.',
           descriptionNative:
@@ -183,7 +186,7 @@ class PocketSyllabusRepository {
         ),
         SyllabusMilestone(
           dayRange: 'Day 46 - 70',
-          titleEn: 'Common Spoken Errors & Mother Tongue Interference',
+          titleEn: 'Common Spoken Errors & Mother Tongue Translation',
           titleNative: 'സാധാരണ തെറ്റുകൾ തിരുത്തൽ (Mistake Elimination)',
           descriptionEn:
               'Fix common literal Malayalam-to-English translations. Build idiomatic rhythm and natural connecting phrases.',
@@ -196,7 +199,7 @@ class PocketSyllabusRepository {
         ),
         SyllabusMilestone(
           dayRange: 'Day 71 - 90',
-          titleEn: 'Live Peer Practice & Speech Endurance',
+          titleEn: 'Live Peer Practice & Habit Maintenance',
           titleNative: 'ലൈവ് സംസാരവും ആത്മവിശ്വാസവും (Live Speaking)',
           descriptionEn:
               'Engage in 10-minute daily peer audio calls and coffee table rooms. Deliver spontaneous 2-minute talks.',
@@ -211,21 +214,89 @@ class PocketSyllabusRepository {
     ),
 
     // -------------------------------------------------------------
-    // TRACK 2: Intermediate Spoken Mastery
+    // TRACK 3: Elementary Track (Some Knowledge, Needs Habit)
     // -------------------------------------------------------------
+    LearnerLevel.elementary: const SyllabusTrack(
+      level: LearnerLevel.elementary,
+      code: 'elementary_habit',
+      nameEn: 'Elementary Confidence & Speech Habit Track',
+      nameNative: 'ഏകദേശ ജ്ഞാനമുള്ളവർക്കുള്ള പാത (Elementary)',
+      targetAudienceEn:
+          'Knows basic grammar and simple phrases, but experiences mental blocks and hesitation when speaking.',
+      targetAudienceNative:
+          'വായന അറിയാം, ലളിതമായ വാചകങ്ങൾ മനസ്സിലാകും, എന്നാൽ ആരെങ്കിലും ഇംഗ്ലീഷിൽ ചോദിക്കുമ്പോൾ പെട്ടെന്ന് മറുപടി പറയാൻ മടിക്കുന്നവർക്ക്.',
+      badgeText: '🧭 3. ELEMENTARY',
+      primaryColor: Color(0xFF2DD4BF),
+      icon: Icons.psychology_outlined,
+      milestones: [
+        SyllabusMilestone(
+          dayRange: 'Day 1 - 20',
+          titleEn: 'Instant Vocal Reflexes & Hesitation Breaker',
+          titleNative: 'മടി മാറ്റലും പെട്ടെന്നുള്ള മറുപടികളും (Instant Reflex)',
+          descriptionEn:
+              'Rapid-fire voice prompts designed to break the thinking gap between Malayalam thought and English speech.',
+          descriptionNative:
+              'മനസ്സിൽ മലയാളത്തിൽ ചിന്തിച്ചു നിൽക്കാതെ ഉടൻ തന്നെ ഇംഗ്ലീഷിൽ മറുപടി നൽകാനുള്ള സ്പീഡ് ഡ്രില്ലുകൾ.',
+          focusAreaEn: 'Eliminating hesitation pauses',
+          focusAreaNative: 'ആലോചിച്ചു നിൽക്കാതെ പെട്ടെന്ന് മറുപടി നൽകൽ',
+          icon: Icons.flash_on_rounded,
+          color: Color(0xFF2DD4BF),
+        ),
+        SyllabusMilestone(
+          dayRange: 'Day 21 - 45',
+          titleEn: 'Expanding Everyday Vocabulary & Expressive Adjectives',
+          titleNative: 'വിവരണാത്മക പദസമ്പത്ത് (Descriptive Words)',
+          descriptionEn:
+              'Replace basic repetitive words (good, bad, happy) with expressive natural alternatives.',
+          descriptionNative:
+              'ഒരേ വാക്കുകൾ ആവർത്തിക്കാതെ മനോഹരമായ പദങ്ങൾ ഉപയോഗിച്ച് കാര്യങ്ങൾ വിവരിക്കാൻ പഠിക്കുക.',
+          focusAreaEn: 'Active vocabulary expansion',
+          focusAreaNative: 'നല്ല പദസമ്പത്ത് സംസാരിക്കുമ്പോൾ ഉപയോഗിക്കൽ',
+          icon: Icons.collections_bookmark_rounded,
+          color: Color(0xFF14B8A6),
+        ),
+        SyllabusMilestone(
+          dayRange: 'Day 46 - 70',
+          titleEn: 'Phone Calls & Asking Questions with Poise',
+          titleNative: 'ഫോൺ സംഭാഷണങ്ങളും ചോദ്യങ്ങൾ ചോദിക്കലും (Phone Etiquette)',
+          descriptionEn:
+              'Master polite inquiry phrases, customer support conversations, and booking appointments over calls.',
+          descriptionNative:
+              'ഫോണിൽ മടിയൊന്നുമില്ലാതെ ഇംഗ്ലീഷിൽ സംസാരിക്കാനും കാര്യങ്ങൾ ചോദിച്ചറിയാനും ശീലിക്കുക.',
+          focusAreaEn: 'Question framing & phone confidence',
+          focusAreaNative: 'സംശയമില്ലാതെ ചോദ്യങ്ങൾ ചോദിക്കൽ',
+          icon: Icons.phone_in_talk_rounded,
+          color: Color(0xFF0EA5E9),
+        ),
+        SyllabusMilestone(
+          dayRange: 'Day 71 - 90',
+          titleEn: 'Spontaneous 3-Minute Monologues',
+          titleNative: 'തുടർച്ചയായി 3 മിനിറ്റ് സംസാരിക്കൽ (Speech Flow)',
+          descriptionEn:
+              'Speak continuously on daily topics without stopping or stuttering.',
+          descriptionNative:
+              'നൽകുന്ന വിഷയങ്ങളിൽ തടസ്സങ്ങളില്ലാതെ 3 മിനിറ്റ് തുടർച്ചയായി സംസാരിക്കാനുള്ള പരിശീലനം.',
+          focusAreaEn: 'Unbroken speech flow & confidence',
+          focusAreaNative: 'സംസാരത്തിലുള്ള തുടർച്ചയും ഒഴുക്കും',
+          icon: Icons.timer_rounded,
+          color: Color(0xFF8B5CF6),
+        ),
+      ],
+    ),
+
     // -------------------------------------------------------------
-    // TRACK 2: Middle (Intermediate) Spoken Agility
+    // TRACK 4: Middle (Intermediate) Track
     // -------------------------------------------------------------
     LearnerLevel.middle: const SyllabusTrack(
       level: LearnerLevel.middle,
-      code: 'middle_mastery',
-      nameEn: 'Middle / Intermediate Spoken Track',
+      code: 'middle_fluency',
+      nameEn: 'Middle / Intermediate Spoken Agility Track',
       nameNative: 'മിഡിൽ ലെവൽ ഫ്ലുവെൻസി പാത (Middle Level)',
       targetAudienceEn:
           'Can hold simple conversations, but wants better sentence variety, speed, and grammatical polish.',
       targetAudienceNative:
           'ചിലതൊക്കെ സംസാരിക്കും, എന്നാൽ ഇടയ്ക്ക് വെച്ച് വാക്കുകൾ തടഞ്ഞു നിൽക്കുന്ന മിഡിൽ ലെവലിലുള്ളവർക്ക്.',
-      badgeText: '⚡ LEVEL 2: MIDDLE LEVEL',
+      badgeText: '⚡ 4. MIDDLE LEVEL',
       primaryColor: Color(0xFFA855F7),
       icon: Icons.psychology_rounded,
       milestones: [
@@ -272,7 +343,7 @@ class PocketSyllabusRepository {
     ),
 
     // -------------------------------------------------------------
-    // TRACK 3: Advanced Workplace & Career English
+    // TRACK 5: Advanced Workplace & Career English
     // -------------------------------------------------------------
     LearnerLevel.advanced: const SyllabusTrack(
       level: LearnerLevel.advanced,
@@ -283,7 +354,7 @@ class PocketSyllabusRepository {
           'Fluent speakers striving for corporate leadership, global client calls, and IELTS presentation ease.',
       targetAudienceNative:
           'നന്നായി സംസാരിക്കും, വിദേശ ജോലികൾ, ഇന്റർവ്യൂകൾ, ആഗോള പ്രസന്റേഷനുകൾ എന്നിവയിൽ മികച്ച മികവ് പുലർത്താൻ ആഗ്രഹിക്കുന്നവർക്ക്.',
-      badgeText: '💼 LEVEL 3: ADVANCED',
+      badgeText: '💼 5. ADVANCED',
       primaryColor: Color(0xFF0EA5E9),
       icon: Icons.business_center_rounded,
       milestones: [
@@ -330,7 +401,7 @@ class PocketSyllabusRepository {
     ),
 
     // -------------------------------------------------------------
-    // TRACK 4: Expert Peak Fluency & Global Eloquence
+    // TRACK 6: Expert Peak Fluency & Global Eloquence
     // -------------------------------------------------------------
     LearnerLevel.expert: const SyllabusTrack(
       level: LearnerLevel.expert,
@@ -341,7 +412,7 @@ class PocketSyllabusRepository {
           'Master-level communicators, public speakers, podcast hosts, and international delegates.',
       targetAudienceNative:
           'ഇംഗ്ലീഷിൽ മാതൃഭാഷപോലെ ഒഴുക്കോടെ സംസാരിക്കാനും അന്താരാഷ്ട്ര വേദികളിൽ പ്രസംഗിക്കാനും ആഗ്രഹിക്കുന്ന എക്സ്പെർട്ടുകൾക്ക്.',
-      badgeText: '👑 LEVEL 4: EXPERT / PEAK',
+      badgeText: '👑 6. EXPERT / PEAK',
       primaryColor: Color(0xFFFFD700),
       icon: Icons.workspace_premium_rounded,
       milestones: [
@@ -428,9 +499,12 @@ class PocketSyllabusRepository {
       return LearnerLevel.advanced;
     } else if (lower.contains('middle') ||
         lower.contains('intermediate') ||
-        lower.contains('simple conversations') ||
-        lower.contains('ഫ്ലുവൻസി')) {
+        lower.contains('മിഡിൽ')) {
       return LearnerLevel.middle;
+    } else if (lower.contains('elementary') ||
+        lower.contains('ഏകദേശം') ||
+        lower.contains('habit')) {
+      return LearnerLevel.elementary;
     } else if (lower.contains('common words') ||
         lower.contains('beginner') ||
         lower.contains('വാക്കുകൾ')) {
