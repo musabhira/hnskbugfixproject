@@ -268,7 +268,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
             'X-Title': 'PocketMates Defense Shield',
           },
           body: jsonEncode({
-            'model': 'google/gemma-4-31b-it:free',
+            'model': 'openrouter/free',
             'messages': [
               {
                 'role': 'system',

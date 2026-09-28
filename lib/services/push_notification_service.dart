@@ -7,6 +7,7 @@ import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
 
 class PushNotificationService {
   static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
@@ -148,10 +149,25 @@ class PushNotificationService {
         debugPrint('PushNotificationService: Topic subscription note: $topicError');
       }
 
-      // 9. Foreground notification listener: show heads-up banner when app is open
+      // 9. Foreground notification listener: show heads-up floating banner when app is open
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint('PushNotificationService: Foreground message received: ${message.messageId}');
         RemoteNotification? notification = message.notification;
+        final title = notification?.title ?? message.data['title']?.toString() ?? 'New Message';
+        final body = notification?.body ?? message.data['body']?.toString() ?? message.data['message']?.toString() ?? '';
+
+        if (body.isNotEmpty) {
+          InAppNotificationService.show(
+            title: title,
+            message: body,
+            avatarUrl: message.data['avatar_url']?.toString(),
+            isRobot: message.data['is_robot'] == 'true' || message.data['is_robot'] == true,
+            onTap: () {
+              _handleNotificationPayload(message.data['type']?.toString() ?? 'chat');
+            },
+          );
+        }
+
         if (notification != null && !kIsWeb) {
           _localNotificationsPlugin.show(
             id: notification.hashCode,

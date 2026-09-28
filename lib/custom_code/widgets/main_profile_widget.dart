@@ -30,6 +30,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -100,7 +101,29 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   String? _equippedTalismanId;
   int _localUserStage = 1;
 
+  /// 🔐 Master Admin check for musabthonippadam@gmail.com / mussabira
+  bool _isAdminUser() {
+    final curUserEmail = _supabase.auth.currentUser?.email;
+    if (AdminAuthService.isMasterAdminEmail(curUserEmail)) return true;
+    final profEmail = _profileData?['email']?.toString();
+    if (AdminAuthService.isMasterAdminEmail(profEmail)) return true;
+    final username = (_profileData?['username'] ?? _profileData?['name'])?.toString().toLowerCase().trim();
+    if (username != null &&
+        (username == 'mussabira' ||
+         username == 'musabhira' ||
+         username.contains('mussabira') ||
+         username.contains('musabthonippadam'))) {
+      return true;
+    }
+    return false;
+  }
+
   int _getEffectiveDay() {
+    // 🧪 ADMIN TESTING OVERRIDE: Active ONLY for Master Admin (musabthonippadam@gmail.com / mussabira) testing their own profile
+    if (_isTestingStage && isMe && _isAdminUser()) {
+      return _localUserStage.clamp(1, 90);
+    }
+
     final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
     final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
     if (isRobot) {
@@ -109,7 +132,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       return PocketRobotService.getDynamicLevel(robot);
     }
     // 🪙 AUDIO DIRECTIVE: User Level / Stage is strictly and non-negotiably derived from Pocket Score!
-    // A user with 0 Pocket Score can ONLY be Level 1 / Stage 1.
+    // A user with 0 Pocket Score can ONLY be Level 1 / Stage 1. Both house and profile must match this score.
     final profScore = _pocketScore > 0
         ? _pocketScore
         : ((_profileData?['pocket_score'] as num?)?.toInt() ?? 0);
@@ -118,6 +141,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Future<void> _loadLocalUserStage() async {
+    // Keep admin testing stage intact during active preview testing
+    if (_isTestingStage && isMe && _isAdminUser()) return;
+
     try {
       final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
       final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
@@ -510,15 +536,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       _pocketScore = score;
       effectiveStage = PocketScoreLevelEngine.getLevelFromScore(score);
     }
-    _localUserStage = effectiveStage;
-    final stage = LearningMilestoneStage.getStageForDay(effectiveStage);
-    _testStageIndex = (stage.stageNumber - 1).clamp(0, LearningMilestoneStage.allStages.length - 1);
+    if (!(_isTestingStage && isMe && _isAdminUser())) {
+      _localUserStage = effectiveStage;
+      final stage = LearningMilestoneStage.getStageForDay(effectiveStage);
+      _testStageIndex = (stage.stageNumber - 1).clamp(0, LearningMilestoneStage.allStages.length - 1);
 
-    // Dynamic Level-Based Theme Colors
-    _bgColor = stage.bgColor;
-    _textColor = stage.textColor;
-    _btnColor = stage.buttonColor;
-    _btnTextColor = stage.buttonTextColor;
+      // Dynamic Level-Based Theme Colors
+      _bgColor = stage.bgColor;
+      _textColor = stage.textColor;
+      _btnColor = stage.buttonColor;
+      _btnTextColor = stage.buttonTextColor;
+    }
 
     // When viewing another user, default to showing their real profile picture if available
     if (!isMe) {
@@ -526,6 +554,13 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       if (pUrl != null && pUrl.toString().trim().isNotEmpty) {
         _showAvatarMode = false;
       }
+    } else {
+      SharedPreferences.getInstance().then((prefs) {
+        final savedMode = prefs.getBool('show_avatar_mode_$userId');
+        if (savedMode != null && mounted) {
+          setState(() => _showAvatarMode = savedMode);
+        }
+      });
     }
   }
 
@@ -1299,6 +1334,57 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   : null,
               centerTitle: true,
               actions: [
+                if (isMe && _isAdminUser())
+                  Padding(
+                    padding: const EdgeInsets.only(right: 6),
+                    child: Center(
+                      child: GestureDetector(
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          final next = (_getEffectiveDay() % 90) + 1;
+                          _jumpToDay(next);
+                        },
+                        onLongPress: () {
+                          _showStageTestingSwitcher(context);
+                        },
+                        child: Tooltip(
+                          message: '⚡ Admin Level Tester (Tap: +1 Level, Long-press: Pick 1-90)',
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFFF59E0B), Color(0xFFFFD700)],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('🧪', style: TextStyle(fontSize: 12)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'LVL ${_getEffectiveDay()}',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.black,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 if (isMe) ...[
                   // Switch Account icon hidden — feature planned for future release
                   material.IconButton(
@@ -1422,7 +1508,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         streak: (_profileData?['daily_streak'] as num?)?.toInt() ?? 1,
                         isDamaged: _fortressStatus?.isDamaged ?? false,
                         houseId: isMe ? 'me' : (widget.userId ?? ''),
-                        showTestingControls: false,
+                        showTestingControls: isMe && _isAdminUser(),
+                        onDayChanged: (d) => _jumpToDay(d),
                       ),
                       if (_recentRaids.isNotEmpty) ...[
                         Container(
@@ -1511,7 +1598,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                               ),
                               onPressed: () {
-                                final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                                final day = _getEffectiveDay();
                                 final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
                                 Navigator.push(
                                   context,
@@ -1800,7 +1887,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints(),
                           onPressed: () async {
-                            final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                            final day = _getEffectiveDay();
                             await PocketDefenseTrapModal.show(
                               context,
                               day,
@@ -2552,7 +2639,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           MaterialPageRoute(
                             builder: (context) => PocketCitadelAttackPage(
                               neighbor: targetNeighbor,
-                              attackerDay: (_profileData?['learning_day'] as num?)?.toInt() ?? 1,
+                              attackerDay: _getEffectiveDay(),
                             ),
                           ),
                         ).then((_) => _loadFortressDefenseData());
@@ -3096,11 +3183,17 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             );
           } else {
             setState(() => _showAvatarMode = !_showAvatarMode);
+            if (isMe) {
+              SharedPreferences.getInstance().then((p) => p.setBool('show_avatar_mode_$userId', _showAvatarMode));
+            }
           }
         }
       },
       onLongPress: () {
         setState(() => _showAvatarMode = !_showAvatarMode);
+        if (isMe) {
+          SharedPreferences.getInstance().then((p) => p.setBool('show_avatar_mode_$userId', _showAvatarMode));
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(_showAvatarMode ? '🎨 Showing Pocket Mate Avatar' : '📷 Showing Real Profile Photo'),
@@ -3149,7 +3242,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
             child: GestureDetector(
               onTap: () async {
                 HapticFeedback.mediumImpact();
-                final currentDay = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                final currentDay = _getEffectiveDay();
                 await JackieChanTalismanVaultModal.show(context, currentDay: currentDay);
                 final talisman = await JackieChanTalismanService.getEquippedTalisman();
                 if (mounted) setState(() => _equippedTalismanId = talisman.id);
@@ -3212,7 +3305,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   /// Interactive bottom sheet for switching unlocked companions and checking upcoming unlock levels (Days 1–90)
   void _showAvatarQuickPicker(BuildContext context) {
     HapticFeedback.mediumImpact();
-    final int userLevel = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    final int userLevel = _getEffectiveDay();
     var currentCfg = _getAvatarConfig();
     final animals90 = VectorAvatarConfig.get90DayAnimals();
 
@@ -3903,7 +3996,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                 );
 
-                final int currentLearningDay = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                final int currentLearningDay = _getEffectiveDay();
                 final bool isDay90Master = currentLearningDay >= 90;
 
                 if (isDay90Master) {
@@ -4112,7 +4205,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                           return;
                         }
 
-                        final day = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+                        final day = _getEffectiveDay();
                         final streak = (_profileData?['daily_streak'] as num?)?.toInt() ?? 1;
                         final targetName = _profileData?['display_name'] ?? _profileData?['full_name'] ?? name;
 
@@ -4852,7 +4945,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   /// ⚡ Interactive 90-Level Testing & Live Preview Switcher
   void _showStageTestingSwitcher(BuildContext context) {
     HapticFeedback.selectionClick();
-    int activeDay = (_profileData?['learning_day'] as num?)?.toInt() ?? 1;
+    int activeDay = _getEffectiveDay();
 
     showModalBottomSheet(
       context: context,

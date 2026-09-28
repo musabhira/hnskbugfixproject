@@ -224,6 +224,14 @@ class _FlameAvatarWidgetState extends State<FlameAvatarWidget> {
   }
 
   @override
+  void dispose() {
+    // Pause and detach the FlameGame to release the EGL GPU context on Windows.
+    _game.pauseEngine();
+    _game.detach();
+    super.dispose();
+  }
+
+  @override
   void didUpdateWidget(covariant FlameAvatarWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.config != widget.config) {

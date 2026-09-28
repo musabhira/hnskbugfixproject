@@ -113,7 +113,10 @@ class VectorAvatarWidget extends StatelessWidget {
         );
       }
     } else {
-      final shouldUseFlame = useFlame ?? (size >= 44);
+      // Only use the GPU-backed FlameGame for large avatar displays (≥120px).
+      // Smaller avatars in lists/feeds use CustomPaint to avoid exhausting the
+      // Windows ANGLE EGL context pool (EGL_CONTEXT_LOST / error 12302).
+      final shouldUseFlame = useFlame ?? (size >= 120);
       if (shouldUseFlame) {
         innerContent = FlameAvatarWidget(
           config: effectiveConfig,

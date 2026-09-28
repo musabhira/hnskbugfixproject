@@ -11,6 +11,7 @@ import 'package:shimmer/shimmer.dart';
 import 'english_hub_level_group_service.dart';
 import 'audio_space/pocket_audio_spaces_lobby_page.dart';
 import 'pocket_homes_reels_feed_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:flutter/services.dart';
 
 class EnglishLearningGroupChatWidget extends ConsumerStatefulWidget {
@@ -45,11 +46,14 @@ class _EnglishLearningGroupChatWidgetState
     super.initState();
     _hubPageController = PageController(initialPage: _selectedHubTab);
     _currentUserId = _supabase.auth.currentUser?.id;
+    // Initial tab is Chat (tab 1) - ensure BGM is quiet during chat
+    PocketGameAudioService.instance.pause();
     _initGroupAndMembership();
   }
 
   @override
   void dispose() {
+    PocketGameAudioService.instance.stop();
     _hubPageController.dispose();
     super.dispose();
   }
@@ -343,47 +347,64 @@ class _EnglishLearningGroupChatWidgetState
       return _buildGuestLanding(context);
     }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF070B0D),
-      body: Column(
-        children: [
-          _buildSegmentedHeader(),
-          Expanded(
-            child: PageView(
-              controller: _hubPageController,
-              onPageChanged: (idx) {
-                HapticFeedback.selectionClick();
-                setState(() {
-                  if (idx == 2 && _selectedHubTab != 2) {
-                    _homesEpoch++;
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Color(0xFF070B0D),
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF070B0D),
+        body: Column(
+          children: [
+            _buildSegmentedHeader(),
+            Expanded(
+              child: PageView(
+                controller: _hubPageController,
+                onPageChanged: (idx) {
+                  HapticFeedback.selectionClick();
+                  // Audio Directive: When on Chat (tab 1) or Voice Spaces (tab 0), silence background music
+                  if (idx != 2) {
+                    PocketGameAudioService.instance.pause();
                   }
-                  _selectedHubTab = idx;
-                });
-              },
-              children: [
-                // 0 (Left): Live Voice Spaces
-                const PocketAudioSpacesLobbyPage(
-                  showHeader: false,
-                  enableSafeArea: false,
-                ),
+                  setState(() {
+                    if (idx == 2 && _selectedHubTab != 2) {
+                      _homesEpoch++;
+                    }
+                    _selectedHubTab = idx;
+                  });
+                },
+                children: [
+                  // 0 (Left): Live Voice Spaces
+                  const PocketAudioSpacesLobbyPage(
+                    showHeader: false,
+                    enableSafeArea: false,
+                  ),
 
-                // 1 (Center): Level Chat
-                _isLoading
-                    ? _buildShimmerLoading(context)
-                    : (_isMember && _groupId != null
-                        ? WhatsAppGroupChat(
-                            groupId: _groupId!,
-                            groupName: _groupName ??
-                                _levelGroup?.groupName ??
-                                'English Hub (All Learners • Lvl 1 - 90)',
-                            showBackButton: false,
-                          )
-                        : _buildErrorState(context)),
+                  // 1 (Center): Level Chat
+                  _isLoading
+                      ? _buildShimmerLoading(context)
+                      : (_isMember && _groupId != null
+                          ? MediaQuery.removePadding(
+                              context: context,
+                              removeTop: true,
+                              child: WhatsAppGroupChat(
+                                groupId: _groupId!,
+                                groupName: _groupName ??
+                                    _levelGroup?.groupName ??
+                                    'English Hub (All Learners • Lvl 1 - 90)',
+                                showBackButton: false,
+                              ),
+                            )
+                          : _buildErrorState(context)),
 
                 // 2 (Right): Homes (Reels-style Homestead & Attack Feed)
                 PocketHomesReelsFeedWidget(
                   key: ValueKey('homes_reel_$_homesEpoch'),
                   userLevel: _levelGroup?.minLevel ?? 1,
+                  isActive: _selectedHubTab == 2,
                   onBackToChat: () {
                     _hubPageController.animateToPage(
                       1,
@@ -397,8 +418,9 @@ class _EnglishLearningGroupChatWidgetState
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildErrorState(BuildContext context) {
     return Center(

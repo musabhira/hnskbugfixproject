@@ -13,9 +13,13 @@ class AiService {
     this.apiKey = _openRouterKey,
     this.baseUrl = 'https://openrouter.ai/api/v1/chat/completions',
     this.models = const [
+      'openrouter/free',
+      'nvidia/nemotron-3.5-lightning:free',
+      'inclusionai/ling-3.0-flash-fin:free',
+      'liquid/lfm-2.5-2.6b:free',
+      'google/gemma-2-9b-it:free',
       'openai/gpt-oss-20b:free',
       'google/gemma-4-31b-it:free',
-      'openrouter/free'
     ],
   });
 

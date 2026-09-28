@@ -9,6 +9,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -169,6 +170,40 @@ class _SettingsPageState extends State<SettingsPage> {
                 },
               ),
               */
+              const SizedBox(height: 24),
+              const _SectionHeader(title: 'Audio & Sound'),
+              ValueListenableBuilder<bool>(
+                valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                builder: (context, isMuted, child) {
+                  return SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    secondary: Icon(
+                      isMuted ? Icons.volume_off : Icons.volume_up,
+                      color: isMuted ? Colors.white54 : const Color(0xFFFFFC00),
+                    ),
+                    title: const Text(
+                      'Game Music & BGM',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    subtitle: Text(
+                      isMuted
+                          ? 'Background music muted'
+                          : 'Playing ambient music in homesteads & streets',
+                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                    ),
+                    activeThumbColor: const Color(0xFFFFFC00),
+                    value: !isMuted,
+                    onChanged: (bool enabled) {
+                      PocketGameAudioService.instance.toggleMute();
+                      setState(() {});
+                    },
+                  );
+                },
+              ),
               const SizedBox(height: 24),
               const _SectionHeader(title: 'Legal'),
               _SettingsTile(

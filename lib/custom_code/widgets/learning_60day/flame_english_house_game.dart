@@ -4437,6 +4437,7 @@ class FlameEnglishHouseWidget extends StatefulWidget {
   final String? paletteId;
   final bool isPresident;
   final bool showTestingControls;
+  final ValueChanged<int>? onDayChanged;
 
   const FlameEnglishHouseWidget({
     super.key,
@@ -4447,6 +4448,7 @@ class FlameEnglishHouseWidget extends StatefulWidget {
     this.paletteId,
     this.isPresident = false,
     this.showTestingControls = false,
+    this.onDayChanged,
   });
 
   @override
@@ -4458,6 +4460,16 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
   HousePalette _currentPalette = HousePalette.presets[0];
   HouseDefenseStatus _defenseStatus = const HouseDefenseStatus();
   late int _previewDay;
+
+  @override
+  void dispose() {
+    // Explicitly detach the game to release the GPU render surface (EGL context).
+    // Without this, the FlameGame loop and its OpenGL context may linger even after
+    // the widget leaves the tree, exhausting the ANGLE EGL context pool on Windows.
+    _game.pauseEngine();
+    _game.detach();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -4493,6 +4505,7 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
         _previewDay = newDay;
       });
       _game.updateDayAndStreak(_previewDay, widget.streak);
+      widget.onDayChanged?.call(newDay);
     }
   }
 
@@ -4503,6 +4516,7 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
       _previewDay = clamped;
     });
     _game.updateDayAndStreak(_previewDay, widget.streak);
+    widget.onDayChanged?.call(clamped);
   }
 
   String _getEstateStageTitle(int d) {
@@ -5163,8 +5177,13 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
       child: Stack(
         children: [
           // 🏡 Flame 2D Interactive Game View
+          // TickerMode pauses the game loop when the widget is not visible,
+          // preventing unnecessary GPU work that triggers EGL_CONTEXT_LOST on Windows.
           Positioned.fill(
-            child: GameWidget(game: _game),
+            child: TickerMode(
+              enabled: TickerMode.valuesOf(context).enabled,
+              child: GameWidget(game: _game),
+            ),
           ),
 
           if (widget.showTestingControls) ...[

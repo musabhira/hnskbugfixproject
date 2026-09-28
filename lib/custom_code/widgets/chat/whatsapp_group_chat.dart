@@ -14,6 +14,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart'
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -481,6 +482,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   @override
   void initState() {
     super.initState();
+    // Audio Directive: Chat conversations should be silent (no game BGM)
+    PocketGameAudioService.instance.pause();
     _currentUserId = _supabase.auth.currentUser?.id ?? ''; // Original line
     // Seed avatar cache from widget argument if provided
     if (widget.avatarConfig != null && widget.groupId.startsWith('p:')) {
@@ -2269,6 +2272,7 @@ Draft: "$draft"''';
       child: Scaffold(
         backgroundColor: backgroundColor,
         appBar: AppBar(
+          primary: widget.showBackButton,
           backgroundColor: appBarColor,
           elevation: 0,
           toolbarHeight: 52,
@@ -2565,11 +2569,19 @@ Draft: "$draft"''';
                         ),
                       );
                     }
-                    final count = _groupMembers.length;
+                    final hubRobots = _isEnglishHubGroup
+                        ? PocketRobotService.getRobotsForLevelBracket(
+                            _hubMinLevel, _hubMaxLevel)
+                        : <PocketRobot>[];
+                    final totalCount = _groupMembers.length + hubRobots.length;
                     return Padding(
                       padding: const EdgeInsets.only(top: 1.5),
                       child: Text(
-                        count > 0 ? '$count members' : 'Group',
+                        totalCount > 0
+                            ? (_isEnglishHubGroup && hubRobots.isNotEmpty
+                                ? '$totalCount members (${_groupMembers.length} Learners • ${hubRobots.length} AI Mates)'
+                                : '$totalCount members')
+                            : 'Group',
                         style: const TextStyle(
                           fontSize: 11,
                           color: Colors.white60,
@@ -5976,13 +5988,13 @@ Draft: "$draft"''';
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isMe
-              ? Colors.black.withValues(alpha: 0.1)
-              : Colors.white.withValues(alpha: 0.05),
+              ? Colors.black.withValues(alpha: 0.2)
+              : Colors.white.withValues(alpha: 0.06),
           borderRadius: BorderRadius.circular(8),
           border: Border(
             left: BorderSide(
-              color: isMe ? Colors.black54 : Colors.yellow,
-              width: 3,
+              color: isMe ? const Color(0xFF25D366) : const Color(0xFFFFD200),
+              width: 3.5,
             ),
           ),
         ),
@@ -5997,17 +6009,19 @@ Draft: "$draft"''';
                     Text(
                       'Replied to Vibe',
                       style: TextStyle(
-                        color: isMe ? Colors.black87 : Colors.yellow,
-                        fontSize: 11,
+                        color: isMe
+                            ? const Color(0xFF25D366)
+                            : const Color(0xFFFFD200),
+                        fontSize: 11.5,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 2),
-                    const Text(
+                    Text(
                       'Vibe Reaction',
                       style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 10,
+                        color: Colors.white.withValues(alpha: 0.85),
+                        fontSize: 11,
                       ),
                     ),
                   ],
@@ -6069,13 +6083,13 @@ Draft: "$draft"''';
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: isMe
-            ? Colors.black.withValues(alpha: 0.1)
-            : Colors.white.withValues(alpha: 0.05),
+            ? Colors.black.withValues(alpha: 0.2)
+            : Colors.white.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(8),
         border: Border(
           left: BorderSide(
-            color: isMe ? Colors.black54 : Colors.yellow,
-            width: 3,
+            color: isMe ? const Color(0xFF25D366) : const Color(0xFFFFD200),
+            width: 3.5,
           ),
         ),
       ),
@@ -6090,8 +6104,10 @@ Draft: "$draft"''';
                   Text(
                     isReplyToStatus ? 'Replied to Vibe' : senderName,
                     style: TextStyle(
-                      color: isMe ? Colors.black87 : Colors.yellow,
-                      fontSize: 11,
+                      color: isMe
+                          ? const Color(0xFF25D366)
+                          : const Color(0xFFFFD200),
+                      fontSize: 11.5,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -6099,8 +6115,9 @@ Draft: "$draft"''';
                   Text(
                     replyText,
                     style: TextStyle(
-                      color: isMe ? Colors.black54 : Colors.white70,
+                      color: Colors.white.withValues(alpha: 0.9),
                       fontSize: 12,
+                      height: 1.25,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -6460,6 +6477,12 @@ Draft: "$draft"''';
                             final profile = member['profile'];
                             final isMemberAdmin = member['role'] == 'admin';
                             final isMe = member['user_id'] == _currentUserId;
+                            final stage = (profile?['learning_day'] ??
+                                    profile?['stage'] ??
+                                    profile?['learning_stage'] ??
+                                    profile?['level'] as num?)
+                                ?.toInt() ??
+                                1;
 
                             return ListTile(
                               contentPadding: EdgeInsets.zero,
@@ -6469,15 +6492,19 @@ Draft: "$draft"''';
                                 style: const TextStyle(color: Colors.white),
                               ),
                               subtitle: Text(
-                                profile?['bio'] ?? 'Active in Pocket World',
+                                'Level $stage · ${profile?['bio'] ?? 'Active in Pocket World'}',
                                 style: const TextStyle(color: Colors.grey),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              trailing: isMemberAdmin
-                                  ? Container(
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  if (isMemberAdmin)
+                                    Container(
+                                      margin: const EdgeInsets.only(right: 6),
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 8, vertical: 2),
+                                          horizontal: 6, vertical: 2),
                                       decoration: BoxDecoration(
                                         border:
                                             Border.all(color: Colors.yellow),
@@ -6487,16 +6514,38 @@ Draft: "$draft"''';
                                           style: TextStyle(
                                               color: Colors.yellow,
                                               fontSize: 10)),
-                                    )
-                                  : (_userRole == 'admin'
-                                      ? IconButton(
-                                          icon: const Icon(
-                                              Icons.remove_circle_outline,
-                                              color: Colors.red),
-                                          onPressed: () => _removeMember(
-                                              member['user_id']),
-                                        )
-                                      : null),
+                                    ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700)
+                                          .withValues(alpha: 0.15),
+                                      border: Border.all(
+                                          color: const Color(0xFFFFD700),
+                                          width: 1),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      'Lvl $stage',
+                                      style: const TextStyle(
+                                        color: Color(0xFFFFD700),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  if (_userRole == 'admin' && !isMe)
+                                    IconButton(
+                                      icon: const Icon(
+                                          Icons.remove_circle_outline,
+                                          color: Colors.red,
+                                          size: 20),
+                                      onPressed: () => _removeMember(
+                                          member['user_id']),
+                                    ),
+                                ],
+                              ),
                               onTap: () {
                                 if (member['user_id'] != null) {
                                   Navigator.push(
@@ -6532,6 +6581,8 @@ Draft: "$draft"''';
                             ),
                             const SizedBox(height: 8),
                             ...hubRobots.map((robot) {
+                              final dynLvl =
+                                  PocketRobotService.getDynamicLevel(robot);
                               return ListTile(
                                 contentPadding: EdgeInsets.zero,
                                 leading: Container(
@@ -6550,32 +6601,12 @@ Draft: "$draft"''';
                                     ],
                                   ),
                                   child: ClipOval(
-                                    child: robot.avatarUrl.isNotEmpty
-                                        ? CachedNetworkImage(
-                                            imageUrl: robot.avatarUrl,
-                                            fit: BoxFit.cover,
-                                            placeholder: (_, __) => Center(
-                                              child: Text(
-                                                robot.archetype.icon,
-                                                style: const TextStyle(
-                                                    fontSize: 20),
-                                              ),
-                                            ),
-                                            errorWidget: (_, __, ___) => Center(
-                                              child: Text(
-                                                robot.archetype.icon,
-                                                style: const TextStyle(
-                                                    fontSize: 20),
-                                              ),
-                                            ),
-                                          )
-                                        : Center(
-                                            child: Text(
-                                              robot.archetype.icon,
-                                              style:
-                                                  const TextStyle(fontSize: 20),
-                                            ),
-                                          ),
+                                    child: VectorAvatarWidget(
+                                      config: VectorAvatarConfig
+                                          .getEvolutionAvatarForStage(dynLvl),
+                                      size: 44,
+                                      showAura: true,
+                                    ),
                                   ),
                                 ),
                                 title: Row(

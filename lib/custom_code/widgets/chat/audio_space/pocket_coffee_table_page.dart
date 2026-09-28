@@ -114,7 +114,9 @@ class _PocketCoffeeTablePageState extends State<PocketCoffeeTablePage>
       if (openRow.isNotEmpty) {
         final existing = AudioSpaceModel.fromMap(openRow);
         setState(() => _joiningTableId = existing.id);
-        await _engine.joinSpace(existing, initialRole: AudioRole.host);
+        final myId = _supabase.auth.currentUser?.id;
+        final role = (existing.hostUserId == myId) ? AudioRole.host : AudioRole.speaker;
+        await _engine.joinSpace(existing, initialRole: role);
         space = existing;
       } else {
         space = await _engine.createSpace(
@@ -147,7 +149,9 @@ class _PocketCoffeeTablePageState extends State<PocketCoffeeTablePage>
       if (_engine.isInRoom && _engine.currentSpace?.id == space.id) {
         if (mounted) await PocketAudioRoomSheet.show(context);
       } else {
-        await _engine.joinSpace(space, initialRole: AudioRole.host);
+        final myId = _supabase.auth.currentUser?.id;
+        final role = (space.hostUserId == myId) ? AudioRole.host : AudioRole.speaker;
+        await _engine.joinSpace(space, initialRole: role);
         if (mounted) await PocketAudioRoomSheet.show(context);
       }
     } catch (_) {

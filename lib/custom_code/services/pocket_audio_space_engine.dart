@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 
 /// Role of a participant inside an Audio Space.
 enum AudioRole { host, speaker, listener }
@@ -203,6 +204,7 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
   MediaStream? _localStream;
   final Map<String, RTCPeerConnection> _peerConnections = {};
   final Map<String, MediaStream> _remoteStreams = {};
+  final Map<String, List<RTCIceCandidate>> _pendingIceCandidates = {};
   RealtimeChannel? _roomChannel;
   Timer? _volumeCheckTimer;
 
@@ -217,7 +219,10 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
       {'urls': 'stun:stun.l.google.com:19302'},
       {'urls': 'stun:stun1.l.google.com:19302'},
       {'urls': 'stun:stun2.l.google.com:19302'},
+      {'urls': 'stun:stun3.l.google.com:19302'},
+      {'urls': 'stun:stun4.l.google.com:19302'},
       {'urls': 'stun:stun.services.mozilla.com'},
+      {'urls': 'stun:stun.ekiga.net'},
       {
         'urls': 'turn:openrelay.metered.ca:80',
         'username': 'openrelayproject',
@@ -326,6 +331,9 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     _participants.clear();
     notifyListeners();
 
+    // Pause background game BGM so it doesn't clash with voice chat
+    PocketGameAudioService.instance.pause();
+
     try {
       // 1. If starting as host or speaker, acquire microphone
       if (_myRole == AudioRole.host || _myRole == AudioRole.speaker) {
@@ -402,10 +410,14 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
 
   /// Request mic permission and get local audio stream
   Future<void> _acquireMicrophone() async {
-    if (!kIsWeb) {
+    // Only request permission via permission_handler on mobile platforms (Android/iOS).
+    // On Windows/Desktop/Web, microphone is managed at OS/browser level directly.
+    if (!kIsWeb &&
+        (defaultTargetPlatform == TargetPlatform.android ||
+            defaultTargetPlatform == TargetPlatform.iOS)) {
       final status = await Permission.microphone.request();
       if (!status.isGranted) {
-        debugPrint('PocketAudioSpaceEngine: Microphone permission denied');
+        debugPrint('PocketAudioSpaceEngine: Microphone permission denied on mobile');
         return;
       }
     }
@@ -422,15 +434,46 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
 
     try {
       _localStream?.dispose();
-      _localStream =
-          await navigator.mediaDevices.getUserMedia(mediaConstraints);
+      try {
+        _localStream =
+            await navigator.mediaDevices.getUserMedia(mediaConstraints);
+      } catch (advancedError) {
+        debugPrint(
+            'PocketAudioSpaceEngine: Advanced audio constraints fallback: $advancedError');
+        _localStream = await navigator.mediaDevices
+            .getUserMedia({'audio': true, 'video': false});
+      }
 
       // Apply current mute state
       if (_localStream != null && _localStream!.getAudioTracks().isNotEmpty) {
         _localStream!.getAudioTracks().first.enabled = !_isMicMuted;
       }
+
+      // Attach audio tracks to any existing peer connections
+      if (_localStream != null) {
+        for (final pc in _peerConnections.values) {
+          await _attachLocalTracksToPc(pc);
+        }
+      }
     } catch (e) {
       debugPrint('PocketAudioSpaceEngine: Error acquiring local stream: $e');
+    }
+  }
+
+  /// Helper to attach local audio tracks to a peer connection safely
+  Future<void> _attachLocalTracksToPc(RTCPeerConnection pc) async {
+    if (_localStream != null && isSpeaker) {
+      try {
+        final senders = await pc.getSenders();
+        for (final track in _localStream!.getAudioTracks()) {
+          final alreadyAdded = senders.any((s) => s.track?.id == track.id);
+          if (!alreadyAdded) {
+            await pc.addTrack(track, _localStream!);
+          }
+        }
+      } catch (e) {
+        debugPrint('PocketAudioSpaceEngine: Error attaching local tracks: $e');
+      }
     }
   }
 
@@ -632,17 +675,31 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
 
       pc.onTrack = (RTCTrackEvent event) {
         if (event.streams.isNotEmpty) {
-          _remoteStreams[peerId] = event.streams[0];
+          final stream = event.streams[0];
+          for (final track in stream.getAudioTracks()) {
+            track.enabled = true;
+          }
+          _remoteStreams[peerId] = stream;
+          _applySpeakerphone();
           notifyListeners();
         }
       };
 
-      // Add local audio stream if I am on stage
-      if (isSpeaker && _localStream != null) {
-        for (final track in _localStream!.getAudioTracks()) {
-          pc.addTrack(track, _localStream!);
+      pc.onAddStream = (MediaStream stream) {
+        for (final track in stream.getAudioTracks()) {
+          track.enabled = true;
         }
-      }
+        _remoteStreams[peerId] = stream;
+        _applySpeakerphone();
+        notifyListeners();
+      };
+
+      pc.onConnectionState = (state) {
+        debugPrint('PocketAudioSpaceEngine: Peer $peerId state -> $state');
+      };
+
+      // Add local audio stream if I am on stage
+      await _attachLocalTracksToPc(pc);
 
       // Deterministic negotiation: higher userId sends offer
       if (_myUserId != null && _myUserId!.compareTo(peerId) > 0) {
@@ -659,7 +716,11 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     if (pc == null) return;
 
     try {
-      final offer = await pc.createOffer({'offerToReceiveAudio': 1});
+      await _attachLocalTracksToPc(pc);
+      final offer = await pc.createOffer({
+        'offerToReceiveAudio': 1,
+        'offerToReceiveVideo': 0,
+      });
       await pc.setLocalDescription(offer);
 
       _roomChannel?.sendBroadcastMessage(
@@ -698,7 +759,21 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
         final description = RTCSessionDescription(sdp, 'offer');
         await pc.setRemoteDescription(description);
 
-        final answer = await pc.createAnswer({'offerToReceiveAudio': 1});
+        // Drain queued ICE candidates
+        final queued = _pendingIceCandidates.remove(senderId) ?? [];
+        for (final cand in queued) {
+          try {
+            await pc.addCandidate(cand);
+          } catch (e) {
+            debugPrint('PocketAudioSpaceEngine: Error adding queued candidate: $e');
+          }
+        }
+
+        await _attachLocalTracksToPc(pc);
+        final answer = await pc.createAnswer({
+          'offerToReceiveAudio': 1,
+          'offerToReceiveVideo': 0,
+        });
         await pc.setLocalDescription(answer);
 
         _roomChannel?.sendBroadcastMessage(
@@ -714,15 +789,36 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
         final sdp = payload['sdp']?.toString() ?? '';
         final description = RTCSessionDescription(sdp, 'answer');
         await pc.setRemoteDescription(description);
+
+        // Drain queued ICE candidates
+        final queued = _pendingIceCandidates.remove(senderId) ?? [];
+        for (final cand in queued) {
+          try {
+            await pc.addCandidate(cand);
+          } catch (e) {
+            debugPrint('PocketAudioSpaceEngine: Error adding queued candidate: $e');
+          }
+        }
       } else if (type == 'candidate') {
         final candMap = payload['candidate'];
-        if (candMap is Map<String, dynamic>) {
+        if (candMap is Map) {
+          final sdpMLine = candMap['sdpMLineIndex'];
           final candidate = RTCIceCandidate(
-            candMap['candidate'],
-            candMap['sdpMid'],
-            candMap['sdpMLineIndex'],
+            candMap['candidate']?.toString(),
+            candMap['sdpMid']?.toString(),
+            sdpMLine is num ? sdpMLine.toInt() : int.tryParse(sdpMLine?.toString() ?? ''),
           );
-          await pc.addCandidate(candidate);
+
+          final remoteDesc = await pc.getRemoteDescription();
+          if (remoteDesc != null) {
+            try {
+              await pc.addCandidate(candidate);
+            } catch (e) {
+              debugPrint('PocketAudioSpaceEngine: Error adding candidate: $e');
+            }
+          } else {
+            _pendingIceCandidates.putIfAbsent(senderId, () => []).add(candidate);
+          }
         }
       }
     } catch (e) {
@@ -788,6 +884,7 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     }
     _peerConnections.clear();
     _remoteStreams.clear();
+    _pendingIceCandidates.clear();
 
     // Stop local mic stream
     _localStream?.getTracks().forEach((t) => t.stop());

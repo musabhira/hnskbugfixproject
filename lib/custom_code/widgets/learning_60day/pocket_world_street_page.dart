@@ -14,6 +14,7 @@ import 'pocket_open_world_game_page.dart';
 import 'pocket_world_game_rules_modal.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 
 /// 🌍 Pocket World Street Model: A resident on the neighborhood street
 class PocketNeighbor {
@@ -135,6 +136,9 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
 
     _loadBannedAndProtectedHouses();
 
+    // 🎯 Target Mode BGM: Start strategic street scout music
+    PocketGameAudioService.instance.playTargetTheme();
+
     if (widget.autoRollRaid) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _rollRandomRaidTarget();
@@ -255,6 +259,7 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
 
   @override
   void dispose() {
+    PocketGameAudioService.instance.stop();
     _pageController.dispose();
     super.dispose();
   }
@@ -418,6 +423,10 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
     if (won == true && mounted) {
       setState(() => _hasWonAnyRaid = true);
       _loadBannedAndProtectedHouses();
+    }
+    // Resume street target theme after returning from raid
+    if (mounted) {
+      PocketGameAudioService.instance.playTargetTheme();
     }
   }
 
@@ -607,6 +616,8 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
                       ],
                     ),
                   ),
+                  const PocketSoundToggleWidget(compact: true),
+                  const SizedBox(width: 6),
                   InkWell(
                     onTap: () => PocketWorldGameRulesModal.show(context),
                     borderRadius: BorderRadius.circular(10),

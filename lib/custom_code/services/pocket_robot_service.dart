@@ -8,6 +8,7 @@ import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/chat_models.dart';
 import 'package:pocket_mates_app/custom_code/services/robot_snap_dataset.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 
 /// 🎭 Archetypes for Pocket Robot Personalities
 enum RobotArchetype {
@@ -357,13 +358,74 @@ class PocketRobotService {
   static const String _part2 =
       'aa71d8a223d927bd748bc051e56ae39daf27aac821cda1965e39a2bf529d1d53';
   static const String _openRouterApiKey = _part1 + _part2;
+
+  // 🎯 TypeSafe Jev System One Decision API configuration
+  static const String _jevModel = 'typesafe/jev-1.13';
+  static const String _jevEndpoint = 'https://openrouter.ai/api/alpha/decisions';
+
+  // ⚡ Speed-Optimized Model Cascade (Fastest Response & Lowest Latency First)
+  // Deep multi-provider pool: when one model hits rate limits (429/503), it immediately hops down the loop.
   static const List<String> _freeAiModels = [
-    'openrouter/free',
-    'google/gemma-4-31b-it:free',
-    'liquid/lfm-2.5-2.6b:free',
-    'meta-llama/llama-3.3-70b-instruct:free',
-    'qwen/qwen-2.5-72b-instruct:free',
+    'openrouter/free', // 1. Dynamic auto-router (picks the fastest available active endpoint instantly)
+    'nvidia/nemotron-3.5-lightning:free', // 2. Ultra-low latency lightning speed
+    'inclusionai/ling-3.0-flash-fin:free', // 3. Flash reasoning model
+    'liquid/lfm-2.5-2.6b:free', // 4. 2.6B edge model (sub-second instant generation)
+    'google/gemma-2-9b-it:free', // 5. Lightweight tuned Google model
+    'google/gemma-4-31b-it:free', // 6. Gemma 4 text preview
+    'google/gemma-4-26b-a4b-it:free', // 7. Gemma 4 mixture preview
+    'openai/gpt-oss-20b:free', // 8. OSS open model
+    'meta-llama/llama-3.2-3b-instruct:free', // 9. Llama 3.2 3B ultra-fast
+    'meta-llama/llama-3.3-70b-instruct:free', // 10. Flagship 70B deep reasoning fallback
+    'qwen/qwen-2.5-72b-instruct:free', // 11. Flagship 72B model
   ];
+
+  // Rate-limit cooldown tracker to skip failing models instantly (avoids waiting)
+  static final Map<String, DateTime> _modelCooldowns = {};
+
+  /// 🎯 Rapid intent & sentiment classification using TypeSafe Jev Decision API
+  static Future<Map<String, dynamic>?> classifyMessageWithJev(
+      String userMessage) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse(_jevEndpoint),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $_openRouterApiKey',
+              'HTTP-Referer': 'https://pocketmates.app',
+              'X-Title': 'Pocket Mates Robots',
+            },
+            body: jsonEncode({
+              'model': _jevModel,
+              'state': userMessage,
+              'questions': {
+                'intent': {
+                  'type': 'choice',
+                  'options': [
+                    'friendly_chat',
+                    'advice',
+                    'emotional_support',
+                    'question',
+                    'english_practice'
+                  ],
+                },
+                'sentiment': {
+                  'type': 'choice',
+                  'options': ['positive', 'neutral', 'negative'],
+                },
+              },
+            }),
+          )
+          .timeout(const Duration(milliseconds: 1500));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      debugPrint('Jev decision error: $e');
+    }
+    return null;
+  }
 
   /// Search robots by name, level, or personality keywords
   static List<PocketRobot> searchRobots(String query) {
@@ -1240,6 +1302,13 @@ class PocketRobotService {
           'stage': dynLvl,
         },
       };
+    }
+
+    // 🎵 Attach a rich ambient/vibe soundtrack matching user persona and robot
+    final vibeMusicTrack = PocketGameAudioService.getRandomVibeTrack(persona: userPersona);
+    vibeItem['music_track'] = vibeMusicTrack.toMap();
+    if (vibeItem['metadata'] is Map<String, dynamic>) {
+      (vibeItem['metadata'] as Map<String, dynamic>)['music_track'] = vibeMusicTrack.toMap();
     }
 
     final prefs = await SharedPreferences.getInstance();
@@ -2351,6 +2420,24 @@ class PocketRobotService {
       return englishReminders[math.Random().nextInt(englishReminders.length)];
     }
 
+    // 0.8 🛡️ Token-Guard for Short Greetings & Routine Words:
+    // If user sends a trivial one-word greeting (e.g. 'hi', 'hello', 'hey', 'bye', 'ok')
+    // and there is no prior question, answer immediately with personality procedurals.
+    // This saves 50%+ of AI tokens for actual deep English practice!
+    final trimmedLower = userMessage.trim().toLowerCase();
+    final isTrivialGreeting = trimmedLower == 'hi' ||
+        trimmedLower == 'hello' ||
+        trimmedLower == 'hey' ||
+        trimmedLower == 'ok' ||
+        trimmedLower == 'k' ||
+        trimmedLower == 'bye' ||
+        trimmedLower == 'good morning' ||
+        trimmedLower == 'good night';
+
+    if (isTrivialGreeting && (history == null || history.isEmpty)) {
+      return _generateProceduralReply(robot: robot, userMessage: userMessage);
+    }
+
     // 1. Direct user chat should always be answered - robots are dedicated English conversation partners!
     // We prioritize live conversation so the learner always receives immediate guidance and feedback.
 
@@ -2373,18 +2460,40 @@ class PocketRobotService {
     return _generateProceduralReply(robot: robot, userMessage: userMessage);
   }
 
-  /// Query free AI models with personality and context
+  /// Query free AI models with personality, Jev context, and power-ranked fallback
   static Future<String?> _queryFreeAiModel({
     required PocketRobot robot,
     required String userMessage,
     List<Map<String, dynamic>>? history,
   }) async {
-    final systemPrompt =
+    // 🎯 Fast Intent & Sentiment Detection with TypeSafe Jev (1.2s tight timeout)
+    // 🛡️ Token-Guard: Only call Jev if message has substance (>= 3 words or question)
+    // to preserve Jev API limits and avoid wasting quota on routine words like 'hi', 'ok', etc.
+    Map<String, dynamic>? jevData;
+    final words = userMessage.trim().split(RegExp(r'\s+'));
+    if (words.length >= 3 || userMessage.contains('?')) {
+      try {
+        jevData = await classifyMessageWithJev(userMessage)
+            .timeout(const Duration(milliseconds: 1200));
+      } catch (_) {}
+    }
+
+    String systemPrompt =
         'You are ${robot.name}, an authentic friendly companion in Pocket Mates. '
         'Your level is ${robot.level} (CEFR rank: ${robot.cefrRank}), and your personality archetype is ${robot.archetype.label}. '
         'You speak naturally and warmly, just like a real human friend and conversation partner. '
         'Keep your answer concise (1 to 2 short sentences), encouraging, and conversational. '
         'Never say you are an AI language model; you are ${robot.name} living in Pocket World!';
+
+    if (jevData != null) {
+      final answers = jevData['answers'] as Map<String, dynamic>? ?? jevData;
+      final intent = answers['intent']?['choice'] ?? answers['intent'];
+      final sentiment = answers['sentiment']?['choice'] ?? answers['sentiment'];
+      if (intent != null || sentiment != null) {
+        systemPrompt +=
+            ' [Context from Jev Decision: User intent is "$intent", sentiment is "$sentiment". Match this vibe warmly.]';
+      }
+    }
 
     final messages = <Map<String, String>>[
       {'role': 'system', 'content': systemPrompt},
@@ -2410,7 +2519,15 @@ class PocketRobotService {
 
     messages.add({'role': 'user', 'content': userMessage});
 
+    // ⚡ Power-ranked model cascade with rate-limit cooldown jumping
+    final now = DateTime.now();
     for (final model in _freeAiModels) {
+      final cooldownUntil = _modelCooldowns[model];
+      if (cooldownUntil != null && cooldownUntil.isAfter(now)) {
+        // Model is in cooldown (hit rate limit or 503 earlier), skip immediately to avoid delay
+        continue;
+      }
+
       try {
         final response = await http
             .post(
@@ -2428,7 +2545,7 @@ class PocketRobotService {
                 'temperature': 0.7,
               }),
             )
-            .timeout(const Duration(milliseconds: 3500));
+            .timeout(const Duration(milliseconds: 2800));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -2437,9 +2554,15 @@ class PocketRobotService {
           if (content != null && content.trim().isNotEmpty) {
             return content.trim();
           }
+        } else if (response.statusCode == 429 || response.statusCode == 503) {
+          // Put this model on cooldown for 90 seconds, then try next model instantly
+          _modelCooldowns[model] = DateTime.now().add(const Duration(seconds: 90));
+          debugPrint('Model $model rate-limited (${response.statusCode}). Placed on 90s cooldown.');
+        } else {
+          debugPrint('Model $model returned HTTP ${response.statusCode}');
         }
       } catch (e) {
-        debugPrint('Model $model attempt: $e');
+        debugPrint('Model $model attempt error: $e');
         continue;
       }
     }
@@ -3373,6 +3496,22 @@ class PocketRobotService {
         cleanText.contains('what does')) {
       replyText =
           "@$humanSenderName Great question! Try saying your thought in a simple 3 or 4-word sentence. You'll remember it forever! 📝";
+    } else if (cleanText.contains('sad') ||
+        cleanText.contains('crying') ||
+        cleanText.contains('bad day') ||
+        cleanText.contains('feeling down') ||
+        cleanText.contains('unhappy') ||
+        cleanText.contains('depressed') ||
+        cleanText.contains('upset') ||
+        cleanText.contains('hurt') ||
+        cleanText.contains('lonely')) {
+      final empatheticReplies = [
+        "@$humanSenderName I'm so sorry you're feeling down. 🫂 Remember you are never alone here in Pocket Mates! We're sending you big warm hugs.",
+        "@$humanSenderName Please take gentle care of yourself today. 💖 Bad days happen, but brighter moments are right around the corner. I'm right here if you want to chat.",
+        "@$humanSenderName Sending you so much warmth and comfort! 🌸 Don't worry about practice right now, just take a deep breath. We're here for you!",
+      ];
+      replyText =
+          empatheticReplies[math.Random().nextInt(empatheticReplies.length)];
     } else if (cleanText.endsWith('?')) {
       replyText =
           "@$humanSenderName That's such a thoughtful question! Daily practice and chatting like this makes English second nature. What do you think? 💡";

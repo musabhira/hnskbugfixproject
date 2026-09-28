@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:just_audio/just_audio.dart';
+import '../../services/pocket_game_audio_service.dart';
 
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
@@ -18,101 +19,12 @@ import 'pocket_reels_game_engine.dart';
 /// Item type for the Reels Feed: either a Homestead or an Interactive English Mini-Game
 enum ReelItemType { home, game }
 
-/// 🎵 Ambient BGM Track for Homes
-class HomeMusicTrack {
-  final String title;
-  final String genre;
-  final String url;
-
-  const HomeMusicTrack({
-    required this.title,
-    required this.genre,
-    required this.url,
-  });
-}
-
+/// 🎵 Ambient BGM Track for Homes - Powered by PocketGameAudioService
 class HomeMusicTracks {
-  static const List<HomeMusicTrack> tracks = [
-    HomeMusicTrack(
-      title: 'Serene Citadel Morning',
-      genre: 'Lofi Acoustic',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-serene-view-443.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Emerald Garden Breeze',
-      genre: 'Calm Piano',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-gentle-reflection-53.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Twilight Fortress Peace',
-      genre: 'Ambient Harp',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-peaceful-landscape-696.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Starry Homestead Lofi',
-      genre: 'Chill Beats',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-relaxing-in-nature-522.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'English Garden Waltz',
-      genre: 'Acoustic Guitar',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-sweet-melody-552.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Valley of Champions',
-      genre: 'Uplifting Folk',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-sunny-day-warm-light-585.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Mystic Citadel Bells',
-      genre: 'Ethereal Zen',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-hazy-afternoon-1126.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Golden Hearth Warmth',
-      genre: 'Fireside Lofi',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-cozy-evening-825.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Village Sunrise Breeze',
-      genre: 'Flute & Strings',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-morning-glory-852.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Study Room Haven',
-      genre: 'Deep Focus Lofi',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-meditation-mind-1200.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Royal Balcony Theme',
-      genre: 'Regal Orchestral',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-dreaming-big-31.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Breezy Meadow Whispers',
-      genre: 'Nature Strings',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-nature-walk-851.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Night Sky Serenade',
-      genre: 'Celestial Ambient',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-sleepy-cat-135.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Old Town Clocktower',
-      genre: 'Warm Acoustic',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-valley-sunset-127.mp3',
-    ),
-    HomeMusicTrack(
-      title: 'Highlands Meadow Dream',
-      genre: 'Celtic Folk',
-      url: 'https://assets.mixkit.co/music/preview/mixkit-spring-breeze-642.mp3',
-    ),
-  ];
+  static List<PocketMusicTrack> get tracks => PocketGameAudioService.homeTracks;
 
-  static HomeMusicTrack getTrackForHouse(String houseId) {
-    final hash = houseId.codeUnits.fold<int>(0, (sum, c) => sum + c);
-    return tracks[hash.abs() % tracks.length];
+  static PocketMusicTrack getTrackForHouse(String houseId) {
+    return PocketGameAudioService.getTrackForHouse(houseId);
   }
 }
 
@@ -145,9 +57,12 @@ class PocketHomesReelsFeedWidget extends StatefulWidget {
   final String? initialHouseId;
   final String? initialGameId;
 
+  final bool isActive;
+
   const PocketHomesReelsFeedWidget({
     super.key,
     this.userLevel = 1,
+    this.isActive = true,
     this.onBackToChat,
     this.initialNeighbor,
     this.initialHouseId,
@@ -170,9 +85,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   final Set<String> _viewedHomeIds = {};
 
-  // Audio player for house ambient background music
-  AudioPlayer? _bgmPlayer;
-  bool _isBgmMuted = false;
+  // Audio player for house ambient background music delegated to PocketGameAudioService
   String? _currentlyPlayingHouseId;
 
   // Games state
@@ -203,82 +116,56 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
-    _initBgm();
     _initAll();
+
+    if (widget.isActive) {
+      final initialId = widget.initialHouseId ?? widget.initialNeighbor?.id ?? 'house_default';
+      _playHomeMusic(initialId);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant PocketHomesReelsFeedWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isActive != oldWidget.isActive) {
+      if (widget.isActive) {
+        final id = _currentlyPlayingHouseId ?? widget.initialHouseId ?? widget.initialNeighbor?.id ?? 'house_default';
+        _playHomeMusic(id);
+      } else {
+        _pauseBgm();
+      }
+    }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       _pauseBgm();
-    } else if (state == AppLifecycleState.resumed && !_isBgmMuted) {
+    } else if (state == AppLifecycleState.resumed && !PocketGameAudioService.instance.isMutedNotifier.value && widget.isActive) {
       if (_currentlyPlayingHouseId != null) {
         _playHomeMusic(_currentlyPlayingHouseId!);
       }
-    }
-  }
-
-  void _initBgm() {
-    try {
-      _bgmPlayer = AudioPlayer();
-      _bgmPlayer!.setLoopMode(LoopMode.one);
-      _bgmPlayer!.setVolume(0.35); // Soft, comfortable ambient level
-    } catch (e) {
-      debugPrint('Error initializing BGM player: $e');
     }
   }
 
   Future<void> _playHomeMusic(String houseId) async {
-    if (_bgmPlayer == null || _isBgmMuted) return;
-    if (_currentlyPlayingHouseId == houseId) {
-      if (_bgmPlayer!.playerState.playing == false) {
-        try {
-          await _bgmPlayer!.play();
-        } catch (_) {}
-      }
-      return;
-    }
-
     _currentlyPlayingHouseId = houseId;
-    final track = HomeMusicTracks.getTrackForHouse(houseId);
-    try {
-      await _bgmPlayer!.setUrl(track.url);
-      if (!_isBgmMuted && mounted) {
-        await _bgmPlayer!.play();
-      }
-    } catch (e) {
-      debugPrint('Error playing ambient home music: $e');
-    }
+    await PocketGameAudioService.instance.playHomeTheme(houseId);
   }
 
   void _pauseBgm() {
-    try {
-      _bgmPlayer?.pause();
-    } catch (_) {}
+    PocketGameAudioService.instance.pause();
   }
 
   void _toggleBgmMute() {
     HapticFeedback.lightImpact();
-    setState(() {
-      _isBgmMuted = !_isBgmMuted;
-    });
-
-    if (_isBgmMuted) {
-      _bgmPlayer?.pause();
-    } else {
-      if (_currentlyPlayingHouseId != null) {
-        _playHomeMusic(_currentlyPlayingHouseId!);
-      }
-    }
+    PocketGameAudioService.instance.toggleMute();
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    try {
-      _bgmPlayer?.stop();
-      _bgmPlayer?.dispose();
-    } catch (_) {}
+    PocketGameAudioService.instance.stop();
     _verticalPageController.dispose();
     _pulseController.dispose();
     super.dispose();
@@ -451,8 +338,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         _isLoading = false;
       });
 
-      // Play music for the first slide if it is a home
-      if (combinedFeed.isNotEmpty) {
+      // Play music for the first slide if it is a home and widget is active
+      if (widget.isActive && combinedFeed.isNotEmpty) {
         final firstItem = combinedFeed.first;
         if (firstItem.type == ReelItemType.home && firstItem.neighbor != null) {
           _playHomeMusic(firstItem.neighbor!.id);
@@ -596,14 +483,17 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     return palettes[day % palettes.length];
   }
 
-  void _onAttackTapped(PocketNeighbor neighbor) {
+  void _onAttackTapped(PocketNeighbor neighbor) async {
     HapticFeedback.heavyImpact();
-    PocketCitadelAttackPage.openForUser(
+    await PocketCitadelAttackPage.openForUser(
       context,
       userId: neighbor.id,
       neighbor: neighbor,
       attackerDay: widget.userLevel,
     );
+    if (mounted && _currentlyPlayingHouseId != null) {
+      _playHomeMusic(_currentlyPlayingHouseId!);
+    }
   }
 
   void _onRingBellTapped(PocketNeighbor neighbor) {
@@ -797,45 +687,60 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             right: 14,
-            child: GestureDetector(
-              onTap: _toggleBgmMute,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.black.withValues(alpha: 0.65),
-                  border: Border.all(
-                    color: _isBgmMuted ? Colors.white24 : const Color(0xFFFFFC00).withValues(alpha: 0.6),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 10,
-                      offset: const Offset(0, 3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      _isBgmMuted ? Icons.volume_off_rounded : Icons.music_note_rounded,
-                      color: _isBgmMuted ? Colors.white60 : const Color(0xFFFFFC00),
-                      size: 16,
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      _isBgmMuted ? 'Muted' : 'Music',
-                      style: GoogleFonts.outfit(
-                        color: _isBgmMuted ? Colors.white60 : const Color(0xFFFFFC00),
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+            child: ValueListenableBuilder<bool>(
+              valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+              builder: (context, isMuted, _) {
+                return ValueListenableBuilder<String?>(
+                  valueListenable: PocketGameAudioService.instance.currentTrackNotifier,
+                  builder: (context, trackTitle, _) {
+                    return GestureDetector(
+                      onTap: _toggleBgmMute,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: Colors.black.withValues(alpha: 0.65),
+                          border: Border.all(
+                            color: isMuted ? Colors.white24 : const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.4),
+                              blurRadius: 10,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isMuted ? Icons.volume_off_rounded : Icons.music_note_rounded,
+                              color: isMuted ? Colors.white60 : const Color(0xFFFFFC00),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 5),
+                            ConstrainedBox(
+                              constraints: const BoxConstraints(maxWidth: 130),
+                              child: Text(
+                                isMuted ? 'Muted' : (trackTitle ?? 'Music'),
+                                style: GoogleFonts.outfit(
+                                  color: isMuted ? Colors.white60 : const Color(0xFFFFFC00),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ),
+                    );
+                  },
+                );
+              },
             ),
           ),
         ],

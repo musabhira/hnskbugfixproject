@@ -28,6 +28,7 @@ import 'package:gal/gal.dart';
 import 'package:dio/dio.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/voice_recorder.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import '/auth/auth_helper.dart';
@@ -85,6 +86,8 @@ class _MessageScreenState extends State<MessageScreen> {
   @override
   void initState() {
     super.initState();
+    // Audio Directive: 1-on-1 chats should be quiet (no game BGM)
+    PocketGameAudioService.instance.pause();
     _senderId = _supabase.auth.currentUser!.id;
     _checkBlockStatus();
     _loadMessages();

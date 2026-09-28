@@ -1438,16 +1438,27 @@ class AIService {
 
   static const String OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1';
 
-  // Free Text Models (Priority Order)
+  // 🎯 TypeSafe Jev System One Decision API Configuration
+  static const String JEV_MODEL = 'typesafe/jev-1.13';
+  static const String JEV_DECISIONS_URL = 'https://openrouter.ai/api/alpha/decisions';
+
+  // ⚡ Speed-Optimized Free Text Models (Fastest Response Time First)
   static const List<String> FREE_TEXT_MODELS = [
-    'google/gemma-4-31b-it:free',
-    'google/gemma-4-26b-a4b-it:free',
-    'nvidia/nemotron-3.5-lightning:free',
-    'liquid/lfm-2.5-2.6b:free',
-    'openai/gpt-oss-20b:free',
-    'nvidia/nemotron-nano-9b-v2:free',
-    'openrouter/free',
+    'openrouter/free', // 1. Dynamic fast auto-router (picks active fast endpoint)
+    'nvidia/nemotron-3.5-lightning:free', // 2. Ultra-low latency lightning speed
+    'inclusionai/ling-3.0-flash-fin:free', // 3. Fast Flash model for instant replies
+    'liquid/lfm-2.5-2.6b:free', // 4. Tiny 2.6B lightweight edge model (sub-second)
+    'google/gemma-2-9b-it:free', // 5. Google lightweight 9B model
+    'google/gemma-4-31b-it:free', // 6. Gemma 4 text preview
+    'google/gemma-4-26b-a4b-it:free', // 7. Gemma 4 mixture
+    'openai/gpt-oss-20b:free', // 8. OSS open model
+    'meta-llama/llama-3.2-3b-instruct:free', // 9. Llama 3.2 3B ultra-fast
+    'meta-llama/llama-3.3-70b-instruct:free', // 10. 70B deep reasoning fallback
+    'qwen/qwen-2.5-72b-instruct:free', // 11. 72B reasoning powerhouse
   ];
+
+  // Cooldown tracker for rate-limited (429/503) models
+  static final Map<String, DateTime> _modelCooldowns = {};
 
   // Free Image Models (Priority Order)
   static const List<String> FREE_IMAGE_MODELS = [
@@ -1469,6 +1480,38 @@ class AIService {
   factory AIService() => _instance;
   AIService._internal();
 
+  /// 🎯 Make rapid typed decisions (intent, classification, sentiment) using TypeSafe Jev
+  Future<Map<String, dynamic>?> decideWithJev({
+    required String state,
+    required Map<String, dynamic> questions,
+  }) async {
+    try {
+      final response = await http
+          .post(
+            Uri.parse(JEV_DECISIONS_URL),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $OPENROUTER_API_KEY',
+              'HTTP-Referer': 'https://pocketmates.app',
+              'X-Title': 'PocketMates Jev Decision',
+            },
+            body: jsonEncode({
+              'model': JEV_MODEL,
+              'state': state,
+              'questions': questions,
+            }),
+          )
+          .timeout(const Duration(milliseconds: 1500));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body) as Map<String, dynamic>?;
+      }
+    } catch (e) {
+      print('Jev decision error: $e');
+    }
+    return null;
+  }
+
   // Callback types
 
   // Generate Text with multiple fallbacks
@@ -1480,9 +1523,16 @@ class AIService {
   }) async {
     onProgress?.call(0.1);
 
+    final now = DateTime.now();
     for (int i = 0; i < FREE_TEXT_MODELS.length; i++) {
       try {
         final model = FREE_TEXT_MODELS[i];
+        final cooldownUntil = _modelCooldowns[model];
+        if (cooldownUntil != null && cooldownUntil.isAfter(now)) {
+          // Model hit rate limit recently, skip immediately
+          continue;
+        }
+
         print('Trying text model: $model');
         onProgress?.call(0.1 + (i * 0.8 / FREE_TEXT_MODELS.length));
 
@@ -1782,6 +1832,9 @@ class AIService {
     } else if (response.statusCode == 401) {
       return AIResponse.error(
           'Authentication Error: Invalid API Key. Please check your OpenRouter token.');
+    } else if (response.statusCode == 429 || response.statusCode == 503) {
+      _modelCooldowns[model] = DateTime.now().add(const Duration(seconds: 90));
+      print('Model $model rate-limited (${response.statusCode}), cooling down for 90s');
     }
 
     return AIResponse.error('Model $model failed: ${response.statusCode}');

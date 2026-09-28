@@ -16,6 +16,7 @@ import 'pocket_defense_trap_modal.dart';
 
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_palace_castle_painter.dart';
@@ -242,6 +243,12 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     _isDefenderDamaged = widget.neighbor.isDamaged;
     _retriesRemaining = PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(widget.neighbor.day);
 
+    // ⚔️ Start energetic battle / raid music based on robot archetype & level!
+    PocketGameAudioService.instance.playAttackTheme(
+      targetId: widget.neighbor.id,
+      targetDay: widget.neighbor.day,
+    );
+
     _transformationController = TransformationController();
     _transformationController.addListener(() {
       final matrix = _transformationController.value;
@@ -316,6 +323,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    PocketGameAudioService.instance.stop();
     _combatTimer?.cancel();
     _transformationController.dispose();
     _cameraAnimationController.dispose();
@@ -3844,7 +3852,11 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
                 const SizedBox(width: 8),
 
-                // 3. 👤 Defender Profile Icon Button
+                // 3. 🔊 Game BGM Mute / Track Capsule
+                const PocketSoundToggleWidget(compact: true),
+                const SizedBox(width: 8),
+
+                // 4. 👤 Defender Profile Icon Button
                 InkWell(
                   onTap: _openDefenderProfile,
                   borderRadius: BorderRadius.circular(20),

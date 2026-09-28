@@ -50,13 +50,9 @@ class ProfileCustomWidget extends StatefulWidget {
 }
 
 class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
-  Color? _selectedColor = Colors.black;
   String? _colorCode = '#000000';
-  Color? _selectedColor1 = Colors.white;
   String? _colorCode1 = '#FFFFFF';
-  Color? _selectedColor2 = const Color(0xFFFFD700);
   String? _colorCode2 = '#FFD700';
-  Color? _selectedColor3 = Colors.black;
   String? _colorCode3 = '#000000';
 
   String? selectedCountry;
@@ -82,6 +78,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   String? _loadedProfileId;
   VectorAvatarConfig _avatarConfig = const VectorAvatarConfig();
   int _learningDay = 1;
+  bool _isAvatarPrimary = false;
 
   // Profile Information Controllers
   final TextEditingController _nameController = TextEditingController();
@@ -144,10 +141,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           _colorCode2 = stage.buttonHex;
           _colorCode3 = stage.buttonTextHex;
           
-          _selectedColor = stage.bgColor;
-          _selectedColor1 = stage.textColor;
-          _selectedColor2 = stage.buttonColor;
-          _selectedColor3 = stage.buttonTextColor;
+
 
           _imageUrlBanner = (profileResponse['banner_image_url']?.toString().isEmpty ?? true) ? null : profileResponse['banner_image_url'];
           
@@ -177,6 +171,17 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
             } catch (_) {}
           }
         });
+
+        // Load primary avatar display preference
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final savedMode = prefs.getBool('show_avatar_mode_$_currentUserId');
+          if (mounted) {
+            safeSetState(() {
+              _isAvatarPrimary = savedMode ?? (_imageUrl == null || _imageUrl!.isEmpty);
+            });
+          }
+        } catch (_) {}
       }
     } catch (error) {
       if (mounted) {
@@ -527,6 +532,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
       try {
         final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('show_avatar_mode_$_currentUserId', _isAvatarPrimary);
         await prefs.remove('profile_cache_$_currentUserId');
         await prefs.remove('cached_profile_$_currentUserId');
         await prefs.remove('cached_stats_$_currentUserId');
@@ -765,10 +771,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           _colorCode1 = '#FFFFFF';
           _colorCode2 = '#FFD700';
           _colorCode3 = '#000000';
-          _selectedColor = Colors.black;
-          _selectedColor1 = Colors.white;
-          _selectedColor2 = const Color(0xFFFFD700);
-          _selectedColor3 = Colors.black;
           selectedCountry = '';
           selectedState = '';
           selectedCity = '';
@@ -805,6 +807,104 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     }
   }
 
+  void _openLocationPickerSheet(DarkModeTheme theme) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.secondaryBackground,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Select Location',
+                        style: GoogleFonts.outfit(
+                          color: theme.primaryText,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: theme.secondaryText),
+                        onPressed: () => Navigator.pop(ctx),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  SelectState(
+                    onCountryChanged: (value) {
+                      safeSetState(() {
+                        selectedCountry = value;
+                        selectedState = '';
+                        selectedCity = '';
+                      });
+                      setModalState(() {});
+                    },
+                    onStateChanged: (value) {
+                      safeSetState(() {
+                        selectedState = value;
+                        selectedCity = '';
+                      });
+                      setModalState(() {});
+                    },
+                    onCityChanged: (value) {
+                      safeSetState(() {
+                        selectedCity = value;
+                      });
+                      setModalState(() {});
+                    },
+                    dropdownColor: Colors.black,
+                    style: TextStyle(
+                      color: theme.primaryText,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFD700),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: Text(
+                        'Done',
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 15,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget buildBeautifulLocationPicker() {
     final theme = DarkModeTheme();
     final hasLocation = (selectedCountry ?? '').isNotEmpty;
@@ -812,100 +912,66 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         .where((s) => (s ?? '').isNotEmpty)
         .join(', ');
 
-    return Padding(
-      padding: const EdgeInsetsDirectional.fromSTEB(20.0, 1.0, 20.0, 0.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.public, color: theme.primary, size: 20),
-              const SizedBox(width: 8),
-              Text(
-                'Location & Country',
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                  color: theme.primaryText,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          // Prominent Selected Country / Location Banner if already chosen
-          if (hasLocation)
+    return InkWell(
+      onTap: () => _openLocationPickerSheet(theme),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: theme.primaryBackground,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.alternate),
+        ),
+        child: Row(
+          children: [
             Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: theme.primary.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: theme.primary.withValues(alpha: 0.4)),
+                color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
               ),
-              child: Row(
+              child: const Icon(Icons.location_on_rounded, color: Color(0xFF10B981), size: 18),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(Icons.location_on, color: theme.primary, size: 18),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Selected: $locationString',
-                      style: TextStyle(
-                        color: theme.primaryText,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
+                  Text(
+                    'Country & Location',
+                    style: TextStyle(color: theme.secondaryText, fontSize: 11),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    hasLocation ? locationString : 'Tap to select country & city',
+                    style: GoogleFonts.inter(
+                      color: hasLocation ? theme.primaryText : theme.secondaryText,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-
-          // Dropdown selector
-          Container(
-            decoration: BoxDecoration(
-              color: theme.primaryBackground,
-              borderRadius: BorderRadius.circular(12),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  spreadRadius: 1,
-                  blurRadius: 3,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: SelectState(
-                onCountryChanged: (value) {
-                  safeSetState(() {
-                    selectedCountry = value;
-                    selectedState = '';
-                    selectedCity = '';
-                  });
-                },
-                onStateChanged: (value) {
-                  safeSetState(() {
-                    selectedState = value;
-                    selectedCity = '';
-                  });
-                },
-                onCityChanged: (value) {
-                  safeSetState(() {
-                    selectedCity = value;
-                  });
-                },
-                dropdownColor: Colors.black,
-                style: TextStyle(
-                  color: theme.primaryText,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 16,
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                hasLocation ? 'Change' : 'Select',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1060,7 +1126,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                       children: [
                         // Privacy toggle
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                           decoration: BoxDecoration(
                             color: theme.primaryBackground,
                             borderRadius: BorderRadius.circular(12),
@@ -1068,64 +1134,42 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           ),
                           child: Row(
                             children: [
-                              Icon(Icons.lock_outline, color: theme.primaryText, size: 18),
-                              const SizedBox(width: 10),
+                              Container(
+                                padding: const EdgeInsets.all(7),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white10,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(Icons.lock_outline_rounded, color: theme.primaryText, size: 16),
+                              ),
+                              const SizedBox(width: 12),
                               Expanded(
-                                child: Text(
-                                  'Private Account',
-                                  style: TextStyle(
-                                    color: theme.primaryText,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Private Account',
+                                      style: TextStyle(
+                                        color: theme.primaryText,
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Only approved mates can see your activity',
+                                      style: TextStyle(
+                                        color: theme.secondaryText,
+                                        fontSize: 11,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                               Switch(
                                 value: _isPrivate,
                                 onChanged: (v) => safeSetState(() => _isPrivate = v),
                                 activeThumbColor: const Color(0xFFFFD700),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-
-                        // Instagram Section
-                        CustomTextField(
-                          width: double.infinity,
-                          height: 56.0,
-                          controller: instaIdController,
-                          labelText: 'Instagram ID (Optional)',
-                          hintText: '@username',
-                        ),
-                        CustomTextField(
-                          width: double.infinity,
-                          height: 56.0,
-                          controller: instaLinkController,
-                          labelText: 'Instagram Profile Link (Optional)',
-                          hintText: 'https://instagram.com/yourprofile',
-                        ),
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.deepPurple.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: Colors.deepPurple.withValues(alpha: 0.3)),
-                          ),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('🎓', style: TextStyle(fontSize: 18)),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Text(
-                                  'Private Mentor Access: Your Instagram handle is private and used by Sovereign Mentors to celebrate your Day 90 Graduation and issue your verified Certificate.',
-                                  style: GoogleFonts.inter(
-                                    color: theme.primaryText.withValues(alpha: 0.85),
-                                    fontSize: 11.5,
-                                    height: 1.4,
-                                  ),
-                                ),
                               ),
                             ],
                           ),
@@ -1141,29 +1185,42 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                           hintText: 'Enter your phone number',
                           initialCountryCode: 'IN',
                         ),
-                        Container(
-                          margin: const EdgeInsets.only(top: 6),
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.3)),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 4),
+                          child: Text(
+                            '🔒 Required for account recovery. Strictly private.',
+                            style: GoogleFonts.inter(
+                              color: theme.secondaryText,
+                              fontSize: 11,
+                            ),
                           ),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.support_agent_rounded, color: Color(0xFF10B981), size: 18),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  'Required for Account Support: Used exclusively to assist with recovery and mentor help. Strictly private and never shared publicly.',
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white.withValues(alpha: 0.85),
-                                    fontSize: 11,
-                                    height: 1.3,
-                                  ),
-                                ),
-                              ),
-                            ],
+                        ),
+                        const SizedBox(height: 14),
+
+                        // Instagram Section
+                        CustomTextField(
+                          width: double.infinity,
+                          height: 56.0,
+                          controller: instaIdController,
+                          labelText: 'Instagram ID (Optional)',
+                          hintText: '@username',
+                        ),
+                        const SizedBox(height: 10),
+                        CustomTextField(
+                          width: double.infinity,
+                          height: 56.0,
+                          controller: instaLinkController,
+                          labelText: 'Instagram Profile Link (Optional)',
+                          hintText: 'https://instagram.com/yourprofile',
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4, left: 4),
+                          child: Text(
+                            '🎓 Optional: Used by mentors to issue Day 90 Verified Certificate.',
+                            style: GoogleFonts.inter(
+                              color: theme.secondaryText,
+                              fontSize: 11,
+                            ),
                           ),
                         ),
                         const SizedBox(height: 14),
@@ -1327,264 +1384,455 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   }
 
   Widget _buildVisualIdentitySection(DarkModeTheme theme) {
-    return Stack(
+    return Column(
       children: [
-        // Banner Image
+        // 1. Cover Banner Image
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(18.0),
-            child: AspectRatio(
-              aspectRatio: 2.2,
-              child: _selectedImageBytesBanner != null
-                  ? Image.memory(
-                      _selectedImageBytesBanner!,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: _imageUrlBanner ?? 'https://picsum.photos/seed/463/600',
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: theme.secondaryBackground,
-                        child: const Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+          child: Stack(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16.0),
+                child: AspectRatio(
+                  aspectRatio: 2.8,
+                  child: _selectedImageBytesBanner != null
+                      ? Image.memory(
+                          _selectedImageBytesBanner!,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        )
+                      : CachedNetworkImage(
+                          imageUrl: _imageUrlBanner ?? 'https://picsum.photos/seed/463/600',
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(color: theme.secondaryBackground),
+                          errorWidget: (context, url, error) => Container(
+                            color: const Color(0xFF1E293B),
+                            child: const Center(
+                              child: Icon(Icons.landscape_rounded, color: Colors.white24, size: 36),
+                            ),
                           ),
                         ),
-                      ),
-                      errorWidget: (context, url, error) => Container(
-                        color: const Color(0xFF1E293B),
-                        child: const Center(
-                          child: Icon(Icons.landscape_rounded, color: Colors.white24, size: 40),
+                ),
+              ),
+              Positioned(
+                right: 12,
+                bottom: 12,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if ((_imageUrlBanner != null && _imageUrlBanner!.isNotEmpty) || _selectedImageBytesBanner != null)
+                      GestureDetector(
+                        onTap: _isLoading
+                            ? null
+                            : () => safeSetState(() {
+                                  _imageUrlBanner = null;
+                                  _selectedImageBytesBanner = null;
+                                }),
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 6),
+                          padding: const EdgeInsets.all(6),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 16),
                         ),
                       ),
+                    GestureDetector(
+                      onTap: (_isLoading || _isCompressingBanner) ? null : _selectImageBanner,
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 4),
+                          ],
+                        ),
+                        child: _isCompressingBanner
+                            ? const SizedBox(
+                                height: 14,
+                                width: 14,
+                                child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
+                              )
+                            : const Icon(Icons.camera_alt_rounded, color: Colors.black, size: 16),
+                      ),
                     ),
-            ),
-          ),
-        ),
-
-        // Banner Edit / Delete Buttons
-        Positioned(
-          right: 28,
-          bottom: 20,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if ((_imageUrlBanner != null && _imageUrlBanner!.isNotEmpty) || _selectedImageBytesBanner != null)
-                GestureDetector(
-                  onTap: _isLoading ? null : () => safeSetState(() {
-                    _imageUrlBanner = null;
-                    _selectedImageBytesBanner = null;
-                  }),
-                  child: Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.all(7),
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.delete, color: Colors.white, size: 16),
-                  ),
-                ),
-              GestureDetector(
-                onTap: (_isLoading || _isCompressingBanner) ? null : _selectImageBanner,
-                child: Container(
-                  padding: const EdgeInsets.all(7),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFD700),
-                    shape: BoxShape.circle,
-                  ),
-                  child: _isCompressingBanner
-                      ? const SizedBox(
-                          height: 16,
-                          width: 16,
-                          child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2),
-                        )
-                      : const Icon(Icons.camera_alt_rounded, color: Colors.black, size: 16),
+                  ],
                 ),
               ),
             ],
           ),
         ),
 
-        // Centered Avatar & Studio Buttons
-        Padding(
-          padding: const EdgeInsets.only(top: 85),
-          child: Center(
-            child: Column(
-              children: [
-                // Avatar with gold border
-                GestureDetector(
-                  onTap: (_isLoading || _isCompressingProfile) ? null : _selectImage,
-                  child: Container(
-                    width: 104,
-                    height: 104,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFFFD700), width: 3),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.3),
-                          blurRadius: 12,
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: _selectedImageBytes != null
-                          ? Image.memory(
-                              _selectedImageBytes!,
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            )
-                          : (_imageUrl != null && _imageUrl!.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: _imageUrl!,
-                                  width: 100,
-                                  height: 100,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) => VectorAvatarWidget(
-                                    config: _avatarConfig,
-                                    size: 100,
-                                  ),
-                                )
-                              : VectorAvatarWidget(
-                                  config: _avatarConfig,
-                                  size: 100,
-                                )),
+        // 2. Dual Identity Container (Public Profile Photo & Pocket Mate Avatar)
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: theme.secondaryBackground,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'PROFILE APPEARANCE',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.8,
                     ),
                   ),
-                ),
-                const SizedBox(height: 10),
-
-                // 3 Quick-Action Buttons: Photo, Avatar Studio, Explore
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Photo button
-                    InkWell(
-                      onTap: (_isLoading || _isCompressingProfile) ? null : _selectImage,
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: theme.secondaryBackground,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: theme.alternate),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.camera_alt_rounded, size: 14, color: Colors.white70),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Photo',
-                              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
-                      ),
+                  Text(
+                    'Tap card to set primary view',
+                    style: GoogleFonts.inter(
+                      color: Colors.white38,
+                      fontSize: 10,
                     ),
-                    const SizedBox(width: 8),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
 
-                    // Avatar Studio Button
-                    InkWell(
+              Row(
+                children: [
+                  // --- CARD A: PUBLIC REAL PHOTO ---
+                  Expanded(
+                    child: GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => VectorAvatarStudioPage(
-                              initialConfig: _avatarConfig,
-                              onAvatarSaved: (newCfg) {
-                                safeSetState(() {
-                                  _avatarConfig = newCfg;
-                                  _imageUrl = null;
-                                  _selectedImageBytes = null;
-                                });
-                              },
-                            ),
-                          ),
-                        );
+                        safeSetState(() => _isAvatarPrimary = false);
                       },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFFFC00),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
-                              blurRadius: 6,
-                            ),
-                          ],
+                          color: !_isAvatarPrimary
+                              ? const Color(0xFFFFD700).withValues(alpha: 0.08)
+                              : Colors.black26,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: !_isAvatarPrimary
+                                ? const Color(0xFFFFD700)
+                                : Colors.white12,
+                            width: !_isAvatarPrimary ? 1.8 : 1.0,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        child: Column(
                           children: [
-                            const Text('🎨', style: TextStyle(fontSize: 12)),
-                            const SizedBox(width: 5),
+                            Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                Container(
+                                  width: 70,
+                                  height: 70,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: !_isAvatarPrimary
+                                          ? const Color(0xFFFFD700)
+                                          : Colors.white24,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: ClipOval(
+                                    child: _selectedImageBytes != null
+                                        ? Image.memory(
+                                            _selectedImageBytes!,
+                                            width: 70,
+                                            height: 70,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : (_imageUrl != null && _imageUrl!.isNotEmpty
+                                            ? CachedNetworkImage(
+                                                imageUrl: _imageUrl!,
+                                                width: 70,
+                                                height: 70,
+                                                fit: BoxFit.cover,
+                                                placeholder: (_, __) => const Center(
+                                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                                ),
+                                                errorWidget: (_, __, ___) => const Icon(
+                                                  Icons.person_rounded,
+                                                  size: 36,
+                                                  color: Colors.white38,
+                                                ),
+                                              )
+                                            : Container(
+                                                color: Colors.white10,
+                                                child: const Icon(
+                                                  Icons.add_a_photo_outlined,
+                                                  size: 26,
+                                                  color: Colors.white54,
+                                                ),
+                                              )),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: (_isLoading || _isCompressingProfile) ? null : _selectImage,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 4),
+                                      ],
+                                    ),
+                                    child: const Icon(Icons.camera_alt_rounded, size: 12, color: Colors.black),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
                             Text(
-                              'Avatar Studio',
-                              style: GoogleFonts.outfit(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold),
+                              'Public Photo',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              !_isAvatarPrimary ? '● Active View' : 'Real Photo',
+                              style: GoogleFonts.inter(
+                                color: !_isAvatarPrimary ? const Color(0xFFFFD700) : Colors.white38,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                InkWell(
+                                  onTap: (_isLoading || _isCompressingProfile) ? null : _selectImage,
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white10,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      (_imageUrl != null && _imageUrl!.isNotEmpty) || _selectedImageBytes != null
+                                          ? 'Change'
+                                          : '+ Upload',
+                                      style: GoogleFonts.inter(
+                                        color: Colors.white70,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                if ((_imageUrl != null && _imageUrl!.isNotEmpty) || _selectedImageBytes != null) ...[
+                                  const SizedBox(width: 4),
+                                  InkWell(
+                                    onTap: () {
+                                      safeSetState(() {
+                                        _imageUrl = null;
+                                        _selectedImageBytes = null;
+                                        _isAvatarPrimary = true;
+                                      });
+                                    },
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4),
+                                      decoration: BoxDecoration(
+                                        color: Colors.red.withValues(alpha: 0.15),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(Icons.delete_outline, size: 14, color: Colors.redAccent),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                  ),
+                  const SizedBox(width: 12),
 
-                    // Explore Network Avatars
-                    InkWell(
+                  // --- CARD B: POCKET MATE AVATAR ---
+                  Expanded(
+                    child: GestureDetector(
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => AvatarNetworkExplorerPage(
-                              onAvatarSelected: (selectedAvatarUrl) {
-                                safeSetState(() {
-                                  _imageUrl = selectedAvatarUrl;
-                                  _selectedImageBytes = null;
-                                });
-                              },
-                            ),
-                          ),
-                        );
+                        safeSetState(() => _isAvatarPrimary = true);
                       },
-                      borderRadius: BorderRadius.circular(20),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
                         decoration: BoxDecoration(
-                          color: theme.secondaryBackground,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: theme.alternate),
+                          color: _isAvatarPrimary
+                              ? const Color(0xFF6366F1).withValues(alpha: 0.12)
+                              : Colors.black26,
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: _isAvatarPrimary
+                                ? const Color(0xFF6366F1)
+                                : Colors.white12,
+                            width: _isAvatarPrimary ? 1.8 : 1.0,
+                          ),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
+                        child: Column(
                           children: [
-                            const Text('🌐', style: TextStyle(fontSize: 12)),
-                            const SizedBox(width: 5),
+                            Stack(
+                              alignment: Alignment.bottomRight,
+                              children: [
+                                Container(
+                                  width: 70,
+                                  height: 70,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: _isAvatarPrimary
+                                          ? const Color(0xFF6366F1)
+                                          : Colors.white24,
+                                      width: 2,
+                                    ),
+                                  ),
+                                  child: ClipOval(
+                                    child: VectorAvatarWidget(
+                                      config: _avatarConfig,
+                                      size: 70,
+                                    ),
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => VectorAvatarStudioPage(
+                                          initialConfig: _avatarConfig,
+                                          onAvatarSaved: (newCfg) {
+                                            safeSetState(() {
+                                              _avatarConfig = newCfg;
+                                              _isAvatarPrimary = true;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFFC00),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(color: Colors.black.withValues(alpha: 0.4), blurRadius: 4),
+                                      ],
+                                    ),
+                                    child: const Icon(Icons.edit_rounded, size: 12, color: Colors.black),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
                             Text(
-                              'Explore',
-                              style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                              'Pocket Mate',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              _isAvatarPrimary ? '● Active View' : 'Companion Avatar',
+                              style: GoogleFonts.inter(
+                                color: _isAvatarPrimary ? const Color(0xFF818CF8) : Colors.white38,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => VectorAvatarStudioPage(
+                                          initialConfig: _avatarConfig,
+                                          onAvatarSaved: (newCfg) {
+                                            safeSetState(() {
+                                              _avatarConfig = newCfg;
+                                              _isAvatarPrimary = true;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFFC00),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'Studio',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.black,
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                InkWell(
+                                  onTap: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => AvatarNetworkExplorerPage(
+                                          onAvatarSelected: (selectedAvatarUrl) {
+                                            safeSetState(() {
+                                              _imageUrl = selectedAvatarUrl;
+                                              _selectedImageBytes = null;
+                                              _isAvatarPrimary = false;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white10,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text('🌐', style: TextStyle(fontSize: 10)),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ],
@@ -1593,45 +1841,42 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
   Widget _buildGenderSection(DarkModeTheme theme) {
     final options = ['Not specified', 'Male', 'Female', 'Other'];
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Gender',
-            style: TextStyle(color: theme.secondaryText, fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: options.map((opt) {
-              final isSelected = selectedGender == opt;
-              return ChoiceChip(
-                label: Text(opt),
-                selected: isSelected,
-                onSelected: (val) {
-                  if (val) safeSetState(() => selectedGender = opt);
-                },
-                selectedColor: const Color(0xFFFFD700),
-                backgroundColor: theme.primaryBackground,
-                labelStyle: GoogleFonts.inter(
-                  color: isSelected ? Colors.black : theme.primaryText,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 12,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Gender',
+          style: TextStyle(color: theme.secondaryText, fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: options.map((opt) {
+            final isSelected = selectedGender == opt;
+            return ChoiceChip(
+              label: Text(opt),
+              selected: isSelected,
+              onSelected: (val) {
+                if (val) safeSetState(() => selectedGender = opt);
+              },
+              selectedColor: const Color(0xFFFFD700),
+              backgroundColor: theme.primaryBackground,
+              labelStyle: GoogleFonts.inter(
+                color: isSelected ? Colors.black : theme.primaryText,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color: isSelected ? const Color(0xFFFFD700) : theme.alternate,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(
-                    color: isSelected ? const Color(0xFFFFD700) : theme.alternate,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -1640,71 +1885,68 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
         ? DateFormat('dd MMMM yyyy').format(_selectedDob!)
         : 'Select your birthday';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: InkWell(
-        onTap: () async {
-          final now = DateTime.now();
-          final initialDate = _selectedDob ?? DateTime(now.year - 18, 1, 1);
-          final picked = await showDatePicker(
-            context: context,
-            initialDate: initialDate,
-            firstDate: DateTime(1920),
-            lastDate: now,
-            builder: (context, child) {
-              return Theme(
-                data: ThemeData.dark().copyWith(
-                  colorScheme: const ColorScheme.dark(
-                    primary: Color(0xFFFFD700),
-                    onPrimary: Colors.black,
-                    surface: Color(0xFF1E293B),
-                    onSurface: Colors.white,
-                  ),
-                  dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF0F172A)),
+    return InkWell(
+      onTap: () async {
+        final now = DateTime.now();
+        final initialDate = _selectedDob ?? DateTime(now.year - 18, 1, 1);
+        final picked = await showDatePicker(
+          context: context,
+          initialDate: initialDate,
+          firstDate: DateTime(1920),
+          lastDate: now,
+          builder: (context, child) {
+            return Theme(
+              data: ThemeData.dark().copyWith(
+                colorScheme: const ColorScheme.dark(
+                  primary: Color(0xFFFFD700),
+                  onPrimary: Colors.black,
+                  surface: Color(0xFF1E293B),
+                  onSurface: Colors.white,
                 ),
-                child: child!,
-              );
-            },
-          );
-          if (picked != null) {
-            safeSetState(() => _selectedDob = picked);
-          }
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          decoration: BoxDecoration(
-            color: theme.primaryBackground,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: theme.alternate),
-          ),
-          child: Row(
-            children: [
-              const Icon(Icons.cake_rounded, color: Color(0xFFFFD700), size: 20),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Date of Birth',
-                      style: TextStyle(color: theme.secondaryText, fontSize: 11),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      dobFormatted,
-                      style: TextStyle(
-                        color: _selectedDob != null ? theme.primaryText : theme.secondaryText,
-                        fontSize: 13.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+                dialogTheme: const DialogThemeData(backgroundColor: Color(0xFF0F172A)),
               ),
-              Icon(Icons.calendar_month_rounded, color: theme.secondaryText, size: 20),
-            ],
-          ),
+              child: child!,
+            );
+          },
+        );
+        if (picked != null) {
+          safeSetState(() => _selectedDob = picked);
+        }
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          color: theme.primaryBackground,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: theme.alternate),
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.cake_rounded, color: Color(0xFFFFD700), size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Date of Birth',
+                    style: TextStyle(color: theme.secondaryText, fontSize: 11),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    dobFormatted,
+                    style: TextStyle(
+                      color: _selectedDob != null ? theme.primaryText : theme.secondaryText,
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.calendar_month_rounded, color: theme.secondaryText, size: 20),
+          ],
         ),
       ),
     );
@@ -1726,64 +1968,61 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       {'name': 'Other', 'native': 'Other'},
     ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Native Language (Mother Tongue)',
-            style: TextStyle(color: theme.secondaryText, fontSize: 12, fontWeight: FontWeight.w500),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Native Language (Mother Tongue)',
+          style: TextStyle(color: theme.secondaryText, fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
+          decoration: BoxDecoration(
+            color: theme.primaryBackground,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: theme.alternate),
           ),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-            decoration: BoxDecoration(
-              color: theme.primaryBackground,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: theme.alternate),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: DropdownButton<String>(
-                isExpanded: true,
-                dropdownColor: theme.secondaryBackground,
-                value: languages.any((l) => l['name'] == selectedNativeLanguage)
-                    ? selectedNativeLanguage
-                    : 'Malayalam',
-                items: languages.map((lang) {
-                  return DropdownMenuItem<String>(
-                    value: lang['name'],
-                    child: Row(
-                      children: [
-                        Text(
-                          lang['name']!,
-                          style: GoogleFonts.inter(
-                            color: theme.primaryText,
-                            fontSize: 13.5,
-                            fontWeight: FontWeight.w600,
-                          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<String>(
+              isExpanded: true,
+              dropdownColor: theme.secondaryBackground,
+              value: languages.any((l) => l['name'] == selectedNativeLanguage)
+                  ? selectedNativeLanguage
+                  : 'Malayalam',
+              items: languages.map((lang) {
+                return DropdownMenuItem<String>(
+                  value: lang['name'],
+                  child: Row(
+                    children: [
+                      Text(
+                        lang['name']!,
+                        style: GoogleFonts.inter(
+                          color: theme.primaryText,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          '(${lang['native']})',
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFFFFD700),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '(${lang['native']})',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
-                      ],
-                    ),
-                  );
-                }).toList(),
-                onChanged: (val) {
-                  if (val != null) safeSetState(() => selectedNativeLanguage = val);
-                },
-              ),
+                      ),
+                    ],
+                  ),
+                );
+              }).toList(),
+              onChanged: (val) {
+                if (val != null) safeSetState(() => selectedNativeLanguage = val);
+              },
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1794,45 +2033,42 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       'Advanced (C1-C2)',
     ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Current English Level',
-            style: TextStyle(color: theme.secondaryText, fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: levels.map((lvl) {
-              final isSelected = selectedEnglishLevel == lvl;
-              return ChoiceChip(
-                label: Text(lvl),
-                selected: isSelected,
-                onSelected: (val) {
-                  if (val) safeSetState(() => selectedEnglishLevel = lvl);
-                },
-                selectedColor: const Color(0xFF6366F1),
-                backgroundColor: theme.primaryBackground,
-                labelStyle: GoogleFonts.inter(
-                  color: isSelected ? Colors.white : theme.primaryText,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 12,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Current English Level',
+          style: TextStyle(color: theme.secondaryText, fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: levels.map((lvl) {
+            final isSelected = selectedEnglishLevel == lvl;
+            return ChoiceChip(
+              label: Text(lvl),
+              selected: isSelected,
+              onSelected: (val) {
+                if (val) safeSetState(() => selectedEnglishLevel = lvl);
+              },
+              selectedColor: const Color(0xFF6366F1),
+              backgroundColor: theme.primaryBackground,
+              labelStyle: GoogleFonts.inter(
+                color: isSelected ? Colors.white : theme.primaryText,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color: isSelected ? const Color(0xFF6366F1) : theme.alternate,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(
-                    color: isSelected ? const Color(0xFF6366F1) : theme.alternate,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
@@ -1845,75 +2081,57 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       'Grammar & Vocabulary',
     ];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Practice Goal',
-            style: TextStyle(color: theme.secondaryText, fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: goals.map((g) {
-              final isSelected = selectedLearningGoal == g;
-              return ChoiceChip(
-                label: Text(g),
-                selected: isSelected,
-                onSelected: (val) {
-                  if (val) safeSetState(() => selectedLearningGoal = g);
-                },
-                selectedColor: const Color(0xFF6366F1),
-                backgroundColor: theme.primaryBackground,
-                labelStyle: GoogleFonts.inter(
-                  color: isSelected ? Colors.white : theme.primaryText,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                  fontSize: 12,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Practice Goal',
+          style: TextStyle(color: theme.secondaryText, fontSize: 12, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: goals.map((g) {
+            final isSelected = selectedLearningGoal == g;
+            return ChoiceChip(
+              label: Text(g),
+              selected: isSelected,
+              onSelected: (val) {
+                if (val) safeSetState(() => selectedLearningGoal = g);
+              },
+              selectedColor: const Color(0xFF6366F1),
+              backgroundColor: theme.primaryBackground,
+              labelStyle: GoogleFonts.inter(
+                color: isSelected ? Colors.white : theme.primaryText,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                fontSize: 12,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+                side: BorderSide(
+                  color: isSelected ? const Color(0xFF6366F1) : theme.alternate,
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  side: BorderSide(
-                    color: isSelected ? const Color(0xFF6366F1) : theme.alternate,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
-      ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
     );
   }
 
   Widget _buildLevelThemeCard() {
     final stage = LearningMilestoneStage.getStageForDay(_learningDay);
-    
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            stage.bgColor.withValues(alpha: 0.9),
-            const Color(0xFF0F172A),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.black.withValues(alpha: 0.35),
+        borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: stage.buttonColor.withValues(alpha: 0.6),
-          width: 1.5,
+          color: stage.buttonColor.withValues(alpha: 0.4),
+          width: 1.2,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: stage.buttonColor.withValues(alpha: 0.15),
-            blurRadius: 16,
-            spreadRadius: 2,
-          ),
-        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1922,18 +2140,18 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
                   color: stage.buttonColor.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
-                  border: Border.all(color: stage.buttonColor, width: 1.2),
+                  border: Border.all(color: stage.buttonColor, width: 1),
                 ),
                 child: Text(
                   stage.emoji,
-                  style: const TextStyle(fontSize: 22),
+                  style: const TextStyle(fontSize: 18),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1941,10 +2159,10 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
                             color: stage.buttonColor,
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             'DAY $_learningDay OF 90',
@@ -1952,121 +2170,102 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                               color: stage.buttonTextColor,
                               fontSize: 10,
                               fontWeight: FontWeight.w900,
-                              letterSpacing: 0.8,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        Text(
-                          stage.fluencyTier,
-                          style: GoogleFonts.inter(
-                            color: Colors.white70,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w600,
+                        const SizedBox(width: 6),
+                        Flexible(
+                          child: Text(
+                            stage.fluencyTier,
+                            style: GoogleFonts.inter(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 2),
                     Text(
                       stage.stageName,
                       style: GoogleFonts.outfit(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        fontSize: 14,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                decoration: BoxDecoration(
+                  color: Colors.white10,
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.lock_outline, size: 10, color: Colors.white54),
+                    const SizedBox(width: 3),
+                    Text(
+                      'Locked',
+                      style: GoogleFonts.inter(color: Colors.white54, fontSize: 10),
                     ),
                   ],
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 10),
           Text(
-            'Your profile theme is earned through your English learning journey. As you progress through the 90 days, your profile colors, buttons, and companion avatar transform dynamically.',
+            'Your profile theme evolves dynamically as you progress through the 90 days.',
             style: GoogleFonts.inter(
-              color: Colors.white.withValues(alpha: 0.75),
-              fontSize: 12,
-              height: 1.4,
+              color: Colors.white60,
+              fontSize: 11,
             ),
           ),
-          const SizedBox(height: 16),
-          // Swatches Grid
+          const SizedBox(height: 10),
+
+          // Palette Swatches Row (Clean, overflow-safe)
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white10),
+              color: Colors.black26,
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'ACTIVE PALETTE SWATCHES',
-                      style: GoogleFonts.outfit(
-                        color: stage.buttonColor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    Row(
-                      children: [
-                        const Icon(Icons.lock_outline, size: 11, color: Colors.white38),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Level Locked',
-                          style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                Row(
-                  children: [
-                    _buildThemeSwatch('Background', stage.bgColor, stage.bgHex),
-                    const SizedBox(width: 8),
-                    _buildThemeSwatch('Text', stage.textColor, stage.textHex),
-                    const SizedBox(width: 8),
-                    _buildThemeSwatch('Button', stage.buttonColor, stage.buttonHex),
-                    const SizedBox(width: 8),
-                    _buildThemeSwatch('Btn Text', stage.buttonTextColor, stage.buttonTextHex),
-                  ],
-                ),
+                _buildCompactSwatch('Bg', stage.bgColor, stage.bgHex),
+                _buildCompactSwatch('Text', stage.textColor, stage.textHex),
+                _buildCompactSwatch('Button', stage.buttonColor, stage.buttonHex),
+                _buildCompactSwatch('Btn Text', stage.buttonTextColor, stage.buttonTextHex),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          // Milestone Gates Row
-          Text(
-            'MAJOR MILESTONE THEMES',
-            style: GoogleFonts.outfit(
-              color: Colors.white54,
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              letterSpacing: 1.0,
-            ),
-          ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 10),
+
+          // Major Milestones Row
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
             child: Row(
               children: [
                 _buildMilestoneBadge(1, 'Genesis', '🌱', _learningDay >= 1),
-                _buildMilestoneBadge(21, 'Habit Gate', '🎯', _learningDay >= 21),
-                _buildMilestoneBadge(30, 'Silver Knight', '⚔️', _learningDay >= 30),
-                _buildMilestoneBadge(60, 'Gold Sovereign', '👑', _learningDay >= 60),
-                _buildMilestoneBadge(90, 'Celestial Void', '🌌', _learningDay >= 90),
+                _buildMilestoneBadge(21, 'Habit', '🎯', _learningDay >= 21),
+                _buildMilestoneBadge(30, 'Knight', '⚔️', _learningDay >= 30),
+                _buildMilestoneBadge(60, 'Sovereign', '👑', _learningDay >= 60),
+                _buildMilestoneBadge(90, 'Celestial', '🌌', _learningDay >= 90),
               ],
             ),
           ),
-          const SizedBox(height: 14),
-          // Dashboard Button
+          const SizedBox(height: 10),
+
+          // Open 90-Day Learning Dashboard
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
@@ -2075,7 +2274,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                   Learning60DayDashboardSheet.show(context, userId: _currentUserId!);
                 }
               },
-              icon: const Icon(Icons.insights_rounded, size: 15, color: Color(0xFFFFFC00)),
+              icon: const Icon(Icons.insights_rounded, size: 14, color: Color(0xFFFFFC00)),
               label: Text(
                 'Open 90-Day Learning Dashboard',
                 style: GoogleFonts.outfit(
@@ -2086,8 +2285,8 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               ),
               style: OutlinedButton.styleFrom(
                 side: const BorderSide(color: Color(0xFFFFFC00)),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                padding: const EdgeInsets.symmetric(vertical: 8),
               ),
             ),
           ),
@@ -2096,56 +2295,29 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
     );
   }
 
-  Widget _buildThemeSwatch(String label, Color color, String hex) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Colors.white12),
+  Widget _buildCompactSwatch(String label, Color color, String hex) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 20,
+          height: 20,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white24, width: 1),
+          ),
         ),
-        child: Column(
-          children: [
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: color,
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white30, width: 1.5),
-                boxShadow: [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.3),
-                    blurRadius: 4,
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 6),
-            Text(
-              label,
-              style: GoogleFonts.inter(
-                color: Colors.white70,
-                fontSize: 10,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 2),
-            Text(
-              hex,
-              style: GoogleFonts.inter(
-                color: Colors.white38,
-                fontSize: 8,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+        const SizedBox(height: 3),
+        Text(
+          label,
+          style: GoogleFonts.inter(
+            color: Colors.white70,
+            fontSize: 9.5,
+            fontWeight: FontWeight.w600,
+          ),
         ),
-      ),
+      ],
     );
   }
 
