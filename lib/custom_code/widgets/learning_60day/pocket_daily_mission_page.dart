@@ -23,6 +23,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day
 import 'package:pocket_mates_app/custom_code/widgets/pocket_library_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_world_game_rules_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_master_syllabus_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_syllabus_repository.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/zero_foundation_curriculum_db.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
@@ -209,6 +211,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String _selectedLanguage = 'Malayalam';
   String _selectedCategory = 'all';
+  LearnerLevel _activeLearnerLevel = LearnerLevel.zero;
   bool _isStorySpeaking = false;
   List<DailyVocabItem> _vocabList = [];
 
@@ -1502,6 +1505,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     _timerService.addListener(_onTimerStateChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
+        final savedLevel = await PocketSyllabusRepository.getSavedLevel();
+        if (mounted && savedLevel != _activeLearnerLevel) {
+          setState(() {
+            _activeLearnerLevel = savedLevel;
+          });
+          _loadVocabForDay();
+        }
+
         final prefs = await SharedPreferences.getInstance();
         final hasChosenLang =
             prefs.getBool(PocketLanguageSelectionDialog.kHasChosenLangKey) ??
@@ -1596,6 +1607,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   void _loadVocabForDay() {
+    if (_activeLearnerLevel == LearnerLevel.zero) {
+      final zeroPlan = ZeroFoundationCurriculumDB.getDayPlan(widget.day);
+      if (zeroPlan.vocabularyItems.isNotEmpty) {
+        _vocabList = zeroPlan.vocabularyItems;
+        return;
+      }
+    }
     final tailored = Pocket90DayVocabCurriculum.getVocabForDay(widget.day);
     if (tailored.isNotEmpty) {
       _vocabList = tailored;
@@ -4807,6 +4825,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   bool get _hasAlphabetPhonics =>
+      (_activeLearnerLevel == LearnerLevel.zero &&
+          ZeroFoundationCurriculumDB.getDayPlan(widget.day).phonicsDrills.isNotEmpty) ||
       PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day).isNotEmpty;
   bool get _hasSentencePatterns =>
       PocketMissionCurriculumRegistry.getSentencePatterns(widget.day)
@@ -6016,9 +6036,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               icon: '📘',
               label: 'YOUR 90-DAY SYLLABUS',
               color: const Color(0xFFFFD700),
-              onTap: () {
+              onTap: () async {
                 HapticFeedback.lightImpact();
-                PocketMasterSyllabusModal.show(context, currentDay: widget.day);
+                await PocketMasterSyllabusModal.show(context, currentDay: widget.day);
+                final updated = await PocketSyllabusRepository.getSavedLevel();
+                if (mounted && updated != _activeLearnerLevel) {
+                  setState(() => _activeLearnerLevel = updated);
+                  _loadVocabForDay();
+                }
               },
             ),
             const SizedBox(width: 8),
@@ -6405,12 +6430,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        'ENGLISH MISSION',
+                        _activeLearnerLevel == LearnerLevel.zero
+                            ? 'ZERO FOUNDATION'
+                            : PocketSyllabusRepository.getTrack(_activeLearnerLevel).badgeText,
                         style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 15.5,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 0.6,
+                          letterSpacing: 0.4,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -7719,8 +7746,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🔤 ALPHABET & 44 PHONICS SOUND SYSTEM CARD ---
   Widget _buildAlphabetPhonicsCard() {
-    final phonicsList =
-        PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day);
+    List<AlphabetPhonicItem> phonicsList = [];
+    if (_activeLearnerLevel == LearnerLevel.zero) {
+      final zeroPlan = ZeroFoundationCurriculumDB.getDayPlan(widget.day);
+      if (zeroPlan.phonicsDrills.isNotEmpty) {
+        phonicsList = zeroPlan.phonicsDrills;
+      }
+    }
+    if (phonicsList.isEmpty) {
+      phonicsList = PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day);
+    }
     if (phonicsList.isEmpty) return const SizedBox.shrink();
 
     return _buildSubtaskCard(
