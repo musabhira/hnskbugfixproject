@@ -264,8 +264,9 @@ class _PocketMasterSyllabusModalState extends State<PocketMasterSyllabusModal>
                   tabs: const [
                     Tab(text: 'Level 0\nZero'),
                     Tab(text: 'Level 1\nBeginner'),
-                    Tab(text: 'Level 2\nIntermed.'),
-                    Tab(text: 'Level 3\nPeak'),
+                    Tab(text: 'Level 2\nMiddle'),
+                    Tab(text: 'Level 3\nAdvanced'),
+                    Tab(text: 'Level 4\nExpert'),
                   ],
                 ),
               ),

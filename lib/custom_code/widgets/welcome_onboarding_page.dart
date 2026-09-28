@@ -215,18 +215,23 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       'emoji': '🌱',
     },
     {
-      'title': 'Level 1: Beginner (Common words & basic phrases)',
+      'title': 'Level 1: Beginner (നിത്യോപയോഗ വാക്കുകൾ)',
       'subtitle': 'Know some words, but cannot speak sentences',
       'emoji': '💬',
     },
     {
-      'title': 'Level 2: Intermediate (Simple conversations)',
+      'title': 'Level 2: Middle (Simple conversations / മിഡിൽ)',
       'subtitle': 'Can converse, want fluency & zero hesitation',
       'emoji': '🗣️',
     },
     {
-      'title': 'Level 3: Peak Fluency & Career Mastery',
+      'title': 'Level 3: Advanced (Workplace & Career)',
       'subtitle': 'Fluent speaker targeting job interviews & leadership',
+      'emoji': '💼',
+    },
+    {
+      'title': 'Level 4: Expert (Peak Fluency & Oratory)',
+      'subtitle': 'Master eloquence, public speaking & international wit',
       'emoji': '👑',
     },
   ];
@@ -4177,13 +4182,13 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             _selectedEnglishLevel = 'Level 0: Zero Foundation (ABC അറിയില്ല)';
           } else if (_quizScore == 1) {
             _selectedEnglishLevel =
-                'Level 1: Beginner (Common words & basic phrases)';
+                'Level 1: Beginner (നിത്യോപയോഗ വാക്കുകൾ)';
           } else if (_quizScore == 2) {
             _selectedEnglishLevel =
-                'Level 2: Intermediate (Simple conversations)';
+                'Level 2: Middle (Simple conversations / മിഡിൽ)';
           } else {
             _selectedEnglishLevel =
-                'Level 3: Peak Fluency & Career Mastery';
+                'Level 3: Advanced (Workplace & Career)';
           }
           setState(() => _selectedPath = 'scratch');
           _nextStep();

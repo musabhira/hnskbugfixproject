@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 🎯 Represents the learner's determined starting proficiency level.
+/// 🎯 Represents the learner's determined starting proficiency level (5 Distinct Tracks).
 enum LearnerLevel {
-  zero, // Absolute beginner (doesn't know ABC / letter sounds)
-  beginner, // Knows some words & basic phrases
-  intermediate, // Can form simple sentences, lacks grammar/confidence
-  advanced, // Fluent, aims for career/interview & peak mastery
+  zero, // 1. Zero: Absolute beginner (doesn't know ABC / letter sounds)
+  beginner, // 2. Beginner: Knows basic everyday words
+  middle, // 3. Middle (Intermediate): Simple conversations, needs fluency
+  advanced, // 4. Advanced: Fluent, job & workplace English
+  expert, // 5. Expert: Executive leadership, international debate & public speaking
 }
 
 /// 📚 Model for a structured Syllabus Track Milestone
@@ -212,16 +213,19 @@ class PocketSyllabusRepository {
     // -------------------------------------------------------------
     // TRACK 2: Intermediate Spoken Mastery
     // -------------------------------------------------------------
-    LearnerLevel.intermediate: const SyllabusTrack(
-      level: LearnerLevel.intermediate,
-      code: 'intermediate_mastery',
-      nameEn: 'Spoken Agility & Confidence Track',
-      nameNative: 'ഫ്ലുവെൻസി & കോൺഫിഡൻസ് പാത (Intermediate)',
+    // -------------------------------------------------------------
+    // TRACK 2: Middle (Intermediate) Spoken Agility
+    // -------------------------------------------------------------
+    LearnerLevel.middle: const SyllabusTrack(
+      level: LearnerLevel.middle,
+      code: 'middle_mastery',
+      nameEn: 'Middle / Intermediate Spoken Track',
+      nameNative: 'മിഡിൽ ലെവൽ ഫ്ലുവെൻസി പാത (Middle Level)',
       targetAudienceEn:
           'Can hold simple conversations, but wants better sentence variety, speed, and grammatical polish.',
       targetAudienceNative:
-          'ചിലതൊക്കെ സംസാരിക്കും, എന്നാൽ വലിയ ഗ്രൂപ്പുകളിൽ സംസാരിക്കാൻ പേടിയും വാക്കുകൾ ആലോചിച്ചു നിൽക്കേണ്ടിയും വരുന്നവർക്ക്.',
-      badgeText: '⚡ LEVEL 2: INTERMEDIATE',
+          'ചിലതൊക്കെ സംസാരിക്കും, എന്നാൽ ഇടയ്ക്ക് വെച്ച് വാക്കുകൾ തടഞ്ഞു നിൽക്കുന്ന മിഡിൽ ലെവലിലുള്ളവർക്ക്.',
+      badgeText: '⚡ LEVEL 2: MIDDLE LEVEL',
       primaryColor: Color(0xFFA855F7),
       icon: Icons.psychology_rounded,
       milestones: [
@@ -268,20 +272,20 @@ class PocketSyllabusRepository {
     ),
 
     // -------------------------------------------------------------
-    // TRACK 3: Advanced Career & Peak Fluency
+    // TRACK 3: Advanced Workplace & Career English
     // -------------------------------------------------------------
     LearnerLevel.advanced: const SyllabusTrack(
       level: LearnerLevel.advanced,
-      code: 'advanced_peak',
-      nameEn: 'Career & Executive Fluency Track',
-      nameNative: 'പ്രൊഫഷണൽ & ഇന്റർവ്യൂ മാസ്റ്ററി (Peak Mastery)',
+      code: 'advanced_career',
+      nameEn: 'Advanced Workplace & Career Track',
+      nameNative: 'അഡ്വാൻസ്ഡ് ജോലി & കരിയർ പാത (Advanced)',
       targetAudienceEn:
-          'Fluent speakers striving for corporate leadership, global client calls, and IELTS 8.0+ presentation ease.',
+          'Fluent speakers striving for corporate leadership, global client calls, and IELTS presentation ease.',
       targetAudienceNative:
           'നന്നായി സംസാരിക്കും, വിദേശ ജോലികൾ, ഇന്റർവ്യൂകൾ, ആഗോള പ്രസന്റേഷനുകൾ എന്നിവയിൽ മികച്ച മികവ് പുലർത്താൻ ആഗ്രഹിക്കുന്നവർക്ക്.',
-      badgeText: '👑 LEVEL 3: PEAK MASTERY',
-      primaryColor: Color(0xFFFFD700),
-      icon: Icons.workspace_premium_rounded,
+      badgeText: '💼 LEVEL 3: ADVANCED',
+      primaryColor: Color(0xFF0EA5E9),
+      icon: Icons.business_center_rounded,
       milestones: [
         SyllabusMilestone(
           dayRange: 'Day 1 - 30',
@@ -294,7 +298,7 @@ class PocketSyllabusRepository {
           focusAreaEn: 'Diplomacy & executive vocabulary',
           focusAreaNative: 'ഉന്നത നിലവാരത്തിലുള്ള ഓഫീസ് ഇംഗ്ലീഷ്',
           icon: Icons.business_center_rounded,
-          color: Color(0xFFFFD700),
+          color: Color(0xFF0EA5E9),
         ),
         SyllabusMilestone(
           dayRange: 'Day 31 - 60',
@@ -311,14 +315,72 @@ class PocketSyllabusRepository {
         ),
         SyllabusMilestone(
           dayRange: 'Day 61 - 90',
-          titleEn: 'Global Stage Presence & Natural Rhythm',
-          titleNative: 'ഗ്ലോബൽ പ്രസന്റേഷനുകൾ (Global Fluency)',
+          titleEn: 'Negotiations & Cross-Border Client Calls',
+          titleNative: 'ക്ലയന്റ് കോളുകൾ & നെഗോഷ്യേഷൻസ് (Global Client Skills)',
           descriptionEn:
-              'Master intonation, connected speech assimilation, and effortless eloquence on international stages.',
+              'Conduct effortless meetings with overseas clients, handle objections with poise and polite assertion.',
           descriptionNative:
-              'ഏതൊരു വിദേശിയോടും ഒഴുക്കോടെയും ആത്മവിശ്വാസത്തോടെയും സംസാരിക്കാൻ കഴിയുന്ന ഉന്നത നിലവാരം.',
-          focusAreaEn: 'Global accent adaptability & eloquence',
-          focusAreaNative: 'ആഗോള തലത്തിലുള്ള ഇംഗ്ലീഷ് ഫ്ലുവെൻസി',
+              'വിദേശ ക്ലയന്റുകളുമായി മീറ്റിംഗുകൾ നടത്താനും പ്രശ്നങ്ങൾ മാന്യമായി പരിഹരിക്കാനും ശീലിക്കുക.',
+          focusAreaEn: 'Client negotiations & boardroom presence',
+          focusAreaNative: 'ബിസിനസ്സ് മീറ്റിംഗ് ലീഡർഷിപ്പ്',
+          icon: Icons.handshake_rounded,
+          color: Color(0xFF10B981),
+        ),
+      ],
+    ),
+
+    // -------------------------------------------------------------
+    // TRACK 4: Expert Peak Fluency & Global Eloquence
+    // -------------------------------------------------------------
+    LearnerLevel.expert: const SyllabusTrack(
+      level: LearnerLevel.expert,
+      code: 'expert_peak',
+      nameEn: 'Expert Peak Fluency Track',
+      nameNative: 'എക്സ്പെർട്ട് പീക്ക് ഫ്ലുവെൻസി (Expert / Native Ease)',
+      targetAudienceEn:
+          'Master-level communicators, public speakers, podcast hosts, and international delegates.',
+      targetAudienceNative:
+          'ഇംഗ്ലീഷിൽ മാതൃഭാഷപോലെ ഒഴുക്കോടെ സംസാരിക്കാനും അന്താരാഷ്ട്ര വേദികളിൽ പ്രസംഗിക്കാനും ആഗ്രഹിക്കുന്ന എക്സ്പെർട്ടുകൾക്ക്.',
+      badgeText: '👑 LEVEL 4: EXPERT / PEAK',
+      primaryColor: Color(0xFFFFD700),
+      icon: Icons.workspace_premium_rounded,
+      milestones: [
+        SyllabusMilestone(
+          dayRange: 'Day 1 - 30',
+          titleEn: 'Spontaneous Oratory & Keynote Speaking',
+          titleNative: 'പബ്ലിക് സ്പീക്കിംഗ് & കീനോട്ടുകൾ (Public Oratory)',
+          descriptionEn:
+              'Master pitch, pace, pauses, and rhetorical devices to captivate large audiences without notes.',
+          descriptionNative:
+              'കുറിപ്പുകളൊന്നുമില്ലാതെ വലിയ സദസ്സുകൾക്ക് മുന്നിൽ ആകർഷകമായി സംസാരിക്കാനും ചിന്തകൾ പങ്കുവെക്കാനും പഠിക്കുക.',
+          focusAreaEn: 'Rhetoric, vocal cadence & authority',
+          focusAreaNative: 'ശബ്ദ നിയന്ത്രണവും ആശയ വിനിമയ കരുത്തും',
+          icon: Icons.campaign_rounded,
+          color: Color(0xFFFFD700),
+        ),
+        SyllabusMilestone(
+          dayRange: 'Day 31 - 60',
+          titleEn: 'Debate Agility & Crisis Communication',
+          titleNative: 'തത്സമയ തർക്കങ്ങളും പ്രതികരണങ്ങളും (Debate Reflexes)',
+          descriptionEn:
+              'Defend complex positions under scrutiny, reframe questions instantly, and de-escalate verbal hostility.',
+          descriptionNative:
+              'തത്സമയ സംവാദങ്ങളിൽ ആലോചിച്ചു നിൽക്കാതെ കൗണ്ടർ പോയിന്റുകൾ ഉന്നയിക്കാനും ലീഡ് ചെയ്യാനും ഉള്ള പരിശീലനം.',
+          focusAreaEn: 'Instant rebuttal & cognitive agility',
+          focusAreaNative: 'തത്സമയ വേഗത്തിലുള്ള മറുപടികൾ',
+          icon: Icons.gavel_rounded,
+          color: Color(0xFFEC4899),
+        ),
+        SyllabusMilestone(
+          dayRange: 'Day 61 - 90',
+          titleEn: 'Native Idiomatic Wit & Accent Mastery',
+          titleNative: 'നേറ്റീവ് സ്പീക്കർ ഒഴുക്ക് (Native Eloquence)',
+          descriptionEn:
+              'Flawless colloquial wit, cultural humor, and accent neutrality mirroring native international standards.',
+          descriptionNative:
+              'ഏതൊരു വിദേശിയോടും ഇംഗ്ലീഷ് മാതൃഭാഷയായ ഒരാളെപ്പോലെ നർമ്മത്തോടെയും സ്വാതന്ത്ര്യത്തോടെയും സംസാരിക്കുക.',
+          focusAreaEn: 'Cultural wit, effortless eloquence',
+          focusAreaNative: 'അതിരുകളില്ലാത്ത ഇംഗ്ലീഷ് സ്വാധീനം',
           icon: Icons.public_rounded,
           color: Color(0xFF10B981),
         ),
@@ -355,24 +417,24 @@ class PocketSyllabusRepository {
   /// Heuristic to determine level from diagnostic answers
   static LearnerLevel resolveLevelFromText(String levelString) {
     final lower = levelString.toLowerCase();
-    if (lower.contains('zero') ||
-        lower.contains('fresh') ||
-        lower.contains('starting fresh') ||
-        lower.contains('abc') ||
-        lower.contains('ഒന്നുമറിയില്ല')) {
-      return LearnerLevel.zero;
-    } else if (lower.contains('common words') ||
-        lower.contains('basic') ||
-        lower.contains('വാക്കുകൾ')) {
-      return LearnerLevel.beginner;
-    } else if (lower.contains('simple conversations') ||
-        lower.contains('intermediate') ||
-        lower.contains('ഫ്ലുവൻസി')) {
-      return LearnerLevel.intermediate;
+    if (lower.contains('expert') ||
+        lower.contains('peak') ||
+        lower.contains('oratory') ||
+        lower.contains('leadership')) {
+      return LearnerLevel.expert;
     } else if (lower.contains('advanced') ||
-        lower.contains('fluent') ||
+        lower.contains('career') ||
         lower.contains('job')) {
       return LearnerLevel.advanced;
+    } else if (lower.contains('middle') ||
+        lower.contains('intermediate') ||
+        lower.contains('simple conversations') ||
+        lower.contains('ഫ്ലുവൻസി')) {
+      return LearnerLevel.middle;
+    } else if (lower.contains('common words') ||
+        lower.contains('beginner') ||
+        lower.contains('വാക്കുകൾ')) {
+      return LearnerLevel.beginner;
     }
     return LearnerLevel.zero;
   }
