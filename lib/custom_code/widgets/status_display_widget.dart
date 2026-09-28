@@ -32,6 +32,7 @@ import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/courses_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
@@ -683,7 +684,24 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       if (!isAuth) return;
     }
 
-    _pickImageForStory();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SnapchatStoryCreatorPage(
+          userId: widget.currentUserId,
+          profileId: widget.currentProfileId,
+          onStatusUploaded: () {
+            _loadStatusesOptimized();
+            widget.onStatusUploaded?.call();
+          },
+        ),
+      ),
+    ).then((res) {
+      if (res == true && mounted) {
+        _loadStatusesOptimized();
+        widget.onStatusUploaded?.call();
+      }
+    });
   }
 
   void _showAddVibeBottomSheet() {
@@ -2516,6 +2534,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     _currentVideoController?.dispose();
     _replyController.dispose();
     _replyFocusNode.dispose();
+    PocketGameAudioService.instance.playAmbientAppTheme();
     super.dispose();
   }
 
@@ -2866,6 +2885,25 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     }
 
     _progressController.reset();
+
+    // 🎵 Play Supabase BGM for vibes & stories
+    if (status['media_type'] != 'video') {
+      final rawMeta = status['metadata'];
+      final meta = rawMeta is Map ? rawMeta : {};
+      final musicUrl = meta['music_url']?.toString();
+      if (musicUrl != null && musicUrl.isNotEmpty) {
+        PocketGameAudioService.instance.playTrack(PocketMusicTrack(
+          id: 'vibe_custom_${status['id']}',
+          title: meta['music_title']?.toString() ?? 'Vibe BGM',
+          genre: 'Vibe Beat',
+          url: musicUrl,
+        ));
+      } else {
+        PocketGameAudioService.instance.playNextShuffleTrack(mood: 'happy');
+      }
+    } else {
+      PocketGameAudioService.instance.pause();
+    }
 
     if (status['media_type'] == 'video' && _currentVideoController != null) {
       await _currentVideoController!.play();
@@ -3367,6 +3405,28 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 child: Center(
                   child: _buildMediaContent(currentStatus),
                 ),
+              ),
+            ),
+
+            // 👆 Fast Left/Right Tap Zones (Instagram-style Story Jump)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 70,
+              bottom: 110,
+              left: 0,
+              width: size.width * 0.33,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: _goToPrevious,
+              ),
+            ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 70,
+              bottom: 110,
+              right: 0,
+              width: size.width * 0.33,
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: _goToNext,
               ),
             ),
 
@@ -4186,13 +4246,15 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   child: Center(
                     child: SizedBox(
                       width: MediaQuery.of(context).size.width * 0.94,
-                      child: FlameEnglishHouseWidget(
-                        currentDay: residentDay,
-                        streak: residentStreak,
-                        isDamaged: isDamaged,
-                        houseId: houseId,
-                        paletteId: paletteId,
-                        isPresident: isPresident,
+                      child: IgnorePointer(
+                        child: FlameEnglishHouseWidget(
+                          currentDay: residentDay,
+                          streak: residentStreak,
+                          isDamaged: isDamaged,
+                          houseId: houseId,
+                          paletteId: paletteId,
+                          isPresident: isPresident,
+                        ),
                       ),
                     ),
                   ),
@@ -5098,20 +5160,22 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Living Citadel Fortress inside Pinch-to-Zoom InteractiveViewer
-            InteractiveViewer(
-              minScale: 0.6,
-              maxScale: 3.5,
-              boundaryMargin: const EdgeInsets.all(120),
-              child: Center(
-                child: SizedBox(
-                  width: isPresident ? 440 : 360,
-                  height: isPresident ? 380 : 320,
-                  child: FlameEnglishHouseWidget(
-                    currentDay: isPresident ? 90 : level,
-                    streak: isPresident ? 90 : level,
-                    paletteId: isPresident ? (paletteId ?? 'royal_gold') : paletteId,
-                    isPresident: isPresident,
+            // Living Citadel Fortress inside Pinch-to-Zoom InteractiveViewer (IgnorePointer for rapid story advance)
+            IgnorePointer(
+              child: InteractiveViewer(
+                minScale: 0.6,
+                maxScale: 3.5,
+                boundaryMargin: const EdgeInsets.all(120),
+                child: Center(
+                  child: SizedBox(
+                    width: isPresident ? 440 : 360,
+                    height: isPresident ? 380 : 320,
+                    child: FlameEnglishHouseWidget(
+                      currentDay: isPresident ? 90 : level,
+                      streak: isPresident ? 90 : level,
+                      paletteId: isPresident ? (paletteId ?? 'royal_gold') : paletteId,
+                      isPresident: isPresident,
+                    ),
                   ),
                 ),
               ),
@@ -7059,6 +7123,10 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
     final filtered = data.where((item) {
       final group = item['groups'] ?? item;
       final name = (group['name'] ?? '').toString().toLowerCase();
+      final clean = name.replaceAll(RegExp(r'[\s_\-]+'), '');
+      if (clean.contains('englishhub') || clean.contains('englishclub')) {
+        return false;
+      }
       return name.contains(query.toLowerCase());
     }).toList();
 
@@ -7265,7 +7333,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'metadata': {'is_private': _isPrivateStory},
         'duration': duration,
         'expires_at':
-            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+            DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
         'mentioned_profile_id': _selectedProfileId,
         'is_active': true, // Ensure it's active so it shows up
@@ -7373,7 +7441,7 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
         'caption': caption,
         'duration': 5,
         'expires_at':
-            DateTime.now().add(const Duration(hours: 24)).toIso8601String(),
+            DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
         'mentioned_profile_id': _selectedProfileId,
         'is_active': true,

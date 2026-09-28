@@ -946,14 +946,24 @@ class _GroupSelectionBottomSheetState extends State<GroupSelectionBottomSheet> {
 
       if (mounted) {
         setState(() {
-          userGroups = response.map((item) {
-            final group = item['groups'];
-            return {
-              'id': group['id'],
-              'name': group['name'],
-              'group_image_url': group['group_image_url'],
-            };
-          }).toList();
+          userGroups = response
+              .map((item) {
+                final group = item['groups'];
+                return {
+                  'id': group['id'],
+                  'name': group['name'],
+                  'group_image_url': group['group_image_url'],
+                };
+              })
+              .where((g) {
+                final name = (g['name'] ?? '')
+                    .toString()
+                    .toLowerCase()
+                    .replaceAll(RegExp(r'[\s_\-]+'), '');
+                return !name.contains('englishhub') &&
+                    !name.contains('englishclub');
+              })
+              .toList();
         });
       }
     } catch (e) {

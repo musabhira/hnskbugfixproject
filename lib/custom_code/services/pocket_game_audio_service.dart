@@ -2,8 +2,10 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'pocket_robot_service.dart';
 
@@ -43,13 +45,16 @@ class PocketMusicTrack {
 }
 
 /// 🎮 Central Game Background Audio & Sound Engine for Pocket Mates
-/// Powers:
-/// 1. ⚔️ Attacking Mode (Citadel & House Attacks) - Level & Archetype specific battle beats
-/// 2. 🏡 Homes Reels Feed - Cozy, happy, uplifting house themes
-/// 3. 📸 Robot Vibes & Stories - Attached background music from music library
-/// 4. 🔇 Global Mute / Unmute state persistent across app sessions
+/// Powered by Supabase Storage 'music' Bucket.
+/// Features:
+/// 1. 🏡 Ambient App & Homes BGM - Joyful, happy, relaxing background music.
+/// 2. ⚔️ Citadel Battle & Attack Mode - Energetic, upbeat arcade loops.
+/// 3. 📸 Robot Vibes & Stories - Attached music playback from Supabase storage.
+/// 4. 🔄 Anti-Boredom Smart Shuffle Loop - Continuously cycles songs without repeating recently played tracks!
+/// 5. 🔇 Global Mute / Unmute state persistent across app sessions.
 class PocketGameAudioService with WidgetsBindingObserver {
-  static final PocketGameAudioService _instance = PocketGameAudioService._internal();
+  static final PocketGameAudioService _instance =
+      PocketGameAudioService._internal();
   static PocketGameAudioService get instance => _instance;
 
   PocketGameAudioService._internal() {
@@ -57,7 +62,11 @@ class PocketGameAudioService with WidgetsBindingObserver {
   }
 
   static const String _kPrefMuteKey = 'game_bgm_muted_pref';
-  static const double kDefaultBgmVolume = 0.45;
+  static const double kDefaultBgmVolume = 0.28;
+  static const double kBattleBgmVolume = 0.38;
+
+  static const String _kSupabaseStorageBase =
+      'https://gswhynuabdspnwudltth.supabase.co/storage/v1/object/public/music/';
 
   AudioPlayer? _player;
   String? _currentTrackUrl;
@@ -65,11 +74,16 @@ class PocketGameAudioService with WidgetsBindingObserver {
   bool _isDisposed = false;
   Completer<void>? _initCompleter;
 
+  // Anti-boredom queue: records last 6 played track IDs to prevent immediate repeats
+  final List<String> _recentlyPlayedIds = [];
+  final math.Random _random = math.Random();
+
   /// Global reactive notifier for mute status (used by Mute/Unmute buttons across screens)
   final ValueNotifier<bool> isMutedNotifier = ValueNotifier<bool>(false);
 
   /// Global reactive notifier for current track title
-  final ValueNotifier<String?> currentTrackNotifier = ValueNotifier<String?>(null);
+  final ValueNotifier<String?> currentTrackNotifier =
+      ValueNotifier<String?>(null);
   String? get currentTrackTitle => _currentTrackTitle;
 
   /// Global reactive notifier for whether audio is actively playing
@@ -85,17 +99,24 @@ class PocketGameAudioService with WidgetsBindingObserver {
       isMutedNotifier.value = isMuted;
 
       _player = AudioPlayer();
-      await _player?.setLoopMode(LoopMode.one);
+      await _player?.setReleaseMode(ReleaseMode.stop);
       await _player?.setVolume(isMuted ? 0.0 : kDefaultBgmVolume);
 
-      _player?.playerStateStream.listen((state) {
-        isPlayingNotifier.value = state.playing &&
-            state.processingState != ProcessingState.completed &&
-            state.processingState != ProcessingState.idle;
+      // Listen for playback completion to auto-chain next shuffle track (no boredom!)
+      _player?.onPlayerComplete.listen((_) {
+        playNextShuffleTrack();
       });
+
+      _player?.onPlayerStateChanged.listen((state) {
+        isPlayingNotifier.value = (state == PlayerState.playing);
+      });
+
+      // Background discover dynamic music from Supabase storage
+      _fetchDynamicMusicFromSupabase();
+
       _initCompleter?.complete();
     } catch (e) {
-      debugPrint('⚠️ PocketGameAudioService init failed: $e');
+      debugPrint('⚠️ PocketGameAudioService init error: $e');
       _initCompleter?.complete();
     }
   }
@@ -108,166 +129,209 @@ class PocketGameAudioService with WidgetsBindingObserver {
     }
   }
 
+  /// Automatically discovers newly uploaded tracks from Supabase storage 'music' bucket
+  Future<void> _fetchDynamicMusicFromSupabase() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final fileList = await supabase.storage.from('music').list();
+      if (fileList.isNotEmpty) {
+        debugPrint(
+            '🎵 Discovered ${fileList.length} music tracks from Supabase storage!');
+      }
+    } catch (e) {
+      debugPrint('Supabase music list notice: $e');
+    }
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _player?.pause();
     } else if (state == AppLifecycleState.resumed) {
       if (!isMutedNotifier.value && _currentTrackUrl != null) {
-        _player?.play();
+        _player?.resume();
       }
     }
   }
 
   // =========================================================================
-  // 🎼 CURATED HIGH-QUALITY ROYALTY-FREE GAME & REEL TRACKS (Kevin MacLeod / CC-BY)
-  // Direct HTTPS audio streams with byte-range & CDN support
+  // 🎼 MASTER TRACK REPERTOIRE (SUPABASE STORAGE BUCKET 'music')
   // =========================================================================
 
-  /// ⚔️ Battle & Attack Mode Tracks (Energetic, Arcade, Epic, Quirky)
-  static const List<PocketMusicTrack> attackTracks = [
+  /// 🏡 Homes & Reels & App Ambient Tracks (Happy, Cozy, Chill, Relaxing)
+  static final List<PocketMusicTrack> homeTracks = [
     PocketMusicTrack(
-      id: 'atk_heroic_epic',
-      title: 'Heroic Citadel Arena',
-      genre: 'Epic Orchestral',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heroic%20Age.mp3',
-      mood: 'epic',
+      id: 'supa_whistler',
+      title: 'Happy Whistler 🌾',
+      genre: 'Uplifting Acoustic',
+      url: '${_kSupabaseStorageBase}kaazoom-the-happy-whistler-1-min-edit-532435.mp3',
+      mood: 'happy',
     ),
     PocketMusicTrack(
-      id: 'atk_clash_defiant',
-      title: 'Fortress Clash Defiant',
-      genre: 'Cinematic Battle Drums',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Clash%20Defiant.mp3',
-      mood: 'battle',
+      id: 'supa_hiphop_fun',
+      title: 'Fun Energy Hop ⚡',
+      genre: 'Uplifting Chill Hop',
+      url:
+          '${_kSupabaseStorageBase}white_records-fun-background-hip-hop-short-music-27-sec-energetic-vlog-music-148916.mp3',
+      mood: 'happy',
     ),
     PocketMusicTrack(
-      id: 'atk_boss_rock',
-      title: 'Grumpy Citadel Raid',
-      genre: 'Volatile Boss Battle',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Volatile%20Reaction.mp3',
-      mood: 'battle',
+      id: 'supa_sailor',
+      title: 'Pocket Town Sailor ⛵',
+      genre: 'Cozy Acoustic',
+      url: '${_kSupabaseStorageBase}nojisuma-sailor-256509.mp3',
+      mood: 'cozy',
     ),
     PocketMusicTrack(
-      id: 'atk_pixelland_arcade',
-      title: '8-Bit Retro Chiptune Blitz',
-      genre: 'Chiptune Retro Arcade',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pixelland.mp3',
-      mood: 'arcade',
+      id: 'supa_stardust',
+      title: 'Dancing in the Stardust ✨',
+      genre: 'Dreamy Pop',
+      url:
+          '${_kSupabaseStorageBase}freesoundserver-dancing-in-the-stardust-free-music-no-copyright-203603.mp3',
+      mood: 'happy',
+    ),
+    PocketMusicTrack(
+      id: 'supa_relaxing',
+      title: 'Fireside Relaxation ☕',
+      genre: 'Chill Ambient',
+      url: '${_kSupabaseStorageBase}andriig-relaxing-relaxing-music-572285.mp3',
+      mood: 'cozy',
+    ),
+    PocketMusicTrack(
+      id: 'supa_lullaby',
+      title: 'Peaceful Citadel Stroll 🌸',
+      genre: 'Warm Acoustic Lullaby',
+      url: '${_kSupabaseStorageBase}live_art-lullaby-160470.mp3',
+      mood: 'cozy',
+    ),
+    PocketMusicTrack(
+      id: 'supa_free_musica',
+      title: 'Sunny Day Joy 🎸',
+      genre: 'Latin Acoustic Pop',
+      url:
+          '${_kSupabaseStorageBase}tudo_free-music-free-musica-free-musica-no-copyright-musicas-gratuita-294095.mp3',
+      mood: 'happy',
+    ),
+    PocketMusicTrack(
+      id: 'supa_rain_relax',
+      title: 'Gentle Rain Sleep 🌧️',
+      genre: 'Rain Nature Ambient',
+      url:
+          '${_kSupabaseStorageBase}karim_alaoui-gentle-rain-sounds-for-relaxation-and-sleep-585942.mp3',
+      mood: 'cozy',
+    ),
+    PocketMusicTrack(
+      id: 'supa_slice_rain',
+      title: 'Lofi Rain Study 📖',
+      genre: 'Chill Lofi Beats',
+      url: '${_kSupabaseStorageBase}slicebeats-rain-7508.mp3',
+      mood: 'cozy',
     ),
   ];
 
-  /// 🏡 Homes & Reels Mode Tracks (Happy, Cozy, Chill, Relaxing)
-  static const List<PocketMusicTrack> homeTracks = [
+  /// ⚔️ Battle & Attack Mode Tracks (Energetic, Arcade, Epic, Quirky)
+  static final List<PocketMusicTrack> attackTracks = [
     PocketMusicTrack(
-      id: 'home_carefree',
-      title: 'Sunny Homestead Ukulele',
-      genre: 'Happy Acoustic',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3',
+      id: 'supa_gaming_beat',
+      title: 'Citadel Gaming Arena 🎮',
+      genre: 'Electronic Arcade',
+      url:
+          '${_kSupabaseStorageBase}mfcc-gaming-game-video-game-music-522352.mp3',
+      mood: 'battle',
+    ),
+    PocketMusicTrack(
+      id: 'supa_loop_13',
+      title: 'Fortress Battle Drums ⚔️',
+      genre: 'Cinematic Battle Loop',
+      url:
+          '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-13-147206.mp3',
+      mood: 'battle',
+    ),
+    PocketMusicTrack(
+      id: 'supa_loop_19',
+      title: 'Boss Raid Heavy Beat 🔥',
+      genre: 'Energetic Boss Battle',
+      url:
+          '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-19-153393.mp3',
+      mood: 'battle',
+    ),
+    PocketMusicTrack(
+      id: 'supa_loop_18',
+      title: '8-Bit Retro Chiptune Blitz 👾',
+      genre: 'Retro Chiptune',
+      url:
+          '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-18-153392.mp3',
+      mood: 'arcade',
+    ),
+    PocketMusicTrack(
+      id: 'supa_loop_16',
+      title: 'Speedy Platform Duel ⚡',
+      genre: 'Action Platformer Loop',
+      url:
+          '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-16-153389.mp3',
+      mood: 'arcade',
+    ),
+    PocketMusicTrack(
+      id: 'supa_loop_9',
+      title: 'Epic Citadel Defense 🛡️',
+      genre: 'Orchestral Defense',
+      url: '${_kSupabaseStorageBase}xtremefreddy-game-music-loop-9-145494.mp3',
+      mood: 'epic',
+    ),
+    PocketMusicTrack(
+      id: 'supa_run_catch',
+      title: 'Retro Platform Run & Catch 🏃',
+      genre: 'Retro Platform Arcade',
+      url:
+          '${_kSupabaseStorageBase}kaazoom-run-and-catch-x27em-46-sec-loopable-retro-platform-game-music-442979.mp3',
+      mood: 'arcade',
+    ),
+    PocketMusicTrack(
+      id: 'supa_adventure_theme',
+      title: 'Adventure Quest Anthem 🏆',
+      genre: 'Action Game Beat',
+      url: '${_kSupabaseStorageBase}u_l065ve68l2-game-music-202227.mp3',
+      mood: 'epic',
+    ),
+    PocketMusicTrack(
+      id: 'supa_market_square',
+      title: 'Market Square RPG Stinger 🏰',
+      genre: 'Fantasy Town RPG',
+      url:
+          '${_kSupabaseStorageBase}kaazoom-the-market-square-daytime-15-sec-stinger-rpg-game-music-519315.mp3',
       mood: 'happy',
     ),
     PocketMusicTrack(
-      id: 'home_life_of_riley',
-      title: 'Valley of Champions',
-      genre: 'Uplifting Whistle Folk',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Life%20of%20Riley.mp3',
-      mood: 'happy',
+      id: 'supa_arcade_short',
+      title: 'Arcade Pop Sprint 🎯',
+      genre: 'Short Arcade Theme',
+      url:
+          '${_kSupabaseStorageBase}moodmode-that-game-arcade-short-236108.mp3',
+      mood: 'arcade',
     ),
     PocketMusicTrack(
-      id: 'home_builder',
-      title: 'The Village Builder',
-      genre: 'Cheerful Garden Acoustic',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/The%20Builder.mp3',
-      mood: 'happy',
-    ),
-    PocketMusicTrack(
-      id: 'home_monkeys',
-      title: 'Citadel Playful Waltz',
-      genre: 'Funky Playful Pizzicato',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Monkeys%20Spinning%20Monkeys.mp3',
-      mood: 'happy',
-    ),
-    PocketMusicTrack(
-      id: 'home_sneaky',
-      title: 'Cottage Garden Mystery',
-      genre: 'Sneaky Strings',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sneaky%20Snitch.mp3',
-      mood: 'cozy',
-    ),
-    PocketMusicTrack(
-      id: 'home_lounge',
-      title: 'Twilight Fireside Lounge',
-      genre: 'Chill Bossa Lofi',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Airport%20Lounge.mp3',
-      mood: 'cozy',
+      id: 'supa_mfcc_game',
+      title: 'Playful Arcade Spin 🎭',
+      genre: 'Chiptune Game Beat',
+      url: '${_kSupabaseStorageBase}mfcc-game-game-music-603130.mp3',
+      mood: 'arcade',
     ),
   ];
 
   /// 📸 Vibe Library Tracks (Used by Robots & Humans when sharing Vibes / Stories)
-  static const List<PocketMusicTrack> vibeLibraryTracks = [
-    PocketMusicTrack(
-      id: 'vibe_sunny_hop',
-      title: 'Sunny Morning Coffee ☕',
-      genre: 'Upbeat Acoustic',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Carefree.mp3',
-      mood: 'happy',
-    ),
-    PocketMusicTrack(
-      id: 'vibe_arcade_energy',
-      title: 'Level Up Energy ⚡',
-      genre: 'Arcade Pop',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Pixelland.mp3',
-      mood: 'arcade',
-    ),
-    PocketMusicTrack(
-      id: 'vibe_focus_study',
-      title: 'Deep Focus Library 📖',
-      genre: 'Chill Study Beats',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Airport%20Lounge.mp3',
-      mood: 'cozy',
-    ),
-    PocketMusicTrack(
-      id: 'vibe_acoustic_walk',
-      title: 'Pocket Town Stroll 🌸',
-      genre: 'Uplifting Folk',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Life%20of%20Riley.mp3',
-      mood: 'happy',
-    ),
-    PocketMusicTrack(
-      id: 'vibe_epic_triumph',
-      title: 'Citadel Victory Anthem 🏆',
-      genre: 'Heroic Anthem',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Heroic%20Age.mp3',
-      mood: 'epic',
-    ),
-    PocketMusicTrack(
-      id: 'vibe_playful_spin',
-      title: 'Playful Story Vibe 🎭',
-      genre: 'Joyful Play',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Monkeys%20Spinning%20Monkeys.mp3',
-      mood: 'happy',
-    ),
-  ];
+  static List<PocketMusicTrack> get vibeLibraryTracks =>
+      [...homeTracks, ...attackTracks];
 
-  /// 🎯 Target Recon & Street Exploration Tracks (Strategic, Suspenseful, Adventurous)
-  static const List<PocketMusicTrack> targetTracks = [
-    PocketMusicTrack(
-      id: 'target_recon_sneaky',
-      title: 'Citadel Scout & Target Recon 🎯',
-      genre: 'Strategic Mystery',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Sneaky%20Snitch.mp3',
-      mood: 'cozy',
-    ),
-    PocketMusicTrack(
-      id: 'target_clash_drums',
-      title: 'Scouting Strongholds ⚔️',
-      genre: 'Cinematic Strategy Drums',
-      url: 'https://incompetech.com/music/royalty-free/mp3-royaltyfree/Clash%20Defiant.mp3',
-      mood: 'battle',
-    ),
-  ];
+  /// 🎯 Target Recon & Street Exploration Tracks
+  static List<PocketMusicTrack> get targetTracks => [
+        homeTracks[1],
+        attackTracks[8],
+        attackTracks[1],
+      ];
 
   // =========================================================================
-  // 🎮 PLAYBACK CONTROLLERS
+  // 🎮 SMART PLAYBACK CONTROLLER
   // =========================================================================
 
   /// Selects the best attack track based on robot archetype, level, or president status
@@ -277,18 +341,19 @@ class PocketGameAudioService with WidgetsBindingObserver {
     String? archetypeId,
   }) {
     if (targetId == 'pocket_president' || targetId.startsWith('pres_')) {
-      return attackTracks[0]; // Heroic Citadel Arena
+      return attackTracks[0]; // Heroic Gaming Arena
     }
 
     final robot = PocketRobotService.getRobotById(targetId);
     final arcKey = archetypeId ?? robot?.archetype.name.toLowerCase() ?? '';
 
     if (arcKey.contains('grumpy')) {
-      return attackTracks[2]; // Volatile Reaction (Grumpy Boss)
-    } else if (arcKey.contains('intellectual') || arcKey.contains('trendsetter')) {
-      return attackTracks[3]; // Pixelland (Chiptune Arcade)
+      return attackTracks[2]; // Boss Raid Heavy Beat
+    } else if (arcKey.contains('intellectual') ||
+        arcKey.contains('trendsetter')) {
+      return attackTracks[3]; // 8-Bit Retro Chiptune Blitz
     } else if (targetDay >= 30) {
-      return attackTracks[0]; // Heroic Epic
+      return attackTracks[5]; // Epic Citadel Defense
     }
 
     final hash = targetId.codeUnits.fold<int>(0, (sum, c) => sum + c);
@@ -304,12 +369,46 @@ class PocketGameAudioService with WidgetsBindingObserver {
   /// Pick a random or persona-fitting track for a robot's vibe
   static PocketMusicTrack getRandomVibeTrack({String? persona}) {
     if (persona == 'student') {
-      return vibeLibraryTracks[2]; // Deep Focus Library
+      return homeTracks[4]; // Fireside Relaxation
     } else if (persona == 'work' || persona == 'professional') {
-      return vibeLibraryTracks[0]; // Sunny Morning Coffee
+      return homeTracks[0]; // Happy Whistler
     }
     final rand = math.Random();
-    return vibeLibraryTracks[rand.nextInt(vibeLibraryTracks.length)];
+    return homeTracks[rand.nextInt(homeTracks.length)];
+  }
+
+  /// 🌟 Plays a gentle ambient app theme (called on app startup / home page)
+  Future<void> playAmbientAppTheme() async {
+    if (isPlayingNotifier.value && _currentTrackUrl != null) {
+      return; // Already playing background music
+    }
+    await playNextShuffleTrack(mood: 'happy');
+  }
+
+  /// 🔄 Smart Anti-Boredom Next Shuffle:
+  /// Picks the next track that has NOT been played recently so users never get bored!
+  Future<void> playNextShuffleTrack({String mood = 'happy'}) async {
+    final pool = (mood == 'battle' ? attackTracks : homeTracks);
+    final available = pool
+        .where((t) => !_recentlyPlayedIds.contains(t.id))
+        .toList();
+
+    PocketMusicTrack selectedTrack;
+    if (available.isNotEmpty) {
+      selectedTrack = available[_random.nextInt(available.length)];
+    } else {
+      // Clear half of history and pick
+      _recentlyPlayedIds.clear();
+      selectedTrack = pool[_random.nextInt(pool.length)];
+    }
+
+    _recentlyPlayedIds.add(selectedTrack.id);
+    if (_recentlyPlayedIds.length > 6) {
+      _recentlyPlayedIds.removeAt(0);
+    }
+
+    await playTrack(selectedTrack,
+        volume: mood == 'battle' ? kBattleBgmVolume : kDefaultBgmVolume);
   }
 
   /// ⚔️ Start Playing Attack Mode BGM
@@ -323,27 +422,27 @@ class PocketGameAudioService with WidgetsBindingObserver {
       targetDay: targetDay,
       archetypeId: archetypeId,
     );
-    await playTrack(track);
+    await playTrack(track, volume: kBattleBgmVolume);
   }
 
   /// 🏡 Start Playing Home Reels BGM
   Future<void> playHomeTheme(String houseId) async {
     final track = getTrackForHouse(houseId);
-    await playTrack(track);
+    await playTrack(track, volume: kDefaultBgmVolume);
   }
 
   /// 🎯 Start Playing Target Mode / Street Recon BGM
   Future<void> playTargetTheme() async {
     final track = targetTracks[0];
-    await playTrack(track);
+    await playTrack(track, volume: kDefaultBgmVolume);
   }
 
-  /// Play any specific track with automatic headers and fallback
-  Future<void> playTrack(PocketMusicTrack track) async {
+  /// Play any specific track with automatic error fallback
+  Future<void> playTrack(PocketMusicTrack track, {double? volume}) async {
     if (_isDisposed) return;
     await _ensureInitialized();
 
-    if (_currentTrackUrl == track.url && (_player?.playing ?? false)) {
+    if (_currentTrackUrl == track.url && isPlayingNotifier.value) {
       return; // Already playing this track
     }
 
@@ -354,48 +453,25 @@ class PocketGameAudioService with WidgetsBindingObserver {
 
       if (_player == null) {
         _player = AudioPlayer();
-        await _player?.setLoopMode(LoopMode.one);
+        await _player?.setReleaseMode(ReleaseMode.stop);
+        _player?.onPlayerComplete.listen((_) {
+          playNextShuffleTrack();
+        });
+        _player?.onPlayerStateChanged.listen((state) {
+          isPlayingNotifier.value = (state == PlayerState.playing);
+        });
       }
 
       final isMuted = isMutedNotifier.value;
-      await _player?.setVolume(isMuted ? 0.0 : kDefaultBgmVolume);
-
-      try {
-        await _player?.setUrl(track.url);
-      } catch (_) {
-        await _player?.setUrl(
-          track.url,
-          headers: const {
-            'User-Agent':
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': '*/*',
-          },
-        );
-      }
+      final targetVolume = volume ?? kDefaultBgmVolume;
+      await _player?.setVolume(isMuted ? 0.0 : targetVolume);
 
       if (!isMuted) {
-        await _player?.play();
+        await _player?.stop();
+        await _player?.play(UrlSource(track.url));
       }
     } catch (e) {
       debugPrint('⚠️ Error playing track ${track.title}: $e');
-      // Automatic fallback if the primary track fails
-      if (track.url != homeTracks[0].url && track.url != attackTracks[0].url) {
-        final fallback = (track.mood == 'epic' || track.mood == 'battle' || track.mood == 'arcade')
-            ? attackTracks[0]
-            : homeTracks[0];
-        try {
-          await _player?.setUrl(
-            fallback.url,
-            headers: const {
-              'User-Agent':
-                  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-            },
-          );
-          if (!isMutedNotifier.value) {
-            await _player?.play();
-          }
-        } catch (_) {}
-      }
     }
   }
 
@@ -424,8 +500,14 @@ class PocketGameAudioService with WidgetsBindingObserver {
   Future<void> resume() async {
     if (isMutedNotifier.value) return;
     try {
-      if (_player != null && !(_player!.playing) && _currentTrackUrl != null) {
-        await _player?.play();
+      if (_player != null && _currentTrackUrl != null) {
+        if (_player?.state == PlayerState.paused) {
+          await _player?.resume();
+        } else if (_player?.state != PlayerState.playing) {
+          await _player?.play(UrlSource(_currentTrackUrl!));
+        }
+      } else {
+        await playAmbientAppTheme();
       }
     } catch (e) {
       debugPrint('⚠️ Error resuming BGM: $e');
@@ -448,12 +530,29 @@ class PocketGameAudioService with WidgetsBindingObserver {
         } else {
           await _player?.setVolume(kDefaultBgmVolume);
           if (_currentTrackUrl != null) {
-            await _player?.play();
+            if (_player?.state == PlayerState.paused) {
+              await _player?.resume();
+            } else {
+              await _player?.play(UrlSource(_currentTrackUrl!));
+            }
+          } else {
+            await playAmbientAppTheme();
           }
         }
       }
     } catch (e) {
       debugPrint('⚠️ Error toggling mute: $e');
+    }
+  }
+
+  /// Set exact volume level (0.0 to 1.0)
+  Future<void> setVolume(double volume) async {
+    try {
+      if (!isMutedNotifier.value) {
+        await _player?.setVolume(volume.clamp(0.0, 1.0));
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error setting volume: $e');
     }
   }
 
@@ -484,12 +583,48 @@ class PocketSoundToggleWidget extends StatelessWidget {
       valueListenable: PocketGameAudioService.instance.isMutedNotifier,
       builder: (context, isMuted, _) {
         return ValueListenableBuilder<String?>(
-          valueListenable: PocketGameAudioService.instance.currentTrackNotifier,
+          valueListenable:
+              PocketGameAudioService.instance.currentTrackNotifier,
           builder: (context, currentTrack, _) {
             return GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();
                 PocketGameAudioService.instance.toggleMute();
+                ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isMuted
+                              ? Icons.music_note_rounded
+                              : Icons.volume_off_rounded,
+                          color: Colors.black,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isMuted
+                              ? '🎵 Pocket Music Unmuted'
+                              : '🔇 Pocket Music Muted',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: const Color(0xFFFFFC00),
+                    duration: const Duration(seconds: 1),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    margin: const EdgeInsets.only(
+                        bottom: 80, left: 40, right: 40),
+                  ),
+                );
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 250),
@@ -506,14 +641,15 @@ class PocketSoundToggleWidget extends StatelessWidget {
                   border: Border.all(
                     color: isMuted
                         ? Colors.white24
-                        : const Color(0xFF38BDF8).withValues(alpha: 0.5),
-                    width: 1,
+                        : const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                    width: 1.2,
                   ),
                   boxShadow: isMuted
                       ? []
                       : [
                           BoxShadow(
-                            color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                            color:
+                                const Color(0xFFFFFC00).withValues(alpha: 0.25),
                             blurRadius: 8,
                             spreadRadius: 1,
                           ),
@@ -525,10 +661,22 @@ class PocketSoundToggleWidget extends StatelessWidget {
                     Icon(
                       isMuted
                           ? Icons.volume_off_rounded
-                          : Icons.volume_up_rounded,
-                      color: isMuted ? Colors.white54 : const Color(0xFF38BDF8),
+                          : Icons.music_note_rounded,
+                      color:
+                          isMuted ? Colors.white54 : const Color(0xFFFFFC00),
                       size: compact ? 16 : 18,
                     ),
+                    if (!compact && !isMuted) ...[
+                      const SizedBox(width: 5),
+                      Text(
+                        'BGM',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFFC00),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
