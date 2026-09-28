@@ -27,6 +27,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_sylla
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/zero_foundation_curriculum_db.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/beginner_curriculum_db.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/elementary_curriculum_db.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/middle_curriculum_db.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
@@ -1625,6 +1626,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       final elementaryPlan = ElementaryCurriculumDB.getDayPlan(widget.day);
       if (elementaryPlan.vocabularyItems.isNotEmpty) {
         _vocabList = elementaryPlan.vocabularyItems;
+        return;
+      }
+    } else if (_activeLearnerLevel == LearnerLevel.middle) {
+      final middlePlan = MiddleCurriculumDB.getDayPlan(widget.day);
+      if (middlePlan.vocabularyItems.isNotEmpty) {
+        _vocabList = middlePlan.vocabularyItems;
         return;
       }
     }
