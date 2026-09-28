@@ -5119,6 +5119,11 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
                         const SizedBox(height: 16),
 
+                        // 🎯 Active Level 1-to-90 Specialized Curriculum Spotlight
+                        _buildActiveLevelCurriculumCard(),
+
+                        const SizedBox(height: 2),
+
                         // 📖 Step 1: Core Linguistic Theory & Speech Architecture (Dedicated Detail Page)
                         if (_showVocab || _showSpeaking) ...[
                           _buildTheorySubtaskCard(),
@@ -7018,6 +7023,275 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  // --- 🎯 ACTIVE LEVEL 1-TO-90 CURRICULUM SPOTLIGHT CARD ---
+  Widget _buildActiveLevelCurriculumCard() {
+    final track = PocketSyllabusRepository.getTrack(_activeLearnerLevel);
+    String titleEn = '';
+    String titleMl = '';
+    String focusLabel = '';
+    String focusValue = '';
+    String formulaText = '';
+    String speakingTask = '';
+
+    switch (_activeLearnerLevel) {
+      case LearnerLevel.zero:
+        final plan = ZeroFoundationCurriculumDB.getDayPlan(widget.day);
+        titleEn = plan.titleEn;
+        titleMl = plan.titleMl;
+        focusLabel = 'KEY OBJECTIVE';
+        focusValue = plan.keyObjective;
+        formulaText = plan.survivalPhrases.isNotEmpty ? plan.survivalPhrases.join(' • ') : 'Listen & Repeat after audio';
+        speakingTask = plan.dailyVoiceMissionPrompt;
+        break;
+      case LearnerLevel.beginner:
+        final plan = BeginnerCurriculumDB.getDayPlan(widget.day);
+        titleEn = plan.titleEn;
+        titleMl = plan.titleMl;
+        focusLabel = 'SITUATIONAL CONTEXT';
+        focusValue = plan.situationalContext;
+        formulaText = plan.spokenFormula;
+        speakingTask = plan.dailySpeakingTask;
+        break;
+      case LearnerLevel.elementary:
+        final plan = ElementaryCurriculumDB.getDayPlan(widget.day);
+        titleEn = plan.titleEn;
+        titleMl = plan.titleMl;
+        focusLabel = 'REFLEX FOCUS';
+        focusValue = plan.reflexFocus;
+        formulaText = plan.hesitationBusterRule;
+        speakingTask = plan.dailySpeakingTask;
+        break;
+      case LearnerLevel.middle:
+        final plan = MiddleCurriculumDB.getDayPlan(widget.day);
+        titleEn = plan.titleEn;
+        titleMl = plan.titleMl;
+        focusLabel = 'FLOW TECHNIQUE';
+        focusValue = plan.flowTechnique;
+        formulaText = plan.speechConnectorFormula;
+        speakingTask = plan.dailySpeakingTask;
+        break;
+      case LearnerLevel.advanced:
+        final plan = AdvancedCurriculumDB.getDayPlan(widget.day);
+        titleEn = plan.titleEn;
+        titleMl = plan.titleMl;
+        focusLabel = 'EXECUTIVE SCENARIO';
+        focusValue = plan.executiveScenario;
+        formulaText = plan.diplomaticFormula;
+        speakingTask = plan.dailySpeakingTask;
+        break;
+      case LearnerLevel.expert:
+        final plan = ExpertCurriculumDB.getDayPlan(widget.day);
+        titleEn = plan.titleEn;
+        titleMl = plan.titleMl;
+        focusLabel = 'RHETORICAL DEVICE';
+        focusValue = plan.rhetoricalDevice;
+        formulaText = plan.oratoryCadenceFormula;
+        speakingTask = plan.dailySpeakingTask;
+        break;
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            track.primaryColor.withValues(alpha: 0.16),
+            const Color(0xFF0F172A),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: track.primaryColor.withValues(alpha: 0.5),
+          width: 1.2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: track.primaryColor.withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: track.primaryColor.withValues(alpha: 0.22),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: track.primaryColor.withValues(alpha: 0.5)),
+                ),
+                child: Icon(track.icon, color: track.primaryColor, size: 20),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      track.badgeText,
+                      style: GoogleFonts.outfit(
+                        color: track.primaryColor,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                    Text(
+                      'DAY ${widget.day} SPECIALIZED LESSON',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () async {
+                  HapticFeedback.lightImpact();
+                  await PocketMasterSyllabusModal.show(context, currentDay: widget.day);
+                  final updated = await PocketSyllabusRepository.getSavedLevel();
+                  if (mounted && updated != _activeLearnerLevel) {
+                    setState(() => _activeLearnerLevel = updated);
+                    _loadVocabForDay();
+                  }
+                },
+                borderRadius: BorderRadius.circular(8),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4.5),
+                  decoration: BoxDecoration(
+                    color: Colors.white10,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.swap_horiz_rounded, color: Colors.white70, size: 14),
+                      const SizedBox(width: 4),
+                      Text(
+                        'SWITCH',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            titleEn,
+            style: GoogleFonts.inter(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            titleMl,
+            style: GoogleFonts.inter(
+              color: const Color(0xFFCBD5E1),
+              fontSize: 12.5,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.3),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '$focusLabel: ',
+                  style: GoogleFonts.outfit(
+                    color: track.primaryColor,
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    focusValue,
+                    style: GoogleFonts.inter(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (formulaText.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.25)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.flash_on_rounded, color: Color(0xFFFFD700), size: 14),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      formulaText,
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          if (speakingTask.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                const Icon(Icons.mic_rounded, color: Color(0xFF34D399), size: 14),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Daily Task: $speakingTask',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF6EE7B7),
+                      fontSize: 11,
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
