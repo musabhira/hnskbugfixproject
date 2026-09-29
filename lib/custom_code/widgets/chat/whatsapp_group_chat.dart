@@ -164,6 +164,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   // 🏆 PocketTalk 4-Day Spoken Pact State
   PocketTalkPact? _activePocketTalkPact;
   int _userTrophyCount = 0;
+  Timer? _pactActiveTimer;
+  DateTime? _lastPactMinuteLogTime;
 
   // Speech-to-Text for English Hub
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -515,6 +517,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _loadMateStreak();
     _checkEnglishHubAdminBlock();
     _checkMateStatus();
+    _startPactActiveTracker();
 
     _scrollController.addListener(() {
       if (_scrollController.hasClients) {
@@ -853,6 +856,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     }
     _hubRobotIdleConversationTimer?.cancel();
     _hubRobotReplyCooldownTimer?.cancel();
+    _pactActiveTimer?.cancel();
     _messageController.removeListener(_onMessageChanged);
     _messageController.dispose();
     _scrollController.dispose();
@@ -1128,13 +1132,36 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     if (uid.isEmpty || otherUserId.isEmpty) return;
 
     try {
-      final pact = await PocketTrophyService.ensurePact(myId: uid, otherUserId: otherUserId);
+      final evalResult = await PocketTrophyService.checkAndEvaluatePact(myId: uid, otherUserId: otherUserId);
+      final pact = evalResult.pact;
       final trophies = await PocketTrophyService.getTrophyCount(uid);
       if (mounted) {
         safeSetState(() {
           _activePocketTalkPact = pact;
           _userTrophyCount = trophies;
         });
+
+        if (evalResult.didBreach && evalResult.deductedTrophy) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.warning_amber_rounded, color: Colors.white, size: 20),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      evalResult.message,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: Colors.redAccent,
+              duration: const Duration(seconds: 5),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
 
       final mate = await PocketMateService.isMate(uid, otherUserId);
@@ -1165,6 +1192,159 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       debugPrint('Error checking mate & pact status: $e');
     }
   }
+
+  void _startPactActiveTracker() {
+    if (!widget.groupId.startsWith('p:')) return;
+    _pactActiveTimer?.cancel();
+    // Every 60s of active presence in personal pact chat, log 1 minute towards today's 15 mins
+    _pactActiveTimer = Timer.periodic(const Duration(seconds: 60), (_) {
+      if (mounted && widget.groupId.startsWith('p:')) {
+        _logPactMinute(1);
+      }
+    });
+  }
+
+  Future<void> _logPactMinute(int mins) async {
+    if (!widget.groupId.startsWith('p:') || _currentUserId.isEmpty) return;
+    final otherUserId = widget.groupId.substring(2);
+    if (otherUserId.isEmpty) return;
+
+    final now = DateTime.now();
+    if (_lastPactMinuteLogTime != null && now.difference(_lastPactMinuteLogTime!).inSeconds < 15) {
+      return; // Throttle
+    }
+    _lastPactMinuteLogTime = now;
+
+    try {
+      final res = await PocketTrophyService.recordActiveChatMinutes(
+        myId: _currentUserId,
+        otherUserId: otherUserId,
+        minutesToAdd: mins,
+      );
+
+      final trophies = await PocketTrophyService.getTrophyCount(_currentUserId);
+
+      if (mounted) {
+        safeSetState(() {
+          _activePocketTalkPact = res.pact;
+          _userTrophyCount = trophies;
+        });
+
+        if (res.didUnlockTrophy) {
+          _showTrophyUnlockDialog();
+        } else if (res.didCompleteDayQuota) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Text('🎉', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Day ${res.pact.streakDays} Goal Achieved! (15 mins done today) 🏆 Keep it up tomorrow!',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF10B981),
+              duration: const Duration(seconds: 4),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error logging pact minute: $e');
+    }
+  }
+
+  void _showTrophyUnlockDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.5),
+        ),
+        title: Column(
+          children: [
+            const Text('🏆', style: TextStyle(fontSize: 48)),
+            const SizedBox(height: 8),
+            Text(
+              'PACT COMPLETED!',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD700),
+                fontWeight: FontWeight.w900,
+                fontSize: 20,
+                letterSpacing: 1,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Congratulations! You and your partner completed 15 minutes of English speaking every day for 4 consecutive days (1 Hour Total)!',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(color: Colors.white, fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.emoji_events_rounded, color: Color(0xFFFFD700), size: 24),
+                  const SizedBox(width: 8),
+                  Text(
+                    '+1 Spoken Trophy Earned! 🏆',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '🤝 You are now Official Pocket Mates! Full profiles are permanently unlocked.',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.inter(color: const Color(0xFF4ADE80), fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ],
+        ),
+        actions: [
+          Center(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
+              ),
+              onPressed: () {
+                Navigator.pop(ctx);
+                _checkMateStatus();
+              },
+              child: const Text('Awesome!', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Future<void> _acceptIncomingRequest() async {
     if (_incomingPendingRequest == null) return;
@@ -1942,16 +2122,19 @@ Draft: "$draft"''';
         PocketFortressDefenseService.recordActivityPoints('group_chat');
       }
 
-      if (widget.groupId.startsWith('p:') && !_isMate) {
-        final otherUserId = widget.groupId.substring(2);
-        await PocketMateService.sendMateRequest(
-          senderId: _currentUserId,
-          receiverId: otherUserId,
-          message: text ?? 'Sent you a message request',
-        );
-        safeSetState(() {
-          _isOutgoingPendingRequest = true;
-        });
+      if (widget.groupId.startsWith('p:')) {
+        _logPactMinute(1);
+        if (!_isMate) {
+          final otherUserId = widget.groupId.substring(2);
+          await PocketMateService.sendMateRequest(
+            senderId: _currentUserId,
+            receiverId: otherUserId,
+            message: text ?? 'Sent you a message request',
+          );
+          safeSetState(() {
+            _isOutgoingPendingRequest = true;
+          });
+        }
       }
 
       return message?.id;
@@ -2281,6 +2464,8 @@ Draft: "$draft"''';
     final currentStreak = pact?.streakDays ?? 1;
     final isCompleted = pact?.isCompleted ?? false;
     final isMates = _isMate || (pact?.isMatesNow ?? false);
+    final dailyMinutes = (pact?.dailyMinutesToday ?? 0).clamp(0, 15);
+    final isDailyQuotaDone = dailyMinutes >= 15;
 
     return Container(
       width: double.infinity,
@@ -2305,125 +2490,318 @@ Draft: "$draft"''';
           ),
         ),
       ),
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
-      child: Row(
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Trophy / Pact Icon
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: isCompleted
-                  ? const Color(0xFFFFD700).withValues(alpha: 0.2)
-                  : const Color(0xFF38BDF8).withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isCompleted ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
-                width: 1.1,
+          Row(
+            children: [
+              // Trophy / Pact Icon
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: isCompleted
+                      ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                      : const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: isCompleted ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                    width: 1.1,
+                  ),
+                ),
+                child: Text(
+                  isCompleted ? '🏆' : '⚡',
+                  style: const TextStyle(fontSize: 13),
+                ),
               ),
-            ),
-            child: Text(
-              isCompleted ? '🏆' : '⚡',
-              style: const TextStyle(fontSize: 14),
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      isCompleted ? 'POCKET TALK PACT COMPLETED 🏆' : 'POCKET TALK 4-DAY PACT',
-                      style: GoogleFonts.outfit(
-                        color: isCompleted ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 0.5,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          isCompleted ? 'POCKET TALK COMPLETED 🏆' : 'POCKET TALK 4-DAY PACT',
+                          style: GoogleFonts.outfit(
+                            color: isCompleted ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                        const SizedBox(width: 5),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                          decoration: BoxDecoration(
+                            color: isMates ? Colors.green.withValues(alpha: 0.2) : Colors.amber.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            isMates ? 'VERIFIED MATES 🤝' : 'LOCKED PROFILE 🔒',
+                            style: GoogleFonts.inter(
+                              color: isMates ? const Color(0xFF4ADE80) : const Color(0xFFFBBF24),
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 6),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: isMates ? Colors.green.withValues(alpha: 0.2) : Colors.amber.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        isMates ? 'VERIFIED MATES 🤝' : 'LOCKED PROFILE 🔒',
-                        style: GoogleFonts.inter(
-                          color: isMates ? const Color(0xFF4ADE80) : const Color(0xFFFBBF24),
-                          fontSize: 8.5,
+                    const SizedBox(height: 2),
+                    Row(
+                      children: [
+                        Text(
+                          isCompleted
+                              ? 'All 4 Days Done (60 mins) • 🏆$_userTrophyCount Trophies'
+                              : isDailyQuotaDone
+                                  ? '✅ Day $currentStreak/4 Complete! (15m done)'
+                                  : '⏱️ $dailyMinutes/15 mins today • Day $currentStreak/4',
+                          style: GoogleFonts.inter(
+                            color: isDailyQuotaDone ? const Color(0xFF4ADE80) : Colors.white70,
+                            fontSize: 10.5,
+                            fontWeight: isDailyQuotaDone ? FontWeight.w600 : FontWeight.normal,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        // 4 Streak Indicator Dots
+                        Row(
+                          children: List.generate(4, (index) {
+                            final isFilled = index < currentStreak;
+                            return Container(
+                              margin: const EdgeInsets.only(right: 2.5),
+                              width: 6.5,
+                              height: 6.5,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isFilled
+                                    ? (isCompleted ? const Color(0xFFFFD700) : const Color(0xFF38BDF8))
+                                    : Colors.white24,
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              // Rules Info Button
+              InkWell(
+                onTap: _showPocketTalkRulesModal,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  margin: const EdgeInsets.only(right: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.white24, width: 0.8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.info_outline_rounded, color: Colors.white70, size: 12),
+                      const SizedBox(width: 3),
+                      Text(
+                        'RULES',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 9,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-                const SizedBox(height: 3),
-                Row(
-                  children: [
-                    Text(
-                      'Day $currentStreak of 4 • English Only • 🏆$_userTrophyCount Trophies',
-                      style: GoogleFonts.inter(
-                        color: Colors.white70,
-                        fontSize: 11,
+              ),
+              // Instant "Report Non-English" AI Inspector Button
+              InkWell(
+                onTap: _showReportNonEnglishDialog,
+                borderRadius: BorderRadius.circular(6),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(6),
+                    border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4), width: 0.9),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.gavel_rounded, color: Colors.redAccent, size: 11),
+                      const SizedBox(width: 3),
+                      Text(
+                        'NON-ENGLISH',
+                        style: GoogleFonts.outfit(
+                          color: Colors.redAccent,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (!isCompleted) ...[
+            const SizedBox(height: 5),
+            // Daily Progress Bar & Loss Aversion Penalty Notice
+            Row(
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(3),
+                    child: LinearProgressIndicator(
+                      value: (dailyMinutes / 15.0).clamp(0.0, 1.0),
+                      minHeight: 4,
+                      backgroundColor: Colors.white12,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isDailyQuotaDone ? const Color(0xFF22C55E) : const Color(0xFF38BDF8),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    // Progress dots 1, 2, 3, 4
-                    Row(
-                      children: List.generate(4, (index) {
-                        final isFilled = index < currentStreak;
-                        return Container(
-                          margin: const EdgeInsets.only(right: 3),
-                          width: 7,
-                          height: 7,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isFilled
-                                ? (isCompleted ? const Color(0xFFFFD700) : const Color(0xFF38BDF8))
-                                : Colors.white24,
-                          ),
-                        );
-                      }),
-                    ),
-                  ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  isDailyQuotaDone ? 'Ready for tomorrow' : '⚠️ Skip day = -1 Trophy',
+                  style: GoogleFonts.inter(
+                    color: isDailyQuotaDone ? const Color(0xFF4ADE80) : const Color(0xFFF87171),
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
-          ),
-          // Instant "Report Non-English" AI Inspector Button
-          InkWell(
-            onTap: _showReportNonEnglishDialog,
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
-              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4), width: 0.9),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.gavel_rounded, color: Colors.redAccent, size: 12),
-                  const SizedBox(width: 4),
-                  Text(
-                    'NON-ENGLISH',
-                    style: GoogleFonts.outfit(
-                      color: Colors.redAccent,
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          ],
         ],
       ),
+    );
+  }
+
+  void _showPocketTalkRulesModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                const Text('🏆', style: TextStyle(fontSize: 24)),
+                const SizedBox(width: 8),
+                Text(
+                  'PocketTalk 4-Day Spoken Pact',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'A serious mutual agreement to build real conversational fluency in English.',
+              style: GoogleFonts.inter(color: Colors.white60, fontSize: 12.5),
+            ),
+            const SizedBox(height: 16),
+            _buildRuleItem(
+              icon: Icons.timer_outlined,
+              title: '15 Minutes Daily (1 Hour Total)',
+              desc: 'Speak or chat for at least 15 minutes each day for 4 consecutive days (15m x 4 = 60 mins total).',
+              color: const Color(0xFF38BDF8),
+            ),
+            const SizedBox(height: 12),
+            _buildRuleItem(
+              icon: Icons.trending_down_rounded,
+              title: 'Loss Aversion: Trophy Penalty (കമ്മിയാവും)',
+              desc: 'If either person misses a day or stops chatting before completing 15 mins, the pact breaks and 1 Trophy is deducted from your profile!',
+              color: Colors.redAccent,
+            ),
+            const SizedBox(height: 12),
+            _buildRuleItem(
+              icon: Icons.g_translate_rounded,
+              title: 'Strict English Only',
+              desc: 'All messages must be in English. Speaking other languages can be reported via AI check, resetting streak and deducting 50 Pocket Score.',
+              color: Colors.amberAccent,
+            ),
+            const SizedBox(height: 12),
+            _buildRuleItem(
+              icon: Icons.emoji_events_rounded,
+              title: '150-Trophy Master Graduation',
+              desc: 'Completing all 4 days awards 1 Spoken Trophy 🏆 and unlocks mutual full profiles. Reach 150 Trophies to graduate at Level 90!',
+              color: const Color(0xFFFFD700),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRuleItem({
+    required IconData icon,
+    required String title,
+    required String desc,
+    required Color color,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: color, size: 18),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                desc,
+                style: GoogleFonts.inter(
+                  color: Colors.white70,
+                  fontSize: 11.5,
+                  height: 1.35,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
