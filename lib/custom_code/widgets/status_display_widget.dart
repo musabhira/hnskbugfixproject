@@ -2897,11 +2897,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     _progressController.reset();
 
-    // 🎵 Play BGM for vibes (Robots & Presidents have automatic background music; Humans only if custom music attached)
+    // 🎵 Play BGM for vibes: ONLY Robots and President have background music! (User Audio Directive: Humans stories must NOT play background music)
     if (status['media_type'] != 'video') {
       final rawMeta = status['metadata'];
       final meta = rawMeta is Map ? rawMeta : {};
-      final musicUrl = meta['music_url']?.toString();
       final targetProfileId = widget.statusGroup['profile']?['id']?.toString() ??
           widget.statusGroup['id']?.toString() ??
           '';
@@ -2917,16 +2916,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           widget.statusGroup['profile']?['is_president'] == true ||
           meta['is_president'] == true;
 
-      if (musicUrl != null && musicUrl.isNotEmpty) {
-        PocketGameAudioService.instance.playTrack(PocketMusicTrack(
-          id: 'vibe_custom_${status['id']}',
-          title: meta['music_title']?.toString() ?? 'Vibe BGM',
-          genre: 'Vibe Beat',
-          url: musicUrl,
-        ));
-      } else if (isRobot || isPresident) {
+      if (isRobot || isPresident) {
         PocketGameAudioService.instance.playNextShuffleTrack(mood: 'happy');
       } else {
+        // Strictly NO background music for human stories
         PocketGameAudioService.instance.pause();
       }
     } else {
@@ -6960,7 +6953,6 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
                         await _videoPreviewController!.pause();
                       } catch (_) {}
                     }
-                    Navigator.pop(context);
                     _uploadStatus(_localPickedFile ?? file!,
                         _localPickedMediaType ?? mediaType!);
                   } else if (sContent != null) {

@@ -426,10 +426,42 @@ class PocketGameAudioService with WidgetsBindingObserver {
     await playTrack(track, volume: kBattleBgmVolume);
   }
 
-  /// 🏡 Start Playing Home Reels BGM
-  Future<void> playHomeTheme(String houseId) async {
+  /// 🏡 Start Playing Home Reels BGM (Always unmuted by default for Homes reels experience)
+  Future<void> playHomeTheme(String houseId, {bool forceUnmute = true}) async {
+    if (forceUnmute && isMutedNotifier.value) {
+      isMutedNotifier.value = false;
+      await _player?.setVolume(kDefaultBgmVolume);
+    }
     final track = getTrackForHouse(houseId);
     await playTrack(track, volume: kDefaultBgmVolume);
+  }
+
+  /// Explicitly set mute status
+  Future<void> setMuted(bool muted, {bool persist = true}) async {
+    isMutedNotifier.value = muted;
+    try {
+      if (persist) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool(_kPrefMuteKey, muted);
+      }
+      if (_player != null) {
+        if (muted) {
+          await _player?.setVolume(0.0);
+          await _player?.pause();
+        } else {
+          await _player?.setVolume(kDefaultBgmVolume);
+          if (_currentTrackUrl != null) {
+            if (_player?.state == PlayerState.paused) {
+              await _player?.resume();
+            } else {
+              await _player?.play(UrlSource(_currentTrackUrl!));
+            }
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error setting mute: $e');
+    }
   }
 
   /// 🎯 Start Playing Target Mode / Street Recon BGM

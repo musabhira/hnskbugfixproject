@@ -683,3 +683,5 @@ class PocketTrophyService {
   }
 }
 
+/// ⚡ PocketTalkPactService alias for PocketTrophyService
+typedef PocketTalkPactService = PocketTrophyService;

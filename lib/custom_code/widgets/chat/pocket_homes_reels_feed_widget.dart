@@ -7,6 +7,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:just_audio/just_audio.dart';
 import '../../services/pocket_game_audio_service.dart';
+import '../../services/pocket_mate_service.dart';
+import '../../services/pocket_trophy_service.dart';
+import '../learning_60day/pocket_fortress_defense_service.dart';
 
 import '../avatar/vector_avatar_config.dart';
 import '../avatar/vector_avatar_widget.dart';
@@ -84,6 +87,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   late AnimationController _pulseController;
 
   final Set<String> _viewedHomeIds = {};
+  final Set<String> _protectedHomeIds = {};
+  bool _isHomesAudioMuted = false;
 
   // Audio player for house ambient background music delegated to PocketGameAudioService
   String? _currentlyPlayingHouseId;
@@ -116,6 +121,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
+    // Audio Directive: Music in Homes must always be ON by default, uninhibited by global settings
+    PocketGameAudioService.instance.setMuted(false, persist: false);
+
     _initAll();
 
     if (widget.isActive) {
@@ -129,8 +137,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     super.didUpdateWidget(oldWidget);
     if (widget.isActive != oldWidget.isActive) {
       if (widget.isActive) {
-        final id = _currentlyPlayingHouseId ?? widget.initialHouseId ?? widget.initialNeighbor?.id ?? 'house_default';
-        _playHomeMusic(id);
+        if (!_isHomesAudioMuted) {
+          final id = _currentlyPlayingHouseId ?? widget.initialHouseId ?? widget.initialNeighbor?.id ?? 'house_default';
+          _playHomeMusic(id);
+        }
       } else {
         _pauseBgm();
       }
@@ -141,7 +151,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       _pauseBgm();
-    } else if (state == AppLifecycleState.resumed && !PocketGameAudioService.instance.isMutedNotifier.value && widget.isActive) {
+    } else if (state == AppLifecycleState.resumed && !_isHomesAudioMuted && widget.isActive) {
       if (_currentlyPlayingHouseId != null) {
         _playHomeMusic(_currentlyPlayingHouseId!);
       }
@@ -150,7 +160,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   Future<void> _playHomeMusic(String houseId) async {
     _currentlyPlayingHouseId = houseId;
-    await PocketGameAudioService.instance.playHomeTheme(houseId);
+    if (_isHomesAudioMuted) return;
+    await PocketGameAudioService.instance.playHomeTheme(houseId, forceUnmute: true);
   }
 
   void _pauseBgm() {
@@ -159,7 +170,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
   void _toggleBgmMute() {
     HapticFeedback.lightImpact();
-    PocketGameAudioService.instance.toggleMute();
+    setState(() {
+      _isHomesAudioMuted = !_isHomesAudioMuted;
+    });
+    PocketGameAudioService.instance.setMuted(_isHomesAudioMuted, persist: false);
   }
 
   @override
@@ -266,6 +280,22 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 
     // 3. Add Sovereign President as supreme Day 90 boss
     rawNeighbors.add(PocketNeighbor.createPresident());
+
+    // Check Presidential Protection status for neighbors
+    try {
+      final protectedSet = <String>{};
+      for (final n in rawNeighbors) {
+        if (await PocketFortressDefenseService.isUnderPresidentialProtection(n.id)) {
+          protectedSet.add(n.id);
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _protectedHomeIds.clear();
+          _protectedHomeIds.addAll(protectedSet);
+        });
+      }
+    } catch (_) {}
 
     // 4. Strict Seen vs Unseen Separation:
     // Unseen homes appear first! Seen homes are pushed to the very bottom!
@@ -484,6 +514,31 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   }
 
   void _onAttackTapped(PocketNeighbor neighbor) async {
+    if (_protectedHomeIds.contains(neighbor.id)) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFF1E3A8A),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          content: Row(
+            children: [
+              const Text('🏛️', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  '${neighbor.name}\'s Citadel is under Presidential Protection! Defended by the Sovereign Guard for 48 hours.',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     HapticFeedback.heavyImpact();
     await PocketCitadelAttackPage.openForUser(
       context,
@@ -496,28 +551,119 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     }
   }
 
-  void _onRingBellTapped(PocketNeighbor neighbor) {
+  Future<void> _onSendMateRequest(PocketNeighbor neighbor) async {
+    final currentUserId = _supabase.auth.currentUser?.id;
+    if (currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to connect with Mates')),
+      );
+      return;
+    }
     HapticFeedback.mediumImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        backgroundColor: const Color(0xFF1E293B),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        content: Row(
-          children: [
-            const Text('🔔', style: TextStyle(fontSize: 18)),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                'Ding-dong! You rang the doorbell of ${neighbor.name}!',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
-              ),
+
+    final isAlreadyMate = await PocketMateService.isMate(currentUserId, neighbor.id);
+    if (isAlreadyMate) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            content: Row(
+              children: [
+                const Text('🤝', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'You and ${neighbor.name} are already Pocket Mates!',
+                    style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        duration: const Duration(seconds: 2),
-      ),
+          ),
+        );
+      }
+      return;
+    }
+
+    final success = await PocketMateService.sendMateRequest(
+      senderId: currentUserId,
+      receiverId: neighbor.id,
+      contextType: 'homes_reels',
+      message: 'Saw your Citadel Home and wants to connect as your Pocket Mate! 🏰',
     );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFF1E293B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          content: Row(
+            children: [
+              const Text('🤝', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  success
+                      ? 'Mate request sent to ${neighbor.name}!'
+                      : 'Could not send request right now.',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _onSendPocketTalkRequest(PocketNeighbor neighbor) async {
+    final currentUserId = _supabase.auth.currentUser?.id;
+    if (currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to start a Pocket Talk Pact')),
+      );
+      return;
+    }
+    HapticFeedback.heavyImpact();
+
+    final pact = await PocketTalkPactService.requestPact(
+      myId: currentUserId,
+      otherUserId: neighbor.id,
+    );
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: const Color(0xFF2C2407),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(color: const Color(0xFFFFD600).withValues(alpha: 0.5)),
+          ),
+          content: Row(
+            children: [
+              const Text('⚡', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  pact != null
+                      ? '⚡ 4-Day Spoken Pact invite sent to ${neighbor.name}!'
+                      : 'Pocket Talk invite sent to ${neighbor.name}!',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD600),
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   /// ✨ Opens Add to Vibes & Share modal for Homes
@@ -683,62 +829,51 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               ),
             ),
 
-          // 🔊 Ambient Music Mute / Unmute Button (Top Right)
+          // 🔊 Ambient Music Speaker Toggle Button (Top Right - Speaker Icon Only, User Audio Directive)
           Positioned(
             top: MediaQuery.of(context).padding.top + 8,
             right: 14,
             child: ValueListenableBuilder<bool>(
               valueListenable: PocketGameAudioService.instance.isMutedNotifier,
               builder: (context, isMuted, _) {
-                return ValueListenableBuilder<String?>(
-                  valueListenable: PocketGameAudioService.instance.currentTrackNotifier,
-                  builder: (context, trackTitle, _) {
-                    return GestureDetector(
-                      onTap: _toggleBgmMute,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: Colors.black.withValues(alpha: 0.65),
-                          border: Border.all(
-                            color: isMuted ? Colors.white24 : const Color(0xFFFFFC00).withValues(alpha: 0.6),
-                            width: 1.2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.4),
-                              blurRadius: 10,
-                              offset: const Offset(0, 3),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              isMuted ? Icons.volume_off_rounded : Icons.music_note_rounded,
-                              color: isMuted ? Colors.white60 : const Color(0xFFFFFC00),
-                              size: 16,
-                            ),
-                            const SizedBox(width: 5),
-                            ConstrainedBox(
-                              constraints: const BoxConstraints(maxWidth: 130),
-                              child: Text(
-                                isMuted ? 'Muted' : (trackTitle ?? 'Music'),
-                                style: GoogleFonts.outfit(
-                                  color: isMuted ? Colors.white60 : const Color(0xFFFFFC00),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        ),
+                final effectiveMuted = _isHomesAudioMuted || isMuted;
+                return GestureDetector(
+                  onTap: _toggleBgmMute,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.65),
+                      border: Border.all(
+                        color: effectiveMuted
+                            ? Colors.white24
+                            : const Color(0xFFFFFC00).withValues(alpha: 0.7),
+                        width: 1.2,
                       ),
-                    );
-                  },
+                      boxShadow: [
+                        BoxShadow(
+                          color: (effectiveMuted
+                                  ? Colors.black
+                                  : const Color(0xFFFFFC00))
+                              .withValues(alpha: 0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        effectiveMuted
+                            ? Icons.volume_off_rounded
+                            : Icons.volume_up_rounded,
+                        color: effectiveMuted
+                            ? Colors.white60
+                            : const Color(0xFFFFFC00),
+                        size: 20,
+                      ),
+                    ),
+                  ),
                 );
               },
             ),
@@ -838,6 +973,47 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ),
 
+        // 🏛️ Presidential Protection Overlay Badge
+        if (_protectedHomeIds.contains(neighbor.id))
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 58,
+            left: 14,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E3A8A).withValues(alpha: 0.9),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: const Color(0xFF60A5FA),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF3B82F6).withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🏛️', style: TextStyle(fontSize: 14)),
+                  const SizedBox(width: 5),
+                  Text(
+                    'Presidential Protection 🛡️',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF93C5FD),
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
         // Vignette subtle gradient for reel contrast
         Positioned.fill(
           child: IgnorePointer(
@@ -918,9 +1094,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               ),
               const SizedBox(height: 14),
 
-              // 🔔 Ring Doorbell Button
+              // 🤝 Mates Request Button (User Audio Directive: Doorbell replaced with Mates request)
               GestureDetector(
-                onTap: () => _onRingBellTapped(neighbor),
+                onTap: () => _onSendMateRequest(neighbor),
                 child: Container(
                   width: 44,
                   height: 44,
@@ -930,16 +1106,53 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                     border: Border.all(color: Colors.white24, width: 1.2),
                   ),
                   child: const Center(
-                    child: Text('🔔', style: TextStyle(fontSize: 18)),
+                    child: Text('🤝', style: TextStyle(fontSize: 18)),
                   ),
                 ),
               ),
               const SizedBox(height: 3),
               Text(
-                'Doorbell',
+                'Mates',
                 style: GoogleFonts.outfit(
                   color: Colors.white70,
                   fontSize: 9.5,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // ⚡ Pocket Talk Pact Request Button (User Audio Directive: Send Pocket Talk request)
+              GestureDetector(
+                onTap: () => _onSendPocketTalkRequest(neighbor),
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.7),
+                    border: Border.all(
+                      color: const Color(0xFFFFD600).withValues(alpha: 0.6),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD600).withValues(alpha: 0.25),
+                        blurRadius: 8,
+                        spreadRadius: -1,
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text('⚡', style: TextStyle(fontSize: 18)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Text(
+                'Pocket Talk',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD600),
+                  fontSize: 9.0,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -970,43 +1183,38 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 14),
 
-              // 🛡️ Defense Shield / HP Indicator
-              Container(
-                width: 46,
-                padding: const EdgeInsets.symmetric(vertical: 5),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.7),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: neighbor.hasActiveShield
-                        ? const Color(0xFF10B981)
-                        : Colors.redAccent,
-                    width: 1,
+              // 🏛️ Presidential Protection status pill (shown only if protected; 100% indicator removed per User Directive)
+              if (_protectedHomeIds.contains(neighbor.id)) ...[
+                const SizedBox(height: 14),
+                Container(
+                  width: 46,
+                  padding: const EdgeInsets.symmetric(vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E3A8A).withValues(alpha: 0.85),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFF60A5FA),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🏛️', style: TextStyle(fontSize: 13)),
+                      const SizedBox(height: 1),
+                      Text(
+                        'Shield',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF93C5FD),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      neighbor.hasActiveShield ? '🛡️' : '⚠️',
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                    const SizedBox(height: 1),
-                    Text(
-                      '${neighbor.hp}%',
-                      style: GoogleFonts.outfit(
-                        color: neighbor.hasActiveShield
-                            ? const Color(0xFF34D399)
-                            : Colors.redAccent,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              ],
             ],
           ),
         ),

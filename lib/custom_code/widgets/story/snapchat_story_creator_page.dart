@@ -713,13 +713,14 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
 
     final selectedIds = <String>{};
     bool postToStoryToo = true;
+    final hostContext = context;
 
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) {
+        builder: (dialogCtx, setModalState) {
           return Container(
             height: MediaQuery.of(context).size.height * 0.72,
             decoration: const BoxDecoration(
@@ -903,7 +904,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                 postToStoryToo: postToStoryToo,
                               );
                               if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                ScaffoldMessenger.of(hostContext).showSnackBar(
                                   SnackBar(
                                     content: Row(
                                       children: [
@@ -922,13 +923,15 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                   ),
                                 );
                                 widget.onStatusUploaded?.call();
-                                Navigator.pop(context, true);
+                                if (Navigator.canPop(hostContext)) {
+                                  Navigator.pop(hostContext, true);
+                                }
                               }
                             } catch (e) {
                               debugPrint('Error sending direct snaps: $e');
                               if (mounted) {
                                 setState(() => _isUploading = false);
-                                ScaffoldMessenger.of(context).showSnackBar(
+                                ScaffoldMessenger.of(hostContext).showSnackBar(
                                   SnackBar(content: Text('Failed to send snap: $e'), backgroundColor: Colors.red),
                                 );
                               }
