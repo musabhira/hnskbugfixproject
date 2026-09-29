@@ -40,6 +40,8 @@ import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -88,7 +90,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   int _refreshKeyCount = 0;
   late PageController _pageController;
   int _searchTabIndex = 0; // 0 for People, 1 for Products
-  int _searchPeopleFilterIndex = 0; // 0: All, 1: Humans, 2: Robots
+  int _searchPeopleFilterIndex = 0; // 0: All, 1: Humans, 2: Robots, 3: Pocket Talk
+  Set<String> _pocketTalkPeerIds = {};
   bool _isCongestedSearch = false; // Toggle for Congested / Compact View
   int _searchPeopleOffset = 0;
   bool _hasMorePeopleSearch = true;
@@ -96,6 +99,24 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   int _searchProductsOffset = 0;
   bool _hasMoreProductsSearch = true;
   bool _isLoadingMoreProductsSearch = false;
+
+  Future<void> _refreshPocketTalkPeers() async {
+    final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
+    if (uid.isEmpty) return;
+    try {
+      final ids = await PocketTrophyService.getAllActiveOrPendingPactUserIds(uid);
+      if (mounted) {
+        safeSetState(() => _pocketTalkPeerIds = ids);
+      }
+      if (ids.isEmpty) {
+        await PocketTalkEngine.dispatchAutoPocketTalkRequests(currentUserId: uid);
+        final updatedIds = await PocketTrophyService.getAllActiveOrPendingPactUserIds(uid);
+        if (mounted) {
+          safeSetState(() => _pocketTalkPeerIds = updatedIds);
+        }
+      }
+    } catch (_) {}
+  }
 
   List<Map<String, dynamic>> get _filteredPersonSearchResults {
     if (_searchPeopleFilterIndex == 1) {
@@ -107,6 +128,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       return _personSearchResults.where((p) {
         final id = p['user_id']?.toString() ?? p['id']?.toString() ?? '';
         return PocketRobotService.isRobotId(id);
+      }).toList();
+    } else if (_searchPeopleFilterIndex == 3) {
+      return _personSearchResults.where((p) {
+        final id = p['user_id']?.toString() ?? p['id']?.toString() ?? '';
+        return _pocketTalkPeerIds.contains(id);
       }).toList();
     }
     return _personSearchResults;
@@ -179,6 +205,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     _loadCachedData();
     _loadAllUserData();
     _loadPendingRequests();
+    _refreshPocketTalkPeers();
     _searchController.addListener(_onSearchChanged);
 
     // Add post frame callback to check for updates after initial render
@@ -2751,6 +2778,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             onTap: () => safeSetState(
                                 () => _searchPeopleFilterIndex = 2),
                           ),
+                          const SizedBox(width: 8),
+                          _buildSearchFilterChip(
+                            label: 'Pocket Talk ⚡',
+                            icon: material.Icons.bolt_rounded,
+                            isSelected: _searchPeopleFilterIndex == 3,
+                            onTap: () async {
+                              safeSetState(
+                                  () => _searchPeopleFilterIndex = 3);
+                              await _refreshPocketTalkPeers();
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -2766,6 +2804,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         return !PocketRobotService.isRobotId(c.id);
                       } else if (_searchPeopleFilterIndex == 2) {
                         return PocketRobotService.isRobotId(c.id);
+                      } else if (_searchPeopleFilterIndex == 3) {
+                        return _pocketTalkPeerIds.contains(c.id) ||
+                            (c.lastMessage?.contains('PocketTalk') == true ||
+                             c.lastMessage?.contains('Pocket Talk') == true ||
+                             c.lastMessage?.contains('⚡') == true);
                       }
                       return true;
                     }).toList();
@@ -3144,7 +3187,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 Icon(
                                   _searchPeopleFilterIndex == 2
                                       ? material.Icons.smart_toy_rounded
-                                      : material.Icons.people_rounded,
+                                      : (_searchPeopleFilterIndex == 3
+                                          ? material.Icons.bolt_rounded
+                                          : material.Icons.people_rounded),
                                   size: 16,
                                   color: const Color(0xFFFFFC00),
                                 ),
@@ -3154,7 +3199,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       ? 'HUMANS (${peopleResults.length})'
                                       : (_searchPeopleFilterIndex == 2
                                           ? 'ROBOTS (${peopleResults.length})'
-                                          : 'PEOPLE (${peopleResults.length})'),
+                                          : (_searchPeopleFilterIndex == 3
+                                              ? 'POCKET TALK (${peopleResults.length})'
+                                              : 'PEOPLE (${peopleResults.length})')),
                                   style: GoogleFonts.outfit(
                                     fontSize: 12.5,
                                     fontWeight: FontWeight.bold,

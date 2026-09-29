@@ -707,23 +707,41 @@ class _ConversationTileState extends State<ConversationTile> {
         ? Colors.white.withValues(alpha: 0.9)
         : Colors.black.withValues(alpha: 0.85);
 
+    final isPactActive = _cachedPact?.isAccepted == true && !_cachedPact!.isForfeited;
+    final isPactPending = _cachedPact != null && !_cachedPact!.isAccepted && !_cachedPact!.isForfeited;
+
     final tileContent = material.Material(
       color: Colors.transparent,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
         decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xFF131B26).withValues(alpha: 0.75)
-              : Colors.white.withValues(alpha: 0.9),
+          color: isPactActive
+              ? (isDark
+                  ? const Color(0xFF0C2436).withValues(alpha: 0.95)
+                  : const Color(0xFFE0F7FA).withValues(alpha: 0.95))
+              : (isPactPending
+                  ? (isDark
+                      ? const Color(0xFF1E211A).withValues(alpha: 0.9)
+                      : const Color(0xFFFFFDE7).withValues(alpha: 0.95))
+                  : (isDark
+                      ? const Color(0xFF131B26).withValues(alpha: 0.75)
+                      : Colors.white.withValues(alpha: 0.9))),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: borderColor,
-            width: 1,
+            color: isPactActive
+                ? const Color(0xFF00E5FF)
+                : (isPactPending ? const Color(0xFFFFD700) : borderColor),
+            width: isPactActive ? 1.6 : (isPactPending ? 1.3 : 1.0),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
-              blurRadius: 6,
+              color: isPactActive
+                  ? const Color(0xFF00E5FF).withValues(alpha: isDark ? 0.22 : 0.12)
+                  : (isPactPending
+                      ? const Color(0xFFFFD700).withValues(alpha: isDark ? 0.18 : 0.1)
+                      : Colors.black.withValues(alpha: isDark ? 0.15 : 0.03)),
+              blurRadius: isPactActive ? 10 : 6,
+              spreadRadius: isPactActive ? 1 : 0,
               offset: const Offset(0, 1.5),
             ),
           ],
@@ -920,6 +938,64 @@ class _ConversationTileState extends State<ConversationTile> {
                                     },
                                   ),
                                 ],
+                                if (isPactActive)
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF00E5FF).withValues(alpha: 0.18),
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(
+                                        color: const Color(0xFF00E5FF).withValues(alpha: 0.6),
+                                        width: 0.9,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text('⚡', style: TextStyle(fontSize: 10)),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          'Day ${_cachedPact!.streakDays}/4 🏆',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFF00E5FF),
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 9.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                else if (isPactPending)
+                                  Container(
+                                    margin: const EdgeInsets.only(left: 6),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 1.5),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFFFD700).withValues(alpha: 0.18),
+                                      borderRadius: BorderRadius.circular(5),
+                                      border: Border.all(
+                                        color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                                        width: 0.9,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        const Text('⚡', style: TextStyle(fontSize: 10)),
+                                        const SizedBox(width: 2),
+                                        Text(
+                                          'Pocket Talk ⏳',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFFD700),
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 9.5,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 if (_isPendingSent)
                                   Container(
                                     margin: const EdgeInsets.only(left: 6),

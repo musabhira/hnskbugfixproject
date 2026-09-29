@@ -19,6 +19,7 @@ class PocketTalkPact {
   final bool isMatesNow; // True when officially unlocked as mutual Pocket Mates
   final int trophiesEarned;
   final bool isForfeited; // True if pact failed/breached due to missed daily quota
+  final bool hasBothSpoken; // True when both users have sent at least one message / interacted
 
   const PocketTalkPact({
     required this.pactId,
@@ -34,6 +35,7 @@ class PocketTalkPact {
     required this.isMatesNow,
     this.trophiesEarned = 0,
     this.isForfeited = false,
+    this.hasBothSpoken = false,
   });
 
   Map<String, dynamic> toMap() => {
@@ -50,6 +52,7 @@ class PocketTalkPact {
         'isMatesNow': isMatesNow,
         'trophiesEarned': trophiesEarned,
         'isForfeited': isForfeited,
+        'hasBothSpoken': hasBothSpoken,
       };
 
   factory PocketTalkPact.fromMap(Map<String, dynamic> map) {
@@ -69,6 +72,7 @@ class PocketTalkPact {
       isMatesNow: map['isMatesNow'] == true || map['isMatesNow'] == 'true',
       trophiesEarned: (map['trophiesEarned'] as num?)?.toInt() ?? 0,
       isForfeited: map['isForfeited'] == true || map['isForfeited'] == 'true',
+      hasBothSpoken: map['hasBothSpoken'] == true || map['hasBothSpoken'] == 'true',
     );
   }
 }
@@ -184,6 +188,7 @@ class PocketTrophyService {
           isMatesNow: decoded['isMatesNow'] == 'true',
           trophiesEarned: int.tryParse(decoded['trophiesEarned'] ?? '0') ?? 0,
           isForfeited: decoded['isForfeited'] == 'true',
+          hasBothSpoken: decoded['hasBothSpoken'] == 'true',
         );
       }
     } catch (_) {}
@@ -281,8 +286,9 @@ class PocketTrophyService {
     final pact = await getPact(myId, otherUserId);
     if (pact == null) return null;
 
-    // If pending acceptance, do not evaluate streak penalties
-    if (!pact.isAccepted) {
+    // If pending acceptance or both users haven't yet engaged in communication,
+    // protect users from unfair penalty (as per audio directive)
+    if (!pact.isAccepted || !pact.hasBothSpoken) {
       return PactEvaluationResult(pact: pact);
     }
 
@@ -537,6 +543,65 @@ class PocketTrophyService {
     }
   }
 
+  /// Check if two users have an active or pending pact
+  static Future<bool> hasActiveOrPendingPact(String myId, String otherUserId) async {
+    final pact = await getPact(myId, otherUserId);
+    if (pact == null) return false;
+    return !pact.isForfeited && !pact.isCompleted;
+  }
+
+  /// Get all other user IDs who have an active or pending pact with this user
+  static Future<Set<String>> getAllActiveOrPendingPactUserIds(String userId) async {
+    final result = <String>{};
+    if (userId.isEmpty) return result;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys().where((k) => k.startsWith(kPrefsPactPrefix));
+      for (final k in keys) {
+        final val = prefs.getString(k);
+        if (val != null && val.contains(userId)) {
+          final decoded = Uri.splitQueryString(val);
+          final isForfeited = decoded['isForfeited'] == 'true';
+          if (!isForfeited) {
+            final u1 = decoded['user1Id'];
+            final u2 = decoded['user2Id'];
+            if (u1 != null && u1 != userId) result.add(u1);
+            if (u2 != null && u2 != userId) result.add(u2);
+          }
+        }
+      }
+    } catch (_) {}
+    return result;
+  }
+
+  /// Record user message engagement to unlock streak protection guard
+  static Future<void> markUserEngagement({
+    required String myId,
+    required String otherUserId,
+  }) async {
+    final pact = await getPact(myId, otherUserId);
+    if (pact == null || pact.isCompleted || pact.isForfeited) return;
+    if (!pact.hasBothSpoken) {
+      final updated = PocketTalkPact(
+        pactId: pact.pactId,
+        user1Id: pact.user1Id,
+        user2Id: pact.user2Id,
+        initiatorId: pact.initiatorId,
+        startedAt: pact.startedAt,
+        streakDays: pact.streakDays,
+        lastSpokenDate: pact.lastSpokenDate,
+        dailyMinutesToday: pact.dailyMinutesToday,
+        isAccepted: pact.isAccepted,
+        isCompleted: pact.isCompleted,
+        isMatesNow: pact.isMatesNow,
+        trophiesEarned: pact.trophiesEarned,
+        isForfeited: pact.isForfeited,
+        hasBothSpoken: true,
+      );
+      await _savePact(updated);
+    }
+  }
+
   // --- Internal Helpers ---
 
   static String _generatePactId(String u1, String u2) {
@@ -577,6 +642,7 @@ class PocketTrophyService {
       'isMatesNow': pact.isMatesNow.toString(),
       'trophiesEarned': pact.trophiesEarned.toString(),
       'isForfeited': pact.isForfeited.toString(),
+      'hasBothSpoken': pact.hasBothSpoken.toString(),
     };
     final encoded = Uri(queryParameters: map).query;
     await prefs.setString('$kPrefsPactPrefix${pact.pactId}', encoded);

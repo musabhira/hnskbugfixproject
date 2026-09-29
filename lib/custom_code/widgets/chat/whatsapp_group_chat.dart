@@ -2100,6 +2100,14 @@ Draft: "$draft"''';
             metadata: metadata,
           );
 
+      if (widget.groupId.startsWith('p:') && _currentUserId.isNotEmpty) {
+        final otherUid = widget.groupId.substring(2);
+        PocketTrophyService.markUserEngagement(
+          myId: _currentUserId,
+          otherUserId: otherUid,
+        );
+      }
+
       if (_isEnglishHubGroup && message != null) {
         final prefs = await SharedPreferences.getInstance();
         int currentPoints = prefs.getInt('english_hub_points') ?? 0;
@@ -4111,6 +4119,9 @@ Draft: "$draft"''';
                                 _buildImageMessage(message),
                               if (message.messageType == 'snap')
                                 _buildSnapMessage(message, isMe),
+                              if (message.messageType == 'pocket_talk_request' ||
+                                  message.metadata?['is_pocket_talk'] == true)
+                                _buildPocketTalkRequestMessage(message, isMe),
                               if (message.messageType == 'voice' &&
                                   message.fileUrl != null)
                                 _buildVoiceMessage(message),
@@ -5085,6 +5096,239 @@ Draft: "$draft"''';
     );
   }
 
+  Widget _buildPocketTalkRequestMessage(ChatMessage message, bool isMe) {
+    final metadata = message.metadata ?? {};
+    final isAcceptedFromMeta = metadata['status'] == 'accepted';
+    final otherUserId = widget.groupId.startsWith('p:')
+        ? widget.groupId.substring(2)
+        : message.senderId;
+
+    return FutureBuilder<PocketTalkPact?>(
+      future: PocketTrophyService.getPact(_currentUserId, otherUserId),
+      builder: (context, snapshot) {
+        final pact = snapshot.data;
+        final accepted = isAcceptedFromMeta ||
+            (pact != null && pact.isAccepted && !pact.isForfeited);
+        final streakDays = pact?.streakDays ?? 1;
+
+        return Container(
+          margin: const EdgeInsets.symmetric(vertical: 5),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: accepted
+                ? const Color(0xFF0C2436).withValues(alpha: 0.95)
+                : const Color(0xFF0F1A24).withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: accepted
+                  ? const Color(0xFF00E5FF)
+                  : const Color(0xFFFFD700),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (accepted
+                        ? const Color(0xFF00E5FF)
+                        : const Color(0xFFFFD700))
+                    .withValues(alpha: 0.25),
+                blurRadius: 10,
+                spreadRadius: 1,
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 36,
+                    height: 36,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: accepted
+                            ? [
+                                const Color(0xFF00E5FF),
+                                const Color(0xFF00B0FF)
+                              ]
+                            : [
+                                const Color(0xFFFFD700),
+                                const Color(0xFFFF9100)
+                              ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (accepted
+                                  ? const Color(0xFF00E5FF)
+                                  : const Color(0xFFFFD700))
+                              .withValues(alpha: 0.4),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Icon(
+                        accepted
+                            ? Icons.bolt_rounded
+                            : Icons.record_voice_over_rounded,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Flexible(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                accepted
+                                    ? 'Pocket Talk Active ⚡'
+                                    : (isMe
+                                        ? 'Pocket Talk Sent ⚡'
+                                        : 'Pocket Talk Invite ⚡'),
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 14.5,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: (accepted
+                                        ? const Color(0xFF00E5FF)
+                                        : const Color(0xFFFFD700))
+                                    .withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(6),
+                                border: Border.all(
+                                  color: (accepted
+                                          ? const Color(0xFF00E5FF)
+                                          : const Color(0xFFFFD700))
+                                      .withValues(alpha: 0.6),
+                                  width: 0.8,
+                                ),
+                              ),
+                              child: Text(
+                                accepted
+                                    ? 'DAY $streakDays/4 🏆'
+                                    : '4-DAY PACT',
+                                style: GoogleFonts.inter(
+                                  color: accepted
+                                      ? const Color(0xFF00E5FF)
+                                      : const Color(0xFFFFD700),
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          accepted
+                              ? 'Target: 15 mins daily English • +1 Trophy on Day 4'
+                              : (isMe
+                                  ? 'Waiting for mate to accept 4-day spoken pact'
+                                  : 'Both must chat 4 days in English to earn +1 Trophy 🏆'),
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              if (!accepted && !isMe) ...[
+                const SizedBox(height: 10),
+                GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.heavyImpact();
+                    await PocketTrophyService.acceptPact(
+                      myId: _currentUserId,
+                      otherUserId: otherUserId,
+                    );
+                    await _sendMessage(
+                      text:
+                          '🤝 Accepted Pocket Talk! 4-day English spoken pact is ON! 🏆',
+                      messageType: 'text',
+                    );
+                    safeSetState(() {});
+                  },
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF00E5FF), Color(0xFF00B0FF)],
+                      ),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF00E5FF)
+                              .withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Accept & Start Day 1 🤝',
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _sendPocketTalkInvite() async {
+    if (!AuthHelper.checkLoggedIn(context)) return;
+    if (!widget.groupId.startsWith('p:')) return;
+    final otherUserId = widget.groupId.substring(2);
+
+    HapticFeedback.mediumImpact();
+    final pact = await PocketTrophyService.requestPact(
+      myId: _currentUserId,
+      otherUserId: otherUserId,
+      autoAccept: false,
+    );
+
+    await _sendMessage(
+      text: '⚡ Pocket Talk 4-Day Spoken Pact Request',
+      messageType: 'pocket_talk_request',
+      metadata: {
+        'is_pocket_talk': true,
+        'pact_id': pact?.pactId,
+        'sender_id': _currentUserId,
+        'status': 'pending',
+        'streak_days': 1,
+      },
+    );
+    FocusScope.of(context).unfocus();
+  }
+
   Widget _buildDocumentMessage(ChatMessage message, bool isMe) {
     final url = message.fileUrl;
     final localPath = message.metadata?['local_path'];
@@ -5934,6 +6178,15 @@ Draft: "$draft"''';
                       focusNode: _focusNode,
                       style:
                           const TextStyle(color: Colors.white, fontSize: 14.5),
+                      textInputAction: TextInputAction.send,
+                      onSubmitted: (_) {
+                        if (_isEditing) {
+                          _submitEdit();
+                        } else {
+                          _handleSendAction();
+                        }
+                        FocusScope.of(context).unfocus();
+                      },
                       decoration: InputDecoration(
                         hintText: !widget.groupId.startsWith('p:')
                             ? 'Type in English only... 🇬🇧'
@@ -5977,6 +6230,18 @@ Draft: "$draft"''';
                                   color: Color(0xFFFF8A00)),
                               onPressed: () => _pickAndSendSnap(),
                             ),
+                            if (widget.groupId.startsWith('p:'))
+                              IconButton(
+                                iconSize: 20,
+                                constraints: const BoxConstraints(
+                                    minWidth: 32, minHeight: 36),
+                                padding: EdgeInsets.zero,
+                                tooltip: 'Pocket Talk ⚡',
+                                icon: const Icon(
+                                    Icons.bolt_rounded,
+                                    color: Color(0xFF00E5FF)),
+                                onPressed: _sendPocketTalkInvite,
+                              ),
                             const SizedBox(width: 4),
                           ],
                         );
@@ -6040,7 +6305,14 @@ Draft: "$draft"''';
 
               if (showSend) {
                 return GestureDetector(
-                  onTap: _isEditing ? _submitEdit : _handleSendAction,
+                  onTap: () {
+                    if (_isEditing) {
+                      _submitEdit();
+                    } else {
+                      _handleSendAction();
+                    }
+                    FocusScope.of(context).unfocus();
+                  },
                   child: const CircleAvatar(
                     backgroundColor: Color(0xFFFFD600),
                     radius: 20,
@@ -6194,6 +6466,13 @@ Draft: "$draft"''';
                     Navigator.pop(ctx);
                     _showToolPicker();
                   }),
+                  if (widget.groupId.startsWith('p:'))
+                    _buildAttachOption(
+                        Icons.bolt_rounded, const Color(0xFF00E5FF), 'Pocket Talk ⚡',
+                        () {
+                      Navigator.pop(ctx);
+                      _sendPocketTalkInvite();
+                    }),
                 ],
               ),
             ],
@@ -6282,6 +6561,7 @@ Draft: "$draft"''';
 
   Future<void> _handleSendAction() async {
     if (!AuthHelper.checkLoggedIn(context)) return;
+    FocusScope.of(context).unfocus();
     final text = _messageController.text;
     final mentions = _extractMentions(text);
     final metadata = mentions.isNotEmpty ? {'mentions': mentions} : null;
