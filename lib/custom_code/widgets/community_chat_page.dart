@@ -20,6 +20,8 @@ import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart' as flutter;
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/pocket_animated_aura_avatar.dart';
 
 class CommunityChatPage extends StatefulWidget {
   final double? width;
@@ -605,181 +607,231 @@ class _CommunityChatPageState extends State<CommunityChatPage>
     String? avatar;
     String subtitle;
     int memberCount = 0;
+    Map<String, dynamic>? otherUser;
 
     if (isGroup) {
-      title = data['name'];
+      title = data['name'] ?? 'Group';
       avatar = data['group_image_url'];
       subtitle = data['last_message'] ?? 'No messages yet';
       memberCount = data['member_count']?[0]?['count'] ?? 0;
     } else {
-      final otherUser = chat['other_user'];
-      title = otherUser['name'];
-      avatar = otherUser['avatar'];
-      subtitle = data['last_message'] ?? 'No messages yet';
+      otherUser = chat['other_user'];
+      title = otherUser?['name'] ?? 'Pocket Mate';
+      avatar = otherUser?['avatar'];
+      subtitle = data['last_message'] ?? 'Tap to chat';
     }
 
     final hasMention = _currentUserName != null &&
         subtitle.contains('@$_currentUserName');
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade900,
-        borderRadius: BorderRadius.circular(12),
-        border: (isUnread || hasMention)
-            ? Border.all(color: hasMention ? Colors.green.withValues(alpha: 0.5) : Colors.yellow.withValues(alpha: 0.3), width: 1)
-            : null,
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Stack(
-          children: [
-            CircleAvatar(
-              radius: 28,
-              backgroundImage: avatar != null ? NetworkImage(avatar) : null,
-              backgroundColor: Colors.yellow.shade700,
-              child: avatar == null
-                  ? Icon(
-                      isGroup ? Icons.group : Icons.person,
-                      color: Colors.black,
-                      size: isGroup ? 24 : 20,
+    final isSnap = subtitle.contains('Snap') ||
+        subtitle.contains('🔥 Pocket Snap') ||
+        subtitle.contains('⚡ Pocket Snap');
+    final isPact = subtitle.contains('PocketTalk') || subtitle.contains('Pact');
+
+    VectorAvatarConfig? avatarConfig;
+    if (!isGroup && otherUser != null) {
+      if (otherUser['avatar_config'] != null && otherUser['avatar_config'] is Map) {
+        avatarConfig = VectorAvatarConfig.fromMap(Map<String, dynamic>.from(otherUser['avatar_config']));
+      } else {
+        final stage = otherUser['learning_day'] ?? otherUser['stage'] ?? 1;
+        avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(stage is int ? stage : 1);
+      }
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              if (isGroup) {
+                _navigateToGroupChat(data);
+              } else {
+                _navigateToPersonalChat(chat['other_user']);
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              child: Row(
+                children: [
+                  // 🌟 Living Animated Avatar with Spreading Aura Glow
+                  if (!isGroup)
+                    PocketAnimatedAuraAvatar(
+                      size: 48,
+                      config: avatarConfig,
+                      imageUrl: avatar,
+                      name: title,
+                      isOnline: otherUser?['is_online'] == true,
+                      hasStory: otherUser?['has_story'] == true || isSnap,
                     )
-                  : null,
+                  else
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF3B82F6), Color(0xFF1D4ED8)],
+                        ),
+                      ),
+                      child: ClipOval(
+                        child: avatar != null
+                            ? Image.network(avatar, fit: BoxFit.cover)
+                            : const Icon(Icons.group, color: Colors.white, size: 24),
+                      ),
+                    ),
+                  const SizedBox(width: 14),
+
+                  // 📝 User / Group Title & Snapchat-style status indicator
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                title,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: isUnread ? FontWeight.w800 : FontWeight.w600,
+                                  letterSpacing: 0.2,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (isGroup) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                decoration: BoxDecoration(
+                                  color: Colors.white12,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '$memberCount',
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                            if (hasMention) ...[
+                              const SizedBox(width: 6),
+                              const Icon(Icons.alternate_email, size: 12, color: Color(0xFF22C55E)),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        // ⚡ Snapchat-style Subtitle (Red square / red arrow / clean status)
+                        Row(
+                          children: [
+                            if (isSnap && isUnread) ...[
+                              Container(
+                                width: 9,
+                                height: 9,
+                                margin: const EdgeInsets.only(right: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFF0055), // Snap Red
+                                  borderRadius: BorderRadius.circular(2),
+                                ),
+                              ),
+                              Text(
+                                'New Snap',
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFFFF0055),
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 12.5,
+                                ),
+                              ),
+                            ] else if (isPact) ...[
+                              const Text('⚡ ', style: TextStyle(fontSize: 11)),
+                              Flexible(
+                                child: Text(
+                                  subtitle,
+                                  style: GoogleFonts.inter(
+                                    color: const Color(0xFF38BDF8),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 12.5,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ] else ...[
+                              if (data['last_message_sender_id'] == _currentUserId)
+                                const Padding(
+                                  padding: EdgeInsets.only(right: 4),
+                                  child: Icon(Icons.send_rounded, size: 11, color: Colors.white38),
+                                ),
+                              Flexible(
+                                child: Text(
+                                  subtitle,
+                                  style: GoogleFonts.inter(
+                                    color: isUnread ? Colors.white : Colors.white54,
+                                    fontSize: 13,
+                                    fontWeight: isUnread ? FontWeight.w600 : FontWeight.w400,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                            if (lastMessageTime.isNotEmpty) ...[
+                              Text(
+                                ' • $lastMessageTime',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white38,
+                                  fontSize: 11.5,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 💬 Snapchat Outline Chat Bubble Action Icon
+                  Padding(
+                    padding: const EdgeInsets.only(left: 8),
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: isUnread
+                            ? const Color(0xFFFFFC00).withValues(alpha: 0.15)
+                            : Colors.transparent,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isUnread
+                            ? Icons.chat_bubble_rounded
+                            : Icons.chat_bubble_outline_rounded,
+                        color: isUnread ? const Color(0xFFFFFC00) : Colors.white38,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-            if (isGroup)
-              Positioned(
-                bottom: 0,
-                right: 0,
-                child: Container(
-                  padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.yellow,
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.black, width: 1),
-                  ),
-                  child: const Icon(
-                    Icons.group,
-                    size: 12,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
-        title: Row(
-          children: [
-            Expanded(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: isUnread ? FontWeight.bold : FontWeight.w500,
-                ),
-              ),
-            ),
-            if (isGroup)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.yellow.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.yellow, width: 0.5),
-                ),
-                child: Text(
-                  '$memberCount',
-                  style: const TextStyle(
-                    color: Colors.yellow,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            if (hasMention) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.all(2),
-                decoration: const BoxDecoration(
-                  color: Colors.green,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.alternate_email,
-                  size: 10,
-                  color: Colors.white,
-                ),
-              ),
-            ],
-          ],
+        // Minimal subtle divider
+        Divider(
+          height: 1,
+          thickness: 0.5,
+          color: Colors.white.withValues(alpha: 0.06),
+          indent: 78,
+          endIndent: 16,
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (isGroup && data['description'] != null) ...[
-              Text(
-                data['description'],
-                style: TextStyle(
-                  color: Colors.grey.shade400,
-                  fontSize: 12,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 2),
-            ],
-            Text(
-              subtitle,
-              style: TextStyle(
-                color: isUnread ? Colors.white70 : Colors.grey.shade500,
-                fontSize: 14,
-                fontWeight: isUnread ? FontWeight.w500 : FontWeight.normal,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-        trailing: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            if (lastMessageTime.isNotEmpty)
-              Text(
-                lastMessageTime,
-                style: TextStyle(
-                  color: isUnread ? Colors.yellow : Colors.grey.shade600,
-                  fontSize: 12,
-                  fontWeight: isUnread ? FontWeight.bold : FontWeight.normal,
-                ),
-              ),
-            if (isUnread) ...[
-              const SizedBox(height: 4),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.yellow,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Text(
-                  '${data['unread_count']}',
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
-        onTap: () {
-          if (isGroup) {
-            _navigateToGroupChat(data);
-          } else {
-            _navigateToPersonalChat(chat['other_user']);
-          }
-        },
-      ),
+      ],
     );
   }
 

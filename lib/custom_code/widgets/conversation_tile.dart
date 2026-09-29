@@ -6,7 +6,6 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -14,8 +13,7 @@ import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/pocket_animated_aura_avatar.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -326,9 +324,6 @@ class _ConversationTileState extends State<ConversationTile> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark
-        ? Colors.white.withValues(alpha: 0.07)
-        : Colors.black.withValues(alpha: 0.05);
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final secondaryTextColor = isDark
         ? Colors.white.withValues(alpha: 0.4)
@@ -339,259 +334,103 @@ class _ConversationTileState extends State<ConversationTile> {
 
     return material.Material(
       color: Colors.transparent,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
-        decoration: BoxDecoration(
-          color: isDark
-              ? const Color(0xFF131B26).withValues(alpha: 0.75)
-              : Colors.white.withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: borderColor,
-            width: 1,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
-              blurRadius: 6,
-              offset: const Offset(0, 1.5),
-            ),
-          ],
-        ),
-        child: material.InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () {
-            final isSnap = !PocketPresidentService.isPresidentId(widget.conversation.id) &&
-                (widget.conversation.lastMessage?.contains('Snap') == true ||
-                    widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
-                    widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true);
-            if (isSnap &&
-                widget.conversation.unreadCount > 0 &&
-                widget.onSnapViewTap != null) {
-              widget.onSnapViewTap!();
-            } else {
-              widget.onTap();
-            }
-          },
-          onLongPress: widget.onLongPress,
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    if (_hasUnwatchedStatus && widget.onStatusTap != null) {
-                      VibesSeenService.markSeen(
-                        currentUserId: widget.currentUserId,
-                        userId: widget.conversation.id,
-                        profileId: widget.conversation.id,
-                        groupId: widget.conversation.isGroup
-                            ? widget.conversation.id
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          material.InkWell(
+            onTap: () {
+              final isSnap = !PocketPresidentService.isPresidentId(widget.conversation.id) &&
+                  (widget.conversation.lastMessage?.contains('Snap') == true ||
+                      widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
+                      widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true);
+              if (isSnap &&
+                  widget.conversation.unreadCount > 0 &&
+                  widget.onSnapViewTap != null) {
+                widget.onSnapViewTap!();
+              } else {
+                widget.onTap();
+              }
+            },
+            onLongPress: widget.onLongPress,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                children: [
+                  // 🌟 Living Animated Avatar with Spreading Aura Glow & Story Ring
+                  if (!widget.conversation.isGroup &&
+                      !widget.conversation.isTool &&
+                      !widget.conversation.isNotification &&
+                      !widget.conversation.isActiveTimer)
+                    PocketAnimatedAuraAvatar(
+                      size: 50,
+                      config: _cachedAvatarConfig,
+                      imageUrl: (_showRealPhoto || _getStoryThumbnailUrl() != null)
+                          ? (_getStoryThumbnailUrl() ?? widget.conversation.imageUrl)
+                          : null,
+                      name: widget.conversation.name,
+                      isOnline: widget.conversation.isOnline,
+                      hasStory: _hasUnwatchedStatus,
+                      onTap: () {
+                        if (_hasUnwatchedStatus && widget.onStatusTap != null) {
+                          VibesSeenService.markSeen(
+                            currentUserId: widget.currentUserId,
+                            userId: widget.conversation.id,
+                            profileId: widget.conversation.id,
+                          );
+                          setState(() {});
+                          widget.onStatusTap!();
+                        } else if (widget.conversation.imageUrl != null) {
+                          setState(() => _showRealPhoto = !_showRealPhoto);
+                          HapticFeedback.lightImpact();
+                        }
+                      },
+                    )
+                  else
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: widget.conversation.isActiveTimer
+                            ? material.Colors.green.withValues(alpha: 0.1)
+                            : widget.conversation.isTool
+                                ? _getIconColor(isDark).withValues(alpha: 0.15)
+                                : (isDark
+                                    ? const Color(0xFF262626)
+                                    : const Color(0xFFE2E8F0)),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: widget.conversation.isActiveTimer
+                              ? material.Colors.greenAccent.withValues(alpha: 0.3)
+                              : widget.conversation.isTool
+                                  ? _getIconColor(isDark).withValues(alpha: 0.45)
+                                  : (isDark
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : Colors.black.withValues(alpha: 0.1)),
+                          width: widget.conversation.isTool ? 1.5 : 1.2,
+                        ),
+                        image: (widget.conversation.isGroup &&
+                                widget.conversation.imageUrl != null)
+                            ? DecorationImage(
+                                image: CachedNetworkImageProvider(
+                                  widget.conversation.imageUrl!,
+                                  maxWidth: 120,
+                                  maxHeight: 120,
+                                ),
+                                fit: BoxFit.cover,
+                              )
                             : null,
-                      );
-                      setState(() {});
-                      widget.onStatusTap!();
-                    } else {
-                      widget.onTap();
-                    }
-                  },
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      if (_hasUnwatchedStatus)
-                        Container(
-                          width: 58,
-                          height: 58,
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [
-                                Color(0xFF833AB4), // Purple
-                                Color(0xFFF77737), // Orange
-                                Color(0xFFFCAF45), // Yellow
-                              ],
-                              begin: Alignment.topRight,
-                              end: Alignment.bottomLeft,
-                            ),
-                          ),
-                        ),
-                      GestureDetector(
-                        onTap: () {
-                          if (_hasUnwatchedStatus &&
-                              widget.onStatusTap != null) {
-                            VibesSeenService.markSeen(
-                              currentUserId: widget.currentUserId,
-                              userId: widget.conversation.id,
-                              profileId: widget.conversation.id,
-                              groupId: widget.conversation.isGroup
-                                  ? widget.conversation.id
-                                  : null,
-                            );
-                            setState(() {});
-                            widget.onStatusTap!();
-                          } else if (widget.conversation.imageUrl != null) {
-                            setState(() => _showRealPhoto = !_showRealPhoto);
-                            HapticFeedback.lightImpact();
-                          }
-                        },
-                        onDoubleTap: () {
-                          if (widget.conversation.imageUrl != null) {
-                            setState(() => _showRealPhoto = !_showRealPhoto);
-                            HapticFeedback.lightImpact();
-                          }
-                        },
-                        onLongPress: () {
-                          if (widget.conversation.imageUrl != null) {
-                            setState(() => _showRealPhoto = !_showRealPhoto);
-                            HapticFeedback.mediumImpact();
-                          }
-                        },
-                        child: Container(
-                          width: 50,
-                          height: 50,
-                          decoration: BoxDecoration(
-                            color: widget.conversation.isActiveTimer
-                                ? material.Colors.green.withValues(alpha: 0.1)
-                                : widget.conversation.isTool
-                                    ? _getIconColor(isDark)
-                                        .withValues(alpha: 0.15)
-                                    : (isDark
-                                        ? const Color(0xFF262626)
-                                        : const Color(0xFFE2E8F0)),
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: widget.conversation.isActiveTimer
-                                  ? material.Colors.greenAccent
-                                      .withValues(alpha: 0.3)
-                                  : widget.conversation.isTool
-                                      ? _getIconColor(isDark)
-                                          .withValues(alpha: 0.45)
-                                      : (isDark
-                                          ? Colors.white.withValues(alpha: 0.1)
-                                          : Colors.black
-                                              .withValues(alpha: 0.1)),
-                              width: widget.conversation.isTool ? 1.5 : 1.2,
-                            ),
-                            image: (_getStoryThumbnailUrl() != null ||
-                                    widget.conversation.name.toLowerCase().contains('english hub') ||
-                                    widget.conversation.toolTitle == 'English Hub')
-                                ? null
-                                : ((_showRealPhoto &&
-                                        widget.conversation.imageUrl != null)
-                                    ? DecorationImage(
-                                        image: CachedNetworkImageProvider(
-                                          widget.conversation.imageUrl!,
-                                          maxWidth: 120,
-                                          maxHeight: 120,
-                                        ),
-                                        fit: BoxFit.cover,
-                                      )
-                                    : (widget.conversation.isGroup &&
-                                            widget.conversation.imageUrl !=
-                                                null)
-                                        ? DecorationImage(
-                                            image: CachedNetworkImageProvider(
-                                              widget.conversation.imageUrl!,
-                                              maxWidth: 120,
-                                              maxHeight: 120,
-                                            ),
-                                            fit: BoxFit.cover,
-                                          )
-                                        : null),
-                          ),
-                          child: _getStoryThumbnailUrl() != null
-                              ? ClipOval(
-                                  child: CachedNetworkImage(
-                                    imageUrl: _getStoryThumbnailUrl()!,
-                                    width: 50,
-                                    height: 50,
-                                    memCacheWidth: 120,
-                                    memCacheHeight: 120,
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) => Container(
-                                      width: 50,
-                                      height: 50,
-                                      color: isDark
-                                          ? const Color(0xFF1E293B)
-                                          : const Color(0xFFE2E8F0),
-                                      child: const Center(
-                                        child: SizedBox(
-                                          width: 14,
-                                          height: 14,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 1.5,
-                                            color: Color(0xFFFFFC00),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    errorWidget: (context, url, err) =>
-                                        VectorAvatarWidget(
-                                      config: _cachedAvatarConfig,
-                                      size: 48,
-                                      showAura: false,
-                                    ),
-                                  ),
-                                )
-                              : ((widget.conversation.name.toLowerCase().contains('english hub') ||
-                                      widget.conversation.toolTitle == 'English Hub')
-                                  ? ClipOval(
-                                      child: VectorAvatarWidget(
-                                        config: EnglishHubLevelGroupService.getEnglishHubAvatarConfig(widget.conversation.name),
-                                        size: 48,
-                                        showAura: true,
-                                      ),
-                                    )
-                                  : ((!_showRealPhoto ||
-                                          widget.conversation.imageUrl == null)
-                                      ? (!widget.conversation.isGroup &&
-                                              !widget.conversation.isTool &&
-                                              !widget.conversation.isNotification &&
-                                              !widget.conversation.isActiveTimer)
-                                          ? (PocketPresidentService.isPresidentId(
-                                                  widget.conversation.id)
-                                              ? const PresidentAvatarWidget(size: 48)
-                                              : VectorAvatarWidget(
-                                                  config: _cachedAvatarConfig,
-                                                  size: 48,
-                                                  showAura: true,
-                                                ))
-                                          : (widget.conversation.imageUrl == null
-                                              ? Center(
-                                                  child: Icon(
-                                                    _getIconData(),
-                                                    color: _getIconColor(isDark),
-                                                    size: 24,
-                                                  ),
-                                                )
-                                              : null)
-                                      : null)),
-                        ),
                       ),
-                      if (widget.conversation.isOnline &&
-                          !widget.conversation.isGroup)
-                        Positioned(
-                          right: 1,
-                          bottom: 1,
-                          child: Container(
-                            width: 11,
-                            height: 11,
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981), // Emerald
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: isDark
-                                    ? const Color(0xFF1A1A1A)
-                                    : const Color(0xFFFFFFFF),
-                                width: 2.0,
+                      child: widget.conversation.imageUrl == null
+                          ? Center(
+                              child: Icon(
+                                _getIconData(),
+                                color: _getIconColor(isDark),
+                                size: 24,
                               ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(width: 11),
+                            )
+                          : null,
+                    ),
+                  const SizedBox(width: 12),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1019,6 +858,14 @@ class _ConversationTileState extends State<ConversationTile> {
             ),
           ),
         ),
+        Divider(
+            height: 1,
+            thickness: 0.5,
+            color: Colors.white.withValues(alpha: 0.06),
+            indent: 78,
+            endIndent: 16,
+          ),
+        ],
       ),
     );
   }
