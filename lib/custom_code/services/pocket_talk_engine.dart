@@ -39,14 +39,21 @@ class PocketTalkEngine {
         return [];
       }
 
-      // Check current active pact count (user should have at most 2 active pacts at a time)
-      final activeCount = await PocketTrophyService.getActivePactsCount(currentUserId);
-      if (activeCount >= 2) {
-        debugPrint('PocketTalkEngine: User already has $activeCount active pacts (max 2). Skipping auto-dispatch.');
+      // If user is already actively engaged in an accepted 4-day pact, do NOT auto-dispatch!
+      final hasActive = await PocketTrophyService.hasAnyActiveAcceptedPact(currentUserId);
+      if (hasActive) {
+        debugPrint('PocketTalkEngine: User already has an active 4-day pact. Skipping auto-dispatch.');
         return [];
       }
 
-      final slotsAvailable = 2 - activeCount;
+      // Check current pending pacts
+      final pendingPacts = await PocketTrophyService.getAllPendingPactUserIds(currentUserId);
+      if (pendingPacts.length >= 5) {
+        debugPrint('PocketTalkEngine: User already has ${pendingPacts.length} pending companion invites. Skipping.');
+        return [];
+      }
+
+      final slotsAvailable = (5 - pendingPacts.length).clamp(1, 5);
 
       // 1. Fetch current user profile to determine gender & level
       final myProfile = await _supabase

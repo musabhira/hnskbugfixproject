@@ -5175,61 +5175,37 @@ Draft: "$draft"''';
         final streakDays = pact?.streakDays ?? 1;
 
         return Container(
-          width: 290,
-          margin: const EdgeInsets.symmetric(vertical: 6),
-          padding: const EdgeInsets.all(14),
+          width: 250,
+          margin: const EdgeInsets.symmetric(vertical: 4),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: accepted
-                  ? [const Color(0xFF2B1705), const Color(0xFF170E04)]
-                  : [const Color(0xFF261205), const Color(0xFF150B03)],
-            ),
-            borderRadius: BorderRadius.circular(18),
+            color: const Color(0xFF22262C),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: accepted
-                  ? const Color(0xFFFFB300)
-                  : const Color(0xFFFF7043).withValues(alpha: 0.6),
-              width: 1.2,
+                  ? const Color(0xFFFFB300).withValues(alpha: 0.6)
+                  : Colors.white.withValues(alpha: 0.12),
+              width: accepted ? 1.2 : 0.8,
             ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFF8F00).withValues(alpha: 0.22),
-                blurRadius: 12,
-                spreadRadius: 1,
-              ),
-            ],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header Row: Flame Icon + Title + Pact Badge
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    width: 38,
-                    height: 38,
+                    width: 32,
+                    height: 32,
                     decoration: BoxDecoration(
+                      color: const Color(0xFFFFB300).withValues(alpha: 0.15),
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFFF9100), Color(0xFFFF3D00)],
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              const Color(0xFFFF6D00).withValues(alpha: 0.45),
-                          blurRadius: 8,
-                        ),
-                      ],
                     ),
                     child: const Center(
-                      child: Text('🔥', style: TextStyle(fontSize: 20)),
+                      child: Text('⚡', style: TextStyle(fontSize: 16)),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -5240,46 +5216,35 @@ Draft: "$draft"''';
                               'Pocket Talk',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 15,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13.5,
                               ),
                             ),
-                            const SizedBox(width: 6),
+                            const Spacer(),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
+                                  horizontal: 5, vertical: 1.5),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFFFAB00)
-                                    .withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                  color: const Color(0xFFFFAB00),
-                                  width: 0.8,
-                                ),
+                                color: const Color(0xFFFFB300).withValues(alpha: 0.18),
+                                borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                accepted
-                                    ? 'DAY $streakDays/4 🏆'
-                                    : '4-DAY PACT',
+                                accepted ? 'Day $streakDays/4' : '4 Days',
                                 style: GoogleFonts.inter(
-                                  color: const Color(0xFFFFC107),
+                                  color: const Color(0xFFFFB300),
                                   fontSize: 9,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ),
                           ],
                         ),
+                        const SizedBox(height: 2),
                         Text(
-                          accepted
-                              ? 'Spoken Accountability Active'
-                              : (isMe
-                                  ? 'Spoken Pact Invite Sent'
-                                  : 'Spoken Pact Invitation'),
+                          '15 mins daily English • +1 Trophy 🏆',
                           style: GoogleFonts.inter(
-                            color: const Color(0xFFFFB74D),
-                            fontSize: 11,
-                            fontWeight: FontWeight.w500,
+                            color: Colors.white60,
+                            fontSize: 10.5,
                           ),
                         ),
                       ],
@@ -5287,122 +5252,8 @@ Draft: "$draft"''';
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-
-              // Pact Description & Goals
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.35),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.06),
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        const Text('🗣️', style: TextStyle(fontSize: 13)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            '15 Minutes daily English conversation',
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Text('⏱️', style: TextStyle(fontSize: 13)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Commit for 4 consecutive days (1 hr total)',
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      children: [
-                        const Text('🏆', style: TextStyle(fontSize: 13)),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            'Earn +1 Gold Trophy & become mutual mates',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFFFD54F),
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              // Active 4-Day Progress Tracker if accepted
-              if (accepted) ...[
-                const SizedBox(height: 10),
-                Row(
-                  children: List.generate(4, (index) {
-                    final dayNum = index + 1;
-                    final isDone = dayNum < streakDays;
-                    final isCurrent = dayNum == streakDays;
-                    return Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(right: index == 3 ? 0 : 5),
-                        padding: const EdgeInsets.symmetric(vertical: 4),
-                        decoration: BoxDecoration(
-                          color: isDone
-                              ? const Color(0xFFFFB300)
-                              : (isCurrent
-                                  ? const Color(0xFFFF8F00)
-                                      .withValues(alpha: 0.35)
-                                  : Colors.white.withValues(alpha: 0.08)),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: isCurrent
-                                ? const Color(0xFFFFB300)
-                                : Colors.transparent,
-                            width: 1,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Day $dayNum',
-                            style: GoogleFonts.inter(
-                              color: isDone ? Colors.black : Colors.white70,
-                              fontSize: 9.5,
-                              fontWeight: isDone || isCurrent
-                                  ? FontWeight.w700
-                                  : FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ],
-
-              // Action Buttons: Accept button for recipient, waiting status for sender
               if (!accepted) ...[
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 if (!isMe)
                   GestureDetector(
                     onTap: () async {
@@ -5413,76 +5264,66 @@ Draft: "$draft"''';
                       );
                       await _sendMessage(
                         text:
-                            '🤝 Accepted Pocket Talk! 4-day English spoken pact is ON! 🏆',
+                            '🤝 Accepted Pocket Talk! 4-day spoken pact is ON! 🏆',
                         messageType: 'text',
                       );
                       safeSetState(() {});
                     },
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      padding: const EdgeInsets.symmetric(vertical: 7),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFFF9100), Color(0xFFFF3D00)],
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFFFF3D00).withValues(alpha: 0.4),
-                            blurRadius: 10,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
+                        color: const Color(0xFFFFB300),
+                        borderRadius: BorderRadius.circular(8),
                       ),
                       child: Center(
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Text('🤝', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 6),
-                            Text(
-                              'Accept 4-Day Spoken Pact',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                fontSize: 13.5,
-                              ),
-                            ),
-                          ],
+                        child: Text(
+                          'Accept 4-Day Pact 🤝',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
                   )
                 else
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.06),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.1),
-                      ),
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Text('⏳', style: TextStyle(fontSize: 12)),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Waiting for mate to accept agreement...',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFFFFB74D),
-                              fontWeight: FontWeight.w600,
-                              fontSize: 11.5,
-                            ),
-                          ),
-                        ],
+                  Padding(
+                    padding: const EdgeInsets.only(top: 4),
+                    child: Text(
+                      'Waiting for mate to accept ⏳',
+                      style: GoogleFonts.inter(
+                        color: Colors.white54,
+                        fontSize: 10.5,
+                        fontStyle: FontStyle.italic,
                       ),
                     ),
                   ),
+              ] else ...[
+                const SizedBox(height: 6),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(6),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('🔥', style: TextStyle(fontSize: 11)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Pact active: Day $streakDays of 4',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFFFB300),
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ],
           ),
@@ -5490,7 +5331,6 @@ Draft: "$draft"''';
       },
     );
   }
-
   Future<void> _sendPocketTalkInvite() async {
     if (!AuthHelper.checkLoggedIn(context)) return;
     if (!widget.groupId.startsWith('p:')) return;
@@ -6432,7 +6272,11 @@ Draft: "$draft"''';
                                   color: Color(0xFFFF8A00)),
                               onPressed: () => _pickAndSendSnap(),
                             ),
-                            if (widget.groupId.startsWith('p:'))
+                            if (widget.groupId.startsWith('p:') &&
+                                !PocketRobotService.isRobotId(
+                                    widget.groupId.substring(2)) &&
+                                !PocketPresidentService.isPresidentId(
+                                    widget.groupId.substring(2)))
                               IconButton(
                                 iconSize: 20,
                                 constraints: const BoxConstraints(
@@ -6665,7 +6509,11 @@ Draft: "$draft"''';
                     Navigator.pop(ctx);
                     _showToolPicker();
                   }),
-                  if (widget.groupId.startsWith('p:'))
+                  if (widget.groupId.startsWith('p:') &&
+                      !PocketRobotService.isRobotId(
+                          widget.groupId.substring(2)) &&
+                      !PocketPresidentService.isPresidentId(
+                          widget.groupId.substring(2)))
                     _buildAttachOption(Icons.bolt_rounded,
                         const Color(0xFF00E5FF), 'Pocket Talk ⚡', () {
                       Navigator.pop(ctx);

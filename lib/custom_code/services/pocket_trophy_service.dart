@@ -18,8 +18,10 @@ class PocketTalkPact {
   final bool isCompleted; // True when 4 days of 15m achieved & trophy minted
   final bool isMatesNow; // True when officially unlocked as mutual Pocket Mates
   final int trophiesEarned;
-  final bool isForfeited; // True if pact failed/breached due to missed daily quota
-  final bool hasBothSpoken; // True when both users have sent at least one message / interacted
+  final bool
+      isForfeited; // True if pact failed/breached due to missed daily quota
+  final bool
+      hasBothSpoken; // True when both users have sent at least one message / interacted
 
   const PocketTalkPact({
     required this.pactId,
@@ -72,7 +74,8 @@ class PocketTalkPact {
       isMatesNow: map['isMatesNow'] == true || map['isMatesNow'] == 'true',
       trophiesEarned: (map['trophiesEarned'] as num?)?.toInt() ?? 0,
       isForfeited: map['isForfeited'] == true || map['isForfeited'] == 'true',
-      hasBothSpoken: map['hasBothSpoken'] == true || map['hasBothSpoken'] == 'true',
+      hasBothSpoken:
+          map['hasBothSpoken'] == true || map['hasBothSpoken'] == 'true',
     );
   }
 }
@@ -148,8 +151,7 @@ class PocketTrophyService {
       try {
         await _supabase
             .from('profile')
-            .update({'trophies_count': newCount})
-            .eq('user_id', userId);
+            .update({'trophies_count': newCount}).eq('user_id', userId);
       } catch (_) {}
       return newCount;
     } catch (_) {
@@ -158,7 +160,8 @@ class PocketTrophyService {
   }
 
   /// Check whether two users have an active, requested, or completed 4-day pact
-  static Future<PocketTalkPact?> getPact(String myId, String otherUserId) async {
+  static Future<PocketTalkPact?> getPact(
+      String myId, String otherUserId) async {
     if (myId.isEmpty || otherUserId.isEmpty) return null;
     // 🤖 Robots & Presidents do NOT participate in PocketTalk Pacts / Streaks
     if (PocketRobotService.isRobotId(myId) ||
@@ -179,10 +182,12 @@ class PocketTrophyService {
           user1Id: decoded['user1Id'] ?? myId,
           user2Id: decoded['user2Id'] ?? otherUserId,
           initiatorId: decoded['initiatorId'] ?? decoded['user1Id'] ?? myId,
-          startedAt: DateTime.tryParse(decoded['startedAt'] ?? '') ?? DateTime.now(),
+          startedAt:
+              DateTime.tryParse(decoded['startedAt'] ?? '') ?? DateTime.now(),
           streakDays: int.tryParse(decoded['streakDays'] ?? '1') ?? 1,
           lastSpokenDate: decoded['lastSpokenDate'] ?? '',
-          dailyMinutesToday: int.tryParse(decoded['dailyMinutesToday'] ?? '0') ?? 0,
+          dailyMinutesToday:
+              int.tryParse(decoded['dailyMinutesToday'] ?? '0') ?? 0,
           isAccepted: decoded['isAccepted'] == 'true',
           isCompleted: decoded['isCompleted'] == 'true',
           isMatesNow: decoded['isMatesNow'] == 'true',
@@ -241,7 +246,8 @@ class PocketTrophyService {
     required String myId,
     required String otherUserId,
     bool autoAccept = false,
-  }) => requestPact(myId: myId, otherUserId: otherUserId, autoAccept: autoAccept);
+  }) =>
+      requestPact(myId: myId, otherUserId: otherUserId, autoAccept: autoAccept);
 
   /// Accept an incoming PocketTalk Spoken Pact request
   static Future<PocketTalkPact?> acceptPact({
@@ -307,7 +313,9 @@ class PocketTrophyService {
     if (daysDiff == 1) {
       if (pact.dailyMinutesToday >= kDailyRequiredMinutes) {
         // Yesterday's 15 mins was accomplished! Advance to next day's session
-        final nextStreak = pact.streakDays < kPactRequiredDays ? pact.streakDays + 1 : pact.streakDays;
+        final nextStreak = pact.streakDays < kPactRequiredDays
+            ? pact.streakDays + 1
+            : pact.streakDays;
         final rolledOver = PocketTalkPact(
           pactId: pact.pactId,
           user1Id: pact.user1Id,
@@ -348,7 +356,8 @@ class PocketTrophyService {
           pact: breached,
           didBreach: true,
           deductedTrophy: true,
-          message: 'Pact broken! You did not reach 15 minutes yesterday. -1 Trophy deducted 🏆⬇️',
+          message:
+              'Pact broken! You did not reach 15 minutes yesterday. -1 Trophy deducted 🏆⬇️',
         );
       }
     } else if (daysDiff > 1) {
@@ -374,7 +383,8 @@ class PocketTrophyService {
         pact: breached,
         didBreach: true,
         deductedTrophy: true,
-        message: 'Pact broken! Missed daily chat. -1 Trophy deducted from your profile 🏆⬇️',
+        message:
+            'Pact broken! Missed daily chat. -1 Trophy deducted from your profile 🏆⬇️',
       );
     }
 
@@ -382,29 +392,37 @@ class PocketTrophyService {
   }
 
   /// Accumulate active chat minutes today towards the 15-minute daily threshold
-  static Future<({
-    PocketTalkPact? pact,
-    bool didCompleteDayQuota,
-    bool didUnlockTrophy,
-  })> recordActiveChatMinutes({
+  static Future<
+      ({
+        PocketTalkPact? pact,
+        bool didCompleteDayQuota,
+        bool didUnlockTrophy,
+      })> recordActiveChatMinutes({
     required String myId,
     required String otherUserId,
     int minutesToAdd = 1,
   }) async {
-    final eval = await checkAndEvaluatePact(myId: myId, otherUserId: otherUserId);
+    final eval =
+        await checkAndEvaluatePact(myId: myId, otherUserId: otherUserId);
     if (eval == null) {
       return (pact: null, didCompleteDayQuota: false, didUnlockTrophy: false);
     }
     final pact = eval.pact;
 
     if (!pact.isAccepted || pact.isCompleted) {
-      return (pact: pact, didCompleteDayQuota: pact.isCompleted, didUnlockTrophy: false);
+      return (
+        pact: pact,
+        didCompleteDayQuota: pact.isCompleted,
+        didUnlockTrophy: false
+      );
     }
 
     final today = _getTodayDateString();
-    final currentMins = (pact.lastSpokenDate == today) ? pact.dailyMinutesToday : 0;
+    final currentMins =
+        (pact.lastSpokenDate == today) ? pact.dailyMinutesToday : 0;
     final newMins = currentMins + minutesToAdd;
-    final didJustReachQuota = currentMins < kDailyRequiredMinutes && newMins >= kDailyRequiredMinutes;
+    final didJustReachQuota =
+        currentMins < kDailyRequiredMinutes && newMins >= kDailyRequiredMinutes;
 
     bool didCompletePact = false;
     int finalStreak = pact.streakDays;
@@ -428,7 +446,8 @@ class PocketTrophyService {
       isAccepted: true,
       isCompleted: didCompletePact,
       isMatesNow: didCompletePact,
-      trophiesEarned: didCompletePact ? pact.trophiesEarned + 1 : pact.trophiesEarned,
+      trophiesEarned:
+          didCompletePact ? pact.trophiesEarned + 1 : pact.trophiesEarned,
       isForfeited: false,
     );
 
@@ -441,15 +460,21 @@ class PocketTrophyService {
       return (pact: updated, didCompleteDayQuota: true, didUnlockTrophy: true);
     }
 
-    return (pact: updated, didCompleteDayQuota: didJustReachQuota, didUnlockTrophy: false);
+    return (
+      pact: updated,
+      didCompleteDayQuota: didJustReachQuota,
+      didUnlockTrophy: false
+    );
   }
 
   /// Legacy compatibility wrapper
-  static Future<({PocketTalkPact? pact, bool didUnlockTrophy})> recordDailySpokenInteraction({
+  static Future<({PocketTalkPact? pact, bool didUnlockTrophy})>
+      recordDailySpokenInteraction({
     required String myId,
     required String otherUserId,
   }) async {
-    final res = await recordActiveChatMinutes(myId: myId, otherUserId: otherUserId, minutesToAdd: 1);
+    final res = await recordActiveChatMinutes(
+        myId: myId, otherUserId: otherUserId, minutesToAdd: 1);
     return (pact: res.pact, didUnlockTrophy: res.didUnlockTrophy);
   }
 
@@ -509,7 +534,8 @@ class PocketTrophyService {
     required String otherUserId,
   }) async {
     if (myId.isEmpty || otherUserId.isEmpty || myId == otherUserId) return true;
-    if (PocketRobotService.isRobotId(otherUserId)) return true; // Robots always public
+    if (PocketRobotService.isRobotId(otherUserId))
+      return true; // Robots always public
 
     final pact = await getPact(myId, otherUserId);
     if (pact != null && pact.isMatesNow) return true;
@@ -532,7 +558,8 @@ class PocketTrophyService {
       for (final k in keys) {
         final val = prefs.getString(k);
         if (val != null && val.contains(userId)) {
-          if (!val.contains('isCompleted=true') && !val.contains('isForfeited=true')) {
+          if (!val.contains('isCompleted=true') &&
+              !val.contains('isForfeited=true')) {
             count++;
           }
         }
@@ -544,14 +571,91 @@ class PocketTrophyService {
   }
 
   /// Check if two users have an active or pending pact
-  static Future<bool> hasActiveOrPendingPact(String myId, String otherUserId) async {
+  static Future<bool> hasActiveOrPendingPact(
+      String myId, String otherUserId) async {
     final pact = await getPact(myId, otherUserId);
     if (pact == null) return false;
     return !pact.isForfeited && !pact.isCompleted;
   }
 
+  /// Check whether the user currently has ANY active accepted 4-day pact
+  static Future<bool> hasAnyActiveAcceptedPact(String userId) async {
+    if (userId.isEmpty) return false;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys().where((k) => k.startsWith(kPrefsPactPrefix));
+      for (final k in keys) {
+        final val = prefs.getString(k);
+        if (val != null && val.contains(userId)) {
+          final decoded = Uri.splitQueryString(val);
+          final isAccepted = decoded['isAccepted'] == 'true';
+          final isForfeited = decoded['isForfeited'] == 'true';
+          final isCompleted = decoded['isCompleted'] == 'true';
+          if (isAccepted && !isForfeited && !isCompleted) {
+            return true;
+          }
+        }
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  /// Get all user IDs who have an active accepted 4-day pact with this user
+  static Future<Set<String>> getAllActiveAcceptedPactUserIds(
+      String userId) async {
+    final result = <String>{};
+    if (userId.isEmpty) return result;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys().where((k) => k.startsWith(kPrefsPactPrefix));
+      for (final k in keys) {
+        final val = prefs.getString(k);
+        if (val != null && val.contains(userId)) {
+          final decoded = Uri.splitQueryString(val);
+          final isAccepted = decoded['isAccepted'] == 'true';
+          final isForfeited = decoded['isForfeited'] == 'true';
+          final isCompleted = decoded['isCompleted'] == 'true';
+          if (isAccepted && !isForfeited && !isCompleted) {
+            final u1 = decoded['user1Id'];
+            final u2 = decoded['user2Id'];
+            if (u1 != null && u1 != userId) result.add(u1);
+            if (u2 != null && u2 != userId) result.add(u2);
+          }
+        }
+      }
+    } catch (_) {}
+    return result;
+  }
+
+  /// Get all user IDs who have a pending (unaccepted) pact invite with this user
+  static Future<Set<String>> getAllPendingPactUserIds(String userId) async {
+    final result = <String>{};
+    if (userId.isEmpty) return result;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys().where((k) => k.startsWith(kPrefsPactPrefix));
+      for (final k in keys) {
+        final val = prefs.getString(k);
+        if (val != null && val.contains(userId)) {
+          final decoded = Uri.splitQueryString(val);
+          final isAccepted = decoded['isAccepted'] == 'true';
+          final isForfeited = decoded['isForfeited'] == 'true';
+          final isCompleted = decoded['isCompleted'] == 'true';
+          if (!isAccepted && !isForfeited && !isCompleted) {
+            final u1 = decoded['user1Id'];
+            final u2 = decoded['user2Id'];
+            if (u1 != null && u1 != userId) result.add(u1);
+            if (u2 != null && u2 != userId) result.add(u2);
+          }
+        }
+      }
+    } catch (_) {}
+    return result;
+  }
+
   /// Get all other user IDs who have an active or pending pact with this user
-  static Future<Set<String>> getAllActiveOrPendingPactUserIds(String userId) async {
+  static Future<Set<String>> getAllActiveOrPendingPactUserIds(
+      String userId) async {
     final result = <String>{};
     if (userId.isEmpty) return result;
     try {
@@ -660,8 +764,7 @@ class PocketTrophyService {
       try {
         await _supabase
             .from('profile')
-            .update({'trophies_count': newCount})
-            .eq('user_id', userId);
+            .update({'trophies_count': newCount}).eq('user_id', userId);
       } catch (_) {}
     } catch (_) {}
   }
@@ -674,7 +777,15 @@ class PocketTrophyService {
     if (malRegex.hasMatch(text)) return true;
 
     // Check for common transliterated words
-    final manglish = ['enthoke', 'sugano', 'njan', 'evideya', 'chechi', 'chetta', 'mone'];
+    final manglish = [
+      'enthoke',
+      'sugano',
+      'njan',
+      'evideya',
+      'chechi',
+      'chetta',
+      'mone'
+    ];
     final lower = text.toLowerCase();
     for (final word in manglish) {
       if (lower.contains(word)) return true;

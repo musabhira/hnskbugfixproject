@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
 import '/custom_code/widgets/index.dart';
@@ -90,8 +91,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   int _refreshKeyCount = 0;
   late PageController _pageController;
   int _searchTabIndex = 0; // 0 for People, 1 for Products
-  int _searchPeopleFilterIndex = 0; // 0: All, 1: Humans, 2: Robots, 3: Pocket Talk
+  int _searchPeopleFilterIndex =
+      0; // 0: All, 1: Humans, 2: Robots, 3: Pocket Talk
   Set<String> _pocketTalkPeerIds = {};
+  Set<String> _pocketTalkActivePeerIds = {};
+  Set<String> _pocketTalkPendingPeerIds = {};
   bool _isCongestedSearch = false; // Toggle for Congested / Compact View
   int _searchPeopleOffset = 0;
   bool _hasMorePeopleSearch = true;
@@ -104,15 +108,32 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
     if (uid.isEmpty) return;
     try {
-      final ids = await PocketTrophyService.getAllActiveOrPendingPactUserIds(uid);
+      final activeIds =
+          await PocketTrophyService.getAllActiveAcceptedPactUserIds(uid);
+      final pendingIds =
+          await PocketTrophyService.getAllPendingPactUserIds(uid);
+      final allIds = {...activeIds, ...pendingIds};
       if (mounted) {
-        safeSetState(() => _pocketTalkPeerIds = ids);
+        safeSetState(() {
+          _pocketTalkActivePeerIds = activeIds;
+          _pocketTalkPendingPeerIds = pendingIds;
+          _pocketTalkPeerIds = allIds;
+        });
       }
-      if (ids.isEmpty) {
-        await PocketTalkEngine.dispatchAutoPocketTalkRequests(currentUserId: uid);
-        final updatedIds = await PocketTrophyService.getAllActiveOrPendingPactUserIds(uid);
+      // If user has NO active pact and NO pending pacts, auto-dispatch to companion peers so they are never alone!
+      if (activeIds.isEmpty && pendingIds.isEmpty) {
+        await PocketTalkEngine.dispatchAutoPocketTalkRequests(
+            currentUserId: uid);
+        final updatedPending =
+            await PocketTrophyService.getAllPendingPactUserIds(uid);
         if (mounted) {
-          safeSetState(() => _pocketTalkPeerIds = updatedIds);
+          safeSetState(() {
+            _pocketTalkPendingPeerIds = updatedPending;
+            _pocketTalkPeerIds = {
+              ..._pocketTalkActivePeerIds,
+              ...updatedPending
+            };
+          });
         }
       }
     } catch (_) {}
@@ -1613,10 +1634,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     final unreadCount = conversations.where((c) => c.unreadCount > 0).length;
     final groupsCount = conversations.where((c) => c.isGroup).length;
     final pocketTalkCount = conversations.where((c) {
+      if (PocketRobotService.isRobotId(c.id) ||
+          PocketPresidentService.isPresidentId(c.id) ||
+          c.isGroup) {
+        return false;
+      }
       return _pocketTalkPeerIds.contains(c.id) ||
           (c.lastMessage?.contains('PocketTalk') == true ||
-           c.lastMessage?.contains('Pocket Talk') == true ||
-           c.lastMessage?.contains('⚡') == true);
+              c.lastMessage?.contains('Pocket Talk') == true);
     }).length;
 
     return Padding(
@@ -2802,8 +2827,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             icon: material.Icons.bolt_rounded,
                             isSelected: _searchPeopleFilterIndex == 3,
                             onTap: () async {
-                              safeSetState(
-                                  () => _searchPeopleFilterIndex = 3);
+                              safeSetState(() => _searchPeopleFilterIndex = 3);
                               await _refreshPocketTalkPeers();
                             },
                           ),
@@ -2823,10 +2847,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       } else if (_searchPeopleFilterIndex == 2) {
                         return PocketRobotService.isRobotId(c.id);
                       } else if (_searchPeopleFilterIndex == 3) {
+                        if (PocketRobotService.isRobotId(c.id) ||
+                            PocketPresidentService.isPresidentId(c.id) ||
+                            c.isGroup) {
+                          return false;
+                        }
                         return _pocketTalkPeerIds.contains(c.id) ||
                             (c.lastMessage?.contains('PocketTalk') == true ||
-                             c.lastMessage?.contains('Pocket Talk') == true ||
-                             c.lastMessage?.contains('⚡') == true);
+                                c.lastMessage?.contains('Pocket Talk') == true);
                       }
                       return true;
                     }).toList();
@@ -3687,7 +3715,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 child: _buildChatCategoryFilterChips(combined),
               ),
 
-
               if (_chatCategoryFilterIndex == 3) ...[
                 // Requests View (Strangers, Marketplace inquiries, Anonymous chat requests)
                 _buildRequestsSubTabToggle(isDark),
@@ -3707,7 +3734,28 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         filteredConversations
                             .where((c) => !pendingSenderIds.contains(c.id))
                             .toList();
-                    if (_chatCategoryFilterIndex == 1) {
+                    if (_chatCategoryFilterIndex == 0) {
+                      // Under 'All': hide pending/unaccepted auto-dispatched Pocket Talk invites.
+                      // Once accepted, they appear in 'All'!
+                      activeFiltered = activeFiltered.where((c) {
+                        if (PocketRobotService.isRobotId(c.id) ||
+                            PocketPresidentService.isPresidentId(c.id) ||
+                            c.isGroup) {
+                          return true;
+                        }
+                        final isPendingPact = _pocketTalkPendingPeerIds
+                                .contains(c.id) ||
+                            (c.lastMessage?.contains('Pocket Talk') == true &&
+                                !_pocketTalkActivePeerIds.contains(c.id)) ||
+                            (c.lastMessage?.contains('PocketTalk') == true &&
+                                !_pocketTalkActivePeerIds.contains(c.id));
+                        if (isPendingPact &&
+                            !_pocketTalkActivePeerIds.contains(c.id)) {
+                          return false; // Keep exclusively in 'Pocket Talk' tab until accepted!
+                        }
+                        return true;
+                      }).toList();
+                    } else if (_chatCategoryFilterIndex == 1) {
                       activeFiltered = activeFiltered
                           .where((c) => PocketRobotService.isRobotId(c.id))
                           .toList();
@@ -3733,11 +3781,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             !lowerName.contains('english practice');
                       }).toList();
                     } else if (_chatCategoryFilterIndex == 6) {
+                      // Strictly human Pocket Talk conversations (both pending and active)
                       activeFiltered = activeFiltered.where((c) {
+                        if (PocketRobotService.isRobotId(c.id) ||
+                            PocketPresidentService.isPresidentId(c.id) ||
+                            c.isGroup) {
+                          return false;
+                        }
                         return _pocketTalkPeerIds.contains(c.id) ||
                             (c.lastMessage?.contains('PocketTalk') == true ||
-                             c.lastMessage?.contains('Pocket Talk') == true ||
-                             c.lastMessage?.contains('⚡') == true);
+                                c.lastMessage?.contains('Pocket Talk') == true);
                       }).toList();
                     }
 
