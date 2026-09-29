@@ -44,6 +44,7 @@ class _CommunityChatPageState extends State<CommunityChatPage>
 
   List<Map<String, dynamic>> _conversations = [];
   List<Map<String, dynamic>> _groups = [];
+  String _chatCategoryFilter = 'All'; // 'All', 'PocketTalks', 'Groups'
   bool _isLoading = true;
   Timer? _refreshTimer;
   Uint8List? _selectedImageBytes;
@@ -516,19 +517,77 @@ class _CommunityChatPageState extends State<CommunityChatPage>
       ));
     }
 
-    return RefreshIndicator(
-      onRefresh: _loadData,
-      color: Colors.yellow,
-      backgroundColor: Colors.grey.shade900,
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: allChats.length,
-        itemBuilder: (context, index) {
-          final chat = allChats[index];
-          final isGroup = chat['type'] == 'group';
+    final filteredChats = allChats.where((chat) {
+      if (_chatCategoryFilter == 'PocketTalks') {
+        return chat['type'] == 'personal';
+      } else if (_chatCategoryFilter == 'Groups') {
+        return chat['type'] == 'group';
+      }
+      return true;
+    }).toList();
 
-          return _buildChatListItem(chat, isGroup);
-        },
+    return Column(
+      children: [
+        // ⚡ Filter Ribbon Bar ('All', 'PocketTalks 🏆', 'Groups')
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          color: Colors.black,
+          child: Row(
+            children: [
+              _buildFilterChip('All', 'All Chats'),
+              const SizedBox(width: 8),
+              _buildFilterChip('PocketTalks', '⚡ PocketTalks 🏆'),
+              const SizedBox(width: 8),
+              _buildFilterChip('Groups', '👥 Groups'),
+            ],
+          ),
+        ),
+        Expanded(
+          child: RefreshIndicator(
+            onRefresh: _loadData,
+            color: Colors.yellow,
+            backgroundColor: Colors.grey.shade900,
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              itemCount: filteredChats.length,
+              itemBuilder: (context, index) {
+                final chat = filteredChats[index];
+                final isGroup = chat['type'] == 'group';
+
+                return _buildChatListItem(chat, isGroup);
+              },
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildFilterChip(String key, String label) {
+    final isSelected = _chatCategoryFilter == key;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        safeSetState(() => _chatCategoryFilter = key);
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.yellow : const Color(0xFF1E293B),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? Colors.yellow : Colors.white12,
+            width: 1,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isSelected ? Colors.black : Colors.white70,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            fontSize: 12,
+          ),
+        ),
       ),
     );
   }

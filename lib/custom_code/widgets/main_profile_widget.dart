@@ -1210,6 +1210,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                         message: messageController.text.trim(),
                         contextType: 'english_hub',
                       );
+                      // ⚡ Ensure PocketTalk 4-Day Pact is immediately created and placed in the main chat list
+                      await PocketTrophyService.ensurePact(myId: myId, otherUserId: userId);
                       if (ok && mounted) {
                         setState(() => _isMateRequested = true);
                         ScaffoldMessenger.of(context).showSnackBar(
@@ -4425,7 +4427,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
     final remainingForNext = isRobot ? 0 : PocketScoreLevelEngine.getRemainingScoreForNextLevel(score);
     final progressLabel = isRobot
         ? 'Pocket Robot • Level $currentLvl Fortress'
-        : PocketScoreLevelEngine.getProgressLabel(score);
+        : PocketScoreLevelEngine.getProgressLabel(score, trophies: _pocketTrophyCount);
 
     return GestureDetector(
       onTap: () {
