@@ -1215,6 +1215,66 @@ class _ConversationTileState extends State<ConversationTile> {
                                   }
                                 }
 
+                                final isMentioned = widget.conversation.isGroup &&
+                                    widget.conversation.unreadCount > 0 &&
+                                    widget.conversation.lastMessage != null &&
+                                    widget.conversation.lastMessage!.contains('@');
+
+                                if (isMentioned) {
+                                  return Row(
+                                    children: [
+                                      Container(
+                                        margin: const EdgeInsets.only(right: 6),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 5, vertical: 1.5),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFFD600)
+                                              .withValues(alpha: 0.18),
+                                          borderRadius:
+                                              BorderRadius.circular(4),
+                                          border: Border.all(
+                                            color: const Color(0xFFFFD600)
+                                                .withValues(alpha: 0.6),
+                                            width: 0.8,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            const Icon(
+                                              material.Icons
+                                                  .alternate_email_rounded,
+                                              size: 10,
+                                              color: Color(0xFFFFD600),
+                                            ),
+                                            const SizedBox(width: 2),
+                                            Text(
+                                              'Mentioned',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFFD600),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 10,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: Text(
+                                          widget.conversation.lastMessage ?? '',
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFFFFD600),
+                                            fontSize: 13.5,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+
                                 return Text(
                                   widget.conversation.isActiveTimer
                                       ? (widget.conversation.taskTitle ??
@@ -1275,36 +1335,58 @@ class _ConversationTileState extends State<ConversationTile> {
                       ),
                     if (widget.conversation.unreadCount > 0) ...[
                       const SizedBox(height: 5),
-                      Container(
-                        constraints: const BoxConstraints(minWidth: 19),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 5, vertical: 2.5),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFFFFD600)
-                              : const Color(0xFFFFF500),
-                          borderRadius: BorderRadius.circular(10),
-                          boxShadow: [
-                            BoxShadow(
-                              color: (isDark
-                                      ? const Color(0xFFFFD600)
-                                      : const Color(0xFFFFF500))
-                                  .withValues(alpha: 0.4),
-                              blurRadius: 3,
-                              spreadRadius: -1,
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (widget.conversation.isGroup &&
+                              widget.conversation.lastMessage != null &&
+                              widget.conversation.lastMessage!.contains('@')) ...[
+                            Container(
+                              margin: const EdgeInsets.only(right: 4),
+                              padding: const EdgeInsets.all(2.5),
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFFFD600),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                material.Icons.alternate_email_rounded,
+                                size: 9,
+                                color: Colors.black,
+                              ),
                             ),
                           ],
-                        ),
-                        child: Center(
-                          child: Text(
-                            widget.conversation.unreadCount.toString(),
-                            style: GoogleFonts.outfit(
-                              color: isDark ? Colors.black : Colors.white,
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
+                          Container(
+                            constraints: const BoxConstraints(minWidth: 19),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 5, vertical: 2.5),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? const Color(0xFFFFD600)
+                                  : const Color(0xFFFFF500),
+                              borderRadius: BorderRadius.circular(10),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: (isDark
+                                          ? const Color(0xFFFFD600)
+                                          : const Color(0xFFFFF500))
+                                      .withValues(alpha: 0.4),
+                                  blurRadius: 3,
+                                  spreadRadius: -1,
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                widget.conversation.unreadCount.toString(),
+                                style: GoogleFonts.outfit(
+                                  color: isDark ? Colors.black : Colors.white,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                             ),
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ],

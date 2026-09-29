@@ -4085,7 +4085,7 @@ Draft: "$draft"''';
                   child: Container(
                     decoration: BoxDecoration(
                       color: isMe
-                          ? const Color(0xFF005C4B)
+                          ? const Color(0xFF2C2407)
                           : const Color(0xFF1F2C34),
                       borderRadius: BorderRadius.circular(12).copyWith(
                         bottomRight: isMe
@@ -4096,7 +4096,9 @@ Draft: "$draft"''';
                             : const Radius.circular(12),
                       ),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.05),
+                        color: isMe
+                            ? const Color(0xFFFFD600).withValues(alpha: 0.22)
+                            : Colors.white.withValues(alpha: 0.05),
                         width: 0.8,
                       ),
                     ),

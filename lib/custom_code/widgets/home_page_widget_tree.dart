@@ -1612,6 +1612,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         .length;
     final unreadCount = conversations.where((c) => c.unreadCount > 0).length;
     final groupsCount = conversations.where((c) => c.isGroup).length;
+    final pocketTalkCount = conversations.where((c) {
+      return _pocketTalkPeerIds.contains(c.id) ||
+          (c.lastMessage?.contains('PocketTalk') == true ||
+           c.lastMessage?.contains('Pocket Talk') == true ||
+           c.lastMessage?.contains('⚡') == true);
+    }).length;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 2, 14, 6),
@@ -1624,6 +1630,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
               title: 'All',
               index: 0,
               icon: Icons.all_inbox_rounded,
+              isDark: isDark,
+            ),
+            const SizedBox(width: 6),
+            _buildCategoryChipItem(
+              title: 'Pocket Talk ⚡',
+              index: 6,
+              count: pocketTalkCount > 0 ? pocketTalkCount : null,
+              icon: Icons.bolt_rounded,
+              highlightBadge: pocketTalkCount > 0,
               isDark: isDark,
             ),
             const SizedBox(width: 6),
@@ -1688,6 +1703,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         setState(() {
           _chatCategoryFilterIndex = index;
         });
+        if (index == 6) {
+          _refreshPocketTalkPeers();
+        }
       },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -3714,6 +3732,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             !lowerName.contains('english learning') &&
                             !lowerName.contains('english practice');
                       }).toList();
+                    } else if (_chatCategoryFilterIndex == 6) {
+                      activeFiltered = activeFiltered.where((c) {
+                        return _pocketTalkPeerIds.contains(c.id) ||
+                            (c.lastMessage?.contains('PocketTalk') == true ||
+                             c.lastMessage?.contains('Pocket Talk') == true ||
+                             c.lastMessage?.contains('⚡') == true);
+                      }).toList();
                     }
 
                     if (activeFiltered.isNotEmpty) {
@@ -3952,7 +3977,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           ? 'No unread messages'
                                           : (_chatCategoryFilterIndex == 5
                                               ? 'No groups joined yet'
-                                              : 'No conversations yet'))),
+                                              : (_chatCategoryFilterIndex == 6
+                                                  ? 'No Pocket Talk pacts yet. Start a 4-day spoken pact! ⚡'
+                                                  : 'No conversations yet')))),
                               style: GoogleFonts.outfit(
                                 fontSize: 16,
                                 color: material.Colors.white
