@@ -931,6 +931,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     _signInScrollController.dispose();
     _bgmPlayer?.stop();
     _bgmPlayer?.dispose();
+    PocketGameAudioService.instance.stop();
+
     _heroAnimController.dispose();
     _transformationController.dispose();
     _ambientController.dispose();
@@ -1247,6 +1249,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             _loadingMessage = 'Welcome back! Opening your home...';
           });
           await Future.delayed(const Duration(milliseconds: 350));
+          await _bgmPlayer?.stop();
+          await PocketGameAudioService.instance.stop();
           if (mounted) {
             context.goNamedAuth(HomePageWidget.routeName, context.mounted);
           }
@@ -1268,6 +1272,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     await Future.delayed(const Duration(milliseconds: 400));
     await _saveOnboardingChoicesLocally();
     _bgmPlayer?.stop();
+    await PocketGameAudioService.instance.stop();
     if (mounted) {
       final lvl =
           PocketSyllabusRepository.resolveLevelFromText(_selectedEnglishLevel);
@@ -1278,6 +1283,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             nativeLanguage: _selectedNativeLanguage,
             onContinue: () {
               Navigator.of(ctx).pop();
+              _bgmPlayer?.stop();
+              PocketGameAudioService.instance.stop();
               if (mounted) {
                 context.goNamed(HomePageWidget.routeName);
               }
@@ -1286,6 +1293,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         ),
       );
     }
+
   }
 
   @override

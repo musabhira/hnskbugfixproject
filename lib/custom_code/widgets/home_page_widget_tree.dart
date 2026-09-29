@@ -43,6 +43,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
 typedef ChatConversation = groups_provider.ChatConversation;
@@ -216,6 +218,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   @override
   void initState() {
     super.initState();
+    PocketGameAudioService.instance.stop();
     _pageController = PageController(initialPage: _chatTabIndex);
     ContactsNameService().initialize();
     final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
@@ -231,12 +234,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
     // Add post frame callback to check for updates after initial render
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      PocketGameAudioService.instance.stop();
       _checkAppUpdate();
       _checkEulaAndRedirect();
       _loadVibesFilterInitial();
       _checkOnboarding();
     });
   }
+
 
   Future<void> _checkOnboarding() async {
     final user = supabase.auth.currentUser;
@@ -520,15 +525,22 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     setState(() {
       _chatTabIndex = index;
     });
+    if (index != 1) {
+      PocketGameAudioService.instance.stop();
+    }
   }
 
   void _onTabTapped(int index) {
+    if (index != 1) {
+      PocketGameAudioService.instance.stop();
+    }
     _pageController.animateToPage(
       index,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
   }
+
 
   Future<void> _loadCachedData() async {
     try {

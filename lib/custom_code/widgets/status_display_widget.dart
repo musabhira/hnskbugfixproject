@@ -2535,8 +2535,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     _currentVideoController?.dispose();
     _replyController.dispose();
     _replyFocusNode.dispose();
-    PocketGameAudioService.instance.pause();
+    PocketGameAudioService.instance.stop();
     super.dispose();
+
   }
 
   bool _isUuid(String id) {
@@ -2920,11 +2921,12 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         PocketGameAudioService.instance.playNextShuffleTrack(mood: 'happy');
       } else {
         // Strictly NO background music for human stories
-        PocketGameAudioService.instance.pause();
+        PocketGameAudioService.instance.stop();
       }
     } else {
-      PocketGameAudioService.instance.pause();
+      PocketGameAudioService.instance.stop();
     }
+
 
     if (status['media_type'] == 'video' && _currentVideoController != null) {
       await _currentVideoController!.play();

@@ -11,6 +11,8 @@ import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+
 
 /// 🌟 Clean Step-by-Step Profile Creation Flow
 ///
@@ -150,11 +152,13 @@ class _ProfileSetupOnboardingPageState
           await prefs.setBool('profile_setup_completed_${user.id}', true);
           await prefs.setBool('profile_setup_prompted_${user.id}', true);
           await _bgmPlayer?.stop();
+          await PocketGameAudioService.instance.stop();
           await Future.delayed(const Duration(milliseconds: 350));
           if (mounted) {
             context.goNamedAuth(HomePageWidget.routeName, context.mounted);
             return;
           }
+
         }
 
         if (existing != null && mounted) {
@@ -187,11 +191,13 @@ class _ProfileSetupOnboardingPageState
   void dispose() {
     _bgmPlayer?.stop();
     _bgmPlayer?.dispose();
+    PocketGameAudioService.instance.stop();
     _pageController.dispose();
     _nameController.dispose();
     _phoneController.dispose();
     super.dispose();
   }
+
 
   Future<void> _pickImage() async {
     HapticFeedback.selectionClick();
@@ -381,8 +387,12 @@ class _ProfileSetupOnboardingPageState
           ),
         );
 
+        await _bgmPlayer?.stop();
+        await PocketGameAudioService.instance.stop();
+
         // Smooth navigation to HomePage
         context.goNamedAuth(HomePageWidget.routeName, context.mounted);
+
       }
     } catch (e, st) {
       debugPrint('Error saving onboarding profile: $e\n$st');

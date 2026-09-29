@@ -1,6 +1,7 @@
 import '/flutter_flow/flutter_flow_util.dart';
 import 'package:flutter/material.dart';
 import '/custom_code/widgets/index.dart' as custom_widgets;
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'home_page_model.dart';
 export 'home_page_model.dart';
 
@@ -20,10 +21,12 @@ class _HomePageWidgetState extends State<HomePageWidget> {
   @override
   void initState() {
     super.initState();
+    PocketGameAudioService.instance.stop();
     _model = createModel(context, () => HomePageModel());
 
     WidgetsBinding.instance.addPostFrameCallback((_) => safeSetState(() {}));
   }
+
 
   @override
   void dispose() {
