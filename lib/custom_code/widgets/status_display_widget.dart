@@ -2535,7 +2535,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     _currentVideoController?.dispose();
     _replyController.dispose();
     _replyFocusNode.dispose();
-    PocketGameAudioService.instance.playAmbientAppTheme();
+    PocketGameAudioService.instance.pause();
     super.dispose();
   }
 
@@ -2897,11 +2897,15 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     _progressController.reset();
 
-    // 🎵 Play Supabase BGM for vibes & stories
+    // 🎵 Play BGM for vibes (Robots & Presidents have automatic background music; Humans only if custom music attached)
     if (status['media_type'] != 'video') {
       final rawMeta = status['metadata'];
       final meta = rawMeta is Map ? rawMeta : {};
       final musicUrl = meta['music_url']?.toString();
+      final userId = (status['user_id'] ?? status['userId'] ?? '').toString();
+      final isRobot = PocketRobotService.isRobotId(userId) || meta['is_robot'] == true;
+      final isPresident = PocketPresidentService.isPresidentId(userId) || meta['is_president'] == true;
+
       if (musicUrl != null && musicUrl.isNotEmpty) {
         PocketGameAudioService.instance.playTrack(PocketMusicTrack(
           id: 'vibe_custom_${status['id']}',
@@ -2909,8 +2913,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           genre: 'Vibe Beat',
           url: musicUrl,
         ));
-      } else {
+      } else if (isRobot || isPresident) {
         PocketGameAudioService.instance.playNextShuffleTrack(mood: 'happy');
+      } else {
+        PocketGameAudioService.instance.pause();
       }
     } else {
       PocketGameAudioService.instance.pause();

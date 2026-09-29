@@ -25,6 +25,7 @@ import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'day90_master_certificate_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -206,10 +207,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     });
 
     _loadData();
+    // 🎵 Play gentle ambient target roadmap loop music
+    PocketGameAudioService.instance.playTargetTheme();
   }
 
   @override
   void dispose() {
+    PocketGameAudioService.instance.pause();
     _midnightTicker?.cancel();
     _bobController.dispose();
     _scrollController.dispose();
@@ -1182,6 +1186,21 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                         streak: prog.streakDays,
                                       ),
                                     ),
+                                  );
+                                },
+                              ),
+                              const SizedBox(width: 6),
+                              // 🔊 Background Music Mute / Unmute Pill
+                              ValueListenableBuilder<bool>(
+                                valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                                builder: (context, isMuted, _) {
+                                  return _buildMinimalFloatingPill(
+                                    icon: isMuted ? '🔇' : '🔊',
+                                    label: isMuted ? 'Muted' : 'Music',
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      PocketGameAudioService.instance.toggleMute();
+                                    },
                                   );
                                 },
                               ),

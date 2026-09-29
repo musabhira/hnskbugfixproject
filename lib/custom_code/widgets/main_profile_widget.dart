@@ -1163,14 +1163,60 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
+            // 📜 4-Day Spoken Pact Agreement Terms Box
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF1E1B4B).withValues(alpha: 0.6),
+                    const Color(0xFF0F172A),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('🏆', style: TextStyle(fontSize: 14)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'PocketTalk 4-Day Spoken Agreement',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '• Chat 15 minutes each day for 4 consecutive days (1 Hour Total)\n'
+                    '• ⚠️ Skipping a day breaks the pact and deducts 1 Trophy (കമ്മിയാവും)\n'
+                    '• English only: Non-English can be reported & penalized\n'
+                    '• Complete 4 days to earn +1 Spoken Trophy 🏆 & unlock full profile!',
+                    style: GoogleFonts.inter(
+                      color: Colors.white70,
+                      fontSize: 10.5,
+                      height: 1.45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
             TextField(
               controller: messageController,
-              maxLines: 3,
-              style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+              maxLines: 2,
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Add an intro note...',
-                hintStyle: const TextStyle(color: Colors.white38),
+                hintStyle: const TextStyle(color: Colors.white38, fontSize: 12),
                 filled: true,
                 fillColor: const Color(0xFF0F121A),
                 border: OutlineInputBorder(
@@ -1179,7 +1225,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
               ),
             ),
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -1223,7 +1269,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Text(
-                                    'Mate Request sent! $targetName will see it in their Requests tab.',
+                                    'Pact Agreement sent! $targetName will see it in their Requests tab.',
                                     style:
                                         GoogleFonts.outfit(color: Colors.white),
                                   ),
@@ -1237,9 +1283,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                       }
                     },
                     child: Text(
-                      'Send Request 🤝',
+                      'Agree & Connect 🤝',
                       style: GoogleFonts.outfit(
-                          fontWeight: FontWeight.bold, fontSize: 14),
+                          fontWeight: FontWeight.bold, fontSize: 13.5),
                     ),
                   ),
                 ),

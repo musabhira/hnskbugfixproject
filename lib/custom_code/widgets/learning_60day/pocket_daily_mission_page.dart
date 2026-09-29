@@ -64,6 +64,7 @@ import 'pocket_alphabet_phonics_game_page.dart';
 import 'pocket_mission_topic_detail_page.dart';
 import 'pocket_language_selection_dialog.dart';
 import 'day90_master_certificate_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'career_adventure/adventure_models.dart';
 import 'career_adventure/career_adventure_game_page.dart';
@@ -1508,6 +1509,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     _loadVocabForDay();
     _loadSavedMissionState();
     _timerService.addListener(_onTimerStateChanged);
+    // 🎵 Play gentle ambient study background music
+    PocketGameAudioService.instance.playAmbientAppTheme();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
         final savedLevel = await PocketSyllabusRepository.getSavedLevel();
@@ -1602,6 +1605,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   @override
   void dispose() {
+    PocketGameAudioService.instance.pause();
     _tts.stop();
     _speakingTimer?.cancel();
     _storyRecordTimer?.cancel();
@@ -5059,16 +5063,20 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool get _canClaimAndAdvance => _hasPassedToday;
 
   // 🏷️ Category Filter Getters
+  bool get _showTheory =>
+      _selectedCategory == 'all' || _selectedCategory == 'theory';
   bool get _showVocab =>
       _selectedCategory == 'all' || _selectedCategory == 'vocab';
+  bool get _showGrammar =>
+      _selectedCategory == 'all' || _selectedCategory == 'grammar';
   bool get _showSpeaking =>
       _selectedCategory == 'all' || _selectedCategory == 'speaking';
   bool get _showAdventure =>
       _selectedCategory == 'all' || _selectedCategory == 'adventure';
+  bool get _showDefense =>
+      _selectedCategory == 'all' || _selectedCategory == 'defense' || _selectedCategory == 'citadel';
   bool get _showShortcuts =>
-      _selectedCategory == 'all' || _selectedCategory == 'shortcuts';
-  bool get _showCitadel =>
-      _selectedCategory == 'all' || _selectedCategory == 'citadel';
+      _selectedCategory == 'all' || _selectedCategory == 'shortcuts' || _selectedCategory == 'grammar';
 
   @override
   Widget build(BuildContext context) {
@@ -5125,7 +5133,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         const SizedBox(height: 2),
 
                         // 📖 Step 1: Core Linguistic Theory & Speech Architecture (Dedicated Detail Page)
-                        if (_showVocab || _showSpeaking) ...[
+                        if (_showTheory) ...[
                           _buildTheorySubtaskCard(),
                           const SizedBox(height: 14),
                         ],
@@ -5143,13 +5151,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ],
 
                         // 🎙️ Step 4: Master Multi-Skill Fluency Gym (Dedicated Arena Detail Page)
-                        if (_showSpeaking || _showVocab) ...[
+                        if (_showSpeaking) ...[
                           _buildFluencyGymSubtaskCard(),
                           const SizedBox(height: 14),
                         ],
 
                         // ⚡ Secret Code Grammar Matrix (Audio Directive: Code-Based English Tenses & Rules)
-                        if (_showVocab && _showActiveSecretCode) ...[
+                        if (_showGrammar && _showActiveSecretCode) ...[
                           _buildTopicSubtaskCard(
                             stepNumber: '$_stepSecretCode',
                             icon: '⚡',
@@ -5178,7 +5186,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ],
 
                         // 🏗️ Sentence Builder Game (Audio Directive: 1-2-3 Code Block Puzzle)
-                        if (_showVocab && _showActiveSentenceBuilder) ...[
+                        if (_showGrammar && _showActiveSentenceBuilder) ...[
                           _buildTopicSubtaskCard(
                             stepNumber: '$_stepSentenceBuilder',
                             icon: '🏗️',
@@ -5293,7 +5301,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       ],
 
                       // ⏰ 12 Tenses Speaking Mastery Card (User Audio Directive: 12 Tenses vocal drills)
-                      if (_showVocab && _showActive12Tenses) ...[
+                      if (_showGrammar && _showActive12Tenses) ...[
                         _buildTopicSubtaskCard(
                           stepNumber: '$_stepTenses',
                           icon: '⏰',
@@ -5322,7 +5330,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
 
                     // 📝 Articles Practice Card (A, An, The Speaking Drills)
-                    if (_showVocab && _showActiveArticles) ...[
+                    if (_showGrammar && _showActiveArticles) ...[
                       _buildTopicSubtaskCard(
                         stepNumber: '$_stepArticles',
                         icon: '📝',
@@ -5351,7 +5359,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
 
                     // 📍 Prepositions Practice Card (In, On, At)
-                    if (_showVocab && _showActivePrepositions) ...[
+                    if (_showGrammar && _showActivePrepositions) ...[
                       _buildTopicSubtaskCard(
                         stepNumber: '$_stepPrepositions',
                         icon: '📍',
@@ -5380,7 +5388,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
 
                     // 🎯 Modal Verbs Practice Card (Can, Must, Should)
-                    if (_showVocab && _showActiveModalVerbs) ...[
+                    if (_showGrammar && _showActiveModalVerbs) ...[
                       _buildTopicSubtaskCard(
                         stepNumber: '$_stepModalVerbs',
                         icon: '🎯',
@@ -5409,7 +5417,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
 
                     // 🔗 Conjunctions Practice Card (FANBOYS & Linkers)
-                    if (_showVocab && _showActiveConjunctions) ...[
+                    if (_showGrammar && _showActiveConjunctions) ...[
                       _buildTopicSubtaskCard(
                         stepNumber: '$_stepConjunctions',
                         icon: '🔗',
@@ -5438,7 +5446,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
 
                     // 🔄 Active & Passive Voice Practice Card
-                    if (_showVocab && _showActiveActivePassive) ...[
+                    if (_showGrammar && _showActiveActivePassive) ...[
                       _buildTopicSubtaskCard(
                         stepNumber: '$_stepActivePassive',
                         icon: '🔄',
@@ -5467,7 +5475,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
 
                     // 💬 Direct & Indirect Speech Practice Card
-                    if (_showVocab && _showActiveDirectIndirect) ...[
+                    if (_showGrammar && _showActiveDirectIndirect) ...[
                       _buildTopicSubtaskCard(
                         stepNumber: '$_stepDirectIndirect',
                         icon: '💬',
@@ -5496,7 +5504,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
 
                     // 🔀 Conditionals (If Clauses) Practice Card
-                    if (_showVocab && _showActiveConditionals) ...[
+                    if (_showGrammar && _showActiveConditionals) ...[
                       _buildTopicSubtaskCard(
                         stepNumber: '$_stepConditionals',
                         icon: '🔀',
@@ -5525,7 +5533,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
 
                     // ❓ Question Tags Practice Card
-                    if (_showVocab && _showActiveQuestionTags) ...[
+                    if (_showGrammar && _showActiveQuestionTags) ...[
                       _buildTopicSubtaskCard(
                         stepNumber: '$_stepQuestionTags',
                         icon: '❓',
@@ -5554,7 +5562,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ],
 
                     // 🏗️ Sentence Structure Practice Card
-                    if (_showVocab && _showActiveSentenceStructure) ...[
+                    if (_showGrammar && _showActiveSentenceStructure) ...[
                       _buildTopicSubtaskCard(
                         stepNumber: '$_stepSentenceStructure',
                         icon: '🏗️',
@@ -5728,7 +5736,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       ],
 
                       // 📐 Sentence Patterns & Core Reading Notes
-                      if (_showVocab) ...[
+                      if (_showTheory || _showVocab) ...[
                         if (_hasSentencePatterns) ...[
                           _buildSentencePatternCard(),
                           const SizedBox(height: 14),
@@ -5768,7 +5776,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                       ],
 
                       // Subtask 7 & 8: 🛡️ Citadel Home Defense & Battle Raids
-                      if (_showCitadel) ...[
+                      if (_showDefense) ...[
                         _buildSubtaskCard(
                           stepNumber: '$_stepDefenseTrap',
                           icon: '🛡️',
@@ -6406,7 +6414,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // --- TOP APP BAR HEADER ---
+  // --- TOP APP BAR HEADER (Decluttered & Clean) ---
   Widget _buildHeader(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -6431,7 +6439,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           Container(
             width: 38,
             height: 38,
-            margin: const EdgeInsets.only(right: 8),
+            margin: const EdgeInsets.only(right: 10),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
@@ -6453,16 +6461,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 3.5),
+                          horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFFC00),
-                        borderRadius: BorderRadius.circular(7),
+                        borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
                         'DAY ${widget.day}',
                         style: GoogleFonts.outfit(
                           color: Colors.black,
-                          fontSize: 12,
+                          fontSize: 11.5,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -6475,9 +6483,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                             : PocketSyllabusRepository.getTrack(_activeLearnerLevel).badgeText,
                         style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 14,
+                          fontSize: 13.5,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 0.4,
+                          letterSpacing: 0.3,
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -6485,107 +6493,68 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   ],
                 ),
                 const SizedBox(height: 3),
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(5),
-                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
-                      ),
-                      child: Text(
-                        'PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(widget.day)}',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w900,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: Text(
-                        'Stage ${widget.day}/90 • Pass: 100 PTS',
-                        style: GoogleFonts.inter(
-                          color: const Color(0xFF6EE7B7),
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(10),
-              border:
-                  Border.all(color: Colors.amberAccent.withValues(alpha: 0.45)),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🪙', style: TextStyle(fontSize: 13)),
-                const SizedBox(width: 4),
                 Text(
-                  '+200 PS',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  '• $_completedSubtasksCount/7',
+                  'Stage ${widget.day}/90 • Pass: 100 PTS',
                   style: GoogleFonts.inter(
-                    color: Colors.white70,
-                    fontSize: 11.5,
+                    color: const Color(0xFF6EE7B7),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
           const SizedBox(width: 8),
-          // 🌐 Global Language Picker Button
-          InkWell(
-            onTap: _openLanguageDialog,
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4.5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFF00FFCC).withValues(alpha: 0.4),
-                  width: 1.1,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.translate_rounded,
-                      color: Color(0xFF00FFCC), size: 12),
-                  const SizedBox(width: 4),
-                  Text(
-                    _selectedLanguage,
-                    style: GoogleFonts.inter(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+          // 🎵 Ambient Study Music Speaker Toggle
+          ValueListenableBuilder<bool>(
+            valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+            builder: (context, isMuted, _) {
+              return Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    PocketGameAudioService.instance.toggleMute();
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isMuted
+                          ? const Color(0xFF1E293B)
+                          : const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isMuted
+                            ? Colors.white24
+                            : const Color(0xFFFFD700).withValues(alpha: 0.6),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                          color: isMuted ? Colors.white60 : const Color(0xFFFFD700),
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          isMuted ? 'Muted' : 'BGM',
+                          style: GoogleFonts.inter(
+                            color: isMuted ? Colors.white60 : const Color(0xFFFFD700),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const Icon(Icons.arrow_drop_down,
-                      color: Colors.white70, size: 14),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ],
       ),
@@ -7504,15 +7473,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // 🏷️ Category Track Filter Bar (User Audio Directive: Category switcher instead of language bar at top)
+  // 🏷️ Category Track Filter Bar (User Audio Directive: Category switcher + Integrated Language chip)
   Widget _buildCategoryFilterBar() {
     final categories = [
-      {'id': 'all', 'label': 'ALL MISSIONS', 'icon': '🎯'},
-      {'id': 'vocab', 'label': 'VOCAB & GRAMMAR', 'icon': '📖'},
-      {'id': 'speaking', 'label': 'SPEAKING DRILLS', 'icon': '🎙️'},
+      {'id': 'all', 'label': 'ALL', 'icon': '🎯'},
+      {'id': 'theory', 'label': 'THEORY', 'icon': '📖'},
+      {'id': 'vocab', 'label': 'VOCAB', 'icon': '🧠'},
+      {'id': 'grammar', 'label': 'GRAMMAR', 'icon': '⚡'},
+      {'id': 'speaking', 'label': 'SPEAKING', 'icon': '🎙️'},
       {'id': 'adventure', 'label': '2D QUESTS', 'icon': '🎮'},
-      {'id': 'shortcuts', 'label': 'SHORTCUTS & QUIZ', 'icon': '⚡'},
-      {'id': 'citadel', 'label': 'DEFENSE & RAIDS', 'icon': '🛡️'},
+      {'id': 'defense', 'label': 'DEFENSE', 'icon': '🛡️'},
     ];
 
     return Container(
@@ -7529,62 +7499,106 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
         child: Row(
-          children: categories.map((cat) {
-            final id = cat['id']!;
-            final isSelected = _selectedCategory == id;
+          children: [
+            ...categories.map((cat) {
+              final id = cat['id']!;
+              final isSelected = _selectedCategory == id;
 
-            return Padding(
-              padding: const EdgeInsets.only(right: 6),
+              return Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: InkWell(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _selectedCategory = id);
+                  },
+                  borderRadius: BorderRadius.circular(10),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? const Color(0xFFFFD700)
+                          : const Color(0xFF1E293B),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isSelected
+                            ? const Color(0xFFFFD700)
+                            : Colors.white24,
+                        width: isSelected ? 1.5 : 1,
+                      ),
+                      boxShadow: [
+                        if (isSelected)
+                          BoxShadow(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(cat['icon']!, style: const TextStyle(fontSize: 13)),
+                        const SizedBox(width: 5),
+                        Text(
+                          cat['label']!,
+                          style: GoogleFonts.outfit(
+                            color: isSelected ? Colors.black : Colors.white70,
+                            fontSize: 11,
+                            fontWeight:
+                                isSelected ? FontWeight.w900 : FontWeight.w600,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+            // 🌐 Integrated Language Selector Chip
+            Padding(
+              padding: const EdgeInsets.only(left: 2),
               child: InkWell(
                 onTap: () {
                   HapticFeedback.selectionClick();
-                  setState(() => _selectedCategory = id);
+                  _openLanguageDialog();
                 },
                 borderRadius: BorderRadius.circular(10),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
+                child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? const Color(0xFFFFD700)
-                        : const Color(0xFF1E293B),
+                    color: const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: isSelected
-                          ? const Color(0xFFFFD700)
-                          : Colors.white24,
-                      width: isSelected ? 1.5 : 1,
+                      color: const Color(0xFF00FFCC).withValues(alpha: 0.5),
+                      width: 1.2,
                     ),
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                          blurRadius: 8,
-                        ),
-                    ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(cat['icon']!, style: const TextStyle(fontSize: 13)),
+                      const Icon(Icons.translate_rounded,
+                          color: Color(0xFF00FFCC), size: 13),
                       const SizedBox(width: 5),
                       Text(
-                        cat['label']!,
-                        style: GoogleFonts.outfit(
-                          color: isSelected ? Colors.black : Colors.white70,
+                        _selectedLanguage,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF00FFCC),
                           fontSize: 11,
-                          fontWeight:
-                              isSelected ? FontWeight.w900 : FontWeight.w600,
-                          letterSpacing: 0.3,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
+                      const SizedBox(width: 2),
+                      const Icon(Icons.arrow_drop_down,
+                          color: Color(0xFF00FFCC), size: 16),
                     ],
                   ),
                 ),
               ),
-            );
-          }).toList(),
+            ),
+          ],
         ),
       ),
     );
