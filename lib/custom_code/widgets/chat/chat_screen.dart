@@ -585,17 +585,12 @@ class _MessageBubble extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
-              color: isMe ? const Color(0xFF2C2407) : const Color(0xFF1F2C34),
+              color: isMe ? const Color(0xFF2B3038) : const Color(0xFF22262C),
               border: Border.all(
-                color: isMe
-                    ? const Color(0xFFFFD600).withValues(alpha: 0.22)
-                    : Colors.white.withValues(alpha: 0.05),
+                color: Colors.white.withValues(alpha: 0.08),
                 width: 0.8,
               ),
-              borderRadius: BorderRadius.circular(12).copyWith(
-                bottomRight: isMe ? Radius.zero : null,
-                bottomLeft: isMe ? null : Radius.zero,
-              ),
+              borderRadius: BorderRadius.circular(18),
             ),
             constraints: BoxConstraints(
                 maxWidth: MediaQuery.of(context).size.width * 0.75),
@@ -689,7 +684,8 @@ class _MessageBubble extends StatelessWidget {
                       Text(
                         timeago.format(message.createdAt),
                         style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.54),
+                            color: const Color(0xFF4ADE80).withValues(alpha: 0.85),
+                            fontWeight: FontWeight.w600,
                             fontSize: 10),
                       ),
                     ],
