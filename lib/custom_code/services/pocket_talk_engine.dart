@@ -39,6 +39,15 @@ class PocketTalkEngine {
         return [];
       }
 
+      // Check current active pact count (user should have at most 2 active pacts at a time)
+      final activeCount = await PocketTrophyService.getActivePactsCount(currentUserId);
+      if (activeCount >= 2) {
+        debugPrint('PocketTalkEngine: User already has $activeCount active pacts (max 2). Skipping auto-dispatch.');
+        return [];
+      }
+
+      final slotsAvailable = 2 - activeCount;
+
       // 1. Fetch current user profile to determine gender & level
       final myProfile = await _supabase
           .from('profile')
@@ -49,7 +58,7 @@ class PocketTalkEngine {
       final myGender = (myProfile?['gender']?.toString().toLowerCase()) ?? 'male';
       final targetGender = (myGender == 'male') ? 'female' : 'male';
 
-      // 2. Query active peers with target gender first
+      // 2. Query active human peers with target gender first (Excluding AI robots & presidents)
       List<Map<String, dynamic>> candidateList = [];
       try {
         final genderQuery = await _supabase
@@ -60,59 +69,76 @@ class PocketTalkEngine {
             .limit(10);
 
         if (genderQuery.isNotEmpty) {
-          candidateList.addAll(List<Map<String, dynamic>>.from(genderQuery));
+          for (final row in genderQuery) {
+            final uid = row['user_id']?.toString() ?? '';
+            if (uid.isNotEmpty &&
+                !PocketRobotService.isRobotId(uid) &&
+                !uid.startsWith('robot_') &&
+                !uid.startsWith('president_')) {
+              candidateList.add(Map<String, dynamic>.from(row));
+            }
+          }
         }
       } catch (_) {}
 
-      // 3. Fallback: If not enough target gender peers, pull any other active learners
-      if (candidateList.length < 5) {
+      // 3. Fallback: If not enough target gender peers, pull other active human learners
+      if (candidateList.length < slotsAvailable) {
         try {
           final fallbackQuery = await _supabase
               .from('profile')
               .select('user_id, name, gender, profile_image_url, learning_day, bio')
               .neq('user_id', currentUserId)
-              .limit(10 - candidateList.length);
+              .limit(10);
 
           for (final row in fallbackQuery) {
             final uid = row['user_id']?.toString() ?? '';
-            if (!candidateList.any((c) => c['user_id'] == uid)) {
+            if (uid.isNotEmpty &&
+                !candidateList.any((c) => c['user_id'] == uid) &&
+                !PocketRobotService.isRobotId(uid) &&
+                !uid.startsWith('robot_') &&
+                !uid.startsWith('president_')) {
               candidateList.add(Map<String, dynamic>.from(row));
             }
           }
         } catch (_) {}
       }
 
-      // 4. Fallback 2: Ensure AI PocketRobo mates are included so the user is NEVER left without peers!
-      if (candidateList.length < 5) {
-        final robots = PocketRobotService.getAllRobots().take(5);
-        for (final r in robots) {
-          candidateList.add({
-            'user_id': r.id,
-            'name': r.name,
-            'gender': 'neutral',
-            'profile_image_url': r.avatarUrl,
-            'learning_day': r.baseLevel,
-            'bio': r.bio,
-            'is_robot': true,
-          });
-        }
-      }
-
-      // 5. Pre-create PocketTalk Spoken Pacts for candidates
+      // 4. Pre-create PocketTalk Spoken Pact requests for human candidates (strictly no robots)
       final dispatched = <Map<String, dynamic>>[];
-      for (final candidate in candidateList.take(8)) {
+      for (final candidate in candidateList.take(slotsAvailable)) {
         final targetId = candidate['user_id']?.toString() ?? '';
         if (targetId.isNotEmpty) {
-          await PocketTrophyService.ensurePact(
+          // Creates a pending request (like a Snap invite) waiting for recipient acceptance
+          await PocketTrophyService.requestPact(
             myId: currentUserId,
             otherUserId: targetId,
+            autoAccept: false,
           );
+
+          // Ensure conversation exists in Supabase so it shows in their chat list
+          try {
+            final conv = await _supabase
+                .from('conversations')
+                .select('id')
+                .or('and(user1_id.eq.$currentUserId,user2_id.eq.$targetId),and(user1_id.eq.$targetId,user2_id.eq.$currentUserId)')
+                .maybeSingle();
+
+            if (conv == null) {
+              await _supabase.from('conversations').insert({
+                'user1_id': currentUserId,
+                'user2_id': targetId,
+                'last_message': '⚡ Sent PocketTalk 4-Day Spoken Pact invite! Tap to accept.',
+                'updated_at': DateTime.now().toIso8601String(),
+              });
+            }
+          } catch (_) {}
+
           dispatched.add(candidate);
         }
       }
 
       await prefs.setInt(lastDispatchKey, now);
-      debugPrint('PocketTalkEngine: Successfully auto-paired with ${dispatched.length} learners!');
+      debugPrint('PocketTalkEngine: Successfully auto-dispatched pact requests to ${dispatched.length} human peers!');
       return dispatched;
     } catch (e) {
       debugPrint('PocketTalkEngine.dispatchAutoPocketTalkRequests error: $e');

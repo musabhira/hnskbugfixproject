@@ -1131,9 +1131,22 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     final uid = _supabase.auth.currentUser?.id ?? '';
     if (uid.isEmpty || otherUserId.isEmpty) return;
 
+    // 🤖 Robots & Presidents do NOT have PocketTalk Pacts / Streaks
+    if (PocketRobotService.isRobotId(otherUserId) ||
+        PocketPresidentService.isPresidentId(otherUserId) ||
+        otherUserId.startsWith('robot_') ||
+        otherUserId.startsWith('president_')) {
+      if (mounted) {
+        safeSetState(() {
+          _activePocketTalkPact = null;
+        });
+      }
+      return;
+    }
+
     try {
       final evalResult = await PocketTrophyService.checkAndEvaluatePact(myId: uid, otherUserId: otherUserId);
-      final pact = evalResult.pact;
+      final pact = evalResult?.pact;
       final trophies = await PocketTrophyService.getTrophyCount(uid);
       if (mounted) {
         safeSetState(() {
@@ -1141,7 +1154,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           _userTrophyCount = trophies;
         });
 
-        if (evalResult.didBreach && evalResult.deductedTrophy) {
+        if (evalResult != null && evalResult.didBreach && evalResult.deductedTrophy) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
@@ -1222,6 +1235,8 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         minutesToAdd: mins,
       );
 
+      if (res.pact == null) return;
+
       final trophies = await PocketTrophyService.getTrophyCount(_currentUserId);
 
       if (mounted) {
@@ -1241,7 +1256,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'Day ${res.pact.streakDays} Goal Achieved! (15 mins done today) 🏆 Keep it up tomorrow!',
+                      'Day ${res.pact!.streakDays} Goal Achieved! (15 mins done today) 🏆 Keep it up tomorrow!',
                       style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
                     ),
                   ),
@@ -2461,10 +2476,140 @@ Draft: "$draft"''';
   // --- 🏆 POCKET TALK: 4-DAY SPOKEN PACT & TROPHY HEADER RIBBON ---
   Widget _buildPocketTalkPactHeaderRibbon() {
     final pact = _activePocketTalkPact;
-    final currentStreak = pact?.streakDays ?? 1;
-    final isCompleted = pact?.isCompleted ?? false;
-    final isMates = _isMate || (pact?.isMatesNow ?? false);
-    final dailyMinutes = (pact?.dailyMinutesToday ?? 0).clamp(0, 15);
+    if (pact == null || pact.isCompleted) {
+      return const SizedBox.shrink();
+    }
+
+    if (!widget.groupId.startsWith('p:')) {
+      return const SizedBox.shrink();
+    }
+
+    final otherUserId = widget.groupId.substring(2);
+    if (PocketRobotService.isRobotId(otherUserId) ||
+        PocketPresidentService.isPresidentId(otherUserId) ||
+        otherUserId.startsWith('robot_') ||
+        otherUserId.startsWith('president_')) {
+      return const SizedBox.shrink();
+    }
+
+    // ⚡ If pending request, show accept / waiting invite ribbon
+    if (!pact.isAccepted) {
+      final isSender = _currentUserId == pact.initiatorId;
+      if (isSender) {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Text('⚡', style: TextStyle(fontSize: 15)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'PocketTalk 4-Day Pact Invite Sent • Waiting for ${widget.groupName} to accept 🤝',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      } else {
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
+            ),
+            border: Border(
+              bottom: BorderSide(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                width: 1.2,
+              ),
+            ),
+          ),
+          child: Row(
+            children: [
+              const Text('🏆', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      'PocketTalk 4-Day Spoken Request',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 11.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      '15m/day for 4 days • English only • +1 Trophy',
+                      style: GoogleFonts.inter(
+                        color: Colors.white60,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  HapticFeedback.mediumImpact();
+                  final accepted = await PocketTrophyService.acceptPact(
+                    myId: _currentUserId,
+                    otherUserId: otherUserId,
+                  );
+                  if (mounted && accepted != null) {
+                    safeSetState(() {
+                      _activePocketTalkPact = accepted;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('🤝 PocketTalk 4-Day Pact Accepted! Day 1 starts now.'),
+                        backgroundColor: Color(0xFF10B981),
+                      ),
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF00FFCC),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                ),
+                child: Text(
+                  'Accept 🤝',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    }
+
+    final currentStreak = pact.streakDays;
+    final isCompleted = pact.isCompleted;
+    final isMates = _isMate || pact.isMatesNow;
+    final dailyMinutes = pact.dailyMinutesToday.clamp(0, 15);
     final isDailyQuotaDone = dailyMinutes >= 15;
 
     return Container(
