@@ -2459,7 +2459,7 @@ class PocketRobotService {
     // 1. Direct user chat should always be answered - robots are dedicated English conversation partners!
     // We prioritize live conversation so the learner always receives immediate guidance and feedback.
 
-    // 2. Query free AI models first for realistic, dynamic human-like responses
+    // 2. Direct AI query for realistic, dynamic human-like responses (Bypassing Jev for maximum speed)
     try {
       final aiResponse = await _queryFreeAiModel(
         robot: robot,
@@ -2470,49 +2470,48 @@ class PocketRobotService {
         return aiResponse.trim();
       }
     } catch (e) {
-      debugPrint('Free AI model generation error: $e');
+      debugPrint('Direct AI model generation error: $e');
     }
 
-    // 3. Fallback to rich archetype persona generator if offline or rate-limited
-    await Future.delayed(const Duration(milliseconds: 300));
+    // 3. Fallback to rich archetype persona generator if offline or rate-limited (instant, no artificial delays)
     return _generateProceduralReply(robot: robot, userMessage: userMessage);
   }
 
-  /// Query free AI models with personality, Jev context, and power-ranked fallback
+  /// ⚡ Direct AI conversation query (Bypassing Jev for maximum speed & sub-second reply)
   static Future<String?> _queryFreeAiModel({
     required PocketRobot robot,
     required String userMessage,
     List<Map<String, dynamic>>? history,
   }) async {
-    // 🎯 Fast Intent & Sentiment Detection with TypeSafe Jev (1.2s tight timeout)
-    // 🛡️ Token-Guard: Only call Jev if message has substance (>= 3 words or question)
-    // to preserve Jev API limits and avoid wasting quota on routine words like 'hi', 'ok', etc.
-    Map<String, dynamic>? jevData;
-    final words = userMessage.trim().split(RegExp(r'\s+'));
-    if (words.length >= 3 || userMessage.contains('?')) {
-      try {
-        jevData = await classifyMessageWithJev(userMessage)
-            .timeout(const Duration(milliseconds: 1200));
-      } catch (_) {}
-    }
-
-    String systemPrompt =
+    final systemPrompt =
         'You are ${robot.name}, an authentic friendly companion in Pocket Mates. '
         'Your level is ${robot.level} (CEFR rank: ${robot.cefrRank}), and your personality archetype is ${robot.archetype.label}. '
         'You speak naturally and warmly, just like a real human friend and conversation partner. '
         'Keep your answer concise (1 to 2 short sentences), encouraging, and conversational. '
         'Never say you are an AI language model; you are ${robot.name} living in Pocket World!';
 
-    if (jevData != null) {
-      final answers = jevData['answers'] as Map<String, dynamic>? ?? jevData;
-      final intent = answers['intent']?['choice'] ?? answers['intent'];
-      final sentiment = answers['sentiment']?['choice'] ?? answers['sentiment'];
-      if (intent != null || sentiment != null) {
-        systemPrompt +=
-            ' [Context from Jev Decision: User intent is "$intent", sentiment is "$sentiment". Match this vibe warmly.]';
+    // ⚡ Direct Step 1: High-Speed Direct AI Generation (Sub-second latency, zero quota issues)
+    try {
+      final encodedMsg = Uri.encodeComponent(userMessage.trim());
+      final encodedSys = Uri.encodeComponent(systemPrompt);
+      final pollUri = Uri.parse('https://text.pollinations.ai/$encodedMsg?system=$encodedSys');
+
+      final pollResponse = await http
+          .get(pollUri)
+          .timeout(const Duration(milliseconds: 2200));
+
+      if (pollResponse.statusCode == 200 && pollResponse.body.trim().isNotEmpty) {
+        final reply = pollResponse.body.trim();
+        // Ensure clean text without HTML wrappers
+        if (!reply.startsWith('<!DOCTYPE') && !reply.startsWith('<html') && reply.length > 1) {
+          return reply;
+        }
       }
+    } catch (e) {
+      debugPrint('Direct AI fast attempt error: $e');
     }
 
+    // ⚡ Direct Step 2: OpenRouter Direct Model Cascade Fallback
     final messages = <Map<String, String>>[
       {'role': 'system', 'content': systemPrompt},
     ];
@@ -2537,12 +2536,10 @@ class PocketRobotService {
 
     messages.add({'role': 'user', 'content': userMessage});
 
-    // ⚡ Power-ranked model cascade with rate-limit cooldown jumping
     final now = DateTime.now();
     for (final model in _freeAiModels) {
       final cooldownUntil = _modelCooldowns[model];
       if (cooldownUntil != null && cooldownUntil.isAfter(now)) {
-        // Model is in cooldown (hit rate limit or 503 earlier), skip immediately to avoid delay
         continue;
       }
 
@@ -2563,7 +2560,7 @@ class PocketRobotService {
                 'temperature': 0.7,
               }),
             )
-            .timeout(const Duration(milliseconds: 2800));
+            .timeout(const Duration(milliseconds: 1800));
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -2572,10 +2569,11 @@ class PocketRobotService {
           if (content != null && content.trim().isNotEmpty) {
             return content.trim();
           }
-        } else if (response.statusCode == 429 || response.statusCode == 503) {
-          // Put this model on cooldown for 90 seconds, then try next model instantly
-          _modelCooldowns[model] = DateTime.now().add(const Duration(seconds: 90));
-          debugPrint('Model $model rate-limited (${response.statusCode}). Placed on 90s cooldown.');
+        } else if (response.statusCode == 429 ||
+            response.statusCode == 503 ||
+            response.statusCode == 401) {
+          _modelCooldowns[model] = DateTime.now().add(const Duration(minutes: 5));
+          debugPrint('Model $model status (${response.statusCode}). Placed on cooldown.');
         } else {
           debugPrint('Model $model returned HTTP ${response.statusCode}');
         }
