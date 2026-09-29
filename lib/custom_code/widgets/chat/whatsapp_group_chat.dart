@@ -5957,22 +5957,23 @@ Draft: "$draft"''';
                         return Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
+                            if (!_isEnglishHubGroup)
+                              IconButton(
+                                iconSize: 20,
+                                constraints: const BoxConstraints(
+                                    minWidth: 32, minHeight: 36),
+                                padding: EdgeInsets.zero,
+                                tooltip: 'Attach file',
+                                icon: const Icon(Icons.attach_file,
+                                    color: Colors.white70),
+                                onPressed: () => _showAttachmentBottomSheet(),
+                              ),
                             IconButton(
                               iconSize: 20,
                               constraints: const BoxConstraints(
                                   minWidth: 32, minHeight: 36),
                               padding: EdgeInsets.zero,
-                              tooltip: 'Attach file',
-                              icon: const Icon(Icons.attach_file,
-                                  color: Colors.white70),
-                              onPressed: () => _showAttachmentBottomSheet(),
-                            ),
-                            IconButton(
-                              iconSize: 20,
-                              constraints: const BoxConstraints(
-                                  minWidth: 32, minHeight: 36),
-                              padding: EdgeInsets.zero,
-                              tooltip: 'Send 24h Snap 🔥',
+                              tooltip: 'Send Snap 🔥',
                               icon: const Icon(
                                   Icons.local_fire_department_rounded,
                                   color: Color(0xFFFF8A00)),
@@ -6006,15 +6007,16 @@ Draft: "$draft"''';
                                   ? null
                                   : _polishEnglishDraft,
                             ),
-                            IconButton(
-                              iconSize: 20,
-                              constraints: const BoxConstraints(
-                                  minWidth: 32, minHeight: 36),
-                              padding: EdgeInsets.zero,
-                              icon: const Icon(Icons.attach_file,
-                                  color: Colors.white70),
-                              onPressed: () => _showAttachmentBottomSheet(),
-                            ),
+                            if (!_isEnglishHubGroup)
+                              IconButton(
+                                iconSize: 20,
+                                constraints: const BoxConstraints(
+                                    minWidth: 32, minHeight: 36),
+                                padding: EdgeInsets.zero,
+                                icon: const Icon(Icons.attach_file,
+                                    color: Colors.white70),
+                                onPressed: () => _showAttachmentBottomSheet(),
+                              ),
                             const SizedBox(width: 4),
                           ],
                         );
@@ -6173,40 +6175,25 @@ Draft: "$draft"''';
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _buildAttachOption(Icons.local_fire_department_rounded,
-                      const Color(0xFFFFFC00), 'Snap 🔥', () {
+                      const Color(0xFFFF8A00), 'Snap 🔥', () {
                     Navigator.pop(ctx);
                     _pickAndSendSnap();
                   }),
+                  _buildAttachOption(Icons.camera_alt_rounded,
+                      const Color(0xFFE1306C), 'Camera', () {
+                    Navigator.pop(ctx);
+                    _pickAndUploadImage(ImageSource.camera);
+                  }),
                   _buildAttachOption(
-                      Icons.photo_library_rounded, Colors.purple, 'Gallery',
+                      Icons.photo_library_rounded, Colors.purpleAccent, 'Gallery',
                       () {
-                    Navigator.pop(context);
+                    Navigator.pop(ctx);
                     _pickAndUploadImage(ImageSource.gallery);
                   }),
                   _buildAttachOption(
-                      Icons.insert_drive_file, Colors.blue, 'Document', () {
+                      Icons.construction_rounded, Colors.deepOrangeAccent, 'Tool',
+                      () {
                     Navigator.pop(ctx);
-                    _pickAndStageDocument();
-                  }),
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildAttachOption(Icons.audiotrack, Colors.orange, 'Audio',
-                      () {
-                    Navigator.pop(context);
-                    _pickAndStageAudio();
-                  }),
-                  _buildAttachOption(Icons.videocam, Colors.teal, 'Video', () {
-                    Navigator.pop(context);
-                    _pickAndStageVideo();
-                  }),
-                  _buildAttachOption(
-                      Icons.construction_rounded, Colors.deepOrange, 'Tool',
-                      () {
-                    Navigator.pop(context);
                     _showToolPicker();
                   }),
                 ],

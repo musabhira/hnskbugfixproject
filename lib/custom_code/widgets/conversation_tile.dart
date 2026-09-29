@@ -17,6 +17,7 @@ import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/living_spreading_aura.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -46,6 +47,8 @@ class _ConversationTileState extends State<ConversationTile> {
   late VectorAvatarConfig _cachedAvatarConfig;
   bool _showRealPhoto = false;
   bool _isPendingSent = false;
+  PocketTalkPact? _cachedPact;
+  bool _isSendingPocketTalk = false;
 
   bool get _hasUnwatchedStatus {
     if (!widget.conversation.hasStatus) return false;
@@ -125,6 +128,7 @@ class _ConversationTileState extends State<ConversationTile> {
     _cachedAvatarConfig = _getAvatarConfig();
     VibesSeenService.seenEpochNotifier.addListener(_onVibesSeenChanged);
     _checkPendingSent();
+    _loadPocketTalkPact();
   }
 
   void _checkPendingSent() {
@@ -144,6 +148,124 @@ class _ConversationTileState extends State<ConversationTile> {
     }
   }
 
+  void _loadPocketTalkPact() {
+    if (!widget.conversation.isGroup &&
+        !widget.conversation.isTool &&
+        !widget.conversation.isNotification &&
+        !widget.conversation.isActiveTimer &&
+        !PocketRobotService.isRobotId(widget.conversation.id) &&
+        !PocketPresidentService.isPresidentId(widget.conversation.id) &&
+        widget.currentUserId.isNotEmpty &&
+        widget.conversation.id.isNotEmpty) {
+      PocketTrophyService.getPact(
+        widget.currentUserId,
+        widget.conversation.id,
+      ).then((pact) {
+        if (mounted && pact != _cachedPact) {
+          setState(() => _cachedPact = pact);
+        }
+      });
+    }
+  }
+
+  Future<void> _sendPocketTalkRequest() async {
+    if (_isSendingPocketTalk) return;
+    HapticFeedback.mediumImpact();
+    setState(() => _isSendingPocketTalk = true);
+    try {
+      final pact = await PocketTrophyService.requestPact(
+        myId: widget.currentUserId,
+        otherUserId: widget.conversation.id,
+        autoAccept: false,
+      );
+
+      try {
+        await PocketMateService.sendMateRequest(
+          senderId: widget.currentUserId,
+          receiverId: widget.conversation.id,
+          message: '⚡ Sent PocketTalk 4-Day Spoken Pact invite! Tap to accept.',
+          contextType: 'pocket_talk',
+        );
+      } catch (_) {}
+
+      if (mounted) {
+        setState(() {
+          _cachedPact = pact;
+          _isSendingPocketTalk = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF0F172A),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFF00E5FF), width: 1),
+            ),
+            content: Row(
+              children: [
+                const Icon(material.Icons.record_voice_over_rounded,
+                    color: Color(0xFF00E5FF), size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Pocket Talk request sent! 🤝',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (_) {
+      if (mounted) setState(() => _isSendingPocketTalk = false);
+    }
+  }
+
+  Future<void> _acceptPocketTalkRequest() async {
+    HapticFeedback.mediumImpact();
+    try {
+      final accepted = await PocketTrophyService.acceptPact(
+        myId: widget.currentUserId,
+        otherUserId: widget.conversation.id,
+      );
+      if (mounted && accepted != null) {
+        setState(() => _cachedPact = accepted);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF0F172A),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFF10B981), width: 1),
+            ),
+            content: Row(
+              children: [
+                const Icon(material.Icons.check_circle_rounded,
+                    color: Color(0xFF10B981), size: 20),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '🤝 Pocket Talk Accepted! Day 1 starts now.',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (_) {}
+  }
+
   @override
   void didUpdateWidget(covariant ConversationTile oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -154,6 +276,7 @@ class _ConversationTileState extends State<ConversationTile> {
     }
     if (oldWidget.conversation.id != widget.conversation.id) {
       _checkPendingSent();
+      _loadPocketTalkPact();
     }
   }
 
@@ -1109,37 +1232,14 @@ class _ConversationTileState extends State<ConversationTile> {
                     ],
                   ],
                 ),
-                // Snapchat-style Camera Button on Personal Chats
+                // Snapchat-style Camera / Pocket Talk Action Button on Personal Chats
                 if (!widget.conversation.isGroup &&
                     !widget.conversation.isTool &&
                     !widget.conversation.isNotification &&
                     !widget.conversation.isActiveTimer &&
                     !PocketPresidentService.isPresidentId(widget.conversation.id)) ...[
                   const SizedBox(width: 6),
-                  material.IconButton(
-                    icon: const Icon(
-                      material.Icons.camera_alt_rounded,
-                      color: Color(0xFFFFFC00),
-                      size: 20,
-                    ),
-                    padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(minWidth: 30, minHeight: 30),
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      if (widget.onSnapCameraTap != null) {
-                        widget.onSnapCameraTap!();
-                      } else {
-                        PocketSnapService.launchSnapWorkflow(
-                          context,
-                          userId: widget.currentUserId,
-                          profileId: widget.currentUserId,
-                          preselectedRecipientId: widget.conversation.id,
-                        );
-                      }
-                    },
-                    tooltip: 'Send Snap',
-                  ),
+                  _buildTrailingActionButton(isDark),
                 ],
               ],
             ),
@@ -1147,6 +1247,126 @@ class _ConversationTileState extends State<ConversationTile> {
         ),
       ),
     );
+  }
+
+  Widget _buildTrailingActionButton(bool isDark) {
+    // If it's a Robot, show Camera button for sending Snaps to the AI Robot
+    final isRobot = PocketRobotService.isRobotId(widget.conversation.id);
+    if (isRobot) {
+      return material.IconButton(
+        icon: const Icon(
+          material.Icons.camera_alt_rounded,
+          color: Color(0xFFFFFC00),
+          size: 20,
+        ),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+        onPressed: _onSnapPressed,
+        tooltip: 'Send Snap 🔥',
+      );
+    }
+
+    // For human Mates:
+    // If Pocket Talk Pact is accepted/active -> Prioritize Camera for sending Snaps!
+    final isPactAccepted = _cachedPact?.isAccepted == true;
+    if (isPactAccepted) {
+      return material.IconButton(
+        icon: const Icon(
+          material.Icons.camera_alt_rounded,
+          color: Color(0xFFFFFC00),
+          size: 20,
+        ),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+        onPressed: _onSnapPressed,
+        tooltip: 'Send Snap 🔥',
+      );
+    }
+
+    // If I sent a Pocket Talk request and it's waiting for mate's acceptance
+    final isPendingByMe = _cachedPact != null &&
+        !_cachedPact!.isAccepted &&
+        _cachedPact!.initiatorId == widget.currentUserId;
+    if (isPendingByMe) {
+      return material.IconButton(
+        icon: const Icon(
+          material.Icons.hourglass_top_rounded,
+          color: Color(0xFFFFD600),
+          size: 19,
+        ),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+        onPressed: () {
+          HapticFeedback.selectionClick();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: const Color(0xFF0F172A),
+              behavior: SnackBarBehavior.floating,
+              content: Text(
+                'Pocket Talk request pending • Waiting for mate to accept 🤝',
+                style: GoogleFonts.outfit(color: Colors.white70),
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        tooltip: 'Pocket Talk Pending ⏳',
+      );
+    }
+
+    // If mate sent me a Pocket Talk request -> Quick Accept
+    final isIncomingRequest = _cachedPact != null &&
+        !_cachedPact!.isAccepted &&
+        _cachedPact!.initiatorId != widget.currentUserId;
+    if (isIncomingRequest) {
+      return material.IconButton(
+        icon: const Icon(
+          material.Icons.handshake_rounded,
+          color: Color(0xFF00E5FF),
+          size: 20,
+        ),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+        onPressed: _acceptPocketTalkRequest,
+        tooltip: 'Accept Pocket Talk 🤝',
+      );
+    }
+
+    // Not yet requested -> Fast Pocket Talk Request Button!
+    return material.IconButton(
+      icon: _isSendingPocketTalk
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Color(0xFF00E5FF),
+              ),
+            )
+          : const Icon(
+              material.Icons.record_voice_over_rounded,
+              color: Color(0xFF00E5FF),
+              size: 20,
+            ),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
+      onPressed: _sendPocketTalkRequest,
+      tooltip: 'Request Pocket Talk 🤝',
+    );
+  }
+
+  void _onSnapPressed() {
+    HapticFeedback.lightImpact();
+    if (widget.onSnapCameraTap != null) {
+      widget.onSnapCameraTap!();
+    } else {
+      PocketSnapService.launchSnapWorkflow(
+        context,
+        userId: widget.currentUserId,
+        profileId: widget.currentUserId,
+        preselectedRecipientId: widget.conversation.id,
+      );
+    }
   }
 }
 
