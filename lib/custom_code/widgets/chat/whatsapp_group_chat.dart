@@ -1341,32 +1341,105 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
             ),
             const SizedBox(height: 12),
             Text(
-              '🤝 You are now Official Pocket Mates! Full profiles are permanently unlocked.',
+              'Pocket Talk trial completed! Choose whether to graduate to permanent Pocket Mates or find your next speaking partner.',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
-                  color: const Color(0xFF4ADE80),
+                  color: Colors.white70,
                   fontSize: 12,
-                  fontWeight: FontWeight.w600),
+                  fontWeight: FontWeight.w500),
             ),
           ],
         ),
         actions: [
-          Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFD700),
-                foregroundColor: Colors.black,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 32, vertical: 10),
-              ),
-              onPressed: () {
-                Navigator.pop(ctx);
-                _checkMateStatus();
-              },
-              child: const Text('Awesome!',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Column(
+              children: [
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      final otherUserId = widget.groupId.startsWith('p:')
+                          ? widget.groupId.substring(2)
+                          : '';
+                      if (otherUserId.isNotEmpty) {
+                        await PocketTrophyService.graduatePactToMates(
+                          myId: _currentUserId,
+                          otherUserId: otherUserId,
+                        );
+                        safeSetState(() {
+                          _isMate = true;
+                        });
+                        await _sendMessage(
+                          text:
+                              '🤝 We graduated to Permanent Pocket Mates! 🏆✨',
+                          messageType: 'text',
+                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  '🤝 Connected as permanent Pocket Mates! Profiles unlocked.'),
+                              backgroundColor: Color(0xFF10B981),
+                            ),
+                          );
+                        }
+                      }
+                      _checkMateStatus();
+                    },
+                    child: Text(
+                      'Become Permanent Pocket Mates 🤝',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton(
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(
+                          color: Colors.white.withValues(alpha: 0.2)),
+                      foregroundColor: Colors.white70,
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                    ),
+                    onPressed: () async {
+                      Navigator.pop(ctx);
+                      final otherUserId = widget.groupId.startsWith('p:')
+                          ? widget.groupId.substring(2)
+                          : '';
+                      if (otherUserId.isNotEmpty) {
+                        await PocketTrophyService.expirePact(
+                          myId: _currentUserId,
+                          otherUserId: otherUserId,
+                        );
+                        safeSetState(() {
+                          _activePocketTalkPact = null;
+                        });
+                        if (mounted) {
+                          Navigator.pop(context);
+                        }
+                      }
+                    },
+                    child: Text(
+                      'Find Next Speaking Partner ⚡',
+                      style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w600, fontSize: 12),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -2121,6 +2194,11 @@ Draft: "$draft"''';
           myId: _currentUserId,
           otherUserId: otherUid,
         );
+        if (messageType == 'voice') {
+          final voiceSecs = voiceDuration ?? 30;
+          final mins = (voiceSecs / 60).ceil().clamp(1, 5);
+          _logPactMinute(mins);
+        }
       }
 
       if (_isEnglishHubGroup && message != null) {
@@ -2497,7 +2575,7 @@ Draft: "$draft"''';
   // --- 🏆 POCKET TALK: 4-DAY SPOKEN PACT & TROPHY HEADER RIBBON ---
   Widget _buildPocketTalkPactHeaderRibbon() {
     final pact = _activePocketTalkPact;
-    if (pact == null || pact.isCompleted) {
+    if (pact == null || (pact.isCompleted && _isMate)) {
       return const SizedBox.shrink();
     }
 
@@ -2873,6 +2951,108 @@ Draft: "$draft"''';
                   ),
                 ),
               ],
+            ),
+          ] else ...[
+            const SizedBox(height: 7),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Text('🎉', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Pact Finished! Graduate to permanent Pocket Mates?',
+                      style: GoogleFonts.inter(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  ElevatedButton(
+                    onPressed: () async {
+                      HapticFeedback.mediumImpact();
+                      final success =
+                          await PocketTrophyService.graduatePactToMates(
+                        myId: _currentUserId,
+                        otherUserId: otherUserId,
+                      );
+                      if (mounted && success) {
+                        safeSetState(() {
+                          _isMate = true;
+                        });
+                        await _sendMessage(
+                          text:
+                              '🤝 We graduated to Permanent Pocket Mates! 🏆✨',
+                          messageType: 'text',
+                        );
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text(
+                                  '🤝 Connected as permanent Pocket Mates! Profiles unlocked.'),
+                              backgroundColor: Color(0xFF10B981),
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8)),
+                    ),
+                    child: Text(
+                      'Become Mates 🤝',
+                      style: GoogleFonts.outfit(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  TextButton(
+                    onPressed: () async {
+                      HapticFeedback.lightImpact();
+                      await PocketTrophyService.expirePact(
+                        myId: _currentUserId,
+                        otherUserId: otherUserId,
+                      );
+                      if (mounted) {
+                        safeSetState(() {
+                          _activePocketTalkPact = null;
+                        });
+                        Navigator.pop(context);
+                      }
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 6),
+                      foregroundColor: Colors.white60,
+                    ),
+                    child: Text(
+                      'Next Partner ⚡',
+                      style: GoogleFonts.outfit(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ],

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:flutter/foundation.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 
@@ -273,7 +275,111 @@ class PocketTrophyService {
       isForfeited: false,
     );
     await _savePact(accepted);
+
+    // 🔒 SINGLE-FOCUS AUTO-FREEZE:
+    // Once an agreement is formed, cancel/freeze all other pending invitations
+    // for both participants so each user focuses completely on this 1 speaking partner.
+    await cancelOtherPendingPacts(myId, exceptPeerId: otherUserId);
+    await cancelOtherPendingPacts(otherUserId, exceptPeerId: myId);
+
     return accepted;
+  }
+
+  /// Cancel/Freeze all other pending pact requests for this user, ensuring single-focus on 1 partner
+  static Future<void> cancelOtherPendingPacts(String userId,
+      {required String exceptPeerId}) async {
+    if (userId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys =
+          prefs.getKeys().where((k) => k.startsWith(kPrefsPactPrefix)).toList();
+      for (final k in keys) {
+        final val = prefs.getString(k);
+        if (val != null && val.contains(userId)) {
+          final decoded = Uri.splitQueryString(val);
+          final u1 = decoded['user1Id'] ?? '';
+          final u2 = decoded['user2Id'] ?? '';
+          final peerId = (u1 == userId) ? u2 : u1;
+          final isAccepted = decoded['isAccepted'] == 'true';
+
+          // If pending and not the accepted partner, cancel it
+          if (!isAccepted && peerId != exceptPeerId && peerId.isNotEmpty) {
+            await prefs.remove(k);
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error canceling other pending pacts: $e');
+    }
+  }
+
+  /// Graduate a completed 4-day Pocket Talk pact into permanent Pocket Mates
+  static Future<bool> graduatePactToMates({
+    required String myId,
+    required String otherUserId,
+  }) async {
+    if (myId.isEmpty || otherUserId.isEmpty) return false;
+    try {
+      final pact = await getPact(myId, otherUserId);
+      if (pact != null) {
+        final graduated = PocketTalkPact(
+          pactId: pact.pactId,
+          user1Id: pact.user1Id,
+          user2Id: pact.user2Id,
+          initiatorId: pact.initiatorId,
+          startedAt: pact.startedAt,
+          streakDays: pact.streakDays,
+          lastSpokenDate: pact.lastSpokenDate,
+          dailyMinutesToday: pact.dailyMinutesToday,
+          isAccepted: true,
+          isCompleted: true,
+          isMatesNow: true,
+          trophiesEarned: pact.trophiesEarned,
+          isForfeited: false,
+          hasBothSpoken: pact.hasBothSpoken,
+        );
+        await _savePact(graduated);
+      }
+
+      // Add to local mates list for both
+      await PocketMateService.addMateLocally(myId, otherUserId);
+      await PocketMateService.addMateLocally(otherUserId, myId);
+
+      // Persist mutual follow in Supabase if not robot
+      if (!PocketRobotService.isRobotId(otherUserId) &&
+          !otherUserId.startsWith('robot_')) {
+        try {
+          await _supabase.from('follows').upsert([
+            {
+              'follower_id': myId,
+              'followed_id': otherUserId,
+              'created_at': DateTime.now().toIso8601String(),
+            },
+            {
+              'follower_id': otherUserId,
+              'followed_id': myId,
+              'created_at': DateTime.now().toIso8601String(),
+            }
+          ]);
+        } catch (_) {}
+      }
+      return true;
+    } catch (e) {
+      debugPrint('Error graduating pact to mates: $e');
+      return false;
+    }
+  }
+
+  /// Natural expiration or dismissal of a completed/expired pact
+  static Future<void> expirePact({
+    required String myId,
+    required String otherUserId,
+  }) async {
+    final pactId = _generatePactId(myId, otherUserId);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('$kPrefsPactPrefix$pactId');
+    } catch (_) {}
   }
 
   /// Check pact integrity: detects missed days and applies trophy deduction penalty.
