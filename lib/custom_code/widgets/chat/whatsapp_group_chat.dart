@@ -44,7 +44,6 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/pocket_animated_aura_avatar.dart';
 import '../image_viewer.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ai_prompt_service.dart'
     show AIService;
@@ -3100,14 +3099,41 @@ Draft: "$draft"''';
                       ? (PocketPresidentService.isPresidentId(
                               widget.groupId.substring(2))
                           ? const PresidentAvatarWidget(size: 34)
-                          : PocketAnimatedAuraAvatar(
-                              size: 36,
-                              config: _getPersonalAvatarConfig(
-                                widget.groupId.substring(2),
-                              ),
-                              imageUrl: widget.groupImage,
-                              name: widget.groupName,
-                              isOnline: true,
+                          : Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  width: 34,
+                                  height: 34,
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: ClipOval(
+                                    child: VectorAvatarWidget(
+                                      config: _getPersonalAvatarConfig(
+                                        widget.groupId.substring(2),
+                                      ),
+                                      size: 34,
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    width: 9,
+                                    height: 9,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF22C55E),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xFF121B22),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ))
                       : (_isEnglishHubGroup
                           ? Container(
@@ -4003,22 +4029,21 @@ Draft: "$draft"''';
               crossAxisAlignment:
                   isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
-                if (!isMe)
+                if (!isMe && !widget.groupId.startsWith('p:'))
                   GestureDetector(
                     onTap: () => _showUserOptionsDialog(
-                        message.senderId, message.senderName ?? widget.groupName),
+                        message.senderId, message.senderName ?? 'User'),
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 4, bottom: 3),
+                      padding: const EdgeInsets.only(left: 4, bottom: 2),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            (message.senderName ?? widget.groupName).toUpperCase(),
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF38BDF8),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.6,
+                            message.senderName ?? 'User',
+                            style: const TextStyle(
+                              color: Color(0xFFFFFC00),
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                           if (_isAdmin(message.senderId)) ...[
@@ -4054,37 +4079,20 @@ Draft: "$draft"''';
                   child: Container(
                     decoration: BoxDecoration(
                       color: isMe
-                          ? const Color(0xFF1E293B)
-                          : const Color(0xFF0F172A),
-                      borderRadius: BorderRadius.circular(14).copyWith(
+                          ? const Color(0xFF005C4B)
+                          : const Color(0xFF1F2C34),
+                      borderRadius: BorderRadius.circular(12).copyWith(
                         bottomRight: isMe
-                            ? const Radius.circular(3)
-                            : const Radius.circular(14),
+                            ? const Radius.circular(2)
+                            : const Radius.circular(12),
                         bottomLeft: !isMe
-                            ? const Radius.circular(3)
-                            : const Radius.circular(14),
+                            ? const Radius.circular(2)
+                            : const Radius.circular(12),
                       ),
-                      border: Border(
-                        left: !isMe
-                            ? const BorderSide(
-                                color: Color(0xFF38BDF8),
-                                width: 2.5,
-                              )
-                            : BorderSide(
-                                color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
-                                width: 1.0,
-                              ),
-                        top: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 0.8),
-                        right: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 0.8),
-                        bottom: BorderSide(color: Colors.white.withValues(alpha: 0.06), width: 0.8),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        width: 0.8,
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.25),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1.5),
-                        ),
-                      ],
                     ),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -4311,30 +4319,20 @@ Draft: "$draft"''';
                               ),
                               if (isMe) ...[
                                 const SizedBox(width: 4),
-                                if (message.isOptimistic || message.isPending)
-                                  const Icon(Icons.access_time_rounded, size: 11, color: Colors.white38)
-                                else
-                                  Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      const Icon(
-                                        Icons.send_rounded,
-                                        size: 10,
-                                        color: Color(0xFFFF0055),
-                                      ),
-                                      const SizedBox(width: 2.5),
-                                      Text(
-                                        message.isRead ? 'Opened' : 'Delivered',
-                                        style: GoogleFonts.inter(
-                                          color: message.isRead
-                                              ? const Color(0xFF38BDF8)
-                                              : const Color(0xFFFF0055),
-                                          fontSize: 9.5,
-                                          fontWeight: FontWeight.w700,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
+                                Icon(
+                                  (message.isOptimistic || message.isPending)
+                                      ? Icons.access_time
+                                      : Icons.done_all,
+                                  size: 13,
+                                  color: (message.isOptimistic ||
+                                          message.isPending)
+                                      ? const Color(0xFF0F172A)
+                                          .withValues(alpha: 0.4)
+                                      : (message.isRead
+                                          ? const Color(0xFF0284C7)
+                                          : const Color(0xFF0F172A)
+                                              .withValues(alpha: 0.6)),
+                                ),
                               ]
                             ],
                           ),
@@ -5899,44 +5897,22 @@ Draft: "$draft"''';
     }
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
+        color: const Color(0xFF070B0D),
         border: Border(
             top: BorderSide(
-                color: Colors.white.withValues(alpha: 0.08), width: 0.8)),
+                color: Colors.white.withValues(alpha: 0.05), width: 1)),
       ),
       child: Row(
         children: [
-          // 📷 Snapchat-Style Circular Camera Button
-          GestureDetector(
-            onTap: () => _pickAndSendSnap(),
-            child: Container(
-              width: 38,
-              height: 38,
-              margin: const EdgeInsets.only(right: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.15),
-                  width: 1.0,
-                ),
-              ),
-              child: const Icon(
-                Icons.camera_alt_rounded,
-                color: Colors.white,
-                size: 19,
-              ),
-            ),
-          ),
           Expanded(
             child: Container(
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(24),
+                color: const Color(0xFF121B22),
+                borderRadius: BorderRadius.circular(22),
                 border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.12), width: 0.8),
+                    color: Colors.white.withValues(alpha: 0.08), width: 0.5),
               ),
               child: Row(
                 children: [
@@ -5947,7 +5923,7 @@ Draft: "$draft"''';
                     icon: Icon(
                         _showEmojiPicker
                             ? Icons.keyboard
-                            : Icons.sentiment_satisfied_alt_rounded,
+                            : Icons.emoji_emotions_outlined,
                         color: Colors.white70),
                     onPressed: () {
                       safeSetState(() => _showEmojiPicker = !_showEmojiPicker);
@@ -5959,22 +5935,16 @@ Draft: "$draft"''';
                       controller: _messageController,
                       focusNode: _focusNode,
                       style:
-                          GoogleFonts.inter(color: Colors.white, fontSize: 14.5),
-                      textInputAction: TextInputAction.send,
-                      onSubmitted: (text) {
-                        if (!_isRecording) {
-                          _handleSendAction();
-                        }
-                      },
+                          const TextStyle(color: Colors.white, fontSize: 14.5),
                       decoration: InputDecoration(
                         hintText: !widget.groupId.startsWith('p:')
-                            ? 'Chat in English only... 🇬🇧'
-                            : 'Chat',
-                        hintStyle: GoogleFonts.inter(
+                            ? 'Type in English only... 🇬🇧'
+                            : 'Type a message...',
+                        hintStyle: const TextStyle(
                             color: Colors.white38, fontSize: 14),
                         border: InputBorder.none,
                         contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 8),
+                            horizontal: 8, vertical: 8),
                       ),
                       minLines: 1,
                       maxLines: 5,

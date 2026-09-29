@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
@@ -13,7 +14,9 @@ import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:pocket_mates_app/custom_code/services/vibes_seen_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/avatar/pocket_animated_aura_avatar.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/living_spreading_aura.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -321,9 +324,236 @@ class _ConversationTileState extends State<ConversationTile> {
         : Colors.black.withValues(alpha: 0.45);
   }
 
+  Widget _buildAvatar(bool isDark) {
+    // 1. Stories / Vibes Thumbnail
+    if (_getStoryThumbnailUrl() != null) {
+      return Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: const Color(0xFFFFFC00),
+            width: 1.5,
+          ),
+        ),
+        child: ClipOval(
+          child: CachedNetworkImage(
+            imageUrl: _getStoryThumbnailUrl()!,
+            width: 50,
+            height: 50,
+            memCacheWidth: 120,
+            memCacheHeight: 120,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              width: 50,
+              height: 50,
+              color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+              child: const Center(
+                child: SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 1.5,
+                    color: Color(0xFFFFFC00),
+                  ),
+                ),
+              ),
+            ),
+            errorWidget: (context, url, err) => VectorAvatarWidget(
+              config: _cachedAvatarConfig,
+              size: 48,
+              showAura: false,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // 2. English Hub Level Group
+    if (widget.conversation.name.toLowerCase().contains('english hub') ||
+        widget.conversation.toolTitle == 'English Hub') {
+      final hubConfig = EnglishHubLevelGroupService.getEnglishHubAvatarConfig(widget.conversation.name);
+      final hubColor = VectorAvatarConfig.parseHex(hubConfig.outfitAccentColor, fallback: const Color(0xFFFFFC00));
+      return LivingSpreadingAura(
+        color: hubColor,
+        size: 50,
+        child: ClipOval(
+          child: VectorAvatarWidget(
+            config: hubConfig,
+            size: 48,
+            showAura: true,
+          ),
+        ),
+      );
+    }
+
+    // 3. President Avatar with Sovereign Gold Aura Spread
+    if (PocketPresidentService.isPresidentId(widget.conversation.id)) {
+      return const LivingSpreadingAura(
+        color: Color(0xFFFFD700),
+        size: 50,
+        child: PresidentAvatarWidget(size: 48, showGlow: false),
+      );
+    }
+
+    // 4. Tools with Tool Color Aura Spread
+    if (widget.conversation.isTool) {
+      final toolColor = _getIconColor(isDark);
+      return LivingSpreadingAura(
+        color: toolColor,
+        size: 50,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: toolColor.withValues(alpha: 0.15),
+            border: Border.all(
+              color: toolColor.withValues(alpha: 0.65),
+              width: 1.5,
+            ),
+          ),
+          child: Center(
+            child: Icon(
+              _getIconData(),
+              color: toolColor,
+              size: 24,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // 5. Group Chats with Group Blue/Cyan Aura Spread
+    if (widget.conversation.isGroup) {
+      const groupColor = Color(0xFF38BDF8);
+      return LivingSpreadingAura(
+        color: groupColor,
+        size: 50,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0),
+            border: Border.all(
+              color: groupColor.withValues(alpha: 0.65),
+              width: 1.5,
+            ),
+            image: widget.conversation.imageUrl != null
+                ? DecorationImage(
+                    image: CachedNetworkImageProvider(
+                      widget.conversation.imageUrl!,
+                      maxWidth: 120,
+                      maxHeight: 120,
+                    ),
+                    fit: BoxFit.cover,
+                  )
+                : null,
+          ),
+          child: widget.conversation.imageUrl == null
+              ? const Center(
+                  child: Icon(
+                    material.Icons.group_rounded,
+                    color: groupColor,
+                    size: 24,
+                  ),
+                )
+              : null,
+        ),
+      );
+    }
+
+    // 6. Active Timer or Notification
+    if (widget.conversation.isActiveTimer || widget.conversation.isNotification) {
+      final itemColor = widget.conversation.isActiveTimer
+          ? material.Colors.greenAccent
+          : _getIconColor(isDark);
+      return LivingSpreadingAura(
+        color: itemColor,
+        size: 50,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: itemColor.withValues(alpha: 0.15),
+            border: Border.all(
+              color: itemColor.withValues(alpha: 0.5),
+              width: 1.5,
+            ),
+          ),
+          child: Center(
+            child: Icon(
+              _getIconData(),
+              color: itemColor,
+              size: 24,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // 7. Regular Pocket Mate (User toggled real photo)
+    final mateColor = VectorAvatarConfig.parseHex(
+      _cachedAvatarConfig.outfitAccentColor,
+      fallback: const Color(0xFFFFFC00),
+    );
+    if (_showRealPhoto && widget.conversation.imageUrl != null) {
+      return LivingSpreadingAura(
+        color: mateColor,
+        size: 50,
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: mateColor.withValues(alpha: 0.75),
+              width: 1.5,
+            ),
+            image: DecorationImage(
+              image: CachedNetworkImageProvider(
+                widget.conversation.imageUrl!,
+                maxWidth: 120,
+                maxHeight: 120,
+              ),
+              fit: BoxFit.cover,
+            ),
+          ),
+        ),
+      );
+    }
+
+    // 8. Regular Pocket Mate (Vector Avatar with Living Animated Aura)
+    return Container(
+      width: 50,
+      height: 50,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: mateColor.withValues(alpha: 0.35),
+            blurRadius: 10,
+            spreadRadius: 1.5,
+          ),
+        ],
+      ),
+      child: VectorAvatarWidget(
+        config: _cachedAvatarConfig,
+        size: 48,
+        showAura: true,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.07)
+        : Colors.black.withValues(alpha: 0.05);
     final primaryTextColor = isDark ? Colors.white : Colors.black87;
     final secondaryTextColor = isDark
         ? Colors.white.withValues(alpha: 0.4)
@@ -334,103 +564,139 @@ class _ConversationTileState extends State<ConversationTile> {
 
     return material.Material(
       color: Colors.transparent,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          material.InkWell(
-            onTap: () {
-              final isSnap = !PocketPresidentService.isPresidentId(widget.conversation.id) &&
-                  (widget.conversation.lastMessage?.contains('Snap') == true ||
-                      widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
-                      widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true);
-              if (isSnap &&
-                  widget.conversation.unreadCount > 0 &&
-                  widget.onSnapViewTap != null) {
-                widget.onSnapViewTap!();
-              } else {
-                widget.onTap();
-              }
-            },
-            onLongPress: widget.onLongPress,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              child: Row(
-                children: [
-                  // 🌟 Living Animated Avatar with Spreading Aura Glow & Story Ring
-                  if (!widget.conversation.isGroup &&
-                      !widget.conversation.isTool &&
-                      !widget.conversation.isNotification &&
-                      !widget.conversation.isActiveTimer)
-                    PocketAnimatedAuraAvatar(
-                      size: 50,
-                      config: _cachedAvatarConfig,
-                      imageUrl: (_showRealPhoto || _getStoryThumbnailUrl() != null)
-                          ? (_getStoryThumbnailUrl() ?? widget.conversation.imageUrl)
-                          : null,
-                      name: widget.conversation.name,
-                      isOnline: widget.conversation.isOnline,
-                      hasStory: _hasUnwatchedStatus,
-                      onTap: () {
-                        if (_hasUnwatchedStatus && widget.onStatusTap != null) {
-                          VibesSeenService.markSeen(
-                            currentUserId: widget.currentUserId,
-                            userId: widget.conversation.id,
-                            profileId: widget.conversation.id,
-                          );
-                          setState(() {});
-                          widget.onStatusTap!();
-                        } else if (widget.conversation.imageUrl != null) {
-                          setState(() => _showRealPhoto = !_showRealPhoto);
-                          HapticFeedback.lightImpact();
-                        }
-                      },
-                    )
-                  else
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        color: widget.conversation.isActiveTimer
-                            ? material.Colors.green.withValues(alpha: 0.1)
-                            : widget.conversation.isTool
-                                ? _getIconColor(isDark).withValues(alpha: 0.15)
-                                : (isDark
-                                    ? const Color(0xFF262626)
-                                    : const Color(0xFFE2E8F0)),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: widget.conversation.isActiveTimer
-                              ? material.Colors.greenAccent.withValues(alpha: 0.3)
-                              : widget.conversation.isTool
-                                  ? _getIconColor(isDark).withValues(alpha: 0.45)
-                                  : (isDark
-                                      ? Colors.white.withValues(alpha: 0.1)
-                                      : Colors.black.withValues(alpha: 0.1)),
-                          width: widget.conversation.isTool ? 1.5 : 1.2,
-                        ),
-                        image: (widget.conversation.isGroup &&
-                                widget.conversation.imageUrl != null)
-                            ? DecorationImage(
-                                image: CachedNetworkImageProvider(
-                                  widget.conversation.imageUrl!,
-                                  maxWidth: 120,
-                                  maxHeight: 120,
-                                ),
-                                fit: BoxFit.cover,
-                              )
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF131B26).withValues(alpha: 0.75)
+              : Colors.white.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: borderColor,
+            width: 1,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+              blurRadius: 6,
+              offset: const Offset(0, 1.5),
+            ),
+          ],
+        ),
+        child: material.InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            final isSnap = !PocketPresidentService.isPresidentId(widget.conversation.id) &&
+                (widget.conversation.lastMessage?.contains('Snap') == true ||
+                    widget.conversation.lastMessage?.contains('🔥 Pocket Snap') == true ||
+                    widget.conversation.lastMessage?.contains('⚡ Pocket Snap') == true);
+            if (isSnap &&
+                widget.conversation.unreadCount > 0 &&
+                widget.onSnapViewTap != null) {
+              widget.onSnapViewTap!();
+            } else {
+              widget.onTap();
+            }
+          },
+          onLongPress: widget.onLongPress,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    if (_hasUnwatchedStatus && widget.onStatusTap != null) {
+                      VibesSeenService.markSeen(
+                        currentUserId: widget.currentUserId,
+                        userId: widget.conversation.id,
+                        profileId: widget.conversation.id,
+                        groupId: widget.conversation.isGroup
+                            ? widget.conversation.id
                             : null,
+                      );
+                      setState(() {});
+                      widget.onStatusTap!();
+                    } else {
+                      widget.onTap();
+                    }
+                  },
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (_hasUnwatchedStatus)
+                        Container(
+                          width: 58,
+                          height: 58,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [
+                                Color(0xFF833AB4), // Purple
+                                Color(0xFFF77737), // Orange
+                                Color(0xFFFCAF45), // Yellow
+                              ],
+                              begin: Alignment.topRight,
+                              end: Alignment.bottomLeft,
+                            ),
+                          ),
+                        ),
+                      GestureDetector(
+                        onTap: () {
+                          if (_hasUnwatchedStatus &&
+                              widget.onStatusTap != null) {
+                            VibesSeenService.markSeen(
+                              currentUserId: widget.currentUserId,
+                              userId: widget.conversation.id,
+                              profileId: widget.conversation.id,
+                              groupId: widget.conversation.isGroup
+                                  ? widget.conversation.id
+                                  : null,
+                            );
+                            setState(() {});
+                            widget.onStatusTap!();
+                          } else if (widget.conversation.imageUrl != null) {
+                            setState(() => _showRealPhoto = !_showRealPhoto);
+                            HapticFeedback.lightImpact();
+                          }
+                        },
+                        onDoubleTap: () {
+                          if (widget.conversation.imageUrl != null) {
+                            setState(() => _showRealPhoto = !_showRealPhoto);
+                            HapticFeedback.lightImpact();
+                          }
+                        },
+                        onLongPress: () {
+                          if (widget.conversation.imageUrl != null) {
+                            setState(() => _showRealPhoto = !_showRealPhoto);
+                            HapticFeedback.mediumImpact();
+                          }
+                        },
+                        child: _buildAvatar(isDark),
                       ),
-                      child: widget.conversation.imageUrl == null
-                          ? Center(
-                              child: Icon(
-                                _getIconData(),
-                                color: _getIconColor(isDark),
-                                size: 24,
+                      if (widget.conversation.isOnline &&
+                          !widget.conversation.isGroup)
+                        Positioned(
+                          right: 1,
+                          bottom: 1,
+                          child: Container(
+                            width: 11,
+                            height: 11,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981), // Emerald
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isDark
+                                    ? const Color(0xFF1A1A1A)
+                                    : const Color(0xFFFFFFFF),
+                                width: 2.0,
                               ),
-                            )
-                          : null,
-                    ),
-                  const SizedBox(width: 12),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 11),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -858,14 +1124,6 @@ class _ConversationTileState extends State<ConversationTile> {
             ),
           ),
         ),
-        Divider(
-            height: 1,
-            thickness: 0.5,
-            color: Colors.white.withValues(alpha: 0.06),
-            indent: 78,
-            endIndent: 16,
-          ),
-        ],
       ),
     );
   }
