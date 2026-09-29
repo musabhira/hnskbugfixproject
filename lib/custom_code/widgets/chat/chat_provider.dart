@@ -734,8 +734,38 @@ class ChatMessages extends _$ChatMessages {
         senderId: uid,
       );
 
+      // Handle Pocket Talk challenge to Robot
+      if (messageType == 'pocket_talk_request') {
+        PocketTrophyService.acceptPact(myId: actualId, otherUserId: uid);
+        Future.delayed(const Duration(milliseconds: 1000), () async {
+          const acceptText =
+              "⚡ Challenge Accepted! I've joined your 4-Day Spoken Pact. Speak with me for 15 minutes daily in English to win your Gold Trophy! 🏆🎙️";
+          final replyMsg = ChatMessage(
+            id: 'robot_pact_${DateTime.now().millisecondsSinceEpoch}',
+            receiverId: uid,
+            senderId: actualId,
+            messageText: acceptText,
+            messageType: 'text',
+            createdAt: DateTime.now(),
+            isOptimistic: false,
+            isRead: true,
+          );
+          await PocketRobotService.saveRobotChatMessage(
+              uid, actualId, replyMsg.toJson());
+          addIncomingMessage(replyMsg);
+          ref.read(conversationsProvider.notifier).updateLastMessage(
+                conversationId: actualId,
+                message: acceptText,
+                time: DateTime.now(),
+                senderId: actualId,
+              );
+        });
+        return userMessage;
+      }
+
       // Asynchronously generate authentic AI response from robot
       if (messageType == 'voice' && fileUrl != null && fileUrl.isNotEmpty) {
+
         PocketRobotService.transcribeAudio(audioUrl: fileUrl).then((transcript) {
           final effectiveText = (transcript != null && transcript.trim().isNotEmpty)
               ? transcript.trim()
@@ -892,11 +922,23 @@ class ChatMessages extends _$ChatMessages {
             )
           ''';
 
-      final response = await _supabase
-          .from(isPersonal ? 'messages' : 'group_messages')
-          .insert(messageData)
-          .select(selectQueryInsert)
-          .single();
+      Map<String, dynamic> response;
+      try {
+        response = await _supabase
+            .from(isPersonal ? 'messages' : 'group_messages')
+            .insert(messageData)
+            .select(selectQueryInsert)
+            .single();
+      } catch (insertSelectError) {
+        debugPrint(
+            'Insert with selectQueryInsert failed ($insertSelectError), trying simple insert');
+        response = await _supabase
+            .from(isPersonal ? 'messages' : 'group_messages')
+            .insert(messageData)
+            .select('*')
+            .single();
+      }
+
 
       final sender = _safeGet(response['sender']);
       final senderProfile = _safeGet(sender?['profile']);
@@ -984,7 +1026,9 @@ class ChatMessages extends _$ChatMessages {
 
       return fullMessage;
     } catch (e) {
+      debugPrint('Error sending message: $e');
       // Offline / Insert failed: Mark as pending instead of removing
+
       final pendingMessage = ChatMessage(
         id: optimisticMessage.id,
         groupId: optimisticMessage.groupId,

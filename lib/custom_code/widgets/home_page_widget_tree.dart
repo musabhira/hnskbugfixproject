@@ -3751,10 +3751,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 !_pocketTalkActivePeerIds.contains(c.id));
                         if (isPendingPact &&
                             !_pocketTalkActivePeerIds.contains(c.id)) {
-                          return false; // Keep exclusively in 'Pocket Talk' tab until accepted!
+                          final myUid = _currentUserId ??
+                              supabase.auth.currentUser?.id ??
+                              '';
+                          final isMe = c.lastSenderId == myUid;
+                          if (!isMe) {
+                            return false; // Keep incoming unaccepted requests exclusively in 'Pocket Talk' tab!
+                          }
                         }
                         return true;
                       }).toList();
+
                     } else if (_chatCategoryFilterIndex == 1) {
                       activeFiltered = activeFiltered
                           .where((c) => PocketRobotService.isRobotId(c.id))

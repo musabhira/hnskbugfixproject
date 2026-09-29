@@ -5241,12 +5241,23 @@ Draft: "$draft"''';
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          '15 mins daily English • +1 Trophy 🏆',
+                          '15 mins daily English • +1 Gold Trophy 🏆',
                           style: GoogleFonts.inter(
-                            color: Colors.white60,
+                            color: Colors.white70,
                             fontSize: 10.5,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Required to advance past Level 5',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFFFFB300),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+
                       ],
                     ),
                   ),

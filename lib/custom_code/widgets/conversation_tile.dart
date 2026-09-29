@@ -19,6 +19,8 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/living_spreading_aur
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/group_sky_members_page.dart';
+
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -850,8 +852,39 @@ class _ConversationTileState extends State<ConversationTile> {
                             ),
                           ),
                         ),
+                      if (_cachedPact != null &&
+                          _cachedPact!.isAccepted &&
+                          !_cachedPact!.isForfeited)
+                        Positioned(
+                          top: -2,
+                          right: -2,
+                          child: Container(
+                            padding: const EdgeInsets.all(2.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFFFD700),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFD700)
+                                      .withValues(alpha: 0.5),
+                                  blurRadius: 4,
+                                  spreadRadius: 0.5,
+                                ),
+                              ],
+                            ),
+                            child: const Text(
+                              '⚡',
+                              style: TextStyle(fontSize: 8.5),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
+
                 ),
                 const SizedBox(width: 11),
                 Expanded(
@@ -1376,16 +1409,36 @@ class _ConversationTileState extends State<ConversationTile> {
       ),
     );
 
-    // Audio Directive: Swiping a chat tile left-to-right opens the Citadel Attack page!
+    // Audio Directive: Tools should NEVER be swipable!
+    if (widget.conversation.isTool ||
+        widget.conversation.isNotification ||
+        widget.conversation.isActiveTimer) {
+      return tileContent;
+    }
+
+    // Audio Directive: Swiping opens Attack (individual citadel) or Group Sky Members Page!
     return Dismissible(
       key: ValueKey('chat_tile_swipe_${widget.conversation.id}'),
       direction: DismissDirection.startToEnd,
       confirmDismiss: (direction) async {
         HapticFeedback.mediumImpact();
-        PocketCitadelAttackPage.openForUser(
-          context,
-          userId: widget.conversation.id,
-        );
+        if (widget.conversation.isGroup) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => GroupSkyMembersPage(
+                groupId: widget.conversation.id,
+                groupName: widget.conversation.name,
+                groupImage: widget.conversation.imageUrl,
+              ),
+            ),
+          );
+        } else {
+          PocketCitadelAttackPage.openForUser(
+            context,
+            userId: widget.conversation.id,
+          );
+        }
         return false; // Prevent tile removal from list; smoothly spring back
       },
       background: Container(
@@ -1393,13 +1446,13 @@ class _ConversationTileState extends State<ConversationTile> {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: const LinearGradient(
-            colors: [Color(0xFFEF4444), Color(0xFFFF8A00)],
+            colors: [Color(0xFFFF3D00), Color(0xFFFF9100)], // Flame fire gradient
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+              color: const Color(0xFFFF3D00).withValues(alpha: 0.35),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -1416,9 +1469,11 @@ class _ConversationTileState extends State<ConversationTile> {
                 color: Colors.black.withValues(alpha: 0.25),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
-                material.Icons.flash_on_rounded,
-                color: Color(0xFFFFFC00),
+              child: Icon(
+                widget.conversation.isGroup
+                    ? material.Icons.cloud_rounded
+                    : material.Icons.local_fire_department_rounded,
+                color: const Color(0xFFFFFC00),
                 size: 22,
               ),
             ),
@@ -1428,7 +1483,7 @@ class _ConversationTileState extends State<ConversationTile> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'RAID CITADEL ⚔️',
+                  widget.conversation.isGroup ? 'GROUP CITADEL ⚔️' : 'ATTACK ⚔️',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontSize: 13,
@@ -1437,7 +1492,9 @@ class _ConversationTileState extends State<ConversationTile> {
                   ),
                 ),
                 Text(
-                  'Swipe to attack home',
+                  widget.conversation.isGroup
+                      ? 'Swipe to view sky alliance members'
+                      : 'Swipe to attack citadel',
                   style: GoogleFonts.inter(
                     color: Colors.white.withValues(alpha: 0.85),
                     fontSize: 10.5,
@@ -1451,6 +1508,7 @@ class _ConversationTileState extends State<ConversationTile> {
       ),
       child: tileContent,
     );
+
   }
 
   Widget _buildTrailingActionButton(bool isDark) {
