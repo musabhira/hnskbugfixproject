@@ -10,6 +10,9 @@ class LivingSpreadingAura extends StatefulWidget {
   final double size;
   final bool animate;
   final BorderRadius? borderRadius;
+  final double speed;
+  final int maxParticles;
+  final double intensity;
 
   const LivingSpreadingAura({
     super.key,
@@ -18,6 +21,9 @@ class LivingSpreadingAura extends StatefulWidget {
     this.size = 50.0,
     this.animate = true,
     this.borderRadius,
+    this.speed = 1.0,
+    this.maxParticles = 12,
+    this.intensity = 1.0,
   });
 
   @override
@@ -47,7 +53,7 @@ class _LivingSpreadingAuraState extends State<LivingSpreadingAura>
 
   void _onTick() {
     final now = DateTime.now();
-    final dt = (now.difference(_lastTick).inMicroseconds / 1000000.0).clamp(0.001, 0.05);
+    final dt = (now.difference(_lastTick).inMicroseconds / 1000000.0).clamp(0.001, 0.05) * widget.speed;
     _lastTick = now;
     _elapsedTime += dt;
 
@@ -58,10 +64,12 @@ class _LivingSpreadingAuraState extends State<LivingSpreadingAura>
       }
     }
 
-    if (widget.animate && _particles.length < 12 && _random.nextDouble() < 0.28) {
+    if (widget.animate &&
+        _particles.length < widget.maxParticles &&
+        _random.nextDouble() < (0.28 * widget.speed.clamp(0.2, 1.0))) {
       final angle = _random.nextDouble() * 2 * math.pi;
-      final speed = 15.0 + _random.nextDouble() * 25.0;
-      final dist = (widget.size * 0.42);
+      final speed = (15.0 + _random.nextDouble() * 25.0) * widget.speed.clamp(0.4, 1.0);
+      final dist = (widget.size * 0.44);
       final px = widget.size / 2 + math.cos(angle) * dist;
       final py = widget.size / 2 + math.sin(angle) * dist;
 
@@ -72,8 +80,8 @@ class _LivingSpreadingAuraState extends State<LivingSpreadingAura>
           vx: math.cos(angle) * speed * 0.5,
           vy: -speed * 0.7,
           color: widget.color,
-          size: 2.0 + _random.nextDouble() * 2.5,
-          lifespan: 0.8 + _random.nextDouble() * 0.7,
+          size: 1.8 + _random.nextDouble() * 2.0,
+          lifespan: (0.8 + _random.nextDouble() * 0.7) / widget.speed.clamp(0.4, 1.0),
         ),
       );
     }
@@ -103,6 +111,7 @@ class _LivingSpreadingAuraState extends State<LivingSpreadingAura>
                 color: widget.color,
                 particles: _particles,
                 elapsedTime: _elapsedTime,
+                intensity: widget.intensity,
               ),
             ),
           ),
@@ -111,9 +120,9 @@ class _LivingSpreadingAuraState extends State<LivingSpreadingAura>
           AnimatedBuilder(
             animation: _controller,
             builder: (context, child) {
-              final breathing = math.sin(_elapsedTime * 2.5) * 0.018;
+              final breathing = math.sin(_elapsedTime * 2.5) * (0.018 * widget.speed.clamp(0.3, 1.0));
               final totalScale = (1.0 + breathing).clamp(0.95, 1.25);
-              final bobY = math.sin(_elapsedTime * 2.5) * (widget.size * 0.012);
+              final bobY = math.sin(_elapsedTime * 2.5) * (widget.size * 0.012 * widget.speed.clamp(0.3, 1.0));
 
               return Transform.translate(
                 offset: Offset(0, bobY),
@@ -165,11 +174,13 @@ class _SpreadingAuraPainter extends CustomPainter {
   final Color color;
   final List<_FlameAuraParticle> particles;
   final double elapsedTime;
+  final double intensity;
 
   _SpreadingAuraPainter({
     required this.color,
     required this.particles,
     required this.elapsedTime,
+    this.intensity = 1.0,
   });
 
   @override
@@ -179,11 +190,13 @@ class _SpreadingAuraPainter extends CustomPainter {
 
     // Spreading radial aura glow in backdrop
     final spreadPulse = (math.sin(elapsedTime * 2.5) + 1.0) / 2.0;
+    final baseAlpha = (0.35 + 0.15 * spreadPulse) * intensity;
+    final midAlpha = (0.10 * spreadPulse) * intensity;
     final glowPaint = Paint()
       ..shader = RadialGradient(
         colors: [
-          color.withValues(alpha: 0.35 + 0.15 * spreadPulse),
-          color.withValues(alpha: 0.10 * spreadPulse),
+          color.withValues(alpha: baseAlpha.clamp(0.0, 1.0)),
+          color.withValues(alpha: midAlpha.clamp(0.0, 1.0)),
           Colors.transparent,
         ],
         stops: const [0.0, 0.65, 1.0],
@@ -193,7 +206,7 @@ class _SpreadingAuraPainter extends CustomPainter {
     // Upward floating flame particles
     for (final p in particles) {
       final pPaint = Paint()
-        ..color = p.color.withValues(alpha: (p.lifeProgress * 0.75).clamp(0.0, 1.0))
+        ..color = p.color.withValues(alpha: (p.lifeProgress * 0.75 * intensity).clamp(0.0, 1.0))
         ..style = PaintingStyle.fill;
       canvas.drawCircle(Offset(p.x, p.y), p.size * p.lifeProgress, pPaint);
     }

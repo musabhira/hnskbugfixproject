@@ -397,28 +397,49 @@ class _ConversationTileState extends State<ConversationTile> {
       );
     }
 
-    // 4. Tools with Tool Color Aura Spread
+    // 4. Tools with Minimal, Calm Background Aura Spread
     if (widget.conversation.isTool) {
       final toolColor = _getIconColor(isDark);
       return LivingSpreadingAura(
         color: toolColor,
         size: 50,
+        speed: 0.35, // Calm, slow, peaceful speed
+        maxParticles: 4, // Minimal particle count (subtle motes)
+        intensity: 0.45, // Soft, gentle ambient glow
         child: Container(
           width: 48,
           height: 48,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: toolColor.withValues(alpha: 0.15),
+            // Solid opaque backdrop so aura and particles emerge ONLY from behind the edges!
+            color: isDark ? const Color(0xFF131B26) : Colors.white,
             border: Border.all(
-              color: toolColor.withValues(alpha: 0.65),
+              color: toolColor.withValues(alpha: 0.55),
               width: 1.5,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: toolColor.withValues(alpha: 0.20),
+                blurRadius: 8,
+                spreadRadius: 0.5,
+              ),
+            ],
           ),
           child: Center(
-            child: Icon(
-              _getIconData(),
-              color: toolColor,
-              size: 24,
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: toolColor.withValues(alpha: 0.12),
+              ),
+              child: Center(
+                child: Icon(
+                  _getIconData(),
+                  color: toolColor,
+                  size: 20,
+                ),
+              ),
             ),
           ),
         ),
