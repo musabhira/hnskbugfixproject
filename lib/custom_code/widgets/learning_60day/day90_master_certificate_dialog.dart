@@ -333,7 +333,7 @@ class _Day90MasterCertificateDialogState extends State<Day90MasterCertificateDia
                       const SizedBox(height: 12),
 
                       Text(
-                        'for exemplary perseverance across all 90 progressive language domains and conquering Stage 91 Presidential Palace Citadel Raid, achieving CEFR C2 Executive Oratory, Rhetorical Fluency, and Sovereign Distinction.',
+                        'for exemplary perseverance across all 90 progressive language domains, conquering Stage 91 Presidential Palace Citadel Raid, and earning 150+ PocketTalk Spoken Trophies with active community peers, achieving CEFR C2 Executive Oratory, Rhetorical Fluency, and Sovereign Distinction.',
                         textAlign: TextAlign.center,
                         style: GoogleFonts.inter(
                           color: Colors.white.withValues(alpha: 0.88),

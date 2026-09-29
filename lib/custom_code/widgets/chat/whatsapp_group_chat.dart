@@ -17,6 +17,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -159,6 +160,10 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   bool _isMate = false;
   bool _isOutgoingPendingRequest = false;
   Map<String, dynamic>? _incomingPendingRequest;
+
+  // 🏆 PocketTalk 4-Day Spoken Pact State
+  PocketTalkPact? _activePocketTalkPact;
+  int _userTrophyCount = 0;
 
   // Speech-to-Text for English Hub
   final stt.SpeechToText _speechToText = stt.SpeechToText();
@@ -1123,6 +1128,15 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     if (uid.isEmpty || otherUserId.isEmpty) return;
 
     try {
+      final pact = await PocketTrophyService.ensurePact(myId: uid, otherUserId: otherUserId);
+      final trophies = await PocketTrophyService.getTrophyCount(uid);
+      if (mounted) {
+        safeSetState(() {
+          _activePocketTalkPact = pact;
+          _userTrophyCount = trophies;
+        });
+      }
+
       final mate = await PocketMateService.isMate(uid, otherUserId);
       if (mate) {
         if (mounted) {
@@ -1148,7 +1162,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         });
       }
     } catch (e) {
-      debugPrint('Error checking mate status: $e');
+      debugPrint('Error checking mate & pact status: $e');
     }
   }
 
@@ -2261,6 +2275,246 @@ Draft: "$draft"''';
     );
   }
 
+  // --- 🏆 POCKET TALK: 4-DAY SPOKEN PACT & TROPHY HEADER RIBBON ---
+  Widget _buildPocketTalkPactHeaderRibbon() {
+    final pact = _activePocketTalkPact;
+    final currentStreak = pact?.streakDays ?? 1;
+    final isCompleted = pact?.isCompleted ?? false;
+    final isMates = _isMate || (pact?.isMatesNow ?? false);
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: isCompleted
+              ? [
+                  const Color(0xFFFFD700).withValues(alpha: 0.25),
+                  const Color(0xFFB45309).withValues(alpha: 0.18),
+                ]
+              : [
+                  const Color(0xFF1E1B4B),
+                  const Color(0xFF0F172A),
+                ],
+        ),
+        border: Border(
+          bottom: BorderSide(
+            color: isCompleted
+                ? const Color(0xFFFFD700).withValues(alpha: 0.5)
+                : const Color(0xFF38BDF8).withValues(alpha: 0.3),
+            width: 1.2,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 14),
+      child: Row(
+        children: [
+          // Trophy / Pact Icon
+          Container(
+            padding: const EdgeInsets.all(6),
+            decoration: BoxDecoration(
+              color: isCompleted
+                  ? const Color(0xFFFFD700).withValues(alpha: 0.2)
+                  : const Color(0xFF38BDF8).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isCompleted ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                width: 1.1,
+              ),
+            ),
+            child: Text(
+              isCompleted ? '🏆' : '⚡',
+              style: const TextStyle(fontSize: 14),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  children: [
+                    Text(
+                      isCompleted ? 'POCKET TALK PACT COMPLETED 🏆' : 'POCKET TALK 4-DAY PACT',
+                      style: GoogleFonts.outfit(
+                        color: isCompleted ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                      decoration: BoxDecoration(
+                        color: isMates ? Colors.green.withValues(alpha: 0.2) : Colors.amber.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        isMates ? 'VERIFIED MATES 🤝' : 'LOCKED PROFILE 🔒',
+                        style: GoogleFonts.inter(
+                          color: isMates ? const Color(0xFF4ADE80) : const Color(0xFFFBBF24),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 3),
+                Row(
+                  children: [
+                    Text(
+                      'Day $currentStreak of 4 • English Only • 🏆$_userTrophyCount Trophies',
+                      style: GoogleFonts.inter(
+                        color: Colors.white70,
+                        fontSize: 11,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    // Progress dots 1, 2, 3, 4
+                    Row(
+                      children: List.generate(4, (index) {
+                        final isFilled = index < currentStreak;
+                        return Container(
+                          margin: const EdgeInsets.only(right: 3),
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isFilled
+                                ? (isCompleted ? const Color(0xFFFFD700) : const Color(0xFF38BDF8))
+                                : Colors.white24,
+                          ),
+                        );
+                      }),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // Instant "Report Non-English" AI Inspector Button
+          InkWell(
+            onTap: _showReportNonEnglishDialog,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4.5),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4), width: 0.9),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.gavel_rounded, color: Colors.redAccent, size: 12),
+                  const SizedBox(width: 4),
+                  Text(
+                    'NON-ENGLISH',
+                    style: GoogleFonts.outfit(
+                      color: Colors.redAccent,
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReportNonEnglishDialog() {
+    final otherUserId = widget.groupId.startsWith('p:') ? widget.groupId.substring(2) : '';
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF0F172A),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(color: Colors.redAccent.withValues(alpha: 0.3)),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.security_rounded, color: Colors.redAccent, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              'English Guard AI Report',
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'PocketTalk strictly enforces English-only speaking to build real fluency. Paste the non-English sentence or message below for immediate AI scanning:',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              style: const TextStyle(color: Colors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'e.g. Enthoke vishesham... or Malayalam voice text',
+                hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
+                filled: true,
+                fillColor: Colors.black26,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Colors.white12)),
+              ),
+              maxLines: 2,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            onPressed: () async {
+              final text = controller.text.trim();
+              Navigator.pop(ctx);
+              if (text.isEmpty || otherUserId.isEmpty) return;
+
+              final didDetect = await PocketTrophyService.reportNonEnglishMessage(
+                reporterId: _currentUserId,
+                violatorId: otherUserId,
+                messageText: text,
+              );
+
+              if (!mounted) return;
+              if (didDetect) {
+                _checkMateStatus();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('🚨 Non-English confirmed! 50 Pocket Score deducted from offender and streak reset to Day 1.'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('AI scan did not detect non-English violation in the provided text.'),
+                    backgroundColor: Colors.grey,
+                  ),
+                );
+              }
+            },
+            child: const Text('AI Spot Check', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     const backgroundColor = Color(0xFF070B0D);
@@ -2785,6 +3039,8 @@ Draft: "$draft"''';
                   children: [
                     if (_isEnglishHubGroup)
                       _buildEnglishHubHeaderRibbon()
+                    else if (widget.groupId.startsWith('p:'))
+                      _buildPocketTalkPactHeaderRibbon()
                     else if (!widget.groupId.startsWith('p:'))
                       Container(
                         width: double.infinity,

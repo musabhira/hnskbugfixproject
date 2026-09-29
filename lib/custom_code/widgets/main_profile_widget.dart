@@ -29,6 +29,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citad
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 
@@ -273,9 +274,14 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
 
   // 🪙 Unified Pocket Score state (highest priority on user profile)
   int _pocketScore = 0;
+  // 🏆 PocketTalk Spoken Trophies (Earned through 4-Day Spoken Pacts)
+  int _pocketTrophyCount = 0;
 
   Future<void> _loadPocketScore() async {
     try {
+      final trophies = await PocketTrophyService.getTrophyCount(userId);
+      if (mounted) setState(() => _pocketTrophyCount = trophies);
+
       final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
       final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
       if (isRobot) {
@@ -1639,38 +1645,40 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ],
                   ),
                 )
-              : (_profileData?['is_private'] == true && !_isFollowing && !isMe)
+              : ((_profileData?['is_private'] == true || !_isMate) && !isMe)
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(22),
                             decoration: BoxDecoration(
-                              color: btnColor.withValues(alpha: 0.1),
+                              color: const Color(0xFF1E1B4B),
                               shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 1.5),
                             ),
-                            child: Icon(
-                              material.Icons.lock_outline_rounded,
-                              size: 48,
-                              color: btnColor,
-                            ),
+                            child: const Text('🔒', style: TextStyle(fontSize: 40)),
                           ),
                           const SizedBox(height: 16),
                           Text(
-                            "This account is private",
-                            style: TextStyle(
+                            "Profile Locked: PocketTalk in Progress",
+                            style: GoogleFonts.outfit(
                               color: textColor,
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            "Follow this account to see their photos and updates.",
-                            style: TextStyle(
-                              color: textColor.withValues(alpha: 0.6),
-                              fontSize: 13,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 32),
+                            child: Text(
+                              "Full social bio, photos and updates unlock once you complete the 4-Day Spoken Pact and earn your Mates Trophy 🏆 together!",
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.inter(
+                                color: textColor.withValues(alpha: 0.65),
+                                fontSize: 13,
+                                height: 1.4,
+                              ),
                             ),
                           ),
                         ],
@@ -4511,6 +4519,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
       if (unlockedCount < 1 && day >= 90) unlockedCount = 1;
     } else {
       unlockedCount = day >= 90 ? 6 : (day >= 60 ? 5 : (day >= 30 ? 4 : (day >= 21 ? 3 : (day >= 15 ? 2 : 1))));
+      unlockedCount += _pocketTrophyCount;
     }
     final score = _pocketScore;
 
@@ -4634,7 +4643,8 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              _buildAchievementRow('🏆', 'PocketTalk Spoken Trophies: $_pocketTrophyCount Earned', '1 Trophy earned for every 4-Day Spoken Pact completed with active mates.', _pocketTrophyCount > 0),
+              _buildAchievementRow('🎓', '90-Day Master Graduation (Target: 150 Trophies)', 'Required to unlock official global fluency certificate: $_pocketTrophyCount/150 completed (${((_pocketTrophyCount / 150.0) * 100).clamp(0, 100).toStringAsFixed(0)}%).', _pocketTrophyCount >= 150),
               _buildAchievementRow('🌱', 'Day 1 Genesis Starter', 'Completed your first English foundation mission.', day >= 1),
               _buildAchievementRow('👑', 'Day 15 Royalty Unlock', '15 days continuous practice milestone.', day >= 15),
               _buildAchievementRow('🎯', 'Day 21 Habit Anchor Lock', '21 days permanent English habit loop formed.', day >= 21),

@@ -19,6 +19,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:flutter/material.dart' as flutter;
+import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 
 class CommunityChatPage extends StatefulWidget {
   final double? width;
@@ -74,6 +75,9 @@ class _CommunityChatPageState extends State<CommunityChatPage>
       _currentUserProfileId = profileResponse['id'];
       _currentUserName = profileResponse['name'];
       _loadData();
+
+      // ⚡ Auto-dispatch smart pre-paired PocketTalk Spoken Pacts (Active peers + Cross-gender priority)
+      PocketTalkEngine.dispatchAutoPocketTalkRequests(currentUserId: _currentUserId);
     } catch (e) {
       debugPrint('Error getting user profile: $e');
       if (mounted) {
