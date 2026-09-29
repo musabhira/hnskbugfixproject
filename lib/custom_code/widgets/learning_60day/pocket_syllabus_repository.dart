@@ -63,6 +63,8 @@ class SyllabusTrack {
     required this.icon,
     required this.milestones,
   });
+
+  Color get color => primaryColor;
 }
 
 /// 🏛️ Central Repository of all 6 Definitive 90-Day Syllabus Tracks for PoketMates

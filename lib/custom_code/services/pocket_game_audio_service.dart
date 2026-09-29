@@ -95,6 +95,7 @@ class PocketGameAudioService with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     try {
       final prefs = await SharedPreferences.getInstance();
+      // Audio Directive: Audio must NOT be muted by default
       final isMuted = prefs.getBool(_kPrefMuteKey) ?? false;
       isMutedNotifier.value = isMuted;
 
@@ -655,29 +656,12 @@ class PocketSoundToggleWidget extends StatelessWidget {
                           ),
                         ],
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      isMuted
-                          ? Icons.volume_off_rounded
-                          : Icons.music_note_rounded,
-                      color:
-                          isMuted ? Colors.white54 : const Color(0xFFFFFC00),
-                      size: compact ? 16 : 18,
-                    ),
-                    if (!compact && !isMuted) ...[
-                      const SizedBox(width: 5),
-                      Text(
-                        'BGM',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFFC00),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ],
+                child: Icon(
+                  isMuted
+                      ? Icons.volume_off_rounded
+                      : Icons.volume_up_rounded,
+                  color: isMuted ? Colors.white54 : const Color(0xFFFFFC00),
+                  size: compact ? 16 : 18,
                 ),
               ),
             );

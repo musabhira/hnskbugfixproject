@@ -26,6 +26,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'pocket_citadel_attack_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'pocket_syllabus_repository.dart';
+import 'pocket_master_syllabus_modal.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -167,6 +169,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   UserLearningProgress? _progress;
   String? _equippedTalismanId;
   bool _hasAcceptedRules = false;
+  LearnerLevel _currentLearnerLevel = LearnerLevel.zero;
   final int _totalDays = 91;
   bool _hasConqueredCitadel = false;
   bool _isSubscribed = false;
@@ -209,6 +212,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     _loadData();
     // 🎵 Play gentle ambient target roadmap loop music
     PocketGameAudioService.instance.playTargetTheme();
+    PocketSyllabusRepository.getSavedLevel().then((lvl) {
+      if (mounted) setState(() => _currentLearnerLevel = lvl);
+    });
   }
 
   @override
@@ -1503,10 +1509,154 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+
+                // 🔊 Minimal BGM Speaker Toggle (Audio Directive)
+                ValueListenableBuilder<bool>(
+                  valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                  builder: (context, isMuted, _) {
+                    return GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        PocketGameAudioService.instance.toggleMute();
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isMuted ? Colors.white24 : const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Icon(
+                          isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                          color: isMuted ? Colors.white54 : const Color(0xFFFFFC00),
+                          size: 15,
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ],
             ),
 
-            const SizedBox(height: 5),
+            const SizedBox(height: 6),
+
+            // 📘 'Your Syllabus' Level Selector & Exam Ribbon (Audio Directive)
+            Builder(
+              builder: (context) {
+                final track = PocketSyllabusRepository.getTrack(_currentLearnerLevel);
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: track.color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: track.color.withValues(alpha: 0.4), width: 1),
+                  ),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          PocketMasterSyllabusModal.show(
+                            context,
+                            initialLevel: _currentLearnerLevel,
+                            currentDay: prog.currentDay,
+                            onLevelChanged: (newLevel) {
+                              setState(() => _currentLearnerLevel = newLevel);
+                              _loadData();
+                            },
+                          );
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(track.icon, color: track.color, size: 14),
+                            const SizedBox(width: 5),
+                            Text(
+                              'Your Syllabus: ',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white70,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              track.nameEn,
+                              style: GoogleFonts.outfit(
+                                color: track.color,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: track.color.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                track.code,
+                                style: GoogleFonts.outfit(
+                                  color: track.color,
+                                  fontSize: 9.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(Icons.arrow_drop_down_rounded, color: Colors.white54, size: 16),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      // 📝 Syllabus Examination button
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.mediumImpact();
+                          _openSyllabusExamination(track);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('📝', style: TextStyle(fontSize: 10)),
+                              const SizedBox(width: 3),
+                              Text(
+                                'Exam',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.black,
+                                  fontSize: 10.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
 
             // 🎯 Minimal Horizontal Target Milestones Strip
             _buildTargetMilestonesStrip(prog),
@@ -1586,7 +1736,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   Text(
                     isRule
                         ? item.title
-                        : '${item.title} (PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)})',
+                        : '${item.title} (PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)}${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay) > 0 ? " • 🏆${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)}" : ""})',
                     style: GoogleFonts.outfit(
                       color: isCurrentTarget
                           ? item.themeColor
@@ -1709,6 +1859,45 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ],
                     ),
                   ),
+                  if (PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay) > 0)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      margin: const EdgeInsets.only(bottom: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00E5FF).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.6)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('🏆', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Required Pocket Talk Trophies: 🏆 ${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)}',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFF00E5FF),
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'Earned through 4-Day Pocket Talk Spoken Pacts in Mates Chat. Complete spoken pacts to cross this milestone!',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white70,
+                                    fontSize: 10.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   Text('🏡 House Stage: ${item.houseStage}', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
                   const SizedBox(height: 4),
                   Text('🛡️ Defense Unlock: ${item.defenseSummary}', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5)),
@@ -1752,6 +1941,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             },
           ),
         ],
+      ),
+    );
+  }
+
+  /// 📝 Open CEFR Syllabus Interactive Examination
+  void _openSyllabusExamination(SyllabusTrack track) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => _SyllabusExamDialog(
+        track: track,
+        currentDay: _progress?.currentDay ?? 1,
+        onExamCompleted: (score) {
+          setState(() {
+            _unifiedPocketScore += (score * 30);
+          });
+          _loadData();
+        },
       ),
     );
   }
@@ -3434,3 +3641,620 @@ class _AdventureMapRoadPainter extends CustomPainter {
         oldDelegate.ruleNodeY != ruleNodeY;
   }
 }
+
+/// 📝 Interactive CEFR Syllabus Examination Dialog
+class _SyllabusExamDialog extends StatefulWidget {
+  final SyllabusTrack track;
+  final int currentDay;
+  final Function(int score)? onExamCompleted;
+
+  const _SyllabusExamDialog({
+    required this.track,
+    required this.currentDay,
+    this.onExamCompleted,
+  });
+
+  @override
+  State<_SyllabusExamDialog> createState() => _SyllabusExamDialogState();
+}
+
+class _SyllabusExamDialogState extends State<_SyllabusExamDialog> {
+  int _currentIndex = 0;
+  int _score = 0;
+  int? _selectedIndex;
+  bool _answered = false;
+  bool _finished = false;
+
+  late final List<Map<String, dynamic>> _questions;
+
+  @override
+  void initState() {
+    super.initState();
+    _questions = _getQuestionsForLevel(widget.track.level);
+  }
+
+  List<Map<String, dynamic>> _getQuestionsForLevel(LearnerLevel level) {
+    switch (level) {
+      case LearnerLevel.zero:
+        return [
+          {
+            'q': 'Which alphabet letter comes after "B"?',
+            'options': ['A', 'C', 'D', 'E'],
+            'correct': 1,
+            'exp': 'A -> B -> C is the alphabetical sequence.',
+          },
+          {
+            'q': 'How do you greet someone in the morning?',
+            'options': ['Good Night', 'Good Morning', 'Good Evening', 'Goodbye'],
+            'correct': 1,
+            'exp': '"Good Morning" is the polite greeting for the morning.',
+          },
+          {
+            'q': 'Choose the correct word: "I ___ a student."',
+            'options': ['is', 'are', 'am', 'be'],
+            'correct': 2,
+            'exp': '"I" pairs with "am" in present simple tense.',
+          },
+          {
+            'q': 'Which of these is an animal?',
+            'options': ['Table', 'Dog', 'Pencil', 'River'],
+            'correct': 1,
+            'exp': 'A dog is a domestic animal.',
+          },
+          {
+            'q': 'What color is the clear sky on a sunny day?',
+            'options': ['Green', 'Blue', 'Red', 'Yellow'],
+            'correct': 1,
+            'exp': 'The sky appears blue during the day.',
+          },
+        ];
+      case LearnerLevel.beginner:
+        return [
+          {
+            'q': 'Complete the sentence: "Yesterday, she ___ to the market."',
+            'options': ['goes', 'went', 'gone', 'going'],
+            'correct': 1,
+            'exp': '"Went" is the past simple tense of "go".',
+          },
+          {
+            'q': 'Fill in the blank: "Where ___ you live?"',
+            'options': ['do', 'does', 'is', 'are'],
+            'correct': 0,
+            'exp': 'With subject "you", we use the auxiliary verb "do".',
+          },
+          {
+            'q': 'Complete the sentence: "They ___ playing football right now."',
+            'options': ['is', 'are', 'was', 'am'],
+            'correct': 1,
+            'exp': 'Present continuous with "They" takes "are".',
+          },
+          {
+            'q': 'Choose the correct possessive pronoun: "This book belongs to John. It is ___."',
+            'options': ['her', 'hers', 'his', 'him'],
+            'correct': 2,
+            'exp': '"His" is the possessive pronoun for John (he).',
+          },
+          {
+            'q': 'Negative form: "I don\'t have ___ money."',
+            'options': ['some', 'any', 'many', 'much of'],
+            'correct': 1,
+            'exp': 'In negative sentences, "any" is typically used with uncountable nouns.',
+          },
+        ];
+      case LearnerLevel.elementary:
+        return [
+          {
+            'q': 'Conditional clause: "If it rains tomorrow, we ___ at home."',
+            'options': ['stayed', 'will stay', 'would stay', 'staying'],
+            'correct': 1,
+            'exp': 'First conditional takes Present Simple in "if" clause and "will + verb" in main clause.',
+          },
+          {
+            'q': 'Preposition of time: "She has been working here ___ three years."',
+            'options': ['since', 'for', 'during', 'from'],
+            'correct': 1,
+            'exp': '"For" is used for periods/durations of time (3 years).',
+          },
+          {
+            'q': 'Conjunction: "The meal was tasty, ___ it was rather expensive."',
+            'options': ['because', 'although', 'so', 'therefore'],
+            'correct': 1,
+            'exp': '"Although" introduces a contrast or concession.',
+          },
+          {
+            'q': 'Indirect question: "Could you tell me where the station ___?"',
+            'options': ['is', 'is it', 'it is located at', 'does it be'],
+            'correct': 0,
+            'exp': 'In indirect questions, the word order is statement order (subject + verb).',
+          },
+          {
+            'q': 'Gerund phrase: "I look forward to ___ you soon."',
+            'options': ['meet', 'meeting', 'met', 'be meeting'],
+            'correct': 1,
+            'exp': '"Look forward to" is followed by a gerund (-ing form).',
+          },
+        ];
+      case LearnerLevel.middle:
+        return [
+          {
+            'q': 'Third conditional: "Had I known about the storm, I ___ earlier."',
+            'options': ['left', 'would leave', 'would have left', 'will have left'],
+            'correct': 2,
+            'exp': 'Inverted third conditional requires "would have + past participle".',
+          },
+          {
+            'q': 'Prepositional phrase: "The flight was delayed ___ inclement weather."',
+            'options': ['due to', 'because', 'owing', 'despite of'],
+            'correct': 0,
+            'exp': '"Due to" acts as an adjectival/adverbial preposition phrase followed by a noun phrase.',
+          },
+          {
+            'q': 'Subject-verb agreement: "Neither the manager nor the assistants ___ in the hall."',
+            'options': ['was', 'were', 'is', 'has been'],
+            'correct': 1,
+            'exp': 'With "neither... nor", the verb agrees with the closer subject ("assistants" -> were).',
+          },
+          {
+            'q': 'Collocation: "She delivered her keynote with tremendous poise and ___."',
+            'options': ['eloquence', 'reluctance', 'negligence', 'ambivalence'],
+            'correct': 0,
+            'exp': '"Eloquence" signifies fluent and persuasive expressive speaking.',
+          },
+          {
+            'q': 'Phrasal verb: "The council must come up ___ a viable alternative."',
+            'options': ['with', 'to', 'for', 'about'],
+            'correct': 0,
+            'exp': '"Come up with" means to produce or formulate an idea/plan.',
+          },
+        ];
+      case LearnerLevel.advanced:
+        return [
+          {
+            'q': 'Vocabulary: "His analysis was so ___ that even sceptics accepted his conclusions."',
+            'options': ['cogent', 'spurious', 'superfluous', 'tenuous'],
+            'correct': 0,
+            'exp': '"Cogent" means clear, logical, and convincing.',
+          },
+          {
+            'q': 'Inversion: "Scarcely had the session begun ___ the microphone malfunctioned."',
+            'options': ['than', 'when', 'then', 'that'],
+            'correct': 1,
+            'exp': '"Scarcely... when" is the standard correlative inversion pair.',
+          },
+          {
+            'q': 'Collocation: "The committee reached a unanimous ___ after prolonged debate."',
+            'options': ['consensus', 'contention', 'dissent', 'ambiguity'],
+            'correct': 0,
+            'exp': '"Unanimous consensus" indicates complete agreement across all parties.',
+          },
+          {
+            'q': 'Subjunctive mood: "It is imperative that the CEO ___ present at the hearing."',
+            'options': ['is', 'be', 'was', 'would be'],
+            'correct': 1,
+            'exp': 'Formal mandative subjunctive uses the bare base form "be".',
+          },
+          {
+            'q': 'Idiomatic discourse: "To mitigate geopolitical risk, supply chain agility is of ___ importance."',
+            'options': ['paramount', 'nominal', 'trivial', 'ancillary'],
+            'correct': 0,
+            'exp': '"Paramount" means more important than anything else; supreme.',
+          },
+        ];
+      case LearnerLevel.expert:
+        return [
+          {
+            'q': 'Elite Lexicon: "Her diplomatic discourse exhibited rare perspicacity and ___."',
+            'options': ['finesse', 'obloquy', 'solipsism', 'vacillation'],
+            'correct': 0,
+            'exp': '"Finesse" denotes intricate and refined skill or diplomacy.',
+          },
+          {
+            'q': 'Nuance: "His critique was commended for its incisive and ___ reasoning."',
+            'options': ['trenchant', 'specious', 'platitudinous', 'insipid'],
+            'correct': 0,
+            'exp': '"Trenchant" describes expression that is vigorous, incisive, and keenly effective.',
+          },
+          {
+            'q': 'Adverbial phrasing: "Notwithstanding strenuous opposition, the motion was ___ approved."',
+            'options': ['summarily', 'tentatively', 'feebly', 'gratuitously'],
+            'correct': 0,
+            'exp': '"Summarily" means expeditiously and without delay or formal hesitation.',
+          },
+          {
+            'q': 'Philosophical rhetoric: "The lecturer warned against conflating temporal fame with ___ value."',
+            'options': ['ephemeral', 'intrinsic', 'circumstantial', 'utilitarian'],
+            'correct': 1,
+            'exp': '"Intrinsic" denotes belonging naturally; essential and timeless.',
+          },
+          {
+            'q': 'Stylistic mastery: "He spoke with such erudition that the audience was held in ___ silence."',
+            'options': ['rapt', 'lukewarm', 'flippant', 'perfunctory'],
+            'correct': 0,
+            'exp': '"Rapt" describes intense and completely absorbed fascination.',
+          },
+        ];
+    }
+  }
+
+  void _handleOptionSelect(int index) {
+    if (_answered) return;
+    final isCorrect = index == _questions[_currentIndex]['correct'];
+    setState(() {
+      _selectedIndex = index;
+      _answered = true;
+      if (isCorrect) _score++;
+    });
+    if (isCorrect) {
+      HapticFeedback.mediumImpact();
+    } else {
+      HapticFeedback.vibrate();
+    }
+  }
+
+  void _next() {
+    if (_currentIndex < _questions.length - 1) {
+      setState(() {
+        _currentIndex++;
+        _selectedIndex = null;
+        _answered = false;
+      });
+    } else {
+      setState(() {
+        _finished = true;
+      });
+      widget.onExamCompleted?.call(_score);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final q = _questions[_currentIndex];
+    final themeColor = widget.track.primaryColor;
+
+    return Dialog(
+      backgroundColor: const Color(0xFF131722),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(22),
+        side: BorderSide(color: themeColor.withValues(alpha: 0.6), width: 1.5),
+      ),
+      insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 440),
+        padding: const EdgeInsets.all(18),
+        child: _finished ? _buildCertificateView(themeColor) : _buildExamContent(q, themeColor),
+      ),
+    );
+  }
+
+  Widget _buildExamContent(Map<String, dynamic> q, Color themeColor) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: themeColor.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(widget.track.icon, color: themeColor, size: 18),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    '${widget.track.code} • ${widget.track.nameEn}',
+                    style: GoogleFonts.outfit(
+                      color: themeColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    'CEFR Syllabus Level Assessment',
+                    style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+              onPressed: () => Navigator.pop(context),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+
+        // Progress bar
+        Row(
+          children: [
+            Text(
+              'Question ${_currentIndex + 1} of ${_questions.length}',
+              style: GoogleFonts.outfit(
+                color: Colors.white70,
+                fontSize: 11.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            Text(
+              'Score: $_score',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD700),
+                fontSize: 11.5,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 6),
+        LinearProgressIndicator(
+          value: (_currentIndex + 1) / _questions.length,
+          backgroundColor: Colors.white12,
+          valueColor: AlwaysStoppedAnimation<Color>(themeColor),
+          minHeight: 4,
+          borderRadius: BorderRadius.circular(3),
+        ),
+        const SizedBox(height: 16),
+
+        // Question
+        Text(
+          q['q'] as String,
+          style: GoogleFonts.outfit(
+            color: Colors.white,
+            fontSize: 14.5,
+            fontWeight: FontWeight.w700,
+            height: 1.35,
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // Options
+        ...List.generate((q['options'] as List).length, (idx) {
+          final opt = q['options'][idx] as String;
+          Color cardBorder = Colors.white12;
+          Color cardBg = Colors.white.withValues(alpha: 0.04);
+          Color textColor = Colors.white;
+
+          if (_answered) {
+            if (idx == q['correct']) {
+              cardBorder = const Color(0xFF10B981);
+              cardBg = const Color(0xFF10B981).withValues(alpha: 0.18);
+              textColor = const Color(0xFF10B981);
+            } else if (idx == _selectedIndex) {
+              cardBorder = const Color(0xFFEF4444);
+              cardBg = const Color(0xFFEF4444).withValues(alpha: 0.15);
+              textColor = const Color(0xFFEF4444);
+            }
+          }
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              onTap: () => _handleOptionSelect(idx),
+              borderRadius: BorderRadius.circular(12),
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: cardBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: cardBorder, width: 1.2),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _answered && idx == q['correct']
+                            ? const Color(0xFF10B981)
+                            : (_answered && idx == _selectedIndex
+                                ? const Color(0xFFEF4444)
+                                : Colors.white10),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        String.fromCharCode(65 + idx),
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        opt,
+                        style: GoogleFonts.inter(
+                          color: textColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    if (_answered && idx == q['correct'])
+                      const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+                    if (_answered && idx == _selectedIndex && idx != q['correct'])
+                      const Icon(Icons.cancel_rounded, color: Color(0xFFEF4444), size: 18),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+
+        if (_answered) ...[
+          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.05),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('💡', style: TextStyle(fontSize: 13)),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    q['exp'] as String,
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: themeColor,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 11),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: _next,
+              child: Text(
+                _currentIndex < _questions.length - 1 ? 'NEXT QUESTION →' : 'VIEW CERTIFICATE 🏆',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 12.5),
+              ),
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCertificateView(Color themeColor) {
+    final pct = (_score / _questions.length * 100).round();
+    final isPassed = pct >= 60;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: RadialGradient(
+              colors: [
+                themeColor.withValues(alpha: 0.25),
+                Colors.transparent,
+              ],
+            ),
+            shape: BoxShape.circle,
+          ),
+          child: const Text('🎓', style: TextStyle(fontSize: 48)),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          isPassed ? 'LEVEL ASSESSMENT PASSED!' : 'ASSESSMENT COMPLETED',
+          style: GoogleFonts.outfit(
+            color: isPassed ? const Color(0xFF10B981) : Colors.amber,
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 0.5,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Track: ${widget.track.nameEn} (${widget.track.code})',
+          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
+        ),
+        const SizedBox(height: 14),
+
+        // Score Card
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: themeColor.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              Column(
+                children: [
+                  Text('SCORE', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11)),
+                  const SizedBox(height: 2),
+                  Text('$_score / ${_questions.length}', style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Container(width: 1, height: 28, color: Colors.white12),
+              Column(
+                children: [
+                  Text('ACCURACY', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11)),
+                  const SizedBox(height: 2),
+                  Text('$pct%', style: GoogleFonts.outfit(color: themeColor, fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+              Container(width: 1, height: 28, color: Colors.white12),
+              Column(
+                children: [
+                  Text('BONUS', style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11)),
+                  const SizedBox(height: 2),
+                  Text('+${_score * 30} PS', style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 18, fontWeight: FontWeight.bold)),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        Container(
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            children: [
+              const Text('📜', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  isPassed
+                      ? 'Congratulations! You demonstrated proficiency for ${widget.track.nameEn}. Keep building your daily streak!'
+                      : 'Good effort! Review today\'s syllabus milestones to strengthen your foundations and retake anytime.',
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: themeColor,
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              'CLAIM & RETURN TO MAP',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+

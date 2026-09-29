@@ -902,6 +902,11 @@ class _PocketWorldStreetPageState extends State<PocketWorldStreetPage> {
               child: PageView.builder(
                 controller: _pageController,
                 itemCount: _neighbors.length,
+                onPageChanged: (index) {
+                  if (index >= 0 && index < _neighbors.length) {
+                    PocketGameAudioService.instance.playHomeTheme(_neighbors[index].id);
+                  }
+                },
                 itemBuilder: (context, index) {
                   final neighbor = _neighbors[index];
                   final isBanned = neighbor.isBanned || _bannedHouseIds.contains(neighbor.id);

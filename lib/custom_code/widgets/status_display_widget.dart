@@ -2902,9 +2902,20 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       final rawMeta = status['metadata'];
       final meta = rawMeta is Map ? rawMeta : {};
       final musicUrl = meta['music_url']?.toString();
-      final userId = (status['user_id'] ?? status['userId'] ?? '').toString();
-      final isRobot = PocketRobotService.isRobotId(userId) || meta['is_robot'] == true;
-      final isPresident = PocketPresidentService.isPresidentId(userId) || meta['is_president'] == true;
+      final targetProfileId = widget.statusGroup['profile']?['id']?.toString() ??
+          widget.statusGroup['id']?.toString() ??
+          '';
+      final userId = (status['user_id'] ?? status['userId'] ?? widget.statusGroup['user_id'] ?? targetProfileId).toString();
+      final isRobot = PocketRobotService.isRobotId(userId) ||
+          PocketRobotService.isRobotId(targetProfileId) ||
+          widget.statusGroup['is_robot'] == true ||
+          widget.statusGroup['profile']?['is_robot'] == true ||
+          meta['is_robot'] == true;
+      final isPresident = PocketPresidentService.isPresidentId(userId) ||
+          PocketPresidentService.isPresidentId(targetProfileId) ||
+          widget.statusGroup['is_president'] == true ||
+          widget.statusGroup['profile']?['is_president'] == true ||
+          meta['is_president'] == true;
 
       if (musicUrl != null && musicUrl.isNotEmpty) {
         PocketGameAudioService.instance.playTrack(PocketMusicTrack(
@@ -3752,6 +3763,25 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               ),
                             ),
                           ),
+                        const SizedBox(width: 8),
+                        ValueListenableBuilder<bool>(
+                          valueListenable: PocketGameAudioService.instance.isMutedNotifier,
+                          builder: (context, isMuted, _) {
+                            return IconButton(
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                PocketGameAudioService.instance.toggleMute();
+                              },
+                              icon: Icon(
+                                isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                                color: isMuted ? Colors.white54 : const Color(0xFFFFFC00),
+                                size: 22,
+                              ),
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                            );
+                          },
+                        ),
                         const SizedBox(width: 8),
                         IconButton(
                           onPressed: () => Navigator.pop(context),

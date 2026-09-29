@@ -18,6 +18,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/widgets/avatar/living_spreading_aura.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 
 class ConversationTile extends StatefulWidget {
   final ChatConversation conversation;
@@ -706,7 +707,7 @@ class _ConversationTileState extends State<ConversationTile> {
         ? Colors.white.withValues(alpha: 0.9)
         : Colors.black.withValues(alpha: 0.85);
 
-    return material.Material(
+    final tileContent = material.Material(
       color: Colors.transparent,
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
@@ -1246,6 +1247,82 @@ class _ConversationTileState extends State<ConversationTile> {
           ),
         ),
       ),
+    );
+
+    // Audio Directive: Swiping a chat tile left-to-right opens the Citadel Attack page!
+    return Dismissible(
+      key: ValueKey('chat_tile_swipe_${widget.conversation.id}'),
+      direction: DismissDirection.startToEnd,
+      confirmDismiss: (direction) async {
+        HapticFeedback.mediumImpact();
+        PocketCitadelAttackPage.openForUser(
+          context,
+          userId: widget.conversation.id,
+        );
+        return false; // Prevent tile removal from list; smoothly spring back
+      },
+      background: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          gradient: const LinearGradient(
+            colors: [Color(0xFFEF4444), Color(0xFFFF8A00)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+              blurRadius: 10,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.25),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                material.Icons.flash_on_rounded,
+                color: Color(0xFFFFFC00),
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'RAID CITADEL ⚔️',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.8,
+                  ),
+                ),
+                Text(
+                  'Swipe to attack home',
+                  style: GoogleFonts.inter(
+                    color: Colors.white.withValues(alpha: 0.85),
+                    fontSize: 10.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+      child: tileContent,
     );
   }
 
