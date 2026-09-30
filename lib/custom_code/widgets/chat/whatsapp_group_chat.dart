@@ -24,6 +24,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart
 
 import 'dart:async';
 import 'dart:math' as math;
+import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:google_fonts/google_fonts.dart' hide Config;
@@ -2138,15 +2140,65 @@ Draft: "$draft"''';
       return null;
     }
 
-    if (_isEnglishHubGroup && text != null && text.trim().isNotEmpty) {
-      if (!_isEnglishOnly(text)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content:
-                Text('⚠️ Only English messages are allowed in this group!'),
-            backgroundColor: Colors.redAccent,
-          ),
+    final isPocketTalkOrHub = widget.groupId.startsWith('p:') || _isEnglishHubGroup;
+    if (isPocketTalkOrHub && text != null && text.trim().isNotEmpty) {
+      final langResult = PocketLanguageGuardService.checkMessage(text);
+      if (!langResult.isValid || !_isEnglishOnly(text)) {
+        final warnRecord = await PocketLanguageGuardService.recordWarning(
+          userId: _currentUserId,
+          contextId: widget.groupId,
+          violationType: langResult.reason,
+          sampleWord: langResult.detectedWord,
         );
+        HapticFeedback.vibrate();
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: const Color(0xFF131722),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+                side: const BorderSide(color: Color(0xFFFFB300), width: 1.5),
+              ),
+              title: Row(
+                children: [
+                  const Text('🗣️', style: TextStyle(fontSize: 24)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      warnRecord.title,
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Text(
+                warnRecord.message,
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.9),
+                  fontSize: 13.5,
+                  height: 1.4,
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: Text(
+                    'I Understand (Speak in English) 🤝',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
         return null;
       }
     }
@@ -2198,6 +2250,9 @@ Draft: "$draft"''';
           final voiceSecs = voiceDuration ?? 30;
           final mins = (voiceSecs / 60).ceil().clamp(1, 5);
           _logPactMinute(mins);
+        } else {
+          // 💬 Interactive text chatting also increments spoken/chat engagement (throttled by _logPactMinute)
+          _logPactMinute(1);
         }
       }
 
@@ -2666,6 +2721,45 @@ Draft: "$draft"''';
                   ],
                 ),
               ),
+              TextButton(
+                onPressed: () async {
+                  HapticFeedback.lightImpact();
+                  final success =
+                      await PocketTrophyService.swapOrDeclinePartner(
+                    myId: _currentUserId,
+                    otherUserId: otherUserId,
+                    reason: 'declined_request',
+                  );
+                  if (mounted && success) {
+                    safeSetState(() {
+                      _activePocketTalkPact = null;
+                    });
+                    unawaited(PocketTalkEngine.autoRefillPocketTalkPacts(
+                        _currentUserId));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Pocket Talk request declined • 0 penalty'),
+                        backgroundColor: Colors.grey,
+                      ),
+                    );
+                    Navigator.pop(context);
+                  }
+                },
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.white60,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                ),
+                child: Text(
+                  'Decline',
+                  style: GoogleFonts.outfit(
+                    fontSize: 11,
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 4),
               ElevatedButton(
                 onPressed: () async {
                   HapticFeedback.mediumImpact();
@@ -2915,6 +3009,41 @@ Draft: "$draft"''';
                   ),
                 ),
               ),
+              if (currentStreak <= 1 && !isCompleted) ...[
+                const SizedBox(width: 5),
+                InkWell(
+                  onTap: () => _showDay1SwapPartnerDialog(otherUserId),
+                  borderRadius: BorderRadius.circular(6),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                          color:
+                              const Color(0xFF818CF8).withValues(alpha: 0.5),
+                          width: 0.9),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.swap_horiz_rounded,
+                            color: Color(0xFFA5B4FC), size: 11),
+                        const SizedBox(width: 3),
+                        Text(
+                          'SWAP 🔄',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFA5B4FC),
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ],
           ),
           if (!isCompleted) ...[
@@ -3135,6 +3264,14 @@ Draft: "$draft"''';
                   'Completing all 4 days awards 1 Spoken Trophy 🏆 and unlocks mutual full profiles. Reach 150 Trophies to graduate at Level 90!',
               color: const Color(0xFFFFD700),
             ),
+            const SizedBox(height: 12),
+            _buildRuleItem(
+              icon: Icons.swap_horiz_rounded,
+              title: 'Day 1 Safe Swap Grace Period',
+              desc:
+                  'Not feeling the vibe or partner inactive on Day 1? Swap partners with zero Trophy penalty! Automatic match refills ensure you never get stuck.',
+              color: const Color(0xFF818CF8),
+            ),
           ],
         ),
       ),
@@ -3283,6 +3420,244 @@ Draft: "$draft"''';
                     color: Colors.white, fontWeight: FontWeight.bold)),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showDay1SwapPartnerDialog(String otherUserId) {
+    String selectedReason = 'Not active / slow replies';
+    final reasons = [
+      'Not active / slow replies',
+      'Speaking level mismatch',
+      'Incompatible conversation style',
+      'Looking for a different topic focus',
+      '🚨 Inappropriate behavior (Report & Swap)',
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setModalState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.swap_horiz_rounded,
+                        color: Color(0xFFA5B4FC),
+                        size: 22,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Day 1 Safe Swap (Zero Penalty)',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Exchange partner today without losing any Trophies 🛡️',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF4ADE80),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Why would you like to swap speaking partners?',
+                  style: GoogleFonts.inter(
+                    color: Colors.white70,
+                    fontSize: 12.5,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                ...reasons.map((r) {
+                  final isSelected = selectedReason == r;
+                  final isReport = r.startsWith('🚨');
+                  return InkWell(
+                    onTap: () {
+                      setModalState(() {
+                        selectedReason = r;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(8),
+                    child: Container(
+                      margin: const EdgeInsets.only(bottom: 6),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 9),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? (isReport
+                                ? Colors.red.withValues(alpha: 0.2)
+                                : const Color(0xFF6366F1)
+                                    .withValues(alpha: 0.25))
+                            : Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected
+                              ? (isReport
+                                  ? Colors.redAccent
+                                  : const Color(0xFF818CF8))
+                              : Colors.white12,
+                          width: isSelected ? 1.2 : 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSelected
+                                ? Icons.radio_button_checked
+                                : Icons.radio_button_off,
+                            color: isSelected
+                                ? (isReport
+                                    ? Colors.redAccent
+                                    : const Color(0xFF818CF8))
+                                : Colors.white38,
+                            size: 17,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              r,
+                              style: GoogleFonts.inter(
+                                color: isReport && isSelected
+                                    ? Colors.redAccent
+                                    : Colors.white,
+                                fontSize: 12,
+                                fontWeight: isSelected
+                                    ? FontWeight.w600
+                                    : FontWeight.normal,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text(
+                          'Keep Partner',
+                          style: GoogleFonts.inter(color: Colors.white54),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      flex: 2,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selectedReason.startsWith('🚨')
+                              ? Colors.redAccent
+                              : const Color(0xFF6366F1),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: () async {
+                          Navigator.pop(ctx);
+                          HapticFeedback.mediumImpact();
+
+                          if (selectedReason.startsWith('🚨')) {
+                            ReportHelper.showReportDialog(
+                              context: context,
+                              contentType: 'user',
+                              contentId: otherUserId,
+                              contentTitle: widget.groupName,
+                            );
+                          }
+
+                          // Capture context-dependent objects before the async gap
+                          final messenger = ScaffoldMessenger.of(context);
+                          final navigator = Navigator.of(context);
+
+                          final success =
+                              await PocketTrophyService.swapOrDeclinePartner(
+                            myId: _currentUserId,
+                            otherUserId: otherUserId,
+                            reason: selectedReason,
+                          );
+
+                          if (mounted && success) {
+                            safeSetState(() {
+                              _activePocketTalkPact = null;
+                            });
+                            unawaited(PocketTalkEngine.autoRefillPocketTalkPacts(
+                                _currentUserId));
+
+                            messenger.showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                    '🔄 Partner swapped safely (0 Trophy penalty). Matching new speaking companion! ⚡'),
+                                backgroundColor: Color(0xFF10B981),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                            navigator.pop();
+                          }
+                        },
+                        child: Text(
+                          selectedReason.startsWith('🚨')
+                              ? 'Report & Swap 🔄'
+                              : 'Confirm Swap (0 Penalty) 🔄',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -3492,8 +3867,9 @@ Draft: "$draft"''';
                         : widget.groupId;
                     String? activeTypingId;
                     if (widget.groupId.startsWith('p:')) {
-                      if (typingMap[targetId] == true)
+                      if (typingMap[targetId] == true) {
                         activeTypingId = targetId;
+                      }
                     } else {
                       if (typingMap[widget.groupId] == true) {
                         activeTypingId = widget.groupId;
@@ -3919,8 +4295,9 @@ Draft: "$draft"''';
                               String? activeTypingId;
                               if (widget.groupId.startsWith('p:')) {
                                 final targetId = widget.groupId.substring(2);
-                                if (typingMap[targetId] == true)
+                                if (typingMap[targetId] == true) {
                                   activeTypingId = targetId;
+                                }
                               } else {
                                 if (typingMap[widget.groupId] == true) {
                                   activeTypingId = widget.groupId;
@@ -5541,6 +5918,14 @@ Draft: "$draft"''';
       }
     }
 
+    final canStart =
+        await PocketTrophyService.canInitiateNewPact(_currentUserId);
+    if (!canStart) {
+      _showSnackBar(
+          '⚡ You already have 3 active Pocket Talks running! Complete an agreement first.');
+      return;
+    }
+
     HapticFeedback.mediumImpact();
     final pact = await PocketTrophyService.requestPact(
       myId: _currentUserId,
@@ -5559,7 +5944,9 @@ Draft: "$draft"''';
         'streak_days': 1,
       },
     );
-    FocusScope.of(context).unfocus();
+    if (mounted) {
+      FocusScope.of(context).unfocus();
+    }
   }
 
   Widget _buildDocumentMessage(ChatMessage message, bool isMe) {
@@ -7704,7 +8091,7 @@ Draft: "$draft"''';
                                 IconButton(
                                   icon: const Icon(Icons.search,
                                       color: Colors.grey),
-                                  onPressed: () {}, // TODO: Member search
+                                  onPressed: () => _showMemberSearchDialog(),
                                 ),
                             ],
                           ),
@@ -7960,6 +8347,130 @@ Draft: "$draft"''';
           ),
         ),
       ),
+    );
+  }
+
+  void _showMemberSearchDialog() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1A2433),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModalState) {
+            final controller = TextEditingController();
+            var filtered = List<Map<String, dynamic>>.from(_groupMembers);
+
+            void onSearch(String query) {
+              final q = query.trim().toLowerCase();
+              setModalState(() {
+                filtered = q.isEmpty
+                    ? List.from(_groupMembers)
+                    : _groupMembers.where((m) {
+                        final name = (m['profile']?['name'] ?? '').toString().toLowerCase();
+                        return name.contains(q);
+                      }).toList();
+              });
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(ctx).viewInsets.bottom),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(ctx).size.height * 0.6,
+                ),
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Handle
+                    Container(
+                      width: 36,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    // Search field
+                    TextField(
+                      controller: controller,
+                      autofocus: true,
+                      style: const TextStyle(color: Colors.white),
+                      decoration: InputDecoration(
+                        hintText: 'Search members…',
+                        hintStyle: const TextStyle(color: Colors.white38),
+                        prefixIcon: const Icon(Icons.search, color: Colors.white38),
+                        filled: true,
+                        fillColor: Colors.white.withValues(alpha: 0.07),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onChanged: onSearch,
+                    ),
+                    const SizedBox(height: 8),
+                    // Results
+                    Flexible(
+                      child: StatefulBuilder(
+                        builder: (_, __) => ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: filtered.length,
+                          itemBuilder: (_, i) {
+                            final m = filtered[i];
+                            final profile = m['profile'];
+                            final name = profile?['name'] ?? 'Unknown';
+                            final stage = ((profile?['learning_day'] ??
+                                            profile?['stage'] ??
+                                            profile?['learning_stage'] ??
+                                            profile?['level'] as num?) ??
+                                        1)
+                                    .toInt();
+                            final isMe = m['user_id'] == _currentUserId;
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: _buildParticipantAvatar(profile, size: 40),
+                              title: Text(
+                                isMe ? 'You' : name,
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              subtitle: Text(
+                                'Level $stage · ${profile?['bio'] ?? 'Pocket World'}',
+                                style: const TextStyle(color: Colors.grey, fontSize: 12),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              onTap: () {
+                                Navigator.pop(ctx);
+                                if (m['user_id'] != null) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) => VerfiedSwitchPage(
+                                        userId: m['user_id'].toString(),
+                                      ),
+                                    ),
+                                  );
+                                }
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

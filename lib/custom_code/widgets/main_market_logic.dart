@@ -199,12 +199,22 @@ class MarketNotifier extends Notifier<MarketState> {
       final List<Map<String, dynamic>> fetchedItems =
           List<Map<String, dynamic>>.from(response as List);
 
-      // Seed robot items into the market catalog
-      if (page == 0) {
-        final robotItems =
-            PocketRobotService.getAllRobotMarketItems(category: category);
-        fetchedItems.addAll(robotItems);
-      }
+      // Filter out robot items and private posts from the market catalog
+      fetchedItems.removeWhere((item) {
+        final uid = (item['user_id'] ?? '').toString();
+        final isRobot = item['is_robot'] == true ||
+            uid.startsWith('robot_') ||
+            PocketRobotService.isRobotId(uid);
+        if (isRobot) return true;
+
+        // Post-level privacy check: if an item is explicitly marked private (is_public == false),
+        // only show it to its owner, never in the general explore market feed.
+        final isPublic = item['is_public'];
+        if (isPublic == false && uid != currentUserId) {
+          return true;
+        }
+        return false;
+      });
 
       final currentCategoryItems = isRefresh
           ? <Map<String, dynamic>>[]

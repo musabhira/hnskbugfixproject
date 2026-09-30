@@ -8,6 +8,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'whats_app_groups_provider.dart';
 
 import 'chat_models.dart';
@@ -736,7 +737,7 @@ class ChatMessages extends _$ChatMessages {
 
       // Handle Pocket Talk challenge to Robot
       if (messageType == 'pocket_talk_request') {
-        PocketTrophyService.acceptPact(myId: actualId, otherUserId: uid);
+        await PocketTrophyService.acceptPact(myId: actualId, otherUserId: uid);
         Future.delayed(const Duration(milliseconds: 1000), () async {
           const acceptText =
               "⚡ Challenge Accepted! I've joined your 4-Day Spoken Pact. Speak with me for 15 minutes daily in English to win your Gold Trophy! 🏆🎙️";

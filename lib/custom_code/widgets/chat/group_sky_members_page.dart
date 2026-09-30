@@ -33,6 +33,7 @@ class _GroupSkyMembersPageState extends State<GroupSkyMembersPage>
   final List<Map<String, dynamic>> _members = [];
   bool _isLoading = true;
   String _currentUserId = '';
+  bool _canInitiatePocketTalk = true;
 
   @override
   void initState() {
@@ -53,6 +54,10 @@ class _GroupSkyMembersPageState extends State<GroupSkyMembersPage>
 
   Future<void> _fetchGroupMembers() async {
     setState(() => _isLoading = true);
+    if (_currentUserId.isNotEmpty) {
+      _canInitiatePocketTalk =
+          await PocketTrophyService.canInitiateNewPact(_currentUserId);
+    }
     try {
       final supabase = Supabase.instance.client;
       final response = await supabase
@@ -182,9 +187,24 @@ class _GroupSkyMembersPageState extends State<GroupSkyMembersPage>
       return;
     }
 
+    final canStart =
+        await PocketTrophyService.canInitiateNewPact(_currentUserId);
+    if (!canStart) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              "⚡ You already have 3 active Pocket Talks running! Complete an agreement first."),
+          backgroundColor: Color(0xFFFFB300),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
     HapticFeedback.mediumImpact();
     try {
-      final pact = await PocketTrophyService.requestPact(
+      await PocketTrophyService.requestPact(
         myId: _currentUserId,
         otherUserId: targetUserId,
         autoAccept: false,
@@ -237,7 +257,7 @@ class _GroupSkyMembersPageState extends State<GroupSkyMembersPage>
       final stageInt = int.tryParse(stage.toString()) ?? 1;
       return VectorAvatarConfig.getEvolutionAvatarForStage(stageInt);
     }
-    return VectorAvatarConfig.defaultConfig;
+    return const VectorAvatarConfig();
   }
 
   @override
@@ -558,7 +578,7 @@ class _GroupSkyMembersPageState extends State<GroupSkyMembersPage>
 
               // Level / Stage
               Text(
-                'Stage $stage • ${xp} XP',
+                'Stage $stage • $xp XP',
                 style: GoogleFonts.inter(
                   color: const Color(0xFFFFB300),
                   fontSize: 10.5,
@@ -626,38 +646,42 @@ class _GroupSkyMembersPageState extends State<GroupSkyMembersPage>
                     ),
                   ),
                 ),
-                const SizedBox(height: 6),
-                // Pocket Talk Button
-                GestureDetector(
-                  onTap: () => _onPocketTalkMember(uid, name, imageUrl),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 6),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFB300).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: const Color(0xFFFFB300).withValues(alpha: 0.6),
-                        width: 1,
+                if (!PocketRobotService.isRobotId(uid) &&
+                    !PocketPresidentService.isPresidentId(uid) &&
+                    _canInitiatePocketTalk) ...[
+                  const SizedBox(height: 6),
+                  // Pocket Talk Button
+                  GestureDetector(
+                    onTap: () => _onPocketTalkMember(uid, name, imageUrl),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFB300).withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: const Color(0xFFFFB300).withValues(alpha: 0.6),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('⚡', style: TextStyle(fontSize: 11)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Pocket Talk',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFB300),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('⚡', style: TextStyle(fontSize: 11)),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Pocket Talk',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFFFB300),
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                ),
+                ],
               ],
             ],
           ),

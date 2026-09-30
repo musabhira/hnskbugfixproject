@@ -44,6 +44,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
 
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -98,6 +99,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Set<String> _pocketTalkPeerIds = {};
   Set<String> _pocketTalkActivePeerIds = {};
   Set<String> _pocketTalkPendingPeerIds = {};
+  int _pocketTalkSubTabIndex = 0; // 0: Received (First/Main), 1: Sent, 2: Active / Accepted (4-Day Pacts)
   bool _isCongestedSearch = false; // Toggle for Congested / Compact View
   int _searchPeopleOffset = 0;
   bool _hasMorePeopleSearch = true;
@@ -122,10 +124,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           _pocketTalkPeerIds = allIds;
         });
       }
-      // If user has NO active pact and NO pending pacts, auto-dispatch to companion peers so they are never alone!
-      if (activeIds.isEmpty && pendingIds.isEmpty) {
-        await PocketTalkEngine.dispatchAutoPocketTalkRequests(
-            currentUserId: uid);
+      // Guarantee each user has up to 3 active 4-day speaking pairs!
+      if (activeIds.length < PocketTrophyService.kMaxActivePacts && pendingIds.length < 5) {
+        await PocketTalkEngine.autoRefillPocketTalkPacts(uid);
         final updatedPending =
             await PocketTrophyService.getAllPendingPactUserIds(uid);
         if (mounted) {
@@ -1819,6 +1820,112 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     );
   }
 
+  Widget _buildAllTabChatActionButtons(bool isDark) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(14, 2, 14, 8),
+        child: Row(
+          children: [
+            // Button 1: Random Chat
+            Expanded(
+              child: GestureDetector(
+                onTap: () async {
+                  HapticFeedback.selectionClick();
+                  final isAuth = await AuthAlertBox.checkAuthAndShowAlert(
+                    context: context,
+                    customMessage:
+                        "Please login to start Anonymous English Chat",
+                  );
+                  if (isAuth && mounted) {
+                    Navigator.push(
+                      context,
+                      material.MaterialPageRoute(
+                        builder: (context) => const AnonymousEnglishChatPage(),
+                      ),
+                    );
+                  }
+                },
+                child: Container(
+                  height: 42,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFFFB300),
+                        Color(0xFFFFFC00),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(13),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFB300).withValues(alpha: 0.28),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Random',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+
+            // Button 2: Pocket Talk (Opens 3D Swipable Cards)
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketTalkCardSwiperDialog.show(context);
+                },
+                child: Container(
+                  height: 42,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [
+                        Color(0xFFFFB300),
+                        Color(0xFFFFFC00),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(13),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFB300).withValues(alpha: 0.28),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Pocket Talk',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildAnonymousLiveMatchBanner(bool isDark) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(14, 0, 0, 10),
@@ -2239,6 +2346,202 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 ),
               ],
             ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPocketTalkHubHeader(bool isDark) {
+    final activeCount = _pocketTalkActivePeerIds.length;
+    final isCapReached = activeCount >= 4;
+
+    return SliverToBoxAdapter(
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(14, 4, 14, 10),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: isDark
+                ? [
+                    const Color(0xFF1E170A),
+                    const Color(0xFF131B26),
+                  ]
+                : [
+                    const Color(0xFFFFFBEA),
+                    const Color(0xFFF0FDF4),
+                  ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFFFFB300).withValues(alpha: 0.45),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFB300).withValues(alpha: 0.12),
+              blurRadius: 10,
+              spreadRadius: 0.5,
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFB300).withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Text('⚡', style: TextStyle(fontSize: 16)),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Pocket Talk 4-Day Spoken Pacts',
+                        style: GoogleFonts.outfit(
+                          color: isDark ? Colors.white : Colors.black87,
+                          fontSize: 14.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'Chat daily in English • Win Gold Trophies 🏆',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFFFB300),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3.5),
+                  decoration: BoxDecoration(
+                    color: isCapReached
+                        ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                        : const Color(0xFFFFB300).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: isCapReached
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFB300),
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '$activeCount/4 Agreements',
+                    style: GoogleFonts.outfit(
+                      color: isCapReached
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFFFFB300),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              isCapReached
+                  ? '🎯 You have 4/4 active speaking agreements! Complete your 4-day pacts to mint Trophies and unlock new companion slots.'
+                  : '🤝 Every user can have up to 4 concurrent speaking agreements. Missing chat days forfeits streak and deducts trophies!',
+              style: GoogleFonts.inter(
+                color: isDark ? Colors.white70 : Colors.black54,
+                fontSize: 11.5,
+                height: 1.35,
+              ),
+            ),
+            const SizedBox(height: 12),
+            // 🌟 User Audio Directive: Tabs for Received (first/main), Sent, and Active
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.black.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                children: [
+                  _buildPocketTalkSubTabItem(
+                    label: 'Received',
+                    icon: Icons.inbox_rounded,
+                    index: 0,
+                    isDark: isDark,
+                  ),
+                  _buildPocketTalkSubTabItem(
+                    label: 'Sent',
+                    icon: Icons.send_rounded,
+                    index: 1,
+                    isDark: isDark,
+                  ),
+                  _buildPocketTalkSubTabItem(
+                    label: 'Active ($activeCount/4)',
+                    icon: Icons.handshake_rounded,
+                    index: 2,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPocketTalkSubTabItem({
+    required String label,
+    required IconData icon,
+    required int index,
+    required bool isDark,
+  }) {
+    final isSelected = _pocketTalkSubTabIndex == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          safeSetState(() {
+            _pocketTalkSubTabIndex = index;
+          });
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6.5),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFFFFFC00) : Colors.transparent,
+            borderRadius: BorderRadius.circular(9),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 13,
+                color: isSelected
+                    ? Colors.black
+                    : (isDark ? Colors.white70 : Colors.black54),
+              ),
+              const SizedBox(width: 5),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 11.5,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                  color: isSelected
+                      ? Colors.black
+                      : (isDark ? Colors.white70 : Colors.black54),
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -3732,9 +4035,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 _buildRequestsSubTabToggle(isDark),
                 _buildPendingRequestsSliver(),
               ] else ...[
+                if (_chatCategoryFilterIndex == 0)
+                  _buildAllTabChatActionButtons(isDark),
                 if (_pendingRequests.isNotEmpty &&
                     _chatCategoryFilterIndex == 0)
                   _buildPendingRequestsBanner(isDark),
+                if (_chatCategoryFilterIndex == 6)
+                  _buildPocketTalkHubHeader(isDark),
                 // Active Conversations List
                 Builder(
                   builder: (context) {
@@ -3800,16 +4107,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             !lowerName.contains('english practice');
                       }).toList();
                     } else if (_chatCategoryFilterIndex == 6) {
-                      // Strictly human Pocket Talk conversations (both pending and active)
+                      // 🌟 User Audio Directive: Pocket Talk sub-tabs (Received first/main, Sent, Active 4-Day Pacts)
+                      final myUid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
                       activeFiltered = activeFiltered.where((c) {
+                        if (c.isGroup) return false;
                         if (PocketRobotService.isRobotId(c.id) ||
-                            PocketPresidentService.isPresidentId(c.id) ||
-                            c.isGroup) {
-                          return false;
+                            PocketPresidentService.isPresidentId(c.id)) {
+                          return false; // Robots do not participate in Pocket Talk
                         }
-                        return _pocketTalkPeerIds.contains(c.id) ||
+                        final isPT = _pocketTalkPeerIds.contains(c.id) ||
                             (c.lastMessage?.contains('PocketTalk') == true ||
                                 c.lastMessage?.contains('Pocket Talk') == true);
+                        if (!isPT) return false;
+
+                        final isActive = _pocketTalkActivePeerIds.contains(c.id);
+                        if (_pocketTalkSubTabIndex == 0) {
+                          // 📥 Received (First / Priority): Incoming requests sent by others
+                          return !isActive && c.lastSenderId != myUid;
+                        } else if (_pocketTalkSubTabIndex == 1) {
+                          // 📤 Sent: Outgoing requests initiated by current user
+                          return !isActive && c.lastSenderId == myUid;
+                        } else {
+                          // 🤝 Active / Accepted: Agreed 4-Day Spoken Pacts
+                          return isActive;
+                        }
                       }).toList();
                     }
 
@@ -4050,7 +4371,11 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                           : (_chatCategoryFilterIndex == 5
                                               ? 'No groups joined yet'
                                               : (_chatCategoryFilterIndex == 6
-                                                  ? 'No Pocket Talk pacts yet. Start a 4-day spoken pact! ⚡'
+                                                  ? (_pocketTalkSubTabIndex == 0
+                                                      ? 'No incoming Pocket Talk requests right now 📥'
+                                                      : (_pocketTalkSubTabIndex == 1
+                                                          ? 'No pending requests sent. Tap Pocket Talk on cards above! 📤'
+                                                          : 'No active 4-day agreements yet 🤝'))
                                                   : 'No conversations yet')))),
                               style: GoogleFonts.outfit(
                                 fontSize: 16,

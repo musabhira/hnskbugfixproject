@@ -21,6 +21,8 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_wid
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_palace_castle_painter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/president/presidential_security_forces.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'day90_master_certificate_dialog.dart';
 
 /// ⚔️ Pocket Citadel Attack Page: Full-Screen Battle & Defense Raid
@@ -48,6 +50,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
   static Future<void> openForUser(
     BuildContext context, {
     required String userId,
+    String? targetName,
     PocketNeighbor? neighbor,
     Map<String, dynamic>? preloadedProfile,
     int attackerDay = 1,
@@ -152,7 +155,7 @@ class PocketCitadelAttackPage extends StatefulWidget {
 
     final userNeighbor = PocketNeighbor(
       id: userId,
-      name: p['first_name'] ?? p['name'] ?? (isMe ? 'My Fortress' : 'Citadel Defender'),
+      name: p['first_name'] ?? p['name'] ?? targetName ?? (isMe ? 'My Fortress' : 'Citadel Defender'),
       day: (p['learning_day'] as num?)?.toInt() ?? 1,
       streak: (p['streak'] as num?)?.toInt() ?? 1,
       rank: p['rank']?.toString() ?? 'Citizen',
@@ -207,6 +210,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
   bool _isDailyLimitReached = false;
   int _attacksUsed = 0;
   late int _attackerDay;
+  bool _canInitiatePocketTalk = true;
 
   // 🔍 Interactive Estate Zoom & Pan Controls: Spherical World / Rolling Hills
   int _defenderScore = 0;
@@ -242,6 +246,7 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     _attackerDay = widget.attackerDay;
     _isDefenderDamaged = widget.neighbor.isDamaged;
     _retriesRemaining = PocketFortressDefenseService.getAttackerLifelinesForNeighborDay(widget.neighbor.day);
+    _checkPocketTalkCap();
 
     // ⚔️ Start energetic battle / raid music based on robot archetype & level!
     PocketGameAudioService.instance.playAttackTheme(
@@ -4296,46 +4301,97 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                 ),
               )
             else
-              GestureDetector(
-                onTap: _onTapBottomAttack,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 7),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                    ),
-                    borderRadius: BorderRadius.circular(11),
-                    border: Border.all(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.9),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFEF4444).withValues(alpha: 0.5),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: _onTapBottomAttack,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 7),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEF4444), Color(0xFFB91C1C)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                        borderRadius: BorderRadius.circular(11),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.9),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('⚔️', style: TextStyle(fontSize: 13)),
+                          const SizedBox(width: 6),
+                          Text(
+                            'ATTACK',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('⚔️', style: TextStyle(fontSize: 13)),
-                      const SizedBox(width: 6),
-                      Text(
-                        'ATTACK',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 13.5,
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: 0.8,
+                  if (!widget.neighbor.isPresident &&
+                      !PocketRobotService.isRobotId(widget.neighbor.id) &&
+                      _canInitiatePocketTalk) ...[
+                    const SizedBox(width: 10),
+                    GestureDetector(
+                      onTap: _onSendPocketTalkFromCitadel,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 7),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                          ),
+                          borderRadius: BorderRadius.circular(11),
+                          border: Border.all(
+                            color: const Color(0xFFFFD600),
+                            width: 1.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD600).withValues(alpha: 0.35),
+                              blurRadius: 8,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('⚡', style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 5),
+                            Text(
+                              'POCKET TALK',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD600),
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
+                    ),
+                  ],
+                ],
               ),
           ],
         ),
@@ -4909,6 +4965,81 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     );
   }
 
+
+  void _checkPocketTalkCap() {
+    final myId = SupaFlow.client.auth.currentUser?.id;
+    if (myId != null && myId.isNotEmpty) {
+      PocketTrophyService.canInitiateNewPact(myId).then((can) {
+        if (mounted && can != _canInitiatePocketTalk) {
+          setState(() => _canInitiatePocketTalk = can);
+        }
+      });
+    }
+  }
+
+  Future<void> _onSendPocketTalkFromCitadel() async {
+    final myId = SupaFlow.client.auth.currentUser?.id;
+    if (myId == null || myId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please log in to start a Pocket Talk Pact')),
+      );
+      return;
+    }
+    final targetId = widget.neighbor.id;
+    if (targetId == myId) return;
+
+    final canStart = await PocketTrophyService.canInitiateNewPact(myId);
+    if (!canStart) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('⚡ Maximum 3 active Pocket Talks reached! Complete an agreement first.'),
+            backgroundColor: Color(0xFF0F172A),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    HapticFeedback.mediumImpact();
+    await PocketTrophyService.requestPact(
+      myId: myId,
+      otherUserId: targetId,
+      autoAccept: PocketRobotService.isRobotId(targetId) ||
+          PocketPresidentService.isPresidentId(targetId),
+    );
+
+    try {
+      await PocketMateService.sendMateRequest(
+        senderId: myId,
+        receiverId: targetId,
+        message: '⚡ Sent PocketTalk 4-Day Spoken Pact invite! Tap to accept.',
+        contextType: 'citadel',
+      );
+    } catch (_) {}
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.bolt_rounded, color: Color(0xFFFFD600), size: 18),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  '⚡ Pocket Talk 4-Day Pact invite sent to ${widget.neighbor.name}!',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF0F172A),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
 
   void _onTapBottomAttack() {
     HapticFeedback.heavyImpact();

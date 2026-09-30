@@ -64,6 +64,7 @@ import 'pocket_alphabet_phonics_game_page.dart';
 import 'pocket_mission_topic_detail_page.dart';
 import 'pocket_language_selection_dialog.dart';
 import 'day90_master_certificate_dialog.dart';
+import 'pocket_level_exam_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'career_adventure/adventure_models.dart';
@@ -205,9 +206,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   AudioPlayer? _storyPlaybackPlayer;
   bool _isStoryAudioPlaying = false;
 
-  // Quiz state
-  int _selectedQuizAnswer = -1;
-  bool _quizSubmitted = false;
 
   // 🌐 Multilingual Category Preferences (Audio Requirement)
   static List<String> get kSupportedLanguages =>
@@ -754,6 +752,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     }
   }
 
+  // ignore: unused_element
   String get _quizQuestion {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
       final regQ = PocketMissionCurriculumRegistry.getQuizQuestion(widget.day);
@@ -799,6 +798,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     }
   }
 
+  // ignore: unused_element
   List<String> get _quizOptions {
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
       final regOpts =
@@ -5046,9 +5046,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       : (_hasPronunciationClinic ? _stepPronunciation : _stepCodeEnglish);
   int get _stepSpeakingChallenge => _hasSpeakingChallenge ? _stepThinking + 1 : _stepThinking;
   int get _stepShortcut => _stepSpeakingChallenge + 1;
-  int get _stepQuiz => _stepShortcut + 1;
-  int get _stepDefenseTrap => _stepQuiz + 1;
+  int get _stepDefenseTrap => _stepShortcut + 1;
   int get _stepBattleRaid => _stepDefenseTrap + 1;
+  int get _stepQuiz => widget.day >= 4 ? _stepBattleRaid + 1 : _stepDefenseTrap + 1;
 
   int get _currentDayPoints {
     final total = _totalSubtasksCount;
@@ -5767,11 +5767,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ],
                       ],
 
-                      // ⚡ Shortcuts: Fluency Shortcut & Quick Revision Quiz
+                      // ⚡ Shortcuts: Fluency Shortcut
                       if (_showShortcuts) ...[
                         _buildFluencyShortcutCard(),
-                        const SizedBox(height: 14),
-                        _buildRevisionQuizCard(),
                         const SizedBox(height: 14),
                       ],
 
@@ -5944,6 +5942,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         const SizedBox(height: 10),
                       ],
 
+                      // 🎓 STEP 18: DAILY LEVEL MASTERY EXAM (Cyber Cat, Cyber Fox, Shadow Wolf, Royal Tiger, Golden Lion)
+                      _buildRevisionQuizCard(),
+                      const SizedBox(height: 14),
+
                       // 🧬 Target Evolution Avatar to Achieve Card
                       _buildTargetAvatarCard(),
 
@@ -6077,21 +6079,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     _saveSubtask('fluency_gym', val);
                   },
                 );
-              },
-            ),
-            const SizedBox(width: 8),
-            _buildActionPill(
-              icon: '📘',
-              label: 'YOUR 90-DAY SYLLABUS',
-              color: const Color(0xFFFFD700),
-              onTap: () async {
-                HapticFeedback.lightImpact();
-                await PocketMasterSyllabusModal.show(context, currentDay: widget.day);
-                final updated = await PocketSyllabusRepository.getSavedLevel();
-                if (mounted && updated != _activeLearnerLevel) {
-                  setState(() => _activeLearnerLevel = updated);
-                  _loadVocabForDay();
-                }
               },
             ),
             const SizedBox(width: 8),
@@ -6478,12 +6465,10 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     const SizedBox(width: 8),
                     Flexible(
                       child: Text(
-                        _activeLearnerLevel == LearnerLevel.zero
-                            ? 'ZERO FOUNDATION'
-                            : PocketSyllabusRepository.getTrack(_activeLearnerLevel).badgeText,
+                        'DAILY MISSION',
                         style: GoogleFonts.outfit(
                           color: Colors.white,
-                          fontSize: 13.5,
+                          fontSize: 13,
                           fontWeight: FontWeight.bold,
                           letterSpacing: 0.3,
                         ),
@@ -6974,7 +6959,8 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               ),
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 8),
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -6999,6 +6985,14 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   // --- 🎯 ACTIVE LEVEL 1-TO-90 CURRICULUM SPOTLIGHT CARD ---
   Widget _buildActiveLevelCurriculumCard() {
+    // 🌟 User Audio Directive: Removed heavy crash-prone level details card
+    // which caused constant overflow and responsive layout crashes.
+    // Track switching is now handled cleanly via the minimal selector above Verified in ground!
+    if (1 == 2) _buildActiveLevelCurriculumCardDeprecated();
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildActiveLevelCurriculumCardDeprecated() {
     final track = PocketSyllabusRepository.getTrack(_activeLearnerLevel);
     String titleEn = '';
     String titleMl = '';
@@ -14232,17 +14226,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
-  // --- SUBTASK 6: ✍️ QUICK REVISION MINI-QUIZ CARD ---
+  // --- SUBTASK 6: 🎓 LEVEL MASTERY EXAM CARD ---
   Widget _buildRevisionQuizCard() {
     return _buildTopicSubtaskCard(
       stepNumber: '$_stepQuiz',
-      icon: '✍️',
-      title: 'Quick Revision Mini-Quiz',
+      icon: '🎓',
+      title: 'Level ${widget.day} Mastery Exam',
       subtitle:
-          'Pass the daily 4-question knowledge checkpoint with 100% accuracy to earn mission points & claim your badge.',
+          'Mandatory end-of-level assessment! Pass all 5 adaptive questions with 100% accuracy to unlock Level ${widget.day + 1}.',
       isVerified: _revisionQuizPassed,
       actionColor: const Color(0xFF10B981),
-      actionLabel: 'REVISION MINI-QUIZ ✍️',
+      actionLabel: _revisionQuizPassed ? 'EXAM PASSED ✓' : 'START LEVEL EXAM 🎓',
       subtaskKey: 'quiz',
       builder: (ctx, lang, markCompleted) {
         return _buildRevisionQuizDetailContent(lang, markCompleted);
@@ -14250,16 +14244,194 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     );
   }
 
+  String _getLevelAnimalName(int day) {
+    switch (day) {
+      case 1:
+        return 'Cyber Cat';
+      case 2:
+        return 'Cyber Fox';
+      case 3:
+        return 'Shadow Wolf';
+      case 4:
+        return 'Royal Tiger';
+      case 5:
+        return 'Golden Lion';
+      case 6:
+        return 'Mighty Elephant';
+      case 7:
+        return 'Ninja Panda';
+      case 8:
+        return 'Noble Bear';
+      case 9:
+        return 'Cyber Ape';
+      case 10:
+        return 'Majestic Eagle';
+      case 11:
+        return 'Shadow Leopard';
+      case 12:
+        return 'Cosmic Unicorn';
+      case 13:
+        return 'Solar Phoenix';
+      case 14:
+        return 'Armored Rhino';
+      case 15:
+        return 'Thunder Bison';
+      case 16:
+        return 'Mystic Croc';
+      default:
+        if (day >= 1 && day <= 90) {
+          final animals = VectorAvatarConfig.get90DayAnimals();
+          return animals[day - 1].rarityTier;
+        }
+        return 'Level $day';
+    }
+  }
+
+  String _getDayExamOrdinal(int day) {
+    switch (day) {
+      case 1:
+        return 'FIRST DAY EXAM';
+      case 2:
+        return 'SECOND DAY EXAM';
+      case 3:
+        return 'THIRD DAY EXAM';
+      case 4:
+        return 'FOURTH DAY EXAM';
+      case 5:
+        return 'FIFTH DAY EXAM';
+      case 6:
+        return 'SIXTH DAY EXAM';
+      case 7:
+        return 'SEVENTH DAY EXAM';
+      case 8:
+        return 'EIGHTH DAY EXAM';
+      case 9:
+        return 'NINTH DAY EXAM';
+      case 10:
+        return 'TENTH DAY EXAM';
+      case 11:
+        return 'ELEVENTH DAY EXAM';
+      case 12:
+        return 'TWELFTH DAY EXAM';
+      case 13:
+        return 'THIRTEENTH DAY EXAM';
+      case 14:
+        return 'FOURTEENTH DAY EXAM';
+      case 15:
+        return 'FIFTEENTH DAY EXAM';
+      case 16:
+        return 'SIXTEENTH DAY EXAM';
+      case 17:
+        return 'SEVENTEENTH DAY EXAM';
+      case 18:
+        return 'EIGHTEENTH DAY EXAM';
+      case 19:
+        return 'NINETEENTH DAY EXAM';
+      case 20:
+        return 'TWENTIETH DAY EXAM';
+      case 21:
+        return 'TWENTY-FIRST DAY EXAM';
+      case 22:
+        return 'TWENTY-SECOND DAY EXAM';
+      case 23:
+        return 'TWENTY-THIRD DAY EXAM';
+      case 24:
+        return 'TWENTY-FOURTH DAY EXAM';
+      case 25:
+        return 'TWENTY-FIFTH DAY EXAM';
+      case 26:
+        return 'TWENTY-SIXTH DAY EXAM';
+      case 27:
+        return 'TWENTY-SEVENTH DAY EXAM';
+      case 28:
+        return 'TWENTY-EIGHTH DAY EXAM';
+      case 29:
+        return 'TWENTY-NINTH DAY EXAM';
+      case 30:
+        return 'THIRTIETH DAY EXAM';
+      case 31:
+        return 'THIRTY-FIRST DAY EXAM';
+      case 32:
+        return 'THIRTY-SECOND DAY EXAM';
+      case 33:
+        return 'THIRTY-THIRD DAY EXAM';
+      case 34:
+        return 'THIRTY-FOURTH DAY EXAM';
+      case 35:
+        return 'THIRTY-FIFTH DAY EXAM';
+      case 36:
+        return 'THIRTY-SIXTH DAY EXAM';
+      case 37:
+        return 'THIRTY-SEVENTH DAY EXAM';
+      case 38:
+        return 'THIRTY-EIGHTH DAY EXAM';
+      case 39:
+        return 'THIRTY-NINTH DAY EXAM';
+      case 40:
+        return 'FORTIETH DAY EXAM';
+      case 41:
+        return 'FORTY-FIRST DAY EXAM';
+      case 42:
+        return 'FORTY-SECOND DAY EXAM';
+      case 43:
+        return 'FORTY-THIRD DAY EXAM';
+      case 44:
+        return 'FORTY-FOURTH DAY EXAM';
+      case 45:
+        return 'FORTY-FIFTH DAY EXAM';
+      case 46:
+        return 'FORTY-SIXTH DAY EXAM';
+      case 47:
+        return 'FORTY-SEVENTH DAY EXAM';
+      case 48:
+        return 'FORTY-EIGHTH DAY EXAM';
+      case 49:
+        return 'FORTY-NINTH DAY EXAM';
+      case 50:
+        return 'FIFTIETH DAY EXAM';
+      case 51:
+        return 'FIFTY-FIRST DAY EXAM';
+      case 52:
+        return 'FIFTY-SECOND DAY EXAM';
+      case 53:
+        return 'FIFTY-THIRD DAY EXAM';
+      case 54:
+        return 'FIFTY-FOURTH DAY EXAM';
+      case 55:
+        return 'FIFTY-FIFTH DAY EXAM';
+      case 56:
+        return 'FIFTY-SIXTH DAY EXAM';
+      case 57:
+        return 'FIFTY-SEVENTH DAY EXAM';
+      case 58:
+        return 'FIFTY-EIGHTH DAY EXAM';
+      case 59:
+        return 'FIFTY-NINTH DAY EXAM';
+      case 60:
+        return 'SIXTIETH DAY EXAM';
+      case 61:
+        return 'SIXTY-FIRST DAY EXAM';
+      case 62:
+        return 'SIXTY-SECOND DAY EXAM';
+      case 63:
+        return 'SIXTY-THIRD DAY EXAM';
+      case 64:
+        return 'SIXTY-FOURTH DAY EXAM';
+      default:
+        return 'DAY $day EXAM';
+    }
+  }
+
   Widget _buildRevisionQuizDetailContent(
       String lang, void Function(bool) markCompleted) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: const Color(0xFF0F172A),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: _revisionQuizPassed ? const Color(0xFF10B981) : Colors.white12,
-          width: _revisionQuizPassed ? 1.5 : 1.0,
+          color: _revisionQuizPassed ? const Color(0xFF10B981) : const Color(0xFFFFD700).withValues(alpha: 0.4),
+          width: _revisionQuizPassed ? 1.5 : 1.2,
         ),
       ),
       child: Column(
@@ -14268,165 +14440,140 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
                   color: _revisionQuizPassed
                       ? const Color(0xFF10B981)
-                      : Colors.white12,
+                      : const Color(0xFFFFD700),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   _revisionQuizPassed
-                      ? 'STEP $_stepQuiz ✓'
-                      : 'STEP $_stepQuiz',
-                  style: TextStyle(
-                    color: _revisionQuizPassed ? Colors.black : Colors.white70,
+                      ? 'STEP $_stepQuiz • ${_getDayExamOrdinal(widget.day)} ✓ PASSED'
+                      : 'STEP $_stepQuiz • ${_getDayExamOrdinal(widget.day)}',
+                  style: const TextStyle(
+                    color: Colors.black,
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
+                    letterSpacing: 0.5,
                   ),
                 ),
               ),
               const SizedBox(width: 8),
-              const Text('✍️', style: TextStyle(fontSize: 16)),
+              const Text('🎓', style: TextStyle(fontSize: 18)),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  'Quick Revision Mini-Quiz',
+                  'Day ${widget.day} Exam: ${_getLevelAnimalName(widget.day)} Mastery',
                   style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
-                      fontSize: 14),
+                      fontSize: 15),
                 ),
               ),
               if (_revisionQuizPassed)
                 const Icon(Icons.check_circle_rounded,
-                    color: Color(0xFF10B981), size: 18),
+                    color: Color(0xFF10B981), size: 20),
             ],
           ),
           const SizedBox(height: 10),
-          Text(
-            _quizQuestion,
-            style: GoogleFonts.outfit(
-                color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+
+          // Exam Specification Pills
+          Wrap(
+            spacing: 8,
+            runSpacing: 6,
+            children: [
+              _buildExamPill(Icons.quiz_rounded, '5 Questions', const Color(0xFF38BDF8)),
+              _buildExamPill(Icons.school_rounded, PocketSyllabusRepository.getTrack(_activeLearnerLevel).nameEn, const Color(0xFFFFFC00)),
+              _buildExamPill(Icons.verified_rounded, 'Pass Mark: 50% (3/5)', const Color(0xFF34D399)),
+              _buildExamPill(Icons.lock_open_rounded, 'Unlocks Level ${widget.day + 1}', const Color(0xFF10B981)),
+            ],
           ),
-          const SizedBox(height: 10),
-          ...List.generate(3, (i) {
-            final options = _quizOptions;
-            final isCorrect = i == 0;
-            final isSelected = _selectedQuizAnswer == i;
+          const SizedBox(height: 12),
 
-            Color optionBg = const Color(0xFF1E293B);
-            if (_quizSubmitted) {
-              if (isCorrect) {
-                optionBg = const Color(0xFF10B981).withValues(alpha: 0.3);
-              }
-              if (isSelected && !isCorrect) {
-                optionBg = Colors.red.withValues(alpha: 0.3);
-              }
-            } else if (isSelected) {
-              optionBg = const Color(0xFFFFFC00).withValues(alpha: 0.2);
-            }
-
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              decoration: BoxDecoration(
-                color: optionBg,
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: isSelected ? const Color(0xFFFFFC00) : Colors.white12,
-                ),
-              ),
-              child: ListTile(
-                title: Text(
-                  options[i],
-                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
-                ),
-                onTap: _quizSubmitted
-                    ? null
-                    : () {
-                        setState(() => _selectedQuizAnswer = i);
-                        HapticFeedback.lightImpact();
-                      },
-                trailing: isSelected
-                    ? const Icon(Icons.radio_button_checked,
-                        color: Color(0xFFFFFC00), size: 18)
-                    : null,
-              ),
-            );
-          }),
-          if (_quizSubmitted) ...[
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: _selectedQuizAnswer == 0
-                    ? const Color(0xFF064E3B)
-                    : const Color(0xFF78350F),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: _selectedQuizAnswer == 0
-                      ? const Color(0xFF10B981)
-                      : Colors.amberAccent,
-                ),
-              ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(_selectedQuizAnswer == 0 ? '✅' : '💡',
-                      style: const TextStyle(fontSize: 18)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          _selectedQuizAnswer == 0
-                              ? 'Spot on! Correct answer.'
-                              : 'Keep learning! Correct answer is: "${_quizOptions[0]}"',
-                          style: GoogleFonts.inter(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Step 5 verified ✓ You can proceed to the next subtask.',
-                          style: TextStyle(color: Colors.white70, fontSize: 11),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+          Text(
+            _revisionQuizPassed
+                ? '🎉 Congratulations! You passed the Day ${widget.day} ${_getLevelAnimalName(widget.day)} Exam (${PocketSyllabusRepository.getTrack(_activeLearnerLevel).nameEn}). Level ${widget.day + 1} (${_getLevelAnimalName(widget.day + 1)}) is unlocked!'
+                : 'Pass this 5-question exam based on today\'s ${PocketSyllabusRepository.getTrack(_activeLearnerLevel).nameEn} syllabus with at least 50% (3/5 correct) to master Day ${widget.day} (${_getLevelAnimalName(widget.day)}) and unlock Day ${widget.day + 1}!',
+            style: GoogleFonts.inter(
+              color: _revisionQuizPassed ? const Color(0xFF86EFAC) : Colors.white70,
+              fontSize: 12.5,
+              height: 1.45,
             ),
-          ],
-          const SizedBox(height: 10),
+          ),
+          const SizedBox(height: 16),
+
+          // 🎓 Launch Level Exam Button
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
-              onPressed: _selectedQuizAnswer == -1
-                  ? null
-                  : () {
-                      setState(() {
-                        _quizSubmitted = true;
-                        _revisionQuizPassed = true;
-                        _saveSubtask('quiz', true);
-                      });
-                      markCompleted(true);
-                      HapticFeedback.mediumImpact();
-                    },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFFC00),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12)),
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                HapticFeedback.heavyImpact();
+                final passed = await PocketLevelExamDialog.show(
+                  context,
+                  level: widget.day,
+                  trackLevel: _activeLearnerLevel,
+                  onExamPassed: () {
+                    markCompleted(true);
+                    setState(() => _revisionQuizPassed = true);
+                    _saveSubtask('quiz', true);
+                  },
+                );
+                if (passed == true && mounted) {
+                  markCompleted(true);
+                  setState(() => _revisionQuizPassed = true);
+                  _saveSubtask('quiz', true);
+                }
+              },
+              icon: Icon(
+                _revisionQuizPassed ? Icons.refresh_rounded : Icons.school_rounded,
+                color: Colors.black,
+                size: 20,
               ),
-              child: Text(
-                _revisionQuizPassed ? 'QUIZ COMPLETED ✓ NEXT' : 'SUBMIT ANSWER',
+              label: Text(
+                _revisionQuizPassed
+                    ? 'RE-TAKE DAY ${widget.day} EXAM ↺'
+                    : 'START ${_getDayExamOrdinal(widget.day)} (${_getLevelAnimalName(widget.day).toUpperCase()}) 🎓',
                 style: GoogleFonts.outfit(
-                    color: Colors.black, fontWeight: FontWeight.bold),
+                  color: Colors.black,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 13,
+                  letterSpacing: 0.3,
+                ),
               ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _revisionQuizPassed ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                foregroundColor: Colors.black,
+                elevation: 3,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExamPill(IconData icon, String text, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 12, color: color),
+          const SizedBox(width: 4),
+          Text(
+            text,
+            style: GoogleFonts.inter(
+              color: color,
+              fontSize: 10.5,
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -14705,10 +14852,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     String buttonText;
 
     if (canClaim) {
-      headerTitle = '🎉 DAY ${widget.day} PASSED! ($points/200 PTS)';
-      description =
-          'Pass Mark achieved ($points/200 PTS)! 50 Bonus Coins awarded to your Vault Store. Day ${widget.day + 1} is now UNLOCKED!';
-      buttonText = 'CLAIM REWARDS & COMPLETE DAY ${widget.day} MISSION 🚀';
+      headerTitle = _revisionQuizPassed
+          ? '🎉 LEVEL ${widget.day} COMPLETE! ($points/200 PTS)'
+          : '🎓 LEVEL ${widget.day} EXAM REQUIRED ($points/200 PTS)';
+      description = _revisionQuizPassed
+          ? 'Pass Mark achieved & Level Exam Mastered! 50 Bonus Coins awarded to your Vault Store.'
+          : 'Pass Mark achieved! You must pass the Level ${widget.day} Mastery Exam with 100% accuracy to complete this level.';
+      buttonText = _revisionQuizPassed
+          ? 'CLAIM REWARDS & COMPLETE LEVEL ${widget.day} 🚀'
+          : 'TAKE LEVEL ${widget.day} EXAM & FINISH 🎓';
     } else {
       final ptsNeeded = (100 - points).clamp(0, 100);
       headerTitle = '⏳ PASS MARK PENDING ($points/200 PTS)';
@@ -14763,6 +14915,21 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               onPressed: canClaim
                   ? () async {
                       HapticFeedback.heavyImpact();
+                      // 🎓 Level Mastery Exam must be taken and passed with 100% accuracy!
+                      if (!_revisionQuizPassed) {
+                        final passed = await PocketLevelExamDialog.show(
+                          context,
+                          level: widget.day,
+                          trackLevel: _activeLearnerLevel,
+                          onExamPassed: () {
+                            setState(() => _revisionQuizPassed = true);
+                            _saveSubtask('quiz', true);
+                          },
+                        );
+                        if (passed != true && !_revisionQuizPassed) return;
+                      }
+                      if (!mounted) return;
+
                       if (!_defenseTrapArmed) {
                         final uid = SupaFlow.client.auth.currentUser?.id;
                         if (uid != null) {

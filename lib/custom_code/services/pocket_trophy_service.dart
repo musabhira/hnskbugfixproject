@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
 
 /// 🏆 Model representing an active, requested, or completed PocketTalk 4-Day Spoken Pact
 class PocketTalkPact {
@@ -113,6 +114,7 @@ class PocketTrophyService {
   // Key Constants
   static const int kDailyRequiredMinutes = 15; // 15 mins per day
   static const int kPactRequiredDays = 4; // 4 consecutive days = 1 hour total
+  static const int kMaxActivePacts = 4; // Target cap: 4 active speaking pairs (Audio Directive)
   static const int kMasterCertificationTargetTrophies = 150;
   static const String kPrefsTrophiesCountKey = 'pocket_talk_trophies_count_';
   static const String kPrefsPactPrefix = 'pocket_talk_pact_';
@@ -165,7 +167,7 @@ class PocketTrophyService {
   static Future<PocketTalkPact?> getPact(
       String myId, String otherUserId) async {
     if (myId.isEmpty || otherUserId.isEmpty) return null;
-    // 🤖 Robots & Presidents do NOT participate in PocketTalk Pacts / Streaks
+    // 🤖 Pocket Talk is strictly between human learners; robots are excluded
     if (PocketRobotService.isRobotId(myId) ||
         PocketRobotService.isRobotId(otherUserId) ||
         PocketPresidentService.isPresidentId(myId) ||
@@ -203,23 +205,42 @@ class PocketTrophyService {
     return null;
   }
 
-  /// Request or start a 4-Day Spoken Pact between two human users
+  /// Whether the user is eligible to initiate a new Pocket Talk request.
+  /// Returns false once the user reaches 4 active agreements (kMaxActivePacts).
+  static Future<bool> canInitiateNewPact(String userId) async {
+    if (userId.isEmpty) return false;
+    final activeIds = await getAllActiveAcceptedPactUserIds(userId);
+    return activeIds.length < kMaxActivePacts;
+  }
+
+  /// Request or start a 4-Day Spoken Pact between two users (human or robot)
   static Future<PocketTalkPact?> requestPact({
     required String myId,
     required String otherUserId,
     bool autoAccept = false,
   }) async {
     if (myId.isEmpty || otherUserId.isEmpty || myId == otherUserId) return null;
-    // 🤖 Robots & Presidents do NOT participate in PocketTalk Pacts / Streaks
-    if (PocketRobotService.isRobotId(myId) ||
-        PocketRobotService.isRobotId(otherUserId) ||
-        PocketPresidentService.isPresidentId(myId) ||
-        PocketPresidentService.isPresidentId(otherUserId)) {
+
+    // 🤖 Pocket Talk is strictly between human learners! Robots do not participate.
+    if (PocketRobotService.isRobotId(otherUserId) ||
+        PocketPresidentService.isPresidentId(otherUserId) ||
+        PocketRobotService.isRobotId(myId) ||
+        PocketPresidentService.isPresidentId(myId)) {
+      debugPrint('PocketTalk is strictly for human learners. Excluded robot/president.');
+      return null;
+    }
+
+    // 🔒 4-Agreement Cap: If user already has 4 active agreements, block new pact creation!
+    final canStart = await canInitiateNewPact(myId);
+    if (!canStart) {
+      debugPrint('User $myId has reached max active pacts ($kMaxActivePacts). Cannot request more.');
       return null;
     }
 
     final existing = await getPact(myId, otherUserId);
-    if (existing != null) return existing;
+    if (existing != null) {
+      return existing;
+    }
 
     final today = _getTodayDateString();
     final pactId = _generatePactId(myId, otherUserId);
@@ -256,8 +277,27 @@ class PocketTrophyService {
     required String myId,
     required String otherUserId,
   }) async {
-    final pact = await getPact(myId, otherUserId);
-    if (pact == null) return null;
+    var pact = await getPact(myId, otherUserId);
+    if (pact == null) {
+      final pactId = _generatePactId(myId, otherUserId);
+      pact = PocketTalkPact(
+        pactId: pactId,
+        user1Id: otherUserId,
+        user2Id: myId,
+        initiatorId: otherUserId,
+        startedAt: DateTime.now(),
+        streakDays: 1,
+        lastSpokenDate: _getTodayDateString(),
+        dailyMinutesToday: 0,
+        isAccepted: true,
+        isCompleted: false,
+        isMatesNow: false,
+        trophiesEarned: 0,
+        isForfeited: false,
+      );
+      await _savePact(pact);
+      return pact;
+    }
 
     final accepted = PocketTalkPact(
       pactId: pact.pactId,
@@ -276,11 +316,17 @@ class PocketTrophyService {
     );
     await _savePact(accepted);
 
-    // 🔒 SINGLE-FOCUS AUTO-FREEZE:
-    // Once an agreement is formed, cancel/freeze all other pending invitations
-    // for both participants so each user focuses completely on this 1 speaking partner.
-    await cancelOtherPendingPacts(myId, exceptPeerId: otherUserId);
-    await cancelOtherPendingPacts(otherUserId, exceptPeerId: myId);
+    // 🔒 SMART ACTIVE-CAP:
+    // Only cancel extra pending pacts once user has reached the 3-pact target cap!
+    // This guarantees each user can have up to 3 active speaking pairs as requested.
+    final myActive = await getAllActiveAcceptedPactUserIds(myId);
+    if (myActive.length >= kMaxActivePacts) {
+      await cancelOtherPendingPacts(myId, exceptPeerId: otherUserId);
+    }
+    final otherActive = await getAllActiveAcceptedPactUserIds(otherUserId);
+    if (otherActive.length >= kMaxActivePacts) {
+      await cancelOtherPendingPacts(otherUserId, exceptPeerId: myId);
+    }
 
     return accepted;
   }
@@ -380,6 +426,26 @@ class PocketTrophyService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove('$kPrefsPactPrefix$pactId');
     } catch (_) {}
+  }
+
+  /// 🔄 Day 1 Grace Period & Polite Partner Swap:
+  /// Allows either partner to swap or decline during Day 1 with ZERO penalty.
+  /// Automatically clears this pact and refills with a fresh companion!
+  static Future<bool> swapOrDeclinePartner({
+    required String myId,
+    required String otherUserId,
+    String reason = 'vibe_mismatch',
+  }) async {
+    if (myId.isEmpty || otherUserId.isEmpty) return false;
+    try {
+      final pactId = _generatePactId(myId, otherUserId);
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('$kPrefsPactPrefix$pactId');
+      return true;
+    } catch (e) {
+      debugPrint('Error swapping partner: $e');
+      return false;
+    }
   }
 
   /// Check pact integrity: detects missed days and applies trophy deduction penalty.
@@ -640,8 +706,9 @@ class PocketTrophyService {
     required String otherUserId,
   }) async {
     if (myId.isEmpty || otherUserId.isEmpty || myId == otherUserId) return true;
-    if (PocketRobotService.isRobotId(otherUserId))
+    if (PocketRobotService.isRobotId(otherUserId)) {
       return true; // Robots always public
+    }
 
     final pact = await getPact(myId, otherUserId);
     if (pact != null && pact.isMatesNow) return true;
@@ -724,8 +791,18 @@ class PocketTrophyService {
           if (isAccepted && !isForfeited && !isCompleted) {
             final u1 = decoded['user1Id'];
             final u2 = decoded['user2Id'];
-            if (u1 != null && u1 != userId) result.add(u1);
-            if (u2 != null && u2 != userId) result.add(u2);
+            if (u1 != null &&
+                u1 != userId &&
+                !PocketRobotService.isRobotId(u1) &&
+                !PocketPresidentService.isPresidentId(u1)) {
+              result.add(u1);
+            }
+            if (u2 != null &&
+                u2 != userId &&
+                !PocketRobotService.isRobotId(u2) &&
+                !PocketPresidentService.isPresidentId(u2)) {
+              result.add(u2);
+            }
           }
         }
       }
@@ -750,8 +827,18 @@ class PocketTrophyService {
           if (!isAccepted && !isForfeited && !isCompleted) {
             final u1 = decoded['user1Id'];
             final u2 = decoded['user2Id'];
-            if (u1 != null && u1 != userId) result.add(u1);
-            if (u2 != null && u2 != userId) result.add(u2);
+            if (u1 != null &&
+                u1 != userId &&
+                !PocketRobotService.isRobotId(u1) &&
+                !PocketPresidentService.isPresidentId(u1)) {
+              result.add(u1);
+            }
+            if (u2 != null &&
+                u2 != userId &&
+                !PocketRobotService.isRobotId(u2) &&
+                !PocketPresidentService.isPresidentId(u2)) {
+              result.add(u2);
+            }
           }
         }
       }
@@ -875,28 +962,11 @@ class PocketTrophyService {
     } catch (_) {}
   }
 
-  /// AI / regex detector for non-English letters (Malayalam Unicode: 0x0D00 to 0x0D7F)
+  /// AI / regex detector for non-English letters (delegated to PocketLanguageGuardService)
   static bool _detectNonEnglishText(String text) {
     if (text.isEmpty) return false;
-    // Check for Malayalam characters
-    final malRegex = RegExp(r'[\u0D00-\u0D7F]');
-    if (malRegex.hasMatch(text)) return true;
-
-    // Check for common transliterated words
-    final manglish = [
-      'enthoke',
-      'sugano',
-      'njan',
-      'evideya',
-      'chechi',
-      'chetta',
-      'mone'
-    ];
-    final lower = text.toLowerCase();
-    for (final word in manglish) {
-      if (lower.contains(word)) return true;
-    }
-    return false;
+    final check = PocketLanguageGuardService.checkMessage(text);
+    return !check.isValid;
   }
 }
 

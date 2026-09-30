@@ -39,6 +39,7 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
   final ImagePicker _picker = ImagePicker();
   bool _isCompressingImage = false;
   bool _isService = false;
+  bool _isPublic = true;
 
   String? selectedCategory;
   final TextEditingController _titleController = TextEditingController();
@@ -224,8 +225,8 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
         }
       }
 
-      // Insert into database
-      await _supabase.from('gallery').insert({
+      // Insert into database with is_public support and graceful fallback
+      final insertData = <String, dynamic>{
         'user_id': _currentUserId,
         'title': _titleController.text.trim(),
         'description': _descriptionController.text.trim(),
@@ -233,7 +234,19 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
         'category': selectedCategory,
         'image_url': _imageUrlBanner,
         'is_service': _isService,
-      });
+        'is_public': _isPublic,
+      };
+
+      try {
+        await _supabase.from('gallery').insert(insertData);
+      } catch (insertErr) {
+        if (insertErr.toString().contains('is_public')) {
+          insertData.remove('is_public');
+          await _supabase.from('gallery').insert(insertData);
+        } else {
+          rethrow;
+        }
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -1086,6 +1099,86 @@ class _CreateGalleryWidgetState extends State<CreateGalleryWidget> {
                               onChanged: (value) {
                                 safeSetState(() {
                                   selectedCategory = value;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 24.0),
+
+                      // Visibility Card (Public vs Private)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16.0),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF161924),
+                          borderRadius: BorderRadius.circular(16.0),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.07),
+                            width: 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8.0),
+                              decoration: BoxDecoration(
+                                color: (_isPublic
+                                        ? const Color(0xFFFFFF00)
+                                        : Colors.cyanAccent)
+                                    .withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(10.0),
+                              ),
+                              child: Icon(
+                                _isPublic
+                                    ? Icons.public_rounded
+                                    : Icons.lock_outline_rounded,
+                                color: _isPublic
+                                    ? const Color(0xFFFFFF00)
+                                    : Colors.cyanAccent,
+                                size: 18.0,
+                              ),
+                            ),
+                            const SizedBox(width: 12.0),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _isPublic
+                                        ? 'Public Showcase'
+                                        : 'Private Showcase',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 15,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    _isPublic
+                                        ? 'Visible in Explore & Market feed'
+                                        : 'Only visible in your private showcase',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white60,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Switch.adaptive(
+                              value: _isPublic,
+                              activeThumbColor: const Color(0xFFFFFF00),
+                              activeTrackColor: const Color(0xFFFFFF00)
+                                  .withValues(alpha: 0.3),
+                              inactiveThumbColor: Colors.white54,
+                              inactiveTrackColor: Colors.white10,
+                              onChanged: (val) {
+                                safeSetState(() {
+                                  _isPublic = val;
                                 });
                               },
                             ),

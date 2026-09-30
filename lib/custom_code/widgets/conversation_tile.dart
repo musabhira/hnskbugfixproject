@@ -52,6 +52,7 @@ class _ConversationTileState extends State<ConversationTile> {
   bool _isPendingSent = false;
   PocketTalkPact? _cachedPact;
   bool _isSendingPocketTalk = false;
+  bool _canInitiatePact = true;
 
   bool get _hasUnwatchedStatus {
     if (!widget.conversation.hasStatus) return false;
@@ -169,10 +170,42 @@ class _ConversationTileState extends State<ConversationTile> {
         }
       });
     }
+
+    if (widget.currentUserId.isNotEmpty) {
+      PocketTrophyService.canInitiateNewPact(widget.currentUserId).then((can) {
+        if (mounted && can != _canInitiatePact) {
+          setState(() => _canInitiatePact = can);
+        }
+      });
+    }
   }
 
   Future<void> _sendPocketTalkRequest() async {
     if (_isSendingPocketTalk) return;
+
+    final canStart =
+        await PocketTrophyService.canInitiateNewPact(widget.currentUserId);
+    if (!canStart) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF0F172A),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Color(0xFFFFB300), width: 1),
+            ),
+            content: Text(
+              '⚡ You already have 3 active Pocket Talks running! Complete an agreement before requesting a new one.',
+              style: GoogleFonts.outfit(color: Colors.white70),
+            ),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+
     HapticFeedback.mediumImpact();
     setState(() => _isSendingPocketTalk = true);
     try {
@@ -227,6 +260,35 @@ class _ConversationTileState extends State<ConversationTile> {
     } catch (_) {
       if (mounted) setState(() => _isSendingPocketTalk = false);
     }
+  }
+
+  Future<void> _declinePocketTalkRequest() async {
+    HapticFeedback.lightImpact();
+    try {
+      final success = await PocketTrophyService.swapOrDeclinePartner(
+        myId: widget.currentUserId,
+        otherUserId: widget.conversation.id,
+        reason: 'declined_request',
+      );
+      if (mounted && success) {
+        setState(() => _cachedPact = null);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: const Color(0xFF0F172A),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: Colors.white24, width: 1),
+            ),
+            content: Text(
+              'Pocket Talk declined • Refilling new matches ⚡',
+              style: GoogleFonts.outfit(color: Colors.white70),
+            ),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (_) {}
   }
 
   Future<void> _acceptPocketTalkRequest() async {
@@ -710,7 +772,6 @@ class _ConversationTileState extends State<ConversationTile> {
         : Colors.black.withValues(alpha: 0.85);
 
     final isPactActive = _cachedPact?.isAccepted == true && !_cachedPact!.isForfeited;
-    final isPactPending = _cachedPact != null && !_cachedPact!.isAccepted && !_cachedPact!.isForfeited;
 
     final tileContent = material.Material(
       color: Colors.transparent,
@@ -1576,21 +1637,54 @@ class _ConversationTileState extends State<ConversationTile> {
       );
     }
 
-    // If mate sent me a Pocket Talk request -> Quick Accept
+    // If mate sent me a Pocket Talk request -> Quick Accept or Decline / Swap
     final isIncomingRequest = _cachedPact != null &&
         !_cachedPact!.isAccepted &&
         _cachedPact!.initiatorId != widget.currentUserId;
     if (isIncomingRequest) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          material.IconButton(
+            icon: const Icon(
+              material.Icons.close_rounded,
+              color: Colors.redAccent,
+              size: 18,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
+            onPressed: _declinePocketTalkRequest,
+            tooltip: 'Decline / Swap ✕',
+          ),
+          const SizedBox(width: 2),
+          material.IconButton(
+            icon: const Icon(
+              material.Icons.handshake_rounded,
+              color: Color(0xFF00E5FF),
+              size: 20,
+            ),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+            onPressed: _acceptPocketTalkRequest,
+            tooltip: 'Accept Pocket Talk 🤝',
+          ),
+        ],
+      );
+    }
+
+    // User Directive: If user already has 3 active agreements running, do not show Pocket Talk request button!
+    // Instead show the standard Snap Camera button so users can still chat/snap without Pocket Talk button.
+    if (!_canInitiatePact) {
       return material.IconButton(
         icon: const Icon(
-          material.Icons.handshake_rounded,
-          color: Color(0xFF00E5FF),
+          material.Icons.camera_alt_rounded,
+          color: Color(0xFFFFFC00),
           size: 20,
         ),
         padding: EdgeInsets.zero,
         constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-        onPressed: _acceptPocketTalkRequest,
-        tooltip: 'Accept Pocket Talk 🤝',
+        onPressed: _onSnapPressed,
+        tooltip: 'Send Snap 🔥',
       );
     }
 

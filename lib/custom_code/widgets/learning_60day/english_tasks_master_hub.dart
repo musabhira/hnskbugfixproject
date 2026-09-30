@@ -27,7 +27,7 @@ import 'pocket_citadel_attack_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'pocket_syllabus_repository.dart';
-import 'pocket_master_syllabus_modal.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -57,7 +57,7 @@ class TargetMilestoneItem {
 final List<TargetMilestoneItem> kTargetMilestones = [
   const TargetMilestoneItem(
     stageNumber: 0,
-    title: 'Rule',
+    title: 'Rules',
     rangeText: 'Charter',
     targetDay: 0,
     houseStage: 'Rules & Pledge',
@@ -68,7 +68,7 @@ final List<TargetMilestoneItem> kTargetMilestones = [
   ),
   const TargetMilestoneItem(
     stageNumber: 1,
-    title: 'Target 1',
+    title: 'Levels 1–7',
     rangeText: 'Days 1–7',
     targetDay: 7,
     houseStage: 'Wooden Cabin',
@@ -79,7 +79,7 @@ final List<TargetMilestoneItem> kTargetMilestones = [
   ),
   const TargetMilestoneItem(
     stageNumber: 2,
-    title: 'Target 2',
+    title: 'Levels 8–20',
     rangeText: 'Days 8–20',
     targetDay: 20,
     houseStage: 'Brick Villa',
@@ -90,7 +90,7 @@ final List<TargetMilestoneItem> kTargetMilestones = [
   ),
   const TargetMilestoneItem(
     stageNumber: 3,
-    title: 'Target 3',
+    title: 'Levels 21–45',
     rangeText: 'Days 21–45',
     targetDay: 45,
     houseStage: 'Stone Fortress',
@@ -101,7 +101,7 @@ final List<TargetMilestoneItem> kTargetMilestones = [
   ),
   const TargetMilestoneItem(
     stageNumber: 4,
-    title: 'Target 4',
+    title: 'Levels 46–70',
     rangeText: 'Days 46–70',
     targetDay: 70,
     houseStage: 'Imperial Manor',
@@ -112,7 +112,7 @@ final List<TargetMilestoneItem> kTargetMilestones = [
   ),
   const TargetMilestoneItem(
     stageNumber: 5,
-    title: 'Target 5',
+    title: 'Levels 71–89',
     rangeText: 'Days 71–89',
     targetDay: 89,
     houseStage: 'Cyber Citadel',
@@ -123,7 +123,7 @@ final List<TargetMilestoneItem> kTargetMilestones = [
   ),
   const TargetMilestoneItem(
     stageNumber: 6,
-    title: 'Target 6 (DAY 90)',
+    title: 'Level 90 Master',
     rangeText: 'Day 90 Master',
     targetDay: 90,
     houseStage: 'Supreme Empire',
@@ -134,7 +134,7 @@ final List<TargetMilestoneItem> kTargetMilestones = [
   ),
   const TargetMilestoneItem(
     stageNumber: 7,
-    title: 'Target 7 (LEVEL 91 ⚔️)',
+    title: 'Level 91 (Palace Raid ⚔️)',
     rangeText: 'Presidential Citadel',
     targetDay: 91,
     houseStage: 'Sovereign Citadel Raid',
@@ -166,6 +166,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   bool _isLoading = true;
   bool _isRefreshing = false;
   int _unifiedPocketScore = 0;
+  int _unifiedTrophies = 0;
   UserLearningProgress? _progress;
   String? _equippedTalismanId;
   bool _hasAcceptedRules = false;
@@ -173,6 +174,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   final int _totalDays = 91;
   bool _hasConqueredCitadel = false;
   bool _isSubscribed = false;
+  bool _hasCustomSelectedSyllabus = false;
 
   // ⏱️ Midnight Daily Unlock Ticker
   Timer? _midnightTicker;
@@ -249,11 +251,21 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     return false;
   }
 
-  /// Level N can ONLY be unlocked if Level N-1 has been COMPLETED
+  /// Level N can ONLY be unlocked if:
+  /// 1. Rules accepted (if Level 1)
+  /// 2. Level N-1 has been COMPLETED with exam passed
+  /// 3. Pocket Score >= getRequiredScoreForLevel(N)
+  /// 4. Not waiting for midnight digestion interval
   bool _isDayUnlocked(int day, int currentDay) {
     if (day == 1) return _hasAcceptedRules;
-    // Sequential prerequisite check
+    // Sequential prerequisite check: previous level MUST be completed!
     if (!_isDayCompleted(day - 1)) return false;
+    // Pocket Score threshold check
+    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+    if (_unifiedPocketScore < reqScore) return false;
+    // Spoken Trophy requirement check (Audio Directive: Level 5 requires 1 Trophy, etc.)
+    final reqTrophies = PocketScoreLevelEngine.getRequiredTrophiesForLevel(day);
+    if (_unifiedTrophies < reqTrophies) return false;
     // If waiting for midnight countdown
     if (_isDayWaitingForMidnight(day)) return false;
     return true;
@@ -268,6 +280,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     final progRaw = await Learning60DayService().fetchProgress(uid);
     final score = await PocketFortressDefenseService.getUnifiedScore(uid);
+    final trophies = await PocketTrophyService.getTrophyCount(uid);
 
     final prefs = await SharedPreferences.getInstance();
     final lastCompDay = prefs.getInt('learning_last_completed_day_$uid') ?? 0;
@@ -282,23 +295,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
     if (lastCompDay > 0) {
       for (int d = 1; d <= math.min(lastCompDay, 9); d++) {
-        completed.add(d);
+        if (prefs.getBool('pocket_day_${uid}_${d}_completed') == true) {
+          completed.add(d);
+        }
       }
     }
 
-    // 🪙 Audio Directive: Player's standing and active roadmap level is strictly governed by Pocket Score!
-    // E.g. 1000 PS => Level 6. If Pocket Score decreases, target level decreases along with it!
-    final scoreLevel = PocketScoreLevelEngine.getLevelFromScore(score);
-    int calculatedCurrentDay = scoreLevel.clamp(1, _totalDays);
-
-    // Synchronize completed days up to current standing
-    for (int d = 1; d < calculatedCurrentDay; d++) {
-      completed.add(d);
+    // 🪙 Find the current active incomplete level sequentially
+    int activeDay = 1;
+    for (int d = 1; d <= _totalDays; d++) {
+      if (!completed.contains(d)) {
+        activeDay = d;
+        break;
+      }
     }
-    // Remove any completion flags above calculatedCurrentDay if score was deducted
-    completed.removeWhere((d) => d >= calculatedCurrentDay);
 
-    // Sync persisted state with current score level
+    int calculatedCurrentDay = activeDay.clamp(1, _totalDays);
+
+    // Sync persisted state with active level
     await prefs.setInt('pocket_learning_user_stage_$uid', calculatedCurrentDay);
     await prefs.setInt('learning_day_$uid', calculatedCurrentDay);
 
@@ -317,13 +331,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     final isVip = await PocketAdService().isUserSubscribed();
     final isCitadelConquered = await PocketPresidentService.hasConqueredPresidentialCitadel(uid);
+    final savedLevel = await PocketSyllabusRepository.getSavedLevel();
+    final hasCustomSyllabus = prefs.getBool('pocket_has_custom_syllabus_selection_$uid') ?? false;
 
     if (mounted) {
       setState(() {
         _isSubscribed = isVip;
         _hasConqueredCitadel = isCitadelConquered;
+        _currentLearnerLevel = savedLevel;
+        _hasCustomSelectedSyllabus = hasCustomSyllabus;
         _progress = prog;
         _unifiedPocketScore = score;
+        _unifiedTrophies = trophies;
         _completedDays
           ..clear()
           ..addAll(completed);
@@ -693,6 +712,27 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                       ),
                     ),
+                    if (PocketScoreLevelEngine.getRequiredTrophiesForLevel(day) > 0) ...[
+                      const SizedBox(width: 8),
+                      const Text('•', style: TextStyle(color: Colors.white30, fontSize: 11)),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFB300).withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.5)),
+                        ),
+                        child: Text(
+                          '🏆 ${PocketScoreLevelEngine.getRequiredTrophiesForLevel(day)} Trophy',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ),
+                    ],
                     const SizedBox(width: 8),
                     const Text('•', style: TextStyle(color: Colors.white30, fontSize: 11)),
                     const SizedBox(width: 8),
@@ -928,6 +968,71 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                 ] else ...[
+                  // 1. Check if previous level is not completed
+                  if (day > 1 && !_isDayCompleted(day - 1)) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: Colors.redAccent.withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('🔒', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Level $day is locked! You must complete Level ${day - 1} and pass its exam first.',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFF87171),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // Check if Spoken Trophies are missing
+                  if (PocketScoreLevelEngine.getRequiredTrophiesForLevel(day) > _unifiedTrophies) ...[
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFB300).withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFFFFB300).withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('🏆', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'Requires ${PocketScoreLevelEngine.getRequiredTrophiesForLevel(day)} Spoken 🏆 (You have $_unifiedTrophies). Complete 4-Day Pocket Talk Pacts to unlock!',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11.5,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+
+                  // 2. Check if waiting for midnight
                   if (_isDayWaitingForMidnight(day)) ...[
                     Container(
                       width: double.infinity,
@@ -954,24 +1059,33 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ),
                     ),
                     const SizedBox(height: 8),
-                    // ⚡ Pocket VIP Binge Pass Button (₹199/mo)
+
+                    // 🎬 Option A: Watch Short Video Ad to Unlock Now
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () {
+                        onPressed: () async {
                           Navigator.pop(ctx);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                          final watched = await PocketAdService().showVideoAd(
+                            context: context,
+                            placementTitle: 'Instant Next Level Unlock',
                           );
+                          if (watched) {
+                            final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+                            if (uid != null) {
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.remove('learning_day_${uid}_${day - 1}_completed_date');
+                            }
+                            await _loadData();
+                          }
                         },
-                        icon: const Icon(Icons.bolt_rounded, size: 17, color: Colors.black),
+                        icon: const Icon(Icons.play_circle_fill_rounded, size: 17, color: Colors.black),
                         label: Text(
-                          '⚡ FAST-TRACK NOW • Pocket VIP ₹199',
+                          '🎬 WATCH AD • UNLOCK INSTANTLY',
                           style: GoogleFonts.outfit(
                             color: Colors.black,
                             fontWeight: FontWeight.w900,
-                            fontSize: 12.5,
+                            fontSize: 12,
                             letterSpacing: 0.3,
                           ),
                         ),
@@ -981,6 +1095,36 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           elevation: 0,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // ⚡ Option B: Pocket VIP Binge Pass Button (₹199/mo)
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                          );
+                        },
+                        icon: const Icon(Icons.bolt_rounded, size: 17, color: Color(0xFF00E5FF)),
+                        label: Text(
+                          '⚡ FAST-TRACK NOW • Pocket VIP ₹199',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF00E5FF),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        style: OutlinedButton.styleFrom(
+                          side: const BorderSide(color: Color(0xFF00E5FF)),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                       ),
                     ),
@@ -1115,6 +1259,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         // 🐾 Minimal Flame Animal Cards in Map Space (Audio Directive!)
                         for (int day = 1; day <= _totalDays; day++)
                           _buildMapMiniAnimalCard(day, screenWidth, prog.currentDay),
+
+                        // 📚 Minimal Syllabus Track Selector Menu directly above Rules / Level 1 Node (Audio Directive!)
+                        _buildSyllabusSelectorMenu(screenWidth),
 
                         // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
                         _buildRuleLevelNode(screenWidth),
@@ -1544,130 +1691,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
             const SizedBox(height: 6),
 
-            // 📘 'Your Syllabus' Level Selector & Exam Ribbon (Audio Directive)
-            Builder(
-              builder: (context) {
-                final track = PocketSyllabusRepository.getTrack(_currentLearnerLevel);
-                return Container(
-                  margin: const EdgeInsets.only(bottom: 6),
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: track.color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: track.color.withValues(alpha: 0.4), width: 1),
-                  ),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          PocketMasterSyllabusModal.show(
-                            context,
-                            initialLevel: _currentLearnerLevel,
-                            currentDay: prog.currentDay,
-                            onLevelChanged: (newLevel) {
-                              setState(() => _currentLearnerLevel = newLevel);
-                              _loadData();
-                            },
-                          );
-                        },
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(track.icon, color: track.color, size: 14),
-                            const SizedBox(width: 5),
-                            Text(
-                              'Your Syllabus: ',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white70,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            Text(
-                              track.nameEn,
-                              style: GoogleFonts.outfit(
-                                color: track.color,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: track.color.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                track.code,
-                                style: GoogleFonts.outfit(
-                                  color: track.color,
-                                  fontSize: 9.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            const Icon(Icons.arrow_drop_down_rounded, color: Colors.white54, size: 16),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      // 📝 Syllabus Examination button
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.mediumImpact();
-                          _openSyllabusExamination(track);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFFFFD700), Color(0xFFFF9100)],
-                            ),
-                            borderRadius: BorderRadius.circular(6),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(0xFFFFD700).withValues(alpha: 0.3),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Text('📝', style: TextStyle(fontSize: 10)),
-                              const SizedBox(width: 3),
-                              Text(
-                                'Exam',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.black,
-                                  fontSize: 10.5,
-                                  fontWeight: FontWeight.w900,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-
-            // 🎯 Minimal Horizontal Target Milestones Strip
-            _buildTargetMilestonesStrip(prog),
+            // 🎯 Minimal Horizontal Level Milestones Strip
+            _buildMilestonesStrip(prog),
           ],
         ),
       ),
     );
   }
 
-  /// 🎯 Minimal Horizontal Target Milestones Strip (Audio Requirement!)
-  Widget _buildTargetMilestonesStrip(UserLearningProgress prog) {
+  /// 🎯 Minimal Horizontal Level Milestones Strip (Audio Requirement!)
+  Widget _buildMilestonesStrip(UserLearningProgress prog) {
     return SizedBox(
       height: 28,
       child: ListView.separated(
@@ -1736,7 +1769,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   Text(
                     isRule
                         ? item.title
-                        : '${item.title} (PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)}${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay) > 0 ? " • 🏆${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)}" : ""})',
+                        : '${item.title} (PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)}${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay) > 0 ? " & 🏆${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)} Trophy" : ""})',
                     style: GoogleFonts.outfit(
                       color: isCurrentTarget
                           ? item.themeColor
@@ -2050,6 +2083,211 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
+
+  /// 📚 Minimal Syllabus Track Selector Menu directly above the Rules / Level 1 Node (User Audio Directive!)
+  /// Displays "YOUR SYLLABUS" initially as generated during onboarding.
+  /// Tapping opens the 6-track switcher without any bottomsheet.
+  Widget _buildSyllabusSelectorMenu(double screenWidth) {
+    final track = PocketSyllabusRepository.getTrack(_currentLearnerLevel);
+    final x = screenWidth / 2;
+    // Positioned cleanly right above the Rules node (_ruleNodeY is 240, top of sphere is 203)
+    final y = _ruleNodeY - 54.0;
+    final pillWidth = _hasCustomSelectedSyllabus ? 172.0 : 144.0;
+
+    return Positioned(
+      left: x - (pillWidth / 2),
+      top: y,
+      child: PopupMenuButton<LearnerLevel?>(
+        tooltip: 'Your Syllabus',
+        color: const Color(0xFF131722),
+        elevation: 14,
+        offset: const Offset(0, 34),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: (_hasCustomSelectedSyllabus ? track.primaryColor : const Color(0xFFFFD700)).withValues(alpha: 0.8),
+            width: 1.3,
+          ),
+        ),
+        onSelected: (level) async {
+          if (level == null) return;
+          HapticFeedback.selectionClick();
+          await PocketSyllabusRepository.saveLevel(level);
+          final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('pocket_has_custom_syllabus_selection_${uid ?? "guest"}', true);
+          setState(() {
+            _hasCustomSelectedSyllabus = true;
+            _currentLearnerLevel = level;
+          });
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Row(
+                  children: [
+                    Icon(PocketSyllabusRepository.getTrack(level).icon,
+                        color: const Color(0xFFFFFC00), size: 18),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Syllabus Track switched to ${PocketSyllabusRepository.getTrack(level).nameEn}! 🎯',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF1E2438),
+                behavior: SnackBarBehavior.floating,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          }
+        },
+        itemBuilder: (context) {
+          final items = <PopupMenuEntry<LearnerLevel?>>[];
+          items.addAll(LearnerLevel.values.map((lvl) {
+            final t = PocketSyllabusRepository.getTrack(lvl);
+            final isSelected = lvl == _currentLearnerLevel;
+            return PopupMenuItem<LearnerLevel?>(
+              value: lvl,
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: t.primaryColor.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(t.icon, color: t.primaryColor, size: 16),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          t.nameEn,
+                          style: GoogleFonts.outfit(
+                            color: isSelected ? const Color(0xFFFFFC00) : Colors.white,
+                            fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                            fontSize: 12.5,
+                          ),
+                        ),
+                        Text(
+                          t.badgeText,
+                          style: GoogleFonts.inter(
+                            color: Colors.white54,
+                            fontSize: 9.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (isSelected) ...[
+                    const SizedBox(width: 6),
+                    const Icon(Icons.check_circle_rounded, color: Color(0xFFFFFC00), size: 16),
+                  ],
+                ],
+              ),
+            );
+          }));
+
+          items.add(const PopupMenuDivider(height: 8));
+          items.add(
+            PopupMenuItem<LearnerLevel?>(
+              value: null,
+              onTap: () {
+                Future.microtask(() {
+                  _openSyllabusExamination(PocketSyllabusRepository.getTrack(_currentLearnerLevel));
+                });
+              },
+              child: Row(
+                children: [
+                  const Text('📝', style: TextStyle(fontSize: 15)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'Take Track Examination',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFD700),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+
+          return items;
+        },
+        child: Container(
+          width: pillWidth,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F1424).withValues(alpha: 0.95),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: (_hasCustomSelectedSyllabus ? track.primaryColor : const Color(0xFFFFD700)).withValues(alpha: 0.7),
+              width: 1.1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: (_hasCustomSelectedSyllabus ? track.primaryColor : const Color(0xFFFFD700)).withValues(alpha: 0.22),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (!_hasCustomSelectedSyllabus) ...[
+                const Text('📘', style: TextStyle(fontSize: 12)),
+                const SizedBox(width: 5),
+                Text(
+                  'YOUR SYLLABUS',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.w800,
+                    fontSize: 10.5,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(width: 3),
+                const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFFFFD700), size: 16),
+              ] else ...[
+                Icon(track.icon, color: track.primaryColor, size: 12),
+                const SizedBox(width: 5),
+                Flexible(
+                  child: Text(
+                    'SYLLABUS: ${track.nameEn.replaceAll(' Track', '').toUpperCase()}',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                      letterSpacing: 0.3,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 3),
+                Icon(Icons.arrow_drop_down_rounded, color: track.primaryColor, size: 16),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   /// 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
   Widget _buildRuleLevelNode(double screenWidth) {
@@ -2446,18 +2684,27 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                       ],
                     ),
-                    child: Text(
-                      'PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(day)}',
-                      style: GoogleFonts.outfit(
-                        color: isCurrent
-                            ? Colors.black
-                            : (isCompleted
-                                ? const Color(0xFF34D399)
-                                : const Color(0xFFFFD700)),
-                        fontWeight: FontWeight.w900,
-                        fontSize: 11.5,
-                        letterSpacing: 0.3,
-                      ),
+                    child: Builder(
+                      builder: (context) {
+                        final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+                        final reqTrophies = PocketScoreLevelEngine.getRequiredTrophiesForLevel(day);
+                        final label = reqTrophies > 0
+                            ? 'PS $reqScore • 🏆$reqTrophies'
+                            : 'PS $reqScore';
+                        return Text(
+                          label,
+                          style: GoogleFonts.outfit(
+                            color: isCurrent
+                                ? Colors.black
+                                : (isCompleted
+                                    ? const Color(0xFF34D399)
+                                    : const Color(0xFFFFD700)),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11.0,
+                            letterSpacing: 0.3,
+                          ),
+                        );
+                      },
                     ),
                   ),
                 ),
@@ -2728,8 +2975,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// User audio requirement: Before level 1 start, the avatar stands on the Rules node!
   Widget _buildAnimatedAvatar(double screenWidth, int currentDay) {
     final bool atRuleNode = !_hasAcceptedRules;
-    final double x = atRuleNode ? (screenWidth / 2) : _getNodeX(currentDay, screenWidth);
-    final double y = atRuleNode ? _ruleNodeY : _getNodeY(currentDay);
+    final double x = atRuleNode ? ((screenWidth / 2) + 54) : _getNodeX(currentDay, screenWidth);
+    final double y = atRuleNode ? (_ruleNodeY + 12) : _getNodeY(currentDay);
     final avatarConfig = _getAvatarForDay(atRuleNode ? 1 : currentDay);
 
     return Positioned(

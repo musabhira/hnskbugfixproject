@@ -36,6 +36,7 @@ class VectorAvatarConfig {
   final String? imageUrl;
   final String? networkImageUrl;
   final String? talismanId; // 'rabbit' | 'dragon' | 'ox' | 'horse' | 'dog' | 'snake' | 'rooster' | 'monkey' | 'sheep' | 'rat' | 'tiger' | 'pig'
+  static const VectorAvatarConfig defaultConfig = VectorAvatarConfig();
 
   const VectorAvatarConfig({
     this.artStyle = 'vector',

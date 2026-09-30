@@ -11,6 +11,8 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.da
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/anonymous_match_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_guard_service.dart';
 
 /// Omegle-Style Anonymous 1-on-1 Text Match with Animated Radar & Quick Skip
 class AnonymousEnglishChatPage extends StatefulWidget {
@@ -39,6 +41,8 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
   final List<Map<String, dynamic>> _messages = [];
   bool _requestSent = false;
   bool _isMutualPocketMate = false;
+  bool _pocketTalkPactActive = false;
+  bool _pocketTalkRequestPending = false;
 
   String _currentIcebreaker = '';
 
@@ -72,6 +76,8 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
       _messages.clear();
       _requestSent = false;
       _isMutualPocketMate = false;
+      _pocketTalkPactActive = false;
+      _pocketTalkRequestPending = false;
       _isPeerTyping = false;
       _currentIcebreaker = _matchService.getRandomIcebreaker();
       _onlineCount = _matchService.getEstimatedOnlineCount();
@@ -100,6 +106,10 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
       final pocketList = prefs.getStringList('pocket_mates_$myId') ?? [];
       final isPocket = pocketList.contains(peer.peerId);
 
+      // Check if existing Pocket Talk pact is active
+      final existingPact = await PocketTrophyService.getPact(myId, peer.peerId);
+      final isPactActive = existingPact != null && existingPact.isAccepted && !existingPact.isCompleted;
+
       // Automatic Connection as requested by user
       HapticFeedback.mediumImpact();
 
@@ -107,18 +117,60 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
       if (peer.isLivePeer) {
         _matchService.subscribeToRoom(
           roomId: peer.roomId,
-          onMessageReceived: (payload) {
+          onMessageReceived: (payload) async {
             final senderId = payload['sender_id']?.toString();
+            final text = payload['text']?.toString() ?? '';
             if (senderId != myId) {
-              if (mounted) {
-                setState(() {
-                  _messages.add({
-                    'isMe': false,
-                    'text': payload['text']?.toString() ?? '',
-                    'time': DateTime.now(),
+              if (text == '[POCKET_TALK_INVITE]') {
+                if (mounted) {
+                  setState(() {
+                    _messages.add({
+                      'isMe': false,
+                      'isPocketTalkInvite': true,
+                      'senderId': senderId,
+                      'text': text,
+                      'time': DateTime.now(),
+                    });
                   });
-                });
-                _scrollToBottom();
+                  _scrollToBottom();
+                }
+              } else if (text == '[POCKET_TALK_ACCEPTED]') {
+                final currentPeer = _matchedPeer;
+                if (currentPeer != null) {
+                  await PocketTrophyService.requestPact(
+                    myId: myId,
+                    otherUserId: currentPeer.peerId,
+                  );
+                  await PocketTrophyService.acceptPact(
+                    myId: myId,
+                    otherUserId: currentPeer.peerId,
+                  );
+                  await PocketMateService.addMate(myId, currentPeer.peerId);
+                }
+                if (mounted) {
+                  setState(() {
+                    _pocketTalkPactActive = true;
+                    _pocketTalkRequestPending = false;
+                    _isMutualPocketMate = true;
+                    _messages.add({
+                      'isSystem': true,
+                      'text': '🎉 Pocket Talk 4-Day Spoken Pact Accepted!\nYou and ${_matchedPeer?.moniker} are now official Pocket Talk partners. Check your Pocket Talk ⚡ tab.',
+                      'time': DateTime.now(),
+                    });
+                  });
+                  _scrollToBottom();
+                }
+              } else {
+                if (mounted) {
+                  setState(() {
+                    _messages.add({
+                      'isMe': false,
+                      'text': text,
+                      'time': DateTime.now(),
+                    });
+                  });
+                  _scrollToBottom();
+                }
               }
             }
           },
@@ -128,6 +180,7 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
       setState(() {
         _matchedPeer = peer;
         _isMutualPocketMate = isPocket;
+        _pocketTalkPactActive = isPactActive;
         _isSearching = false;
 
         // Welcome banner
@@ -148,6 +201,22 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
   void _sendMessage() async {
     final text = _msgController.text.trim();
     if (text.isEmpty) return;
+
+    final langCheck = PocketLanguageGuardService.checkMessage(text);
+    if (!langCheck.isValid) {
+      HapticFeedback.vibrate();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '⚠️ Please chat in English! Anonymous English practice requires English messages 🌟',
+            style: GoogleFonts.inter(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
 
     _msgController.clear();
     HapticFeedback.lightImpact();
@@ -312,6 +381,308 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
           groupId: 'p:$peerUserId',
           groupName: _matchedPeer?.moniker ?? 'Pocket Mate',
         ),
+      ),
+    );
+  }
+
+  Future<void> _sendPocketTalkInvite() async {
+    final myId = _supabase.auth.currentUser?.id;
+    final currentPeer = _matchedPeer;
+    if (myId == null || currentPeer == null) return;
+
+    if (_pocketTalkPactActive) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('⚡ Pocket Talk pact is already active with ${currentPeer.moniker}!'),
+          backgroundColor: const Color(0xFF1E2438),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    if (_pocketTalkRequestPending) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('⚡ Pocket Talk invitation already pending in this chat!'),
+          backgroundColor: Color(0xFF1E2438),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    // Check 3-Agreement Cap
+    final canStart = await PocketTrophyService.canInitiateNewPact(myId);
+    if (!canStart) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.info_outline, color: Color(0xFFFFFC00)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    '⚡ You already have 3 active Pocket Talk pacts! Complete Day 4 before initiating another.',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    HapticFeedback.mediumImpact();
+
+    setState(() {
+      _pocketTalkRequestPending = true;
+      _messages.add({
+        'isMe': true,
+        'isPocketTalkInvite': true,
+        'senderId': myId,
+        'text': '[POCKET_TALK_INVITE]',
+        'time': DateTime.now(),
+      });
+    });
+    _scrollToBottom();
+
+    if (currentPeer.isLivePeer) {
+      await _matchService.sendRoomMessage(
+        roomId: currentPeer.roomId,
+        senderId: myId,
+        text: '[POCKET_TALK_INVITE]',
+      );
+    } else {
+      // Simulated peer / robot: dummy response as requested (robots don't accept 4-day pacts)
+      setState(() => _isPeerTyping = true);
+      Future.delayed(const Duration(milliseconds: 1400), () {
+        if (!mounted) return;
+        setState(() {
+          _isPeerTyping = false;
+          _messages.add({
+            'isMe': false,
+            'text': "🤖 I'm an AI companion! 4-Day Spoken Pacts are reserved for live human Pocket Mates. Keep chatting with me or tap 'Next' to challenge a live partner!",
+            'time': DateTime.now(),
+          });
+        });
+        _scrollToBottom();
+      });
+    }
+  }
+
+  Future<void> _acceptPocketTalkInvite() async {
+    final myId = _supabase.auth.currentUser?.id;
+    final currentPeer = _matchedPeer;
+    if (myId == null || currentPeer == null) return;
+
+    final canStart = await PocketTrophyService.canInitiateNewPact(myId);
+    if (!canStart) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '⚡ You have reached the 3 active pact limit! Complete Day 4 before accepting a new pact.',
+              style: GoogleFonts.outfit(color: Colors.white),
+            ),
+            backgroundColor: const Color(0xFF1E293B),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+      return;
+    }
+
+    HapticFeedback.heavyImpact();
+
+    // Establish pact in PocketTrophyService
+    await PocketTrophyService.requestPact(
+      myId: currentPeer.peerId,
+      otherUserId: myId,
+    );
+    await PocketTrophyService.acceptPact(
+      myId: myId,
+      otherUserId: currentPeer.peerId,
+    );
+    await PocketMateService.addMate(myId, currentPeer.peerId);
+
+    if (currentPeer.isLivePeer) {
+      await _matchService.sendRoomMessage(
+        roomId: currentPeer.roomId,
+        senderId: myId,
+        text: '[POCKET_TALK_ACCEPTED]',
+      );
+    }
+
+    if (mounted) {
+      setState(() {
+        _pocketTalkPactActive = true;
+        _pocketTalkRequestPending = false;
+        _isMutualPocketMate = true;
+        _messages.add({
+          'isSystem': true,
+          'text': '🎉 Pocket Talk 4-Day Spoken Pact Activated!\nYou and ${currentPeer.moniker} are now official Pocket Talk partners. Your Day 1 pact is live in your Pocket Talk ⚡ tab.',
+          'time': DateTime.now(),
+        });
+      });
+      _scrollToBottom();
+    }
+  }
+
+  Widget _buildPocketTalkInviteCard(Map<String, dynamic> msg) {
+    final isMe = msg['isMe'] == true;
+    final peerMoniker = _matchedPeer?.moniker ?? 'Mate';
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131728),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: const Color(0xFFFFFC00),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
+            blurRadius: 16,
+            spreadRadius: 2,
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Text('⚡', style: TextStyle(fontSize: 20)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '4-Day Spoken English Pact',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
+                    ),
+                    Text(
+                      '15 mins/day • 4 consecutive days • 1 Trophy 🏆',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFFC00),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            isMe
+                ? 'You challenged $peerMoniker to a 4-Day Spoken English Pact!\n⚠️ Must be accepted now before closing this temporary chat.'
+                : '$peerMoniker challenged you to a 4-Day Spoken English Pact!\n⚠️ Accept right now before this temporary session ends to lock in Day 1.',
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 12.5,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 14),
+          if (_pocketTalkPactActive)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF10B981)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.verified_rounded, color: Color(0xFF10B981), size: 16),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Pact Active • Day 1 Activated 🏆',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF10B981),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 13,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else if (isMe)
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(
+                    width: 12,
+                    height: 12,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Color(0xFFFFFC00),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Waiting for $peerMoniker to accept...',
+                    style: GoogleFonts.inter(
+                      color: Colors.white60,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          else
+            ElevatedButton.icon(
+              onPressed: _acceptPocketTalkInvite,
+              icon: const Icon(Icons.handshake_rounded, color: Colors.black, size: 18),
+              label: Text(
+                'Accept Pact 🤝 (Lock 4 Days)',
+                style: GoogleFonts.outfit(
+                  color: Colors.black,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFFC00),
+                foregroundColor: Colors.black,
+                elevation: 3,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
@@ -645,6 +1016,63 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
                     ),
                   ),
                 ),
+
+              const SizedBox(width: 8),
+
+              // Instant Pocket Talk Pact Button
+              if (_pocketTalkPactActive)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFFFFC00)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('⚡', style: TextStyle(fontSize: 12)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Pact Active',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFFC00),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                GestureDetector(
+                  onTap: _sendPocketTalkInvite,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1B1E30),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('⚡', style: TextStyle(fontSize: 12)),
+                        const SizedBox(width: 4),
+                        Text(
+                          _pocketTalkRequestPending ? 'Pending' : 'Pocket Talk',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFFC00),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -686,6 +1114,12 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
               final msg = _messages[index];
               final isSystem = msg['isSystem'] == true;
               final isMe = msg['isMe'] == true;
+              final isPocketTalkInvite = msg['isPocketTalkInvite'] == true ||
+                  msg['text'] == '[POCKET_TALK_INVITE]';
+
+              if (isPocketTalkInvite) {
+                return _buildPocketTalkInviteCard(msg);
+              }
 
               if (isSystem) {
                 return Container(

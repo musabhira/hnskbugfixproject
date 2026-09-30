@@ -39,28 +39,37 @@ class PocketTalkEngine {
         return [];
       }
 
-      // If user is already actively engaged in an accepted 4-day pact, do NOT auto-dispatch!
-      final hasActive = await PocketTrophyService.hasAnyActiveAcceptedPact(currentUserId);
-      if (hasActive) {
-        debugPrint('PocketTalkEngine: User already has an active 4-day pact. Skipping auto-dispatch.');
+      // Check how many active 4-day pacts user currently has
+      final activeIds = await PocketTrophyService.getAllActiveAcceptedPactUserIds(currentUserId);
+      if (activeIds.length >= PocketTrophyService.kMaxActivePacts) {
+        debugPrint('PocketTalkEngine: User already has ${activeIds.length} active 4-day pacts (Cap: ${PocketTrophyService.kMaxActivePacts}). Skipping auto-dispatch.');
         return [];
       }
 
       // Check current pending pacts
       final pendingPacts = await PocketTrophyService.getAllPendingPactUserIds(currentUserId);
-      if (pendingPacts.length >= 5) {
-        debugPrint('PocketTalkEngine: User already has ${pendingPacts.length} pending companion invites. Skipping.');
+
+      // 🌟 User Audio Directive: Stop automatic requests! If the user has any active pacts or pending invites,
+      // never auto-dispatch. Only if user has zero active and zero pending invites (completely idle) should it suggest one.
+      if (activeIds.isNotEmpty || pendingPacts.isNotEmpty) {
+        debugPrint('PocketTalkEngine: User already has pacts or invites. Skipping auto-dispatch.');
         return [];
       }
 
-      final slotsAvailable = (5 - pendingPacts.length).clamp(1, 5);
+      final slotsAvailable = 1;
 
-      // 1. Fetch current user profile to determine gender & level
+      // 1. Fetch current user profile to determine gender, level, and age (Audio Directive)
       final myProfile = await _supabase
           .from('profile')
-          .select('id, user_id, gender, learning_day, english_level')
+          .select('id, user_id, gender, learning_day, english_level, year, month, day')
           .eq('user_id', currentUserId)
           .maybeSingle();
+
+      final currentYear = DateTime.now().year;
+      final myYear = (myProfile?['year'] as num?)?.toInt();
+      final int? myAge = (myYear != null && myYear > 1900 && myYear <= currentYear)
+          ? (currentYear - myYear)
+          : null;
 
       final myGender = (myProfile?['gender']?.toString().toLowerCase()) ?? 'male';
       final targetGender = (myGender == 'male') ? 'female' : 'male';
@@ -70,10 +79,10 @@ class PocketTalkEngine {
       try {
         final genderQuery = await _supabase
             .from('profile')
-            .select('user_id, name, gender, profile_image_url, learning_day, bio')
+            .select('user_id, name, gender, profile_image_url, learning_day, bio, year, month, day')
             .neq('user_id', currentUserId)
             .eq('gender', targetGender)
-            .limit(10);
+            .limit(15);
 
         if (genderQuery.isNotEmpty) {
           for (final row in genderQuery) {
@@ -93,9 +102,9 @@ class PocketTalkEngine {
         try {
           final fallbackQuery = await _supabase
               .from('profile')
-              .select('user_id, name, gender, profile_image_url, learning_day, bio')
+              .select('user_id, name, gender, profile_image_url, learning_day, bio, year, month, day')
               .neq('user_id', currentUserId)
-              .limit(10);
+              .limit(15);
 
           for (final row in fallbackQuery) {
             final uid = row['user_id']?.toString() ?? '';
@@ -108,6 +117,21 @@ class PocketTalkEngine {
             }
           }
         } catch (_) {}
+      }
+
+      // 🎯 Smart Age Proximity Sorting (Audio Directive)
+      // Pairs users whose ages are close to each other (e.g. 20-year-old with 18-24, not 40+)
+      if (myAge != null && candidateList.length > 1) {
+        candidateList.sort((a, b) {
+          final aYear = (a['year'] as num?)?.toInt();
+          final bYear = (b['year'] as num?)?.toInt();
+          final aAge = (aYear != null && aYear > 1900 && aYear <= currentYear) ? (currentYear - aYear) : null;
+          final bAge = (bYear != null && bYear > 1900 && bYear <= currentYear) ? (currentYear - bYear) : null;
+
+          final aDiff = aAge != null ? (aAge - myAge).abs() : 999;
+          final bDiff = bAge != null ? (bAge - myAge).abs() : 999;
+          return aDiff.compareTo(bDiff);
+        });
       }
 
       // 4. Pre-create PocketTalk Spoken Pact requests for human candidates (strictly no robots)
@@ -164,5 +188,19 @@ class PocketTalkEngine {
       targetTrophies: target,
       progressPercentage: pct,
     );
+  }
+
+  /// Guarantee that every user maintains up to 3 active 4-day spoken pairs.
+  /// If user has fewer than 3 active pacts, auto-dispatches companion invites.
+  static Future<void> autoRefillPocketTalkPacts(String userId) async {
+    if (userId.isEmpty) return;
+    try {
+      final activeIds = await PocketTrophyService.getAllActiveAcceptedPactUserIds(userId);
+      if (activeIds.length < PocketTrophyService.kMaxActivePacts) {
+        await dispatchAutoPocketTalkRequests(currentUserId: userId);
+      }
+    } catch (e) {
+      debugPrint('PocketTalkEngine.autoRefillPocketTalkPacts error: $e');
+    }
   }
 }
