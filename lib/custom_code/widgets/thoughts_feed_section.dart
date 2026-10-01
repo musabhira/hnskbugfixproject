@@ -389,9 +389,11 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
                       CreateThreadPage(userId: widget.currentUserId),
                 ),
               );
+              if (!mounted) return;
               if (result != null) {
                 await _fetchThreads(refresh: true);
-                if (mounted && result is Map<String, dynamic>) {
+                if (!mounted) return;
+                if (result is Map<String, dynamic>) {
                   _showInstantShareModal(context, result);
                 }
               }
@@ -672,10 +674,10 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
                     child: ElevatedButton.icon(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        SharePlus.share(
-                          '💬 "$content"\n\n— Shared via Pocket Mates\nhttps://pocketmates.app',
+                        SharePlus.instance.share(ShareParams(
+                          text: '💬 "$content"\n\n— Shared via Pocket Mates\nhttps://pocketmates.app',
                           subject: 'Pocket Mates Thought',
-                        );
+                        ));
                       },
                       icon: const Icon(Icons.share_rounded, size: 18, color: Colors.black),
                       label: Text(
