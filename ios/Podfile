@@ -31,9 +31,6 @@ target 'Runner' do
   use_frameworks! :linkage => :static
   use_modular_headers!
 
-  pod 'FirebaseCore'
-  pod 'FirebaseMessaging'
-
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 end
 
