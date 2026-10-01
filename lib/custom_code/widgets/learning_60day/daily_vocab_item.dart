@@ -1,3 +1,5 @@
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+
 /// 📚 Model for Daily 10 Vocabulary Words to Memorize (Multilingual Support)
 class DailyVocabItem {
   final String word;
@@ -57,18 +59,37 @@ class DailyVocabItem {
   }
 
   String getMeaning(String language) {
-    switch (language.toLowerCase()) {
-      case 'tamil':
-        return tamilMeaning.isNotEmpty ? tamilMeaning : malayalamMeaning;
-      case 'hindi':
-        return hindiMeaning.isNotEmpty ? hindiMeaning : malayalamMeaning;
-      case 'telugu':
-        return teluguMeaning.isNotEmpty ? teluguMeaning : malayalamMeaning;
-      case 'kannada':
-        return kannadaMeaning.isNotEmpty ? kannadaMeaning : malayalamMeaning;
-      case 'malayalam':
-      default:
-        return malayalamMeaning;
+    final lang = language.toLowerCase();
+    if (lang.contains('hind') || lang == 'hi') {
+      if (hindiMeaning.isNotEmpty) return hindiMeaning;
+      final dict = PocketLanguageService.getWordTranslation(word, 'hindi');
+      if (dict.isNotEmpty) return dict;
+      return definition.isNotEmpty ? definition : word;
     }
+    if (lang.contains('tamil') || lang == 'ta') {
+      if (tamilMeaning.isNotEmpty) return tamilMeaning;
+      final dict = PocketLanguageService.getWordTranslation(word, 'tamil');
+      if (dict.isNotEmpty) return dict;
+      return definition.isNotEmpty ? definition : word;
+    }
+    if (lang.contains('telug') || lang == 'te') {
+      if (teluguMeaning.isNotEmpty) return teluguMeaning;
+      final dict = PocketLanguageService.getWordTranslation(word, 'telugu');
+      if (dict.isNotEmpty) return dict;
+      return definition.isNotEmpty ? definition : word;
+    }
+    if (lang.contains('kannad') || lang == 'kn') {
+      if (kannadaMeaning.isNotEmpty) return kannadaMeaning;
+      final dict = PocketLanguageService.getWordTranslation(word, 'kannada');
+      if (dict.isNotEmpty) return dict;
+      return definition.isNotEmpty ? definition : word;
+    }
+    if (lang.contains('malay') || lang == 'ml') {
+      if (malayalamMeaning.isNotEmpty) return malayalamMeaning;
+      final dict = PocketLanguageService.getWordTranslation(word, 'malayalam');
+      if (dict.isNotEmpty) return dict;
+      return definition.isNotEmpty ? definition : word;
+    }
+    return definition.isNotEmpty ? definition : word;
   }
 }

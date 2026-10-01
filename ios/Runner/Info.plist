@@ -78,21 +78,19 @@
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to take photos and make video calls.</string>
+	<string>Poket Mates needs camera access to let you take photos, record vibes, and make video calls with your mates.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app needs microphone access to record voice messages and make audio calls.</string>
+	<string>Poket Mates needs microphone access to record voice messages, practice English speaking, and make audio calls.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>This app needs speech recognition to convert your speech to text for the Voice Assistant.</string>
+	<string>Poket Mates needs speech recognition to convert your speech to text for English pronunciation tasks and voice messaging.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs access to your gallery to let you share photos with your friends.</string>
+	<string>Poket Mates needs access to your photo library so you can share pictures, videos, and vibes with your mates.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>This app needs permission to save photos to your gallery.</string>
+	<string>Poket Mates needs permission to save photos and downloaded media to your library.</string>
 	<key>NSContactsUsageDescription</key>
-	<string>This app requires contacts access to import phone numbers for bulk messaging.</string>
+	<string>Poket Mates needs access to your contacts to help you find and connect with friends, sync contact names in your chats, and discover mates.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>This app needs access to location when open to show nearby events and users.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>This app needs access to location to show nearby events even when in background.</string>
+	<string>Poket Mates needs access to your location while using the app to show nearby mates and community events.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>whatsapp</string>

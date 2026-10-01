@@ -222,6 +222,59 @@ class _SettingsPageState extends State<SettingsPage> {
                       builder: (context) => const TermsOfServicePage()),
                 ),
               ),
+              _SettingsTile(
+                icon: Icons.support_agent_rounded,
+                title: 'Help & Contact Support',
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    builder: (ctx) => AlertDialog(
+                      backgroundColor: const Color(0xFF161922),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16)),
+                      title: Text(
+                        'Help & Support',
+                        style: GoogleFonts.outfit(
+                            color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Need help or want to report inappropriate content or user behavior?',
+                            style: GoogleFonts.inter(
+                                color: Colors.white70, fontSize: 13),
+                          ),
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              const Icon(Icons.email_outlined,
+                                  color: Color(0xFFFFFC00), size: 18),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: SelectableText(
+                                  'support@pocketmatesapp.com',
+                                  style: GoogleFonts.inter(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(ctx),
+                          child: const Text('Close',
+                              style: TextStyle(color: Color(0xFFFFFC00))),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
               const SizedBox(height: 24),
               const _SectionHeader(title: 'Account'),
               _SettingsTile(
@@ -379,8 +432,8 @@ class _PresidentAndAdminSettingsSectionState
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (bContext) => StatefulBuilder(
-        builder: (context, setModalState) {
-          final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+        builder: (modalContext, setModalState) {
+          final bottomInset = MediaQuery.of(modalContext).viewInsets.bottom;
           return Padding(
             padding: EdgeInsets.only(
               left: 20,
@@ -495,8 +548,10 @@ class _PresidentAndAdminSettingsSectionState
                               replyText: text,
                               adminName: 'President Mus\'ab',
                             );
-                            if (mounted) {
+                            if (bContext.mounted) {
                               Navigator.pop(bContext);
+                            }
+                            if (mounted) {
                               _fetchInquiries();
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(

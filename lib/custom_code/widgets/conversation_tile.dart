@@ -131,6 +131,7 @@ class _ConversationTileState extends State<ConversationTile> {
     super.initState();
     _cachedAvatarConfig = _getAvatarConfig();
     VibesSeenService.seenEpochNotifier.addListener(_onVibesSeenChanged);
+    ContactsNameService().syncNotifier.addListener(_onContactsSyncChanged);
     _checkPendingSent();
     _loadPocketTalkPact();
   }
@@ -348,7 +349,12 @@ class _ConversationTileState extends State<ConversationTile> {
   @override
   void dispose() {
     VibesSeenService.seenEpochNotifier.removeListener(_onVibesSeenChanged);
+    ContactsNameService().syncNotifier.removeListener(_onContactsSyncChanged);
     super.dispose();
+  }
+
+  void _onContactsSyncChanged() {
+    if (mounted) setState(() {});
   }
 
   void _onVibesSeenChanged() {
@@ -389,8 +395,6 @@ class _ConversationTileState extends State<ConversationTile> {
           return material.Icons.videogame_asset_rounded;
         case 'Crazy Games':
           return material.Icons.sports_esports_rounded;
-        case 'Bulk Sender':
-          return material.Icons.rocket_launch_rounded;
         case 'Travel Radar':
           return material.Icons.radar_rounded;
         case 'Password Pro':
@@ -466,8 +470,6 @@ class _ConversationTileState extends State<ConversationTile> {
           return const Color(0xFF00E5FF);
         case 'Crazy Games':
           return const Color(0xFF8B5CF6);
-        case 'Bulk Sender':
-          return const Color(0xFF10B981);
         case 'Travel Radar':
           return const Color(0xFF06B6D4);
         case 'Password Pro':

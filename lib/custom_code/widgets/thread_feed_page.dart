@@ -1236,7 +1236,7 @@ class _CreateThreadPageState extends State<CreateThreadPage> {
         _showSnackBar('Thought shared successfully! ✨', const Color(0xFF22C55E));
         await Future.delayed(const Duration(milliseconds: 300));
         if (mounted) {
-          Navigator.pop(context, true);
+          Navigator.pop(context, inserted ?? {'content': text, 'user_id': userId});
         }
       }
     } catch (e) {

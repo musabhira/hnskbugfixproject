@@ -22,6 +22,7 @@ import 'package:pocket_mates_app/custom_code/widgets/new_user_onboarding_dialog.
 import 'package:pocket_mates_app/custom_code/widgets/teams/teams_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/status_display_widget.dart';
 import 'dart:io' as io;
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:math' as math;
@@ -643,7 +644,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             'learning_stage': 1,
             'learning_points': 0,
             'xp': 0,
-            'native_language': 'Malayalam',
+            'native_language': PocketLanguageService.currentLanguage,
             'english_level': 'Beginner (A1-A2)',
             'learning_goal': 'Daily Fluency & Speaking',
           };
@@ -990,9 +991,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       case 'Poster Maker':
         page = const TemplateGalleryPage();
         break;
-      case 'Bulk Sender':
-        page = const BulkSenderPage();
-        break;
       case 'Poki Games':
         page = const PokiGamesPage();
         break;
@@ -1272,6 +1270,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                               ),
                                               _buildVibesSection(),
                                               ThoughtsFeedSection(
+                                                key: ValueKey('thoughts_feed_$_refreshKeyCount'),
                                                 currentUserId:
                                                     _currentUserId ?? '',
                                                 currentProfileId:
@@ -1304,17 +1303,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Future<void> _handleRefresh() async {
-    // Refresh all main data providers
+    // Refresh all main data providers across the app
     try {
       setState(() {
         _refreshKeyCount++;
       });
       await Future.wait([
+        ref.read(conversationsProvider.notifier).refreshNow(),
         ref.refresh(conversationsProvider.future),
         ref.refresh(activeUsersProvider(profileId.toString()).future),
         _loadPendingRequests(),
         _loadAllUserData(),
       ]);
+      if (mounted) safeSetState(() {});
     } catch (e) {
       debugPrint('Refresh error: $e');
     }
@@ -2251,74 +2252,109 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   }
 
   Widget _buildPendingRequestsBanner(bool isDark) {
+    if (_pendingRequests.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+    final topReq = _pendingRequests.first;
+    final senderName = topReq['sender_name'] ?? 'Pocket Mate';
+    final msg = topReq['message'] ?? 'wants to connect as your Mate';
+    final hasMultiple = _pendingRequests.length > 1;
+
     return SliverToBoxAdapter(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        child: InkWell(
-          onTap: () {
-            HapticFeedback.selectionClick();
-            setState(() {
-              _chatCategoryFilterIndex = 3;
-            });
-          },
-          borderRadius: BorderRadius.circular(14),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: isDark
-                    ? [
-                        const Color(0xFF1E1B4B).withValues(alpha: 0.6),
-                        const Color(0xFF1E293B)
-                      ]
-                    : [const Color(0xFFEEF2FF), Colors.white],
-              ),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.4),
-                width: 1,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isDark
+                  ? [
+                      const Color(0xFF1E1B4B).withValues(alpha: 0.8),
+                      const Color(0xFF1E293B)
+                    ]
+                  : [const Color(0xFFEEF2FF), Colors.white],
             ),
-            child: Row(
-              children: [
-                Container(
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+              width: 1.1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
+                blurRadius: 10,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _chatCategoryFilterIndex = 3);
+                },
+                child: Container(
                   padding: const EdgeInsets.all(7),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.mark_email_unread_rounded,
-                    color: Color(0xFF818CF8),
+                    color: Color(0xFFFFFC00),
                     size: 18,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _chatCategoryFilterIndex = 3);
+                  },
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        '${_pendingRequests.length} Message ${_pendingRequests.length == 1 ? 'Request' : 'Requests'}',
-                        style: GoogleFonts.outfit(
-                          color: isDark ? Colors.white : Colors.black87,
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        children: [
+                          Flexible(
+                            child: Text(
+                              senderName,
+                              style: GoogleFonts.outfit(
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (hasMultiple) ...[
+                            const SizedBox(width: 5),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '+${_pendingRequests.length - 1} more',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFA5B4FC),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'Vibe replies and requests from people you don\'t know yet',
+                        msg,
                         style: GoogleFonts.inter(
-                          color: isDark ? Colors.white60 : Colors.black54,
+                          color: isDark ? Colors.white70 : Colors.black54,
                           fontSize: 11.5,
                         ),
                         maxLines: 1,
@@ -2327,25 +2363,30 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     ],
                   ),
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6366F1),
-                    borderRadius: BorderRadius.circular(20),
+              ),
+              const SizedBox(width: 8),
+              // Instant Accept button directly on top of "All" chats list
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFFC00),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  minimumSize: const Size(62, 32),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Text(
-                    'Review',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  elevation: 0,
+                ),
+                onPressed: () => _acceptMateRequest(topReq),
+                child: Text(
+                  'Accept',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -2625,7 +2666,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     material.MaterialPageRoute(
                       builder: (context) => WhatsAppGroupChat(
                         groupId: 'p:$receiverId',
-                        groupName: req['receiver_name'] ?? 'Poket Mate',
+                        groupName: req['receiver_name'] ?? 'Pocket Mate',
                         groupImage: req['receiver_profile_image'],
                       ),
                     ),
@@ -2790,7 +2831,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   material.MaterialPageRoute(
                     builder: (context) => WhatsAppGroupChat(
                       groupId: 'p:${req['sender_id']}',
-                      groupName: req['sender_name'] ?? 'Poket Mate',
+                      groupName: req['sender_name'] ?? 'Pocket Mate',
                       groupImage: req['sender_profile_image'],
                     ),
                   ),
@@ -5054,11 +5095,15 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             customMessage: "Please login to add Thought",
                           );
                           if (isAuthenticated && mounted) {
-                            Navigator.push(
+                            final posted = await Navigator.push(
                                 context,
                                 material.MaterialPageRoute(
                                     builder: (_) => CreateThreadPage(
                                         userId: _currentUserId ?? '')));
+                            if (posted != null && mounted) {
+                              _onTabTapped(2);
+                              _handleRefresh();
+                            }
                           }
                         },
                         child: Container(
@@ -6209,7 +6254,7 @@ class _HomeMainHeaderDelegate extends SliverPersistentHeaderDelegate {
   });
 
   static const double topBarHeight = 44.0;
-  static const double statusWidgetHeight = 126.0;
+  static const double statusWidgetHeight = 102.0;
   static const double tabBarHeight = 42.0;
   static const double searchBarHeight = 48.0;
 

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import '/flutter_flow/flutter_flow_theme.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -216,7 +218,18 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
                 return content.contains(q) || name.contains(q);
               }).toList()
             : robotThoughts;
-        newThreads.insertAll(0, filteredRobo);
+
+        // Ensure real human & user thoughts ALWAYS appear first at the top of the feed!
+        if (newThreads.isEmpty) {
+          newThreads.addAll(filteredRobo);
+        } else if (filteredRobo.isNotEmpty) {
+          // Interleave robot thoughts after user thoughts (index 2 and 5)
+          final insertIdx = newThreads.length >= 2 ? 2 : newThreads.length;
+          newThreads.insert(insertIdx, filteredRobo.first);
+          if (filteredRobo.length > 1 && newThreads.length > 4) {
+            newThreads.insert(4, filteredRobo[1]);
+          }
+        }
       }
 
       if (mounted) {
@@ -369,14 +382,19 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
           padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
           child: InkWell(
             onTap: () async {
-              await Navigator.push(
+              final result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) =>
                       CreateThreadPage(userId: widget.currentUserId),
                 ),
               );
-              _fetchThreads(refresh: true);
+              if (result != null) {
+                await _fetchThreads(refresh: true);
+                if (mounted && result is Map<String, dynamic>) {
+                  _showInstantShareModal(context, result);
+                }
+              }
             },
             borderRadius: BorderRadius.circular(16),
             child: Container(
@@ -521,6 +539,197 @@ class _ThoughtsFeedSectionState extends State<ThoughtsFeedSection>
               ),
             ).then((_) => _fetchThreads(refresh: true));
           },
+        );
+      },
+    );
+  }
+
+  void _showInstantShareModal(BuildContext context, Map<String, dynamic> thoughtData) {
+    final content = (thoughtData['content'] ?? '').toString();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF131826) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black12,
+              width: 1,
+            ),
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white24 : Colors.black26,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 18),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF22C55E).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_rounded,
+                      color: Color(0xFF22C55E),
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    'Thought Shared! ✨',
+                    style: GoogleFonts.outfit(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: isDark
+                        ? [const Color(0xFF1E2538), const Color(0xFF141926)]
+                        : [const Color(0xFFFFFBEB), const Color(0xFFFEF3C7)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                    width: 1.2,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const CircleAvatar(
+                          radius: 16,
+                          backgroundColor: Color(0xFFFFFC00),
+                          child: Icon(Icons.person, color: Colors.black87, size: 18),
+                        ),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'You',
+                              style: GoogleFonts.outfit(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 13,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            Text(
+                              'Just now • Public Thought',
+                              style: GoogleFonts.inter(
+                                fontSize: 10.5,
+                                color: isDark ? Colors.white54 : Colors.black54,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      content,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.5,
+                        height: 1.45,
+                        fontWeight: FontWeight.w500,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        SharePlus.share(
+                          '💬 "$content"\n\n— Shared via Pocket Mates\nhttps://pocketmates.app',
+                          subject: 'Pocket Mates Thought',
+                        );
+                      },
+                      icon: const Icon(Icons.share_rounded, size: 18, color: Colors.black),
+                      label: Text(
+                        'Share with Mates',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13.5,
+                          color: Colors.black,
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFFC00),
+                        foregroundColor: Colors.black,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 13),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  InkWell(
+                    onTap: () {
+                      Clipboard.setData(ClipboardData(text: content));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Thought copied to clipboard! 📋'),
+                          backgroundColor: Color(0xFF10B981),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(16),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.grey.shade200,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isDark ? Colors.white12 : Colors.grey.shade300,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.copy_rounded,
+                        size: 20,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         );
       },
     );

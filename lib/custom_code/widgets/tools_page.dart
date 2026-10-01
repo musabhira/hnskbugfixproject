@@ -8,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '/custom_code/widgets/drawing_app_home.dart';
 import '/custom_code/widgets/teams/teams_home_widget.dart';
 import '/custom_code/widgets/poster_designer/template_gallery_page.dart';
-import '/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
 import '/custom_code/widgets/poki_games_page.dart';
 import '/custom_code/widgets/nearby_users_page.dart';
 import '/custom_code/widgets/chess_game_page.dart';
@@ -25,7 +24,6 @@ import '/custom_code/widgets/learning_60day/english_tasks_master_hub.dart';
 import '/custom_code/widgets/pocket_library_page.dart';
 import '/custom_code/widgets/voice_accent_coach_page.dart';
 import '/custom_code/widgets/subscription_page.dart';
-import '/custom_code/widgets/social_media_downloader_page.dart';
 import '/custom_code/widgets/daily_media_tools_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_studio_page.dart';
@@ -1484,28 +1482,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             MaterialPageRoute(builder: (context) => const DrawingAppHome())),
       },
       {
-        'title': 'Insta & Story Saver',
-        'subtitle': 'Reels, Stories & Shorts',
-        'icon': Icons.download_for_offline_rounded,
-        'category': 'Social',
-        'color': const Color(0xFFE1306C),
-        'gradient': [
-          const Color(0xFF833AB4),
-          const Color(0xFFFD1D1D),
-          const Color(0xFFFCB045)
-        ],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'cyber_synthwave',
-          hairStyle: 'anime_spiky',
-          hairColor: '#FD1D1D',
-        ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const SocialMediaDownloaderPage())),
-      },
-      {
         'title': 'Daily Media Suite',
         'subtitle': 'Compress, Audio & PDF',
         'icon': Icons.video_file_rounded,
@@ -1594,22 +1570,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         ),
         'onTap': () => Navigator.push(context,
             MaterialPageRoute(builder: (context) => const CrazyGamesPage())),
-      },
-      {
-        'title': 'Bulk Sender',
-        'subtitle': 'Instant Group Blast',
-        'icon': Icons.rocket_launch_rounded,
-        'category': 'Comms',
-        'color': const Color(0xFF10B981),
-        'gradient': [const Color(0xFF10B981), const Color(0xFF06B6D4)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'tech_hoodie',
-          auraStyle: 'matrix_green',
-          hairStyle: 'undercut',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => Navigator.push(context,
-            MaterialPageRoute(builder: (context) => const BulkSenderPage())),
       },
       {
         'title': 'Travel Radar',

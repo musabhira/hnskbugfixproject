@@ -23,6 +23,7 @@ import 'learning_60day/pocket_syllabus_repository.dart';
 import 'learning_60day/pocket_generating_syllabus_page.dart';
 import 'tools_page.dart';
 import '../services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 enum WelcomeMode {
   welcome,
@@ -118,10 +119,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   static const bool kEnableAppleSignIn = false;
 
   // Onboarding Selections
-  String _selectedNativeLanguage = 'Malayalam';
+  String _selectedNativeLanguage = 'Hindi';
   final String _selectedTargetLanguage = 'English';
   String _selectedReferralSource = 'Instagram / Reels';
-  String _selectedEnglishLevel = 'Beginner (Starting fresh)';
+  String _selectedEnglishLevel = 'Level 1: Beginner';
   String _selectedLearningGoal = 'Daily Fluency & Speaking';
   int _selectedDailyGoalMins = 30;
   String _selectedPlan = 'free'; // 'free' or 'super'
@@ -139,44 +140,14 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   int _quizScore = 0;
   int? _selectedQuizAnswer;
 
-  final List<Map<String, dynamic>> _placementQuestions = [
-    {
-      'question': 'What is the English word for "വെള്ളം" (Water)?',
-      'options': [
-        'Paper',
-        'Water',
-        'Sleep',
-        'I do not know / അറിയില്ല',
-      ],
-      'correct': 1,
-    },
-    {
-      'question': 'How do you say "എനിക്ക് ചായ വേണം" (I want tea)?',
-      'options': [
-        'Me tea give',
-        'I want tea',
-        'Tea want I',
-        'I do not know / അറിയില്ല',
-      ],
-      'correct': 1,
-    },
-    {
-      'question': 'Which sentence is grammatically correct?',
-      'options': [
-        'She go to the office every day.',
-        'She goes to the office every day.',
-        'She going to the office every day.',
-        'I do not know / അറിയില്ല',
-      ],
-      'correct': 1,
-    },
-  ];
+  List<Map<String, dynamic>> get _placementQuestions =>
+      PocketLanguageService.getPlacementQuestions(_selectedNativeLanguage);
 
   // Options Data
   final List<Map<String, String>> _nativeLanguages = [
-    {'code': 'Malayalam', 'name': 'മലയാളം (Malayalam)', 'flag': '🌴'},
-    {'code': 'Tamil', 'name': 'தமிழ் (Tamil)', 'flag': '🦚'},
     {'code': 'Hindi', 'name': 'हिन्दी (Hindi)', 'flag': '🇮🇳'},
+    {'code': 'Tamil', 'name': 'தமிழ் (Tamil)', 'flag': '🦚'},
+    {'code': 'Malayalam', 'name': 'മലയാളം (Malayalam)', 'flag': '🌴'},
     {'code': 'Kannada', 'name': 'ಕನ್ನಡ (Kannada)', 'flag': '🌸'},
     {'code': 'Telugu', 'name': 'తెలుగు (Telugu)', 'flag': '🌺'},
     {'code': 'English', 'name': 'English', 'flag': '🌐'},
@@ -208,38 +179,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     },
   ];
 
-  final List<Map<String, String>> _englishLevels = [
-    {
-      'title': 'Level 0: Zero Foundation (ABC അറിയില്ല)',
-      'subtitle': 'Absolute zero - learn from sounds & voice',
-      'emoji': '🌱',
-    },
-    {
-      'title': 'Level 1: Beginner (നിത്യോപയോഗ വാക്കുകൾ)',
-      'subtitle': 'Know some words, but cannot speak sentences',
-      'emoji': '💬',
-    },
-    {
-      'title': 'Level 2: Elementary (ഏകദേശ ജ്ഞാനം, മടിയുള്ളവർ)',
-      'subtitle': 'Know basic phrases, has hesitation & needs speech habits',
-      'emoji': '🧭',
-    },
-    {
-      'title': 'Level 3: Middle (Simple conversations / മിഡിൽ)',
-      'subtitle': 'Can converse, want fluency & zero hesitation',
-      'emoji': '🗣️',
-    },
-    {
-      'title': 'Level 4: Advanced (Workplace & Career)',
-      'subtitle': 'Fluent speaker targeting job interviews & leadership',
-      'emoji': '💼',
-    },
-    {
-      'title': 'Level 5: Expert (Peak Fluency & Oratory)',
-      'subtitle': 'Master eloquence, public speaking & international wit',
-      'emoji': '👑',
-    },
-  ];
+  List<Map<String, String>> get _englishLevels =>
+      PocketLanguageService.getEnglishLevels(_selectedNativeLanguage);
 
   final List<Map<String, dynamic>> _learningGoals = [
     {
@@ -2106,9 +2047,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   // --- Step 2: Native Language ---
   Widget _buildStep2NativeLanguage() {
     return _buildStepContainer(
-      title: 'What is your native language?\nനിങ്ങളുടെ മാതൃഭാഷ ഏതാണ്?',
+      title: 'What is your native language?\nआपकी मातृभाषा क्या है?',
       mascotHint:
-          'Select your native tongue so we can guide your practice comfortably. (നിങ്ങൾ സംസാരിക്കുന്ന ഭാഷ തിരഞ്ഞെടുക്കുക)',
+          'Select your native language so all daily explanations, phonics, and grammar hints are personalized for you.',
       child: ListView.separated(
         shrinkWrap: true,
         physics: const BouncingScrollPhysics(),
@@ -2123,7 +2064,12 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             isSelected: isSelected,
             onTap: () {
               HapticFeedback.selectionClick();
-              setState(() => _selectedNativeLanguage = lang['code']!);
+              final code = lang['code']!;
+              setState(() {
+                _selectedNativeLanguage = code;
+                _selectedEnglishLevel = _englishLevels.first['title']!;
+              });
+              PocketLanguageService.setNativeLanguage(code);
             },
           );
         },
@@ -4191,17 +4137,15 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
             _selectedQuizAnswer = null;
           });
         } else {
+          final levels = _englishLevels;
           if (_quizScore == 0) {
-            _selectedEnglishLevel = 'Level 0: Zero Foundation (ABC അറിയില്ല)';
+            _selectedEnglishLevel = levels[0]['title']!;
           } else if (_quizScore == 1) {
-            _selectedEnglishLevel =
-                'Level 1: Beginner (നിത്യോപയോഗ വാക്കുകൾ)';
+            _selectedEnglishLevel = levels.length > 1 ? levels[1]['title']! : levels[0]['title']!;
           } else if (_quizScore == 2) {
-            _selectedEnglishLevel =
-                'Level 2: Elementary (ഏകദേശ ജ്ഞാനം, മടിയുള്ളവർ)';
+            _selectedEnglishLevel = levels.length > 2 ? levels[2]['title']! : levels[1]['title']!;
           } else {
-            _selectedEnglishLevel =
-                'Level 3: Middle (Simple conversations / മിഡിൽ)';
+            _selectedEnglishLevel = levels.length > 3 ? levels[3]['title']! : levels[2]['title']!;
           }
           setState(() => _selectedPath = 'scratch');
           _nextStep();

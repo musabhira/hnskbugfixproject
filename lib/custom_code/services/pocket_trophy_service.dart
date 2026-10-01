@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:flutter/foundation.dart';
@@ -25,6 +26,8 @@ class PocketTalkPact {
       isForfeited; // True if pact failed/breached due to missed daily quota
   final bool
       hasBothSpoken; // True when both users have sent at least one message / interacted
+  final int user1Days; // Distinct calendar days user1 sent messages (0 to 4)
+  final int user2Days; // Distinct calendar days user2 sent messages (0 to 4)
 
   const PocketTalkPact({
     required this.pactId,
@@ -41,6 +44,8 @@ class PocketTalkPact {
     this.trophiesEarned = 0,
     this.isForfeited = false,
     this.hasBothSpoken = false,
+    this.user1Days = 0,
+    this.user2Days = 0,
   });
 
   Map<String, dynamic> toMap() => {
@@ -58,6 +63,8 @@ class PocketTalkPact {
         'trophiesEarned': trophiesEarned,
         'isForfeited': isForfeited,
         'hasBothSpoken': hasBothSpoken,
+        'user1Days': user1Days,
+        'user2Days': user2Days,
       };
 
   factory PocketTalkPact.fromMap(Map<String, dynamic> map) {
@@ -79,6 +86,8 @@ class PocketTalkPact {
       isForfeited: map['isForfeited'] == true || map['isForfeited'] == 'true',
       hasBothSpoken:
           map['hasBothSpoken'] == true || map['hasBothSpoken'] == 'true',
+      user1Days: (map['user1Days'] as num?)?.toInt() ?? 0,
+      user2Days: (map['user2Days'] as num?)?.toInt() ?? 0,
     );
   }
 }
@@ -198,6 +207,8 @@ class PocketTrophyService {
           trophiesEarned: int.tryParse(decoded['trophiesEarned'] ?? '0') ?? 0,
           isForfeited: decoded['isForfeited'] == 'true',
           hasBothSpoken: decoded['hasBothSpoken'] == 'true',
+          user1Days: int.tryParse(decoded['user1Days'] ?? '0') ?? 0,
+          user2Days: int.tryParse(decoded['user2Days'] ?? '0') ?? 0,
         );
       }
     } catch (_) {}
@@ -479,12 +490,20 @@ class PocketTrophyService {
       return PactEvaluationResult(pact: pact);
     }
 
+    // 🛡️ Asymmetric Protection: Never penalize an active user whose partner is inactive!
+    final prefs = await SharedPreferences.getInstance();
+    final myDates =
+        prefs.getStringList('pocket_pact_user_dates_${pact.pactId}_$myId') ?? [];
+    if (myDates.isNotEmpty) {
+      return PactEvaluationResult(pact: pact);
+    }
+
     final daysDiff = _daysBetween(pact.lastSpokenDate, today);
 
     // If 1 day difference (i.e. yesterday):
     if (daysDiff == 1) {
       if (pact.dailyMinutesToday >= kDailyRequiredMinutes) {
-        // Yesterday's 15 mins was accomplished! Advance to next day's session
+        // Yesterday's session was accomplished! Advance to next day's session
         final nextStreak = pact.streakDays < kPactRequiredDays
             ? pact.streakDays + 1
             : pact.streakDays;
@@ -505,65 +524,124 @@ class PocketTrophyService {
         );
         await _savePact(rolledOver);
         return PactEvaluationResult(pact: rolledOver);
-      } else {
-        // Breached! Failed to complete 15 minutes yesterday
-        await deductTrophyPenalty(myId);
-        final breached = PocketTalkPact(
-          pactId: pact.pactId,
-          user1Id: pact.user1Id,
-          user2Id: pact.user2Id,
-          initiatorId: pact.initiatorId,
-          startedAt: DateTime.now(),
-          streakDays: 1,
-          lastSpokenDate: today,
-          dailyMinutesToday: 0,
-          isAccepted: true,
-          isCompleted: false,
-          isMatesNow: false,
-          trophiesEarned: pact.trophiesEarned,
-          isForfeited: true,
-        );
-        await _savePact(breached);
-        return PactEvaluationResult(
-          pact: breached,
-          didBreach: true,
-          deductedTrophy: true,
-          message:
-              'Pact broken! You did not reach 15 minutes yesterday. -1 Trophy deducted 🏆⬇️',
-        );
       }
-    } else if (daysDiff > 1) {
-      // Breached! Inactive for 2 or more days
-      await deductTrophyPenalty(myId);
-      final breached = PocketTalkPact(
-        pactId: pact.pactId,
-        user1Id: pact.user1Id,
-        user2Id: pact.user2Id,
-        initiatorId: pact.initiatorId,
-        startedAt: DateTime.now(),
-        streakDays: 1,
-        lastSpokenDate: today,
-        dailyMinutesToday: 0,
-        isAccepted: true,
-        isCompleted: false,
-        isMatesNow: false,
-        trophiesEarned: pact.trophiesEarned,
-        isForfeited: true,
-      );
-      await _savePact(breached);
-      return PactEvaluationResult(
-        pact: breached,
-        didBreach: true,
-        deductedTrophy: true,
-        message:
-            'Pact broken! Missed daily chat. -1 Trophy deducted from your profile 🏆⬇️',
-      );
     }
 
     return PactEvaluationResult(pact: pact);
   }
 
-  /// Accumulate active chat minutes today towards the 15-minute daily threshold
+  /// 📅 Record daily chat/spoken activity for a specific user in a 4-day pact.
+  /// When sender sends any message (text or voice) on a calendar day:
+  /// 1. Adds today's date (YYYY-MM-DD) to that user's completed dates for this pact.
+  /// 2. Immune to Supabase message deletion (12-24 hr cleanup) because dates are recorded in persistent state.
+  /// 3. Independent: User A reaches 4 days -> User A gets Trophy 🏆, even if User B never replied!
+  /// 4. User B only receives a trophy when User B also reaches 4 days.
+  static Future<({bool didCompleteDay, bool didUnlockTrophy, int currentDays})>
+      recordUserDailyChatActivity({
+    required String senderId,
+    required String receiverId,
+  }) async {
+    if (senderId.isEmpty || receiverId.isEmpty) {
+      return (didCompleteDay: false, didUnlockTrophy: false, currentDays: 0);
+    }
+    if (PocketRobotService.isRobotId(senderId) ||
+        PocketRobotService.isRobotId(receiverId) ||
+        PocketPresidentService.isPresidentId(senderId) ||
+        PocketPresidentService.isPresidentId(receiverId)) {
+      return (didCompleteDay: false, didUnlockTrophy: false, currentDays: 0);
+    }
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pactId = _generatePactId(senderId, receiverId);
+      final today = _getTodayDateString();
+
+      final datesKey = 'pocket_pact_user_dates_${pactId}_$senderId';
+      final completedDates = (prefs.getStringList(datesKey) ?? []).toSet();
+      final isNewDay = !completedDates.contains(today);
+
+      if (isNewDay) {
+        completedDates.add(today);
+        await prefs.setStringList(datesKey, completedDates.toList());
+      }
+
+      // Check trophy award status for sender
+      final trophyAwardedKey = 'pocket_pact_trophy_awarded_${pactId}_$senderId';
+      final alreadyAwarded = prefs.getBool(trophyAwardedKey) ?? false;
+      bool didUnlock = false;
+
+      if (completedDates.length >= kPactRequiredDays && !alreadyAwarded) {
+        await prefs.setBool(trophyAwardedKey, true);
+        await _incrementTrophyCount(senderId);
+        didUnlock = true;
+
+        // If the other user also completed 4 days, graduate to mutual Pocket Mates!
+        final otherDatesKey = 'pocket_pact_user_dates_${pactId}_$receiverId';
+        final otherDates = prefs.getStringList(otherDatesKey) ?? [];
+        if (otherDates.length >= kPactRequiredDays) {
+          await graduatePactToMates(myId: senderId, otherUserId: receiverId);
+        }
+      }
+
+      // Keep pact model synced in memory / local store
+      var pact = await getPact(senderId, receiverId);
+      if (pact != null) {
+        final otherDatesKey = 'pocket_pact_user_dates_${pactId}_$receiverId';
+        final otherDates = prefs.getStringList(otherDatesKey) ?? [];
+        final bothSpoken = completedDates.isNotEmpty && otherDates.isNotEmpty;
+
+        final u1Days = (pact.user1Id == senderId) ? completedDates.length : otherDates.length;
+        final u2Days = (pact.user2Id == senderId) ? completedDates.length : otherDates.length;
+
+        final updated = PocketTalkPact(
+          pactId: pact.pactId,
+          user1Id: pact.user1Id,
+          user2Id: pact.user2Id,
+          initiatorId: pact.initiatorId,
+          startedAt: pact.startedAt,
+          streakDays: math.max(u1Days, u2Days).clamp(1, kPactRequiredDays),
+          lastSpokenDate: today,
+          dailyMinutesToday: pact.dailyMinutesToday + 1,
+          isAccepted: true,
+          isCompleted: alreadyAwarded || didUnlock,
+          isMatesNow: pact.isMatesNow || (completedDates.length >= kPactRequiredDays && otherDates.length >= kPactRequiredDays),
+          trophiesEarned: didUnlock ? pact.trophiesEarned + 1 : pact.trophiesEarned,
+          isForfeited: false,
+          hasBothSpoken: bothSpoken,
+          user1Days: u1Days,
+          user2Days: u2Days,
+        );
+        await _savePact(updated);
+      }
+
+      return (
+        didCompleteDay: isNewDay,
+        didUnlockTrophy: didUnlock,
+        currentDays: completedDates.length,
+      );
+    } catch (e) {
+      debugPrint('Error recording user daily chat activity: $e');
+      return (didCompleteDay: false, didUnlockTrophy: false, currentDays: 0);
+    }
+  }
+
+  /// Get how many days a specific user has completed in this pact (0 to 4)
+  static Future<int> getUserCompletedPactDays({
+    required String userId,
+    required String otherUserId,
+  }) async {
+    if (userId.isEmpty || otherUserId.isEmpty) return 0;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final pactId = _generatePactId(userId, otherUserId);
+      final dates = prefs.getStringList('pocket_pact_user_dates_${pactId}_$userId');
+      return dates?.length ?? 0;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  /// Accumulate active chat minutes today towards the daily threshold
   static Future<
       ({
         PocketTalkPact? pact,
@@ -574,68 +652,15 @@ class PocketTrophyService {
     required String otherUserId,
     int minutesToAdd = 1,
   }) async {
-    final eval =
-        await checkAndEvaluatePact(myId: myId, otherUserId: otherUserId);
-    if (eval == null) {
-      return (pact: null, didCompleteDayQuota: false, didUnlockTrophy: false);
-    }
-    final pact = eval.pact;
-
-    if (!pact.isAccepted || pact.isCompleted) {
-      return (
-        pact: pact,
-        didCompleteDayQuota: pact.isCompleted,
-        didUnlockTrophy: false
-      );
-    }
-
-    final today = _getTodayDateString();
-    final currentMins =
-        (pact.lastSpokenDate == today) ? pact.dailyMinutesToday : 0;
-    final newMins = currentMins + minutesToAdd;
-    final didJustReachQuota =
-        currentMins < kDailyRequiredMinutes && newMins >= kDailyRequiredMinutes;
-
-    bool didCompletePact = false;
-    int finalStreak = pact.streakDays;
-
-    if (didJustReachQuota) {
-      // Reached 15 mins for today!
-      if (finalStreak >= kPactRequiredDays) {
-        didCompletePact = true;
-      }
-    }
-
-    final updated = PocketTalkPact(
-      pactId: pact.pactId,
-      user1Id: pact.user1Id,
-      user2Id: pact.user2Id,
-      initiatorId: pact.initiatorId,
-      startedAt: pact.startedAt,
-      streakDays: finalStreak,
-      lastSpokenDate: today,
-      dailyMinutesToday: newMins,
-      isAccepted: true,
-      isCompleted: didCompletePact,
-      isMatesNow: didCompletePact,
-      trophiesEarned:
-          didCompletePact ? pact.trophiesEarned + 1 : pact.trophiesEarned,
-      isForfeited: false,
+    final act = await recordUserDailyChatActivity(
+      senderId: myId,
+      receiverId: otherUserId,
     );
-
-    await _savePact(updated);
-
-    if (didCompletePact) {
-      // 🏆 MINT TROPHY FOR BOTH USERS!
-      await _incrementTrophyCount(myId);
-      await _incrementTrophyCount(otherUserId);
-      return (pact: updated, didCompleteDayQuota: true, didUnlockTrophy: true);
-    }
-
+    final pact = await getPact(myId, otherUserId);
     return (
-      pact: updated,
-      didCompleteDayQuota: didJustReachQuota,
-      didUnlockTrophy: false
+      pact: pact,
+      didCompleteDayQuota: act.didCompleteDay,
+      didUnlockTrophy: act.didUnlockTrophy,
     );
   }
 
@@ -871,32 +896,12 @@ class PocketTrophyService {
     return result;
   }
 
-  /// Record user message engagement to unlock streak protection guard
+  /// Record user message engagement to record daily activity and unlock streak protection
   static Future<void> markUserEngagement({
     required String myId,
     required String otherUserId,
   }) async {
-    final pact = await getPact(myId, otherUserId);
-    if (pact == null || pact.isCompleted || pact.isForfeited) return;
-    if (!pact.hasBothSpoken) {
-      final updated = PocketTalkPact(
-        pactId: pact.pactId,
-        user1Id: pact.user1Id,
-        user2Id: pact.user2Id,
-        initiatorId: pact.initiatorId,
-        startedAt: pact.startedAt,
-        streakDays: pact.streakDays,
-        lastSpokenDate: pact.lastSpokenDate,
-        dailyMinutesToday: pact.dailyMinutesToday,
-        isAccepted: pact.isAccepted,
-        isCompleted: pact.isCompleted,
-        isMatesNow: pact.isMatesNow,
-        trophiesEarned: pact.trophiesEarned,
-        isForfeited: pact.isForfeited,
-        hasBothSpoken: true,
-      );
-      await _savePact(updated);
-    }
+    await recordUserDailyChatActivity(senderId: myId, receiverId: otherUserId);
   }
 
   // --- Internal Helpers ---
@@ -940,6 +945,8 @@ class PocketTrophyService {
       'trophiesEarned': pact.trophiesEarned.toString(),
       'isForfeited': pact.isForfeited.toString(),
       'hasBothSpoken': pact.hasBothSpoken.toString(),
+      'user1Days': pact.user1Days.toString(),
+      'user2Days': pact.user2Days.toString(),
     };
     final encoded = Uri(queryParameters: map).query;
     await prefs.setString('$kPrefsPactPrefix${pact.pactId}', encoded);

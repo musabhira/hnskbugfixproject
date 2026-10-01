@@ -56,6 +56,7 @@ import 'pocket_sentence_structure_practice_card.dart';
 import 'pocket_time_machine_practice_card.dart';
 import 'pocket_day_detail_overview_page.dart';
 import 'pocket_fluency_gym_detail_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 export 'daily_vocab_item.dart';
 import 'daily_vocab_item.dart';
@@ -95,6 +96,7 @@ import 'career_adventure/bridge_builder_models.dart';
 import 'career_adventure/bridge_builder_game_page.dart';
 import 'career_adventure/travel_rush_models.dart';
 import 'career_adventure/travel_rush_game_page.dart';
+import 'pocket_daily_mission_roadmap_widget.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -215,6 +217,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   String _selectedLanguage = 'Malayalam';
   String _selectedCategory = 'all';
+  bool _isRoadmapView = true; // 🗺️ Default to scenic gamified journey roadmap
   LearnerLevel _activeLearnerLevel = LearnerLevel.zero;
   bool _isStorySpeaking = false;
   List<DailyVocabItem> _vocabList = [];
@@ -5103,11 +5106,16 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 // Top Header Deck
                 _buildHeader(context),
 
-                // 🏷️ Category Filter Bar (User Audio Directive: Category switcher instead of language bar at top)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
-                  child: _buildCategoryFilterBar(),
-                ),
+                if (_isRoadmapView)
+                  Expanded(
+                    child: _buildRoadmapView(),
+                  )
+                else ...[
+                  // 🏷️ Category Filter Bar (User Audio Directive: Category switcher instead of language bar at top)
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 4, 16, 6),
+                    child: _buildCategoryFilterBar(),
+                  ),
 
                 // Quick Sovereign Action Bar: Rules & 90d Guarantee, Reading Library, Code English
                 _buildSovereignActionBar(),
@@ -5961,19 +5969,928 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                     ];
 
                     return ListView.builder(
-                      cacheExtent: 450,
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 40),
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      physics: const BouncingScrollPhysics(),
                       itemCount: missionWidgets.length,
                       itemBuilder: (context, index) => missionWidgets[index],
                     );
                   },
                 ),
               ),
-              ],
-            ),
-          ),
-        ],
+            ],
+          ],
+        ),
       ),
+    ],
+  ),
+);
+}
+
+
+  void _notifyStepUnlocked(int currentStep, int nextStep) {
+    if (!mounted) return;
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF10B981),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        content: Row(
+          children: [
+            const Text('🎉', style: TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Step $currentStep Completed! Step $nextStep Unlocked! 🚀',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ],
+        ),
+        duration: const Duration(seconds: 3),
+      ),
+    );
+  }
+
+  Future<void> _claimDailyMissionSuccess() async {
+    HapticFeedback.heavyImpact();
+    // 🎓 Level Mastery Exam must be taken and passed with 100% accuracy!
+    if (!_revisionQuizPassed) {
+      final passed = await PocketLevelExamDialog.show(
+        context,
+        level: widget.day,
+        trackLevel: _activeLearnerLevel,
+        onExamPassed: () {
+          setState(() => _revisionQuizPassed = true);
+          _saveSubtask('quiz', true);
+        },
+      );
+      if (passed != true && !_revisionQuizPassed) return;
+    }
+    if (!mounted) return;
+
+    if (!_defenseTrapArmed) {
+      final uid = SupaFlow.client.auth.currentUser?.id;
+      if (uid != null) {
+        await PocketCitadelAttackPage.openForUser(
+          context,
+          userId: uid,
+          attackerDay: widget.day,
+          isDefenseMode: true,
+        );
+      } else {
+        await PocketDefenseTrapModal.show(context, widget.day);
+      }
+      if (mounted) {
+        setState(() => _defenseTrapArmed = true);
+        _saveSubtask('defense', true);
+      }
+    }
+    final uid = SupaFlow.client.auth.currentUser?.id;
+    final nextDay = (widget.day < 90) ? widget.day + 1 : 90;
+    if (uid != null) {
+      await Learning60DayService().completeDailyMission(
+        userId: uid,
+        day: widget.day,
+        earnedPoints: _currentDayPoints,
+        advanceToNextDay: false,
+      );
+      await PocketFortressDefenseService.recordActivityPoints('daily_mission');
+    } else {
+      final currentUid = SupaFlow.client.auth.currentUser?.id;
+      final prefs = await SharedPreferences.getInstance();
+      final todayStr =
+          '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
+      if (currentUid != null) {
+        await prefs.setBool('pocket_day_${currentUid}_${widget.day}_completed', true);
+        await prefs.setString('learning_day_${currentUid}_${widget.day}_completed_date', todayStr);
+        await prefs.setInt('learning_day_${currentUid}_${widget.day}_completed_timestamp', DateTime.now().millisecondsSinceEpoch);
+        await prefs.setInt('learning_last_completed_day_$currentUid', widget.day);
+      }
+    }
+    await PocketFortressDefenseService.awardRaidLoot(50);
+
+    widget.onMissionCompleted?.call();
+    if (mounted) {
+      if (widget.day == 90) {
+        final prefs = await SharedPreferences.getInstance();
+        final userName = prefs.getString('user_name') ?? 'Pocket Scholar';
+        if (mounted) {
+          await Day90MasterCertificateDialog.show(
+            context,
+            userName: userName,
+            userDay: 90,
+          );
+        }
+      }
+      if (!mounted) return;
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🎉 Day ${widget.day} English Mission Complete! Earned $_currentDayPoints/200 Points!\n⏳ Day $nextDay unlocks tonight at Midnight (12:00 AM)!',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      );
+    }
+  }
+
+  /// 🗺️ Builds the Gamified Journey Roadmap View
+  Widget _buildRoadmapView() {
+    final List<_RawRoadmapStep> rawSteps = [];
+
+    // Step 1: Core Linguistic Theory
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepTheory,
+        icon: '📖',
+        title: 'Core Linguistic Theory',
+        category: 'Theory',
+        subtitle: 'Speech rules, grammar breakdown & common mother-tongue mistake fixes for Day ${widget.day}',
+        accentColor: const Color(0xFFA855F7),
+        isCompleted: _dailyRuleCompleted,
+        onAction: () async {
+          HapticFeedback.lightImpact();
+          await PocketDayDetailOverviewPage.show(context, widget.day);
+          if (mounted && !_dailyRuleCompleted) {
+            setState(() => _dailyRuleCompleted = true);
+            _saveSubtask('daily_rule', true);
+            _notifyStepUnlocked(_stepTheory, _stepVocab);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_dailyRuleCompleted;
+          setState(() => _dailyRuleCompleted = next);
+          _saveSubtask('daily_rule', next);
+          if (next) _notifyStepUnlocked(_stepTheory, _stepVocab);
+        },
+      ),
+    );
+
+    // Step 2: 10 Core Vocabulary Words
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepVocab,
+        icon: '🧠',
+        title: '10 Core Vocabulary Words',
+        category: 'Vocab',
+        subtitle: 'Memorize 10 essential words with definitions, native meanings & audio pronunciation',
+        accentColor: const Color(0xFFFF8906),
+        isCompleted: _vocabMemorized,
+        onAction: () async {
+          HapticFeedback.lightImpact();
+          await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => PocketMissionTopicDetailPage(
+                day: widget.day,
+                stepNumber: '$_stepVocab',
+                icon: '🧠',
+                title: '10 Core Vocabulary Words',
+                subtitle: 'Memorize 10 essential words with definitions, native meanings & audio pronunciation.',
+                accentColor: const Color(0xFFFF8906),
+                initialLanguage: _selectedLanguage,
+                isInitiallyCompleted: _vocabMemorized,
+                builder: (ctx, lang, markCompleted) => _buildVocabDetailContent(lang, markCompleted),
+              ),
+            ),
+          );
+          if (mounted && _vocabMemorized) {
+            _notifyStepUnlocked(_stepVocab, _hasAlphabetPhonics ? _stepPhonics : _stepFluencyGym);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_vocabMemorized;
+          setState(() => _vocabMemorized = next);
+          _saveSubtask('vocab_mem', next);
+          if (next) _notifyStepUnlocked(_stepVocab, _hasAlphabetPhonics ? _stepPhonics : _stepFluencyGym);
+        },
+      ),
+    );
+
+    // Step 3: Alphabet & 44 Phonics Sound System (if active)
+    if (_hasAlphabetPhonics) {
+      rawSteps.add(
+        _RawRoadmapStep(
+          stepNumber: _stepPhonics,
+          icon: '🔤',
+          title: 'Alphabet & 44 Phonics Sounds',
+          category: 'Phonics',
+          subtitle: 'Master authentic mouth placements & acoustic IPA frequencies with interactive voice playback',
+          accentColor: const Color(0xFFFF9100),
+          isCompleted: _alphabetPhonicsCompleted,
+          onAction: () async {
+            List<AlphabetPhonicItem> phonicsList = [];
+            if (_activeLearnerLevel == LearnerLevel.zero) {
+              final zeroPlan = ZeroFoundationCurriculumDB.getDayPlan(widget.day);
+              if (zeroPlan.phonicsDrills.isNotEmpty) {
+                phonicsList = zeroPlan.phonicsDrills;
+              }
+            }
+            if (phonicsList.isEmpty) {
+              phonicsList = PocketMissionCurriculumRegistry.getAlphabetPhonics(widget.day);
+            }
+            if (phonicsList.isNotEmpty) {
+              final res = await Navigator.of(context).push<bool>(
+                MaterialPageRoute(
+                  builder: (_) => PocketAlphabetPhonicsGamePage(
+                    day: widget.day,
+                    selectedLanguage: _selectedLanguage,
+                    phonicsList: phonicsList,
+                  ),
+                ),
+              );
+              if (res == true && mounted) {
+                setState(() => _alphabetPhonicsCompleted = true);
+                _saveSubtask('alphabet_phonics', true);
+                _notifyStepUnlocked(_stepPhonics, _stepFluencyGym);
+              }
+            }
+          },
+          onToggleComplete: () {
+            final next = !_alphabetPhonicsCompleted;
+            setState(() => _alphabetPhonicsCompleted = next);
+            _saveSubtask('alphabet_phonics', next);
+            if (next) _notifyStepUnlocked(_stepPhonics, _stepFluencyGym);
+          },
+        ),
+      );
+    }
+
+    // Step 4: Multi-Skill Fluency Gym
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepFluencyGym,
+        icon: '🎙️',
+        title: 'Master Multi-Skill Fluency Gym',
+        category: 'Speaking',
+        subtitle: '8 vocal workout stations: Tongue twisters, syllable stress, shadowing & speech reflexes',
+        accentColor: const Color(0xFF10B981),
+        isCompleted: _fluencyGymCompleted,
+        onAction: () async {
+          HapticFeedback.lightImpact();
+          final res = await PocketFluencyGymDetailPage.open(
+            context,
+            day: widget.day,
+            selectedLanguage: _selectedLanguage,
+            isInitiallyCompleted: _fluencyGymCompleted,
+            onCompleted: (val) {
+              if (mounted) {
+                setState(() => _fluencyGymCompleted = val);
+                _saveSubtask('fluency_gym', val);
+              }
+            },
+          );
+          if (res == true && mounted && !_fluencyGymCompleted) {
+            setState(() => _fluencyGymCompleted = true);
+            _saveSubtask('fluency_gym', true);
+            _notifyStepUnlocked(_stepFluencyGym, _stepActiveGrammar);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_fluencyGymCompleted;
+          setState(() => _fluencyGymCompleted = next);
+          _saveSubtask('fluency_gym', next);
+          if (next) _notifyStepUnlocked(_stepFluencyGym, _stepActiveGrammar);
+        },
+      ),
+    );
+
+    // Step 5: Secret Code Grammar Matrix (if active)
+    if (_showActiveSecretCode) {
+      rawSteps.add(
+        _RawRoadmapStep(
+          stepNumber: _stepSecretCode,
+          icon: '⚡',
+          title: 'Secret Code Grammar Matrix',
+          category: 'Grammar',
+          subtitle: 'Master formula-based English codes & zero-error sentence rules in an interactive arena',
+          accentColor: const Color(0xFFFFD700),
+          isCompleted: _secretCodeGrammarCompleted,
+          onAction: () async {
+            final res = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (_) => PocketMissionTopicDetailPage(
+                  day: widget.day,
+                  stepNumber: '$_stepSecretCode',
+                  icon: '⚡',
+                  title: 'Secret Code Grammar Matrix',
+                  subtitle: 'Master formula-based English codes & zero-error sentence rules in an interactive practice arena.',
+                  accentColor: const Color(0xFFFFD700),
+                  initialLanguage: _selectedLanguage,
+                  isInitiallyCompleted: _secretCodeGrammarCompleted,
+                  builder: (ctx, lang, markCompleted) => PocketSecretCodeGrammarCard(
+                    day: widget.day,
+                    selectedLanguage: lang,
+                    isCompleted: _secretCodeGrammarCompleted,
+                    onCompleted: (val) {
+                      markCompleted(val);
+                      _saveSubtask('secret_code', val);
+                      if (mounted) setState(() => _secretCodeGrammarCompleted = val);
+                    },
+                    onSpeak: _speakWord,
+                    stepNumber: '$_stepSecretCode',
+                  ),
+                ),
+              ),
+            );
+            if (res == true && mounted) {
+              setState(() => _secretCodeGrammarCompleted = true);
+              _saveSubtask('secret_code', true);
+              _notifyStepUnlocked(_stepSecretCode, _stepSecretCode + 1);
+            }
+          },
+          onToggleComplete: () {
+            final next = !_secretCodeGrammarCompleted;
+            setState(() => _secretCodeGrammarCompleted = next);
+            _saveSubtask('secret_code', next);
+            if (next) _notifyStepUnlocked(_stepSecretCode, _stepSecretCode + 1);
+          },
+        ),
+      );
+    }
+
+    // Step 6: Sentence Builder Game (if active)
+    if (_showActiveSentenceBuilder) {
+      rawSteps.add(
+        _RawRoadmapStep(
+          stepNumber: _stepSentenceBuilder,
+          icon: '🏗️',
+          title: 'Sentence Builder Puzzle',
+          category: 'Grammar',
+          subtitle: 'Assemble scrambled word blocks into natural native sentence structures with real-time feedback',
+          accentColor: const Color(0xFF00E5FF),
+          isCompleted: _sentenceBuilderCompleted,
+          onAction: () async {
+            final res = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (_) => PocketMissionTopicDetailPage(
+                  day: widget.day,
+                  stepNumber: '$_stepSentenceBuilder',
+                  icon: '🏗️',
+                  title: 'Sentence Builder Puzzle',
+                  subtitle: 'Assemble scrambled word blocks into natural native sentence structures with real-time feedback.',
+                  accentColor: const Color(0xFF00E5FF),
+                  initialLanguage: _selectedLanguage,
+                  isInitiallyCompleted: _sentenceBuilderCompleted,
+                  builder: (ctx, lang, markCompleted) => PocketSentenceBuilderCard(
+                    day: widget.day,
+                    isCompleted: _sentenceBuilderCompleted,
+                    onCompleted: (val) {
+                      markCompleted(val);
+                      _saveSubtask('sentence_builder', val);
+                      if (mounted) setState(() => _sentenceBuilderCompleted = val);
+                    },
+                    onSpeak: _speakWord,
+                    stepNumber: '$_stepSentenceBuilder',
+                  ),
+                ),
+              ),
+            );
+            if (res == true && mounted) {
+              setState(() => _sentenceBuilderCompleted = true);
+              _saveSubtask('sentence_builder', true);
+              _notifyStepUnlocked(_stepSentenceBuilder, _stepSentenceBuilder + 1);
+            }
+          },
+          onToggleComplete: () {
+            final next = !_sentenceBuilderCompleted;
+            setState(() => _sentenceBuilderCompleted = next);
+            _saveSubtask('sentence_builder', next);
+            if (next) _notifyStepUnlocked(_stepSentenceBuilder, _stepSentenceBuilder + 1);
+          },
+        ),
+      );
+    }
+
+    // Step 7: Daily Slang to Smart English (if active)
+    if (_showActiveSlang) {
+      rawSteps.add(
+        _RawRoadmapStep(
+          stepNumber: _stepSlang,
+          icon: '💬',
+          title: 'Daily Slang to Smart English',
+          category: 'Vocab',
+          subtitle: 'Transform regional vernacular phrases into polished professional English idioms',
+          accentColor: const Color(0xFFFF6D00),
+          isCompleted: _slangSmartEnglishCompleted,
+          onAction: () async {
+            final res = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (_) => PocketMissionTopicDetailPage(
+                  day: widget.day,
+                  stepNumber: '$_stepSlang',
+                  icon: '💬',
+                  title: 'Daily Slang to Smart English',
+                  subtitle: 'Transform regional vernacular phrases into polished, confident professional English idioms.',
+                  accentColor: const Color(0xFFFF6D00),
+                  initialLanguage: _selectedLanguage,
+                  isInitiallyCompleted: _slangSmartEnglishCompleted,
+                  builder: (ctx, lang, markCompleted) => PocketSlangSmartEnglishCard(
+                    day: widget.day,
+                    selectedLanguage: lang,
+                    isCompleted: _slangSmartEnglishCompleted,
+                    onCompleted: (val) {
+                      markCompleted(val);
+                      _saveSubtask('slang_smart', val);
+                      if (mounted) setState(() => _slangSmartEnglishCompleted = val);
+                    },
+                    onSpeak: _speakWord,
+                    stepNumber: '$_stepSlang',
+                  ),
+                ),
+              ),
+            );
+            if (res == true && mounted) {
+              setState(() => _slangSmartEnglishCompleted = true);
+              _saveSubtask('slang_smart', true);
+              _notifyStepUnlocked(_stepSlang, _stepSlang + 1);
+            }
+          },
+          onToggleComplete: () {
+            final next = !_slangSmartEnglishCompleted;
+            setState(() => _slangSmartEnglishCompleted = next);
+            _saveSubtask('slang_smart', next);
+            if (next) _notifyStepUnlocked(_stepSlang, _stepSlang + 1);
+          },
+        ),
+      );
+    }
+
+    // Step 8: Practice Speaking Aloud (if active)
+    if (_showActiveSpeakingPractice) {
+      rawSteps.add(
+        _RawRoadmapStep(
+          stepNumber: _stepSpeaking,
+          icon: '🎤',
+          title: 'Practice Speaking Aloud',
+          category: 'Speaking',
+          subtitle: 'SpeakNow-style vocal pronunciation drills. Speak aloud and build unconscious muscle memory',
+          accentColor: const Color(0xFFE040FB),
+          isCompleted: _practiceSpeakingCompleted,
+          onAction: () async {
+            final res = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (_) => PocketMissionTopicDetailPage(
+                  day: widget.day,
+                  stepNumber: '$_stepSpeaking',
+                  icon: '🎤',
+                  title: 'Practice Speaking Aloud',
+                  subtitle: 'SpeakNow-style vocal pronunciation drills. Speak aloud and build unconscious muscle memory.',
+                  accentColor: const Color(0xFFE040FB),
+                  initialLanguage: _selectedLanguage,
+                  isInitiallyCompleted: _practiceSpeakingCompleted,
+                  builder: (ctx, lang, markCompleted) => PocketPracticeSpeakingCard(
+                    day: widget.day,
+                    selectedLanguage: lang,
+                    isCompleted: _practiceSpeakingCompleted,
+                    onCompleted: (val) {
+                      markCompleted(val);
+                      _saveSubtask('practice_speaking', val);
+                      if (mounted) setState(() => _practiceSpeakingCompleted = val);
+                    },
+                    onSpeak: _speakWord,
+                    stepNumber: '$_stepSpeaking',
+                  ),
+                ),
+              ),
+            );
+            if (res == true && mounted) {
+              setState(() => _practiceSpeakingCompleted = true);
+              _saveSubtask('practice_speaking', true);
+              _notifyStepUnlocked(_stepSpeaking, _stepSpeaking + 1);
+            }
+          },
+          onToggleComplete: () {
+            final next = !_practiceSpeakingCompleted;
+            setState(() => _practiceSpeakingCompleted = next);
+            _saveSubtask('practice_speaking', next);
+            if (next) _notifyStepUnlocked(_stepSpeaking, _stepSpeaking + 1);
+          },
+        ),
+      );
+    }
+
+    // Step 9: Time Machine Action Verbs (if active)
+    if (_showActiveTimeMachine) {
+      rawSteps.add(
+        _RawRoadmapStep(
+          stepNumber: _stepTimeMachine,
+          icon: '⏳',
+          title: 'Time Machine Verbs Trainer',
+          category: 'Speaking',
+          subtitle: 'Master core action verbs across past, present & future with instant speech accuracy scoring',
+          accentColor: const Color(0xFFFFD700),
+          isCompleted: _timeMachinePracticeCompleted,
+          onAction: () async {
+            final res = await Navigator.of(context).push<bool>(
+              MaterialPageRoute(
+                builder: (_) => PocketMissionTopicDetailPage(
+                  day: widget.day,
+                  stepNumber: '$_stepTimeMachine',
+                  icon: '⏳',
+                  title: 'Time Machine Trainer (Past, Present & Future)',
+                  subtitle: 'Master core action verbs across yesterday, today and tomorrow with instant speech accuracy scoring.',
+                  accentColor: const Color(0xFFFFD700),
+                  initialLanguage: _selectedLanguage,
+                  isInitiallyCompleted: _timeMachinePracticeCompleted,
+                  builder: (ctx, lang, markCompleted) => PocketTimeMachinePracticeCard(
+                    day: widget.day,
+                    selectedLanguage: lang,
+                    isCompleted: _timeMachinePracticeCompleted,
+                    onCompleted: (val) {
+                      markCompleted(val);
+                      _saveSubtask('time_machine_practice', val);
+                      if (mounted) setState(() => _timeMachinePracticeCompleted = val);
+                    },
+                    onSpeak: _speakWord,
+                    stepNumber: '$_stepTimeMachine',
+                  ),
+                ),
+              ),
+            );
+            if (res == true && mounted) {
+              setState(() => _timeMachinePracticeCompleted = true);
+              _saveSubtask('time_machine_practice', true);
+              _notifyStepUnlocked(_stepTimeMachine, _stepTimeMachine + 1);
+            }
+          },
+          onToggleComplete: () {
+            final next = !_timeMachinePracticeCompleted;
+            setState(() => _timeMachinePracticeCompleted = next);
+            _saveSubtask('time_machine_practice', next);
+            if (next) _notifyStepUnlocked(_stepTimeMachine, _stepTimeMachine + 1);
+          },
+        ),
+      );
+    }
+
+    // Step 10: English Hub Community Chat
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepEnglishHub,
+        icon: '💬',
+        title: 'English Hub Community Chat',
+        category: 'Speaking',
+        subtitle: 'Enter the active English Hub and send at least 15 English messages to fellow learners',
+        accentColor: const Color(0xFFFFFC00),
+        isCompleted: _hubChatVerified,
+        onAction: () async {
+          final currentUserId = Supabase.instance.client.auth.currentUser?.id;
+          final nav = Navigator.of(context);
+          EnglishHubLevelGroup levelGroup;
+          if (currentUserId != null) {
+            levelGroup = await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+              userLevel: widget.day,
+              userId: currentUserId,
+            );
+          } else {
+            levelGroup = await EnglishHubLevelGroupService.getGroupByLevel(widget.day);
+          }
+          if (!mounted) return;
+          await nav.push(
+            MaterialPageRoute(
+              builder: (_) => WhatsAppGroupChat(
+                groupId: levelGroup.groupId,
+                groupName: levelGroup.groupName,
+              ),
+            ),
+          );
+          if (mounted) {
+            _verifyEnglishHubChatWithBackend();
+          }
+        },
+        onToggleComplete: () {
+          _verifyEnglishHubChatWithBackend();
+        },
+      ),
+    );
+
+    // Step 11: Peer Call / 1-on-1 English Talk
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepPeerCall,
+        icon: '🎙️',
+        title: 'Peer Call / 1-on-1 English Talk',
+        category: 'Speaking',
+        subtitle: 'Connect with at least 3 mates for live conversation practice to conquer speaking hesitation',
+        accentColor: const Color(0xFF00E5FF),
+        isCompleted: _peerCallVerified,
+        onAction: () async {
+          if (!_timerService.isRunning && !_timerService.hasReachedTarget) {
+            _timerService.toggleTimer();
+          }
+          await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const StagePeerMatchmakerPage()),
+          );
+          if (mounted) {
+            _verifyPeerTalkWithBackend();
+          }
+        },
+        onToggleComplete: () {
+          _verifyPeerTalkWithBackend();
+        },
+      ),
+    );
+
+    // Step 12: 2D Adventure Quests (e.g. Cyber Vocab for Day 1)
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepAdventureGame,
+        icon: '🎮',
+        title: widget.day == 1 ? 'Career Adventure (Cyber Vocab)' : 'Daily 2D Adventure Quest',
+        category: 'Adventure',
+        subtitle: 'Interactive 2D career quest & vocational vocabulary challenges',
+        accentColor: const Color(0xFFE11D48),
+        isCompleted: _careerAdventureCompleted,
+        onAction: () async {
+          if (widget.day == 1) {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CyberVocabGamePage(
+                  onCompleted: (xp) {
+                    if (mounted) {
+                      setState(() => _careerAdventureCompleted = true);
+                      _saveSubtask('career_adventure', true);
+                      _notifyStepUnlocked(_stepAdventureGame, _stepReadingNotes);
+                    }
+                  },
+                ),
+              ),
+            );
+          } else {
+            setState(() => _careerAdventureCompleted = true);
+            _saveSubtask('career_adventure', true);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_careerAdventureCompleted;
+          setState(() => _careerAdventureCompleted = next);
+          _saveSubtask('career_adventure', next);
+          if (next) _notifyStepUnlocked(_stepAdventureGame, _stepReadingNotes);
+        },
+      ),
+    );
+
+    // Step 13: Core Reading Notes & Aloud Story
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepReadingNotes,
+        icon: '📖',
+        title: 'Grammar Notes & Story Aloud',
+        category: 'Reading',
+        subtitle: 'Multi-page authentic stories, grammar notes & voice recording drills',
+        accentColor: const Color(0xFF60A5FA),
+        isCompleted: _readingNotesCompleted,
+        onAction: () async {
+          final res = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => PocketMissionTopicDetailPage(
+                day: widget.day,
+                stepNumber: '$_stepReadingNotes',
+                icon: '📖',
+                title: 'Grammar Notes & Authentic Story Reading',
+                subtitle: 'Deep-dive into multi-page authentic stories, grammar breakdowns, voice recordings, and native explanations.',
+                accentColor: const Color(0xFF60A5FA),
+                initialLanguage: _selectedLanguage,
+                isInitiallyCompleted: _readingNotesCompleted,
+                builder: (ctx, lang, markCompleted) => _buildReadingNotesDetailContent(lang, markCompleted),
+              ),
+            ),
+          );
+          if (res == true && mounted) {
+            setState(() => _readingNotesCompleted = true);
+            _saveSubtask('reading', true);
+            _notifyStepUnlocked(_stepReadingNotes, _stepCodeEnglish);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_readingNotesCompleted;
+          setState(() => _readingNotesCompleted = next);
+          _saveSubtask('reading', next);
+          if (next) _notifyStepUnlocked(_stepReadingNotes, _stepCodeEnglish);
+        },
+      ),
+    );
+
+    // Step 14: Code English Decoder
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepCodeEnglish,
+        icon: '⚡',
+        title: 'Pocket Code English Decoder',
+        category: 'Shortcuts',
+        subtitle: 'Mnemonic syntax algorithms & live syntax compiler test',
+        accentColor: const Color(0xFF00FFCC),
+        isCompleted: _codeEnglishCompleted,
+        onAction: () async {
+          final res = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => PocketMissionTopicDetailPage(
+                day: widget.day,
+                stepNumber: '$_stepCodeEnglish',
+                icon: '⚡',
+                title: 'Pocket Code English Decoder',
+                subtitle: 'Mnemonic Syntax Algorithms: Master formula-based English codes & test with the live syntax compiler.',
+                accentColor: const Color(0xFF00FFCC),
+                initialLanguage: _selectedLanguage,
+                isInitiallyCompleted: _codeEnglishCompleted,
+                builder: (ctx, lang, markCompleted) => _buildCodeEnglishDetailContent(lang, markCompleted),
+              ),
+            ),
+          );
+          if (res == true && mounted) {
+            setState(() => _codeEnglishCompleted = true);
+            _saveSubtask('code_english', true);
+            _notifyStepUnlocked(_stepCodeEnglish, _stepShortcut);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_codeEnglishCompleted;
+          setState(() => _codeEnglishCompleted = next);
+          _saveSubtask('code_english', next);
+          if (next) _notifyStepUnlocked(_stepCodeEnglish, _stepShortcut);
+        },
+      ),
+    );
+
+    // Step 15: Sovereign Fluency Shortcut
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepShortcut,
+        icon: '⚡',
+        title: 'Sovereign Fluency Shortcut',
+        category: 'Shortcuts',
+        subtitle: 'Colloquial native speech shortcuts & lightning contractions',
+        accentColor: const Color(0xFFFFD700),
+        isCompleted: _fluencyShortcutCompleted,
+        onAction: () async {
+          final res = await Navigator.of(context).push<bool>(
+            MaterialPageRoute(
+              builder: (_) => PocketMissionTopicDetailPage(
+                day: widget.day,
+                stepNumber: '$_stepShortcut',
+                icon: '⚡',
+                title: 'Sovereign Fluency Shortcut (കുറുക്കുവഴി)',
+                subtitle: 'Master native colloquial shortcuts and speech linking.',
+                accentColor: const Color(0xFFFFD700),
+                initialLanguage: _selectedLanguage,
+                isInitiallyCompleted: _fluencyShortcutCompleted,
+                builder: (ctx, lang, markCompleted) => _buildFluencyShortcutDetailContent(lang, markCompleted),
+              ),
+            ),
+          );
+          if (res == true && mounted) {
+            setState(() => _fluencyShortcutCompleted = true);
+            _saveSubtask('fluency_shortcut', true);
+            _notifyStepUnlocked(_stepShortcut, _stepDefenseTrap);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_fluencyShortcutCompleted;
+          setState(() => _fluencyShortcutCompleted = next);
+          _saveSubtask('fluency_shortcut', next);
+          if (next) _notifyStepUnlocked(_stepShortcut, _stepDefenseTrap);
+        },
+      ),
+    );
+
+    // Step 16: Arm Home Defense Shield
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepDefenseTrap,
+        icon: '🛡️',
+        title: 'Arm Home Defense Shield',
+        category: 'Defense',
+        subtitle: 'Fortify your English Cottage front gate with an authentic grammar trap',
+        accentColor: const Color(0xFF8B5CF6),
+        isCompleted: _defenseTrapArmed,
+        onAction: () async {
+          final uid = SupaFlow.client.auth.currentUser?.id;
+          if (uid != null) {
+            await PocketCitadelAttackPage.openForUser(
+              context,
+              userId: uid,
+              attackerDay: widget.day,
+              isDefenseMode: true,
+            );
+          } else {
+            await PocketDefenseTrapModal.show(context, widget.day);
+          }
+          if (mounted) {
+            setState(() => _defenseTrapArmed = true);
+            _saveSubtask('defense', true);
+            _notifyStepUnlocked(_stepDefenseTrap, _stepQuiz);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_defenseTrapArmed;
+          setState(() => _defenseTrapArmed = next);
+          _saveSubtask('defense', next);
+          if (next) _notifyStepUnlocked(_stepDefenseTrap, _stepQuiz);
+        },
+      ),
+    );
+
+    // Step 17: Level Mastery Exam
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepQuiz,
+        icon: '🎓',
+        title: 'Level ${widget.day} Mastery Exam',
+        category: 'Exam',
+        subtitle: 'Mandatory adaptive exam! Pass to certify Day ${widget.day} and unlock Day ${widget.day + 1}',
+        accentColor: const Color(0xFF10B981),
+        isCompleted: _revisionQuizPassed,
+        onAction: () async {
+          HapticFeedback.heavyImpact();
+          final passed = await PocketLevelExamDialog.show(
+            context,
+            level: widget.day,
+            trackLevel: _activeLearnerLevel,
+            onExamPassed: () {
+              if (mounted) {
+                setState(() => _revisionQuizPassed = true);
+                _saveSubtask('quiz', true);
+              }
+            },
+          );
+          if (passed == true && mounted) {
+            setState(() => _revisionQuizPassed = true);
+            _saveSubtask('quiz', true);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_revisionQuizPassed;
+          setState(() => _revisionQuizPassed = next);
+          _saveSubtask('quiz', next);
+        },
+      ),
+    );
+
+    // Sequential Unlocking Calculation:
+    // Step 1 is unlocked. Step N is unlocked IF step N-1 is completed (or if Master Admin)
+    final List<RoadmapStepItem> finalItems = [];
+    bool previousDone = true;
+
+    for (int i = 0; i < rawSteps.length; i++) {
+      final s = rawSteps[i];
+      final bool isUnlocked = (i == 0) || previousDone || _isMasterAdmin;
+      final bool isActive = isUnlocked && !s.isCompleted && (i == 0 || rawSteps[i - 1].isCompleted);
+
+      finalItems.add(
+        RoadmapStepItem(
+          stepNumber: i + 1,
+          icon: s.icon,
+          title: s.title,
+          category: s.category,
+          subtitle: s.subtitle,
+          accentColor: s.accentColor,
+          isCompleted: s.isCompleted,
+          isUnlocked: isUnlocked,
+          isActive: isActive,
+          onAction: s.onAction,
+          onToggleComplete: s.onToggleComplete,
+        ),
+      );
+
+      if (!s.isCompleted) {
+        previousDone = false;
+      }
+    }
+
+    return PocketDailyMissionRoadmapWidget(
+      day: widget.day,
+      steps: finalItems,
+      completedCount: _completedSubtasksCount,
+      totalCount: rawSteps.length,
+      points: _currentDayPoints,
+      hasPassedToday: _hasPassedToday,
+      isTimerCompleted: _isTimerCompleted,
+      timerDisplay: _timerService.formatTime(),
+      isTimerRunning: _timerService.isRunning,
+      onToggleTimer: () {
+        HapticFeedback.lightImpact();
+        _timerService.toggleTimer();
+        setState(() {});
+      },
+      onClaimReward: () {
+        HapticFeedback.heavyImpact();
+        _claimDailyMissionSuccess();
+      },
+      onSwitchToListView: () {
+        HapticFeedback.selectionClick();
+        setState(() => _isRoadmapView = false);
+      },
     );
   }
 
@@ -6540,6 +7457,52 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                 ),
               );
             },
+          ),
+          const SizedBox(width: 8),
+          // 🗺️ Journey Map vs 📋 List View Mode Switcher
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                setState(() => _isRoadmapView = !_isRoadmapView);
+              },
+              borderRadius: BorderRadius.circular(10),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                decoration: BoxDecoration(
+                  color: _isRoadmapView
+                      ? const Color(0xFFFFD700).withValues(alpha: 0.18)
+                      : const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: _isRoadmapView
+                        ? const Color(0xFFFFD700)
+                        : Colors.white24,
+                    width: 1.2,
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      _isRoadmapView ? Icons.map_rounded : Icons.view_agenda_rounded,
+                      color: _isRoadmapView ? const Color(0xFFFFD700) : Colors.white70,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      _isRoadmapView ? 'Map' : 'List',
+                      style: GoogleFonts.inter(
+                        color: _isRoadmapView ? const Color(0xFFFFD700) : Colors.white70,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -7168,15 +8131,17 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
               fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            titleMl,
-            style: GoogleFonts.inter(
-              color: const Color(0xFFCBD5E1),
-              fontSize: 12.5,
-              height: 1.35,
+          if (titleMl.isNotEmpty && PocketLanguageService.currentLanguage.toLowerCase().contains('malay')) ...[
+            const SizedBox(height: 4),
+            Text(
+              titleMl,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFCBD5E1),
+                fontSize: 12.5,
+                height: 1.35,
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -14417,6 +15382,58 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         return 'SIXTY-THIRD DAY EXAM';
       case 64:
         return 'SIXTY-FOURTH DAY EXAM';
+      case 65:
+        return 'SIXTY-FIFTH DAY EXAM';
+      case 66:
+        return 'SIXTY-SIXTH DAY EXAM';
+      case 67:
+        return 'SIXTY-SEVENTH DAY EXAM';
+      case 68:
+        return 'SIXTY-EIGHTH DAY EXAM';
+      case 69:
+        return 'SIXTY-NINTH DAY EXAM';
+      case 70:
+        return 'SEVENTIETH DAY EXAM';
+      case 71:
+        return 'SEVENTY-FIRST DAY EXAM';
+      case 72:
+        return 'SEVENTY-SECOND DAY EXAM';
+      case 73:
+        return 'SEVENTY-THIRD DAY EXAM';
+      case 74:
+        return 'SEVENTY-FOURTH DAY EXAM';
+      case 75:
+        return 'SEVENTY-FIFTH DAY EXAM';
+      case 76:
+        return 'SEVENTY-SIXTH DAY EXAM';
+      case 77:
+        return 'SEVENTY-SEVENTH DAY EXAM';
+      case 78:
+        return 'SEVENTY-EIGHTH DAY EXAM';
+      case 79:
+        return 'SEVENTY-NINTH DAY EXAM';
+      case 80:
+        return 'EIGHTIETH DAY EXAM';
+      case 81:
+        return 'EIGHTY-FIRST DAY EXAM';
+      case 82:
+        return 'EIGHTY-SECOND DAY EXAM';
+      case 83:
+        return 'EIGHTY-THIRD DAY EXAM';
+      case 84:
+        return 'EIGHTY-FOURTH DAY EXAM';
+      case 85:
+        return 'EIGHTY-FIFTH DAY EXAM';
+      case 86:
+        return 'EIGHTY-SIXTH DAY EXAM';
+      case 87:
+        return 'EIGHTY-SEVENTH DAY EXAM';
+      case 88:
+        return 'EIGHTY-EIGHTH DAY EXAM';
+      case 89:
+        return 'EIGHTY-NINTH DAY EXAM';
+      case 90:
+        return 'NINETIETH DAY GRAND MASTER EXAM';
       default:
         return 'DAY $day EXAM';
     }
@@ -14912,106 +15929,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: canClaim
-                  ? () async {
-                      HapticFeedback.heavyImpact();
-                      // 🎓 Level Mastery Exam must be taken and passed with 100% accuracy!
-                      if (!_revisionQuizPassed) {
-                        final passed = await PocketLevelExamDialog.show(
-                          context,
-                          level: widget.day,
-                          trackLevel: _activeLearnerLevel,
-                          onExamPassed: () {
-                            setState(() => _revisionQuizPassed = true);
-                            _saveSubtask('quiz', true);
-                          },
-                        );
-                        if (passed != true && !_revisionQuizPassed) return;
-                      }
-                      if (!mounted) return;
-
-                      if (!_defenseTrapArmed) {
-                        final uid = SupaFlow.client.auth.currentUser?.id;
-                        if (uid != null) {
-                          await PocketCitadelAttackPage.openForUser(
-                            context,
-                            userId: uid,
-                            attackerDay: widget.day,
-                            isDefenseMode: true,
-                          );
-                        } else {
-                          await PocketDefenseTrapModal.show(context, widget.day);
-                        }
-                        if (mounted) {
-                          setState(() => _defenseTrapArmed = true);
-                          _saveSubtask('defense', true);
-                        }
-                      }
-                      final uid = SupaFlow.client.auth.currentUser?.id;
-                      final nextDay = (widget.day < 90) ? widget.day + 1 : 90;
-                      if (uid != null) {
-                        await Learning60DayService().completeDailyMission(
-                          userId: uid,
-                          day: widget.day,
-                          earnedPoints: _currentDayPoints,
-                          advanceToNextDay: false, // Next day unlocks at midnight per user specification
-                        );
-                        await PocketFortressDefenseService.recordActivityPoints(
-                          'daily_mission',
-                        );
-                      } else {
-                        final currentUid = SupaFlow.client.auth.currentUser?.id;
-                        final prefs = await SharedPreferences.getInstance();
-                        final todayStr =
-                            '${DateTime.now().year}-${DateTime.now().month}-${DateTime.now().day}';
-                        if (currentUid != null) {
-                          await prefs.setBool(
-                              'pocket_day_${currentUid}_${widget.day}_completed', true);
-                          await prefs.setString(
-                              'learning_day_${currentUid}_${widget.day}_completed_date',
-                              todayStr);
-                          await prefs.setInt(
-                              'learning_day_${currentUid}_${widget.day}_completed_timestamp',
-                              DateTime.now().millisecondsSinceEpoch);
-                          await prefs.setInt(
-                              'learning_last_completed_day_$currentUid', widget.day);
-                        }
-                      }
-                      // Award 50 bonus coins to vault store
-                      await PocketFortressDefenseService.awardRaidLoot(50);
-
-                      widget.onMissionCompleted?.call();
-                      if (mounted) {
-                        if (widget.day == 90) {
-                          final prefs = await SharedPreferences.getInstance();
-                          final userName =
-                              prefs.getString('user_name') ?? 'Pocket Scholar';
-                          if (mounted) {
-                            await Day90MasterCertificateDialog.show(
-                              context,
-                              userName: userName,
-                              userDay: 90,
-                            );
-                          }
-                        }
-                        if (!mounted) return;
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              '🎉 Day ${widget.day} English Mission Complete! Earned $_currentDayPoints/200 Points!\n⏳ Day $nextDay unlocks tonight at Midnight (12:00 AM)!',
-                              style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            backgroundColor: const Color(0xFF10B981),
-                            behavior: SnackBarBehavior.floating,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                          ),
-                        );
-                      }
-                    }
-                  : null,
+              onPressed: canClaim ? _claimDailyMissionSuccess : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFFFFC00),
                 disabledBackgroundColor: Colors.white12,
@@ -15037,4 +15955,28 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
   }
+}
+
+class _RawRoadmapStep {
+  final int stepNumber;
+  final String icon;
+  final String title;
+  final String category;
+  final String subtitle;
+  final Color accentColor;
+  final bool isCompleted;
+  final VoidCallback onAction;
+  final VoidCallback onToggleComplete;
+
+  _RawRoadmapStep({
+    required this.stepNumber,
+    required this.icon,
+    required this.title,
+    required this.category,
+    required this.subtitle,
+    required this.accentColor,
+    required this.isCompleted,
+    required this.onAction,
+    required this.onToggleComplete,
+  });
 }

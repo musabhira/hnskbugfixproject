@@ -25,6 +25,7 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/avatar_network_explo
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_60day_dashboard.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_models.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 // Begin custom action code
 
@@ -76,6 +77,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
   bool _isCompressingBanner = false;
   String? _selectedTemplateId = 'default';
   String? _loadedProfileId;
+  String? _loadedSlug;
   VectorAvatarConfig _avatarConfig = const VectorAvatarConfig();
   int _learningDay = 1;
   bool _isAvatarPrimary = false;
@@ -89,7 +91,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
   // English Learning & Demographic State
   String selectedGender = 'Not specified';
-  String selectedNativeLanguage = 'Malayalam';
+  String selectedNativeLanguage = PocketLanguageService.currentLanguage;
   String selectedEnglishLevel = 'Intermediate (B1-B2)';
   String selectedLearningGoal = 'Daily Fluency & Speaking';
   DateTime? _selectedDob;
@@ -124,6 +126,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       if (profileResponse != null && mounted) {
         safeSetState(() {
           _loadedProfileId = profileResponse['id']?.toString();
+          _loadedSlug = profileResponse['slug']?.toString();
           _nameController.text = profileResponse['name'] ?? '';
           _imageUrl = (profileResponse['profile_image_url']?.toString().isEmpty ?? true) ? null : profileResponse['profile_image_url'];
           _phoneNumberController.text = profileResponse['phone_no'] ?? '';
@@ -155,7 +158,7 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
           }
 
           selectedGender = profileResponse['gender'] ?? 'Not specified';
-          selectedNativeLanguage = profileResponse['native_language'] ?? 'Malayalam';
+          selectedNativeLanguage = profileResponse['native_language'] ?? PocketLanguageService.currentLanguage;
           selectedEnglishLevel = profileResponse['english_level'] ?? 'Intermediate (B1-B2)';
           selectedLearningGoal = profileResponse['learning_goal'] ?? 'Daily Fluency & Speaking';
 
@@ -370,9 +373,6 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       isValid = false;
       errorMessage =
           'Name contains inappropriate content. Please use appropriate language.';
-    } else if (_phoneNumberController.text.trim().isEmpty) {
-      isValid = false;
-      errorMessage = 'Please enter your phone number to assist and support your account';
     } else if (_bioController.text.isNotEmpty && _containsObjectionableContent(_bioController.text)) {
       isValid = false;
       errorMessage =
@@ -489,55 +489,131 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
       final internalShopName = sanitizedName.toLowerCase().replaceAll(RegExp(r'\s+'), '-');
       final sanitizedBio = _sanitizeContent(_bioController.text);
 
-      // Ensure public.users row exists
-      await _supabase.from('users').upsert({
-        'id': _currentUserId,
-        'email': currentUser.email ?? '',
-      }, onConflict: 'id');
+      // Ensure public.users row exists without failing if email constraint is touched
+      try {
+        final userRow = <String, dynamic>{'id': _currentUserId};
+        if (currentUser.email != null && currentUser.email!.trim().isNotEmpty) {
+          userRow['email'] = currentUser.email!.trim();
+        }
+        await _supabase.from('users').upsert(userRow, onConflict: 'id');
+      } catch (e) {
+        debugPrint('Non-critical: users table upsert: $e');
+      }
 
-      // Update/Insert profile data via atomic upsert
-      await _supabase.from('profile').upsert(
-        {
-          'id': _loadedProfileId ?? _currentUserId,
-          'user_id': _currentUserId,
-          'name': sanitizedName,
-          'profile_image_url': _imageUrl,
-          'shop_name': internalShopName,
-          'slug': _sanitizeSlug(internalShopName),
-          'phone_no': _phoneNumberController.text.trim(),
-          'bio': sanitizedBio,
-          'country': selectedCountry,
-          'state': selectedState,
-          'city': selectedCity,
-          'bg_color_code': _colorCode,
-          'bg_text_color': _colorCode1,
-          'button_color_code': _colorCode2,
-          'button_text_color': _colorCode3,
-          'banner_image_url': _imageUrlBanner,
-          'day': _selectedDob?.day,
-          'month': _selectedDob?.month,
-          'year': _selectedDob?.year,
-          'gender': selectedGender,
-          'native_language': selectedNativeLanguage,
-          'english_level': selectedEnglishLevel,
-          'learning_goal': selectedLearningGoal,
-          'insta_id': instaIdController.text.trim(),
-          'insta_link': instaLinkController.text.trim(),
-          'web_template_id': _selectedTemplateId,
-          'updated_at': DateTime.now().toIso8601String(),
-          'is_private': _isPrivate,
-          'avatar_config': _avatarConfig.toMap(),
-        },
-      );
+      // Determine robust, collision-free slug
+      String targetSlug = _loadedSlug ?? '';
+      if (targetSlug.isEmpty) {
+        final base = _sanitizeSlug(internalShopName);
+        final baseSlug = base.isNotEmpty ? base : 'mate';
+        final shortUid = _currentUserId!.replaceAll('-', '').substring(0, 5).toLowerCase();
+        targetSlug = '$baseSlug-$shortUid';
+      }
+      try {
+        final existingWithSlug = await _supabase
+            .from('profile')
+            .select('user_id')
+            .eq('slug', targetSlug)
+            .neq('user_id', _currentUserId!)
+            .limit(1);
+        if (existingWithSlug.isNotEmpty) {
+          final suffix = _currentUserId!.replaceAll('-', '').substring(0, 4).toLowerCase();
+          final rand = DateTime.now().millisecondsSinceEpoch % 1000;
+          targetSlug = '$targetSlug-$suffix$rand';
+        }
+      } catch (_) {}
+
+      // Update/Insert profile data via resilient update-first strategy
+      // We do not include primary key 'id' to prevent identity/serial constraint errors
+      final profilePayload = <String, dynamic>{
+        'user_id': _currentUserId,
+        'name': sanitizedName,
+        'profile_image_url': _imageUrl,
+        'shop_name': internalShopName,
+        'slug': targetSlug,
+        'phone_no': _phoneNumberController.text.trim().isEmpty ? null : _phoneNumberController.text.trim(),
+        'bio': sanitizedBio,
+        'country': selectedCountry,
+        'state': selectedState,
+        'city': selectedCity,
+        'bg_color_code': _colorCode,
+        'bg_text_color': _colorCode1,
+        'button_color_code': _colorCode2,
+        'button_text_color': _colorCode3,
+        'banner_image_url': _imageUrlBanner,
+        'day': _selectedDob?.day,
+        'month': _selectedDob?.month,
+        'year': _selectedDob?.year,
+        'gender': selectedGender,
+        'native_language': selectedNativeLanguage,
+        'english_level': selectedEnglishLevel,
+        'learning_goal': selectedLearningGoal,
+        'insta_id': instaIdController.text.trim().isEmpty ? null : instaIdController.text.trim(),
+        'insta_link': instaLinkController.text.trim().isEmpty ? null : instaLinkController.text.trim(),
+        'web_template_id': _selectedTemplateId,
+        'updated_at': DateTime.now().toIso8601String(),
+        'is_private': _isPrivate,
+        'avatar_config': _avatarConfig.toMap(),
+      };
+
+      bool saveSucceeded = false;
+      try {
+        // 1. Try direct update first since existing accounts (e.g. Hira) already have a profile row
+        final updateQuery = _supabase.from('profile').update(profilePayload);
+        final updateRes = await (_loadedProfileId != null && _loadedProfileId!.isNotEmpty
+                ? updateQuery.eq('id', _loadedProfileId!)
+                : updateQuery.eq('user_id', _currentUserId!))
+            .select('user_id');
+        if (updateRes.isNotEmpty) {
+          saveSucceeded = true;
+        }
+      } catch (updateErr) {
+        debugPrint('Direct profile update exception: $updateErr');
+        if (updateErr.toString().contains('slug') ||
+            updateErr.toString().contains('duplicate key') ||
+            updateErr.toString().contains('23505')) {
+          profilePayload['slug'] = '$targetSlug-${DateTime.now().millisecondsSinceEpoch % 10000}';
+          final retryQuery = _supabase.from('profile').update(profilePayload);
+          final retryRes = await (_loadedProfileId != null && _loadedProfileId!.isNotEmpty
+                  ? retryQuery.eq('id', _loadedProfileId!)
+                  : retryQuery.eq('user_id', _currentUserId!))
+              .select('user_id');
+          if (retryRes.isNotEmpty) {
+            saveSucceeded = true;
+          }
+        }
+      }
+
+      if (!saveSucceeded) {
+        // 2. Profile row did not exist yet; upsert with user_id conflict target
+        try {
+          await _supabase.from('profile').upsert(
+            profilePayload,
+            onConflict: 'user_id',
+          );
+        } catch (upsertErr) {
+          if (upsertErr.toString().contains('slug') ||
+              upsertErr.toString().contains('duplicate key') ||
+              upsertErr.toString().contains('23505')) {
+            profilePayload['slug'] = '$targetSlug-${DateTime.now().millisecondsSinceEpoch % 10000}';
+            await _supabase.from('profile').upsert(
+              profilePayload,
+              onConflict: 'user_id',
+            );
+          } else {
+            rethrow;
+          }
+        }
+      }
 
       try {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('show_avatar_mode_$_currentUserId', _isAvatarPrimary);
-        await prefs.remove('profile_cache_$_currentUserId');
-        await prefs.remove('cached_profile_$_currentUserId');
+        await prefs.setString('cached_profile_$_currentUserId', jsonEncode(profilePayload));
+        await prefs.setString('profile_cache_$_currentUserId', jsonEncode(profilePayload));
         await prefs.remove('cached_stats_$_currentUserId');
+        await PocketLanguageService.setNativeLanguage(selectedNativeLanguage);
       } catch (e) {
-        debugPrint('Error clearing cache: $e');
+        debugPrint('Error updating local profile cache: $e');
       }
 
       if (mounted) {
@@ -1176,19 +1252,19 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                         ),
                         const SizedBox(height: 14),
 
-                        // Mandatory Phone Number for Support
+                        // Phone Number
                         CustomPhoneTextField(
                           width: double.infinity,
                           height: 56.0,
                           controller: _phoneNumberController,
-                          labelText: 'Phone Number (Mandatory) *',
+                          labelText: 'Phone Number (Optional)',
                           hintText: 'Enter your phone number',
                           initialCountryCode: 'IN',
                         ),
                         Padding(
                           padding: const EdgeInsets.only(top: 4, left: 4),
                           child: Text(
-                            '🔒 Required for account recovery. Strictly private.',
+                            '🔒 Strictly private. Used for account recovery.',
                             style: GoogleFonts.inter(
                               color: theme.secondaryText,
                               fontSize: 11,
@@ -1954,13 +2030,13 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
 
   Widget _buildNativeLanguageSection(DarkModeTheme theme) {
     final languages = [
-      {'name': 'Malayalam', 'native': 'മലയാളം'},
-      {'name': 'Tamil', 'native': 'தமிழ்'},
       {'name': 'Hindi', 'native': 'हिन्दी'},
-      {'name': 'Arabic', 'native': 'العربية'},
-      {'name': 'Bengali', 'native': 'বাংলা'},
+      {'name': 'Tamil', 'native': 'தமிழ்'},
+      {'name': 'Malayalam', 'native': 'മലയാളം'},
       {'name': 'Telugu', 'native': 'తెలుగు'},
       {'name': 'Kannada', 'native': 'ಕನ್ನಡ'},
+      {'name': 'Arabic', 'native': 'العربية'},
+      {'name': 'Bengali', 'native': 'বাংলা'},
       {'name': 'Urdu', 'native': 'اردو'},
       {'name': 'English', 'native': 'English'},
       {'name': 'Spanish', 'native': 'Español'},
@@ -1989,7 +2065,9 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
               dropdownColor: theme.secondaryBackground,
               value: languages.any((l) => l['name'] == selectedNativeLanguage)
                   ? selectedNativeLanguage
-                  : 'Malayalam',
+                  : (languages.any((l) => l['name'] == PocketLanguageService.currentLanguage)
+                      ? PocketLanguageService.currentLanguage
+                      : 'Hindi'),
               items: languages.map((lang) {
                 return DropdownMenuItem<String>(
                   value: lang['name'],
@@ -2017,7 +2095,10 @@ class _ProfileCustomWidgetState extends State<ProfileCustomWidget> {
                 );
               }).toList(),
               onChanged: (val) {
-                if (val != null) safeSetState(() => selectedNativeLanguage = val);
+                if (val != null) {
+                  safeSetState(() => selectedNativeLanguage = val);
+                  PocketLanguageService.setNativeLanguage(val);
+                }
               },
             ),
           ),

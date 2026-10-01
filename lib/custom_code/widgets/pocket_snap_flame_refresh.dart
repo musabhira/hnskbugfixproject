@@ -36,10 +36,10 @@ class PocketSnapFlameRefresh extends StatefulWidget {
     this.restingHeight = 150.0,
     this.primaryFlameColor = const Color(0xFFF59E0B),
     this.accentFlameColor = const Color(0xFFFFC107),
-    this.pullText = 'Pull to connect Poket Mates',
-    this.readyText = 'Release to connect Poket Mates',
-    this.refreshingText = 'Connecting Poket Mates...',
-    this.successText = 'Poket Mates Connected! ✨',
+    this.pullText = 'Pull to connect Pocket Mates',
+    this.readyText = 'Release to connect Pocket Mates',
+    this.refreshingText = 'Connecting Pocket Mates...',
+    this.successText = 'Pocket Mates Connected! ✨',
   });
 
   @override
@@ -437,8 +437,8 @@ class _PhotoboothStripHeader extends StatelessWidget {
                     else
                       Text(
                         isReady
-                            ? '⚡ Release to connect Poket Mates'
-                            : '⬇️ Pull to connect Poket Mates',
+                            ? '⚡ Release to connect Pocket Mates'
+                            : '⬇️ Pull to connect Pocket Mates',
                         style: GoogleFonts.caveat(
                           fontSize: 14.5,
                           fontWeight: FontWeight.bold,
@@ -450,8 +450,8 @@ class _PhotoboothStripHeader extends StatelessWidget {
                     if (isRefreshing)
                       Text(
                         isSuccess
-                            ? 'Poket Mates Connected! ✨'
-                            : 'Connecting Poket Mates...',
+                            ? 'Pocket Mates Connected! ✨'
+                            : 'Connecting Pocket Mates...',
                         style: GoogleFonts.caveat(
                           fontSize: 14.5,
                           fontWeight: FontWeight.bold,

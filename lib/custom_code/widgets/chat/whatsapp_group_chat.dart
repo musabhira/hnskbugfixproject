@@ -18,6 +18,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.
 import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 
 // Begin custom widget code
 // DO NOT REMOVE OR MODIFY THE CODE ABOVE!
@@ -53,7 +54,6 @@ import 'package:pocket_mates_app/custom_code/widgets/thread_feed_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/doodle_background_painter.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
@@ -518,6 +518,13 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _checkEnglishHubAdminBlock();
     _checkMateStatus();
     _startPactActiveTracker();
+
+    // ⌨️ Auto-open keyboard when entering chat
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _focusNode.requestFocus();
+      }
+    });
 
     _scrollController.addListener(() {
       if (_scrollController.hasClients) {
@@ -2215,6 +2222,8 @@ Draft: "$draft"''';
     final replyId = _replyMessage?['id'];
     _isSending = true;
     _messageController.clear();
+    _focusNode.unfocus();
+    FocusScope.of(context).unfocus();
     safeSetState(() {
       _replyMessage = null;
       _stagedGalleryId = null;
@@ -2242,10 +2251,14 @@ Draft: "$draft"''';
 
       if (widget.groupId.startsWith('p:') && _currentUserId.isNotEmpty) {
         final otherUid = widget.groupId.substring(2);
-        PocketTrophyService.markUserEngagement(
-          myId: _currentUserId,
-          otherUserId: otherUid,
-        );
+        PocketTrophyService.recordUserDailyChatActivity(
+          senderId: _currentUserId,
+          receiverId: otherUid,
+        ).then((act) {
+          if (act.didUnlockTrophy && mounted) {
+            _showTrophyUnlockDialog();
+          }
+        });
         if (messageType == 'voice') {
           final voiceSecs = voiceDuration ?? 30;
           final mins = (voiceSecs / 60).ceil().clamp(1, 5);
@@ -3827,7 +3840,14 @@ Draft: "$draft"''';
                       children: [
                         Flexible(
                           child: Text(
-                            isPresident ? 'President' : widget.groupName,
+                            isPresident
+                                ? 'President'
+                                : (widget.groupId.startsWith('p:')
+                                    ? ContactsNameService().getDisplayName(
+                                        userId: targetId,
+                                        fallbackName: widget.groupName,
+                                      )
+                                    : widget.groupName),
                             style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
@@ -6175,8 +6195,6 @@ Draft: "$draft"''';
     switch (title) {
       case 'Poster Designer':
         return Icons.palette;
-      case 'Bulk Sender':
-        return Icons.send_to_mobile;
       case 'Poki Games':
         return Icons.games;
       case 'Drawing Academy':
@@ -6297,9 +6315,6 @@ Draft: "$draft"''';
     switch (title) {
       case 'Poster Designer':
         page = const TemplateGalleryPage();
-        break;
-      case 'Bulk Sender':
-        page = const BulkSenderPage();
         break;
       case 'Poki Games':
         page = const PokiGamesPage();
@@ -7185,6 +7200,7 @@ Draft: "$draft"''';
 
   Future<void> _handleSendAction() async {
     if (!AuthHelper.checkLoggedIn(context)) return;
+    _focusNode.unfocus();
     FocusScope.of(context).unfocus();
     final text = _messageController.text;
     final mentions = _extractMentions(text);
@@ -7410,7 +7426,6 @@ Draft: "$draft"''';
   void _showToolPicker() {
     final tools = [
       {'title': 'Poster Designer', 'description': 'Create amazing posters'},
-      {'title': 'Bulk Sender', 'description': 'Send messages in bulk'},
       {'title': 'Poki Games', 'description': 'Play games with mates'},
       // {'title': 'Drawing Academy', 'description': 'Learn to draw'},
       {'title': 'Travel Radar', 'description': 'Explore nearby places'},

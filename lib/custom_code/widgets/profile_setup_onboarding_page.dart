@@ -13,6 +13,7 @@ import '/flutter_flow/flutter_flow_util.dart';
 import 'package:pocket_mates_app/custom_code/widgets/custom_phone_text_field.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 
 /// 🌟 Clean Step-by-Step Profile Creation Flow
@@ -76,7 +77,7 @@ class _ProfileSetupOnboardingPageState
   ];
 
   // Retrieved user preferences from welcome onboarding
-  String _selectedNativeLanguage = 'Malayalam';
+  String _selectedNativeLanguage = PocketLanguageService.currentLanguage;
   String _selectedTargetLanguage = 'English';
   String _selectedReferralSource = 'Instagram / Reels';
   String _selectedEnglishLevel = 'Intermediate (B1-B2)';
@@ -117,7 +118,7 @@ class _ProfileSetupOnboardingPageState
     try {
       final prefs = await SharedPreferences.getInstance();
       _selectedNativeLanguage =
-          prefs.getString('pm_native_language') ?? 'Malayalam';
+          prefs.getString('pm_native_language') ?? PocketLanguageService.currentLanguage;
       _selectedTargetLanguage =
           prefs.getString('pm_target_language') ?? 'English';
       _selectedReferralSource =
@@ -391,6 +392,7 @@ class _ProfileSetupOnboardingPageState
       await prefs.setBool('pm_onboarding_completed', true);
 
       // Save onboarding answers
+      await PocketLanguageService.setNativeLanguage(_selectedNativeLanguage);
       await prefs.setString(
           'pm_native_language_$userId', _selectedNativeLanguage);
       await prefs.setString(

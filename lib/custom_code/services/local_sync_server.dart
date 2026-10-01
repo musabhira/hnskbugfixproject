@@ -142,17 +142,24 @@ class LocalSyncServer {
   Future<void> saveMessages(
       String userId, String chatOrGroupId, List<dynamic> messages) async {
     final key = '${userId}_$chatOrGroupId';
+    final altChatId = chatOrGroupId.startsWith('p:')
+        ? chatOrGroupId.substring(2)
+        : 'p:$chatOrGroupId';
+    final altKey = '${userId}_$altChatId';
+
     final List<Map<String, dynamic>> jsonList = messages.map((e) {
       if (e is ChatMessage) return e.toJson();
       return Map<String, dynamic>.from(e);
     }).toList();
 
-    // 1. Hot memory cache (0ms immediate latency)
+    // 1. Hot memory cache (0ms immediate latency) - save both keys
     _memoryMessageCache[key] = jsonList;
+    _memoryMessageCache[altKey] = jsonList;
 
     // 2. Persistent storage
     if (_isInitialized) {
       await _messageBox.put(key, jsonList);
+      await _messageBox.put(altKey, jsonList);
     }
   }
 
@@ -162,10 +169,19 @@ class LocalSyncServer {
     if (_memoryMessageCache.containsKey(key)) {
       return _memoryMessageCache[key]!;
     }
+    final altChatId = chatOrGroupId.startsWith('p:')
+        ? chatOrGroupId.substring(2)
+        : 'p:$chatOrGroupId';
+    final altKey = '${userId}_$altChatId';
+    if (_memoryMessageCache.containsKey(altKey)) {
+      return _memoryMessageCache[altKey]!;
+    }
+
     if (!_isInitialized) return [];
-    final List<dynamic>? list = _messageBox.get(key);
+    final List<dynamic>? list = _messageBox.get(key) ?? _messageBox.get(altKey);
     if (list == null) return [];
     _memoryMessageCache[key] = list;
+    _memoryMessageCache[altKey] = list;
     return list;
   }
 
@@ -304,6 +320,14 @@ class LocalSyncServer {
         if (updated.length > 1000) updated.removeLast();
         saveMessages(currentUserId, groupId, updated);
       }
+
+      // Live broadcast for 0-latency chat updates
+      _liveMessageController.add({
+        'chatId': groupId,
+        'message': newData,
+        'is_remote': true,
+        'is_group': true,
+      });
     }
   }
 

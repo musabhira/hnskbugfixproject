@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -10,7 +11,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.da
 
 /// 🔔 In-App Floating Heads-Up Notification Banner Service
 /// Displays a sleek, stacked floating notification at the top of the screen
-/// (like iOS Dynamic Island / Instagram in-app push) when a new message arrives.
+/// (like iOS Dynamic Island / modern glassmorphic card) when a new message arrives.
 class InAppNotificationService {
   static OverlayEntry? _currentEntry;
   static Timer? _dismissTimer;
@@ -84,6 +85,11 @@ class InAppNotificationService {
         }
       }
 
+      // Determine if message is from a group
+      final bool isGroup = event['is_group'] == true ||
+          message['group_id'] != null ||
+          event['table'] == 'group_messages';
+
       // Determine if sender is a Pocket Robot
       final bool isRobot = PocketRobotService.isRobotId(senderId) ||
           message['is_robot'] == true ||
@@ -138,7 +144,7 @@ class InAppNotificationService {
         }
       }
 
-      // Format Message Preview
+      // Format Message Preview & determine Badge
       String previewText = message['message_text']?.toString() ??
           message['content']?.toString() ??
           '';
@@ -146,33 +152,60 @@ class InAppNotificationService {
       final messageType = message['message_type']?.toString();
       final metadata = message['metadata'];
 
+      String badgeText = 'CHAT';
+      Color badgeColor = const Color(0xFF25D366);
+
+      if (isRobot) {
+        badgeText = 'ROBOT';
+        badgeColor = const Color(0xFF00E5FF);
+      }
+
       if (messageType == 'snap' || metadata?['is_snap'] == true) {
         previewText = '🔥 Sent you a Snap';
+        badgeText = 'SNAP';
+        badgeColor = const Color(0xFFFF9500);
       } else if (messageType == 'image') {
         previewText = '📷 Sent a photo';
+        badgeText = 'PHOTO';
+        badgeColor = const Color(0xFF5856D6);
       } else if (messageType == 'audio' || messageType == 'voice') {
         previewText = '🎤 Sent a voice message';
+        badgeText = 'VOICE';
+        badgeColor = const Color(0xFFFF2D55);
       } else if (messageType == 'thought') {
         previewText = '💭 Shared a thought';
+        badgeText = 'THOUGHT';
+        badgeColor = const Color(0xFFAF52DE);
       } else if (previewText.isEmpty) {
         previewText = 'Sent a new message';
       }
 
-      // Target chat identifier for navigation
-      final targetGroupId = rawChatId.startsWith('p:')
-          ? rawChatId
-          : (rawChatId.contains('-') && rawChatId.length > 30 ? 'p:$rawChatId' : rawChatId);
+      // Precise target chat identifier for navigation
+      // Personal chats must always be 'p:<senderId>', while groups use raw groupId
+      final String targetGroupId;
+      if (isGroup) {
+        final gId = message['group_id']?.toString() ?? rawChatId;
+        targetGroupId = gId.startsWith('p:') ? gId.substring(2) : gId;
+      } else {
+        targetGroupId = 'p:$senderId';
+      }
+
+      final String displayName = isGroup && message['group_name'] != null
+          ? message['group_name'].toString()
+          : senderName;
 
       // Display the floating notification banner
       show(
-        title: senderName,
+        title: displayName,
         message: previewText,
         avatarUrl: senderAvatar,
         isRobot: isRobot,
+        badgeText: badgeText,
+        badgeColor: badgeColor,
         onTap: () {
           _navigateToChat(
             groupId: targetGroupId,
-            groupName: senderName,
+            groupName: displayName,
             groupImage: senderAvatar,
           );
         },
@@ -188,6 +221,8 @@ class InAppNotificationService {
     required String message,
     String? avatarUrl,
     bool isRobot = false,
+    String badgeText = 'NOW',
+    Color? badgeColor,
     VoidCallback? onTap,
     Duration duration = const Duration(seconds: 4),
   }) {
@@ -209,6 +244,8 @@ class InAppNotificationService {
         message: message,
         avatarUrl: avatarUrl,
         isRobot: isRobot,
+        badgeText: badgeText,
+        badgeColor: badgeColor ?? const Color(0xFF25D366),
         onTap: () {
           _dismissCurrent();
           onTap?.call();
@@ -261,6 +298,8 @@ class _InAppNotificationWidget extends StatefulWidget {
   final String message;
   final String? avatarUrl;
   final bool isRobot;
+  final String badgeText;
+  final Color badgeColor;
   final VoidCallback onTap;
   final VoidCallback onDismiss;
 
@@ -269,6 +308,8 @@ class _InAppNotificationWidget extends StatefulWidget {
     required this.message,
     this.avatarUrl,
     required this.isRobot,
+    required this.badgeText,
+    required this.badgeColor,
     required this.onTap,
     required this.onDismiss,
   });
@@ -283,13 +324,15 @@ class _InAppNotificationWidgetState extends State<_InAppNotificationWidget>
   late AnimationController _animController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _fadeAnimation;
+  late Animation<double> _scaleAnimation;
+  bool _isPressed = false;
 
   @override
   void initState() {
     super.initState();
     _animController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 340),
+      duration: const Duration(milliseconds: 380),
     );
 
     _slideAnimation = Tween<Offset>(
@@ -304,6 +347,14 @@ class _InAppNotificationWidgetState extends State<_InAppNotificationWidget>
       parent: _animController,
       curve: Curves.easeOut,
     );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.92,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animController,
+      curve: Curves.easeOutCubic,
+    ));
 
     _animController.forward();
   }
@@ -327,7 +378,7 @@ class _InAppNotificationWidgetState extends State<_InAppNotificationWidget>
     final topPadding = MediaQuery.of(context).padding.top;
 
     return Positioned(
-      top: topPadding + 6,
+      top: topPadding + 8,
       left: 14,
       right: 14,
       child: Material(
@@ -336,200 +387,218 @@ class _InAppNotificationWidgetState extends State<_InAppNotificationWidget>
           position: _slideAnimation,
           child: FadeTransition(
             opacity: _fadeAnimation,
-            child: GestureDetector(
-              onTap: widget.onTap,
-              onVerticalDragUpdate: (details) {
-                // Swipe up to dismiss instantly
-                if (details.primaryDelta != null && details.primaryDelta! < -5) {
-                  _dismissWithAnimation();
-                }
-              },
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF1B242D),
-                      Color(0xFF141A20),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: widget.isRobot
-                        ? const Color(0xFF00E5FF).withValues(alpha: 0.45)
-                        : const Color(0xFF25D366).withValues(alpha: 0.45),
-                    width: 1.2,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: (widget.isRobot
-                              ? const Color(0xFF00E5FF)
-                              : const Color(0xFF25D366))
-                          .withValues(alpha: 0.18),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.65),
-                      blurRadius: 22,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    // Avatar / Icon Stack
-                    Stack(
-                      children: [
-                        Container(
-                          width: 44,
-                          height: 44,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: widget.isRobot
-                                  ? const Color(0xFF00E5FF).withValues(alpha: 0.6)
-                                  : const Color(0xFF25D366).withValues(alpha: 0.6),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(22),
-                            child: widget.avatarUrl != null &&
-                                    widget.avatarUrl!.isNotEmpty
-                                ? CachedNetworkImage(
-                                    imageUrl: widget.avatarUrl!,
-                                    width: 44,
-                                    height: 44,
-                                    fit: BoxFit.cover,
-                                    errorWidget: (_, __, ___) =>
-                                        _buildFallbackAvatar(),
-                                  )
-                                : _buildFallbackAvatar(),
-                          ),
-                        ),
-                        if (widget.isRobot)
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              padding: const EdgeInsets.all(2.5),
-                              decoration: const BoxDecoration(
-                                color: Color(0xFF0B1926),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.smart_toy_rounded,
-                                color: Color(0xFF00E5FF),
-                                size: 11,
-                              ),
-                            ),
-                          )
-                        else
-                          Positioned(
-                            bottom: 1,
-                            right: 1,
-                            child: Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF25D366),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: const Color(0xFF141A20),
-                                  width: 1.8,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                    const SizedBox(width: 12),
-
-                    // Title & Content
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Row(
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  widget.title,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w700,
-                                    letterSpacing: -0.2,
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 1.5),
-                                decoration: BoxDecoration(
-                                  color: (widget.isRobot
-                                          ? const Color(0xFF00E5FF)
-                                          : const Color(0xFF25D366))
-                                      .withValues(alpha: 0.18),
-                                  borderRadius: BorderRadius.circular(5),
-                                ),
-                                child: Text(
-                                  widget.isRobot ? 'ROBOT MATE' : 'NOW',
-                                  style: TextStyle(
-                                    color: widget.isRobot
-                                        ? const Color(0xFF00E5FF)
-                                        : const Color(0xFF25D366),
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.4,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 3),
-                          Text(
-                            widget.message,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.88),
-                              fontSize: 12.5,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(width: 8),
-
-                    // Close gesture button
-                    GestureDetector(
-                      onTap: _dismissWithAnimation,
-                      behavior: HitTestBehavior.opaque,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: GestureDetector(
+                onTapDown: (_) => setState(() => _isPressed = true),
+                onTapUp: (_) {
+                  setState(() => _isPressed = false);
+                  widget.onTap();
+                },
+                onTapCancel: () => setState(() => _isPressed = false),
+                onVerticalDragUpdate: (details) {
+                  // Swipe up to dismiss instantly
+                  if (details.primaryDelta != null && details.primaryDelta! < -4) {
+                    _dismissWithAnimation();
+                  }
+                },
+                child: AnimatedScale(
+                  scale: _isPressed ? 0.98 : 1.0,
+                  duration: const Duration(milliseconds: 120),
+                  curve: Curves.easeOut,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(22),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
                       child: Container(
-                        padding: const EdgeInsets.all(5),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.08),
-                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF1B232E).withValues(alpha: 0.92),
+                              const Color(0xFF10161D).withValues(alpha: 0.95),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(22),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.13),
+                            width: 1.0,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.55),
+                              blurRadius: 28,
+                              offset: const Offset(0, 10),
+                            ),
+                            BoxShadow(
+                              color: widget.badgeColor.withValues(alpha: 0.15),
+                              blurRadius: 18,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
                         ),
-                        child: Icon(
-                          Icons.close_rounded,
-                          size: 15,
-                          color: Colors.white.withValues(alpha: 0.65),
+                        child: Row(
+                          children: [
+                            // Avatar / Icon Stack
+                            Stack(
+                              clipBehavior: Clip.none,
+                              children: [
+                                Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: widget.badgeColor.withValues(alpha: 0.65),
+                                      width: 1.5,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: widget.badgeColor.withValues(alpha: 0.25),
+                                        blurRadius: 8,
+                                      ),
+                                    ],
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(22),
+                                    child: widget.avatarUrl != null &&
+                                            widget.avatarUrl!.isNotEmpty
+                                        ? CachedNetworkImage(
+                                            imageUrl: widget.avatarUrl!,
+                                            width: 44,
+                                            height: 44,
+                                            fit: BoxFit.cover,
+                                            errorWidget: (_, __, ___) =>
+                                                _buildFallbackAvatar(),
+                                          )
+                                        : _buildFallbackAvatar(),
+                                  ),
+                                ),
+                                if (widget.isRobot)
+                                  Positioned(
+                                    bottom: -2,
+                                    right: -2,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(2.5),
+                                      decoration: const BoxDecoration(
+                                        color: Color(0xFF0B1926),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.smart_toy_rounded,
+                                        color: Color(0xFF00E5FF),
+                                        size: 12,
+                                      ),
+                                    ),
+                                  )
+                                else
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: Container(
+                                      width: 11,
+                                      height: 11,
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF25D366),
+                                        shape: BoxShape.circle,
+                                        border: Border.all(
+                                          color: const Color(0xFF10161D),
+                                          width: 2.0,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(width: 12),
+
+                            // Title & Content
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          widget.title,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14.5,
+                                            fontWeight: FontWeight.w700,
+                                            letterSpacing: -0.2,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 7, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: widget.badgeColor.withValues(alpha: 0.18),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: widget.badgeColor.withValues(alpha: 0.35),
+                                            width: 0.8,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          widget.badgeText,
+                                          style: TextStyle(
+                                            color: widget.badgeColor,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: 0.4,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    widget.message,
+                                    style: TextStyle(
+                                      color: Colors.white.withValues(alpha: 0.88),
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.25,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            const SizedBox(width: 8),
+
+                            // Close gesture button
+                            GestureDetector(
+                              onTap: _dismissWithAnimation,
+                              behavior: HitTestBehavior.opaque,
+                              child: Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.08),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  Icons.close_rounded,
+                                  size: 14,
+                                  color: Colors.white.withValues(alpha: 0.65),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),

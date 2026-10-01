@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 🌐 Interactive Native Language Selection Modal
 /// Persists the user's choice to SharedPreferences globally across all learning screens.
@@ -20,11 +21,11 @@ class PocketLanguageSelectionDialog extends StatefulWidget {
 
   static const List<Map<String, String>> kLanguages = [
     {
-      'code': 'Malayalam',
-      'name': 'മലയാളം',
-      'englishName': 'Malayalam',
+      'code': 'Hindi',
+      'name': 'हिन्दी',
+      'englishName': 'Hindi',
       'flag': '🇮🇳',
-      'desc': 'മാതൃഭാഷയിലൂടെ ഇംഗ്ലീഷ് വേഗത്തിൽ സംസാരിക്കാൻ പഠിക്കാം',
+      'desc': 'सरल हिन्दी में सम्पूर्ण व्याख्या और अभ्यास',
     },
     {
       'code': 'Tamil',
@@ -34,11 +35,11 @@ class PocketLanguageSelectionDialog extends StatefulWidget {
       'desc': 'தமிழ் மூலமாக எளிய ஆங்கிலப் பயிற்சி',
     },
     {
-      'code': 'Hindi',
-      'name': 'हिन्दी',
-      'englishName': 'Hindi',
+      'code': 'Malayalam',
+      'name': 'മലയാളം',
+      'englishName': 'Malayalam',
       'flag': '🇮🇳',
-      'desc': 'सरल हिन्दी में सम्पूर्ण व्याख्या और अभ्यास',
+      'desc': 'മാതൃഭാഷയിലൂടെ ഇംഗ്ലീഷ് വേഗത്തിൽ സംസാരിക്കാൻ പഠിക്കാം',
     },
     {
       'code': 'Telugu',
@@ -68,10 +69,7 @@ class PocketLanguageSelectionDialog extends StatefulWidget {
     String? currentLanguage,
     bool isFirstLaunch = false,
   }) async {
-    final prefs = await SharedPreferences.getInstance();
-    final active = currentLanguage ??
-        prefs.getString(kPrefLangKey) ??
-        'Malayalam';
+    final active = currentLanguage ?? PocketLanguageService.currentLanguage;
 
     if (!context.mounted) return null;
 
@@ -103,11 +101,7 @@ class _PocketLanguageSelectionDialogState
   Future<void> _confirmAndSave() async {
     HapticFeedback.heavyImpact();
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          PocketLanguageSelectionDialog.kPrefLangKey, _selected);
-      await prefs.setBool(
-          PocketLanguageSelectionDialog.kHasChosenLangKey, true);
+      await PocketLanguageService.setNativeLanguage(_selected);
     } catch (_) {}
 
     if (mounted) {

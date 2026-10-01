@@ -11,6 +11,8 @@ import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 
 class StoryStickerItem {
   final String id;
@@ -72,6 +74,12 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
 
   // Privacy: Public Story vs Pocket Mates Only (Private)
   bool _isPrivateStory = true;
+
+  // 🔒 WhatsApp-style Status Privacy ('my_contacts', 'contacts_except', 'only_share_with', 'public')
+  String _statusPrivacy = 'my_contacts';
+  Set<String> _excludedUserIds = {};
+  Set<String> _includedUserIds = {};
+  List<Map<String, dynamic>> _contactsAndMatesList = [];
 
   // Story Duration (5s, 10s, 15s)
   int _storyDuration = 5;
@@ -215,6 +223,8 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
   void initState() {
     super.initState();
     _loadUserAvatar();
+    _loadPrivacySettings();
+    _fetchContactsAndMates();
     if (widget.initialFile != null) {
       _selectedFile = widget.initialFile;
       _mediaType = widget.initialMediaType ?? 'image';
@@ -241,6 +251,574 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         });
       }
     } catch (_) {}
+  }
+
+  Future<void> _loadPrivacySettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedPrivacy = prefs.getString('vibe_status_privacy');
+      final savedExcluded = prefs.getStringList('vibe_status_excluded_users');
+      final savedIncluded = prefs.getStringList('vibe_status_included_users');
+      if (mounted) {
+        setState(() {
+          if (savedPrivacy != null) _statusPrivacy = savedPrivacy;
+          if (savedExcluded != null) _excludedUserIds = savedExcluded.toSet();
+          if (savedIncluded != null) _includedUserIds = savedIncluded.toSet();
+          _isPrivateStory = _statusPrivacy != 'public';
+        });
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _savePrivacySettings() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('vibe_status_privacy', _statusPrivacy);
+      await prefs.setStringList('vibe_status_excluded_users', _excludedUserIds.toList());
+      await prefs.setStringList('vibe_status_included_users', _includedUserIds.toList());
+    } catch (_) {}
+  }
+
+  Future<void> _fetchContactsAndMates() async {
+    try {
+      final Map<String, Map<String, dynamic>> map = {};
+
+      // 1. Fetch user's following mates
+      final res = await supabase
+          .from('followers')
+          .select('following_id, profile:following_id(id, user_id, name, display_name, phone_no, profile_image_url)')
+          .eq('follower_id', widget.userId);
+
+      for (final item in res) {
+          final prof = item['profile'];
+          if (prof != null) {
+            final uid = prof['user_id']?.toString() ?? prof['id']?.toString();
+            if (uid != null && uid != widget.userId) {
+              final rawName = prof['display_name'] ?? prof['name'] ?? 'Mate';
+              final displayName = ContactsNameService().getDisplayName(
+                userId: uid,
+                fallbackName: rawName.toString(),
+              );
+              map[uid] = {
+                'id': uid,
+                'name': displayName,
+                'avatar': prof['profile_image_url'],
+              };
+            }
+          }
+        }
+
+      // 2. Fetch matched local contacts from ContactsNameService
+      for (final p in ContactsNameService().matchedProfiles) {
+        final uid = p['user_id']?.toString();
+        if (uid != null && uid != widget.userId && !map.containsKey(uid)) {
+          map[uid] = {
+            'id': uid,
+            'name': p['contact_name'] ?? p['name'] ?? 'Contact',
+            'avatar': p['profile_image_url'],
+          };
+        }
+      }
+
+      if (mounted) {
+        setState(() {
+          _contactsAndMatesList = map.values.toList()
+            ..sort((a, b) => (a['name'] ?? '').toString().toLowerCase().compareTo((b['name'] ?? '').toString().toLowerCase()));
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching contacts and mates: $e');
+    }
+  }
+
+  String _getStatusPrivacyLabel() {
+    switch (_statusPrivacy) {
+      case 'contacts_except':
+        return _excludedUserIds.isEmpty
+            ? 'Hide story from...'
+            : 'Hidden from (${_excludedUserIds.length})';
+      case 'only_share_with':
+        return _includedUserIds.isEmpty
+            ? 'Selected Mates'
+            : 'Selected Mates (${_includedUserIds.length})';
+      case 'public':
+        return 'Public (Explore)';
+      case 'my_contacts':
+      default:
+        return 'Close Friends (Mates)';
+    }
+  }
+
+  IconData _getStatusPrivacyIcon() {
+    switch (_statusPrivacy) {
+      case 'contacts_except':
+        return Icons.visibility_off_rounded;
+      case 'only_share_with':
+        return Icons.lock_person_rounded;
+      case 'public':
+        return Icons.public_rounded;
+      case 'my_contacts':
+      default:
+        return Icons.stars_rounded;
+    }
+  }
+
+  void _showStatusPrivacySheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setModalState) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Color(0xFF161922),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              border: Border(top: BorderSide(color: Colors.white12, width: 1)),
+            ),
+            padding: EdgeInsets.fromLTRB(
+              20,
+              16,
+              20,
+              MediaQuery.of(ctx).viewInsets.bottom + 28,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    const Icon(Icons.shield_rounded, color: Color(0xFFFFFC00), size: 22),
+                    const SizedBox(width: 10),
+                    Text(
+                      'Vibe Privacy (Instagram Style)',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Choose who can see this vibe',
+                  style: GoogleFonts.inter(
+                    color: Colors.white54,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 18),
+
+                // 1. Close Friends (Poket Mates)
+                _buildPrivacyRadioOption(
+                  title: 'Close Friends (Poket Mates)',
+                  subtitle: 'Share with all your mates and synced contacts',
+                  icon: Icons.stars_rounded,
+                  value: 'my_contacts',
+                  groupValue: _statusPrivacy,
+                  onChanged: (val) {
+                    setState(() {
+                      _statusPrivacy = val!;
+                      _isPrivateStory = true;
+                    });
+                    setModalState(() {});
+                    _savePrivacySettings();
+                    Navigator.pop(ctx);
+                  },
+                ),
+                const Divider(color: Colors.white10, height: 16),
+
+                // 2. Hide Story From...
+                _buildPrivacyRadioOption(
+                  title: 'Hide Story From...',
+                  subtitle: _excludedUserIds.isEmpty
+                      ? 'Hide your vibes from specific people'
+                      : '${_excludedUserIds.length} person${_excludedUserIds.length > 1 ? 's' : ''} hidden',
+                  icon: Icons.visibility_off_rounded,
+                  value: 'contacts_except',
+                  groupValue: _statusPrivacy,
+                  badgeText: _excludedUserIds.isNotEmpty ? '${_excludedUserIds.length}' : null,
+                  badgeColor: Colors.redAccent,
+                  onChanged: (val) async {
+                    setState(() {
+                      _statusPrivacy = val!;
+                      _isPrivateStory = true;
+                    });
+                    setModalState(() {});
+                    _savePrivacySettings();
+                    await _openContactPicker(isExclusion: true);
+                    setModalState(() {});
+                    if (mounted) setState(() {});
+                  },
+                  onTapTrailing: () async {
+                    await _openContactPicker(isExclusion: true);
+                    setModalState(() {});
+                    if (mounted) setState(() {});
+                  },
+                ),
+                const Divider(color: Colors.white10, height: 16),
+
+                // 3. Selected Mates Only
+                _buildPrivacyRadioOption(
+                  title: 'Selected Mates Only...',
+                  subtitle: _includedUserIds.isEmpty
+                      ? 'Only chosen mates will be able to see'
+                      : '${_includedUserIds.length} mate${_includedUserIds.length > 1 ? 's' : ''} selected',
+                  icon: Icons.lock_person_rounded,
+                  value: 'only_share_with',
+                  groupValue: _statusPrivacy,
+                  badgeText: _includedUserIds.isNotEmpty ? '${_includedUserIds.length}' : null,
+                  badgeColor: Colors.amber,
+                  onChanged: (val) async {
+                    setState(() {
+                      _statusPrivacy = val!;
+                      _isPrivateStory = true;
+                    });
+                    setModalState(() {});
+                    _savePrivacySettings();
+                    await _openContactPicker(isExclusion: false);
+                    setModalState(() {});
+                    if (mounted) setState(() {});
+                  },
+                  onTapTrailing: () async {
+                    await _openContactPicker(isExclusion: false);
+                    setModalState(() {});
+                    if (mounted) setState(() {});
+                  },
+                ),
+                const Divider(color: Colors.white10, height: 16),
+
+                // 4. Public
+                _buildPrivacyRadioOption(
+                  title: 'Public (Explore Vibes)',
+                  subtitle: 'Anyone on Pocket Mates can discover this vibe',
+                  icon: Icons.public_rounded,
+                  value: 'public',
+                  groupValue: _statusPrivacy,
+                  onChanged: (val) {
+                    setState(() {
+                      _statusPrivacy = val!;
+                      _isPrivateStory = false;
+                    });
+                    setModalState(() {});
+                    _savePrivacySettings();
+                    Navigator.pop(ctx);
+                  },
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: Text(
+                    'Changes to privacy settings won\'t affect status updates you\'ve already sent.',
+                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 11.5),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPrivacyRadioOption({
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required String value,
+    required String groupValue,
+    required ValueChanged<String?> onChanged,
+    String? badgeText,
+    Color? badgeColor,
+    VoidCallback? onTapTrailing,
+  }) {
+    final isSelected = value == groupValue;
+    return InkWell(
+      onTap: () => onChanged(value),
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFFFFFC00).withValues(alpha: 0.15)
+                    : Colors.white.withValues(alpha: 0.05),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 20,
+                color: isSelected ? const Color(0xFFFFFC00) : Colors.white70,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.inter(
+                      color: Colors.white54,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (badgeText != null) ...[
+              GestureDetector(
+                onTap: onTapTrailing,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: (badgeColor ?? const Color(0xFFFFFC00)).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: (badgeColor ?? const Color(0xFFFFFC00)).withValues(alpha: 0.6),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        badgeText,
+                        style: GoogleFonts.inter(
+                          color: badgeColor ?? const Color(0xFFFFFC00),
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 3),
+                      Icon(
+                        Icons.edit_rounded,
+                        size: 11,
+                        color: badgeColor ?? const Color(0xFFFFFC00),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
+            Radio<String>(
+              value: value,
+              groupValue: groupValue,
+              onChanged: onChanged,
+              activeColor: const Color(0xFFFFFC00),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openContactPicker({required bool isExclusion}) async {
+    final title = isExclusion ? 'Hide status from...' : 'Share status with...';
+    final Set<String> targetSet = isExclusion
+        ? Set<String>.from(_excludedUserIds)
+        : Set<String>.from(_includedUserIds);
+    String searchQuery = '';
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (pickerCtx) => StatefulBuilder(
+        builder: (pickerCtx, setPickerState) {
+          final filteredList = _contactsAndMatesList.where((c) {
+            final name = (c['name'] ?? '').toString().toLowerCase();
+            return searchQuery.isEmpty || name.contains(searchQuery.toLowerCase());
+          }).toList();
+
+          return Container(
+            height: MediaQuery.of(pickerCtx).size.height * 0.75,
+            decoration: const BoxDecoration(
+              color: Color(0xFF161922),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: Column(
+              children: [
+                const SizedBox(height: 12),
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 10),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                        onPressed: () => Navigator.pop(pickerCtx),
+                      ),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              title,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '${targetSet.length} selected',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFFFFFC00),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          if (isExclusion) {
+                            _excludedUserIds = targetSet;
+                          } else {
+                            _includedUserIds = targetSet;
+                          }
+                          _savePrivacySettings();
+                          Navigator.pop(pickerCtx);
+                          if (mounted) setState(() {});
+                        },
+                        style: TextButton.styleFrom(
+                          backgroundColor: const Color(0xFFFFFC00),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        ),
+                        child: Text(
+                          'Done',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Search bar
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.06),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: TextField(
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 13),
+                      decoration: const InputDecoration(
+                        hintText: 'Search contacts...',
+                        hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
+                        icon: Icon(Icons.search, color: Colors.white38, size: 20),
+                        border: InputBorder.none,
+                      ),
+                      onChanged: (q) {
+                        setPickerState(() => searchQuery = q);
+                      },
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: filteredList.isEmpty
+                      ? Center(
+                          child: Text(
+                            _contactsAndMatesList.isEmpty
+                                ? 'No synced contacts or mates found'
+                                : 'No matching contacts',
+                            style: GoogleFonts.inter(color: Colors.white38),
+                          ),
+                        )
+                      : ListView.separated(
+                          itemCount: filteredList.length,
+                          separatorBuilder: (_, __) =>
+                              const Divider(color: Colors.white10, height: 1),
+                          itemBuilder: (context, i) {
+                            final c = filteredList[i];
+                            final uid = c['id']?.toString() ?? '';
+                            final name = c['name']?.toString() ?? 'Contact';
+                            final isChecked = targetSet.contains(uid);
+
+                            return CheckboxListTile(
+                              value: isChecked,
+                              activeColor: isExclusion ? Colors.redAccent : const Color(0xFFFFFC00),
+                              checkColor: isExclusion ? Colors.white : Colors.black,
+                              title: Text(
+                                name,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              secondary: CircleAvatar(
+                                radius: 18,
+                                backgroundColor: Colors.white12,
+                                backgroundImage: c['avatar'] != null
+                                    ? NetworkImage(c['avatar'])
+                                    : null,
+                                child: c['avatar'] == null
+                                    ? Text(
+                                        name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                        style: const TextStyle(color: Colors.white),
+                                      )
+                                    : null,
+                              ),
+                              onChanged: (bool? checked) {
+                                setPickerState(() {
+                                  if (checked == true) {
+                                    targetSet.add(uid);
+                                  } else {
+                                    targetSet.remove(uid);
+                                  }
+                                });
+                              },
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
   }
 
   Future<void> _loadFileBytes() async {
@@ -613,7 +1191,10 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         'overlay_text': _overlayText.isNotEmpty ? _overlayText : null,
         'filter': _filters[_selectedFilterIndex]['name'],
         'duration': _storyDuration,
-        'is_private': _isPrivateStory,
+        'is_private': _statusPrivacy != 'public',
+        'status_privacy': _statusPrivacy,
+        'excluded_user_ids': _excludedUserIds.toList(),
+        'included_user_ids': _includedUserIds.toList(),
         'stickers': _placedStickers
             .map((s) => {
                   'text': s.text,
@@ -660,9 +1241,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    _isPrivateStory
-                        ? '🔒 Shared to Poket Mates Story! (+15 FDC)'
-                        : '🌟 Shared to Public Vibes! (+15 FDC)',
+                    'Shared to ${_getStatusPrivacyLabel()}! (+15 FDC)',
                     style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -1471,6 +2050,56 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 8),
+
+                  // 🔒 WhatsApp-style Status Privacy selector pill
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: InkWell(
+                      onTap: () => _showStatusPrivacySheet(context),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E2230),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: _statusPrivacy == 'public'
+                                ? Colors.cyanAccent.withValues(alpha: 0.6)
+                                : const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getStatusPrivacyIcon(),
+                              size: 15,
+                              color: _statusPrivacy == 'public'
+                                  ? Colors.cyanAccent
+                                  : const Color(0xFFFFFC00),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Status: ${_getStatusPrivacyLabel()}',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.arrow_drop_down_rounded,
+                              size: 18,
+                              color: Colors.white70,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 10),
 
                   // Action Buttons (Post Story)
@@ -1523,7 +2152,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Text(
-                                        _isPrivateStory ? 'Mates' : 'Post',
+                                        _statusPrivacy == 'public' ? 'Post (Public)' : 'Post Vibe',
                                         style: GoogleFonts.outfit(
                                           color: Colors.black,
                                           fontWeight: FontWeight.bold,

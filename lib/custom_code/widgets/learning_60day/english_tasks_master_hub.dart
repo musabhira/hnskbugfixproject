@@ -583,6 +583,37 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                       ),
                     ),
+                    const SizedBox(width: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: PocketSyllabusRepository.getTrack(_currentLearnerLevel).primaryColor.withValues(alpha: 0.16),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: PocketSyllabusRepository.getTrack(_currentLearnerLevel).primaryColor.withValues(alpha: 0.5),
+                          width: 0.8,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            PocketSyllabusRepository.getTrack(_currentLearnerLevel).icon,
+                            size: 10,
+                            color: PocketSyllabusRepository.getTrack(_currentLearnerLevel).primaryColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            PocketSyllabusRepository.getTrack(_currentLearnerLevel).nameEn,
+                            style: GoogleFonts.inter(
+                              color: PocketSyllabusRepository.getTrack(_currentLearnerLevel).primaryColor,
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const Spacer(),
                     InkWell(
                       onTap: () => Navigator.pop(ctx),
@@ -1538,9 +1569,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
                 const SizedBox(width: 8),
 
-                // 🪙 Pocket Score (PS) Capsule (Audio Directive: No dollar sign, use "PS", show coins, no level text at top)
+                // 🪙 Pocket Score (PS) & 🏆 Trophies Capsule (Audio Directive: Show PS, Coins, and Trophies count)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(10),
@@ -1567,13 +1598,29 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           ),
                         ),
                       ),
-                      const SizedBox(width: 6),
+                      const SizedBox(width: 5),
                       Text(
                         '🪙 $_unifiedPocketScore',
                         style: GoogleFonts.outfit(
                           color: const Color(0xFFFFD700),
                           fontWeight: FontWeight.w900,
-                          fontSize: 13,
+                          fontSize: 12.5,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Container(
+                        width: 1,
+                        height: 12,
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        '🏆 $_unifiedTrophies',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 12.5,
                           letterSpacing: 0.2,
                         ),
                       ),
@@ -1594,7 +1641,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(
-                            'Roadmap Refreshed! Day ${prog.currentDay} • 🪙 $_unifiedPocketScore PTS',
+                            'Roadmap Refreshed! Day ${prog.currentDay} • 🪙 $_unifiedPocketScore PTS • 🏆 $_unifiedTrophies',
                             style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12),
                           ),
                           backgroundColor: const Color(0xFF10B981),
@@ -1979,6 +2026,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   /// 📝 Open CEFR Syllabus Interactive Examination
+  // ignore: unused_element
   void _openSyllabusExamination(SyllabusTrack track) {
     showDialog(
       context: context,
@@ -2092,7 +2140,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final x = screenWidth / 2;
     // Positioned cleanly right above the Rules node (_ruleNodeY is 240, top of sphere is 203)
     final y = _ruleNodeY - 54.0;
-    final pillWidth = _hasCustomSelectedSyllabus ? 172.0 : 144.0;
+    final pillWidth = _hasCustomSelectedSyllabus ? 188.0 : 164.0;
 
     return Positioned(
       left: x - (pillWidth / 2),
@@ -2120,6 +2168,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             _hasCustomSelectedSyllabus = true;
             _currentLearnerLevel = level;
           });
+
+          // Sync to Supabase profile so the selected level persists globally
+          if (uid != null) {
+            try {
+              await _supabase.from('profile').update({
+                'english_level': level.name,
+                'updated_at': DateTime.now().toIso8601String(),
+              }).eq('user_id', uid);
+            } catch (e) {
+              debugPrint('Notice: Error updating profile english_level on syllabus switch: $e');
+            }
+          }
+
+          // Dynamically refresh learning hub and missions to immediately reflect switched track
+          await _loadData();
+
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
@@ -2148,8 +2212,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           }
         },
         itemBuilder: (context) {
-          final items = <PopupMenuEntry<LearnerLevel?>>[];
-          items.addAll(LearnerLevel.values.map((lvl) {
+          return LearnerLevel.values.map((lvl) {
             final t = PocketSyllabusRepository.getTrack(lvl);
             final isSelected = lvl == _currentLearnerLevel;
             return PopupMenuItem<LearnerLevel?>(
@@ -2197,37 +2260,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ],
               ),
             );
-          }));
-
-          items.add(const PopupMenuDivider(height: 8));
-          items.add(
-            PopupMenuItem<LearnerLevel?>(
-              value: null,
-              onTap: () {
-                Future.microtask(() {
-                  _openSyllabusExamination(PocketSyllabusRepository.getTrack(_currentLearnerLevel));
-                });
-              },
-              child: Row(
-                children: [
-                  const Text('📝', style: TextStyle(fontSize: 15)),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Text(
-                      'Take Track Examination',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFD700),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-
-          return items;
+          }).toList();
         },
         child: Container(
           width: pillWidth,
@@ -2248,38 +2281,44 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             ],
           ),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (!_hasCustomSelectedSyllabus) ...[
-                const Text('📘', style: TextStyle(fontSize: 12)),
-                const SizedBox(width: 5),
-                Text(
-                  'YOUR SYLLABUS',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontWeight: FontWeight.w800,
-                    fontSize: 10.5,
-                    letterSpacing: 0.5,
+                const Text('📘', style: TextStyle(fontSize: 11)),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
+                    'YOUR SYLLABUS',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontWeight: FontWeight.w800,
+                      fontSize: 10,
+                      letterSpacing: 0.3,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 3),
+                const SizedBox(width: 2),
                 const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFFFFD700), size: 16),
               ] else ...[
                 Icon(track.icon, color: track.primaryColor, size: 12),
-                const SizedBox(width: 5),
+                const SizedBox(width: 4),
                 Flexible(
                   child: Text(
                     'SYLLABUS: ${track.nameEn.replaceAll(' Track', '').toUpperCase()}',
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
-                      fontSize: 10,
+                      fontSize: 9.5,
                       letterSpacing: 0.3,
                     ),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                const SizedBox(width: 3),
+                const SizedBox(width: 2),
                 Icon(Icons.arrow_drop_down_rounded, color: track.primaryColor, size: 16),
               ],
             ],

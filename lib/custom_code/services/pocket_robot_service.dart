@@ -3121,6 +3121,10 @@ class PocketRobotService {
     try {
       final prefs = await SharedPreferences.getInstance();
 
+      final matesKey = 'pocket_mates_$userId';
+      final mates = prefs.getStringList(matesKey) ?? [];
+      final areMates = mates.contains(robotId);
+
       // Store user reply in local chat thread with robot
       final chatKey = 'robot_chat_${robotId}_$userId';
       final existingChat = prefs.getStringList(chatKey) ?? [];
@@ -3136,35 +3140,42 @@ class PocketRobotService {
       existingChat.add(userMsg);
       await prefs.setStringList(chatKey, existingChat);
 
-      // Auto accept robot mate if not already mates
-      await acceptRobotRequest(myId: userId, robotId: robotId);
+      if (areMates) {
+        // 1. Existing Mates: Simulate human-like encouraging robot reply after brief delay in "All" chats
+        Timer(const Duration(seconds: 2), () async {
+          try {
+            final replies = [
+              "Thanks for the love! Let's keep practicing English together! 🚀",
+              "Awesome reaction! Did you catch the idiom in today's vibe? 🌟",
+              "Appreciate that mate! You're making tremendous progress every day! 💪",
+              "Super! How's your English practice going today? 😊",
+              "Thank you! You have an amazing eye for detail! 🎯",
+            ];
+            final replyText = replies[math.Random().nextInt(replies.length)];
 
-      // Simulate human-like encouraging robot reply after brief delay
-      Timer(const Duration(seconds: 2), () async {
-        try {
-          final replies = [
-            "Thanks for the love! Let's keep practicing English together! 🚀",
-            "Awesome reaction! Did you catch the idiom in today's vibe? 🌟",
-            "Appreciate that mate! You're making tremendous progress every day! 💪",
-            "Super! How's your English practice going today? 😊",
-            "Thank you! You have an amazing eye for detail! 🎯",
-          ];
-          final replyText = replies[math.Random().nextInt(replies.length)];
+            final roboMsg = jsonEncode({
+              'id': 'robo_${DateTime.now().millisecondsSinceEpoch}',
+              'sender_id': robotId,
+              'receiver_id': userId,
+              'content': replyText,
+              'timestamp': DateTime.now().toIso8601String(),
+              'context': 'vibe_reply',
+            });
 
-          final roboMsg = jsonEncode({
-            'id': 'robo_${DateTime.now().millisecondsSinceEpoch}',
-            'sender_id': robotId,
-            'receiver_id': userId,
-            'content': replyText,
-            'timestamp': DateTime.now().toIso8601String(),
-            'context': 'vibe_reply',
-          });
-
-          final updatedChat = prefs.getStringList(chatKey) ?? [];
-          updatedChat.add(roboMsg);
-          await prefs.setStringList(chatKey, updatedChat);
-        } catch (_) {}
-      });
+            final updatedChat = prefs.getStringList(chatKey) ?? [];
+            updatedChat.add(roboMsg);
+            await prefs.setStringList(chatKey, updatedChat);
+          } catch (_) {}
+        });
+      } else {
+        // 2. Non-Mates: Enqueue mate request so it routes to Requests -> Sent tab without polluting "All" chats
+        await enqueueUserRequestToRobot(userId: userId, robotId: robotId);
+        final sentList = prefs.getStringList('sent_mate_requests_$userId') ?? [];
+        if (!sentList.contains(robotId)) {
+          sentList.add(robotId);
+          await prefs.setStringList('sent_mate_requests_$userId', sentList);
+        }
+      }
     } catch (e) {
       debugPrint('Error handling user status reply to robot: $e');
     }

@@ -25,7 +25,6 @@ import 'package:timeago/timeago.dart' as timeago;
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/widgets/share_content_screen.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poster_designer/template_gallery_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/bulk_sender/bulk_sender_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/poki_games_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/nearby_users_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chess_game_page.dart';
@@ -356,6 +355,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
           .eq('viewer_user_id', widget.currentUserId);
       final viewedStatusIds = Set<String>.from(viewsRes.map((e) => e['status_id'].toString()));
 
+      // 3.6 Load hidden user IDs for stories (Instagram-style Hide)
+      final hiddenUserIds = (prefs.getStringList('hidden_vibe_user_ids') ?? []).toSet();
+
       // 4. Grouping logic
       final Map<String, Map<String, dynamic>> followingGroups = {};
       final Map<String, Map<String, dynamic>> publicGroups = {};
@@ -380,9 +382,30 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         final rawMeta = status['metadata'];
         final metadata = rawMeta is Map ? rawMeta : null;
         final bool isPrivate = metadata != null && (metadata['is_private'] == true || metadata['is_private'] == 'true');
+        final String statusPrivacy = metadata?['status_privacy']?.toString() ?? (isPrivate ? 'my_contacts' : 'public');
+        final List<dynamic> excludedList = metadata?['excluded_user_ids'] is List ? metadata!['excluded_user_ids'] : [];
+        final List<dynamic> includedList = metadata?['included_user_ids'] is List ? metadata!['included_user_ids'] : [];
 
-        // 1. Friends/Following shows only those followed (and author's own)
-        if (isFollowing) {
+        // 🚫 Instagram-style Hide Story Check:
+        if (!isOwn && profUserId != null && hiddenUserIds.contains(profUserId)) {
+          continue;
+        }
+
+        // 🔒 Status Privacy Check:
+        if (!isOwn) {
+          if (statusPrivacy == 'contacts_except' && excludedList.contains(widget.currentUserId)) {
+            continue; // Excluded from viewing this status
+          }
+          if (statusPrivacy == 'only_share_with' && !includedList.contains(widget.currentUserId)) {
+            continue; // Not in the permitted viewer list
+          }
+        }
+
+        // 1. Friends/Following & Contacts Status List
+        final bool canShowInFollowing = isFollowing ||
+            (statusPrivacy == 'only_share_with' && (isOwn || includedList.contains(widget.currentUserId)));
+
+        if (canShowInFollowing) {
           if (!followingGroups.containsKey(profileId)) {
             followingGroups[profileId] = {
               'profile': profile,
@@ -395,7 +418,10 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         }
 
         // 2. Public Explore Vibes shows only public statuses
-        if (!isPrivate) {
+        final bool isPublicExplore = statusPrivacy == 'public' ||
+            (!isPrivate && statusPrivacy != 'only_share_with' && statusPrivacy != 'contacts_except');
+
+        if (isPublicExplore) {
           if (!publicGroups.containsKey(profileId)) {
             publicGroups[profileId] = {
               'profile': profile,
@@ -685,6 +711,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
       if (!isAuth) return;
     }
 
+    if (!mounted) return;
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -1053,7 +1080,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
     return Material(
       color: Colors.transparent,
       child: Container(
-        height: 126,
+        height: 102,
         alignment: Alignment.center,
         child: _isLoading
             ? _buildShimmerLoading()
@@ -2369,6 +2396,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
   final TextEditingController _replyController = TextEditingController();
   final FocusNode _replyFocusNode = FocusNode();
+  bool _showEmojiPicker = false;
 
   final List<_VibeReactionBurst> _reactionBursts = [];
 
@@ -2397,6 +2425,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   void _onTapQuickReaction(String emoji) {
     _spawnFloatingReaction(emoji);
     _replyController.text = emoji;
+    if (mounted) {
+      setState(() => _showEmojiPicker = false);
+    }
     _sendReply();
   }
 
@@ -2694,15 +2725,18 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           statusId: status['id']?.toString() ?? '',
         );
 
+        final prefs = await SharedPreferences.getInstance();
+        final isMate = (prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? []).contains(receiverUserId);
+
         if (mounted) {
           if (_isPaused) _togglePause();
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
                 children: [
-                  const Icon(Icons.send_rounded, color: Colors.black, size: 16),
+                  Icon(isMate ? Icons.send_rounded : Icons.person_add_rounded, color: Colors.black, size: 16),
                   const SizedBox(width: 8),
-                  Text('Replied to $authorName! 🤖',
+                  Text(isMate ? 'Replied to $authorName! 🤖' : 'Sent request to $authorName! 🤝',
                       style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
                 ],
               ),
@@ -3383,6 +3417,241 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     );
   }
 
+  void _showStatusOptionsMenu(Map<String, dynamic> status, Map<String, dynamic>? profile, bool isOwn) {
+    if (!_isPaused) _togglePause();
+
+    final statusId = status['id']?.toString() ?? '';
+    final mediaUrl = status['media_url']?.toString() ?? '';
+    final authorUserId = status['user_id']?.toString() ??
+        profile?['user_id']?.toString() ??
+        profile?['id']?.toString() ??
+        '';
+    final authorName = profile?['name']?.toString() ?? 'User';
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        decoration: const BoxDecoration(
+          color: Color(0xFF161922),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+          border: Border(top: BorderSide(color: Colors.white12, width: 1)),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.white24,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            if (isOwn) ...[
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.delete_forever_rounded, color: Colors.redAccent),
+                ),
+                title: Text(
+                  'Delete Vibe',
+                  style: GoogleFonts.outfit(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Permanently remove this status',
+                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _showDeleteConfirmation(statusId, mediaUrl);
+                },
+              ),
+            ] else ...[
+              // 1. Hide Vibe / Hide User's Story (Instagram style)
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.orangeAccent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.visibility_off_rounded, color: Colors.orangeAccent),
+                ),
+                title: Text(
+                  'Hide $authorName\'s Stories',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Don\'t show vibes and stories from this user',
+                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () async {
+                  Navigator.pop(sheetCtx);
+                  await _hideUserStories(authorUserId, authorName);
+                },
+              ),
+              const Divider(color: Colors.white10, height: 16),
+              // 2. Report Vibe
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.flag_rounded, color: Colors.redAccent),
+                ),
+                title: Text(
+                  'Report Vibe',
+                  style: GoogleFonts.outfit(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Report inappropriate, abusive, or offensive content',
+                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _reportStatus(statusId, authorName);
+                },
+              ),
+              const Divider(color: Colors.white10, height: 16),
+              // 3. Block User (Apple App Store Guideline 1.2 UGC mandate)
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.red.withValues(alpha: 0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.block_rounded, color: Colors.red),
+                ),
+                title: Text(
+                  'Block $authorName',
+                  style: GoogleFonts.outfit(color: Colors.red, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  'Block this user from messaging you or seeing your profile',
+                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetCtx);
+                  _confirmBlockUser(authorUserId, authorName);
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+    ).then((_) {
+      if (mounted && _isPaused) {
+        _togglePause();
+      }
+    });
+  }
+
+  void _confirmBlockUser(String authorUserId, String authorName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF161922),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text('Block $authorName?', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+        content: Text(
+          'They will not be able to send you messages or view your vibes. You won\'t see their content anywhere on Poket Mates.',
+          style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              try {
+                await supabase.from('blocks').insert({
+                  'blocker_id': widget.currentUserId,
+                  'blocked_id': authorUserId,
+                });
+                await _hideUserStories(authorUserId, authorName);
+                if (mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('$authorName has been blocked.'),
+                      backgroundColor: Colors.redAccent,
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              } catch (e) {
+                debugPrint('Error blocking user: $e');
+              }
+            },
+            child: const Text('Block', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _hideUserStories(String authorUserId, String authorName) async {
+    if (authorUserId.isEmpty) return;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hiddenList = prefs.getStringList('hidden_vibe_user_ids') ?? [];
+      if (!hiddenList.contains(authorUserId)) {
+        hiddenList.add(authorUserId);
+        await prefs.setStringList('hidden_vibe_user_ids', hiddenList);
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Stories from $authorName will now be hidden.'),
+            backgroundColor: const Color(0xFF1E2230),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        widget.onNextGroup();
+      }
+    } catch (e) {
+      debugPrint('Error hiding user stories: $e');
+    }
+  }
+
+  void _reportStatus(String statusId, String authorName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => ReportDialog(
+        contentType: 'vibe',
+        contentId: statusId,
+        contentTitle: 'Vibe by $authorName',
+        onReportSubmitted: () {
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Thank you. We have received your report.'),
+                backgroundColor: Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+      ),
+    ).then((_) {
+      if (mounted && _isPaused) {
+        _togglePause();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final statuses = widget.statusGroup['statuses'] as List;
@@ -3779,6 +4048,12 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         ),
                         const SizedBox(width: 8),
                         IconButton(
+                          onPressed: () => _showStatusOptionsMenu(currentStatus, profile, isOwnStatus),
+                          icon: const Icon(Icons.more_vert, color: Colors.white),
+                          padding: EdgeInsets.zero,
+                        ),
+                        const SizedBox(width: 8),
+                        IconButton(
                           onPressed: () => Navigator.pop(context),
                           icon: const Icon(Icons.close, color: Colors.white),
                           padding: EdgeInsets.zero,
@@ -3834,8 +4109,8 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 ),
               ),
 
-            // Quick Floating Reaction Bar (Vibes / Stories Quick Emoji Reactions)
-            if (!isOwnStatus)
+            // Quick Floating Reaction Bar (Shown on-demand via reaction toggle button)
+            if (!isOwnStatus && _showEmojiPicker)
               Positioned(
                 bottom: MediaQuery.of(context).padding.bottom + 68,
                 left: 14,
@@ -3844,16 +4119,16 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.55),
+                      color: Colors.black.withValues(alpha: 0.75),
                       borderRadius: BorderRadius.circular(22),
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.18),
+                        color: Colors.white.withValues(alpha: 0.25),
                         width: 0.8,
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          blurRadius: 10,
+                          color: Colors.black.withValues(alpha: 0.5),
+                          blurRadius: 12,
                           offset: const Offset(0, 2),
                         ),
                       ],
@@ -3895,10 +4170,26 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             color: Colors.white.withValues(alpha: 0.4),
                             width: 1,
                           ),
-                          color: Colors.black.withValues(alpha: 0.2),
+                          color: Colors.black.withValues(alpha: 0.25),
                         ),
                         child: Row(
                           children: [
+                            IconButton(
+                              icon: Icon(
+                                _showEmojiPicker
+                                    ? Icons.close_rounded
+                                    : Icons.add_reaction_outlined,
+                                color: _showEmojiPicker
+                                    ? const Color(0xFFFFFC00)
+                                    : Colors.white70,
+                                size: 20,
+                              ),
+                              splashRadius: 18,
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                setState(() => _showEmojiPicker = !_showEmojiPicker);
+                              },
+                            ),
                             Expanded(
                               child: TextField(
                                 controller: _replyController,
@@ -3915,7 +4206,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                     fontSize: 14,
                                   ),
                                   contentPadding: const EdgeInsets.symmetric(
-                                      horizontal: 16),
+                                      horizontal: 8),
                                   border: InputBorder.none,
                                   enabledBorder: InputBorder.none,
                                   focusedBorder: InputBorder.none,
@@ -5229,12 +5520,21 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
               ),
             ),
 
-            // Top Citadel Title Card (Non-blocking)
+            // Top Citadel Title Card (Tappable to enter Citadel / Palace)
             Positioned(
               top: MediaQuery.of(context).padding.top + 75,
               left: 20,
               right: 20,
-              child: IgnorePointer(
+              child: GestureDetector(
+                onTap: () {
+                  _togglePause();
+                  PocketCitadelAttackPage.openForUser(
+                    context,
+                    userId: targetUserId,
+                  ).then((_) {
+                    if (mounted && _isPaused) _togglePause();
+                  });
+                },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                   decoration: BoxDecoration(
@@ -5290,13 +5590,25 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           ),
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '🔍 Pinch to zoom in/out • Tap below to visit & challenge',
-                        style: GoogleFonts.inter(
-                          color: Colors.white70,
-                          fontSize: 11,
-                        ),
+                      const SizedBox(height: 5),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.touch_app_rounded,
+                            color: isPresident ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                            size: 13,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            isPresident ? 'Tap to Visit Sovereign Palace 🏛️' : 'Tap to Raid / Visit Citadel ⚔️',
+                            style: GoogleFonts.inter(
+                              color: isPresident ? const Color(0xFFFFD700) : const Color(0xFF38BDF8),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -5465,9 +5777,6 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     switch (title) {
       case 'Poster Designer':
         page = const TemplateGalleryPage();
-        break;
-      case 'Bulk Sender':
-        page = const BulkSenderPage();
         break;
       case 'Poki Games':
         page = const PokiGamesPage();
@@ -6158,7 +6467,6 @@ class _StatusUploadWidgetState extends State<StatusUploadWidget> {
   void _showToolPicker() {
     final tools = [
       {'title': 'Poster Designer', 'description': 'Create amazing posters'},
-      {'title': 'Bulk Sender', 'description': 'Send messages in bulk'},
       {'title': 'Poki Games', 'description': 'Play games with mates'},
       // {'title': 'Drawing Academy', 'description': 'Learn to draw'},
       {'title': 'Travel Radar', 'description': 'Explore nearby places'},

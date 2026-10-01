@@ -10,6 +10,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/flutter_flow/flutter_flow_theme.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'index.dart';
 
 import 'package:pocket_mates_app/custom_code/widgets/gallery_profile_search_page.dart' hide MenuFlyoutItem;
@@ -726,7 +727,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               'learning_stage': 1,
               'learning_points': 0,
               'xp': 0,
-              'native_language': 'Malayalam',
+              'native_language': PocketLanguageService.currentLanguage,
               'english_level': 'Beginner (A1-A2)',
               'learning_goal': 'Daily Fluency & Speaking',
             };

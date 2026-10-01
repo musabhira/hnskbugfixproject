@@ -1,14 +1,22 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter/material.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/in_app_notification_service.dart';
+import 'package:pocket_mates_app/flutter_flow/nav/nav.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/tools_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/english_tasks_master_hub.dart';
 
 class PushNotificationService {
   static final FlutterLocalNotificationsPlugin _localNotificationsPlugin =
@@ -345,7 +353,25 @@ class PushNotificationService {
     if (payload == null || payload.isEmpty) return;
     try {
       debugPrint('PushNotificationService: Routing for payload: $payload');
-      // Payloads can be 'chat', 'mission', etc.
+      if (payload.startsWith('chat_p:')) {
+        final targetUserId = payload.substring(7);
+        final context = appNavigatorKey.currentContext;
+        if (context != null) {
+          final displayName = ContactsNameService().getDisplayName(
+            userId: targetUserId,
+            fallbackName: 'Poket Mate',
+          );
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => WhatsAppGroupChat(
+                groupId: 'p:$targetUserId',
+                groupName: displayName,
+                showBackButton: true,
+              ),
+            ),
+          );
+        }
+      }
     } catch (e) {
       debugPrint('PushNotificationService: Error handling payload: $e');
     }
