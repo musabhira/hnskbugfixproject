@@ -84,6 +84,8 @@ jobs:
           
       - name: Build and Sign IPA
         run: |
+          defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts NO
+          
           # Get version and build number from pubspec.yaml
           VERSION_NAME=$(grep 'version:' pubspec.yaml | sed 's/version: //; s/+.*//' | xargs)
           BUILD_NUMBER=$(grep 'version:' pubspec.yaml | sed 's/.*+//' | xargs)
@@ -109,6 +111,8 @@ jobs:
             -archivePath build/ios/Runner.xcarchive \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
+            SWIFT_ENABLE_EXPLICIT_MODULES=NO \
+            CLANG_ENABLE_EXPLICIT_MODULES=NO \
             archive
           
           # Export the archive
