@@ -2854,13 +2854,17 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   children: [
                     Builder(
                       builder: (context) {
+                        final senderId = req['sender_id']?.toString() ?? '';
+                        final isRobot = req['is_robot'] == true ||
+                            PocketRobotService.isRobotId(senderId);
                         final imgUrl =
                             req['sender_profile_image'] ?? req['avatar_url'];
-                        final isRobot = req['is_robot'] == true ||
-                            PocketRobotService.isRobotId(
-                                req['sender_id']?.toString() ?? '');
                         VectorAvatarConfig? avatarConfig;
-                        if (req['avatar_config'] != null) {
+                        if (isRobot) {
+                          final robot = PocketRobotService.getRobotById(senderId);
+                          final lvl = robot?.level ?? req['learning_stage'] ?? req['level'] ?? 1;
+                          avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(lvl is num ? lvl.toInt() : 1);
+                        } else if (req['avatar_config'] != null) {
                           try {
                             avatarConfig = VectorAvatarConfig.fromMap(
                                 Map<String, dynamic>.from(
@@ -2881,30 +2885,36 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             ),
                           ),
                           child: ClipOval(
-                            child: (imgUrl != null &&
-                                    imgUrl.toString().isNotEmpty)
-                                ? Image.network(
-                                    imgUrl.toString(),
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        avatarConfig != null
-                                            ? VectorAvatarWidget(
-                                                config: avatarConfig, size: 48)
-                                            : Container(
-                                                color: const Color(0xFFFFFC00)
-                                                    .withValues(alpha: 0.2),
-                                                alignment: Alignment.center,
-                                                child: Text(
-                                                  (req['sender_name'] ?? 'M')[0]
-                                                      .toUpperCase(),
-                                                  style: const TextStyle(
-                                                    color: Color(0xFFFFFC00),
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 16,
-                                                  ),
-                                                ),
-                                              ),
+                            child: isRobot
+                                ? VectorAvatarWidget(
+                                    config: avatarConfig ??
+                                        VectorAvatarConfig.getEvolutionAvatarForStage(1),
+                                    size: 48,
                                   )
+                                : (imgUrl != null &&
+                                        imgUrl.toString().isNotEmpty)
+                                    ? Image.network(
+                                        imgUrl.toString(),
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (_, __, ___) =>
+                                            avatarConfig != null
+                                                ? VectorAvatarWidget(
+                                                    config: avatarConfig, size: 48)
+                                                : Container(
+                                                    color: const Color(0xFFFFFC00)
+                                                        .withValues(alpha: 0.2),
+                                                    alignment: Alignment.center,
+                                                    child: Text(
+                                                      (req['sender_name'] ?? 'M')[0]
+                                                          .toUpperCase(),
+                                                      style: const TextStyle(
+                                                        color: Color(0xFFFFFC00),
+                                                        fontWeight: FontWeight.bold,
+                                                        fontSize: 16,
+                                                      ),
+                                                    ),
+                                                  ),
+                                      )
                                 : (avatarConfig != null
                                     ? VectorAvatarWidget(
                                         config: avatarConfig, size: 48)
@@ -3331,6 +3341,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   key: ValueKey(conversation.id),
                                   conversation: conversation,
                                   currentUserId: _currentUserId ?? '',
+                                  onFavoriteToggle: () {
+                                    ref
+                                        .read(conversationsProvider.notifier)
+                                        .refreshNow();
+                                    _handleRefresh();
+                                  },
                                   onTap: () async {
                                     if (conversation.isTool) {
                                       _navigateToTool(
@@ -4186,6 +4202,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                 key: ValueKey(conversation.id),
                                 conversation: conversation,
                                 currentUserId: _currentUserId ?? '',
+                                onFavoriteToggle: () {
+                                  ref
+                                      .read(conversationsProvider.notifier)
+                                      .refreshNow();
+                                  _handleRefresh();
+                                },
                                 onTap: () async {
                                   if (conversation.isTool) {
                                     _navigateToTool(

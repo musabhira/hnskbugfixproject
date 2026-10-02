@@ -1933,7 +1933,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                     child: VectorAvatarWidget(
                       config: avatarConfig,
                       size: size * 0.85,
-                      showAura: true,
+                      showAura: false,
                       useFlame: true,
                     ),
                   )),
@@ -1946,9 +1946,9 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         width: size,
         height: size,
         padding: const EdgeInsets.all(2.5),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          gradient: const SweepGradient(
+          gradient: SweepGradient(
             colors: [
               Color(0xFFFFD700), // Gold
               Color(0xFFFFA500), // Amber
@@ -1956,13 +1956,6 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
               Color(0xFFFFD700),
             ],
           ),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFFD700).withValues(alpha: isWatched ? 0.25 : 0.65),
-              blurRadius: isWatched ? 5 : 10,
-              spreadRadius: isWatched ? 0 : 2,
-            ),
-          ],
         ),
         child: avatarInner,
       );
@@ -1986,21 +1979,12 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
         animation: _vibeAuraController,
         builder: (context, child) {
           final animVal = _vibeAuraController.value;
-          final pulse = math.sin(animVal * 2 * math.pi);
           return Container(
             width: size,
             height: size,
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: (isGroup ? const Color(0xFF833AB4) : const Color(0xFFFF8906))
-                      .withValues(alpha: (0.28 + 0.18 * pulse).clamp(0.0, 1.0)),
-                  blurRadius: 7 + 4 * pulse,
-                  spreadRadius: 0.8 + 0.8 * pulse,
-                ),
-              ],
               gradient: isGroup
                   ? SweepGradient(
                       colors: const [
@@ -2978,7 +2962,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     unawaited(Future.wait([
       _markStatusAsViewed(status['id']),
-      _loadViewCount(status['id']),
+      _loadViewCount(status['id'], createdAtStr: status['created_at']?.toString()),
       _loadLikeStatus(status['id']),
       _checkMateStatus(),
     ]));
@@ -3096,7 +3080,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     }
   }
 
-  Future<void> _loadViewCount(String statusId) async {
+  Future<void> _loadViewCount(String statusId, {String? createdAtStr}) async {
     try {
       // Get view count
       final response = await supabase
@@ -3106,7 +3090,9 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           .single();
 
       final baseCount = (response['views_count'] as num?)?.toInt() ?? 0;
-      final robotViews = PocketRobotService.getSimulatedRobotViewers(statusId).length;
+      DateTime? dt;
+      if (createdAtStr != null) dt = DateTime.tryParse(createdAtStr);
+      final robotViews = PocketRobotService.getSimulatedRobotViewers(statusId, statusCreatedAt: dt).length;
 
       setState(() {
         _currentViewCount = baseCount + robotViews;
@@ -3116,8 +3102,21 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
     }
   }
 
-  Future<void> _loadViewers(String statusId) async {
+  Future<void> _loadViewers(String statusId, {String? createdAtStr}) async {
     try {
+      DateTime? dt;
+      if (createdAtStr != null) {
+        dt = DateTime.tryParse(createdAtStr);
+      } else {
+        final statuses = widget.statusGroup['statuses'] as List?;
+        if (statuses != null && _currentIndex < statuses.length) {
+          final s = statuses[_currentIndex];
+          if (s['created_at'] != null) {
+            dt = DateTime.tryParse(s['created_at'].toString());
+          }
+        }
+      }
+
       // Get all viewers with their profile info
       final response = await supabase.from('status_views').select('''
           created_at,
@@ -3139,7 +3138,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       final likedProfileIds =
           likesResponse.map((like) => like['profile_id'] as String).toSet();
 
-      final robotViewers = PocketRobotService.getSimulatedRobotViewers(statusId);
+      final robotViewers = PocketRobotService.getSimulatedRobotViewers(
+        statusId,
+        statusCreatedAt: dt,
+      );
 
       setState(() {
         _currentViewers = [
@@ -3228,21 +3230,28 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                 ),
                               );
                             },
-                            leading: CircleAvatar(
-                              backgroundColor: Colors.grey[800],
-                              backgroundImage:
-                                  profile['profile_image_url'] != null
-                                      ? CachedNetworkImageProvider(
-                                          profile['profile_image_url'])
-                                      : null,
-                              child: profile['profile_image_url'] == null
-                                  ? Text(
-                                      (profile['name'] ?? 'U')[0].toUpperCase(),
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                    )
-                                  : null,
-                            ),
+                            leading: isRobot
+                                ? VectorAvatarWidget(
+                                    config: VectorAvatarConfig.getEvolutionAvatarForStage(
+                                        (profile['level'] as num?)?.toInt() ?? 1),
+                                    size: 40,
+                                    showAura: false,
+                                  )
+                                : CircleAvatar(
+                                    backgroundColor: Colors.grey[800],
+                                    backgroundImage:
+                                        profile['profile_image_url'] != null
+                                            ? CachedNetworkImageProvider(
+                                                profile['profile_image_url'])
+                                            : null,
+                                    child: profile['profile_image_url'] == null
+                                        ? Text(
+                                            (profile['name'] ?? 'U')[0].toUpperCase(),
+                                            style:
+                                                const TextStyle(color: Colors.white),
+                                          )
+                                        : null,
+                                  ),
                             title: Row(
                               children: [
                                 Flexible(
@@ -3679,6 +3688,22 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
             _dragPosition = 0.0;
           });
         },
+        onVerticalDragEnd: (details) {
+          final velocity = details.primaryVelocity ?? 0;
+          if (velocity < -200) {
+            // Swipe UP: Open Instagram-style story viewers list!
+            if (isOwnStatus && currentStatus['id'] != null) {
+              HapticFeedback.lightImpact();
+              _loadViewers(
+                currentStatus['id'],
+                createdAtStr: currentStatus['created_at']?.toString(),
+              );
+            }
+          } else if (velocity > 350) {
+            // Swipe DOWN: Dismiss story!
+            Navigator.of(context).pop();
+          }
+        },
         onTapUp: (details) {
           final tapX = details.globalPosition.dx;
           // Side tapping navigation (Instagram style)
@@ -3996,7 +4021,10 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                         // View Count (Only show for own status)
                         if (isOwnStatus)
                           GestureDetector(
-                            onTap: () => _loadViewers(currentStatus['id']),
+                            onTap: () => _loadViewers(
+                              currentStatus['id'],
+                              createdAtStr: currentStatus['created_at']?.toString(),
+                            ),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -4384,14 +4412,39 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
 
     if (status['media_type'] == 'thought') {
       final thoughtData = status['thought'];
+      final String? profileId = (status['profile_id'] ?? status['user_id'])?.toString();
+      final isRobot = status['is_robot'] == true ||
+          (profileId != null && PocketRobotService.isRobotId(profileId));
+
       final profile = (thoughtData != null &&
               thoughtData['user']?['profile'] is List &&
               (thoughtData['user']['profile'] as List).isNotEmpty)
           ? thoughtData['user']['profile'][0]
-          : (thoughtData != null ? thoughtData['profile'] ?? {} : {});
+          : (thoughtData != null && thoughtData['profile'] is Map
+              ? thoughtData['profile']
+              : (status['profile'] is Map ? status['profile'] : {}));
 
-      final authorName = profile['name'] ?? 'User';
-      final String? authorAvatar = profile['profile_image_url'];
+      String authorName = profile['name'] ?? status['user_name'] ?? '';
+      if (authorName.isEmpty || authorName == 'User') {
+        if (isRobot && profileId != null) {
+          final r = PocketRobotService.getRobotById(profileId);
+          if (r != null) authorName = r.name;
+        }
+        if (authorName.isEmpty) authorName = isRobot ? 'Pocket Mate' : 'User';
+      }
+
+      int robotLevel = 1;
+      if (isRobot) {
+        if (profileId != null) {
+          final r = PocketRobotService.getRobotById(profileId);
+          if (r != null) robotLevel = PocketRobotService.getDynamicLevel(r);
+        }
+        if (robotLevel == 1 && profile['level'] is num) {
+          robotLevel = (profile['level'] as num).toInt();
+        }
+      }
+
+      final String? authorAvatar = profile['profile_image_url'] ?? status['user_avatar'];
       final thoughtContent =
           (thoughtData != null && thoughtData['content'] != null)
               ? thoughtData['content']
@@ -4932,177 +4985,219 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                 ),
               ],
             ),
-        );
-      } else {
-        content = Container(
-        width: double.infinity,
-        height: double.infinity,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF000000), Color(0xFF000000)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Center(
-          child: GestureDetector(
-            onTap: () => _showQuickActionDialog(status),
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 32),
-              padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: const Color(0xFF262626),
-              borderRadius: BorderRadius.circular(24),
-              border:
-                  Border.all(color: Colors.yellow.withValues(alpha: 0.2), width: 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.5),
-                  blurRadius: 20,
-                  offset: const Offset(0, 10),
-                ),
-              ],
+          );
+        } else {
+          content = Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF070B14)],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                            color: Colors.yellow.withValues(alpha: 0.5), width: 1.5),
-                      ),
-                      child: CircleAvatar(
-                        backgroundColor: Colors.black,
-                        backgroundImage: authorAvatar != null
-                            ? CachedNetworkImageProvider(authorAvatar)
-                            : null,
-                        child: authorAvatar == null
-                            ? Text(authorName[0].toUpperCase(),
-                                style: const TextStyle(
-                                    color: Colors.yellow,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 16))
-                            : null,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            authorName,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
-                            ),
-                          ),
-                          const Text(
-                            'Shared a thought',
-                            style: TextStyle(
-                              color: Colors.white38,
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Opacity(
-                      opacity: 0.3,
-                      child: Icon(Icons.format_quote_rounded,
-                          color: Colors.yellow, size: 24),
-                    ),
-                    const SizedBox(width: 8),
-                    // Direct Like on Card
-                    GestureDetector(
-                      onTap: () => _toggleLike(status['id']),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          _isLiked ? Icons.favorite : Icons.favorite_border,
-                          color: _isLiked ? Colors.red : Colors.white70,
-                          size: 18,
-                        ),
-                      ),
+            child: Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 24),
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B).withValues(alpha: 0.85),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.12),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.4),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                Text(
-                  thoughtContent,
-                  maxLines: 6,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    height: 1.5,
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                const SizedBox(height: 32),
-                Center(
-                  child: InkWell(
-                    onTap: () {
-                      _togglePause(); // Pause status while viewing thought
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ThreadCommentsPage(
-                            threadId: status['thought_id'].toString(),
-                            threadContent: thoughtContent,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isRobot
+                                  ? const Color(0xFF06B6D4)
+                                  : const Color(0xFFFFFC00).withValues(alpha: 0.6),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: ClipOval(
+                            child: isRobot
+                                ? VectorAvatarWidget(
+                                    config: VectorAvatarConfig.getEvolutionAvatarForStage(robotLevel),
+                                    size: 44,
+                                    showAura: false,
+                                  )
+                                : (authorAvatar != null && authorAvatar.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: authorAvatar,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (_, __, ___) => Container(
+                                        color: const Color(0xFF0F172A),
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          authorName.isNotEmpty ? authorName[0].toUpperCase() : 'M',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : Container(
+                                      color: const Color(0xFF0F172A),
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        authorName.isNotEmpty ? authorName[0].toUpperCase() : 'M',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    )),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              authorName,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                              ),
+                            ),
+                            Text(
+                              isRobot ? 'AI Companion • Shared thought' : 'Shared a thought',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF94A3B8),
+                                fontSize: 11.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Icon(
+                        Icons.format_quote_rounded,
+                        color: isRobot ? const Color(0xFF06B6D4) : const Color(0xFFFFFC00),
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      // Direct Like on Card
+                      GestureDetector(
+                        onTap: () => _toggleLike(status['id']),
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.05),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _isLiked ? Icons.favorite : Icons.favorite_border,
+                            color: _isLiked ? Colors.red : Colors.white70,
+                            size: 18,
                           ),
                         ),
-                      ).then((_) {
-                        _togglePause(); // Resume when returning
-                      });
-                    },
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.yellow.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(20),
-                        border:
-                            Border.all(color: Colors.yellow.withValues(alpha: 0.3)),
                       ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.remove_red_eye_outlined,
-                              color: Colors.yellow, size: 16),
-                          SizedBox(width: 8),
-                          Text(
-                            'View Details',
-                            style: TextStyle(
-                                color: Colors.yellow,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  Text(
+                    thoughtContent,
+                    maxLines: 7,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFF1F5F9),
+                      fontSize: 16.5,
+                      height: 1.5,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: InkWell(
+                      onTap: () {
+                        final tid = status['thought_id'] ??
+                            status['thought']?['id'] ??
+                            (isRobot ? 'thread_${profileId ?? 'robot'}_1' : null);
+                        if (tid == null) return;
+                        _togglePause(); // Pause status while viewing thought
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ThreadCommentsPage(
+                              threadId: tid.toString(),
+                              threadContent: thoughtContent,
+                              threadData: thoughtData is Map<String, dynamic>
+                                  ? thoughtData
+                                  : (thoughtData is Map
+                                      ? Map<String, dynamic>.from(thoughtData)
+                                      : null),
+                            ),
                           ),
-                        ],
+                        ).then((_) {
+                          _togglePause(); // Resume when returning
+                        });
+                      },
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF334155).withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.15),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.chat_bubble_outline_rounded,
+                              color: Color(0xFF38BDF8),
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'View Discussion',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF38BDF8),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
-        ),
-      ),
-    );
-  }
-} else if (status['media_type'] == 'course') {
+        );
+      }
+    } else if (status['media_type'] == 'course') {
       final metadata = status['metadata'] ?? {};
       final title = metadata['course_title'] ?? 'Course';
       final description = metadata['course_description'] ?? '';

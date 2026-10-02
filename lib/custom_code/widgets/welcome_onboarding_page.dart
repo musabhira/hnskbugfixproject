@@ -1240,9 +1240,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _mode == WelcomeMode.signIn
-          ? const Color(0xFF0F172A)
-          : const Color(0xFF0284C7),
+      backgroundColor: _mode == WelcomeMode.onboarding
+          ? const Color(0xFF0284C7)
+          : const Color(0xFF080C16),
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
@@ -1334,25 +1334,29 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   // 1. WELCOME SCREEN (Initial Launch)
   // =========================================================================
   Widget _buildWelcomeScreen() {
-    return SafeArea(
+    return Stack(
       key: const ValueKey('WelcomeScreen'),
-      child: Stack(
-        children: [
-          // Ambient soft radial gradient in center
-          Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: RadialGradient(
-                  center: Alignment(0, -0.2),
-                  radius: 0.85,
-                  colors: [
-                    Color(0xFF0F172A),
-                    Color(0xFF080C16),
-                  ],
-                ),
+      children: [
+        // Ambient soft radial gradient in center - fills full screen edge-to-edge
+        Positioned.fill(
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                center: Alignment(0, -0.2),
+                radius: 0.85,
+                colors: [
+                  Color(0xFF0F172A),
+                  Color(0xFF080C16),
+                ],
               ),
             ),
           ),
+        ),
+
+        // Safe area content
+        SafeArea(
+          child: Stack(
+            children: [
 
           // Top Controls: Mute/Unmute Audio
           Positioned(
@@ -1485,7 +1489,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           ),
         ],
       ),
-    );
+    ),
+  ],
+);
   }
 
   Widget _buildFeaturePill(String text) {

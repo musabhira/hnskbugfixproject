@@ -1095,26 +1095,57 @@ class PocketRobotService {
     } else if (choice >= 5 && choice <= 6) {
       // --- 3. Thought / Daily Reflection ---
       final thoughts = [
-        '💭 Daily Fluency Thought:\n"Fluency is not about never making mistakes. It is about speaking with confidence and rhythm without stopping yourself." — ${robot.name} ✨',
-        '💭 Mindset Note:\n"Don\'t translate in your head. Train your mouth to speak simple 3-word thoughts directly in English." 🧠',
-        '💭 Evening Reflection:\n"Every 10 minutes of speaking English today builds neural speech pathways for tomorrow." 🚀',
-        '💭 Pocket Wisdom:\n"Consistency beats talent every single time. 1 mission a day equals mastery in 90 days." 🏆',
+        'Fluency is not about never making mistakes. It is about speaking with confidence and rhythm without stopping yourself. ✨',
+        'Don\'t translate in your head. Train your mouth to speak simple 3-word thoughts directly in English. 🧠',
+        'Every 10 minutes of speaking English today builds neural speech pathways for tomorrow. 🚀',
+        'Consistency beats talent every single time. 1 mission a day equals mastery in 90 days. 🏆',
       ];
       final thoughtText = thoughts[rand.nextInt(thoughts.length)];
+      final thoughtId = 'thread_${robot.id}_${now.millisecondsSinceEpoch}';
+      final thoughtMap = {
+        'id': thoughtId,
+        'content': thoughtText,
+        'user_id': robot.id,
+        'created_at': now.toIso8601String(),
+        'like_count': 16 + (dynLvl * 2),
+        'comment_count': 2,
+        'profile': {
+          'id': robot.id,
+          'name': robot.name,
+          'profile_image_url': robot.avatarUrl,
+          'level': dynLvl,
+        },
+        'user': {
+          'id': robot.id,
+          'profile': [
+            {
+              'name': robot.name,
+              'profile_image_url': robot.avatarUrl,
+            }
+          ]
+        }
+      };
+
       vibeItem = {
         'id': 'vibe_${robot.id}_${now.millisecondsSinceEpoch}',
+        'thought_id': thoughtId,
         'media_type': 'thought',
         'media_url': '',
         'caption': thoughtText,
         'created_at': now.toIso8601String(),
         'expires_at': now.add(const Duration(hours: 12)).toIso8601String(),
         'profile_id': robot.id,
+        'user_id': robot.id,
+        'user_name': robot.name,
+        'user_avatar': robot.avatarUrl,
         'is_active': true,
         'is_robot': true,
+        'thought': thoughtMap,
         'metadata': {
           'tag': '💭 Daily Thought',
           'category': 'Mindset',
           'item_type': 'thought_share',
+          'thought_id': thoughtId,
           'gradient_colors': [0xFF8B5CF6, 0xFFEC4899],
         },
         'profile': {
@@ -1774,29 +1805,83 @@ class PocketRobotService {
     return comments;
   }
 
-  /// 👁️ Simulated robot viewers for user-uploaded Vibes (status)
-  static List<Map<String, dynamic>> getSimulatedRobotViewers(String statusId) {
+  /// 👁️ Realistic simulated robot viewers for user-uploaded Vibes (status)
+  /// Viewer count and timestamps realistically correspond to status creation time:
+  /// - Just posted (< 45 sec): 0 viewers (Nobody has opened it yet)
+  /// - 45s - 2m: 0 to 1 viewer
+  /// - 2m - 10m: 1 to 2 viewers
+  /// - 10m - 30m: 2 to 3 viewers
+  /// - 30m - 3h: 3 to 5 viewers
+  /// - > 3h: 4 to 6 viewers max
+  /// Timestamps are strictly AFTER statusCreatedAt and before now!
+  static List<Map<String, dynamic>> getSimulatedRobotViewers(
+    String statusId, {
+    DateTime? statusCreatedAt,
+  }) {
     final now = DateTime.now();
-    final allRobots = getAllRobots();
-    final sampleRobots = [
-      if (allRobots.isNotEmpty) allRobots[0],
-      if (allRobots.length > 4) allRobots[4],
-      if (allRobots.length > 11) allRobots[11],
-      if (allRobots.length > 21) allRobots[21],
-      if (allRobots.length > 44) allRobots[44],
-    ];
+    final createdAt = statusCreatedAt ?? now.subtract(const Duration(minutes: 5));
+    final age = now.difference(createdAt);
 
-    return sampleRobots.asMap().entries.map((entry) {
+    // Determine realistic viewer count based on status age
+    int count = 0;
+    if (age.inSeconds < 45) {
+      count = 0; // Just posted! No one has opened it yet.
+    } else if (age.inMinutes < 2) {
+      count = (statusId.hashCode.abs() % 2 == 0) ? 1 : 0;
+    } else if (age.inMinutes < 10) {
+      count = 1 + (statusId.hashCode.abs() % 2); // 1 or 2 viewers
+    } else if (age.inMinutes < 30) {
+      count = 2 + (statusId.hashCode.abs() % 2); // 2 or 3 viewers
+    } else if (age.inHours < 3) {
+      count = 3 + (statusId.hashCode.abs() % 3); // 3 to 5 viewers
+    } else {
+      count = 4 + (statusId.hashCode.abs() % 3); // 4 to 6 viewers
+    }
+
+    if (count <= 0) return [];
+
+    final allRobots = getAllRobots();
+    if (allRobots.isEmpty) return [];
+
+    // Deterministically pick robots unique to this statusId
+    final hash = statusId.hashCode.abs();
+    final selectedRobots = <PocketRobot>[];
+    for (int i = 0; i < count; i++) {
+      final index = (hash + (i * 7) + 3) % allRobots.length;
+      final robot = allRobots[index];
+      if (!selectedRobots.any((r) => r.id == robot.id)) {
+        selectedRobots.add(robot);
+      }
+    }
+
+    // Assign realistic viewing timestamps between createdAt and now
+    return selectedRobots.asMap().entries.map((entry) {
       final idx = entry.key;
       final r = entry.value;
       final dynLvl = getDynamicLevel(r);
+
+      // Stagger along the elapsed time
+      final stepFraction = (idx + 1) / (selectedRobots.length + 1);
+      final offsetFromCreated = Duration(
+        milliseconds: (age.inMilliseconds * stepFraction).round(),
+      );
+      var viewTime = createdAt.add(offsetFromCreated);
+      if (viewTime.isAfter(now)) {
+        viewTime = now.subtract(Duration(seconds: 10 + (idx * 15)));
+      }
+      if (viewTime.isBefore(createdAt)) {
+        viewTime = createdAt.add(Duration(seconds: 5 + (idx * 5)));
+      }
+
+      final isLiked = (hash + idx) % 4 == 0 && age.inMinutes >= 5;
+
       return {
         'id': 'sim_view_${statusId}_${r.id}',
-        'created_at': now
-            .subtract(Duration(minutes: (idx + 1) * 8 + 4))
-            .toIso8601String(),
+        'created_at': viewTime.toIso8601String(),
         'viewer_profile_id': r.id,
         'viewer_user_id': r.id,
+        'is_robot': true,
+        'is_liked': isLiked,
         'profile': {
           'id': r.id,
           'name': r.name,

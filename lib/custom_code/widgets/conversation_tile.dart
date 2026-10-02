@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async' as async;
 import 'package:flutter/material.dart' as material;
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:pocket_mates_app/custom_code/widgets/chat/whats_app_groups_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
@@ -30,6 +32,7 @@ class ConversationTile extends StatefulWidget {
   final VoidCallback? onLongPress;
   final VoidCallback? onSnapCameraTap;
   final VoidCallback? onSnapViewTap;
+  final VoidCallback? onFavoriteToggle;
 
   const ConversationTile({
     super.key,
@@ -40,6 +43,7 @@ class ConversationTile extends StatefulWidget {
     this.onLongPress,
     this.onSnapCameraTap,
     this.onSnapViewTap,
+    this.onFavoriteToggle,
   });
 
   @override
@@ -1465,6 +1469,11 @@ class _ConversationTileState extends State<ConversationTile> {
                   const SizedBox(width: 6),
                   _buildTrailingActionButton(isDark),
                 ],
+                // Tool Favorited Love / Heart Button in All chats
+                if (widget.conversation.isTool) ...[
+                  const SizedBox(width: 6),
+                  _buildToolFavoriteButton(),
+                ],
               ],
             ),
           ),
@@ -1572,6 +1581,40 @@ class _ConversationTileState extends State<ConversationTile> {
       child: tileContent,
     );
 
+  }
+
+  Future<void> _handleToolFavoriteToggle() async {
+    HapticFeedback.mediumImpact();
+    final toolTitle = widget.conversation.toolTitle ?? widget.conversation.name;
+    final prefs = await SharedPreferences.getInstance();
+    final userId = widget.currentUserId.isNotEmpty ? widget.currentUserId : 'guest';
+
+    for (final key in ['favorited_tools_$userId', 'favorited_tools_guest']) {
+      final raw = prefs.getString(key) ?? '[]';
+      try {
+        final list = List<dynamic>.from(jsonDecode(raw));
+        list.removeWhere((e) => e is Map && e['title'] == toolTitle);
+        await prefs.setString(key, jsonEncode(list));
+      } catch (_) {}
+    }
+
+    if (widget.onFavoriteToggle != null) {
+      widget.onFavoriteToggle!();
+    }
+  }
+
+  Widget _buildToolFavoriteButton() {
+    return material.IconButton(
+      icon: const Icon(
+        Icons.favorite_rounded,
+        color: Color(0xFFFF2E93),
+        size: 21,
+      ),
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+      onPressed: _handleToolFavoriteToggle,
+      tooltip: 'Remove from favorites',
+    );
   }
 
   Widget _buildTrailingActionButton(bool isDark) {

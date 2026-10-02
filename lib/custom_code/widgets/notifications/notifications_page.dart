@@ -286,8 +286,14 @@ class _NotificationsPageState extends State<NotificationsPage> {
                   ..._connectionRequests.map((req) {
                     final stageNum = (req['stage'] as num?)?.toInt() ?? 1;
                     final stage = LearningMilestoneStage.getStageForDay(stageNum);
+                    final isRobot = req['isRobot'] == true ||
+                        PocketRobotService.isRobotId(req['senderId']?.toString() ?? '');
                     VectorAvatarConfig? avatarConfig;
-                    if (req['avatarConfig'] != null) {
+                    if (isRobot) {
+                      final robot = PocketRobotService.getRobotById(req['senderId']?.toString() ?? '');
+                      final lvl = robot?.level ?? (req['stage'] as num?)?.toInt() ?? 1;
+                      avatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(lvl);
+                    } else if (req['avatarConfig'] != null) {
                       try {
                         avatarConfig = VectorAvatarConfig.fromMap(Map<String, dynamic>.from(req['avatarConfig']));
                       } catch (_) {}
@@ -309,20 +315,22 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             children: [
                               ClipRRect(
                                 borderRadius: BorderRadius.circular(22),
-                                child: (req['avatarUrl'] != null &&
-                                        (req['avatarUrl'] as String).isNotEmpty)
-                                    ? Image.network(
-                                        req['avatarUrl'],
-                                        width: 44,
-                                        height: 44,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            VectorAvatarWidget(
-                                                config: avatarConfig!,
-                                                size: 44),
-                                      )
-                                    : VectorAvatarWidget(
-                                        config: avatarConfig, size: 44),
+                                child: isRobot
+                                    ? VectorAvatarWidget(config: avatarConfig, size: 44)
+                                    : ((req['avatarUrl'] != null &&
+                                            (req['avatarUrl'] as String).isNotEmpty)
+                                        ? Image.network(
+                                            req['avatarUrl'],
+                                            width: 44,
+                                            height: 44,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) =>
+                                                VectorAvatarWidget(
+                                                    config: avatarConfig!,
+                                                    size: 44),
+                                          )
+                                        : VectorAvatarWidget(
+                                            config: avatarConfig, size: 44)),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
