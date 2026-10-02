@@ -259,12 +259,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   int _levelRivalShuffleSeed = 0;
 
   // Spacing & node dimensions for upward climbing roadmap with 90 English Houses
-  static const double _nodeSpacingY = 220.0;
-  static const double _expandedActiveGap = 290.0;
-  static const double _topPadding = 420.0; // Summit apex spacing with Citadel Palace
-  static const double _bottomPadding = 280.0;
-  double get _ruleNodeY => _getNodeY(1) + 160.0; // Positioned below Day 1 at the bottom
+  // User audio directive: "nalla space itto... valiya route aayikkotte... aakaashathra space aayikkotte... onnoode vishaalamaayi potte"
+  static const double _nodeSpacingY = 320.0;
+  static const double _expandedActiveGap = 440.0;
+  static const double _topPadding = 480.0; // Summit apex spacing with Citadel Palace
+  static const double _bottomPadding = 320.0;
+  double get _ruleNodeY => _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
   final Map<String, bool> _subStepFlags = {};
+  bool _hasInitiallyScrolled = false;
 
   @override
   void initState() {
@@ -439,12 +441,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         _isRefreshing = false;
       });
 
-      // Auto-scroll to current active day or Rules node & check daily consistency
+      // Instant initial positioning to current active day or Rules node without animated downward scroll
+      // User Audio Directive: "keri varumbol thanne ... scroll cheythu adiyil pokunna feeling undu, athu venda. Starting thanne scrollingil ninnu thudangiyaal mathi... speed-il athu venda"
       WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (!rulesAccepted) {
-          _scrollToRule(animate: true);
-        } else {
-          _scrollToDay(prog.currentDay, animate: true);
+        if (!_hasInitiallyScrolled) {
+          _hasInitiallyScrolled = true;
+          if (!rulesAccepted) {
+            _scrollToRule(animate: false);
+          } else {
+            _scrollToDay(prog.currentDay, animate: false);
+          }
         }
 
         // 🚨 Check Daily Consistency (User Audio Directive: Consistency loss / focus loss downgrade)
@@ -490,7 +496,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     return y;
   }
 
-  void _scrollToRule({bool animate = true}) {
+  void _scrollToRule({bool animate = false}) {
     if (!_scrollController.hasClients) return;
     final targetY = _ruleNodeY - 280.0;
     final clampedY = targetY.clamp(
@@ -508,7 +514,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
   }
 
-  void _scrollToDay(int day, {bool animate = true}) {
+  void _scrollToDay(int day, {bool animate = false}) {
     if (!_scrollController.hasClients) return;
     final targetY = _getNodeY(day) - 280.0;
     final clampedY = targetY.clamp(
@@ -855,6 +861,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
   }
 
+  /// 🎯 Launches the active in-path sub-step for the given day directly on the trail!
+  /// User Audio Directive: "Day 1, Day 2 ennu paranju DETAIL PAGE ILLA... onnum detail page-ilekku pondaaa!"
+  void _startActiveSubStep(int day) {
+    final subSteps = _getSubStepsForDay(day, _currentLearnerLevel);
+    // Find the first unlocked but incomplete step
+    final activeStep = subSteps.firstWhere(
+      (s) => s.isUnlocked && !s.isCompleted,
+      orElse: () => subSteps.first,
+    );
+    activeStep.onAction();
+  }
+
   void _navigateToMissionPage(int day) {
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     if (uid == null || uid.isEmpty) {
@@ -862,17 +880,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       return;
     }
     HapticFeedback.selectionClick();
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PocketDailyMissionPage(
-          day: day,
-          onMissionCompleted: () => _loadData(),
-        ),
-      ),
-    );
+    // User Audio Directive: "DETAIL PAGE ILLA ennaanu njan parayaan ponathu. Onnum detail page-ilekku pondaaa!"
+    // Directly launch the active in-path sub-step on the climbing trail!
+    _startActiveSubStep(day);
   }
 
+  // ignore: unused_element
   void _showLevelMissionDialog(int day) {
     HapticFeedback.lightImpact();
     final prog =
@@ -2894,10 +2907,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             );
             return;
           }
-          if (isUnlocked) {
-            _navigateToMissionPage(day);
+          if (isCurrent) {
+            _startActiveSubStep(day);
+          } else if (isCompleted) {
+            _showHouseDetailsSheet(day);
+          } else if (isWaitingForMidnight) {
+            _showMidnightLockedToast(day);
           } else {
-            _showLevelMissionDialog(day);
+            _showLevelLockedToast(day);
           }
         },
         child: SizedBox(
@@ -3233,7 +3250,28 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       top: houseTop,
       child: GestureDetector(
         onTap: () {
-          _showHouseDetailsSheet(day);
+          HapticFeedback.lightImpact();
+          if (!_hasAcceptedRules && day == 1) {
+            PocketWorldGameRulesModal.show(
+              context,
+              currentDay: currentDay,
+              onPledgeAccepted: () {
+                setState(() => _hasAcceptedRules = true);
+                _loadData();
+              },
+            );
+            return;
+          }
+          if (isCurrent) {
+            // User Audio Directive: "DETAIL PAGE ILLA... onnum detail page-ilekku pondaaa!"
+            _startActiveSubStep(day);
+          } else if (isCompleted) {
+            _showHouseDetailsSheet(day);
+          } else if (isWaitingForMidnight) {
+            _showMidnightLockedToast(day);
+          } else {
+            _showLevelLockedToast(day);
+          }
         },
         child: SizedBox(
           width: houseWidth,
@@ -3261,18 +3299,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
 
               // 2. High-performance RepaintBoundary wrapping HouseMasterPainter
+              // User Audio Directive: "disabled aavunna pole color kalanjittu nilkkande. Ella veedukalukkum color vecho, pakshe lock aakki vechaal mathi"
               Positioned.fill(
                 child: RepaintBoundary(
-                  child: Opacity(
-                    opacity: isUnlocked || isWaitingForMidnight ? 1.0 : 0.65,
-                    child: CustomPaint(
-                      size: Size(houseWidth, houseHeight),
-                      painter: HouseMasterPainter(
-                        day: day,
-                        palette: palette,
-                        isPresident: (day >= 90),
-                        lightsOn: isCompleted || isCurrent,
-                      ),
+                  child: CustomPaint(
+                    size: Size(houseWidth, houseHeight),
+                    painter: HouseMasterPainter(
+                      day: day,
+                      palette: palette,
+                      isPresident: (day >= 90),
+                      lightsOn: isCompleted || isCurrent,
                     ),
                   ),
                 ),
@@ -3373,7 +3409,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ),
 
-              // 5. Flame Badge when Level is Completed (Audio Directive)
+              // 5. Flame Badge when Level is Completed (Audio Directive: "athinu kazhinja udane flame okke kodukkaam")
               if (isCompleted)
                 Positioned(
                   bottom: 24,
@@ -3404,6 +3440,46 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             fontSize: 7.5,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // 6. Gate Locked Badge when not unlocked (Audio Directive: "Ella veedukalukkum color vecho, pakshe lock aakki vechaal mathi")
+              if (!isUnlocked && !isWaitingForMidnight)
+                Positioned(
+                  bottom: 24,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+                        width: 1,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 9),
+                        const SizedBox(width: 3),
+                        Text(
+                          'GATE LOCKED',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.4,
                           ),
                         ),
                       ],
@@ -3643,22 +3719,26 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 );
                                 return;
                               }
-                              if (isUnlocked && !isWaitingForMidnight) {
-                                _navigateToMissionPage(day);
+                              if (isCurrent) {
+                                _startActiveSubStep(day);
+                              } else if (isCompleted) {
+                                _startActiveSubStep(day);
+                              } else if (isWaitingForMidnight) {
+                                _showMidnightLockedToast(day);
                               } else {
-                                _showLevelMissionDialog(day);
+                                _showLevelLockedToast(day);
                               }
                             },
                             icon: Icon(
                               isCompleted
                                   ? Icons.replay_rounded
-                                  : (isCurrent ? Icons.play_arrow_rounded : Icons.lock_open_rounded),
+                                  : (isCurrent ? Icons.play_arrow_rounded : Icons.lock_rounded),
                               size: 18,
                             ),
                             label: Text(
                               isCompleted
-                                  ? 'Review Day'
-                                  : (isCurrent ? 'Enter Doorstep' : 'View Level'),
+                                  ? 'Replay Sub-Steps'
+                                  : (isCurrent ? 'Start Trail Step' : 'Gate Locked'),
                               style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
                             ),
                           ),
@@ -3672,6 +3752,67 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           ),
         );
       },
+    );
+  }
+
+  void _showMidnightLockedToast(int day) {
+    HapticFeedback.selectionClick();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF1E1B4B),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: const BorderSide(color: Color(0xFFFFD700), width: 1.2),
+        ),
+        content: Row(
+          children: [
+            const Text('⏳', style: TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Day $day Estate unlocks at midnight! (${Learning60DayService.formatRemainingCountdown(_timeUntilMidnight)})',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showLevelLockedToast(int day) {
+    HapticFeedback.selectionClick();
+    final currentDay = _progress?.currentDay ?? 1;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: const Color(0xFF0F172A),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(color: Colors.white.withValues(alpha: 0.2), width: 1.0),
+        ),
+        content: Row(
+          children: [
+            const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 16),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Day $day Gate is locked! Complete Day $currentDay trail steps first to unlock.',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 12,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
