@@ -5,11 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_interactive_teacher_game.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/english_tasks_master_hub.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_90day_vocab_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fluency_gym_detail_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_secret_code_grammar_card.dart';
@@ -19,17 +19,11 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_time_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_alphabet_phonics_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_curriculum_registry.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/zero_foundation_curriculum_db.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/career_adventure/cyber_vocab_game_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_daily_mission_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_level_exam_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_syllabus_repository.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/english_match/stage_peer_matchmaker.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
-import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 
 /// 🏔️ Dedicated Open-World Level Adventure Page (User Audio Directive!)
 ///
@@ -67,7 +61,6 @@ class _PocketDayOpenWorldAdventurePageState
   late AnimationController _animController;
 
   final Map<String, bool> _subStepFlags = {};
-  LearnerLevel _currentLearnerLevel = LearnerLevel.zero;
   bool _isLoading = true;
   double _zoomScale = 0.85;
 
@@ -105,7 +98,6 @@ class _PocketDayOpenWorldAdventurePageState
 
   Future<void> _loadState() async {
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
-    final lvl = await PocketSyllabusRepository.getSavedLevel();
     final prefs = await SharedPreferences.getInstance();
 
     final Map<String, bool> flags = {};
@@ -116,7 +108,6 @@ class _PocketDayOpenWorldAdventurePageState
 
     if (mounted) {
       setState(() {
-        _currentLearnerLevel = lvl;
         _subStepFlags.clear();
         _subStepFlags.addAll(flags);
         _isLoading = false;
@@ -166,8 +157,10 @@ class _PocketDayOpenWorldAdventurePageState
     final targetY = -(worldY * scale) + (size.height / 2.0);
 
     final targetMatrix = Matrix4.identity()
-      ..translate(targetX, targetY)
-      ..scale(scale);
+      ..setEntry(0, 0, scale)
+      ..setEntry(1, 1, scale)
+      ..setEntry(0, 3, targetX)
+      ..setEntry(1, 3, targetY);
 
     if (animate) {
       _transformController.value = targetMatrix;
@@ -986,8 +979,8 @@ class _PocketDayOpenWorldAdventurePageState
             padding: const EdgeInsets.all(16),
             child: PocketSentenceBuilderCard(
               day: day,
-              selectedLanguage: 'Malayalam',
               isCompleted: _subStepFlags['step_6'] ?? false,
+              onSpeak: (_) {},
               onCompleted: (val) {
                 if (val) {
                   Navigator.pop(ctx);
@@ -1066,7 +1059,7 @@ class _PocketDayOpenWorldAdventurePageState
         // Step 12: Cyber Vocab Quest
         final res = await Navigator.push<bool>(
           context,
-          MaterialPageRoute(builder: (_) => CyberVocabGamePage(day: day)),
+          MaterialPageRoute(builder: (_) => const CyberVocabGamePage()),
         );
         if (res == true) _onStepCompleted(12);
         break;
@@ -1080,9 +1073,9 @@ class _PocketDayOpenWorldAdventurePageState
         // Step 14: Code English Decoder
         await PocketCodeEnglishDecoderModal.show(
           context,
-          day: day,
-          onCompleted: () => _onStepCompleted(14),
+          currentDay: day,
         );
+        _onStepCompleted(14);
         break;
 
       case 15:
@@ -1104,8 +1097,7 @@ class _PocketDayOpenWorldAdventurePageState
         // Step 17: Mastery Exam
         final examRes = await PocketLevelExamDialog.show(
           context,
-          day: day,
-          selectedLanguage: 'Malayalam',
+          level: day,
         );
         if (examRes == true) {
           _onStepCompleted(17);
