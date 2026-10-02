@@ -98,8 +98,6 @@ jobs:
           flutter build ios --release \
             --build-name=$VERSION_NAME \
             --build-number=$BUILD_NUMBER \
-            --dart-define=FLUTTER_BUILD_NAME=$VERSION_NAME \
-            --dart-define=FLUTTER_BUILD_NUMBER=$BUILD_NUMBER \
             --no-codesign
           
           # Re-unlock keychain and set as default for the archive phase
