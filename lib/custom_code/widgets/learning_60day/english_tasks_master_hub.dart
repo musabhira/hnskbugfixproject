@@ -34,6 +34,7 @@ import 'pocket_level_exam_dialog.dart';
 import 'pocket_alphabet_phonics_game_page.dart';
 import 'zero_foundation_curriculum_db.dart';
 import 'pocket_mission_curriculum_1_18.dart';
+import 'pocket_mission_curriculum_registry.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:flame/components.dart' show Vector2;
 import 'flame_english_house_game.dart';
@@ -873,6 +874,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         day: day,
         selectedLanguage: 'Malayalam',
         isCompleted: _subStepFlags['step_5'] ?? false,
+        onSpeak: (text) {},
         onCompleted: (val) async {
           if (val) {
             await _onSubStepFinished(day, 5);
@@ -893,6 +895,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       childBuilder: (ctx, markDone) => PocketSentenceBuilderCard(
         day: day,
         isCompleted: _subStepFlags['step_6'] ?? false,
+        onSpeak: (text) {},
         onCompleted: (val) async {
           if (val) {
             await _onSubStepFinished(day, 6);
@@ -914,6 +917,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         day: day,
         selectedLanguage: 'Malayalam',
         isCompleted: _subStepFlags['step_7'] ?? false,
+        onSpeak: (text) {},
         onCompleted: (val) async {
           if (val) {
             await _onSubStepFinished(day, 7);
@@ -1028,7 +1032,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   // 14: Code English Decoder
   Future<void> _launchStep14_CodeEnglish(int day) async {
     HapticFeedback.lightImpact();
-    await PocketCodeEnglishDecoderModal.show(context, day: day);
+    await PocketCodeEnglishDecoderModal.show(context, currentDay: day);
     await _onSubStepFinished(day, 14);
   }
 
@@ -5564,7 +5568,7 @@ class _AdventureMapRoadPainter extends CustomPainter {
     for (int day = 1; day < totalDays; day++) {
       final p1 = Offset(_getNodeX(day), _getNodeY(day));
       final p2 = Offset(_getNodeX(day + 1), _getNodeY(day + 1));
-      final midPoint = Offset((p1.dx + p2.dx) / 2, (p1.dy + p2.dy) / 2);
+      // midPoint removed (was unused after switchback refactor)
 
       if (day == 1) {
         fullPath.moveTo(p1.dx, p1.dy);
