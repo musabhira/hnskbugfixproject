@@ -27,7 +27,37 @@ import 'pocket_citadel_attack_page.dart';
 import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'pocket_syllabus_repository.dart';
+import 'pocket_practice_speaking_card.dart';
+import 'pocket_12_tenses_practice_card.dart';
+import 'pocket_fluency_gym_detail_page.dart';
+import 'pocket_level_exam_dialog.dart';
+import 'pocket_alphabet_phonics_game_page.dart';
+import 'zero_foundation_curriculum_db.dart';
+import 'pocket_mission_curriculum_1_18.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+
+/// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
+class InPathSubStep {
+  final int stepIndex; // 1, 2, 3, 4
+  final String title;
+  final String subtitle;
+  final String icon;
+  final Color color;
+  final bool isCompleted;
+  final bool isUnlocked;
+  final VoidCallback onAction;
+
+  const InPathSubStep({
+    required this.stepIndex,
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+    required this.color,
+    required this.isCompleted,
+    required this.isUnlocked,
+    required this.onAction,
+  });
+}
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
 class TargetMilestoneItem {
@@ -184,11 +214,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   final Set<int> _completedDays = {};
   int _levelRivalShuffleSeed = 0;
 
-  // Spacing & node dimensions
-  static const double _nodeSpacingY = 140.0;
-  static const double _topPadding = 380.0; // Pushed down so Rules and Day 1 have comfortable breathing room
-  static const double _bottomPadding = 340.0;
-  static const double _ruleNodeY = 240.0; // Y center of the Rules / Get Started node
+  // Spacing & node dimensions for upward climbing roadmap
+  static const double _nodeSpacingY = 145.0;
+  static const double _expandedActiveGap = 280.0;
+  static const double _topPadding = 360.0; // Summit apex spacing
+  static const double _bottomPadding = 260.0;
+  double get _ruleNodeY => _getNodeY(1) + 140.0; // Positioned below Day 1 at the bottom
+  final Map<String, bool> _subStepFlags = {};
 
   @override
   void initState() {
@@ -334,6 +366,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final savedLevel = await PocketSyllabusRepository.getSavedLevel();
     final hasCustomSyllabus = prefs.getBool('pocket_has_custom_syllabus_selection_$uid') ?? false;
 
+    final Map<String, bool> subFlags = {};
+    for (int step = 1; step <= 4; step++) {
+      final flagKey = 'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
+      subFlags['step_$step'] = prefs.getBool(flagKey) ?? false;
+    }
+
     if (mounted) {
       setState(() {
         _isSubscribed = isVip;
@@ -346,6 +384,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         _completedDays
           ..clear()
           ..addAll(completed);
+        _subStepFlags
+          ..clear()
+          ..addAll(subFlags);
         _equippedTalismanId = talismanId;
         _hasAcceptedRules = rulesAccepted;
         _lastCompletedDay = lastCompDay;
@@ -379,28 +420,47 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     return VectorAvatarConfig.getEvolutionAvatarForStage(day, talismanId: _equippedTalismanId);
   }
 
-  double _getNodeX(int day, double screenWidth) {
+  double _getNodeXFractional(double dayFraction, double screenWidth) {
     final center = screenWidth / 2;
     final amplitude = (screenWidth - 140) / 2;
-    // S-curve oscillation
-    final wave = math.sin((day - 1) * 0.72);
+    final wave = math.sin((dayFraction - 1) * 0.72);
     return center + (wave * amplitude);
   }
 
-  double _getNodeY(int day) {
-    return _topPadding + ((day - 1) * _nodeSpacingY);
+  double _getNodeX(int day, double screenWidth) {
+    return _getNodeXFractional(day.toDouble(), screenWidth);
+  }
+
+  /// Inverted coordinate system:
+  /// Day 91 is at the summit apex (_topPadding = 360).
+  /// Day 1 is at the bottom.
+  /// Rules node is placed below Day 1 (_ruleNodeY).
+  /// A gap of _expandedActiveGap is opened between activeDay and activeDay + 1 for in-path sub-steps.
+  double _getNodeY(int day, [int? activeDayOverride]) {
+    final activeDay = activeDayOverride ?? (_progress?.currentDay ?? 1);
+    final int daysFromTop = _totalDays - day;
+    double y = _topPadding + (daysFromTop * _nodeSpacingY);
+    if (day <= activeDay && activeDay < _totalDays) {
+      y += _expandedActiveGap;
+    }
+    return y;
   }
 
   void _scrollToRule({bool animate = true}) {
     if (!_scrollController.hasClients) return;
+    final targetY = _ruleNodeY - 280.0;
+    final clampedY = targetY.clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
     if (animate) {
       _scrollController.animateTo(
-        0.0,
+        clampedY,
         duration: const Duration(milliseconds: 700),
         curve: Curves.easeOutCubic,
       );
     } else {
-      _scrollController.jumpTo(0.0);
+      _scrollController.jumpTo(clampedY);
     }
   }
 
@@ -421,6 +481,258 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     } else {
       _scrollController.jumpTo(clampedY);
     }
+  }
+
+  /// Handler when an in-path sub-step is completed
+  Future<void> _onSubStepFinished(int day, int stepIndex) async {
+    final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    if (uid != null && uid.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('pocket_day_${uid}_${day}_step_${stepIndex}_done', true);
+    }
+    HapticFeedback.heavyImpact();
+    await _loadData();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('✨', style: TextStyle(fontSize: 18)),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Step $stepIndex Completed! Keep climbing up the roadmap 🚀',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  /// Sub-Step 1: Phonics or Speaking drill
+  void _launchSubStep1(int day, LearnerLevel level) async {
+    HapticFeedback.lightImpact();
+    if (level == LearnerLevel.zero) {
+      List<AlphabetPhonicItem> phonicsList = [];
+      try {
+        final zeroPlan = ZeroFoundationCurriculumDB.getDayPlan(day);
+        if (zeroPlan.phonicsDrills.isNotEmpty) {
+          phonicsList = zeroPlan.phonicsDrills;
+        }
+      } catch (_) {}
+
+      if (phonicsList.isNotEmpty) {
+        final res = await Navigator.of(context).push<bool>(
+          MaterialPageRoute(
+            builder: (_) => PocketAlphabetPhonicsGamePage(
+              day: day,
+              selectedLanguage: 'Malayalam',
+              phonicsList: phonicsList,
+            ),
+          ),
+        );
+        if (res == true) {
+          await _onSubStepFinished(day, 1);
+        }
+        return;
+      }
+    }
+
+    // Default: Speaking Drill Card
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (ctx) => Scaffold(
+          backgroundColor: const Color(0xFF0F1424),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF131722),
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+              onPressed: () => Navigator.pop(ctx),
+            ),
+            title: Text(
+              'Day $day • Step 1: Speaking Drill',
+              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: PocketPracticeSpeakingCard(
+                day: day,
+                isCompleted: _subStepFlags['step_1'] ?? false,
+                onCompleted: (val) {
+                  if (val) {
+                    _onSubStepFinished(day, 1);
+                    Navigator.pop(ctx);
+                  }
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Sub-Step 2: Fluency Gym or 12 Tenses drill
+  void _launchSubStep2(int day, LearnerLevel level) {
+    HapticFeedback.lightImpact();
+    if (level == LearnerLevel.beginner || level == LearnerLevel.zero) {
+      PocketFluencyGymDetailPage.open(
+        context,
+        day: day,
+        selectedLanguage: 'Malayalam',
+        isInitiallyCompleted: _subStepFlags['step_2'] ?? false,
+        onCompleted: (val) {
+          if (val) _onSubStepFinished(day, 2);
+        },
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (ctx) => Scaffold(
+            backgroundColor: const Color(0xFF0F1424),
+            appBar: AppBar(
+              backgroundColor: const Color(0xFF131722),
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+                onPressed: () => Navigator.pop(ctx),
+              ),
+              title: Text(
+                'Day $day • Step 2: 12 Tenses Practice',
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+            ),
+            body: SafeArea(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Pocket12TensesPracticeCard(
+                  day: day,
+                  isCompleted: _subStepFlags['step_2'] ?? false,
+                  onCompleted: (val) {
+                    if (val) {
+                      _onSubStepFinished(day, 2);
+                      Navigator.pop(ctx);
+                    }
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+  /// Sub-Step 3: Fortress Defense Shield Trap
+  void _launchSubStep3(int day, LearnerLevel level) {
+    HapticFeedback.lightImpact();
+    final myId = _supabase.auth.currentUser?.id;
+    if (myId != null && myId.isNotEmpty) {
+      PocketCitadelAttackPage.openForUser(
+        context,
+        userId: myId,
+        attackerDay: day,
+        isDefenseMode: true,
+      );
+      _onSubStepFinished(day, 3);
+    } else {
+      PocketDefenseTrapModal.show(
+        context,
+        day,
+        isLevelComplete: true,
+      );
+      _onSubStepFinished(day, 3);
+    }
+  }
+
+  /// Sub-Step 4: Level Exam & Mastery Pass
+  void _launchSubStep4(int day, LearnerLevel level) {
+    HapticFeedback.lightImpact();
+    PocketLevelExamDialog.show(
+      context,
+      level: day,
+      trackLevel: level,
+      onExamPassed: () async {
+        await _onSubStepFinished(day, 4);
+        final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+        if (uid != null && uid.isNotEmpty) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('pocket_day_${uid}_${day}_completed', true);
+          await prefs.setInt('learning_last_completed_day_$uid', day);
+          final now = DateTime.now();
+          await prefs.setString('learning_day_${uid}_${day}_completed_date', '${now.year}-${now.month}-${now.day}');
+        }
+        await _loadData();
+      },
+    );
+  }
+
+  /// Returns the 4 sub-steps dynamically adapted for the day & syllabus track
+  List<InPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
+    final step1Done = _subStepFlags['step_1'] ?? false;
+    final step2Done = _subStepFlags['step_2'] ?? false;
+    final step3Done = _subStepFlags['step_3'] ?? false;
+    final step4Done = _subStepFlags['step_4'] ?? false;
+
+    final isZero = level == LearnerLevel.zero;
+    final isBeginner = level == LearnerLevel.beginner || isZero;
+
+    return [
+      InPathSubStep(
+        stepIndex: 1,
+        title: isZero ? 'Phonics Drill' : 'Speaking Drill',
+        subtitle: isZero ? 'Alphabet sounds' : 'AI Speech Tone',
+        icon: isZero ? '🔤' : '🗣️',
+        color: const Color(0xFF10B981),
+        isCompleted: step1Done,
+        isUnlocked: _hasAcceptedRules,
+        onAction: () => _launchSubStep1(day, level),
+      ),
+      InPathSubStep(
+        stepIndex: 2,
+        title: isBeginner ? 'Fluency Gym' : '12 Tenses Gym',
+        subtitle: isBeginner ? 'Speed & muscle drill' : 'Tense conjugation',
+        icon: '🏋️',
+        color: const Color(0xFF38BDF8),
+        isCompleted: step2Done,
+        isUnlocked: step1Done,
+        onAction: () => _launchSubStep2(day, level),
+      ),
+      InPathSubStep(
+        stepIndex: 3,
+        title: 'Defense Shield',
+        subtitle: 'Trap & fortress craft',
+        icon: '🛡️',
+        color: const Color(0xFFA855F7),
+        isCompleted: step3Done,
+        isUnlocked: step2Done,
+        onAction: () => _launchSubStep3(day, level),
+      ),
+      InPathSubStep(
+        stepIndex: 4,
+        title: 'Level Exam',
+        subtitle: 'Final mastery pass',
+        icon: '⚔️',
+        color: const Color(0xFFFFD700),
+        isCompleted: step4Done,
+        isUnlocked: step3Done,
+        onAction: () => _launchSubStep4(day, level),
+      ),
+    ];
   }
 
   void _openAvatarCard(int day) {
@@ -1247,8 +1559,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final prog =
         _progress ?? UserLearningProgress(lastActiveDate: DateTime.now());
     final screenWidth = MediaQuery.of(context).size.width;
-    final totalMapHeight =
-        _topPadding + (_totalDays * _nodeSpacingY) + _bottomPadding;
+    final totalMapHeight = _ruleNodeY + _bottomPadding;
+
+    int completedSubSteps = 0;
+    for (int s = 1; s <= 4; s++) {
+      if (_subStepFlags['step_$s'] ?? false) completedSubSteps++;
+    }
 
     return Scaffold(
       backgroundColor: const Color(0xFF0A1118),
@@ -1273,41 +1589,46 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     Positioned.fill(
                       child: CustomPaint(
                         painter: _AdventureMapRoadPainter(
-                              totalDays: _totalDays,
-                              currentDay: prog.currentDay,
-                              screenWidth: screenWidth,
-                              nodeSpacingY: _nodeSpacingY,
-                              topPadding: _topPadding,
-                              ruleNodeY: _ruleNodeY,
-                              hasAcceptedRules: _hasAcceptedRules,
-                            ),
-                          ),
+                          totalDays: _totalDays,
+                          currentDay: prog.currentDay,
+                          screenWidth: screenWidth,
+                          nodeSpacingY: _nodeSpacingY,
+                          topPadding: _topPadding,
+                          ruleNodeY: _ruleNodeY,
+                          hasAcceptedRules: _hasAcceptedRules,
+                          expandedActiveGap: _expandedActiveGap,
+                          activeSubStepCompletedCount: completedSubSteps,
                         ),
-
-                        // Biome Zone Banners & Scenery Props
-                        ..._buildBiomeProps(screenWidth),
-
-                        // 🐾 Minimal Flame Animal Cards in Map Space (Audio Directive!)
-                        for (int day = 1; day <= _totalDays; day++)
-                          _buildMapMiniAnimalCard(day, screenWidth, prog.currentDay),
-
-                        // 📚 Minimal Syllabus Track Selector Menu directly above Rules / Level 1 Node (Audio Directive!)
-                        _buildSyllabusSelectorMenu(screenWidth),
-
-                        // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
-                        _buildRuleLevelNode(screenWidth),
-
-                        // Interactive 3D Level Nodes (Days 1 to 90)
-                        for (int day = 1; day <= _totalDays; day++)
-                          _buildLevelNode(day, screenWidth, prog.currentDay),
-
-                        // Bouncing Animated Character Avatar at Current Level or Rules Node
-                        _buildAnimatedAvatar(screenWidth, prog.currentDay),
-                      ],
+                      ),
                     ),
-                  ),
+
+                    // Biome Zone Banners & Scenery Props
+                    ..._buildBiomeProps(screenWidth),
+
+                    // 🐾 Minimal Flame Animal Cards in Map Space (Audio Directive!)
+                    for (int day = 1; day <= _totalDays; day++)
+                      _buildMapMiniAnimalCard(day, screenWidth, prog.currentDay),
+
+                    // 📚 Minimal Syllabus Track Selector Menu directly above Rules / Level 1 Node (Audio Directive!)
+                    _buildSyllabusSelectorMenu(screenWidth),
+
+                    // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
+                    _buildRuleLevelNode(screenWidth),
+
+                    // Interactive 3D Level Nodes (Days 1 to 90)
+                    for (int day = 1; day <= _totalDays; day++)
+                      _buildLevelNode(day, screenWidth, prog.currentDay),
+
+                    // In-Path Syllabus Sub-Steps for the active day along the climbing trail (Audio Directive)
+                    ..._buildActiveSubStepNodes(screenWidth, prog.currentDay),
+
+                    // Bouncing Animated Character Avatar at Current Level, Sub-Step or Rules Node
+                    _buildAnimatedAvatar(screenWidth, prog.currentDay),
+                  ],
                 ),
               ),
+            ),
+          ),
 
               // Subtle non-blocking loading shimmer beneath top HUD
               if (_isLoading || _isRefreshing)
@@ -3010,12 +3331,262 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  /// The active character avatar standing on today's node (or on Rules node before start).
+  /// 🎯 In-Path Sub-Step Node rendered directly on the climbing road (User Audio Directive!)
+  Widget _buildSubStepNode({
+    required InPathSubStep step,
+    required double x,
+    required double y,
+    required double screenWidth,
+    required bool isActiveCurrent,
+  }) {
+    const nodeSize = 44.0;
+    final isRightSide = x >= screenWidth / 2;
+    final labelWidth = 115.0;
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: SizedBox(
+        width: nodeSize,
+        height: nodeSize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            // Side Label Card
+            Positioned(
+              left: isRightSide ? (-labelWidth - 8.0) : (nodeSize + 8.0),
+              top: 2.0,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  if (!step.isUnlocked) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('🔒 Complete step ${step.stepIndex - 1} first!'),
+                        duration: const Duration(seconds: 1),
+                        behavior: SnackBarBehavior.floating,
+                      ),
+                    );
+                    return;
+                  }
+                  step.onAction();
+                },
+                child: Container(
+                  width: labelWidth,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131728).withValues(alpha: 0.94),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: step.isCompleted
+                          ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                          : (step.isUnlocked
+                              ? step.color.withValues(alpha: 0.7)
+                              : Colors.white.withValues(alpha: 0.12)),
+                      width: 1.0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.35),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Text(step.icon, style: const TextStyle(fontSize: 10)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              step.title,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 1),
+                      Text(
+                        step.subtitle,
+                        style: GoogleFonts.inter(
+                          color: step.isCompleted
+                              ? const Color(0xFF10B981)
+                              : (step.isUnlocked ? const Color(0xFFFFD700) : Colors.white38),
+                          fontSize: 8,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Pulsing highlight if currently active
+            if (isActiveCurrent)
+              AnimatedBuilder(
+                animation: _bobController,
+                builder: (context, child) {
+                  final scale = 1.0 + (_bobController.value * 0.22);
+                  return Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      width: nodeSize + 8,
+                      height: nodeSize + 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: step.color.withValues(alpha: 0.6 - (_bobController.value * 0.3)),
+                          width: 2.2,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+            // Node Circle Button
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                if (!step.isUnlocked) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('🔒 Complete step ${step.stepIndex - 1} first!'),
+                      duration: const Duration(seconds: 1),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                  return;
+                }
+                step.onAction();
+              },
+              child: Container(
+                width: nodeSize,
+                height: nodeSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LinearGradient(
+                    colors: step.isCompleted
+                        ? [const Color(0xFF10B981), const Color(0xFF047857)]
+                        : (step.isUnlocked
+                            ? [step.color.withValues(alpha: 0.9), step.color.withValues(alpha: 0.6)]
+                            : [const Color(0xFF1F2438), const Color(0xFF121624)]),
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(
+                    color: step.isCompleted
+                        ? const Color(0xFF6EE7B7)
+                        : (step.isUnlocked ? step.color : Colors.white24),
+                    width: 2.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: (step.isCompleted ? const Color(0xFF10B981) : (step.isUnlocked ? step.color : Colors.black))
+                          .withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: step.isCompleted
+                      ? const Icon(Icons.check_rounded, color: Colors.white, size: 20)
+                      : (step.isUnlocked
+                          ? Text(
+                              step.icon,
+                              style: const TextStyle(fontSize: 18),
+                            )
+                          : const Icon(Icons.lock_rounded, color: Colors.white30, size: 16)),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds the 4 in-path sub-step milestone nodes for the active day along the climbing path
+  List<Widget> _buildActiveSubStepNodes(double screenWidth, int activeDay) {
+    if (activeDay >= _totalDays || !_hasAcceptedRules) return [];
+
+    final subSteps = _getSubStepsForDay(activeDay, _currentLearnerLevel);
+    final List<Widget> widgets = [];
+
+    // Find the first unlocked but incomplete step
+    int currentActiveStepIndex = -1;
+    for (var s in subSteps) {
+      if (s.isUnlocked && !s.isCompleted) {
+        currentActiveStepIndex = s.stepIndex;
+        break;
+      }
+    }
+
+    for (int k = 1; k <= 4; k++) {
+      final step = subSteps[k - 1];
+      final fraction = k / 5.0; // 0.2, 0.4, 0.6, 0.8
+      final y = _getNodeY(activeDay) - (fraction * (_nodeSpacingY + _expandedActiveGap));
+      final x = _getNodeXFractional(activeDay + fraction, screenWidth);
+      final isActiveCurrent = (step.stepIndex == currentActiveStepIndex);
+
+      widgets.add(
+        _buildSubStepNode(
+          step: step,
+          x: x,
+          y: y,
+          screenWidth: screenWidth,
+          isActiveCurrent: isActiveCurrent,
+        ),
+      );
+    }
+
+    return widgets;
+  }
+
+  /// The active character avatar standing on today's node (or on active in-path sub-step or Rules node before start).
   /// User audio requirement: Before level 1 start, the avatar stands on the Rules node!
   Widget _buildAnimatedAvatar(double screenWidth, int currentDay) {
     final bool atRuleNode = !_hasAcceptedRules;
-    final double x = atRuleNode ? ((screenWidth / 2) + 54) : _getNodeX(currentDay, screenWidth);
-    final double y = atRuleNode ? (_ruleNodeY + 12) : _getNodeY(currentDay);
+    double x;
+    double y;
+
+    if (atRuleNode) {
+      x = (screenWidth / 2) + 54;
+      y = _ruleNodeY + 12;
+    } else {
+      // Check if avatar should stand on the current incomplete in-path sub-step
+      int activeSubStep = 0;
+      for (int s = 1; s <= 4; s++) {
+        if (!(_subStepFlags['step_$s'] ?? false)) {
+          activeSubStep = s;
+          break;
+        }
+      }
+
+      if (activeSubStep > 0 && currentDay < _totalDays) {
+        final frac = activeSubStep / 5.0;
+        x = _getNodeXFractional(currentDay + frac, screenWidth);
+        y = _getNodeY(currentDay) - (frac * (_nodeSpacingY + _expandedActiveGap));
+      } else {
+        x = _getNodeX(currentDay, screenWidth);
+        y = _getNodeY(currentDay);
+      }
+    }
     final avatarConfig = _getAvatarForDay(atRuleNode ? 1 : currentDay);
 
     return Positioned(
@@ -3146,10 +3717,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   List<Widget> _buildBiomeProps(double screenWidth) {
     return [
-      // Zone 1: Forest & Valley (Day 1 Header)
+      // Zone 1: Forest & Valley (Day 1 Header at the bottom)
       Positioned(
         left: 20,
-        top: 85,
+        top: _getNodeY(1) + 40,
         child: _buildZoneBanner(
           title: '🌲 ZONE 1: EMERALD FOREST & VALLEY',
           subtitle: 'MTI Reduction, Phonetics & Habit Foundations (Days 1–20)',
@@ -3160,7 +3731,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       // Zone 2: Desert Dunes (Day 21 Header)
       Positioned(
         left: 20,
-        top: _getNodeY(21) - 65,
+        top: _getNodeY(21) + 55,
         child: _buildZoneBanner(
           title: '🏜️ ZONE 2: DESERT DUNES & OASIS',
           subtitle: 'Day 21 Habit Anchor, Spoken Confidence & Idioms (Days 21–40)',
@@ -3171,7 +3742,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       // Zone 3: Cyberpunk City (Day 41 Header)
       Positioned(
         left: 20,
-        top: _getNodeY(41) - 65,
+        top: _getNodeY(41) + 55,
         child: _buildZoneBanner(
           title: '⚡ ZONE 3: CYBER NEON HIGHWAY',
           subtitle: 'Fast Peer Debates & Professional Expressions (Days 41–60)',
@@ -3182,7 +3753,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       // Zone 4: Cloud Kingdom (Day 61 Header)
       Positioned(
         left: 20,
-        top: _getNodeY(61) - 65,
+        top: _getNodeY(61) + 55,
         child: _buildZoneBanner(
           title: '☁️ ZONE 4: MYSTIC CLOUD KINGDOM',
           subtitle: 'Impromptu Thinking & Global Dialect Mastery (Days 61–80)',
@@ -3193,7 +3764,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       // Zone 5: Dragon Castle (Day 81 Header)
       Positioned(
         left: 20,
-        top: _getNodeY(81) - 65,
+        top: _getNodeY(81) + 55,
         child: _buildZoneBanner(
           title: '🌋 ZONE 5: DRAGON\'S LAIR & GRANDMASTER THRONE',
           subtitle: 'Day 90 Supreme Cosmic Dragon Graduation 👑 (Days 81–90)',
@@ -3201,10 +3772,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         ),
       ),
 
-      // Level 91 Sovereign Citadel Grand Master Trophy Pinnacle
+      // Level 91 Sovereign Citadel Grand Master Trophy Pinnacle (Apex Summit Top)
       Positioned(
         left: (screenWidth / 2) - 85,
-        top: _getNodeY(91) + 95,
+        top: _getNodeY(91) - 160,
         child: Container(
           width: 170,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
@@ -3752,6 +4323,8 @@ class _AdventureMapRoadPainter extends CustomPainter {
   final double topPadding;
   final double ruleNodeY;
   final bool hasAcceptedRules;
+  final double expandedActiveGap;
+  final int activeSubStepCompletedCount;
 
   _AdventureMapRoadPainter({
     required this.totalDays,
@@ -3761,28 +4334,37 @@ class _AdventureMapRoadPainter extends CustomPainter {
     required this.topPadding,
     required this.ruleNodeY,
     required this.hasAcceptedRules,
+    this.expandedActiveGap = 280.0,
+    this.activeSubStepCompletedCount = 0,
   });
 
-  double _getNodeX(int day) {
+  double _getNodeXFractional(double dayFraction) {
     final center = screenWidth / 2;
     final amplitude = (screenWidth - 140) / 2;
-    final wave = math.sin((day - 1) * 0.72);
+    final wave = math.sin((dayFraction - 1) * 0.72);
     return center + (wave * amplitude);
   }
 
+  double _getNodeX(int day) => _getNodeXFractional(day.toDouble());
+
   double _getNodeY(int day) {
-    return topPadding + ((day - 1) * nodeSpacingY);
+    final int daysFromTop = totalDays - day;
+    double y = topPadding + (daysFromTop * nodeSpacingY);
+    if (day <= currentDay && currentDay < totalDays) {
+      y += expandedActiveGap;
+    }
+    return y;
   }
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Draw Biome Background Gradients
+    // 1. Draw Biome Background Gradients (Inverted: Forest at bottom, Volcano/Citadel at top)
     _paintBiomeGradients(canvas, size);
 
     // 2. Draw Decorative Trees / Rocks / Clouds / Crystals
     _paintWorldDecorations(canvas, size);
 
-    // 3. Draw S-Curve Stepping Stone Road
+    // 3. Draw S-Curve Stepping Stone Road Climbing Upwards
     _paintCobblestoneRoad(canvas);
   }
 
@@ -3791,13 +4373,13 @@ class _AdventureMapRoadPainter extends CustomPainter {
     final paint = Paint()
       ..shader = const LinearGradient(
         colors: [
-          Color(0xFF0F3822), // Zone 1: Lush Forest Green
-          Color(0xFF4A2B0F), // Zone 2: Warm Desert Golden Amber
-          Color(0xFF26144A), // Zone 3: Cyberpunk Electric Violet
-          Color(0xFF1B386E), // Zone 4: Sky Blue Cloud Realm
-          Color(0xFF4A0E18), // Zone 5: Volcanic Magma Crimson
+          Color(0xFF4A0E18), // Top 0.0 - 0.12: Zone 5: Volcanic Magma Crimson & Citadel Apex
+          Color(0xFF1B386E), // 0.35: Zone 4: Sky Blue Cloud Realm
+          Color(0xFF26144A), // 0.58: Zone 3: Cyberpunk Electric Violet
+          Color(0xFF4A2B0F), // 0.80: Zone 2: Warm Desert Golden Amber
+          Color(0xFF0F3822), // Bottom 1.0: Zone 1: Lush Forest Green (Day 1 starts here)
         ],
-        stops: [0.15, 0.38, 0.60, 0.82, 1.0],
+        stops: [0.12, 0.35, 0.58, 0.80, 1.0],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ).createShader(rect);
@@ -3877,7 +4459,7 @@ class _AdventureMapRoadPainter extends CustomPainter {
     final fullPath = Path();
     final completedPath = Path();
 
-    // Connect from Rule node (day 0) down to Day 1
+    // Connect from Rule node at the bottom up to Day 1
     final pRule = Offset(screenWidth / 2, ruleNodeY);
     final pFirst = Offset(_getNodeX(1), _getNodeY(1));
     fullPath.moveTo(pRule.dx, pRule.dy);
@@ -3900,10 +4482,26 @@ class _AdventureMapRoadPainter extends CustomPainter {
         if (day < currentDay && hasAcceptedRules) completedPath.moveTo(p1.dx, p1.dy);
       }
 
-      fullPath.quadraticBezierTo(p1.dx, midPoint.dy, p2.dx, p2.dy);
-
-      if (day < currentDay && hasAcceptedRules) {
-        completedPath.quadraticBezierTo(p1.dx, midPoint.dy, p2.dx, p2.dy);
+      // If this is the active current day, the path routes through the 4 in-path sub-steps
+      if (day == currentDay && currentDay < totalDays) {
+        for (int s = 1; s <= 4; s++) {
+          final frac = s / 5.0;
+          final sx = _getNodeXFractional(day + frac);
+          final sy = _getNodeY(day) - (frac * (nodeSpacingY + expandedActiveGap));
+          fullPath.lineTo(sx, sy);
+          if (hasAcceptedRules && s <= activeSubStepCompletedCount) {
+            completedPath.lineTo(sx, sy);
+          }
+        }
+        fullPath.lineTo(p2.dx, p2.dy);
+        if (hasAcceptedRules && activeSubStepCompletedCount >= 4) {
+          completedPath.lineTo(p2.dx, p2.dy);
+        }
+      } else {
+        fullPath.quadraticBezierTo(p1.dx, midPoint.dy, p2.dx, p2.dy);
+        if (day < currentDay && hasAcceptedRules) {
+          completedPath.quadraticBezierTo(p1.dx, midPoint.dy, p2.dx, p2.dy);
+        }
       }
     }
 
@@ -3924,7 +4522,9 @@ class _AdventureMapRoadPainter extends CustomPainter {
     return oldDelegate.currentDay != currentDay ||
         oldDelegate.screenWidth != screenWidth ||
         oldDelegate.hasAcceptedRules != hasAcceptedRules ||
-        oldDelegate.ruleNodeY != ruleNodeY;
+        oldDelegate.ruleNodeY != ruleNodeY ||
+        oldDelegate.activeSubStepCompletedCount != activeSubStepCompletedCount ||
+        oldDelegate.expandedActiveGap != expandedActiveGap;
   }
 }
 
