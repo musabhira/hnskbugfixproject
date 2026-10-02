@@ -2145,7 +2145,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0A1118),
+      backgroundColor: const Color(0xFF14532D),
       body: Stack(
         children: [
           // 1. The Scrollable Game World Map with Pull-to-Refresh
@@ -5131,6 +5131,65 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       ),
     );
 
+    // 🚩 Destination Checkpoint Sign: "CLIMBING TO DAY ${activeDay + 1} HOMESTEAD 🏡" (User Audio Directive!)
+    // "രണ്ടാമത്തെ ഡേ ടു എന്ന് അവിടെ മോണിറ്റർ ചെയ്യണം. ഡേ ടു ആണ് അതിൽ വരുന്നത്. അതിനു മുന്നേ പഠിക്കേണ്ട ഓരോ സ്റ്റെപ്പുകളാണ്"
+    final nextDayY = _getNodeY(activeDay + 1);
+    final bannerY = nextDayY + 95.0;
+    widgets.add(
+      Positioned(
+        left: (screenWidth / 2) - 135,
+        top: bannerY,
+        child: Container(
+          width: 270,
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF2563EB), Color(0xFF059669)],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('🏔️', style: TextStyle(fontSize: 15)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'DESTINATION: DAY ${activeDay + 1} HOMESTEAD',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Complete all 17 climbing steps below to enter!',
+                style: GoogleFonts.inter(
+                  color: Colors.white.withValues(alpha: 0.95),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+
     // Find the first unlocked but incomplete step
     int currentActiveStepIndex = -1;
     for (var s in subSteps) {
@@ -6075,11 +6134,11 @@ class _AdventureMapRoadPainter extends CustomPainter {
     final paint = Paint()
       ..shader = const LinearGradient(
         colors: [
-          Color(0xFF4A0E18), // Top 0.0 - 0.12: Zone 5: Volcanic Magma Crimson & Citadel Apex
-          Color(0xFF1B386E), // 0.35: Zone 4: Sky Blue Cloud Realm
-          Color(0xFF26144A), // 0.58: Zone 3: Cyberpunk Electric Violet
-          Color(0xFF4A2B0F), // 0.80: Zone 2: Warm Desert Golden Amber
-          Color(0xFF0F3822), // Bottom 1.0: Zone 1: Lush Forest Green (Day 1 starts here)
+          Color(0xFF991B1B), // Top 0.0 - 0.12: Zone 5: Royal Crimson Citadel Apex
+          Color(0xFF0284C7), // 0.35: Zone 4: Radiant Cerulean Cloud Realm
+          Color(0xFF4338CA), // 0.58: Zone 3: Electric Indigo Neon City
+          Color(0xFFD97706), // 0.80: Zone 2: Warm Amber Sunlit Dunes
+          Color(0xFF16A34A), // Bottom 1.0: Zone 1: Vibrant Lush Emerald Meadow (Day 1 starts here)
         ],
         stops: [0.12, 0.35, 0.58, 0.80, 1.0],
         begin: Alignment.topCenter,

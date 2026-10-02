@@ -3,35 +3,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
-import 'package:flame/game.dart' show GameWidget;
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
-import 'flame_english_house_game.dart';
 import 'pocket_fortress_defense_service.dart';
 
-/// 🎮 Voice Profile for Teacher Dialogue
-class TeacherVoiceProfile {
-  final String name;
-  final String lang;
+/// 🎙️ Dynamic Voice Option
+class TeacherVoiceOption {
+  final String label;
+  final String locale;
   final double pitch;
   final double rate;
+  final String? voiceName;
 
-  const TeacherVoiceProfile({
-    required this.name,
-    required this.lang,
+  const TeacherVoiceOption({
+    required this.label,
+    required this.locale,
     required this.pitch,
     required this.rate,
+    this.voiceName,
   });
 }
 
-/// 🎮 Interactive Teacher-Guided Game Page (Full-Screen Immersive Gamification)
-/// Replaces the old static text theory overview with a full-screen living game:
-/// - Open cosmic/dusk sky at the top with drifting clouds and floating companion
-/// - Victorian Manor / House architecture at the bottom (Attack Page ambiance)
-/// - Configurable pleasant TTS teacher voices (Maya, Ava, Oliver, CyberBot)
-/// - Hands-on S+V+O Lego sentence building and word scramble puzzle
-/// - Celebrations, haptics, and Pocket Score marks (+30 PS)
+/// 🎮 Bright & Vibrant Interactive Speaking Tutor Page
+/// User Directive:
+/// - "എന്തോ ഒരു darkness പോലെ... അത് മാറ്റി നല്ല ഫ്രഷ് ആയിരിക്കണം" (Bright, joyful, luminous aesthetics)
+/// - "ഒരു ട്യൂട്ടർ എങ്ങനെയാണ് പഠിപ്പിച്ചു കൊടുക്കുക... 'What is your name?' ചോദിക്കുന്നു... ഇങ്ങോട്ട് പറയുന്നു..."
+/// - "സംസാരിക്കുന്നതിന്റെ വോയിസ് എങ്കിലും ചേഞ്ച് ചെയ്യാൻ പറ്റുമോ എന്ന് നോക്ക്... ആപ്പ് ഇങ്ങോട്ട് പറഞ്ഞു തന്നു പഠിപ്പിക്കുക"
 class PocketInteractiveTeacherGamePage extends StatefulWidget {
   final int day;
   final String? userId;
@@ -67,79 +66,115 @@ class PocketInteractiveTeacherGamePage extends StatefulWidget {
       _PocketInteractiveTeacherGamePageState();
 }
 
-/// Backward compatibility alias for any existing callers
+/// Backward compatibility alias
 typedef PocketInteractiveTeacherGameModal = PocketInteractiveTeacherGamePage;
 
 class _PocketInteractiveTeacherGamePageState
     extends State<PocketInteractiveTeacherGamePage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late final FlutterTts _tts;
+  late final stt.SpeechToText _speech;
+  bool _speechAvailable = false;
+  bool _isListening = false;
   bool _isSpeaking = false;
   bool _showMalayalam = true;
 
-  // Voice profiles for user selection
-  final List<TeacherVoiceProfile> _voiceProfiles = const [
-    TeacherVoiceProfile(name: 'Maya (Friendly)', lang: 'en-US', pitch: 1.18, rate: 0.44),
-    TeacherVoiceProfile(name: 'Ava (Gentle)', lang: 'en-US', pitch: 1.02, rate: 0.40),
-    TeacherVoiceProfile(name: 'Oliver (UK)', lang: 'en-GB', pitch: 0.98, rate: 0.44),
-    TeacherVoiceProfile(name: 'CyberBot 🤖', lang: 'en-US', pitch: 1.35, rate: 0.48),
+  // Curated natural voices
+  List<TeacherVoiceOption> _availableVoices = [
+    const TeacherVoiceOption(label: 'Maya (Warm & Natural) 👩‍🏫', locale: 'en-US', pitch: 1.08, rate: 0.44),
+    const TeacherVoiceOption(label: 'Emma (British Accent) 🇬🇧', locale: 'en-GB', pitch: 1.02, rate: 0.43),
+    const TeacherVoiceOption(label: 'Alex (Friendly Male) 👨‍🏫', locale: 'en-US', pitch: 0.94, rate: 0.45),
+    const TeacherVoiceOption(label: 'Zoya (Cheerful AI) ✨', locale: 'en-US', pitch: 1.25, rate: 0.46),
   ];
   int _selectedVoiceIndex = 0;
 
-  // Game Stage Index:
-  // 0 = Intro & Welcome
-  // 1 = Subject Block
-  // 2 = Verb Block
-  // 3 = Object Block
-  // 4 = Sentence Assembly
-  // 5 = Scramble Challenge
-  // 6 = Victory & Score Award
-  int _currentStage = 0;
+  // Conversation turns:
+  // 0: Greeting & "What is your name?"
+  // 1: Name response acknowledged & "Where are you from?"
+  // 2: Place acknowledged & Sentence breakdown ("I" + "learn" + "English")
+  // 3: Spoken Repeat Challenge ("I speak English")
+  // 4: Interactive Word Puzzle
+  // 5: Victory celebration & +30 PS
+  int _turnIndex = 0;
 
-  // Selections for the builder
-  String? _selectedSubject;
-  String? _selectedVerb;
-  String? _selectedObject;
+  String _userName = '';
+  final TextEditingController _textInputCtrl = TextEditingController();
 
-  // Scramble puzzle state
-  late List<String> _scrambleAvailable;
-  final List<String> _scrambleSelected = [];
-  bool _scrambleError = false;
+  // Spoken recognition feedback
+  String _recognizedWords = '';
+  bool _spokeCorrectly = false;
 
-  late final AnimationController _floatController;
-  FlameEnglishHouseGame? _houseGame;
+  // Puzzle state for Turn 4
+  final List<String> _puzzleAvailable = ['English', 'I', 'speak'];
+  final List<String> _puzzleSelected = [];
+  bool _puzzleError = false;
+
+  late final AnimationController _pulseCtrl;
+  late final AnimationController _sunbeamCtrl;
 
   @override
   void initState() {
     super.initState();
-    _initTts();
-    _floatController = AnimationController(
+    _speech = stt.SpeechToText();
+    _pulseCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1600),
+      duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
-    // Initialize the Flame House Game for the bottom landscape
-    _houseGame = FlameEnglishHouseGame(
-      currentDay: widget.day,
-      streak: 1,
-      isDamaged: false,
-      isPresident: false,
-    );
+    _sunbeamCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 8),
+    )..repeat();
 
-    _resetScramble();
-    _playIntroSpeech();
+    _initSpeechRecognizer();
+    _initTts();
   }
 
-  void _resetScramble() {
-    _scrambleAvailable = ['speaks', 'She', 'English']..shuffle();
-    _scrambleSelected.clear();
-    _scrambleError = false;
+  Future<void> _initSpeechRecognizer() async {
+    try {
+      final available = await _speech.initialize(
+        onError: (_) {
+          if (mounted) setState(() => _isListening = false);
+        },
+        onStatus: (status) {
+          if (status == 'done' || status == 'notListening') {
+            if (mounted) setState(() => _isListening = false);
+          }
+        },
+      );
+      if (mounted) setState(() => _speechAvailable = available);
+    } catch (_) {}
   }
 
   Future<void> _initTts() async {
     _tts = FlutterTts();
     try {
-      await _applyCurrentVoice();
+      // Discover high-quality natural installed voices on device
+      final dynamic rawVoices = await _tts.getVoices;
+      if (rawVoices is List && rawVoices.isNotEmpty) {
+        final List<TeacherVoiceOption> dynamicList = [];
+        for (var v in rawVoices) {
+          if (v is Map) {
+            final name = v['name']?.toString() ?? '';
+            final locale = v['locale']?.toString() ?? '';
+            if (locale.startsWith('en') && (name.contains('natural') || name.contains('local') || name.contains('neural') || name.contains('female'))) {
+              dynamicList.add(
+                TeacherVoiceOption(
+                  label: name.contains('female') ? 'Natural Voice 🎙️' : 'Smooth English 🗣️',
+                  locale: locale,
+                  pitch: 1.05,
+                  rate: 0.44,
+                  voiceName: name,
+                ),
+              );
+            }
+          }
+        }
+        if (dynamicList.isNotEmpty) {
+          _availableVoices = [...dynamicList.take(2), ..._availableVoices];
+        }
+      }
+      await _applyVoice();
       _tts.setStartHandler(() {
         if (mounted) setState(() => _isSpeaking = true);
       });
@@ -150,14 +185,24 @@ class _PocketInteractiveTeacherGamePageState
         if (mounted) setState(() => _isSpeaking = false);
       });
     } catch (_) {}
+
+    // First teacher greeting aloud
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) {
+        _speak("Hello friend! Welcome to Day ${widget.day}! I am your personal English tutor. What is your name?");
+      }
+    });
   }
 
-  Future<void> _applyCurrentVoice() async {
-    final vp = _voiceProfiles[_selectedVoiceIndex];
+  Future<void> _applyVoice() async {
+    final v = _availableVoices[_selectedVoiceIndex];
     try {
-      await _tts.setLanguage(vp.lang);
-      await _tts.setSpeechRate(vp.rate);
-      await _tts.setPitch(vp.pitch);
+      await _tts.setLanguage(v.locale);
+      await _tts.setSpeechRate(v.rate);
+      await _tts.setPitch(v.pitch);
+      if (v.voiceName != null) {
+        await _tts.setVoice({'name': v.voiceName!, 'locale': v.locale});
+      }
     } catch (_) {}
   }
 
@@ -168,53 +213,87 @@ class _PocketInteractiveTeacherGamePageState
     } catch (_) {}
   }
 
-  void _playIntroSpeech() {
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        _speak(
-          "Welcome to Day ${widget.day}! I am your English Guide. Today we build sentences like Lego blocks! Ready to climb?",
-        );
-      }
+  void _startListening({required Function(String) onResult}) async {
+    HapticFeedback.lightImpact();
+    if (!_speechAvailable) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('🎙️ Please type below or tap options if microphone is busy.'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+    await _tts.stop();
+    setState(() {
+      _isListening = true;
+      _recognizedWords = '';
     });
+    try {
+      await _speech.listen(
+        onResult: (result) {
+          if (mounted) {
+            setState(() {
+              _recognizedWords = result.recognizedWords;
+            });
+            if (result.finalResult || result.recognizedWords.isNotEmpty) {
+              onResult(result.recognizedWords);
+            }
+          }
+        },
+        listenOptions: stt.SpeechListenOptions(
+          listenMode: stt.ListenMode.confirmation,
+          cancelOnError: true,
+          partialResults: true,
+        ),
+      );
+    } catch (_) {
+      if (mounted) setState(() => _isListening = false);
+    }
+  }
+
+  void _stopListening() async {
+    try {
+      await _speech.stop();
+    } catch (_) {}
+    if (mounted) setState(() => _isListening = false);
   }
 
   @override
   void dispose() {
     _tts.stop();
-    _floatController.dispose();
+    _speech.stop();
+    _pulseCtrl.dispose();
+    _sunbeamCtrl.dispose();
+    _textInputCtrl.dispose();
     super.dispose();
   }
 
-  void _onNextStage() {
+  void _advanceTurn(int next) {
     HapticFeedback.mediumImpact();
-    setState(() {
-      _currentStage++;
-    });
+    setState(() => _turnIndex = next);
 
-    switch (_currentStage) {
+    switch (next) {
       case 1:
-        _speak("Step 1: Every sentence has a Subject who performs the action. Choose who is speaking!");
+        _speak("Wonderful to meet you, $_userName! Where are you learning English from?");
         break;
       case 2:
-        _speak("Great! Now choose the action Verb!");
+        _speak("Awesome! Look at what you just said: I am $_userName. You just built a real English sentence: Subject, Verb, and Object!");
         break;
       case 3:
-        _speak("Awesome! Now what are we learning? Pick the Object!");
+        _speak("Now repeat after me: I speak English! Tap the microphone and say it aloud.");
         break;
       case 4:
-        _speak("Look at your sentence connect together: I learn English!");
+        _speak("Puzzle test! Put the words in order: I speak English!");
         break;
       case 5:
-        _speak("Puzzle time! Arrange the blocks to say: She speaks English!");
-        break;
-      case 6:
-        _speak("Victory! You mastered sentence structure! Step 1 completed with plus 30 Pocket Score!");
-        _awardPoints();
+        _speak("Super job! You completed Step 1 like a natural speaker! +30 Pocket Score earned!");
+        _awardScore();
         break;
     }
   }
 
-  Future<void> _awardPoints() async {
+  Future<void> _awardScore() async {
     final uid = widget.userId;
     try {
       await PocketFortressDefenseService.recordTrainingPoints(30, uid);
@@ -223,118 +302,94 @@ class _PocketInteractiveTeacherGamePageState
 
   @override
   Widget build(BuildContext context) {
-    final size = MediaQuery.of(context).size;
-
     return Scaffold(
-      backgroundColor: const Color(0xFF070B14),
-      body: Stack(
-        children: [
-          // 1. Bottom Ground & Victorian House Landscape (Attack Page Ambiance!)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            height: size.height * 0.44,
-            child: _houseGame != null
-                ? Opacity(
-                    opacity: 0.85,
-                    child: GameWidget(game: _houseGame!),
-                  )
-                : const SizedBox.shrink(),
+      body: Container(
+        // Vibrant, luminous, cheerful sky gradient (No darkness!)
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Color(0xFFE0F2FE), // Fresh morning sky
+              Color(0xFFBAE6FD), // Sky blue
+              Color(0xFFF0FDF4), // Emerald garden mist
+              Color(0xFFDCFCE7), // Vibrant grass glow
+            ],
+            stops: [0.0, 0.35, 0.70, 1.0],
           ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              // Top Bright Nav Bar with Voice Switcher
+              _buildTopBar(),
 
-          // 2. Cosmic Sky & Dark Glassmorphic Overlay
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    const Color(0xFF0A1020).withValues(alpha: 0.96),
-                    const Color(0xFF0F172A).withValues(alpha: 0.85),
-                    const Color(0xFF070B14).withValues(alpha: 0.55),
-                    const Color(0xFF070B14).withValues(alpha: 0.92),
-                  ],
-                  stops: const [0.0, 0.42, 0.70, 1.0],
-                ),
-              ),
-            ),
-          ),
+              // Conversational Canvas
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                  child: Column(
+                    children: [
+                      // Warm, smiling Teacher Avatar with Live Speech Bubble
+                      _buildTutorHero(),
 
-          // 3. Foreground Content with Header & Stage Canvas
-          SafeArea(
-            child: Column(
-              children: [
-                // Top Navigation Bar & Voice Selector
-                _buildTopBar(),
+                      const SizedBox(height: 18),
 
-                // Scrollable Game Canvas
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-                    child: Column(
-                      children: [
-                        // Teacher Character in Sky with live speech bubble
-                        _buildTeacherSection(),
+                      // Interactive Stage Card (Bright & Frosted Glass)
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 320),
+                        child: _buildCurrentTurnCard(),
+                      ),
 
-                        const SizedBox(height: 18),
-
-                        // Interactive Stage Content
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 320),
-                          child: _buildCurrentStageView(),
-                        ),
-
-                        const SizedBox(height: 24),
-                      ],
-                    ),
+                      const SizedBox(height: 24),
+                    ],
                   ),
                 ),
+              ),
 
-                // Bottom Action Navigation Bar
-                _buildBottomBar(),
-              ],
-            ),
+              // Bottom Bright Bar
+              _buildBottomControls(),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildTopBar() {
-    final currentVoice = _voiceProfiles[_selectedVoiceIndex];
+    final curVoice = _availableVoices[_selectedVoiceIndex];
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 20),
             onPressed: () => Navigator.pop(context),
           ),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF3B82F6), Color(0xFF8B5CF6)],
+                colors: [Color(0xFF2563EB), Color(0xFF4F46E5)],
               ),
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
-                  blurRadius: 10,
+                  color: const Color(0xFF2563EB).withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 3),
                 ),
               ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.gamepad_rounded, color: Colors.white, size: 14),
+                const Icon(Icons.school_rounded, color: Colors.white, size: 14),
                 const SizedBox(width: 5),
                 Text(
-                  'DAY ${widget.day} • STEP 1',
+                  'DAY ${widget.day} • LIVE TUTOR',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontSize: 11,
@@ -347,44 +402,39 @@ class _PocketInteractiveTeacherGamePageState
           ),
           const Spacer(),
 
-          // 🎙️ Voice Switcher Menu (User Audio Directive: "സൗണ്ട് ഒന്ന് വേറെ ഏതേലും സൗണ്ട് ആക്കാൻ പറ്റോ?")
+          // 🎙️ Voice Switcher Menu (User Audio Directive: "സംസാരിക്കുന്നതിന്റെ വോയിസ് എങ്കിലും ചേഞ്ച് ചെയ്യാൻ പറ്റുമോ എന്ന് നോക്ക്")
           PopupMenuButton<int>(
-            tooltip: 'Change Voice',
+            tooltip: 'Choose Natural Tutor Voice',
             initialValue: _selectedVoiceIndex,
             onSelected: (idx) async {
               HapticFeedback.selectionClick();
               setState(() => _selectedVoiceIndex = idx);
-              await _applyCurrentVoice();
-              _speak("Hi! I am ${_voiceProfiles[idx].name}. Ready to learn English!");
+              await _applyVoice();
+              _speak("Hello! I am ready to teach you English today.");
             },
-            color: const Color(0xFF1E293B),
+            color: Colors.white,
+            elevation: 6,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(14),
-              side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
             ),
             itemBuilder: (ctx) => List.generate(
-              _voiceProfiles.length,
+              _availableVoices.length,
               (i) => PopupMenuItem<int>(
                 value: i,
                 child: Row(
                   children: [
                     Icon(
-                      _selectedVoiceIndex == i
-                          ? Icons.radio_button_checked
-                          : Icons.radio_button_off,
-                      color: _selectedVoiceIndex == i
-                          ? const Color(0xFF38BDF8)
-                          : const Color(0xFF64748B),
+                      _selectedVoiceIndex == i ? Icons.check_circle_rounded : Icons.circle_outlined,
+                      color: _selectedVoiceIndex == i ? const Color(0xFF2563EB) : const Color(0xFF94A3B8),
                       size: 16,
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      _voiceProfiles[i].name,
+                      _availableVoices[i].label,
                       style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: _selectedVoiceIndex == i
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                        color: const Color(0xFF0F172A),
+                        fontWeight: _selectedVoiceIndex == i ? FontWeight.bold : FontWeight.w500,
                         fontSize: 12.5,
                       ),
                     ),
@@ -393,22 +443,28 @@ class _PocketInteractiveTeacherGamePageState
               ),
             ),
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFF1E293B).withValues(alpha: 0.85),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF0284C7).withValues(alpha: 0.15),
+                    blurRadius: 8,
+                  ),
+                ],
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.record_voice_over_rounded, color: Color(0xFF38BDF8), size: 14),
+                  const Icon(Icons.record_voice_over_rounded, color: Color(0xFF0284C7), size: 15),
                   const SizedBox(width: 4),
                   Text(
-                    currentVoice.name.split(' ')[0],
+                    curVoice.label.split(' ')[0],
                     style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 10.5,
+                      color: const Color(0xFF0F172A),
+                      fontSize: 11,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -418,31 +474,25 @@ class _PocketInteractiveTeacherGamePageState
           ),
           const SizedBox(width: 8),
 
-          // Malayalam Helper Toggle
+          // Malayalam helper toggle
           GestureDetector(
             onTap: () {
               HapticFeedback.selectionClick();
               setState(() => _showMalayalam = !_showMalayalam);
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
-                color: _showMalayalam
-                    ? const Color(0xFF10B981).withValues(alpha: 0.2)
-                    : const Color(0xFF1E293B),
+                color: _showMalayalam ? const Color(0xFF10B981).withValues(alpha: 0.15) : Colors.white,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: _showMalayalam
-                      ? const Color(0xFF10B981)
-                      : const Color(0xFF334155),
+                  color: _showMalayalam ? const Color(0xFF10B981) : const Color(0xFFCBD5E1),
                 ),
               ),
               child: Text(
                 'മലയാളം',
                 style: GoogleFonts.notoSansMalayalam(
-                  color: _showMalayalam
-                      ? const Color(0xFF34D399)
-                      : const Color(0xFF94A3B8),
+                  color: _showMalayalam ? const Color(0xFF047857) : const Color(0xFF64748B),
                   fontSize: 11,
                   fontWeight: FontWeight.bold,
                 ),
@@ -454,56 +504,63 @@ class _PocketInteractiveTeacherGamePageState
     );
   }
 
-  Widget _buildTeacherSection() {
+  Widget _buildTutorHero() {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF111827).withValues(alpha: 0.88),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3)),
+        color: Colors.white.withValues(alpha: 0.95),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.6), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.45),
-            blurRadius: 18,
-            offset: const Offset(0, 6),
+            color: const Color(0xFF0284C7).withValues(alpha: 0.12),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Floating Animated Teacher Character
+          // Smiling Teacher Avatar with pulse
           AnimatedBuilder(
-            animation: _floatController,
-            builder: (ctx, child) {
-              final floatY = (_floatController.value * 6.0) - 3.0;
-              return Transform.translate(
-                offset: Offset(0, floatY),
+            animation: _pulseCtrl,
+            builder: (ctx, _) {
+              final scale = 1.0 + (_pulseCtrl.value * 0.04);
+              return Transform.scale(
+                scale: scale,
                 child: Container(
-                  width: 72,
-                  height: 72,
+                  width: 76,
+                  height: 76,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF38BDF8), Color(0xFF818CF8)],
+                    ),
+                    border: Border.all(color: Colors.white, width: 3),
                     boxShadow: [
                       BoxShadow(
                         color: _isSpeaking
-                            ? const Color(0xFF38BDF8).withValues(alpha: 0.7)
-                            : const Color(0xFFFFD700).withValues(alpha: 0.35),
-                        blurRadius: _isSpeaking ? 22 : 12,
+                            ? const Color(0xFF0284C7).withValues(alpha: 0.5)
+                            : const Color(0xFFF59E0B).withValues(alpha: 0.3),
+                        blurRadius: _isSpeaking ? 20 : 10,
                         spreadRadius: _isSpeaking ? 4 : 1,
                       ),
                     ],
                   ),
-                  child: ClipOval(
+                  child: const ClipOval(
                     child: VectorAvatarWidget(
-                      config: const VectorAvatarConfig(
+                      config: VectorAvatarConfig(
                         species: 'human',
                         gender: 'female',
+                        hairStyle: 'classic_side',
+                        hairColor: '#4A2E18',
                         outfitStyle: 'blazer',
+                        outfitColor: '#2563EB',
                         accessory: 'round_glasses',
                         auraStyle: 'electric_blue',
                       ),
-                      size: 72,
+                      size: 76,
                       showAura: true,
                     ),
                   ),
@@ -513,7 +570,7 @@ class _PocketInteractiveTeacherGamePageState
           ),
           const SizedBox(width: 14),
 
-          // Speech Bubble with live animation and replay
+          // Speech Bubble
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -523,9 +580,9 @@ class _PocketInteractiveTeacherGamePageState
                     Text(
                       'Teacher Maya',
                       style: GoogleFonts.outfit(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0284C7),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
                     const SizedBox(width: 6),
@@ -538,7 +595,7 @@ class _PocketInteractiveTeacherGamePageState
                             width: 3,
                             height: 10 + (i * 4).toDouble(),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF38BDF8),
+                              color: const Color(0xFF0284C7),
                               borderRadius: BorderRadius.circular(2),
                             ),
                           ),
@@ -546,18 +603,17 @@ class _PocketInteractiveTeacherGamePageState
                       ),
                     const Spacer(),
                     GestureDetector(
-                      onTap: () => _speak(_getTeacherPromptText()),
+                      onTap: () => _speak(_getTutorSpeechText()),
                       child: Container(
                         padding: const EdgeInsets.all(5),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
+                          color: const Color(0xFFE0F2FE),
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF334155)),
                         ),
                         child: const Icon(
                           Icons.volume_up_rounded,
-                          size: 16,
-                          color: Color(0xFF38BDF8),
+                          size: 18,
+                          color: Color(0xFF0284C7),
                         ),
                       ),
                     ),
@@ -565,20 +621,20 @@ class _PocketInteractiveTeacherGamePageState
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  _getTeacherPromptText(),
+                  _getTutorSpeechText(),
                   style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 13.5,
+                    color: const Color(0xFF0F172A),
+                    fontSize: 14,
                     height: 1.35,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                if (_showMalayalam && _getMalayalamPromptText().isNotEmpty) ...[
+                if (_showMalayalam && _getMalayalamSubText().isNotEmpty) ...[
                   const SizedBox(height: 6),
                   Text(
-                    _getMalayalamPromptText(),
+                    _getMalayalamSubText(),
                     style: GoogleFonts.notoSansMalayalam(
-                      color: const Color(0xFF94A3B8),
+                      color: const Color(0xFF475569),
                       fontSize: 12,
                       height: 1.3,
                     ),
@@ -592,113 +648,323 @@ class _PocketInteractiveTeacherGamePageState
     );
   }
 
-  String _getTeacherPromptText() {
-    switch (_currentStage) {
+  String _getTutorSpeechText() {
+    switch (_turnIndex) {
       case 0:
-        return "Welcome to Day ${widget.day}! 👋 English sentences are built just like Lego blocks (Subject + Verb + Object). Let's construct our first one!";
+        return "Hello friend! 👋 I'm your teacher. Let's start with a simple question: What is your name?";
       case 1:
-        return "Step 1: Every English sentence starts with someone doing the action (The Subject). Choose who is speaking:";
+        return "Wonderful to meet you, $_userName! Where are you from?";
       case 2:
-        return "Step 2: Great! Now what action are we doing? Pick the Verb:";
+        return "Notice what you just did? You made sentences naturally: 'I am $_userName'. In English: YOU are the Subject, what you DO is the Verb, and WHAT is the Object!";
       case 3:
-        return "Step 3: Super! Now what are we learning? Pick the Object:";
+        return "Now say it with me: 'I speak English!' Tap the microphone and say it aloud!";
       case 4:
-        return "Look at your sentence come alive! Connect the 3 blocks together:";
+        return "Puzzle Time! 🧩 Tap the words in the right order to build: 'I speak English'!";
       case 5:
-        return "Challenge Time! 🧩 Tap the blocks in order to say: 'She speaks English'!";
-      case 6:
-        return "Outstanding! 🎉 You've mastered English sentence structure without any boring theory! +30 PS unlocked!";
+        return "Outstanding! 🎉 You just spoke and framed your first English sentences without reading boring theory!";
       default:
         return "";
     }
   }
 
-  String _getMalayalamPromptText() {
-    switch (_currentStage) {
+  String _getMalayalamSubText() {
+    switch (_turnIndex) {
       case 0:
-        return "ഇംഗ്ലീഷ് വാക്യങ്ങൾ ലെഗോ ബ്ലോക്ക് പോലെ ലളിതമായി ഉണ്ടാക്കാൻ നമുക്ക് ഒരുമിച്ച് പഠിക്കാം!";
+        return "നിങ്ങളുടെ പേരെന്താണ്? മൈക്കിൽ പറയുകയോ താഴെ ടൈപ്പ് ചെയ്യുകയോ ചെയ്യുക:";
       case 1:
-        return "ആരാണ് ഇവിടെ പ്രവർത്തി ചെയ്യുന്നത് (Subject)? ഒരാളെ തിരഞ്ഞെടുക്കുക:";
+        return "താങ്കൾ എവിടെ നിന്നാണ്? ഉദാഹരണത്തിന്: Kerala, Dubai, Bangalore...";
       case 2:
-        return "അടുത്തത് പ്രവൃത്തി (Verb) ആണ്. എന്ത് കാര്യമാണ് ചെയ്യുന്നത് എന്ന് തിരഞ്ഞെടുക്കുക:";
+        return "നിങ്ങൾ ഇപ്പോൾ പറഞ്ഞത് ശ്രദ്ധിച്ചോ? ഇംഗ്ലീഷിൽ Subject (ആൾ) + Verb (പ്രവൃത്തി) + Object (കാര്യം) എന്ന ക്രമത്തിലാണ് വാക്യങ്ങൾ വരുന്നത്.";
       case 3:
-        return "എന്തിനെക്കുറിച്ചാണ് പഠിക്കുന്നത് (Object)? അത് തിരഞ്ഞെടുക്കുക:";
+        return "'I speak English' എന്ന് ഉറക്കെ പറയൂ. മൈക്ക് ബട്ടണിൽ തൊട്ട് സംസാരിക്കുക:";
       case 4:
-        return "ഇതാ നിങ്ങളുടെ ആദ്യ വാക്യം പൂർത്തിയായി! S + V + O ഫോർമുല ഓർക്കുക.";
+        return "വാക്കുകൾ തൊട്ട് ശരിയായ ക്രമത്തിൽ വാക്യം ഉണ്ടാക്കുക:";
       case 5:
-        return "വാക്കുകൾ ശരിയായ ക്രമത്തിൽ തൊട്ട് ക്രമീകരിക്കുക:";
-      case 6:
-        return "നിങ്ങൾ വിജയകരമായി ഒന്നാമത്തെ സ്റ്റെപ്പ് പൂർത്തിയാക്കി! +30 പോക്കറ്റ് സ്കോർ ലഭിച്ചു!";
+        return "നിങ്ങൾ ആദ്യത്തെ സ്റ്റെപ്പ് മികച്ച രീതിയിൽ പൂർത്തിയാക്കി! +30 പോക്കറ്റ് സ്കോർ നേടി!";
       default:
         return "";
     }
   }
 
-  Widget _buildCurrentStageView() {
-    switch (_currentStage) {
+  Widget _buildCurrentTurnCard() {
+    switch (_turnIndex) {
       case 0:
-        return _buildStage0Welcome();
+        return _buildTurn0NameInput();
       case 1:
-        return _buildStage1Subject();
+        return _buildTurn1LocationInput();
       case 2:
-        return _buildStage2Verb();
+        return _buildTurn2FormulaBreakdown();
       case 3:
-        return _buildStage3Object();
+        return _buildTurn3SpeakingChallenge();
       case 4:
-        return _buildStage4Assembly();
+        return _buildTurn4Puzzle();
       case 5:
-        return _buildStage5Scramble();
-      case 6:
-        return _buildStage6Victory();
+        return _buildTurn5Victory();
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildStage0Welcome() {
+  // --- TURN 0: WHAT IS YOUR NAME? ---
+  Widget _buildTurn0NameInput() {
     return Container(
-      key: const ValueKey('stage0'),
-      padding: const EdgeInsets.all(18),
+      key: const ValueKey('turn0'),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0284C7).withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         children: [
           Text(
-            'The Golden English Formula',
+            'Answer Teacher Maya:',
             style: GoogleFonts.outfit(
-              color: const Color(0xFF38BDF8),
+              color: const Color(0xFF0284C7),
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Mic Button for direct speech
+          GestureDetector(
+            onTap: () {
+              if (_isListening) {
+                _stopListening();
+              } else {
+                _startListening(onResult: (spoken) {
+                  final clean = spoken.replaceAll(RegExp(r'my name is|i am', caseSensitive: false), '').trim();
+                  if (clean.isNotEmpty) {
+                    setState(() {
+                      _userName = clean;
+                      _textInputCtrl.text = clean;
+                    });
+                  }
+                });
+              }
+            },
+            child: Container(
+              width: 68,
+              height: 68,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: _isListening
+                      ? [const Color(0xFFEF4444), const Color(0xFFF97316)]
+                      : [const Color(0xFF2563EB), const Color(0xFF38BDF8)],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: _isListening
+                        ? const Color(0xFFEF4444).withValues(alpha: 0.5)
+                        : const Color(0xFF2563EB).withValues(alpha: 0.35),
+                    blurRadius: 16,
+                  ),
+                ],
+              ),
+              child: Icon(
+                _isListening ? Icons.mic_rounded : Icons.mic_none_rounded,
+                color: Colors.white,
+                size: 34,
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _isListening ? 'Listening to your name...' : 'Tap Mic & Say: "My name is..."',
+            style: GoogleFonts.inter(
+              color: _isListening ? const Color(0xFFDC2626) : const Color(0xFF64748B),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+          // Or type name
+          TextField(
+            controller: _textInputCtrl,
+            onChanged: (v) => setState(() => _userName = v.trim()),
+            decoration: InputDecoration(
+              hintText: 'Or type your name here...',
+              hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
+              filled: true,
+              fillColor: const Color(0xFFF8FAFC),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFFCBD5E1)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: const BorderSide(color: Color(0xFF2563EB), width: 2),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 12),
+          // Quick suggestions
+          Wrap(
+            spacing: 8,
+            children: ['Musab', 'Rahul', 'Fathima', 'John'].map((n) {
+              return ActionChip(
+                label: Text(n, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
+                backgroundColor: const Color(0xFFEFF6FF),
+                side: const BorderSide(color: Color(0xFFBFDBFE)),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  setState(() {
+                    _userName = n;
+                    _textInputCtrl.text = n;
+                  });
+                },
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- TURN 1: WHERE ARE YOU FROM? ---
+  Widget _buildTurn1LocationInput() {
+    final places = [
+      {'name': 'Kerala 🌴', 'val': 'Kerala'},
+      {'name': 'Dubai 🏙️', 'val': 'Dubai'},
+      {'name': 'Bangalore 💻', 'val': 'Bangalore'},
+      {'name': 'Mumbai 🇮🇳', 'val': 'Mumbai'},
+    ];
+
+    return Container(
+      key: const ValueKey('turn1'),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0284C7).withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Where do you live, $_userName?',
+            style: GoogleFonts.outfit(
+              color: const Color(0xFF0284C7),
               fontSize: 16,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 14),
+          ...places.map((p) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFF0FDF4),
+                  foregroundColor: const Color(0xFF065F46),
+                  elevation: 0,
+                  side: const BorderSide(color: Color(0xFF86EFAC), width: 1.5),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                ),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  _speak("I am from ${p['val']}");
+                  _advanceTurn(2);
+                },
+                child: Text(
+                  'I am from ${p['name']}',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  // --- TURN 2: FORMULA BREAKDOWN ---
+  Widget _buildTurn2FormulaBreakdown() {
+    return Container(
+      key: const ValueKey('turn2'),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFF10B981), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: 0.15),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Text(
+            'The Secret Formula You Just Used!',
+            style: GoogleFonts.outfit(
+              color: const Color(0xFF047857),
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
             ),
           ),
           const SizedBox(height: 14),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _buildFormulaPill('SUBJECT', 'Who?', const Color(0xFF3B82F6)),
+              _buildFormulaBrick('I', 'Subject (ആര്?)', const Color(0xFF2563EB)),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 6),
-                child: Text('+', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text('+', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
               ),
-              _buildFormulaPill('VERB', 'Action', const Color(0xFF10B981)),
+              _buildFormulaBrick('speak', 'Verb (എന്ത് ചെയ്യുന്നു?)', const Color(0xFF059669)),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 6),
-                child: Text('+', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text('+', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF64748B))),
               ),
-              _buildFormulaPill('OBJECT', 'What?', const Color(0xFFF59E0B)),
+              _buildFormulaBrick('English', 'Object (എന്തിനെ?)', const Color(0xFFD97706)),
             ],
           ),
-          const SizedBox(height: 14),
-          Text(
-            'Unlike Malayalam (SOV), English always follows S + V + O!\nSubject (ആൾ) + Verb (പ്രവൃത്തി) + Object (കാര്യം)',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: const Color(0xFFCBD5E1),
-              fontSize: 12.5,
-              height: 1.4,
+          const SizedBox(height: 18),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF6FF),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFBFDBFE)),
+            ),
+            child: Row(
+              children: [
+                const Text('💡', style: TextStyle(fontSize: 22)),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Malayalam puts the verb at the end, but in English: The Action (Verb) is always in the middle!',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF1E3A8A),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -706,12 +972,12 @@ class _PocketInteractiveTeacherGamePageState
     );
   }
 
-  Widget _buildFormulaPill(String title, String subtitle, Color color) {
+  Widget _buildFormulaBrick(String title, String sub, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(14),
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color, width: 1.5),
       ),
       child: Column(
@@ -719,16 +985,16 @@ class _PocketInteractiveTeacherGamePageState
           Text(
             title,
             style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 12,
+              color: color,
+              fontSize: 15,
               fontWeight: FontWeight.w900,
             ),
           ),
           Text(
-            subtitle,
+            sub,
             style: GoogleFonts.inter(
-              color: color,
-              fontSize: 10,
+              color: const Color(0xFF64748B),
+              fontSize: 9,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -737,248 +1003,106 @@ class _PocketInteractiveTeacherGamePageState
     );
   }
 
-  Widget _buildStage1Subject() {
-    final options = [
-      {'word': 'I', 'mal': 'ഞാൻ', 'sub': '1st Person'},
-      {'word': 'She', 'mal': 'അവൾ', 'sub': '3rd Person (Singular)'},
-      {'word': 'They', 'mal': 'അവർ', 'sub': '3rd Person (Plural)'},
-    ];
-
-    return Column(
-      key: const ValueKey('stage1'),
-      children: options.map((opt) {
-        final isSelected = _selectedSubject == opt['word'];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: _buildOptionCard(
-            title: opt['word']!,
-            subtitle: opt['sub']!,
-            malayalam: opt['mal']!,
-            color: const Color(0xFF3B82F6),
-            isSelected: isSelected,
-            onTap: () {
-              HapticFeedback.lightImpact();
-              setState(() => _selectedSubject = opt['word']);
-              _speak(opt['word']!);
-            },
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildStage2Verb() {
-    final options = [
-      {'word': 'learn', 'mal': 'പഠിക്കുന്നു', 'sub': 'Mental Action'},
-      {'word': 'speak', 'mal': 'സംസാരിക്കുന്നു', 'sub': 'Communication Action'},
-      {'word': 'play', 'mal': 'കളിക്കുന്നു', 'sub': 'Physical Action'},
-    ];
-
-    return Column(
-      key: const ValueKey('stage2'),
-      children: options.map((opt) {
-        final isSelected = _selectedVerb == opt['word'];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: _buildOptionCard(
-            title: opt['word']!,
-            subtitle: opt['sub']!,
-            malayalam: opt['mal']!,
-            color: const Color(0xFF10B981),
-            isSelected: isSelected,
-            onTap: () {
-              HapticFeedback.lightImpact();
-              setState(() => _selectedVerb = opt['word']);
-              _speak(opt['word']!);
-            },
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildStage3Object() {
-    final options = [
-      {'word': 'English 🇬🇧', 'raw': 'English', 'mal': 'ഇംഗ്ലീഷ് ഭാഷ', 'sub': 'Language'},
-      {'word': 'Cricket 🏏', 'raw': 'Cricket', 'mal': 'ക്രിക്കറ്റ്', 'sub': 'Game'},
-      {'word': 'Music 🎵', 'raw': 'Music', 'mal': 'സംഗീതം', 'sub': 'Art'},
-    ];
-
-    return Column(
-      key: const ValueKey('stage3'),
-      children: options.map((opt) {
-        final isSelected = _selectedObject == opt['raw'];
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          child: _buildOptionCard(
-            title: opt['word']!,
-            subtitle: opt['sub']!,
-            malayalam: opt['mal']!,
-            color: const Color(0xFFF59E0B),
-            isSelected: isSelected,
-            onTap: () {
-              HapticFeedback.lightImpact();
-              setState(() => _selectedObject = opt['raw']);
-              _speak(opt['raw']!);
-            },
-          ),
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildOptionCard({
-    required String title,
-    required String subtitle,
-    required String malayalam,
-    required Color color,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        decoration: BoxDecoration(
-          color: isSelected ? color.withValues(alpha: 0.22) : const Color(0xFF1E293B).withValues(alpha: 0.9),
-          borderRadius: BorderRadius.circular(18),
-          border: Border.all(
-            color: isSelected ? color : const Color(0xFF334155),
-            width: isSelected ? 2.5 : 1,
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: color.withValues(alpha: 0.4),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 38,
-              height: 38,
-              decoration: BoxDecoration(
-                color: isSelected ? color : const Color(0xFF0F172A),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                isSelected ? Icons.check_rounded : Icons.add_rounded,
-                color: isSelected ? Colors.white : const Color(0xFF64748B),
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFF94A3B8),
-                      fontSize: 11,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            if (_showMalayalam)
-              Text(
-                malayalam,
-                style: GoogleFonts.notoSansMalayalam(
-                  color: color,
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStage4Assembly() {
-    final sub = _selectedSubject ?? 'I';
-    final verb = _selectedVerb ?? 'learn';
-    final obj = _selectedObject ?? 'English';
-    final sentence = '$sub $verb $obj.';
-
+  // --- TURN 3: SPEAKING CHALLENGE ---
+  Widget _buildTurn3SpeakingChallenge() {
     return Container(
-      key: const ValueKey('stage4'),
-      padding: const EdgeInsets.all(20),
+      key: const ValueKey('turn3'),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.92),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFF10B981), width: 2),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: _spokeCorrectly ? const Color(0xFF10B981) : const Color(0xFF38BDF8),
+          width: 2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF10B981).withValues(alpha: 0.25),
+            color: const Color(0xFF0284C7).withValues(alpha: 0.12),
             blurRadius: 20,
           ),
         ],
       ),
       child: Column(
         children: [
-          Wrap(
-            alignment: WrapAlignment.center,
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildLegoTile(sub, const Color(0xFF3B82F6), 'Subject'),
-              _buildLegoTile(verb, const Color(0xFF10B981), 'Verb'),
-              _buildLegoTile(obj, const Color(0xFFF59E0B), 'Object'),
-            ],
+          Text(
+            'Target Phrase to Say:',
+            style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 12, fontWeight: FontWeight.bold),
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0F172A),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF334155)),
+          const SizedBox(height: 6),
+          Text(
+            '"I speak English"',
+            style: GoogleFonts.outfit(
+              color: const Color(0xFF1E40AF),
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  '"$sentence"',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w900,
+          ),
+          const SizedBox(height: 16),
+
+          // Big Mic Button
+          GestureDetector(
+            onTap: () {
+              if (_isListening) {
+                _stopListening();
+              } else {
+                _startListening(onResult: (spoken) {
+                  final lower = spoken.toLowerCase();
+                  if (lower.contains('speak') || lower.contains('english') || lower.contains('i speak')) {
+                    HapticFeedback.heavyImpact();
+                    setState(() {
+                      _spokeCorrectly = true;
+                    });
+                    _speak("Brilliant pronunciation! You said it like a natural!");
+                    Future.delayed(const Duration(milliseconds: 1400), () {
+                      if (mounted) _advanceTurn(4);
+                    });
+                  }
+                });
+              }
+            },
+            child: Container(
+              width: 82,
+              height: 82,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LinearGradient(
+                  colors: _spokeCorrectly
+                      ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                      : (_isListening
+                          ? [const Color(0xFFEF4444), const Color(0xFFF97316)]
+                          : [const Color(0xFF2563EB), const Color(0xFF38BDF8)]),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (_spokeCorrectly ? const Color(0xFF10B981) : const Color(0xFF2563EB))
+                        .withValues(alpha: 0.45),
+                    blurRadius: 20,
                   ),
-                ),
-                const SizedBox(width: 10),
-                IconButton(
-                  icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF10B981)),
-                  onPressed: () => _speak(sentence),
-                ),
-              ],
+                ],
+              ),
+              child: Icon(
+                _spokeCorrectly ? Icons.check_circle_rounded : (_isListening ? Icons.mic_rounded : Icons.mic_none_rounded),
+                color: Colors.white,
+                size: 40,
+              ),
             ),
           ),
-          if (_showMalayalam) ...[
-            const SizedBox(height: 10),
+          const SizedBox(height: 12),
+          Text(
+            _spokeCorrectly
+                ? '✅ Excellent speech verified!'
+                : (_isListening ? 'Listening... Speak now!' : 'Tap mic and say: "I speak English"'),
+            style: GoogleFonts.outfit(
+              color: _spokeCorrectly ? const Color(0xFF059669) : const Color(0xFF0F172A),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (_recognizedWords.isNotEmpty) ...[
+            const SizedBox(height: 8),
             Text(
-              'മലയാളം: "ഞാൻ ഇംഗ്ലീഷ് പഠിക്കുന്നു!"',
-              style: GoogleFonts.notoSansMalayalam(
-                color: const Color(0xFF34D399),
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-              ),
+              'Heard: "$_recognizedWords"',
+              style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 12),
             ),
           ],
         ],
@@ -986,36 +1110,197 @@ class _PocketInteractiveTeacherGamePageState
     );
   }
 
-  Widget _buildLegoTile(String text, Color color, String role) {
+  // --- TURN 4: PUZZLE ---
+  Widget _buildTurn4Puzzle() {
+    const targetOrder = ['I', 'speak', 'English'];
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      key: const ValueKey('turn4'),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Arrange words in S + V + O order:',
+            style: GoogleFonts.outfit(color: const Color(0xFF0284C7), fontSize: 15, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 14),
+
+          // Slot
+          Container(
+            height: 54,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            decoration: BoxDecoration(
+              color: _puzzleError ? const Color(0xFFFEE2E2) : const Color(0xFFF1F5F9),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: _puzzleError ? const Color(0xFFEF4444) : const Color(0xFFCBD5E1),
+              ),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: _puzzleSelected.isEmpty
+                  ? [
+                      Text(
+                        'Tap words below in order...',
+                        style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
+                      ),
+                    ]
+                  : _puzzleSelected.map((w) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF2563EB),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          w,
+                          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      );
+                    }).toList(),
+            ),
+          ),
+
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            children: _puzzleAvailable.map((word) {
+              final isPicked = _puzzleSelected.contains(word);
+              return ActionChip(
+                label: Text(
+                  word,
+                  style: GoogleFonts.outfit(
+                    color: isPicked ? const Color(0xFF94A3B8) : const Color(0xFF0F172A),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                backgroundColor: isPicked ? const Color(0xFFE2E8F0) : const Color(0xFFEFF6FF),
+                side: BorderSide(color: isPicked ? const Color(0xFFCBD5E1) : const Color(0xFF93C5FD)),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                onPressed: isPicked
+                    ? null
+                    : () {
+                        HapticFeedback.lightImpact();
+                        setState(() {
+                          _puzzleSelected.add(word);
+                          _puzzleError = false;
+                        });
+                        _speak(word);
+
+                        if (_puzzleSelected.length == targetOrder.length) {
+                          bool match = true;
+                          for (int i = 0; i < targetOrder.length; i++) {
+                            if (_puzzleSelected[i] != targetOrder[i]) match = false;
+                          }
+                          if (match) {
+                            HapticFeedback.heavyImpact();
+                            _speak("Correct! I speak English!");
+                            Future.delayed(const Duration(milliseconds: 600), () {
+                              if (mounted) _advanceTurn(5);
+                            });
+                          } else {
+                            HapticFeedback.vibrate();
+                            setState(() => _puzzleError = true);
+                            _speak("Try again! In English, who is doing it comes first: I!");
+                            Future.delayed(const Duration(milliseconds: 1300), () {
+                              if (mounted) {
+                                setState(() {
+                                  _puzzleSelected.clear();
+                                  _puzzleError = false;
+                                });
+                              }
+                            });
+                          }
+                        }
+                      },
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- TURN 5: VICTORY & REWARD ---
+  Widget _buildTurn5Victory() {
+    return Container(
+      key: const ValueKey('turn5'),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(26),
+        border: Border.all(color: const Color(0xFFF59E0B), width: 2),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.5),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
+            color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
       child: Column(
         children: [
+          Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF59E0B), Color(0xFFEF4444)],
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
+                  blurRadius: 24,
+                ),
+              ],
+            ),
+            child: const Icon(Icons.stars_rounded, color: Colors.white, size: 52),
+          ),
+          const SizedBox(height: 16),
           Text(
-            text,
+            'STEP 1 COMPLETED! 🌟',
             style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 16,
+              color: const Color(0xFF0F172A),
+              fontSize: 22,
               fontWeight: FontWeight.w900,
             ),
           ),
+          const SizedBox(height: 6),
           Text(
-            role,
-            style: GoogleFonts.inter(
-              color: Colors.white.withValues(alpha: 0.85),
-              fontSize: 9.5,
-              fontWeight: FontWeight.bold,
+            '$_userName, you learned to construct English sentences naturally with your tutor!',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(color: const Color(0xFF475569), fontSize: 13),
+          ),
+          const SizedBox(height: 14),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFEF3C7),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: const Color(0xFFF59E0B)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('🪙', style: TextStyle(fontSize: 18)),
+                const SizedBox(width: 6),
+                Text(
+                  '+30 Pocket Score Earned',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFB45309),
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1023,285 +1308,54 @@ class _PocketInteractiveTeacherGamePageState
     );
   }
 
-  Widget _buildStage5Scramble() {
-    const targetOrder = ['She', 'speaks', 'English'];
+  Widget _buildBottomControls() {
+    final isTurn0Ready = _turnIndex == 0 && _userName.isNotEmpty;
+    final isTurn2 = _turnIndex == 2;
+    final isTurn3Ready = _turnIndex == 3 && _spokeCorrectly;
+    final isTurn5 = _turnIndex == 5;
 
-    return Column(
-      key: const ValueKey('stage5'),
-      children: [
-        Text(
-          'Target Sentence:',
-          style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '"She speaks English"',
-          style: GoogleFonts.outfit(
-            color: const Color(0xFF38BDF8),
-            fontSize: 18,
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        if (_showMalayalam)
-          Text(
-            'അവൾ ഇംഗ്ലീഷ് സംസാരിക്കുന്നു',
-            style: GoogleFonts.notoSansMalayalam(
-              color: const Color(0xFF64748B),
-              fontSize: 12,
-            ),
-          ),
-        const SizedBox(height: 20),
+    final canProceed = isTurn0Ready || isTurn2 || isTurn3Ready || isTurn5;
 
-        // Selected Slot Area
-        Container(
-          height: 60,
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          decoration: BoxDecoration(
-            color: _scrambleError
-                ? const Color(0xFFEF4444).withValues(alpha: 0.15)
-                : const Color(0xFF1E293B).withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: _scrambleError ? const Color(0xFFEF4444) : const Color(0xFF334155),
-              width: 1.5,
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: _scrambleSelected.isEmpty
-                ? [
-                    Text(
-                      'Tap blocks below in order...',
-                      style: GoogleFonts.inter(color: const Color(0xFF64748B), fontSize: 13),
-                    ),
-                  ]
-                : _scrambleSelected.map((word) {
-                    return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 4),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Text(
-                        word,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 14,
-                        ),
-                      ),
-                    );
-                  }).toList(),
-          ),
-        ),
-
-        const SizedBox(height: 20),
-
-        Wrap(
-          spacing: 12,
-          runSpacing: 12,
-          alignment: WrapAlignment.center,
-          children: _scrambleAvailable.map((word) {
-            final isPicked = _scrambleSelected.contains(word);
-            return GestureDetector(
-              onTap: isPicked
-                  ? null
-                  : () {
-                      HapticFeedback.lightImpact();
-                      setState(() {
-                        _scrambleSelected.add(word);
-                        _scrambleError = false;
-                      });
-                      _speak(word);
-
-                      if (_scrambleSelected.length == targetOrder.length) {
-                        bool correct = true;
-                        for (int i = 0; i < targetOrder.length; i++) {
-                          if (_scrambleSelected[i] != targetOrder[i]) {
-                            correct = false;
-                            break;
-                          }
-                        }
-                        if (correct) {
-                          HapticFeedback.heavyImpact();
-                          _speak("Perfect! She speaks English!");
-                          Future.delayed(const Duration(milliseconds: 600), () {
-                            if (mounted) _onNextStage();
-                          });
-                        } else {
-                          HapticFeedback.vibrate();
-                          setState(() => _scrambleError = true);
-                          _speak("Oops! In English, Subject comes first, then Verb, then Object. Try again!");
-                          Future.delayed(const Duration(milliseconds: 1400), () {
-                            if (mounted) setState(() => _resetScramble());
-                          });
-                        }
-                      }
-                    },
-              child: AnimatedOpacity(
-                duration: const Duration(milliseconds: 200),
-                opacity: isPicked ? 0.3 : 1.0,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF334155),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(color: const Color(0xFF475569)),
-                    boxShadow: const [
-                      BoxShadow(color: Color(0x33000000), blurRadius: 8, offset: Offset(0, 3)),
-                    ],
-                  ),
-                  child: Text(
-                    word,
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStage6Victory() {
-    return Column(
-      key: const ValueKey('stage6'),
-      children: [
-        Container(
-          width: 90,
-          height: 90,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: const LinearGradient(
-              colors: [Color(0xFFF59E0B), Color(0xFFEF4444)],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFF59E0B).withValues(alpha: 0.5),
-                blurRadius: 30,
-                spreadRadius: 4,
-              ),
-            ],
-          ),
-          child: const Icon(Icons.star_rounded, color: Colors.white, size: 54),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          'STEP 1 MASTERED! 🌟',
-          style: GoogleFonts.outfit(
-            color: Colors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w900,
-            letterSpacing: 0.5,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'You constructed S + V + O sentences like a natural speaker!',
-          textAlign: TextAlign.center,
-          style: GoogleFonts.inter(
-            color: const Color(0xFFCBD5E1),
-            fontSize: 13,
-          ),
-        ),
-        const SizedBox(height: 16),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF59E0B).withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFF59E0B)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('🪙', style: TextStyle(fontSize: 20)),
-              const SizedBox(width: 8),
-              Text(
-                '+30 Pocket Score Earned',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFF59E0B),
-                  fontWeight: FontWeight.w900,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildBottomBar() {
-    final isStage0 = _currentStage == 0;
-    final isStage1Ready = _currentStage == 1 && _selectedSubject != null;
-    final isStage2Ready = _currentStage == 2 && _selectedVerb != null;
-    final isStage3Ready = _currentStage == 3 && _selectedObject != null;
-    final isStage4 = _currentStage == 4;
-    final isStage6 = _currentStage == 6;
-
-    final canProceed = isStage0 ||
-        isStage1Ready ||
-        isStage2Ready ||
-        isStage3Ready ||
-        isStage4 ||
-        isStage6;
-
-    if (_currentStage == 5) {
-      return const SizedBox(height: 20);
+    if (_turnIndex == 1 || _turnIndex == 4) {
+      // These turns handle their own interactive transitions
+      return const SizedBox(height: 14);
     }
 
-    String buttonLabel = 'CONTINUE ➔';
-    if (isStage0) buttonLabel = "LET'S BUILD! 🚀";
-    if (isStage4) buttonLabel = "TEST MY SKILLS IN PUZZLE 🧩";
-    if (isStage6) buttonLabel = "COMPLETE & CLIMB TO STEP 2 🏔️";
+    String label = 'NEXT ➔';
+    if (_turnIndex == 0) label = "YES, THAT'S MY NAME! 🚀";
+    if (_turnIndex == 2) label = "LET'S PRACTICE SPEAKING 🎙️";
+    if (_turnIndex == 3) label = "CONTINUE TO PUZZLE 🧩";
+    if (_turnIndex == 5) label = "FINISH & CLIMB TO STEP 2 🏔️";
 
     return Container(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.95),
-        border: const Border(top: BorderSide(color: Color(0xFF1E293B))),
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: canProceed
-                ? () {
-                    if (isStage6) {
-                      Navigator.pop(context);
-                      widget.onCompleted();
-                    } else {
-                      _onNextStage();
-                    }
+      padding: const EdgeInsets.fromLTRB(18, 8, 18, 16),
+      child: SizedBox(
+        width: double.infinity,
+        height: 52,
+        child: ElevatedButton(
+          onPressed: canProceed
+              ? () {
+                  if (isTurn5) {
+                    Navigator.pop(context);
+                    widget.onCompleted();
+                  } else {
+                    _advanceTurn(_turnIndex + 1);
                   }
-                : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: isStage6
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFF3B82F6),
-              disabledBackgroundColor: const Color(0xFF334155),
-              elevation: 4,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: Text(
-              buttonLabel,
-              style: GoogleFonts.outfit(
-                color: canProceed ? Colors.white : const Color(0xFF94A3B8),
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.8,
-              ),
+                }
+              : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: isTurn5 ? const Color(0xFF10B981) : const Color(0xFF2563EB),
+            disabledBackgroundColor: const Color(0xFFCBD5E1),
+            elevation: 3,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          ),
+          child: Text(
+            label,
+            style: GoogleFonts.outfit(
+              color: canProceed ? Colors.white : const Color(0xFF64748B),
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.8,
             ),
           ),
         ),
