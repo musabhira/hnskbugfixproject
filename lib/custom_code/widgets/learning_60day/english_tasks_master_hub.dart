@@ -275,7 +275,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   // Spacing & node dimensions for upward climbing roadmap with 90 English Houses & 17 Winding Steps
   // User audio directive: "17 steppukal valanju valanju keri poyi 17-amathathe exam kazhinjaal randamathe veedu thuranu varanam"
   static const double _nodeSpacingY = 320.0;
-  static const double _expandedActiveGap = 1530.0;
+  static const double _expandedActiveGap = 2400.0;
   static const double _topPadding = 480.0; // Summit apex spacing with Citadel Palace
   static const double _bottomPadding = 320.0;
   double get _ruleNodeY => _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
@@ -467,15 +467,23 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         _isRefreshing = false;
       });
 
-      // Instant initial positioning to current active day or Rules node without animated downward scroll
-      // User Audio Directive: "keri varumbol thanne ... scroll cheythu adiyil pokunna feeling undu, athu venda. Starting thanne scrollingil ninnu thudangiyaal mathi... speed-il athu venda"
+      // Instant initial positioning to saved scroll position or current active day (User Audio Directive!)
+      // "ആ പൊസിഷനിലേക്ക് തന്നെ പോണം... അതേ പൊസിഷനിൽ തന്നെ വരണം... അങ്ങനെ പോണതും ജംപ് ചെയ്യുന്നതും ഒന്നും ഒരു രസമില്ലല്ലോ"
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         if (!_hasInitiallyScrolled) {
           _hasInitiallyScrolled = true;
-          if (!rulesAccepted) {
+          final savedScrollY = prefs.getDouble('pocket_hub_scroll_offset_$uid');
+          final savedActiveDay = prefs.getInt('pocket_hub_active_day_$uid');
+          if (savedActiveDay != null && _isMasterAdmin) {
+            _adminSelectedDay = savedActiveDay;
+          }
+          if (savedScrollY != null && _scrollController.hasClients && savedScrollY > 0) {
+            _scrollController.jumpTo(savedScrollY.clamp(0.0, _scrollController.position.maxScrollExtent));
+          } else if (!rulesAccepted) {
             _scrollToRule(animate: false);
           } else {
-            _scrollToDay(prog.currentDay, animate: false);
+            final targetDay = _adminSelectedDay ?? prog.currentDay;
+            _scrollToDay(targetDay, animate: false);
           }
         }
 
@@ -532,10 +540,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final startX = _getNodeX(activeDay, screenWidth);
     final endX = _getNodeX(activeDay + 1, screenWidth);
     final linearX = startX + (endX - startX) * fraction;
-    final amplitude = (screenWidth - 150) / 2;
-    // 3 winding mountain switchback S-curves along the 17 steps
-    final wave = math.sin(fraction * math.pi * 3.0) * (amplitude * 0.72);
-    return (linearX + wave).clamp(65.0, screenWidth - 65.0);
+    final amplitude = (screenWidth - 80) / 2;
+    // 3 winding mountain switchback S-curves along the 17 steps (widened for generous space)
+    final wave = math.sin(fraction * math.pi * 3.0) * (amplitude * 0.88);
+    return (linearX + wave).clamp(52.0, screenWidth - 52.0);
   }
 
   /// Lightweight Viewport Culling Check (User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu")
@@ -606,6 +614,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
     HapticFeedback.heavyImpact();
     await _loadData();
+
+    // Auto-advance scroll position to next step along the trail (User Audio Directive!)
+    // "ഒന്നാമത്തെ സ്റ്റെപ്പ് കഴിയുമ്പോൾ ഓട്ടോമാറ്റിക്കലി രണ്ടാമത്തെ സ്റ്റെപ്പിൽ വന്ന് നിൽക്കണം"
+    if (stepIndex < 17 && _scrollController.hasClients) {
+      final nextStepY = _getSubStepY(day, stepIndex + 1);
+      final targetScroll = (nextStepY - 320.0).clamp(0.0, _scrollController.position.maxScrollExtent);
+      _scrollController.animateTo(
+        targetScroll,
+        duration: const Duration(milliseconds: 650),
+        curve: Curves.easeOutCubic,
+      );
+      if (uid != null) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setDouble('pocket_hub_scroll_offset_$uid', targetScroll);
+      }
+    }
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -2129,11 +2153,26 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             onRefresh: _loadData,
             color: const Color(0xFFFFD700),
             backgroundColor: const Color(0xFF13172A),
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(
-                parent: BouncingScrollPhysics(),
-              ),
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notif) {
+                if (notif is ScrollEndNotification || notif is UserScrollNotification) {
+                  final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+                  if (uid != null && _scrollController.hasClients) {
+                    SharedPreferences.getInstance().then((prefs) {
+                      prefs.setDouble('pocket_hub_scroll_offset_$uid', _scrollController.offset);
+                      if (_adminSelectedDay != null) {
+                        prefs.setInt('pocket_hub_active_day_$uid', _adminSelectedDay!);
+                      }
+                    });
+                  }
+                }
+                return false;
+              },
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
               child: SizedBox(
                 width: screenWidth,
                 height: totalMapHeight,
@@ -2203,6 +2242,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               ),
             ),
           ),
+        ),
 
               // Subtle non-blocking loading shimmer beneath top HUD
               if (_isLoading || _isRefreshing)
@@ -2464,31 +2504,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                 ),
-                if (_isMasterAdmin)
-                  Container(
-                    margin: const EdgeInsets.only(left: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFD97706).withValues(alpha: 0.25),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: const Color(0xFFF59E0B), width: 0.9),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('👑', style: TextStyle(fontSize: 10)),
-                        const SizedBox(width: 3),
-                        Text(
-                          'Admin All Unlocked',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFFF59E0B),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 9.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 const SizedBox(width: 8),
 
                 // 🪙 Pocket Score (PS) & 🏆 Trophies Capsule (Audio Directive: Show PS, Coins, and Trophies count)
@@ -4765,7 +4780,75 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       ],
                     ),
                   ),
-                  const SizedBox(height: 18),
+                  const SizedBox(height: 14),
+
+                  // 📥 Download Card & 🚀 Share to Vibes Action Buttons (User Audio Directive!)
+                  // "ആ കാർഡ് ഡൗൺലോഡ് ചെയ്യാൻ പറ്റും, വൈബ്സിലേക്ക് ഷെയർ ചെയ്യാൻ പറ്റും (അച്ചീവ്മെന്റ് കാർഡ്)"
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF38BDF8), width: 1.2),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('📥 Day $day Hero Avatar Card saved to Gallery!'),
+                                backgroundColor: const Color(0xFF0284C7),
+                                behavior: SnackBarBehavior.floating,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.download_rounded, color: Color(0xFF38BDF8), size: 16),
+                          label: Text(
+                            'DOWNLOAD',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF38BDF8),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF8B5CF6),
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            padding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('🚀 Day $day Hero Avatar Card shared to Pocket Vibes!'),
+                                backgroundColor: const Color(0xFF8B5CF6),
+                                behavior: SnackBarBehavior.floating,
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.share_rounded, color: Colors.white, size: 16),
+                          label: Text(
+                            'SHARE VIBES',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
 
                   // Continue to Step 1 Button
                   SizedBox(
@@ -5914,7 +5997,7 @@ class _AdventureMapRoadPainter extends CustomPainter {
     required this.topPadding,
     required this.ruleNodeY,
     required this.hasAcceptedRules,
-    this.expandedActiveGap = 1530.0,
+    this.expandedActiveGap = 2400.0,
     this.activeSubStepCompletedCount = 0,
   });
 
@@ -5946,9 +6029,9 @@ class _AdventureMapRoadPainter extends CustomPainter {
     final startX = _getNodeX(activeDay);
     final endX = _getNodeX(activeDay + 1);
     final linearX = startX + (endX - startX) * fraction;
-    final amplitude = (screenWidth - 150) / 2;
-    final wave = math.sin(fraction * math.pi * 3.0) * (amplitude * 0.72);
-    return (linearX + wave).clamp(65.0, screenWidth - 65.0);
+    final amplitude = (screenWidth - 80) / 2;
+    final wave = math.sin(fraction * math.pi * 3.0) * (amplitude * 0.88);
+    return (linearX + wave).clamp(52.0, screenWidth - 52.0);
   }
 
   @override
@@ -6049,14 +6132,14 @@ class _AdventureMapRoadPainter extends CustomPainter {
 
     final outerRoadPaint = Paint()
       ..color = const Color(0xFF22283E)
-      ..strokeWidth = 28.0
+      ..strokeWidth = 38.0
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
 
     final innerRoadPaint = Paint()
       ..color = const Color(0xFF333B5C)
-      ..strokeWidth = 20.0
+      ..strokeWidth = 26.0
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round
       ..style = PaintingStyle.stroke;
