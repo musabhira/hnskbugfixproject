@@ -91,6 +91,10 @@
 	<string>Poket Mates needs access to your contacts to help you find and connect with friends, sync contact names in your chats, and discover mates.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Poket Mates needs access to your location while using the app to show nearby mates and community events.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Poket Mates needs access to your location to show nearby mates and community events.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Poket Mates needs access to your location to show nearby mates and community events.</string>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>whatsapp</string>
