@@ -158,9 +158,24 @@ class PocketMateService {
     required String senderId,
   }) async {
     try {
-      if (PocketRobotService.isRobotId(senderId)) {
+      if (PocketRobotService.isRobotId(senderId) ||
+          senderId.startsWith('robot_')) {
         await PocketRobotService.acceptRobotRequest(
             myId: myId, robotId: senderId);
+        await addMateLocally(myId, senderId);
+        await addMateLocally(senderId, myId);
+
+        // Clear any pending sent request tracking for this robot
+        try {
+          final prefs = await SharedPreferences.getInstance();
+          final sentList =
+              prefs.getStringList('sent_mate_requests_$myId') ?? [];
+          if (sentList.contains(senderId)) {
+            sentList.remove(senderId);
+            await prefs.setStringList('sent_mate_requests_$myId', sentList);
+          }
+        } catch (_) {}
+
         if (notificationId.isNotEmpty &&
             !notificationId.startsWith('local_') &&
             !notificationId.startsWith('robot_')) {
@@ -297,6 +312,26 @@ class PocketMateService {
   static Future<bool> hasPendingSentRequest(
       String senderId, String receiverId) async {
     if (senderId.isEmpty || receiverId.isEmpty) return false;
+    // Robots and President are never locked behind pending requests
+    if (PocketRobotService.isRobotId(receiverId) ||
+        receiverId.startsWith('robot_') ||
+        PocketPresidentService.isPresidentId(receiverId) ||
+        receiverId == 'pocket_president') {
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final list = prefs.getStringList('pocket_mates_$senderId') ?? [];
+        if (list.contains(receiverId)) {
+          final sentList =
+              prefs.getStringList('sent_mate_requests_$senderId') ?? [];
+          if (sentList.contains(receiverId)) {
+            sentList.remove(receiverId);
+            await prefs.setStringList('sent_mate_requests_$senderId', sentList);
+          }
+          return false;
+        }
+      } catch (_) {}
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final sentList =

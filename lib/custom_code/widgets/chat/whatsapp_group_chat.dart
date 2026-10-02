@@ -1146,6 +1146,9 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
       if (mounted) {
         safeSetState(() {
           _activePocketTalkPact = null;
+          _isMate = true;
+          _isOutgoingPendingRequest = false;
+          _incomingPendingRequest = null;
         });
       }
       return;
@@ -2306,8 +2309,21 @@ Draft: "$draft"''';
 
       if (widget.groupId.startsWith('p:')) {
         _logPactMinute(1);
-        if (!_isMate) {
-          final otherUserId = widget.groupId.substring(2);
+        final otherUserId = widget.groupId.substring(2);
+        final isRobotOrPres = PocketRobotService.isRobotId(otherUserId) ||
+            PocketPresidentService.isPresidentId(otherUserId) ||
+            otherUserId.startsWith('robot_') ||
+            otherUserId.startsWith('president_');
+
+        if (isRobotOrPres) {
+          if (!_isMate) {
+            safeSetState(() {
+              _isMate = true;
+              _isOutgoingPendingRequest = false;
+            });
+            PocketMateService.addMateLocally(_currentUserId, otherUserId);
+          }
+        } else if (!_isMate) {
           await PocketMateService.sendMateRequest(
             senderId: _currentUserId,
             receiverId: otherUserId,

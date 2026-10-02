@@ -537,35 +537,39 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
     final cardWidth = (screenWidth - 36).clamp(300.0, 390.0);
-    final cardHeight = (screenHeight * 0.76).clamp(520.0, 680.0);
+    // User Directive: Fixed height for the card, avoiding Expanded and bottom whitespace
+    const cardHeight = 430.0;
 
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: SafeArea(
         child: Center(
-          child: Container(
-            width: cardWidth + 16,
-            height: cardHeight + 80,
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-            child: Column(
-              children: [
-                // Top Header Bar
-                _buildHeaderBar(),
-                const SizedBox(height: 8),
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            child: Container(
+              width: cardWidth + 16,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Top Header Bar
+                  _buildHeaderBar(),
+                  const SizedBox(height: 10),
 
-                // Card Stack Area
-                Expanded(
-                  child: _isLoading
-                      ? const Center(
-                          child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
-                        )
-                      : (_currentIndex >= _candidates.length)
-                          ? _buildDeckCompletedView()
-                          : _buildCardStack(cardWidth, cardHeight - 80),
-                ),
-              ],
+                  // Card Stack Area (Fixed height, no Expanded, eliminates bottom gap)
+                  SizedBox(
+                    height: cardHeight,
+                    child: _isLoading
+                        ? const Center(
+                            child: CircularProgressIndicator(color: Color(0xFFFFFC00)),
+                          )
+                        : (_currentIndex >= _candidates.length)
+                            ? _buildDeckCompletedView()
+                            : _buildCardStack(cardWidth, cardHeight),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -923,7 +927,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                   // 2. Main NFT Artwork Frame (Widescreen collectible presentation - exactly like Target Page)
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 12),
-                    height: 165,
+                    height: 152,
                     width: double.infinity,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16),
@@ -957,7 +961,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                       child: Center(
                         child: VectorAvatarWidget(
                           config: candidate.avatarConfig,
-                          size: 155,
+                          size: 142,
                           showAura: true,
                         ),
                       ),
@@ -966,7 +970,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
 
                   // 3. Card Identity & Details Deck
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(14, 10, 14, 12),
+                    padding: const EdgeInsets.fromLTRB(14, 8, 14, 8),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1006,7 +1010,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
 
                         // Trait Matrix (SPECIES, LEVEL, POCKET SCORE, OUTFIT)
                         Row(
@@ -1040,7 +1044,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                             ),
                           ],
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 6),
 
                         // In-Game Fortress Spoken Pact Perk Container
                         Builder(
@@ -1122,7 +1126,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                             );
                           },
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 8),
 
                         // Inline Action Deck: [ 🤝 MATE ] and [ ⚡ POCKET TALK ]
                         Row(
@@ -1130,7 +1134,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                             // 1. Mate Request Button (User Audio: "Mate-um kodukka")
                             Expanded(
                               child: SizedBox(
-                                height: 42,
+                                height: 40,
                                 child: OutlinedButton.icon(
                                   onPressed: candidate.isMateRequestSent
                                       ? null
@@ -1178,7 +1182,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                             // 2. Pocket Talk Pact Challenge Button (User Audio: "ipparathu Pocket Talk-um kodukka")
                             Expanded(
                               child: SizedBox(
-                                height: 42,
+                                height: 40,
                                 child: ElevatedButton.icon(
                                   onPressed: candidate.isRequestSent
                                       ? null

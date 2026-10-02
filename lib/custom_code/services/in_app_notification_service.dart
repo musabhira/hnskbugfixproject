@@ -7,6 +7,8 @@ import 'package:pocket_mates_app/flutter_flow/nav/nav.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/local_sync_server.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 
 /// 🔔 In-App Floating Heads-Up Notification Banner Service
@@ -26,7 +28,11 @@ class InAppNotificationService {
   static const Duration _kRobotCooldown = Duration(seconds: 90);
 
   /// In-memory profile cache for fast (0ms) sender avatar/name lookup
-  static final Map<String, Map<String, String>> _profileCache = {};
+  static final Map<String, ({String name, String? avatar, VectorAvatarConfig? avatarConfig})> _profileCache = {};
+
+  /// Deduplication: prevents rapid-fire duplicate banners for the same message ID or chat
+  static final Set<String> _recentlyNotifiedMessageIds = {};
+  static final Map<String, DateTime> _lastNotifiedTimePerChat = {};
 
   static StreamSubscription? _liveMessageSubscription;
   static bool _isListening = false;
@@ -67,6 +73,19 @@ class InAppNotificationService {
       // Ignore messages sent by the logged-in user themselves
       if (senderId == null || senderId == currentUserId) return;
 
+      // 🛡️ Deduplicate by message ID: prevents multiple duplicate notification popups
+      final messageId = message['id']?.toString() ??
+          message['message_id']?.toString();
+      if (messageId != null && messageId.isNotEmpty) {
+        if (_recentlyNotifiedMessageIds.contains(messageId)) {
+          return;
+        }
+        _recentlyNotifiedMessageIds.add(messageId);
+        if (_recentlyNotifiedMessageIds.length > 200) {
+          _recentlyNotifiedMessageIds.remove(_recentlyNotifiedMessageIds.first);
+        }
+      }
+
       // Determine chat ID
       String rawChatId = event['chatId']?.toString() ?? '';
       if (rawChatId.isEmpty) {
@@ -85,6 +104,16 @@ class InAppNotificationService {
         }
       }
 
+      // 🛡️ Per-chat rate limiter: suppress duplicate rapid-fire banners within 2.5s for same chat
+      final now = DateTime.now();
+      if (_lastNotifiedTimePerChat.containsKey(rawChatId)) {
+        final last = _lastNotifiedTimePerChat[rawChatId]!;
+        if (now.difference(last).inMilliseconds < 2500) {
+          return;
+        }
+      }
+      _lastNotifiedTimePerChat[rawChatId] = now;
+
       // Determine if message is from a group
       final bool isGroup = event['is_group'] == true ||
           message['group_id'] != null ||
@@ -97,7 +126,6 @@ class InAppNotificationService {
 
       // Anti-Spam protection for robot messages
       if (isRobot) {
-        final now = DateTime.now();
         if (_lastRobotNotificationTime != null &&
             now.difference(_lastRobotNotificationTime!) < _kRobotCooldown) {
           // Within robot cooldown: silently skip to avoid spamming the user
@@ -107,35 +135,51 @@ class InAppNotificationService {
         _lastRobotNotificationTime = now;
       }
 
-      // Resolve Sender Name & Avatar
+      // Resolve Sender Name & Avatar (Audio directive: Show Avatar, NOT profile image!)
       String senderName = 'Pocket Mate';
       String? senderAvatar;
+      VectorAvatarConfig? senderAvatarConfig;
 
       if (isRobot) {
         final robot = PocketRobotService.getRobotById(senderId);
         senderName = robot?.name ?? message['sender_name']?.toString() ?? 'Pocket Robot';
         senderAvatar = robot?.avatarUrl ?? message['sender_avatar']?.toString();
+        final dynLvl = robot != null ? PocketRobotService.getDynamicLevel(robot) : 1;
+        senderAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(dynLvl);
       } else {
         // Human mate: check cache first
         if (_profileCache.containsKey(senderId)) {
-          senderName = _profileCache[senderId]!['name'] ?? 'Mate';
-          senderAvatar = _profileCache[senderId]!['avatar'];
+          final cached = _profileCache[senderId]!;
+          senderName = cached.name;
+          senderAvatar = cached.avatar;
+          senderAvatarConfig = cached.avatarConfig;
         } else {
           // Fetch from Supabase profile table
           try {
             final res = await SupaFlow.client
                 .from('profile')
-                .select('name, profile_image_url')
+                .select('name, profile_image_url, avatar_config, current_day, user_day')
                 .eq('user_id', senderId)
                 .maybeSingle();
 
             if (res != null) {
               senderName = res['name']?.toString() ?? 'Mate';
               senderAvatar = res['profile_image_url']?.toString();
-              _profileCache[senderId] = {
-                'name': senderName,
-                'avatar': senderAvatar ?? '',
-              };
+              if (res['avatar_config'] != null) {
+                try {
+                  senderAvatarConfig = VectorAvatarConfig.fromMap(
+                      Map<String, dynamic>.from(res['avatar_config']));
+                } catch (_) {}
+              }
+              if (senderAvatarConfig == null) {
+                final dayNum = (res['current_day'] ?? res['user_day'] ?? 1) as num;
+                senderAvatarConfig = VectorAvatarConfig.getEvolutionAvatarForStage(dayNum.toInt());
+              }
+              _profileCache[senderId] = (
+                name: senderName,
+                avatar: senderAvatar,
+                avatarConfig: senderAvatarConfig,
+              );
             }
           } catch (_) {
             senderName = message['sender_name']?.toString() ?? 'Mate';
@@ -143,6 +187,8 @@ class InAppNotificationService {
           }
         }
       }
+
+      senderAvatarConfig ??= VectorAvatarConfig.getEvolutionAvatarForStage(1);
 
       // Format Message Preview & determine Badge
       String previewText = message['message_text']?.toString() ??
@@ -194,11 +240,12 @@ class InAppNotificationService {
           ? message['group_name'].toString()
           : senderName;
 
-      // Display the floating notification banner
+      // Display the floating notification banner with avatar
       show(
         title: displayName,
         message: previewText,
         avatarUrl: senderAvatar,
+        avatarConfig: senderAvatarConfig,
         isRobot: isRobot,
         badgeText: badgeText,
         badgeColor: badgeColor,
@@ -220,6 +267,7 @@ class InAppNotificationService {
     required String title,
     required String message,
     String? avatarUrl,
+    VectorAvatarConfig? avatarConfig,
     bool isRobot = false,
     String badgeText = 'NOW',
     Color? badgeColor,
@@ -243,6 +291,7 @@ class InAppNotificationService {
         title: title,
         message: message,
         avatarUrl: avatarUrl,
+        avatarConfig: avatarConfig,
         isRobot: isRobot,
         badgeText: badgeText,
         badgeColor: badgeColor ?? const Color(0xFF25D366),
@@ -297,6 +346,7 @@ class _InAppNotificationWidget extends StatefulWidget {
   final String title;
   final String message;
   final String? avatarUrl;
+  final VectorAvatarConfig? avatarConfig;
   final bool isRobot;
   final String badgeText;
   final Color badgeColor;
@@ -307,6 +357,7 @@ class _InAppNotificationWidget extends StatefulWidget {
     required this.title,
     required this.message,
     this.avatarUrl,
+    this.avatarConfig,
     required this.isRobot,
     required this.badgeText,
     required this.badgeColor,
@@ -463,17 +514,23 @@ class _InAppNotificationWidgetState extends State<_InAppNotificationWidget>
                                   ),
                                   child: ClipRRect(
                                     borderRadius: BorderRadius.circular(22),
-                                    child: widget.avatarUrl != null &&
-                                            widget.avatarUrl!.isNotEmpty
-                                        ? CachedNetworkImage(
-                                            imageUrl: widget.avatarUrl!,
-                                            width: 44,
-                                            height: 44,
-                                            fit: BoxFit.cover,
-                                            errorWidget: (_, __, ___) =>
-                                                _buildFallbackAvatar(),
+                                    child: widget.avatarConfig != null
+                                        ? VectorAvatarWidget(
+                                            config: widget.avatarConfig!,
+                                            size: 44,
+                                            showAura: false,
                                           )
-                                        : _buildFallbackAvatar(),
+                                        : (widget.avatarUrl != null &&
+                                                widget.avatarUrl!.isNotEmpty
+                                            ? CachedNetworkImage(
+                                                imageUrl: widget.avatarUrl!,
+                                                width: 44,
+                                                height: 44,
+                                                fit: BoxFit.cover,
+                                                errorWidget: (_, __, ___) =>
+                                                    _buildFallbackAvatar(),
+                                              )
+                                            : _buildFallbackAvatar()),
                                   ),
                                 ),
                                 if (widget.isRobot)
