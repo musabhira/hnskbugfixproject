@@ -37,6 +37,17 @@ import 'pocket_mission_curriculum_1_18.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:flame/components.dart' show Vector2;
 import 'flame_english_house_game.dart';
+import 'pocket_90day_vocab_curriculum.dart';
+import 'pocket_day_detail_overview_page.dart';
+import 'pocket_secret_code_grammar_card.dart';
+import 'pocket_sentence_builder_card.dart';
+import 'pocket_slang_smart_english_card.dart';
+import 'pocket_time_machine_practice_card.dart';
+import 'pocket_code_english_decoder_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/english_match/stage_peer_matchmaker.dart';
+import 'career_adventure/cyber_vocab_game_page.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -234,7 +245,8 @@ class EnglishTasksMasterHubPage extends StatefulWidget {
 class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     with SingleTickerProviderStateMixin {
   final _supabase = SupaFlow.client;
-  final ScrollController _scrollController = ScrollController();
+  // Initialize with large offset so Flutter clamps to maxScrollExtent on frame 1 without flashing the summit top!
+  final ScrollController _scrollController = ScrollController(initialScrollOffset: 999999.0);
   late AnimationController _bobController;
 
   bool _isLoading = true;
@@ -258,10 +270,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   final Set<int> _completedDays = {};
   int _levelRivalShuffleSeed = 0;
 
-  // Spacing & node dimensions for upward climbing roadmap with 90 English Houses
-  // User audio directive: "nalla space itto... valiya route aayikkotte... aakaashathra space aayikkotte... onnoode vishaalamaayi potte"
+  // Spacing & node dimensions for upward climbing roadmap with 90 English Houses & 17 Winding Steps
+  // User audio directive: "17 steppukal valanju valanju keri poyi 17-amathathe exam kazhinjaal randamathe veedu thuranu varanam"
   static const double _nodeSpacingY = 320.0;
-  static const double _expandedActiveGap = 440.0;
+  static const double _expandedActiveGap = 1530.0;
   static const double _topPadding = 480.0; // Summit apex spacing with Citadel Palace
   static const double _bottomPadding = 320.0;
   double get _ruleNodeY => _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
@@ -413,7 +425,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final hasCustomSyllabus = prefs.getBool('pocket_has_custom_syllabus_selection_$uid') ?? false;
 
     final Map<String, bool> subFlags = {};
-    for (int step = 1; step <= 4; step++) {
+    for (int step = 1; step <= 17; step++) {
       final flagKey = 'pocket_day_${uid}_${calculatedCurrentDay}_step_${step}_done';
       subFlags['step_$step'] = prefs.getBool(flagKey) ?? false;
     }
@@ -496,6 +508,28 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     return y;
   }
 
+  double _getSubStepY(int activeDay, int stepNumber) {
+    final fraction = stepNumber / 18.0;
+    return _getNodeY(activeDay) - (fraction * (_nodeSpacingY + _expandedActiveGap));
+  }
+
+  double _getSubStepX(int activeDay, int stepNumber, double screenWidth) {
+    final fraction = stepNumber / 18.0;
+    final startX = _getNodeX(activeDay, screenWidth);
+    final endX = _getNodeX(activeDay + 1, screenWidth);
+    final linearX = startX + (endX - startX) * fraction;
+    final amplitude = (screenWidth - 150) / 2;
+    // 3 winding mountain switchback S-curves along the 17 steps
+    final wave = math.sin(fraction * math.pi * 3.0) * (amplitude * 0.72);
+    return (linearX + wave).clamp(65.0, screenWidth - 65.0);
+  }
+
+  /// Lightweight Viewport Culling Check (User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu")
+  bool _isDayInViewport(int day, double minY, double maxY) {
+    final y = _getNodeY(day);
+    return (y >= minY - 320.0) && (y <= maxY + 320.0);
+  }
+
   void _scrollToRule({bool animate = false}) {
     if (!_scrollController.hasClients) return;
     final targetY = _ruleNodeY - 280.0;
@@ -539,6 +573,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     if (uid != null && uid.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('pocket_day_${uid}_${day}_step_${stepIndex}_done', true);
+      // Passing the 17th step (Mastery Exam) certifies Day and unlocks the next house gate!
+      if (stepIndex == 17) {
+        await prefs.setBool('pocket_day_${uid}_${day}_completed', true);
+        await prefs.setInt('learning_last_completed_day_$uid', day);
+        final now = DateTime.now();
+        await prefs.setString('learning_day_${uid}_${day}_completed_date', '${now.year}-${now.month}-${now.day}');
+      }
     }
     HapticFeedback.heavyImpact();
     await _loadData();
@@ -551,7 +592,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Step $stepIndex Completed! Keep climbing up the roadmap 🚀',
+                  stepIndex == 17
+                      ? '🎉 Day $day Mastered! House ${day + 1} Gate is now Unlocked!'
+                      : 'Step $stepIndex / 17 Completed! Keep climbing up the trail 🚀',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -568,66 +611,66 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
   }
 
-  /// Sub-Step 1: Phonics or Speaking drill
-  void _launchSubStep1(int day, LearnerLevel level) async {
-    HapticFeedback.lightImpact();
-    if (level == LearnerLevel.zero) {
-      List<AlphabetPhonicItem> phonicsList = [];
-      try {
-        final zeroPlan = ZeroFoundationCurriculumDB.getDayPlan(day);
-        if (zeroPlan.phonicsDrills.isNotEmpty) {
-          phonicsList = zeroPlan.phonicsDrills;
-        }
-      } catch (_) {}
-
-      if (phonicsList.isNotEmpty) {
-        final res = await Navigator.of(context).push<bool>(
-          MaterialPageRoute(
-            builder: (_) => PocketAlphabetPhonicsGamePage(
-              day: day,
-              selectedLanguage: 'Malayalam',
-              phonicsList: phonicsList,
-            ),
-          ),
-        );
-        if (res == true) {
-          await _onSubStepFinished(day, 1);
-        }
-        return;
-      }
-    }
-
-    // Default: Speaking Drill Card
-    Navigator.push(
+  /// Helper to open any practice card cleanly in a dedicated full-width modal page
+  Future<void> _openCardPage({
+    required String title,
+    required String stepTag,
+    required Color accentColor,
+    required Widget Function(BuildContext ctx, void Function(bool) markDone) childBuilder,
+  }) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (ctx) => Scaffold(
-          backgroundColor: const Color(0xFF0F1424),
+        builder: (pageCtx) => Scaffold(
+          backgroundColor: const Color(0xFF0A1118),
           appBar: AppBar(
             backgroundColor: const Color(0xFF131722),
             elevation: 0,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-              onPressed: () => Navigator.pop(ctx),
+              onPressed: () => Navigator.pop(pageCtx),
             ),
-            title: Text(
-              'Day $day • Step 1: Speaking Drill',
-              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.18),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: accentColor.withValues(alpha: 0.6)),
+                  ),
+                  child: Text(
+                    stepTag,
+                    style: GoogleFonts.outfit(
+                      color: accentColor,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
           ),
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
-              child: PocketPracticeSpeakingCard(
-                day: day,
-                isCompleted: _subStepFlags['step_1'] ?? false,
-                onCompleted: (val) {
-                  if (val) {
-                    _onSubStepFinished(day, 1);
-                    Navigator.pop(ctx);
-                  }
-                },
-              ),
+              child: childBuilder(pageCtx, (completed) {
+                if (completed) {
+                  Navigator.pop(pageCtx);
+                }
+              }),
             ),
           ),
         ),
@@ -635,152 +678,572 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  /// Sub-Step 2: Fluency Gym or 12 Tenses drill
-  void _launchSubStep2(int day, LearnerLevel level) {
+  // --- 17 DEDICATED IN-PATH SUB-STEP LAUNCHERS ---
+
+  // 1: Core Linguistic Theory
+  Future<void> _launchStep1_Theory(int day) async {
     HapticFeedback.lightImpact();
-    if (level == LearnerLevel.beginner || level == LearnerLevel.zero) {
-      PocketFluencyGymDetailPage.open(
-        context,
-        day: day,
-        selectedLanguage: 'Malayalam',
-        isInitiallyCompleted: _subStepFlags['step_2'] ?? false,
-        onCompleted: (val) {
-          if (val) _onSubStepFinished(day, 2);
-        },
-      );
-    } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (ctx) => Scaffold(
-            backgroundColor: const Color(0xFF0F1424),
-            appBar: AppBar(
-              backgroundColor: const Color(0xFF131722),
-              elevation: 0,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
-                onPressed: () => Navigator.pop(ctx),
-              ),
-              title: Text(
-                'Day $day • Step 2: 12 Tenses Practice',
-                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-              ),
+    await PocketDayDetailOverviewPage.show(context, day);
+    await _onSubStepFinished(day, 1);
+  }
+
+  // 2: 10 Core Vocabulary Words
+  Future<void> _launchStep2_Vocab(int day) async {
+    HapticFeedback.lightImpact();
+    final vocabList = Pocket90DayVocabCurriculum.getVocabForDay(day);
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (pageCtx) => Scaffold(
+          backgroundColor: const Color(0xFF0A1118),
+          appBar: AppBar(
+            backgroundColor: const Color(0xFF131722),
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white),
+              onPressed: () => Navigator.pop(pageCtx),
             ),
-            body: SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Pocket12TensesPracticeCard(
-                  day: day,
-                  isCompleted: _subStepFlags['step_2'] ?? false,
-                  onCompleted: (val) {
-                    if (val) {
-                      _onSubStepFinished(day, 2);
-                      Navigator.pop(ctx);
-                    }
-                  },
-                ),
-              ),
+            title: Text(
+              'Day $day • 10 Core Vocabulary Words',
+              style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+          body: SafeArea(
+            child: ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: vocabList.length + 1,
+              separatorBuilder: (_, __) => const SizedBox(height: 10),
+              itemBuilder: (ctx, i) {
+                if (i == vocabList.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 12, bottom: 24),
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(pageCtx);
+                        await _onSubStepFinished(day, 2);
+                      },
+                      icon: const Icon(Icons.check_circle_rounded, size: 20),
+                      label: Text(
+                        'I MEMORIZED ALL 10 WORDS ✓',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                      ),
+                    ),
+                  );
+                }
+                final item = vocabList[i];
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131728),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 28,
+                        height: 28,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFFF8906),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          '${i + 1}',
+                          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  item.word,
+                                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                                ),
+                                const SizedBox(width: 8),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    item.partOfSpeech.toUpperCase(),
+                                    style: GoogleFonts.inter(color: Colors.white60, fontSize: 8.5, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              item.malayalamMeaning,
+                              style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 12.5, fontWeight: FontWeight.w600),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              item.definition,
+                              style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  // 3: Alphabet & 44 Phonics
+  Future<void> _launchStep3_Phonics(int day, LearnerLevel level) async {
+    HapticFeedback.lightImpact();
+    List<AlphabetPhonicItem> phonicsList = [];
+    try {
+      if (level == LearnerLevel.zero) {
+        final zeroPlan = ZeroFoundationCurriculumDB.getDayPlan(day);
+        if (zeroPlan.phonicsDrills.isNotEmpty) {
+          phonicsList = zeroPlan.phonicsDrills;
+        }
+      }
+      if (phonicsList.isEmpty) {
+        phonicsList = PocketMissionCurriculumRegistry.getAlphabetPhonics(day);
+      }
+    } catch (_) {}
+
+    if (phonicsList.isNotEmpty) {
+      final res = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (_) => PocketAlphabetPhonicsGamePage(
+            day: day,
+            selectedLanguage: 'Malayalam',
+            phonicsList: phonicsList,
+          ),
+        ),
       );
+      if (res == true) {
+        await _onSubStepFinished(day, 3);
+      }
+    } else {
+      await _onSubStepFinished(day, 3);
     }
   }
 
-  /// Sub-Step 3: Fortress Defense Shield Trap
-  void _launchSubStep3(int day, LearnerLevel level) {
+  // 4: Fluency Gym
+  Future<void> _launchStep4_FluencyGym(int day, LearnerLevel level) async {
+    HapticFeedback.lightImpact();
+    final res = await PocketFluencyGymDetailPage.open(
+      context,
+      day: day,
+      selectedLanguage: 'Malayalam',
+      isInitiallyCompleted: _subStepFlags['step_4'] ?? false,
+      onCompleted: (val) {
+        if (val) _onSubStepFinished(day, 4);
+      },
+    );
+    if (res == true) {
+      await _onSubStepFinished(day, 4);
+    }
+  }
+
+  // 5: Secret Code Grammar
+  Future<void> _launchStep5_SecretCode(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Secret Code Grammar Matrix',
+      stepTag: 'STEP 5',
+      accentColor: const Color(0xFFFFD700),
+      childBuilder: (ctx, markDone) => PocketSecretCodeGrammarCard(
+        day: day,
+        selectedLanguage: 'Malayalam',
+        isCompleted: _subStepFlags['step_5'] ?? false,
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 5);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 6: Sentence Builder Puzzle
+  Future<void> _launchStep6_SentenceBuilder(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Sentence Builder Gym',
+      stepTag: 'STEP 6',
+      accentColor: const Color(0xFF00E5FF),
+      childBuilder: (ctx, markDone) => PocketSentenceBuilderCard(
+        day: day,
+        isCompleted: _subStepFlags['step_6'] ?? false,
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 6);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 7: Daily Slang to Smart English
+  Future<void> _launchStep7_Slang(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Daily Slang to Smart English',
+      stepTag: 'STEP 7',
+      accentColor: const Color(0xFFFF6D00),
+      childBuilder: (ctx, markDone) => PocketSlangSmartEnglishCard(
+        day: day,
+        selectedLanguage: 'Malayalam',
+        isCompleted: _subStepFlags['step_7'] ?? false,
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 7);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 8: Practice Speaking Aloud
+  Future<void> _launchStep8_Speaking(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Practice Speaking Aloud',
+      stepTag: 'STEP 8',
+      accentColor: const Color(0xFFE040FB),
+      childBuilder: (ctx, markDone) => PocketPracticeSpeakingCard(
+        day: day,
+        isCompleted: _subStepFlags['step_8'] ?? false,
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 8);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 9: Time Machine Verbs Trainer
+  Future<void> _launchStep9_TimeMachine(int day) async {
+    HapticFeedback.lightImpact();
+    await _openCardPage(
+      title: 'Time Machine Verbs Trainer',
+      stepTag: 'STEP 9',
+      accentColor: const Color(0xFFFFC107),
+      childBuilder: (ctx, markDone) => PocketTimeMachinePracticeCard(
+        day: day,
+        selectedLanguage: 'Malayalam',
+        isCompleted: _subStepFlags['step_9'] ?? false,
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 9);
+            markDone(true);
+          }
+        },
+      ),
+    );
+  }
+
+  // 10: English Hub Community Chat
+  Future<void> _launchStep10_CommunityChat(int day) async {
+    HapticFeedback.lightImpact();
+    final currentUserId = _supabase.auth.currentUser?.id;
+    EnglishHubLevelGroup levelGroup;
+    if (currentUserId != null) {
+      levelGroup = await EnglishHubLevelGroupService.ensureUserInLevelGroup(
+        userLevel: day,
+        userId: currentUserId,
+      );
+    } else {
+      levelGroup = await EnglishHubLevelGroupService.getGroupByLevel(day);
+    }
+    if (!mounted) return;
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => WhatsAppGroupChat(
+          groupId: levelGroup.groupId,
+          groupName: levelGroup.groupName,
+        ),
+      ),
+    );
+    await _onSubStepFinished(day, 10);
+  }
+
+  // 11: Peer Call / 1-on-1 English Talk
+  Future<void> _launchStep11_PeerCall(int day) async {
+    HapticFeedback.lightImpact();
+    await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const StagePeerMatchmakerPage()),
+    );
+    await _onSubStepFinished(day, 11);
+  }
+
+  // 12: Daily 2D Adventure Quest
+  Future<void> _launchStep12_AdventureQuest(int day) async {
+    HapticFeedback.lightImpact();
+    if (day == 1) {
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CyberVocabGamePage(
+            onCompleted: (_) => _onSubStepFinished(day, 12),
+          ),
+        ),
+      );
+    } else {
+      await _onSubStepFinished(day, 12);
+    }
+  }
+
+  // 13: Core Reading Notes & Story Aloud
+  Future<void> _launchStep13_ReadingStory(int day) async {
+    HapticFeedback.lightImpact();
+    await PocketDayDetailOverviewPage.show(context, day);
+    await _onSubStepFinished(day, 13);
+  }
+
+  // 14: Code English Decoder
+  Future<void> _launchStep14_CodeEnglish(int day) async {
+    HapticFeedback.lightImpact();
+    await PocketCodeEnglishDecoderModal.show(context, day: day);
+    await _onSubStepFinished(day, 14);
+  }
+
+  // 15: Sovereign Fluency Shortcut
+  Future<void> _launchStep15_Shortcut(int day) async {
+    HapticFeedback.lightImpact();
+    await PocketDayDetailOverviewPage.show(context, day);
+    await _onSubStepFinished(day, 15);
+  }
+
+  // 16: Arm Home Defense Shield
+  Future<void> _launchStep16_DefenseShield(int day) async {
     HapticFeedback.lightImpact();
     final myId = _supabase.auth.currentUser?.id;
     if (myId != null && myId.isNotEmpty) {
-      PocketCitadelAttackPage.openForUser(
+      await PocketCitadelAttackPage.openForUser(
         context,
         userId: myId,
         attackerDay: day,
         isDefenseMode: true,
       );
-      _onSubStepFinished(day, 3);
     } else {
-      PocketDefenseTrapModal.show(
-        context,
-        day,
-        isLevelComplete: true,
-      );
-      _onSubStepFinished(day, 3);
+      await PocketDefenseTrapModal.show(context, day, isLevelComplete: true);
     }
+    await _onSubStepFinished(day, 16);
   }
 
-  /// Sub-Step 4: Level Exam & Mastery Pass
-  void _launchSubStep4(int day, LearnerLevel level) {
-    HapticFeedback.lightImpact();
-    PocketLevelExamDialog.show(
+  // 17: Level Mastery Boss Exam
+  Future<void> _launchStep17_MasteryExam(int day, LearnerLevel level) async {
+    HapticFeedback.heavyImpact();
+    final passed = await PocketLevelExamDialog.show(
       context,
       level: day,
       trackLevel: level,
       onExamPassed: () async {
-        await _onSubStepFinished(day, 4);
-        final uid = widget.userId ?? _supabase.auth.currentUser?.id;
-        if (uid != null && uid.isNotEmpty) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('pocket_day_${uid}_${day}_completed', true);
-          await prefs.setInt('learning_last_completed_day_$uid', day);
-          final now = DateTime.now();
-          await prefs.setString('learning_day_${uid}_${day}_completed_date', '${now.year}-${now.month}-${now.day}');
-        }
-        await _loadData();
+        await _onSubStepFinished(day, 17);
       },
     );
+    if (passed == true) {
+      await _onSubStepFinished(day, 17);
+    }
   }
 
-  /// Returns the 4 sub-steps dynamically adapted for the day & syllabus track
+  /// Returns the 17 sequential sub-steps along the climbing mountain trail (User Audio Directive!)
   List<InPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
-    final step1Done = _subStepFlags['step_1'] ?? false;
-    final step2Done = _subStepFlags['step_2'] ?? false;
-    final step3Done = _subStepFlags['step_3'] ?? false;
-    final step4Done = _subStepFlags['step_4'] ?? false;
-
-    final isZero = level == LearnerLevel.zero;
-    final isBeginner = level == LearnerLevel.beginner || isZero;
-
     return [
       InPathSubStep(
         stepIndex: 1,
-        title: isZero ? 'Phonics Drill' : 'Speaking Drill',
-        subtitle: isZero ? 'Alphabet sounds' : 'AI Speech Tone',
-        icon: isZero ? '🔤' : '🗣️',
-        color: const Color(0xFF10B981),
-        isCompleted: step1Done,
+        title: 'Core Linguistic Theory',
+        subtitle: 'Grammar breakdown & speech rules',
+        icon: '📖',
+        color: const Color(0xFFA855F7),
+        isCompleted: _subStepFlags['step_1'] ?? false,
         isUnlocked: _hasAcceptedRules,
-        onAction: () => _launchSubStep1(day, level),
+        onAction: () => _launchStep1_Theory(day),
       ),
       InPathSubStep(
         stepIndex: 2,
-        title: isBeginner ? 'Fluency Gym' : '12 Tenses Gym',
-        subtitle: isBeginner ? 'Speed & muscle drill' : 'Tense conjugation',
-        icon: '🏋️',
-        color: const Color(0xFF38BDF8),
-        isCompleted: step2Done,
-        isUnlocked: step1Done,
-        onAction: () => _launchSubStep2(day, level),
+        title: '10 Core Vocabulary Words',
+        subtitle: 'Definitions, audio & native meanings',
+        icon: '🧠',
+        color: const Color(0xFFFF8906),
+        isCompleted: _subStepFlags['step_2'] ?? false,
+        isUnlocked: _subStepFlags['step_1'] ?? false,
+        onAction: () => _launchStep2_Vocab(day),
       ),
       InPathSubStep(
         stepIndex: 3,
-        title: 'Defense Shield',
-        subtitle: 'Trap & fortress craft',
-        icon: '🛡️',
-        color: const Color(0xFFA855F7),
-        isCompleted: step3Done,
-        isUnlocked: step2Done,
-        onAction: () => _launchSubStep3(day, level),
+        title: 'Alphabet & 44 Phonics',
+        subtitle: 'Acoustic mouth placement frequencies',
+        icon: '🔤',
+        color: const Color(0xFFFF9100),
+        isCompleted: _subStepFlags['step_3'] ?? false,
+        isUnlocked: _subStepFlags['step_2'] ?? false,
+        onAction: () => _launchStep3_Phonics(day, level),
       ),
       InPathSubStep(
         stepIndex: 4,
-        title: 'Level Exam',
-        subtitle: 'Final mastery pass',
-        icon: '⚔️',
+        title: 'Fluency Gym Workout',
+        subtitle: '8 vocal stations & speech reflexes',
+        icon: '🎙️',
+        color: const Color(0xFF10B981),
+        isCompleted: _subStepFlags['step_4'] ?? false,
+        isUnlocked: _subStepFlags['step_3'] ?? false,
+        onAction: () => _launchStep4_FluencyGym(day, level),
+      ),
+      InPathSubStep(
+        stepIndex: 5,
+        title: 'Secret Code Grammar',
+        subtitle: 'Formula-based sentence codes',
+        icon: '⚡',
         color: const Color(0xFFFFD700),
-        isCompleted: step4Done,
-        isUnlocked: step3Done,
-        onAction: () => _launchSubStep4(day, level),
+        isCompleted: _subStepFlags['step_5'] ?? false,
+        isUnlocked: _subStepFlags['step_4'] ?? false,
+        onAction: () => _launchStep5_SecretCode(day),
+      ),
+      InPathSubStep(
+        stepIndex: 6,
+        title: 'Sentence Builder Puzzle',
+        subtitle: 'Scrambled word block assembly',
+        icon: '🏗️',
+        color: const Color(0xFF00E5FF),
+        isCompleted: _subStepFlags['step_6'] ?? false,
+        isUnlocked: _subStepFlags['step_5'] ?? false,
+        onAction: () => _launchStep6_SentenceBuilder(day),
+      ),
+      InPathSubStep(
+        stepIndex: 7,
+        title: 'Slang to Smart English',
+        subtitle: 'Professional native idioms',
+        icon: '💬',
+        color: const Color(0xFFFF6D00),
+        isCompleted: _subStepFlags['step_7'] ?? false,
+        isUnlocked: _subStepFlags['step_6'] ?? false,
+        onAction: () => _launchStep7_Slang(day),
+      ),
+      InPathSubStep(
+        stepIndex: 8,
+        title: 'Practice Speaking Aloud',
+        subtitle: 'Speech tone & voice accuracy',
+        icon: '🎤',
+        color: const Color(0xFFE040FB),
+        isCompleted: _subStepFlags['step_8'] ?? false,
+        isUnlocked: _subStepFlags['step_7'] ?? false,
+        onAction: () => _launchStep8_Speaking(day),
+      ),
+      InPathSubStep(
+        stepIndex: 9,
+        title: 'Time Machine Verbs Trainer',
+        subtitle: 'Past, present & future reflex drills',
+        icon: '⏳',
+        color: const Color(0xFFFFC107),
+        isCompleted: _subStepFlags['step_9'] ?? false,
+        isUnlocked: _subStepFlags['step_8'] ?? false,
+        onAction: () => _launchStep9_TimeMachine(day),
+      ),
+      InPathSubStep(
+        stepIndex: 10,
+        title: 'English Hub Community Chat',
+        subtitle: 'Send 15 English peer messages',
+        icon: '💬',
+        color: const Color(0xFFFFFC00),
+        isCompleted: _subStepFlags['step_10'] ?? false,
+        isUnlocked: _subStepFlags['step_9'] ?? false,
+        onAction: () => _launchStep10_CommunityChat(day),
+      ),
+      InPathSubStep(
+        stepIndex: 11,
+        title: '1-on-1 English Call',
+        subtitle: 'Live conversation partner practice',
+        icon: '🎙️',
+        color: const Color(0xFF38BDF8),
+        isCompleted: _subStepFlags['step_11'] ?? false,
+        isUnlocked: _subStepFlags['step_10'] ?? false,
+        onAction: () => _launchStep11_PeerCall(day),
+      ),
+      InPathSubStep(
+        stepIndex: 12,
+        title: 'Daily Adventure Quest',
+        subtitle: 'Cyber vocab & career challenges',
+        icon: '🎮',
+        color: const Color(0xFFE11D48),
+        isCompleted: _subStepFlags['step_12'] ?? false,
+        isUnlocked: _subStepFlags['step_11'] ?? false,
+        onAction: () => _launchStep12_AdventureQuest(day),
+      ),
+      InPathSubStep(
+        stepIndex: 13,
+        title: 'Grammar Notes & Story Aloud',
+        subtitle: 'Authentic multi-page story reading',
+        icon: '📖',
+        color: const Color(0xFF60A5FA),
+        isCompleted: _subStepFlags['step_13'] ?? false,
+        isUnlocked: _subStepFlags['step_12'] ?? false,
+        onAction: () => _launchStep13_ReadingStory(day),
+      ),
+      InPathSubStep(
+        stepIndex: 14,
+        title: 'Code English Decoder',
+        subtitle: 'Mnemonic syntax algorithms',
+        icon: '⚡',
+        color: const Color(0xFF00FFCC),
+        isCompleted: _subStepFlags['step_14'] ?? false,
+        isUnlocked: _subStepFlags['step_13'] ?? false,
+        onAction: () => _launchStep14_CodeEnglish(day),
+      ),
+      InPathSubStep(
+        stepIndex: 15,
+        title: 'Sovereign Fluency Shortcut',
+        subtitle: 'Colloquial speech contractions (കുറുക്കുവഴി)',
+        icon: '⚡',
+        color: const Color(0xFFFFB300),
+        isCompleted: _subStepFlags['step_15'] ?? false,
+        isUnlocked: _subStepFlags['step_14'] ?? false,
+        onAction: () => _launchStep15_Shortcut(day),
+      ),
+      InPathSubStep(
+        stepIndex: 16,
+        title: 'Arm Home Defense Shield',
+        subtitle: 'Fortify front gate with grammar trap',
+        icon: '🛡️',
+        color: const Color(0xFF8B5CF6),
+        isCompleted: _subStepFlags['step_16'] ?? false,
+        isUnlocked: _subStepFlags['step_15'] ?? false,
+        onAction: () => _launchStep16_DefenseShield(day),
+      ),
+      InPathSubStep(
+        stepIndex: 17,
+        title: 'Level $day Mastery Exam',
+        subtitle: 'Pass exam to certify & unlock House ${day + 1}',
+        icon: '🎓',
+        color: const Color(0xFF10B981),
+        isCompleted: _subStepFlags['step_17'] ?? false,
+        isUnlocked: _subStepFlags['step_16'] ?? false,
+        onAction: () => _launchStep17_MasteryExam(day, level),
       ),
     ];
   }
@@ -1619,7 +2082,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final totalMapHeight = _ruleNodeY + _bottomPadding;
 
     int completedSubSteps = 0;
-    for (int s = 1; s <= 4; s++) {
+    for (int s = 1; s <= 17; s++) {
       if (_subStepFlags['step_$s'] ?? false) completedSubSteps++;
     }
 
@@ -1662,9 +2125,33 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     // Biome Zone Banners & Scenery Props
                     ..._buildBiomeProps(screenWidth),
 
-                    // 🏡 90 Progressive Architectural English Houses along the Climbing Mountain Trail (Audio Directive!)
-                    for (int day = 1; day <= _totalDays; day++)
-                      _buildRoadmapHouse(day, screenWidth, prog.currentDay),
+                    // 🏡 Viewport-Culled 90 Progressive Architectural English Houses & 3D Level Nodes
+                    // User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu"
+                    Positioned.fill(
+                      child: AnimatedBuilder(
+                        animation: _scrollController,
+                        builder: (context, _) {
+                          final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 999999.0;
+                          final screenH = MediaQuery.of(context).size.height;
+                          final minY = scrollOffset;
+                          final maxY = scrollOffset + screenH;
+
+                          return Stack(
+                            children: [
+                              // 🏡 90 Progressive Architectural English Houses (Viewport Culled)
+                              for (int day = 1; day <= _totalDays; day++)
+                                if (_isDayInViewport(day, minY, maxY))
+                                  _buildRoadmapHouse(day, screenWidth, prog.currentDay),
+
+                              // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
+                              for (int day = 1; day <= _totalDays; day++)
+                                if (_isDayInViewport(day, minY, maxY))
+                                  _buildLevelNode(day, screenWidth, prog.currentDay),
+                            ],
+                          );
+                        },
+                      ),
+                    ),
 
                     // 📚 Minimal Syllabus Track Selector Menu directly above Rules / Level 1 Node (Audio Directive!)
                     _buildSyllabusSelectorMenu(screenWidth),
@@ -1672,11 +2159,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
                     _buildRuleLevelNode(screenWidth),
 
-                    // Interactive 3D Level Nodes (Days 1 to 90)
-                    for (int day = 1; day <= _totalDays; day++)
-                      _buildLevelNode(day, screenWidth, prog.currentDay),
-
-                    // In-Path Syllabus Sub-Steps for the active day along the climbing trail (Audio Directive)
+                    // In-Path Syllabus 17 Sub-Steps for the active day along the climbing trail (Audio Directive)
                     ..._buildActiveSubStepNodes(screenWidth, prog.currentDay),
 
                     // Bouncing Animated Character Avatar at Current Level, Sub-Step or Rules Node
@@ -4000,13 +4483,41 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ),
             ),
+
+            // Stepping Stone Number Badge
+            Positioned(
+              bottom: -7,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: step.isCompleted
+                        ? const Color(0xFF10B981)
+                        : (step.isUnlocked ? step.color : Colors.white24),
+                    width: 0.9,
+                  ),
+                ),
+                child: Text(
+                  '#${step.stepIndex}',
+                  style: GoogleFonts.outfit(
+                    color: step.isCompleted
+                        ? const Color(0xFF6EE7B7)
+                        : (step.isUnlocked ? Colors.white : Colors.white54),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
 
-  /// Builds the 4 in-path sub-step milestone nodes for the active day along the climbing path
+  /// Builds the 17 in-path sub-step milestone nodes for the active day along the climbing path (User Audio Directive!)
   List<Widget> _buildActiveSubStepNodes(double screenWidth, int activeDay) {
     if (activeDay >= _totalDays || !_hasAcceptedRules) return [];
 
@@ -4022,11 +4533,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       }
     }
 
-    for (int k = 1; k <= 4; k++) {
+    for (int k = 1; k <= 17; k++) {
       final step = subSteps[k - 1];
-      final fraction = k / 5.0; // 0.2, 0.4, 0.6, 0.8
-      final y = _getNodeY(activeDay) - (fraction * (_nodeSpacingY + _expandedActiveGap));
-      final x = _getNodeXFractional(activeDay + fraction, screenWidth);
+      final y = _getSubStepY(activeDay, k);
+      final x = _getSubStepX(activeDay, k, screenWidth);
       final isActiveCurrent = (step.stepIndex == currentActiveStepIndex);
 
       widgets.add(
@@ -4055,8 +4565,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       x = (screenWidth / 2) + 54;
       y = _ruleNodeY + 12;
     } else {
-      // Check if avatar should stand on the current incomplete in-path sub-step
-      for (int s = 1; s <= 4; s++) {
+      // Check if avatar should stand on the current incomplete in-path sub-step (1 to 17)
+      for (int s = 1; s <= 17; s++) {
         if (!(_subStepFlags['step_$s'] ?? false)) {
           activeSubStep = s;
           break;
@@ -4064,9 +4574,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       }
 
       if (activeSubStep > 0 && currentDay < _totalDays) {
-        final frac = activeSubStep / 5.0;
-        x = _getNodeXFractional(currentDay + frac, screenWidth);
-        y = _getNodeY(currentDay) - (frac * (_nodeSpacingY + _expandedActiveGap));
+        x = _getSubStepX(currentDay, activeSubStep, screenWidth);
+        y = _getSubStepY(currentDay, activeSubStep);
       } else {
         x = _getNodeX(currentDay, screenWidth);
         y = _getNodeY(currentDay);
@@ -4126,7 +4635,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         atRuleNode
                             ? 'Rules & Pledge • Tap to Start 📜'
                             : (activeSubStep > 0
-                                ? 'Day $currentDay • Step $activeSubStep / 4 ⚡'
+                                ? 'Day $currentDay • Step $activeSubStep / 17 ⚡'
                                 : 'Day $currentDay • At Estate Front Door 🏡'),
                         style: GoogleFonts.outfit(
                           color: Colors.black,
@@ -4204,6 +4713,60 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   List<Widget> _buildBiomeProps(double screenWidth) {
     return [
+      // ☁️ Atmospheric Drifting Clouds across Mountain Passes (User Audio Directive: "meghangal ponathu... weather effects")
+      Positioned.fill(
+        child: IgnorePointer(
+          child: AnimatedBuilder(
+            animation: _bobController,
+            builder: (context, _) {
+              final drift1 = (_bobController.value * 65.0);
+              final drift2 = ((1.0 - _bobController.value) * 75.0);
+
+              return Stack(
+                children: [
+                  // Cloud 1: Zone 1 & 2
+                  Positioned(
+                    left: 20 + drift1,
+                    top: _getNodeY(12) - 40,
+                    child: Opacity(
+                      opacity: 0.20,
+                      child: const Text('☁️', style: TextStyle(fontSize: 48)),
+                    ),
+                  ),
+                  // Cloud 2: Zone 3
+                  Positioned(
+                    right: 25 + drift2,
+                    top: _getNodeY(35) - 30,
+                    child: Opacity(
+                      opacity: 0.22,
+                      child: const Text('☁️', style: TextStyle(fontSize: 54)),
+                    ),
+                  ),
+                  // Cloud 3: Zone 4 (Cloud Realm)
+                  Positioned(
+                    left: 15 + drift2,
+                    top: _getNodeY(64) - 50,
+                    child: Opacity(
+                      opacity: 0.28,
+                      child: const Text('☁️', style: TextStyle(fontSize: 66)),
+                    ),
+                  ),
+                  // Cloud 4: Dragon Castle
+                  Positioned(
+                    right: 40 + drift1,
+                    top: _getNodeY(84) - 40,
+                    child: Opacity(
+                      opacity: 0.24,
+                      child: const Text('☁️', style: TextStyle(fontSize: 50)),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+
       // Zone 1: Forest & Valley (Day 1 Header at the bottom)
       Positioned(
         left: 20,
@@ -4821,7 +5384,7 @@ class _AdventureMapRoadPainter extends CustomPainter {
     required this.topPadding,
     required this.ruleNodeY,
     required this.hasAcceptedRules,
-    this.expandedActiveGap = 280.0,
+    this.expandedActiveGap = 1530.0,
     this.activeSubStepCompletedCount = 0,
   });
 
@@ -4843,6 +5406,21 @@ class _AdventureMapRoadPainter extends CustomPainter {
     return y;
   }
 
+  double _getSubStepY(int activeDay, int stepNumber) {
+    final fraction = stepNumber / 18.0;
+    return _getNodeY(activeDay) - (fraction * (nodeSpacingY + expandedActiveGap));
+  }
+
+  double _getSubStepX(int activeDay, int stepNumber) {
+    final fraction = stepNumber / 18.0;
+    final startX = _getNodeX(activeDay);
+    final endX = _getNodeX(activeDay + 1);
+    final linearX = startX + (endX - startX) * fraction;
+    final amplitude = (screenWidth - 150) / 2;
+    final wave = math.sin(fraction * math.pi * 3.0) * (amplitude * 0.72);
+    return (linearX + wave).clamp(65.0, screenWidth - 65.0);
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     // 1. Draw Biome Background Gradients (Inverted: Forest at bottom, Volcano/Citadel at top)
@@ -4851,8 +5429,32 @@ class _AdventureMapRoadPainter extends CustomPainter {
     // 2. Draw Decorative Trees / Rocks / Clouds / Crystals
     _paintWorldDecorations(canvas, size);
 
-    // 3. Draw S-Curve Stepping Stone Road Climbing Upwards
+    // 3. Draw Soft Drifting Ambient Clouds across Mountain Passes
+    _paintClouds(canvas, size);
+
+    // 4. Draw S-Curve Stepping Stone Road Climbing Upwards
     _paintCobblestoneRoad(canvas);
+  }
+
+  void _paintClouds(Canvas canvas, Size size) {
+    final cloudPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.08)
+      ..style = PaintingStyle.fill;
+    final cloudPaintBright = Paint()
+      ..color = Colors.white.withValues(alpha: 0.14)
+      ..style = PaintingStyle.fill;
+
+    for (int day = 4; day <= totalDays; day += 6) {
+      final cy = _getNodeY(day) - 50.0;
+      final cx = (day * 137.0) % (size.width - 140.0) + 70.0;
+      canvas.drawCircle(Offset(cx, cy), 28, cloudPaint);
+      canvas.drawCircle(Offset(cx + 22, cy - 8), 34, cloudPaintBright);
+      canvas.drawCircle(Offset(cx + 44, cy), 26, cloudPaint);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx - 20, cy + 4, 84, 22), const Radius.circular(11)),
+        cloudPaint,
+      );
+    }
   }
 
   void _paintBiomeGradients(Canvas canvas, Size size) {
@@ -4969,25 +5571,28 @@ class _AdventureMapRoadPainter extends CustomPainter {
         if (day < currentDay && hasAcceptedRules) completedPath.moveTo(p1.dx, p1.dy);
       }
 
-      // If this is the active current day, the path routes through the 4 in-path sub-steps
+      // If this is the active current day, the path routes through the 17 in-path sub-steps (User Audio Directive!)
       if (day == currentDay && currentDay < totalDays) {
-        for (int s = 1; s <= 4; s++) {
-          final frac = s / 5.0;
-          final sx = _getNodeXFractional(day + frac);
-          final sy = _getNodeY(day) - (frac * (nodeSpacingY + expandedActiveGap));
+        for (int s = 1; s <= 17; s++) {
+          final sx = _getSubStepX(day, s);
+          final sy = _getSubStepY(day, s);
           fullPath.lineTo(sx, sy);
           if (hasAcceptedRules && s <= activeSubStepCompletedCount) {
             completedPath.lineTo(sx, sy);
           }
         }
         fullPath.lineTo(p2.dx, p2.dy);
-        if (hasAcceptedRules && activeSubStepCompletedCount >= 4) {
+        if (hasAcceptedRules && activeSubStepCompletedCount >= 17) {
           completedPath.lineTo(p2.dx, p2.dy);
         }
       } else {
-        fullPath.quadraticBezierTo(p1.dx, midPoint.dy, p2.dx, p2.dy);
+        // Natural serpentine mountain switchback curve
+        final midY = (p1.dy + p2.dy) / 2;
+        final curveDir = (day % 2 == 0) ? -24.0 : 24.0;
+        final midX = ((p1.dx + p2.dx) / 2) + curveDir;
+        fullPath.quadraticBezierTo(midX, midY, p2.dx, p2.dy);
         if (day < currentDay && hasAcceptedRules) {
-          completedPath.quadraticBezierTo(p1.dx, midPoint.dy, p2.dx, p2.dy);
+          completedPath.quadraticBezierTo(midX, midY, p2.dx, p2.dy);
         }
       }
     }
