@@ -3,6 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../admin_auth_service.dart';
+import '../avatar/flame_avatar_widget.dart';
+import '../avatar/vector_avatar_config.dart';
+import '../avatar/vector_avatar_widget.dart';
+import 'flame_english_house_game.dart';
+
 /// 🗺️ Data Model for each Step Node along the Daily Mission Roadmap
 class RoadmapStepItem {
   final int stepNumber;
@@ -33,13 +39,14 @@ class RoadmapStepItem {
 }
 
 /// 🌄 Pocket Daily Mission Roadmap Widget
-/// Audio Directive Implementation:
-/// - Replaces confusing 17-card vertical list with an intuitive gamified journey map!
-/// - Top background: Sky with sun, clouds, birds.
-/// - Middle: Layered mountains, rolling green hills, winding trail connecting step nodes.
-/// - Bottom: Beautiful Level 1 English Cottage / House with chimney smoke, lit windows, picket fence.
-/// - Strictly NO Flame game engine used — 100% smooth, lightweight Flutter Canvas CustomPainter.
-/// - Step-by-step unlock: Step 1 is unlocked. Tapping opens reading/activity. On completion, Step 2 unlocks!
+/// Modernized Gamified Path Architecture (Audio Directive):
+/// - Clean, minimal serpentine path (Duolingo / Candy Crush / Target Master Hub style).
+/// - Completely responsive without horizontal card overflow on mobile screens.
+/// - Step-by-step sequential unlocking (Part 1 -> Part 2 -> Part 3).
+/// - Master Admin Bypass (musabthonippadam@gmail.com): All steps instantly unlocked for rapid developer testing.
+/// - Moving Avatar along the path: Day 1 features Cyber Cat moving to the active step as each part is cleared.
+/// - Destination: Day 2 Level 2 Home rendered at the bottom using Flame (FlameEnglishHouseWidget).
+/// - Stage Evolution: When all steps are cleared, Cyber Cat enters the Level 2 house and evolves into Cyber Fox using Flame!
 class PocketDailyMissionRoadmapWidget extends StatefulWidget {
   final int day;
   final List<RoadmapStepItem> steps;
@@ -77,8 +84,9 @@ class PocketDailyMissionRoadmapWidget extends StatefulWidget {
 
 class _PocketDailyMissionRoadmapWidgetState
     extends State<PocketDailyMissionRoadmapWidget>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late AnimationController _ambientController;
+  late AnimationController _bobController;
 
   @override
   void initState() {
@@ -87,32 +95,70 @@ class _PocketDailyMissionRoadmapWidgetState
       vsync: this,
       duration: const Duration(seconds: 8),
     )..repeat();
-  }
 
+    _bobController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..repeat(reverse: true);
+  }
 
   @override
   void dispose() {
     _ambientController.dispose();
+    _bobController.dispose();
     super.dispose();
+  }
+
+  /// Calculates safe, bounded X coordinate for step nodes along a smooth S-curve
+  double _getNodeX(int index, double screenWidth) {
+    final center = screenWidth / 2;
+    // Safe amplitude that guarantees 0% overflow on any screen width (320px–500px+)
+    final maxAmp = ((screenWidth - 140) / 2).clamp(36.0, 78.0);
+    // Sinusoidal wave: alternating left (-1) and right (+1)
+    final sign = (index % 2 == 0) ? -1.0 : 1.0;
+    final variation = (index % 4 == 0 || index % 4 == 3) ? 0.78 : 0.98;
+    return center + (sign * maxAmp * variation);
+  }
+
+  /// Calculates Y coordinate for step nodes
+  double _getNodeY(int index) {
+    return 190.0 + (index * 135.0);
   }
 
   @override
   Widget build(BuildContext context) {
     final stepCount = widget.steps.length;
-    // Calculate total height: top sky (260) + steps spacing (~135 per step) + bottom house section (460)
-    final double mapTotalHeight = 300.0 + (stepCount * 140.0) + 480.0;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMasterAdmin = AdminAuthService.isCurrentMasterAdmin();
+
+    // Calculate total height: top HUD (190) + steps spacing (~135 per step) + bottom Flame house section (740)
+    final double mapTotalHeight = 200.0 + (stepCount * 135.0) + 740.0;
+
+    // Active player avatar for this day (Day 1: Cyber Cat)
+    final currentAvatar = VectorAvatarConfig.getEvolutionAvatarForStage(widget.day);
+    // Next evolved avatar (Day 1 -> Day 2: Cyber Fox)
+    final evolvedAvatar = VectorAvatarConfig.getEvolutionAvatarForStage(widget.day + 1);
+
+    // Determine the active step index for avatar positioning
+    int activeIndex = widget.steps.indexWhere((s) => s.isActive);
+    if (activeIndex == -1) {
+      activeIndex = widget.steps.indexWhere((s) => !s.isCompleted);
+    }
+    final bool allDone = widget.hasPassedToday ||
+        (widget.totalCount > 0 && widget.completedCount >= widget.totalCount);
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: AnimatedBuilder(
-        animation: _ambientController,
+        animation: Listenable.merge([_ambientController, _bobController]),
         builder: (context, child) {
           return SizedBox(
+            width: screenWidth,
             height: mapTotalHeight,
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                // 1. Scenic 2D Landscape Background Canvas (Sky, Mountains, Rolling Hills, River & Trail)
+                // 1. Scenic 2D Landscape Background Canvas (Sky, Sun, Mountains, River & Trail)
                 Positioned.fill(
                   child: CustomPaint(
                     painter: _MissionRoadmapLandscapePainter(
@@ -120,46 +166,67 @@ class _PocketDailyMissionRoadmapWidgetState
                       stepCount: stepCount,
                       completedCount: widget.completedCount,
                       totalHeight: mapTotalHeight,
-                      isAllCompleted: widget.hasPassedToday,
+                      isAllCompleted: allDone,
                       day: widget.day,
+                      screenWidth: screenWidth,
+                      getNodeX: (idx) => _getNodeX(idx, screenWidth),
+                      getNodeY: _getNodeY,
                     ),
                   ),
                 ),
 
-                // 2. Map Floating Header HUD (Timer, Progress, View Switcher)
+                // 2. Top Floating Header HUD (Day, Progress, Timer, Admin badge, List view switcher)
                 Positioned(
                   top: 10,
                   left: 14,
                   right: 14,
-                  child: _buildFloatingMapHeader(),
+                  child: _buildFloatingMapHeader(isMasterAdmin),
                 ),
 
-                // 3. Step Milestone Nodes plotted down the winding trail
+                // 3. Step Milestone Nodes plotted down the serpentine trail
                 ...List.generate(stepCount, (index) {
                   final step = widget.steps[index];
-                  final nodeY = 320.0 + (index * 140.0);
-                  // Alternating serpentine offset (left, center-left, center-right, right...)
-                  final double horizontalOffsetRatio =
-                      _getHorizontalOffsetRatio(index);
+                  final nodeX = _getNodeX(index, screenWidth);
+                  final nodeY = _getNodeY(index);
+                  final isDone = step.isCompleted;
+                  final isUnlocked = step.isUnlocked || isMasterAdmin;
+                  final isActive = (index == activeIndex) && !allDone;
 
                   return Positioned(
-                    top: nodeY,
+                    top: nodeY - 32.0,
                     left: 0,
                     right: 0,
                     child: _buildRoadmapStepNode(
                       step: step,
-                      offsetRatio: horizontalOffsetRatio,
+                      nodeX: nodeX,
+                      isDone: isDone,
+                      isUnlocked: isUnlocked,
+                      isActive: isActive,
+                      isMasterAdmin: isMasterAdmin,
                       ambientProg: _ambientController.value,
                     ),
                   );
                 }),
 
-                // 4. Destination: Level 1 English House at bottom of path
+                // 4. Moving Character Avatar (Cyber Cat for Day 1) walking along the path
+                if (!allDone && activeIndex >= 0 && activeIndex < stepCount)
+                  _buildWalkingAvatar(
+                    avatarConfig: currentAvatar,
+                    nodeX: _getNodeX(activeIndex, screenWidth),
+                    nodeY: _getNodeY(activeIndex),
+                    activeStepNumber: activeIndex + 1,
+                  ),
+
+                // 5. Destination: Level 2 Home using Flame & Evolution Celebration at bottom
                 Positioned(
                   bottom: 24,
                   left: 14,
                   right: 14,
-                  child: _buildBottomHouseDestinationCard(),
+                  child: _buildBottomHouseDestinationCard(
+                    allDone: allDone,
+                    currentAvatar: currentAvatar,
+                    evolvedAvatar: evolvedAvatar,
+                  ),
                 ),
               ],
             ),
@@ -169,26 +236,8 @@ class _PocketDailyMissionRoadmapWidgetState
     );
   }
 
-  /// Calculates a smooth meandering sinusoidal offset for the step nodes
-  double _getHorizontalOffsetRatio(int index) {
-    // Oscillates between -0.45 (left) and +0.45 (right)
-    final cycle = index % 4;
-    switch (cycle) {
-      case 0:
-        return -0.38; // Left
-      case 1:
-        return -0.05; // Center-left
-      case 2:
-        return 0.38; // Right
-      case 3:
-        return 0.05; // Center-right
-      default:
-        return 0.0;
-    }
-  }
-
   /// 🌟 Top Floating Header HUD
-  Widget _buildFloatingMapHeader() {
+  Widget _buildFloatingMapHeader(bool isMasterAdmin) {
     final progressPct = widget.totalCount > 0
         ? (widget.completedCount / widget.totalCount).clamp(0.0, 1.0)
         : 0.0;
@@ -196,7 +245,7 @@ class _PocketDailyMissionRoadmapWidgetState
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+        color: const Color(0xFF0F172A).withValues(alpha: 0.92),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFFFFD700).withValues(alpha: 0.45),
@@ -204,8 +253,8 @@ class _PocketDailyMissionRoadmapWidgetState
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.35),
-            blurRadius: 10,
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 12,
             offset: const Offset(0, 4),
           ),
         ],
@@ -240,7 +289,7 @@ class _PocketDailyMissionRoadmapWidgetState
                   ),
                 ),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -316,7 +365,7 @@ class _PocketDailyMissionRoadmapWidgetState
                 ),
               ),
 
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
 
               // View Switcher to Classic List
               IconButton(
@@ -329,6 +378,38 @@ class _PocketDailyMissionRoadmapWidgetState
               ),
             ],
           ),
+
+          if (isMasterAdmin) ...[
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+              decoration: BoxDecoration(
+                color: const Color(0xFF8B5CF6).withValues(alpha: 0.22),
+                borderRadius: BorderRadius.circular(6),
+                border: Border.all(
+                  color: const Color(0xFFA78BFA),
+                  width: 0.9,
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🧪', style: TextStyle(fontSize: 11)),
+                  const SizedBox(width: 5),
+                  Text(
+                    'DEVELOPER TEST ACCESS (musabthonippadam@gmail.com): ALL STEPS UNLOCKED',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFE9D5FF),
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+
           const SizedBox(height: 8),
           // Gradient Progress Line
           ClipRRect(
@@ -351,320 +432,379 @@ class _PocketDailyMissionRoadmapWidgetState
     );
   }
 
-  /// 🔘 Individual Step Milestone Node on the Winding Trail
+  /// 🔘 Individual Step Milestone Node along the Winding Trail (Duolingo / Candy Crush Style)
   Widget _buildRoadmapStepNode({
     required RoadmapStepItem step,
-    required double offsetRatio,
+    required double nodeX,
+    required bool isDone,
+    required bool isUnlocked,
+    required bool isActive,
+    required bool isMasterAdmin,
     required double ambientProg,
   }) {
-    final isDone = step.isCompleted;
-    final isUnlocked = step.isUnlocked;
-    final isActive = step.isActive;
-
     // Pulse animation for the active step
     final pulseScale =
-        isActive ? (1.0 + (math.sin(ambientProg * 2 * math.pi) * 0.06)) : 1.0;
+        isActive ? (1.0 + (math.sin(ambientProg * 2 * math.pi) * 0.08)) : 1.0;
 
     return Center(
-      child: Transform.translate(
-        offset: Offset(MediaQuery.of(context).size.width * offsetRatio * 0.7, 0),
-        child: SizedBox(
-          width: 250,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Circular Milestone Orb
-              GestureDetector(
-                onTap: () {
-                  if (isUnlocked) {
-                    HapticFeedback.mediumImpact();
-                    step.onAction();
-                  } else {
-                    HapticFeedback.heavyImpact();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Row(
-                          children: [
-                            const Text('🔒', style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'Step ${step.stepNumber} is locked! Complete Step ${step.stepNumber - 1} first.',
-                                style: GoogleFonts.outfit(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: 110,
+        child: Stack(
+          alignment: Alignment.topCenter,
+          clipBehavior: Clip.none,
+          children: [
+            // Circular Milestone Stepping Stone
+            Positioned(
+              left: nodeX - 32.0,
+              top: 0,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      if (isUnlocked) {
+                        HapticFeedback.mediumImpact();
+                        step.onAction();
+                      } else {
+                        HapticFeedback.heavyImpact();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Row(
+                              children: [
+                                const Text('🔒', style: TextStyle(fontSize: 16)),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Part ${step.stepNumber} is locked! Complete Part ${step.stepNumber - 1} first.',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                        backgroundColor: const Color(0xFF1E293B),
-                        behavior: SnackBarBehavior.floating,
-                        duration: const Duration(seconds: 2),
-                      ),
-                    );
-                  }
-                },
-                child: Transform.scale(
-                  scale: pulseScale,
-                  child: Container(
-                    width: 66,
-                    height: 66,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: isDone
-                          ? const LinearGradient(
-                              colors: [Color(0xFF10B981), Color(0xFF047857)],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            )
-                          : (isActive
-                              ? LinearGradient(
-                                  colors: [
-                                    step.accentColor,
-                                    step.accentColor.withValues(alpha: 0.75),
-                                  ],
+                            backgroundColor: const Color(0xFF1E293B),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    child: Transform.scale(
+                      scale: pulseScale,
+                      child: Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: isDone
+                              ? const LinearGradient(
+                                  colors: [Color(0xFF10B981), Color(0xFF047857)],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 )
-                              : const LinearGradient(
-                                  colors: [
-                                    Color(0xFF1E293B),
-                                    Color(0xFF0F172A)
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                )),
-                      border: Border.all(
-                        color: isDone
-                            ? const Color(0xFF34D399)
-                            : (isActive
-                                ? const Color(0xFFFFFC00)
-                                : Colors.white24),
-                        width: (isActive || isDone) ? 2.5 : 1.5,
-                      ),
-                      boxShadow: [
-                        if (isActive)
-                          BoxShadow(
-                            color: step.accentColor.withValues(alpha: 0.45),
-                            blurRadius: 16,
-                            spreadRadius: 2,
+                              : (isActive
+                                  ? LinearGradient(
+                                      colors: [
+                                        step.accentColor,
+                                        step.accentColor.withValues(alpha: 0.75),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )
+                                  : const LinearGradient(
+                                      colors: [
+                                        Color(0xFF1E293B),
+                                        Color(0xFF0F172A),
+                                      ],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    )),
+                          border: Border.all(
+                            color: isDone
+                                ? const Color(0xFF34D399)
+                                : (isActive
+                                    ? const Color(0xFFFFFC00)
+                                    : Colors.white24),
+                            width: (isActive || isDone) ? 2.8 : 1.6,
                           ),
-                        if (isDone)
-                          BoxShadow(
-                            color:
-                                const Color(0xFF10B981).withValues(alpha: 0.35),
-                            blurRadius: 12,
-                          ),
-                      ],
-                    ),
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Text(
-                          isUnlocked ? step.icon : '🔒',
-                          style: TextStyle(
-                            fontSize: isUnlocked ? 28 : 22,
-                          ),
-                        ),
-                        // Top step tag badge
-                        Positioned(
-                          top: -3,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 6, vertical: 1.5),
-                            decoration: BoxDecoration(
-                              color: isDone
-                                  ? const Color(0xFF047857)
-                                  : (isActive
-                                      ? Colors.black
-                                      : const Color(0xFF334155)),
-                              borderRadius: BorderRadius.circular(6),
-                              border: Border.all(
-                                color: isDone
-                                    ? const Color(0xFF34D399)
-                                    : (isActive
-                                        ? const Color(0xFFFFFC00)
-                                        : Colors.white24),
-                                width: 0.9,
+                          boxShadow: [
+                            if (isActive)
+                              BoxShadow(
+                                color: step.accentColor.withValues(alpha: 0.55),
+                                blurRadius: 18,
+                                spreadRadius: 3,
                               ),
-                            ),
-                            child: Text(
-                              isDone ? '✓ DONE' : 'STEP ${step.stepNumber}',
-                              style: GoogleFonts.outfit(
-                                color: isDone
-                                    ? Colors.white
-                                    : (isActive
-                                        ? const Color(0xFFFFFC00)
-                                        : Colors.white70),
-                                fontSize: 8.5,
-                                fontWeight: FontWeight.w900,
+                            if (isDone)
+                              BoxShadow(
+                                color: const Color(0xFF10B981)
+                                    .withValues(alpha: 0.4),
+                                blurRadius: 12,
                               ),
-                            ),
-                          ),
+                          ],
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-
-              const SizedBox(width: 10),
-
-              // Description Info Card
-              Expanded(
-                child: GestureDetector(
-                  onTap: () {
-                    if (isUnlocked) {
-                      HapticFeedback.lightImpact();
-                      step.onAction();
-                    }
-                  },
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isDone
-                            ? const Color(0xFF10B981).withValues(alpha: 0.5)
-                            : (isActive
-                                ? step.accentColor.withValues(alpha: 0.7)
-                                : Colors.white12),
-                        width: isActive ? 1.4 : 1.0,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
+                        child: Stack(
+                          alignment: Alignment.center,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 1.5),
-                              decoration: BoxDecoration(
-                                color: step.accentColor.withValues(alpha: 0.18),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: Text(
-                                step.category.toUpperCase(),
-                                style: GoogleFonts.outfit(
-                                  color: step.accentColor,
-                                  fontSize: 8.5,
-                                  fontWeight: FontWeight.w800,
-                                ),
+                            Text(
+                              isUnlocked ? step.icon : '🔒',
+                              style: TextStyle(
+                                fontSize: isUnlocked ? 28 : 22,
                               ),
                             ),
-                            const Spacer(),
-                            // Quick Manual Verify Checkbox
-                            InkWell(
-                              onTap: step.onToggleComplete,
-                              borderRadius: BorderRadius.circular(6),
-                              child: Padding(
-                                padding: const EdgeInsets.all(2),
-                                child: Icon(
-                                  isDone
-                                      ? Icons.check_circle_rounded
-                                      : Icons.radio_button_unchecked_rounded,
+                            // Top step tag badge
+                            Positioned(
+                              top: -4,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 1.5),
+                                decoration: BoxDecoration(
                                   color: isDone
-                                      ? const Color(0xFF10B981)
-                                      : Colors.white38,
-                                  size: 17,
+                                      ? const Color(0xFF047857)
+                                      : (isActive
+                                          ? Colors.black
+                                          : const Color(0xFF334155)),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: isDone
+                                        ? const Color(0xFF34D399)
+                                        : (isActive
+                                            ? const Color(0xFFFFFC00)
+                                            : Colors.white24),
+                                    width: 0.9,
+                                  ),
+                                ),
+                                child: Text(
+                                  isDone
+                                      ? '✓ DONE'
+                                      : 'PART ${step.stepNumber}',
+                                  style: GoogleFonts.outfit(
+                                    color: isDone
+                                        ? Colors.white
+                                        : (isActive
+                                            ? const Color(0xFFFFFC00)
+                                            : Colors.white70),
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                                 ),
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 3),
-                        Text(
-                          step.title,
-                          style: GoogleFonts.outfit(
-                            color: isUnlocked ? Colors.white : Colors.white54,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12.5,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          step.subtitle,
-                          style: GoogleFonts.inter(
-                            color: Colors.white54,
-                            fontSize: 10,
-                            height: 1.2,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
+                      ),
                     ),
                   ),
-                ),
+
+                  const SizedBox(height: 5),
+
+                  // Minimal Label Pill below the orb (Responsive & clean)
+                  GestureDetector(
+                    onTap: () {
+                      if (isUnlocked) {
+                        HapticFeedback.lightImpact();
+                        step.onAction();
+                      }
+                    },
+                    child: Container(
+                      constraints: const BoxConstraints(maxWidth: 140),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 3.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isDone
+                              ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                              : (isActive
+                                  ? step.accentColor.withValues(alpha: 0.8)
+                                  : Colors.white12),
+                          width: isActive ? 1.3 : 0.9,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              step.title,
+                              style: GoogleFonts.outfit(
+                                color: isUnlocked ? Colors.white : Colors.white54,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 10.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          // Quick toggle checkbox
+                          InkWell(
+                            onTap: step.onToggleComplete,
+                            child: Icon(
+                              isDone
+                                  ? Icons.check_circle_rounded
+                                  : Icons.radio_button_unchecked_rounded,
+                              color: isDone
+                                  ? const Color(0xFF10B981)
+                                  : Colors.white30,
+                              size: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  /// 🏰 Bottom Level 1 English House Destination Card
-  Widget _buildBottomHouseDestinationCard() {
-    final isDone = widget.hasPassedToday;
+  /// 🐾 Walking Animated Character Avatar indicator at the active step
+  Widget _buildWalkingAvatar({
+    required VectorAvatarConfig avatarConfig,
+    required double nodeX,
+    required double nodeY,
+    required int activeStepNumber,
+  }) {
+    final bobY = math.sin(_bobController.value * math.pi) * 8.0;
+
+    return Positioned(
+      left: nodeX - 44.0,
+      top: nodeY - 96.0,
+      child: Transform.translate(
+        offset: Offset(0, -bobY),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Speech bubble
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🐾', style: TextStyle(fontSize: 10)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Part $activeStepNumber • Cyber Cat',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 9.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 3),
+            // Avatar Orb
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: const Color(0xFFFFFC00),
+                  width: 2.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                    blurRadius: 12,
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: VectorAvatarWidget(
+                  config: avatarConfig,
+                  size: 46,
+                  showAura: false,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🏰 Bottom Level 2 English House Destination Card using Flame & Evolution Celebration
+  Widget _buildBottomHouseDestinationCard({
+    required bool allDone,
+    required VectorAvatarConfig currentAvatar,
+    required VectorAvatarConfig evolvedAvatar,
+  }) {
+    final targetDay = widget.day + 1;
 
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.94),
-        borderRadius: BorderRadius.circular(20),
+        color: const Color(0xFF0F172A).withValues(alpha: 0.96),
+        borderRadius: BorderRadius.circular(22),
         border: Border.all(
-          color: isDone
+          color: allDone
               ? const Color(0xFF10B981)
-              : const Color(0xFFFFD700).withValues(alpha: 0.5),
-          width: isDone ? 2.0 : 1.3,
+              : const Color(0xFFFFD700).withValues(alpha: 0.55),
+          width: allDone ? 2.2 : 1.4,
         ),
         boxShadow: [
           BoxShadow(
-            color: (isDone ? const Color(0xFF10B981) : const Color(0xFFFFD700))
-                .withValues(alpha: 0.25),
-            blurRadius: 18,
-            offset: const Offset(0, 4),
+            color: (allDone ? const Color(0xFF10B981) : const Color(0xFFFFD700))
+                .withValues(alpha: 0.28),
+            blurRadius: 22,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          // Destination Header
           Row(
             children: [
               Container(
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: isDone
+                  color: allDone
                       ? const Color(0xFF10B981).withValues(alpha: 0.2)
                       : const Color(0xFFFFD700).withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: isDone
+                    color: allDone
                         ? const Color(0xFF10B981)
                         : const Color(0xFFFFD700),
+                    width: 1.5,
                   ),
                 ),
                 child: Center(
                   child: Text(
-                    isDone ? '👑' : '🏡',
+                    allDone ? '👑' : '🏡',
                     style: const TextStyle(fontSize: 22),
                   ),
                 ),
@@ -675,11 +815,11 @@ class _PocketDailyMissionRoadmapWidgetState
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      isDone
-                          ? 'DAY ${widget.day} COMPLETE • COTTAGE FORTIFIED!'
-                          : 'LEVEL ${widget.day} COTTAGE DESTINATION',
+                      allDone
+                          ? 'STAGE 1 COMPLETE • LEVEL $targetDay UNLOCKED!'
+                          : 'DESTINATION: LEVEL $targetDay COTTAGE',
                       style: GoogleFonts.outfit(
-                        color: isDone
+                        color: allDone
                             ? const Color(0xFF86EFAC)
                             : const Color(0xFFFFD700),
                         fontSize: 13.5,
@@ -689,9 +829,9 @@ class _PocketDailyMissionRoadmapWidgetState
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      isDone
-                          ? 'All foundational steps mastered! Claim your 200 PTS & unlock Day ${widget.day + 1}.'
-                          : 'Complete each step along the roadmap to arm and fortify your Day ${widget.day} English Cottage!',
+                      allDone
+                          ? 'Cyber Cat arrived and evolved into Cyber Fox! Tap below to claim your rewards & enter Day $targetDay.'
+                          : 'Complete Part 1, 2, 3... along the roadmap to march Cyber Cat into your Level $targetDay Home!',
                       style: GoogleFonts.inter(
                         color: Colors.white70,
                         fontSize: 11,
@@ -703,37 +843,180 @@ class _PocketDailyMissionRoadmapWidgetState
               ),
             ],
           ),
+
           const SizedBox(height: 14),
+
+          // 🏡 The Level 2 English House rendered using Flame!
+          Container(
+            height: 280,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white12,
+                width: 1.0,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: FlameEnglishHouseWidget(
+                currentDay: targetDay,
+                streak: 1,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 14),
+
+          // 🧬 Flame Evolution Reveal Showcase when completed!
+          if (allDone) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF3B0764), Color(0xFF1E1B4B)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFFFFD700), width: 1.4),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                    blurRadius: 16,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('⚡', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 6),
+                      Text(
+                        'EVOLUTION UNLOCKED: CYBER FOX!',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFFC00),
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Stage 1 Cyber Cat
+                      Column(
+                        children: [
+                          Container(
+                            width: 58,
+                            height: 58,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: Colors.white24, width: 1.5),
+                            ),
+                            child: ClipOval(
+                              child: VectorAvatarWidget(
+                                config: currentAvatar,
+                                size: 54,
+                                showAura: false,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Stage 1: Cyber Cat',
+                            style: GoogleFonts.inter(
+                              color: Colors.white60,
+                              fontSize: 9.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 14),
+                      const Icon(Icons.arrow_forward_rounded,
+                          color: Color(0xFFFFFC00), size: 22),
+                      const SizedBox(width: 14),
+                      // Stage 2 Cyber Fox (Flame powered!)
+                      Column(
+                        children: [
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: const Color(0xFFFFFC00),
+                                width: 2.2,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
+                            child: ClipOval(
+                              child: FlameAvatarWidget(
+                                config: evolvedAvatar,
+                                size: 60,
+                                showAura: true,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Stage 2: Cyber Fox 🦊',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+          ],
+
+          // Claim & Advance Action Button
           SizedBox(
-            width: double.infinity,
-            height: 46,
+            height: 48,
             child: ElevatedButton.icon(
-              onPressed: isDone ? widget.onClaimReward : null,
+              onPressed: allDone ? widget.onClaimReward : null,
               icon: Icon(
-                isDone ? Icons.celebration_rounded : Icons.lock_outline_rounded,
-                color: isDone ? Colors.black : Colors.white38,
-                size: 18,
+                allDone ? Icons.celebration_rounded : Icons.lock_outline_rounded,
+                color: allDone ? Colors.black : Colors.white38,
+                size: 20,
               ),
               label: Text(
-                isDone
-                    ? 'CLAIM DAY ${widget.day} REWARD (+200 PTS & ADVANCE)'
-                    : 'PASS 100 PTS TO ADVANCE (${widget.points}/100)',
+                allDone
+                    ? 'CLAIM DAY ${widget.day} REWARDS (+200 PTS & ADVANCE)'
+                    : 'COMPLETE ALL STEPS TO ADVANCE (${widget.completedCount}/${widget.totalCount})',
                 style: GoogleFonts.outfit(
-                  color: isDone ? Colors.black : Colors.white38,
+                  color: allDone ? Colors.black : Colors.white38,
                   fontWeight: FontWeight.w900,
                   fontSize: 12,
                   letterSpacing: 0.3,
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: isDone
+                backgroundColor: allDone
                     ? const Color(0xFFFFFC00)
                     : const Color(0xFF1E293B),
                 disabledBackgroundColor: const Color(0xFF1E293B),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: isDone ? 4 : 0,
+                elevation: allDone ? 6 : 0,
               ),
             ),
           ),
@@ -747,8 +1030,7 @@ class _PocketDailyMissionRoadmapWidgetState
 /// - Top Sky with Sun, Fluffy Clouds & Birds
 /// - Distant Layered Mountains & Rolling Foothills
 /// - Lush Green Meadow with Flowerbeds & Trees
-/// - Winding Trail connecting all Step Nodes
-/// - Beautiful Level 1 English House at bottom with Chimney Smoke & Garden Fence
+/// - Winding Trail passing precisely through each Step Node
 class _MissionRoadmapLandscapePainter extends CustomPainter {
   final double ambientProg;
   final int stepCount;
@@ -756,6 +1038,9 @@ class _MissionRoadmapLandscapePainter extends CustomPainter {
   final double totalHeight;
   final bool isAllCompleted;
   final int day;
+  final double screenWidth;
+  final double Function(int) getNodeX;
+  final double Function(int) getNodeY;
 
   _MissionRoadmapLandscapePainter({
     required this.ambientProg,
@@ -764,11 +1049,14 @@ class _MissionRoadmapLandscapePainter extends CustomPainter {
     required this.totalHeight,
     required this.isAllCompleted,
     required this.day,
+    required this.screenWidth,
+    required this.getNodeX,
+    required this.getNodeY,
   });
 
   @override
   void paint(Canvas canvas, Size size) {
-    final w = size.width;
+    final w = screenWidth;
     final h = totalHeight;
 
     // 1. SKY GRADIENT (Upper section down to mountains)
@@ -862,9 +1150,6 @@ class _MissionRoadmapLandscapePainter extends CustomPainter {
 
     // 🛤️ 4. Winding Adventure Cobblestone Trail connecting step nodes
     _drawWindingTrail(canvas, w, h);
-
-    // 🏡 5. The Level 1 English House at bottom
-    _drawLevel1House(canvas, w, h - 330);
   }
 
   /// Drifts fluffy white cumulus cloud
@@ -897,24 +1182,22 @@ class _MissionRoadmapLandscapePainter extends CustomPainter {
 
   /// Wildflowers and foliage decorating the hillsides
   void _drawScenicFlora(Canvas canvas, double w, double h) {
-    // Little trees on distant hills
     for (int i = 0; i < 12; i++) {
       final tx = (i % 2 == 0) ? (w * 0.08) + (i * 2) : w * 0.92 - (i * 2);
-      final ty = 400.0 + (i * 220.0);
-      if (ty < h - 400) {
+      final ty = 340.0 + (i * 220.0);
+      if (ty < h - 550) {
         _drawMiniTree(canvas, tx, ty, scale: 0.85);
       }
     }
 
-    // Little flower sprinkles
     final flowerPaint1 = Paint()..color = const Color(0xFFEF4444);
     final flowerPaint2 = Paint()..color = const Color(0xFFFACC15);
     final flowerPaint3 = Paint()..color = Colors.white;
 
     for (int i = 0; i < 30; i++) {
       final fx = (i * 67.0) % (w - 40) + 20;
-      final fy = 480.0 + (i * 120.0);
-      if (fy < h - 350) {
+      final fy = 400.0 + (i * 120.0);
+      if (fy < h - 550) {
         final fColor = (i % 3 == 0)
             ? flowerPaint1
             : (i % 3 == 1 ? flowerPaint2 : flowerPaint3);
@@ -943,29 +1226,34 @@ class _MissionRoadmapLandscapePainter extends CustomPainter {
     );
   }
 
-  /// Winding Cobblestone Adventure Road meandering between steps
+  /// Winding Cobblestone Adventure Road passing precisely through each step node
   void _drawWindingTrail(Canvas canvas, double w, double h) {
+    if (stepCount == 0) return;
+
     final trailPath = Path();
-    trailPath.moveTo(w * 0.5, 270.0);
+    final firstNodeX = getNodeX(0);
+    final firstNodeY = getNodeY(0);
 
-    for (int i = 0; i < stepCount; i++) {
-      final nodeY = 320.0 + (i * 140.0) + 33.0;
-      final cycle = i % 4;
-      double nodeX = w * 0.5;
-      if (cycle == 0) nodeX = w * 0.5 - 55;
-      if (cycle == 1) nodeX = w * 0.5 - 15;
-      if (cycle == 2) nodeX = w * 0.5 + 55;
-      if (cycle == 3) nodeX = w * 0.5 + 15;
+    // Trail starts from just beneath the header
+    trailPath.moveTo(w * 0.5, 140.0);
+    trailPath.cubicTo(w * 0.5, 160.0, firstNodeX, firstNodeY - 40, firstNodeX, firstNodeY);
 
-      final prevY = (i == 0) ? 270.0 : (320.0 + ((i - 1) * 140.0) + 33.0);
-      final midY = (prevY + nodeY) / 2;
+    for (int i = 0; i < stepCount - 1; i++) {
+      final p1X = getNodeX(i);
+      final p1Y = getNodeY(i);
+      final p2X = getNodeX(i + 1);
+      final p2Y = getNodeY(i + 1);
+      final midY = (p1Y + p2Y) / 2;
 
-      trailPath.cubicTo(w * 0.5, midY, nodeX, midY, nodeX, nodeY);
+      trailPath.cubicTo(p1X, midY, p2X, midY, p2X, p2Y);
     }
 
-    // Connect from last step down to house
-    final lastStepY = 320.0 + ((stepCount - 1) * 140.0) + 33.0;
-    trailPath.cubicTo(w * 0.5, lastStepY + 60, w * 0.5, h - 350, w * 0.5, h - 330);
+    // Connect from last step down toward the destination house
+    final lastNodeX = getNodeX(stepCount - 1);
+    final lastNodeY = getNodeY(stepCount - 1);
+    final houseTopY = h - 680.0;
+
+    trailPath.cubicTo(lastNodeX, lastNodeY + 60, w * 0.5, houseTopY - 40, w * 0.5, houseTopY);
 
     // Trail base shadow
     canvas.drawPath(
@@ -998,190 +1286,11 @@ class _MissionRoadmapLandscapePainter extends CustomPainter {
     );
   }
 
-  /// 🏡 Draws Level 1 Authentic English Cottage at bottom of landscape
-  void _drawLevel1House(Canvas canvas, double w, double groundY) {
-    final cx = w * 0.5;
-    const houseW = 160.0;
-    const houseH = 110.0;
-    final houseLeft = cx - (houseW / 2);
-    final houseTop = groundY - houseH;
-
-    // 1. Cobblestone Front Yard Pathway leading to door
-    final path = Path();
-    path.moveTo(cx - 18, groundY + 50);
-    path.lineTo(cx - 12, groundY);
-    path.lineTo(cx + 12, groundY);
-    path.lineTo(cx + 18, groundY + 50);
-    path.close();
-    canvas.drawPath(path, Paint()..color = const Color(0xFF94A3B8));
-
-    // 2. House Base & Walls (Warm Storybook Cream/Stone)
-    final wallRect = RRect.fromRectAndRadius(
-      Rect.fromLTWH(houseLeft, houseTop, houseW, houseH),
-      const Radius.circular(6),
-    );
-    canvas.drawRRect(
-      wallRect,
-      Paint()..color = const Color(0xFFF7E8D0), // Cream Stone
-    );
-    canvas.drawRRect(
-      wallRect,
-      Paint()
-        ..color = const Color(0xFFDEC5A5)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0,
-    );
-
-    // Timber corner posts
-    canvas.drawRect(Rect.fromLTWH(houseLeft, houseTop, 10, houseH),
-        Paint()..color = const Color(0xFF78350F));
-    canvas.drawRect(Rect.fromLTWH(houseLeft + houseW - 10, houseTop, 10, houseH),
-        Paint()..color = const Color(0xFF78350F));
-
-    // 3. Red Terracotta Pitched Roof
-    const roofOverhang = 18.0;
-    const roofPeakHeight = 52.0;
-    final roofPath = Path();
-    roofPath.moveTo(houseLeft - roofOverhang, houseTop);
-    roofPath.lineTo(cx, houseTop - roofPeakHeight);
-    roofPath.lineTo(houseLeft + houseW + roofOverhang, houseTop);
-    roofPath.close();
-
-    canvas.drawPath(
-      roofPath,
-      Paint()..color = const Color(0xFFE04938), // Storybook Red Roof
-    );
-    canvas.drawPath(
-      roofPath,
-      Paint()
-        ..color = const Color(0xFFBF3728)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.5,
-    );
-
-    // Roof Trim Underhang
-    canvas.drawLine(
-      Offset(houseLeft - roofOverhang, houseTop),
-      Offset(houseLeft + houseW + roofOverhang, houseTop),
-      Paint()
-        ..color = const Color(0xFFFFF7ED)
-        ..strokeWidth = 3.5,
-    );
-
-    // 4. Stone Chimney with Puffing Smoke
-    final chimneyLeft = cx + 32;
-    final chimneyTop = houseTop - roofPeakHeight + 8;
-    canvas.drawRect(
-      Rect.fromLTWH(chimneyLeft, chimneyTop, 18, 34),
-      Paint()..color = const Color(0xFF64748B),
-    );
-    // Chimney Rim
-    canvas.drawRect(
-      Rect.fromLTWH(chimneyLeft - 2, chimneyTop, 22, 5),
-      Paint()..color = const Color(0xFF334155),
-    );
-
-    // 💨 Animated Smoke Puffs
-    final smokeProg = (ambientProg * 2) % 1.0;
-    final smokeAlpha = (1.0 - smokeProg).clamp(0.0, 0.7);
-    final smokeP = Paint()..color = Colors.white.withValues(alpha: smokeAlpha);
-    canvas.drawCircle(
-      Offset(chimneyLeft + 9 + (smokeProg * 8), chimneyTop - 10 - (smokeProg * 24)),
-      7 + (smokeProg * 6),
-      smokeP,
-    );
-    canvas.drawCircle(
-      Offset(chimneyLeft + 9 - (smokeProg * 6), chimneyTop - 25 - (smokeProg * 28)),
-      9 + (smokeProg * 8),
-      smokeP,
-    );
-
-    // 5. Arched Wooden Front Door
-    const doorW = 28.0;
-    const doorH = 46.0;
-    final doorRect = RRect.fromRectAndCorners(
-      Rect.fromLTWH(cx - (doorW / 2), groundY - doorH, doorW, doorH),
-      topLeft: const Radius.circular(14),
-      topRight: const Radius.circular(14),
-    );
-    canvas.drawRRect(doorRect, Paint()..color = const Color(0xFFD97706));
-    canvas.drawRRect(
-      doorRect,
-      Paint()
-        ..color = const Color(0xFF92400E)
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.0,
-    );
-    // Door knob
-    canvas.drawCircle(
-      Offset(cx + 8, groundY - (doorH * 0.45)),
-      2.5,
-      Paint()..color = const Color(0xFFFFD700),
-    );
-
-    // 6. Cozy Glowing Front Windows
-    for (final wx in [houseLeft + 22, houseLeft + houseW - 46]) {
-      final winRect = RRect.fromRectAndRadius(
-        Rect.fromLTWH(wx, houseTop + 32, 24, 28),
-        const Radius.circular(4),
-      );
-      // Warm yellow glow
-      canvas.drawRRect(
-        winRect,
-        Paint()
-          ..color = const Color(0xFFFEF08A)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
-      );
-      canvas.drawRRect(winRect, Paint()..color = const Color(0xFFFFD700));
-      // Window panes cross
-      final winPaint = Paint()
-        ..color = const Color(0xFF78350F)
-        ..strokeWidth = 1.6;
-      canvas.drawLine(Offset(wx + 12, houseTop + 32), Offset(wx + 12, houseTop + 60), winPaint);
-      canvas.drawLine(Offset(wx, houseTop + 46), Offset(wx + 24, houseTop + 46), winPaint);
-    }
-
-    // 7. White Picket Garden Fence
-    _drawPicketFence(canvas, houseLeft - 30, houseLeft - 4, groundY);
-    _drawPicketFence(canvas, houseLeft + houseW + 4, houseLeft + houseW + 30, groundY);
-
-    // 8. Celebration Sparkles if all finished
-    if (isAllCompleted) {
-      final sparkleP = Paint()..color = const Color(0xFFFFD700);
-      for (int i = 0; i < 8; i++) {
-        final sx = cx + math.cos(ambientProg * 2 * math.pi + (i * 0.8)) * 80;
-        final sy = houseTop - 20 + math.sin(ambientProg * 2 * math.pi + (i * 0.8)) * 30;
-        canvas.drawCircle(Offset(sx, sy), 3.0, sparkleP);
-      }
-    }
-  }
-
-  void _drawPicketFence(Canvas canvas, double x1, double x2, double groundY) {
-    final picketP = Paint()..color = Colors.white;
-    final railP = Paint()
-      ..color = const Color(0xFFE2E8F0)
-      ..strokeWidth = 2.0;
-
-    // Cross rails
-    canvas.drawLine(Offset(x1, groundY - 14), Offset(x2, groundY - 14), railP);
-    canvas.drawLine(Offset(x1, groundY - 6), Offset(x2, groundY - 6), railP);
-
-    for (double x = x1; x <= x2; x += 7.0) {
-      final pPath = Path();
-      pPath.moveTo(x - 2, groundY);
-      pPath.lineTo(x - 2, groundY - 18);
-      pPath.lineTo(x, groundY - 22); // Pointy tip
-      pPath.lineTo(x + 2, groundY - 18);
-      pPath.lineTo(x + 2, groundY);
-      pPath.close();
-      canvas.drawPath(pPath, picketP);
-    }
-  }
-
   @override
   bool shouldRepaint(covariant _MissionRoadmapLandscapePainter oldDelegate) {
     return oldDelegate.ambientProg != ambientProg ||
         oldDelegate.completedCount != completedCount ||
-        oldDelegate.isAllCompleted != isAllCompleted;
+        oldDelegate.isAllCompleted != isAllCompleted ||
+        oldDelegate.screenWidth != screenWidth;
   }
 }
