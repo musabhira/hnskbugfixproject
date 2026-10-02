@@ -4451,6 +4451,8 @@ class FlameEnglishHouseWidget extends StatefulWidget {
     this.onDayChanged,
   });
 
+  static String getEstateStageTitle(int d) => _FlameEnglishHouseWidgetState.getEstateStageTitle(d);
+
   @override
   State<FlameEnglishHouseWidget> createState() => _FlameEnglishHouseWidgetState();
 }
@@ -4519,7 +4521,9 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
     widget.onDayChanged?.call(clamped);
   }
 
-  String _getEstateStageTitle(int d) {
+  String _getEstateStageTitle(int d) => getEstateStageTitle(d);
+
+  static String getEstateStageTitle(int d) {
     switch (d) {
       case 1: return '🛖 Cozy Storybook Cottage';
       case 2: return '🛖 Shingle Porch Awning';

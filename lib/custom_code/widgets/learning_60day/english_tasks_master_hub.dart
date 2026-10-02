@@ -35,6 +35,8 @@ import 'pocket_alphabet_phonics_game_page.dart';
 import 'zero_foundation_curriculum_db.dart';
 import 'pocket_mission_curriculum_1_18.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
+import 'package:flame/components.dart' show Vector2;
+import 'flame_english_house_game.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -57,6 +59,48 @@ class InPathSubStep {
     required this.isUnlocked,
     required this.onAction,
   });
+}
+
+/// 🏡 High-Performance CustomPainter for Progressive 90-Day English Houses
+/// Seamlessly invokes HouseMasterComponent's Flutter canvas rendering engine
+class HouseMasterPainter extends CustomPainter {
+  final int day;
+  final HousePalette palette;
+  final bool isDamaged;
+  final bool isPresident;
+  final bool lightsOn;
+  late final HouseMasterComponent _comp;
+
+  HouseMasterPainter({
+    required this.day,
+    HousePalette? palette,
+    this.isDamaged = false,
+    this.isPresident = false,
+    this.lightsOn = true,
+  }) : palette = palette ?? HousePalette.presets[0] {
+    _comp = HouseMasterComponent(
+      day: day,
+      streak: 1,
+      palette: this.palette,
+      isDamaged: isDamaged,
+      isPresident: isPresident,
+    )..lightsOn = lightsOn;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    _comp.resize(Vector2(size.width, size.height));
+    _comp.render(canvas);
+  }
+
+  @override
+  bool shouldRepaint(covariant HouseMasterPainter oldDelegate) {
+    return oldDelegate.day != day ||
+        oldDelegate.isDamaged != isDamaged ||
+        oldDelegate.isPresident != isPresident ||
+        oldDelegate.lightsOn != lightsOn ||
+        oldDelegate.palette.id != palette.id;
+  }
 }
 
 /// 🎯 Model for Minimal Target Roadmaps (Audio Requirement)
@@ -214,12 +258,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   final Set<int> _completedDays = {};
   int _levelRivalShuffleSeed = 0;
 
-  // Spacing & node dimensions for upward climbing roadmap
-  static const double _nodeSpacingY = 145.0;
-  static const double _expandedActiveGap = 280.0;
-  static const double _topPadding = 360.0; // Summit apex spacing
-  static const double _bottomPadding = 260.0;
-  double get _ruleNodeY => _getNodeY(1) + 140.0; // Positioned below Day 1 at the bottom
+  // Spacing & node dimensions for upward climbing roadmap with 90 English Houses
+  static const double _nodeSpacingY = 220.0;
+  static const double _expandedActiveGap = 290.0;
+  static const double _topPadding = 420.0; // Summit apex spacing with Citadel Palace
+  static const double _bottomPadding = 280.0;
+  double get _ruleNodeY => _getNodeY(1) + 160.0; // Positioned below Day 1 at the bottom
   final Map<String, bool> _subStepFlags = {};
 
   @override
@@ -1605,9 +1649,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     // Biome Zone Banners & Scenery Props
                     ..._buildBiomeProps(screenWidth),
 
-                    // 🐾 Minimal Flame Animal Cards in Map Space (Audio Directive!)
+                    // 🏡 90 Progressive Architectural English Houses along the Climbing Mountain Trail (Audio Directive!)
                     for (int day = 1; day <= _totalDays; day++)
-                      _buildMapMiniAnimalCard(day, screenWidth, prog.currentDay),
+                      _buildRoadmapHouse(day, screenWidth, prog.currentDay),
 
                     // 📚 Minimal Syllabus Track Selector Menu directly above Rules / Level 1 Node (Audio Directive!)
                     _buildSyllabusSelectorMenu(screenWidth),
@@ -3156,160 +3200,467 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  /// 🐾 Minimal Animal Card in the Open Space Beside Level Nodes (Audio Requirement!)
-  /// Shows the animal avatar, species title, day, and minimal status badge.
-  Widget _buildMapMiniAnimalCard(int day, double screenWidth, int currentDay) {
+  /// 🏡 90 Progressive Architectural English Houses along the Climbing Mountain Trail (User Audio Directive!)
+  /// Renders the progressive English architectural house at each level.
+  /// The road climbs directly to the front entrance / doorstep of each house.
+  /// When completed, the house glows with warm windows and flame effects.
+  Widget _buildRoadmapHouse(int day, double screenWidth, int currentDay) {
     if (day == 91) {
       return _buildLevel91MiniCard(screenWidth, currentDay);
     }
     final nodeX = _getNodeX(day, screenWidth);
     final nodeY = _getNodeY(day);
-    final isRightSide = nodeX >= screenWidth / 2;
     final isWaitingForMidnight = _isDayWaitingForMidnight(day);
     final isUnlocked = _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules) && !isWaitingForMidnight;
     final isCompleted = _isDayCompleted(day);
-    final config = _getAvatarForDay(day);
+    final isCurrent = (day == currentDay);
 
-    // Responsive compact width that never collides or overflows
-    final double cardWidth = ((screenWidth / 2) - 42.0).clamp(100.0, 140.0);
-    final double cardLeft = isRightSide ? 12.0 : (screenWidth - cardWidth - 12.0);
-    final double cardTop = nodeY - 21.0;
+    // Responsive dimensions for the architectural house along the mountain path
+    final double houseWidth = (screenWidth * 0.56).clamp(200.0, 250.0);
+    const double houseHeight = 138.0;
 
-    final speciesTitle = config.species
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map((w) => w.isNotEmpty ? '${w[0].toUpperCase()}${w.substring(1)}' : '')
-        .join(' ');
+    // Center the house on nodeX, but keep safely within screen margins
+    final double houseLeft = (nodeX - (houseWidth / 2.0)).clamp(10.0, screenWidth - houseWidth - 10.0);
+    // Align house so its doorstep sits right behind/under the level stepping stone (nodeY)
+    final double houseTop = nodeY - houseHeight + 24.0;
 
-    // Color by rarity
-    final tier = config.rarityTier.toLowerCase();
-    Color rarityColor;
-    if (config.species == 'cyber_cat' || tier.contains('cyber cat')) {
-      rarityColor = const Color(0xFFEC4899);
-    } else if (tier.contains('mythic')) {
-      rarityColor = const Color(0xFF00E5FF);
-    } else if (tier.contains('legendary')) {
-      rarityColor = const Color(0xFFFFD700);
-    } else if (tier.contains('epic')) {
-      rarityColor = const Color(0xFFD946EF);
-    } else if (tier.contains('rare')) {
-      rarityColor = const Color(0xFF38BDF8);
-    } else {
-      rarityColor = const Color(0xFF10B981);
-    }
+    final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(day);
+    final palette = HousePalette.presets[(day - 1) % HousePalette.presets.length];
+    final avatarConfig = _getAvatarForDay(day);
 
     return Positioned(
-      left: cardLeft,
-      top: cardTop,
+      left: houseLeft,
+      top: houseTop,
       child: GestureDetector(
         onTap: () {
-          HapticFeedback.selectionClick();
-          _openAvatarCard(day);
+          _showHouseDetailsSheet(day);
         },
-        child: Container(
-          width: cardWidth,
-          height: 42,
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: SizedBox(
+          width: houseWidth,
+          height: houseHeight,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // 1. Warm Flame Aura / Glow Behind the House when Completed or Current (Audio Directive: "athinu kazhinja udane flame okke kodukkaam")
+              if (isCompleted || isCurrent)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isCompleted
+                              ? const Color(0xFFFF5722).withValues(alpha: 0.28)
+                              : const Color(0xFFFFFC00).withValues(alpha: 0.22),
+                          blurRadius: 24,
+                          spreadRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // 2. High-performance RepaintBoundary wrapping HouseMasterPainter
+              Positioned.fill(
+                child: RepaintBoundary(
+                  child: Opacity(
+                    opacity: isUnlocked || isWaitingForMidnight ? 1.0 : 0.65,
+                    child: CustomPaint(
+                      size: Size(houseWidth, houseHeight),
+                      painter: HouseMasterPainter(
+                        day: day,
+                        palette: palette,
+                        isPresident: (day >= 90),
+                        lightsOn: isCompleted || isCurrent,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 3. Estate Title & Stage Pill at the Top of the House
+              Positioned(
+                top: 2,
+                left: 6,
+                right: 36, // space for avatar guardian chip
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isCurrent
+                          ? const Color(0xFFFFFC00)
+                          : (isCompleted
+                              ? const Color(0xFFFF7043)
+                              : (isUnlocked ? Colors.white24 : Colors.white10)),
+                      width: isCurrent || isCompleted ? 1.2 : 0.8,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isCompleted
+                            ? '🔥'
+                            : (isCurrent
+                                ? '📍'
+                                : (isWaitingForMidnight
+                                    ? '⏳'
+                                    : (isUnlocked ? '🏡' : '🔒'))),
+                        style: const TextStyle(fontSize: 10),
+                      ),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          estateTitle,
+                          style: GoogleFonts.outfit(
+                            color: isCurrent
+                                ? const Color(0xFFFFFC00)
+                                : (isCompleted
+                                    ? const Color(0xFFFFB74D)
+                                    : (isUnlocked ? Colors.white : Colors.white60)),
+                            fontSize: 9.0,
+                            fontWeight: FontWeight.w700,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // 4. Resident Avatar Guardian Chip (Click to open collectible card)
+              Positioned(
+                top: 2,
+                right: 4,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    _openAvatarCard(day);
+                  },
+                  child: Container(
+                    width: 26,
+                    height: 26,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: const Color(0xFF0F172A),
+                      border: Border.all(
+                        color: isCurrent
+                            ? const Color(0xFFFFFC00)
+                            : (isCompleted
+                                ? const Color(0xFF10B981)
+                                : (isUnlocked ? Colors.white54 : Colors.white24)),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: VectorAvatarWidget(
+                        config: avatarConfig,
+                        size: 24,
+                        showAura: false,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+
+              // 5. Flame Badge when Level is Completed (Audio Directive)
+              if (isCompleted)
+                Positioned(
+                  bottom: 24,
+                  right: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFF5722), Color(0xFFFF9800)],
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF5722).withValues(alpha: 0.5),
+                          blurRadius: 6,
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🔥', style: TextStyle(fontSize: 8)),
+                        const SizedBox(width: 2),
+                        Text(
+                          'MASTERED',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🏡 Shows rich details sheet for the English Architectural House along the mountain path
+  void _showHouseDetailsSheet(int day) {
+    HapticFeedback.mediumImpact();
+    final isCompleted = _isDayCompleted(day);
+    final isWaitingForMidnight = _isDayWaitingForMidnight(day);
+    final currentDay = _progress?.currentDay ?? 1;
+    final isUnlocked = _isDayUnlocked(day, currentDay) && (day > 1 || _hasAcceptedRules);
+    final isCurrent = (day == currentDay);
+    final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(day);
+    final palette = HousePalette.presets[(day - 1) % HousePalette.presets.length];
+    final config = _getAvatarForDay(day);
+    final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
+    final reqTrophies = PocketScoreLevelEngine.getRequiredTrophiesForLevel(day);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          margin: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFF111726).withValues(alpha: 0.90),
-            borderRadius: BorderRadius.circular(11),
+            color: const Color(0xFF0F172A),
+            borderRadius: BorderRadius.circular(24),
             border: Border.all(
-              color: isWaitingForMidnight
-                  ? const Color(0xFFFFD700).withValues(alpha: 0.65)
-                  : (isUnlocked
-                      ? rarityColor.withValues(alpha: 0.65)
-                      : Colors.white.withValues(alpha: 0.10)),
-              width: (isUnlocked || isWaitingForMidnight) ? 1.2 : 0.8,
+              color: isCurrent
+                  ? const Color(0xFFFFFC00)
+                  : (isCompleted ? const Color(0xFFFF5722) : Colors.white24),
+              width: 1.8,
             ),
             boxShadow: [
               BoxShadow(
-                color: isWaitingForMidnight
-                    ? const Color(0xFFFFD700).withValues(alpha: 0.15)
-                    : (isUnlocked
-                        ? rarityColor.withValues(alpha: 0.15)
-                        : Colors.black.withValues(alpha: 0.25)),
-                blurRadius: 6,
-                offset: const Offset(0, 2),
+                color: (isCurrent
+                        ? const Color(0xFFFFFC00)
+                        : (isCompleted ? const Color(0xFFFF5722) : Colors.black))
+                    .withValues(alpha: 0.35),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Avatar Thumbnail Frame
+              // Drag handle
               Container(
-                width: 28,
-                height: 28,
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(top: 10, bottom: 8),
                 decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isWaitingForMidnight
-                        ? const Color(0xFFFFD700)
-                        : (isUnlocked ? rarityColor : Colors.white24),
-                    width: 1,
-                  ),
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
                 ),
-                child: ClipOval(
-                  child: VectorAvatarWidget(
-                    config: config,
-                    size: 26,
-                    showAura: false,
+              ),
+
+              // Architectural House Canvas Preview
+              Container(
+                height: 160,
+                width: double.infinity,
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      const Color(0xFF1E293B).withValues(alpha: 0.6),
+                      const Color(0xFF0B0F19),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: CustomPaint(
+                    size: const Size(double.infinity, 160),
+                    painter: HouseMasterPainter(
+                      day: day,
+                      palette: palette,
+                      isPresident: (day >= 90),
+                      lightsOn: isCompleted || isCurrent,
+                    ),
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
 
-              // Title & Day & Rarity
-              Expanded(
+              Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      speciesTitle,
-                      style: GoogleFonts.outfit(
-                        color: isUnlocked ? Colors.white : Colors.white70,
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 1),
                     Row(
-                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(
-                          'Day $day',
-                          style: GoogleFonts.inter(
-                            color: isWaitingForMidnight
-                                ? const Color(0xFFFFD700)
-                                : (isUnlocked ? const Color(0xFFFFFC00) : Colors.white38),
-                            fontSize: 8.5,
-                            fontWeight: FontWeight.w700,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                estateTitle,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                isCompleted
+                                    ? '🔥 Mastered Estate • Hearth & Windows Glowing'
+                                    : (isCurrent
+                                        ? '📍 Current Level • Doorstep Entrance'
+                                        : (isUnlocked ? '⚡ Unlocked Estate' : '🔒 Locked Estate')),
+                                style: GoogleFonts.inter(
+                                  color: isCompleted
+                                      ? const Color(0xFFFF9800)
+                                      : (isCurrent
+                                          ? const Color(0xFFFFFC00)
+                                          : (isUnlocked ? const Color(0xFF38BDF8) : Colors.white54)),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(width: 3),
-                        Flexible(
-                          child: Text(
-                            isCompleted
-                                ? '• ✓'
-                                : (isWaitingForMidnight
-                                    ? '• ⏳'
-                                    : (isUnlocked
-                                        ? '• ⚡'
-                                        : '• 🔒')),
-                            style: TextStyle(
-                              color: isCompleted
-                                  ? const Color(0xFF10B981)
-                                  : (isWaitingForMidnight
-                                      ? const Color(0xFFFFD700)
-                                      : (isUnlocked
-                                          ? const Color(0xFFFFFC00)
-                                          : Colors.white38)),
-                              fontSize: 8,
-                              fontWeight: FontWeight.w600,
+                        // Avatar Chip
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            _openAvatarCard(day);
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
                             ),
-                            overflow: TextOverflow.ellipsis,
+                            child: ClipOval(
+                              child: VectorAvatarWidget(
+                                config: config,
+                                size: 36,
+                                showAura: true,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+
+                    // Level Requirement info
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.06),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.stars_rounded, color: Color(0xFFFFD700), size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Required Pocket Score: $reqScore${reqTrophies > 0 ? ' • 🏆 $reqTrophies Trophies' : ''}',
+                            style: GoogleFonts.inter(
+                              color: Colors.white70,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Action buttons
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              side: const BorderSide(color: Colors.white24),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              _openAvatarCard(day);
+                            },
+                            icon: const Icon(Icons.style_rounded, size: 16, color: Color(0xFFFFD700)),
+                            label: Text(
+                              'Guardian Card',
+                              style: GoogleFonts.outfit(fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : (isCurrent
+                                      ? const Color(0xFFFFFC00)
+                                      : const Color(0xFF38BDF8)),
+                              foregroundColor: (isCurrent) ? Colors.black : Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            onPressed: () {
+                              Navigator.pop(ctx);
+                              if (!_hasAcceptedRules && day == 1) {
+                                PocketWorldGameRulesModal.show(
+                                  context,
+                                  currentDay: currentDay,
+                                  onPledgeAccepted: () {
+                                    setState(() => _hasAcceptedRules = true);
+                                    _loadData();
+                                  },
+                                );
+                                return;
+                              }
+                              if (isUnlocked && !isWaitingForMidnight) {
+                                _navigateToMissionPage(day);
+                              } else {
+                                _showLevelMissionDialog(day);
+                              }
+                            },
+                            icon: Icon(
+                              isCompleted
+                                  ? Icons.replay_rounded
+                                  : (isCurrent ? Icons.play_arrow_rounded : Icons.lock_open_rounded),
+                              size: 18,
+                            ),
+                            label: Text(
+                              isCompleted
+                                  ? 'Review Day'
+                                  : (isCurrent ? 'Enter Doorstep' : 'View Level'),
+                              style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
                       ],
@@ -3317,17 +3668,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ],
                 ),
               ),
-              Icon(
-                isUnlocked
-                    ? Icons.chevron_right_rounded
-                    : (isWaitingForMidnight ? Icons.hourglass_top_rounded : Icons.lock_outline_rounded),
-                color: isWaitingForMidnight ? const Color(0xFFFFD700) : (isUnlocked ? rarityColor : Colors.white24),
-                size: 12,
-              ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -3564,13 +3908,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final bool atRuleNode = !_hasAcceptedRules;
     double x;
     double y;
+    int activeSubStep = 0;
 
     if (atRuleNode) {
       x = (screenWidth / 2) + 54;
       y = _ruleNodeY + 12;
     } else {
       // Check if avatar should stand on the current incomplete in-path sub-step
-      int activeSubStep = 0;
       for (int s = 1; s <= 4; s++) {
         if (!(_subStepFlags['step_$s'] ?? false)) {
           activeSubStep = s;
@@ -3634,13 +3978,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(atRuleNode ? '📜' : '🃏',
+                      Text(atRuleNode ? '📜' : (activeSubStep > 0 ? '⚡' : '🏡'),
                           style: const TextStyle(fontSize: 11)),
                       const SizedBox(width: 4),
                       Text(
                         atRuleNode
                             ? 'Rules & Pledge • Tap to Start 📜'
-                            : 'Day $currentDay • View NFT Card',
+                            : (activeSubStep > 0
+                                ? 'Day $currentDay • Step $activeSubStep / 4 ⚡'
+                                : 'Day $currentDay • At Estate Front Door 🏡'),
                         style: GoogleFonts.outfit(
                           color: Colors.black,
                           fontWeight: FontWeight.bold,
