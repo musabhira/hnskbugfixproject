@@ -39,6 +39,7 @@ import 'package:flame/components.dart' show Vector2;
 import 'flame_english_house_game.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_day_detail_overview_page.dart';
+import 'pocket_interactive_teacher_game.dart';
 import 'pocket_secret_code_grammar_card.dart';
 import 'pocket_sentence_builder_card.dart';
 import 'pocket_slang_smart_english_card.dart';
@@ -702,11 +703,17 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   // --- 17 DEDICATED IN-PATH SUB-STEP LAUNCHERS ---
 
-  // 1: Core Linguistic Theory
+  // 1: Interactive Teacher Game (Replaced static theory page!)
   Future<void> _launchStep1_Theory(int day) async {
     HapticFeedback.lightImpact();
-    await PocketDayDetailOverviewPage.show(context, day);
-    await _onSubStepFinished(day, 1);
+    await PocketInteractiveTeacherGameModal.show(
+      context,
+      day: day,
+      userId: widget.userId ?? _supabase.auth.currentUser?.id,
+      onCompleted: () async {
+        await _onSubStepFinished(day, 1);
+      },
+    );
   }
 
   // 2: 10 Core Vocabulary Words
@@ -1103,10 +1110,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     return [
       InPathSubStep(
         stepIndex: 1,
-        title: 'Core Linguistic Theory',
-        subtitle: 'Grammar breakdown & speech rules',
-        icon: '📖',
-        color: const Color(0xFFA855F7),
+        title: 'Interactive Teacher Class',
+        subtitle: '1-on-1 Avatar game & sentence builder',
+        icon: '🎮',
+        color: const Color(0xFF3B82F6),
         isCompleted: _subStepFlags['step_1'] ?? false,
         isUnlocked: admin || _effectiveRulesAccepted,
         onAction: () => _launchStep1_Theory(day),
