@@ -31,6 +31,9 @@ jobs:
           channel: 'stable'
           # Removed flutter-version to avoid 'latest' mismatch error
 
+      - name: Disable Swift Package Manager (Use CocoaPods)
+        run: flutter config --no-enable-swift-package-manager
+
       - name: Install Apple Certificate
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.P12_BASE64 }}
@@ -92,13 +95,12 @@ jobs:
           
           echo "Building version $VERSION_NAME+$BUILD_NUMBER"
           
-          flutter build ipa --release \
+          flutter build ios --release \
             --build-name=$VERSION_NAME \
             --build-number=$BUILD_NUMBER \
-            --export-options-plist=ios/ExportOptions.plist \
             --dart-define=FLUTTER_BUILD_NAME=$VERSION_NAME \
             --dart-define=FLUTTER_BUILD_NUMBER=$BUILD_NUMBER \
-            --no-codesign 2>/dev/null || true
+            --no-codesign
           
           # Re-unlock keychain and set as default for the archive phase
           security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $RUNNER_TEMP/app-signing.keychain-db
