@@ -2180,18 +2180,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   children: [
                     // Background Biomes & Curved Trail Road
                     Positioned.fill(
-                      child: CustomPaint(
-                        painter: _AdventureMapRoadPainter(
-                          totalDays: _totalDays,
-                          currentDay: targetActiveDay,
-                          screenWidth: screenWidth,
-                          nodeSpacingY: _nodeSpacingY,
-                          topPadding: _topPadding,
-                          ruleNodeY: _ruleNodeY,
-                          hasAcceptedRules: _effectiveRulesAccepted,
-                          expandedActiveGap: _expandedActiveGap,
-                          activeSubStepCompletedCount: completedSubSteps,
-                        ),
+                      child: AnimatedBuilder(
+                        animation: _bobController,
+                        builder: (context, _) {
+                          return CustomPaint(
+                            painter: _AdventureMapRoadPainter(
+                              totalDays: _totalDays,
+                              currentDay: targetActiveDay,
+                              screenWidth: screenWidth,
+                              nodeSpacingY: _nodeSpacingY,
+                              topPadding: _topPadding,
+                              ruleNodeY: _ruleNodeY,
+                              hasAcceptedRules: _effectiveRulesAccepted,
+                              expandedActiveGap: _expandedActiveGap,
+                              activeSubStepCompletedCount: completedSubSteps,
+                              animationValue: _bobController.value,
+                            ),
+                          );
+                        },
                       ),
                     ),
 
@@ -6036,7 +6042,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 }
 
-/// Custom painter for rendering the continuous serpentine adventure road
+/// Custom painter for rendering the continuous serpentine adventure road in a living open world
 class _AdventureMapRoadPainter extends CustomPainter {
   final int totalDays;
   final int currentDay;
@@ -6047,6 +6053,7 @@ class _AdventureMapRoadPainter extends CustomPainter {
   final bool hasAcceptedRules;
   final double expandedActiveGap;
   final int activeSubStepCompletedCount;
+  final double animationValue;
 
   _AdventureMapRoadPainter({
     required this.totalDays,
@@ -6058,6 +6065,7 @@ class _AdventureMapRoadPainter extends CustomPainter {
     required this.hasAcceptedRules,
     this.expandedActiveGap = 2400.0,
     this.activeSubStepCompletedCount = 0,
+    this.animationValue = 0.0,
   });
 
   double _getNodeXFractional(double dayFraction) {
@@ -6095,38 +6103,182 @@ class _AdventureMapRoadPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Draw Biome Background Gradients (Inverted: Forest at bottom, Volcano/Citadel at top)
+    // 1. Draw Living Sky & Biome Gradients (Fresh Emerald Valley to Celestial Peaks)
     _paintBiomeGradients(canvas, size);
 
-    // 2. Draw Decorative Trees / Rocks / Clouds / Crystals
+    // 2. Draw Layered Open-World Mountain Peaks (User Audio Directive: "ഒരു മല കേറി ഇങ്ങനെ കേറി വരുന്നു... രണ്ടാമത്തെ വീട് എത്തുമ്പോൾ അതിലും കാട്ടി വലിയൊരു മല കാണും")
+    _paintMountainPeaks(canvas, size);
+
+    // 3. Draw Living Celestial Sky (Sun with radiant beams, clouds, and soaring eagles)
+    _paintCelestialAtmosphere(canvas, size);
+
+    // 4. Draw Scenery props (pine trees, campsites, crystals)
     _paintWorldDecorations(canvas, size);
 
-    // 3. Draw Soft Drifting Ambient Clouds across Mountain Passes
-    _paintClouds(canvas, size);
-
-    // 4. Draw S-Curve Stepping Stone Road Climbing Upwards
+    // 5. Draw Cobblestone Mountain Trail with flickering torches
     _paintCobblestoneRoad(canvas);
   }
 
-  void _paintClouds(Canvas canvas, Size size) {
+  /// 🏔️ Layered Open-World Mountain Silhouettes (2D Living Mountain Ranges)
+  void _paintMountainPeaks(Canvas canvas, Size size) {
+    // Mountain 1: Emerald Forest Mountain (Base around Day 1, Summit at Day 2)
+    final m1BaseY = _getNodeY(1) + 160.0;
+    final m1PeakY = _getNodeY(2) - 40.0;
+    final m1CenterX = screenWidth * 0.52;
+
+    // Distant mountain ridge (Deeper green haze)
+    final distantRidge = Path()
+      ..moveTo(0, m1BaseY)
+      ..lineTo(screenWidth * 0.22, m1PeakY + 120.0)
+      ..lineTo(screenWidth * 0.65, m1PeakY + 40.0)
+      ..lineTo(screenWidth, m1BaseY - 80.0)
+      ..lineTo(screenWidth, m1BaseY + 60.0)
+      ..lineTo(0, m1BaseY + 60.0)
+      ..close();
+    canvas.drawPath(
+      distantRidge,
+      Paint()..color = const Color(0xFF0D5538).withValues(alpha: 0.50),
+    );
+
+    // Main Mountain 1 Peak (The First Climbing Ascent)
+    final peak1 = Path()
+      ..moveTo(0, m1BaseY)
+      ..lineTo(m1CenterX - 50, m1PeakY)
+      ..lineTo(m1CenterX + 20, m1PeakY - 15) // Summit ridge where House 2 perches!
+      ..lineTo(screenWidth, m1BaseY + 80.0)
+      ..lineTo(0, m1BaseY + 80.0)
+      ..close();
+
+    final peak1Paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          const Color(0xFF16A34A).withValues(alpha: 0.70),
+          const Color(0xFF065F46).withValues(alpha: 0.85),
+        ],
+      ).createShader(Rect.fromLTWH(0, m1PeakY, screenWidth, m1BaseY - m1PeakY));
+    canvas.drawPath(peak1, peak1Paint);
+
+    // Mountain 2: Grand Titan Peak (Looms above Day 2 in the distance!)
+    // "രണ്ടാമത്തെ വീട് എത്തുന്ന സമയത്ത്... അതിലും കാട്ടി വലിയൊരു മല കാണും"
+    final m2BaseY = _getNodeY(2) + 200.0;
+    final m2PeakY = _getNodeY(4) - 80.0;
+    final m2CenterX = screenWidth * 0.38;
+
+    final titanPeak = Path()
+      ..moveTo(-40, m2BaseY)
+      ..lineTo(m2CenterX - 30, m2PeakY + 30)
+      ..lineTo(m2CenterX + 10, m2PeakY) // Soaring alpine peak
+      ..lineTo(screenWidth + 40, m2BaseY + 40)
+      ..lineTo(-40, m2BaseY + 40)
+      ..close();
+
+    final titanPaint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          const Color(0xFF0284C7).withValues(alpha: 0.55),
+          const Color(0xFF047857).withValues(alpha: 0.65),
+        ],
+      ).createShader(Rect.fromLTWH(0, m2PeakY, screenWidth, m2BaseY - m2PeakY));
+    canvas.drawPath(titanPeak, titanPaint);
+
+    // Snow crest on Titan Peak
+    final snowCrest = Path()
+      ..moveTo(m2CenterX - 30, m2PeakY + 30)
+      ..lineTo(m2CenterX + 10, m2PeakY)
+      ..lineTo(m2CenterX + 45, m2PeakY + 45)
+      ..lineTo(m2CenterX + 18, m2PeakY + 28)
+      ..lineTo(m2CenterX - 5, m2PeakY + 38)
+      ..close();
+    canvas.drawPath(
+      snowCrest,
+      Paint()..color = Colors.white.withValues(alpha: 0.75),
+    );
+  }
+
+  /// ☀️ Living Celestial Atmosphere: Radiant Sun, Drifting Clouds & Soaring Birds
+  void _paintCelestialAtmosphere(Canvas canvas, Size size) {
+    // 1. Radiant Morning Sun near Day 1-3
+    final sunY = _getNodeY(1) - 600.0;
+    final sunX = screenWidth - 75.0;
+
+    // Outer sun corona glow
+    final sunPulse = math.sin(animationValue * math.pi) * 6.0;
+    final coronaPaint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          const Color(0xFFFFD700).withValues(alpha: 0.45),
+          const Color(0xFFF59E0B).withValues(alpha: 0.15),
+          Colors.transparent,
+        ],
+      ).createShader(Rect.fromCircle(center: Offset(sunX, sunY), radius: 55 + sunPulse));
+    canvas.drawCircle(Offset(sunX, sunY), 55 + sunPulse, coronaPaint);
+
+    // Sun Core
+    final sunCorePaint = Paint()
+      ..shader = const RadialGradient(
+        colors: [Color(0xFFFFFBEB), Color(0xFFFFD700), Color(0xFFF59E0B)],
+      ).createShader(Rect.fromCircle(center: Offset(sunX, sunY), radius: 26));
+    canvas.drawCircle(Offset(sunX, sunY), 26, sunCorePaint);
+
+    // Rotating Sunbeam Rays
+    final rayPaint = Paint()
+      ..color = const Color(0xFFFFD700).withValues(alpha: 0.35)
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
+    for (int i = 0; i < 8; i++) {
+      final angle = (i * (math.pi / 4)) + (animationValue * 0.4);
+      final p1 = Offset(sunX + math.cos(angle) * 32, sunY + math.sin(angle) * 32);
+      final p2 = Offset(sunX + math.cos(angle) * 44, sunY + math.sin(angle) * 44);
+      canvas.drawLine(p1, p2, rayPaint);
+    }
+
+    // 2. Animated Drifting Clouds across mountain peaks
+    final driftOffset = animationValue * 45.0;
     final cloudPaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.08)
+      ..color = Colors.white.withValues(alpha: 0.15)
       ..style = PaintingStyle.fill;
-    final cloudPaintBright = Paint()
-      ..color = Colors.white.withValues(alpha: 0.14)
+    final cloudHighlight = Paint()
+      ..color = Colors.white.withValues(alpha: 0.28)
       ..style = PaintingStyle.fill;
 
-    for (int day = 4; day <= totalDays; day += 6) {
-      final cy = _getNodeY(day) - 50.0;
-      final cx = (day * 137.0) % (size.width - 140.0) + 70.0;
-      canvas.drawCircle(Offset(cx, cy), 28, cloudPaint);
-      canvas.drawCircle(Offset(cx + 22, cy - 8), 34, cloudPaintBright);
-      canvas.drawCircle(Offset(cx + 44, cy), 26, cloudPaint);
+    for (int day = 2; day <= totalDays; day += 5) {
+      final cy = _getNodeY(day) - 60.0;
+      final cx = ((day * 140.0 + driftOffset) % (size.width + 120.0)) - 60.0;
+      canvas.drawCircle(Offset(cx, cy), 26, cloudPaint);
+      canvas.drawCircle(Offset(cx + 20, cy - 8), 32, cloudHighlight);
+      canvas.drawCircle(Offset(cx + 42, cy), 24, cloudPaint);
       canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(cx - 20, cy + 4, 84, 22), const Radius.circular(11)),
+        RRect.fromRectAndRadius(Rect.fromLTWH(cx - 18, cy + 3, 78, 20), const Radius.circular(10)),
         cloudPaint,
       );
     }
+
+    // 3. 🦅 Soaring Eagles / Birds gliding between mountain valleys ("കിളികൾ / പക്ഷികൾ")
+    final wingAngle = animationValue * math.pi * 3.0;
+    _renderFlyingBird(canvas, screenWidth * 0.28 + driftOffset * 0.8, _getNodeY(1) - 380, 1.2, wingAngle);
+    _renderFlyingBird(canvas, screenWidth * 0.42 + driftOffset * 1.1, _getNodeY(1) - 430, 0.9, wingAngle + 1.2);
+    _renderFlyingBird(canvas, screenWidth * 0.68 - driftOffset * 0.7, _getNodeY(2) - 120, 1.1, wingAngle + 2.1);
+  }
+
+  void _renderFlyingBird(Canvas canvas, double cx, double cy, double scale, double wingAngle) {
+    final birdPaint = Paint()
+      ..color = const Color(0xFF064E3B).withValues(alpha: 0.75)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.6 * scale
+      ..strokeCap = StrokeCap.round;
+
+    final wingSpan = 8.0 * scale;
+    final wingY = math.sin(wingAngle) * 3.5 * scale;
+
+    final path = Path();
+    path.moveTo(cx - wingSpan, cy + wingY);
+    path.quadraticBezierTo(cx - wingSpan * 0.4, cy - 3.0 * scale, cx, cy);
+    path.quadraticBezierTo(cx + wingSpan * 0.4, cy - 3.0 * scale, cx + wingSpan, cy + wingY);
+    canvas.drawPath(path, birdPaint);
   }
 
   void _paintBiomeGradients(Canvas canvas, Size size) {
@@ -6279,6 +6431,36 @@ class _AdventureMapRoadPainter extends CustomPainter {
     if (hasAcceptedRules) {
       canvas.drawPath(completedPath, completedGlowPaint);
     }
+
+    // 🕯️ Flickering Mountain Trail Torches along the climbing path
+    final flameFlicker = math.sin(animationValue * math.pi * 4.0) * 1.5;
+    for (int day = 1; day <= totalDays; day += 3) {
+      final ty = _getNodeY(day);
+      final tx = _getNodeX(day) + ((day % 2 == 0) ? 38.0 : -38.0);
+
+      // Wooden torch post
+      canvas.drawLine(
+        Offset(tx, ty + 8),
+        Offset(tx, ty - 6),
+        Paint()
+          ..color = const Color(0xFF78350F)
+          ..strokeWidth = 3.0,
+      );
+
+      // Warm torch flame glow
+      canvas.drawCircle(
+        Offset(tx, ty - 8),
+        6.0 + flameFlicker,
+        Paint()
+          ..color = const Color(0xFFF59E0B).withValues(alpha: 0.55)
+          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4.0),
+      );
+      canvas.drawCircle(
+        Offset(tx, ty - 8),
+        3.0 + flameFlicker * 0.5,
+        Paint()..color = const Color(0xFFFFFBEB),
+      );
+    }
   }
 
   @override
@@ -6288,7 +6470,8 @@ class _AdventureMapRoadPainter extends CustomPainter {
         oldDelegate.hasAcceptedRules != hasAcceptedRules ||
         oldDelegate.ruleNodeY != ruleNodeY ||
         oldDelegate.activeSubStepCompletedCount != activeSubStepCompletedCount ||
-        oldDelegate.expandedActiveGap != expandedActiveGap;
+        oldDelegate.expandedActiveGap != expandedActiveGap ||
+        oldDelegate.animationValue != animationValue;
   }
 }
 
