@@ -39,6 +39,7 @@ import 'package:flame/components.dart' show Vector2;
 import 'flame_english_house_game.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_day_detail_overview_page.dart';
+import 'pocket_day_open_world_adventure_page.dart';
 import 'pocket_interactive_teacher_game.dart';
 import 'pocket_secret_code_grammar_card.dart';
 import 'pocket_sentence_builder_card.dart';
@@ -264,6 +265,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   bool _isSubscribed = false;
   bool _hasCustomSelectedSyllabus = false;
 
+  // 🔍 Interactive Mountain Vista Zoom Scale (User Audio Directive: "zoom out ചെയ്യാൻ പറ്റണം, zoom in ചെയ്യാൻ പറ്റണം... ഒന്നാമത്തേതിൽ നോക്കുമ്പോൾ ഒന്നാമത്തേതും രണ്ടാമത്തേതും രണ്ടും കാണണം")
+  double _mapZoomScale = 1.0;
+
   // ⏱️ Midnight Daily Unlock Ticker
   Timer? _midnightTicker;
   Duration _timeUntilMidnight = Learning60DayService.getRemainingTimeUntilMidnight();
@@ -275,7 +279,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   // Spacing & node dimensions for upward climbing roadmap with 90 English Houses & 17 Winding Steps
   // User audio directive: "17 steppukal valanju valanju keri poyi 17-amathathe exam kazhinjaal randamathe veedu thuranu varanam"
   static const double _nodeSpacingY = 320.0;
-  static const double _expandedActiveGap = 2400.0;
+  // User audio directive: Sub-steps are now in the dedicated Open World Detail page!
+  static const double _expandedActiveGap = 0.0;
   static const double _topPadding = 480.0; // Summit apex spacing with Citadel Palace
   static const double _bottomPadding = 320.0;
   double get _ruleNodeY => _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
@@ -549,12 +554,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// Lightweight Viewport Culling Check (User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu")
   bool _isDayInViewport(int day, double minY, double maxY) {
     final y = _getNodeY(day);
-    return (y >= minY - 320.0) && (y <= maxY + 320.0);
+    final buffer = 600.0 / _mapZoomScale;
+    return (y >= minY - buffer) && (y <= maxY + buffer);
   }
 
   void _scrollToRule({bool animate = false}) {
     if (!_scrollController.hasClients) return;
-    final targetY = _ruleNodeY - 280.0;
+    final targetY = (_ruleNodeY - 280.0) * _mapZoomScale;
     final clampedY = targetY.clamp(
       0.0,
       _scrollController.position.maxScrollExtent,
@@ -572,7 +578,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   void _scrollToDay(int day, {bool animate = false}) {
     if (!_scrollController.hasClients) return;
-    final targetY = _getNodeY(day) - 280.0;
+    final targetY = (_getNodeY(day) - 280.0) * _mapZoomScale;
     final clampedY = targetY.clamp(
       0.0,
       _scrollController.position.maxScrollExtent,
@@ -1381,16 +1387,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
   }
 
-  /// 🎯 Launches the active in-path sub-step for the given day directly on the trail!
-  /// User Audio Directive: "Day 1, Day 2 ennu paranju DETAIL PAGE ILLA... onnum detail page-ilekku pondaaa!"
+  /// 🎯 Opens the dedicated Open World Level Adventure Page for the Day!
+  /// User Audio Directive:
+  /// "ഫസ്റ്റത്തെ ഡേയിൽ നമ്മൾ ആ ഹൗസിന്റെ ഫ്രണ്ടിൽ ഒരു ഡേ വൺ ഇട്ടിട്ടുണ്ടല്ലോ... അതിൽ ജസ്റ്റ് ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ
+  /// അതിന്റെ ഉള്ളിൽ open world പോലത്തെ ഗെയിം സെക്ഷനാ വരുക... അതിൽ 17 സ്റ്റെപ്പുകൾ കാണിക്കും. ഒന്നാമത്തെ വീട് ഫസ്റ്റ് കാണിക്കും,
+  /// രണ്ടാമത്തെ വീടും കാണിക്കും ലാസ്റ്റ്... ഓരോ സ്റ്റെപ്പ് കഴിഞ്ഞ് ലാസ്റ്റ് മേലെ എത്തുമ്പോൾ ഒരു സ്റ്റെപ്പ് കേറുന്ന പോലെ ഫീൽ കിട്ടും!"
   void _startActiveSubStep(int day) {
-    final subSteps = _getSubStepsForDay(day, _currentLearnerLevel);
-    // Find the first unlocked but incomplete step
-    final activeStep = subSteps.firstWhere(
-      (s) => s.isUnlocked && !s.isCompleted,
-      orElse: () => subSteps.first,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PocketDayOpenWorldAdventurePage(
+          day: day,
+          userId: widget.userId ?? _supabase.auth.currentUser?.id,
+          onCompleted: () => _loadData(),
+        ),
+      ),
     );
-    activeStep.onAction();
   }
 
   void _navigateToMissionPage(int day) {
@@ -1400,8 +1412,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       return;
     }
     HapticFeedback.selectionClick();
-    // User Audio Directive: "DETAIL PAGE ILLA ennaanu njan parayaan ponathu. Onnum detail page-ilekku pondaaa!"
-    // Directly launch the active in-path sub-step on the climbing trail!
     _startActiveSubStep(day);
   }
 
@@ -2159,7 +2169,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   final uid = widget.userId ?? _supabase.auth.currentUser?.id;
                   if (uid != null && _scrollController.hasClients) {
                     SharedPreferences.getInstance().then((prefs) {
-                      prefs.setDouble('pocket_hub_scroll_offset_$uid', _scrollController.offset);
+                      prefs.setDouble('pocket_hub_scroll_offset_$uid', _scrollController.offset / _mapZoomScale);
                       if (_adminSelectedDay != null) {
                         prefs.setInt('pocket_hub_active_day_$uid', _adminSelectedDay!);
                       }
@@ -2173,82 +2183,86 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),
                 ),
-              child: SizedBox(
-                width: screenWidth,
-                height: totalMapHeight,
-                child: Stack(
-                  children: [
-                    // Background Biomes & Curved Trail Road
-                    Positioned.fill(
-                      child: AnimatedBuilder(
-                        animation: _bobController,
-                        builder: (context, _) {
-                          return CustomPaint(
-                            painter: _AdventureMapRoadPainter(
-                              totalDays: _totalDays,
-                              currentDay: targetActiveDay,
-                              screenWidth: screenWidth,
-                              nodeSpacingY: _nodeSpacingY,
-                              topPadding: _topPadding,
-                              ruleNodeY: _ruleNodeY,
-                              hasAcceptedRules: _effectiveRulesAccepted,
-                              expandedActiveGap: _expandedActiveGap,
-                              activeSubStepCompletedCount: completedSubSteps,
-                              animationValue: _bobController.value,
+                child: SizedBox(
+                  width: screenWidth,
+                  height: totalMapHeight * _mapZoomScale,
+                  child: Transform.scale(
+                    scale: _mapZoomScale,
+                    alignment: Alignment.topCenter,
+                    child: SizedBox(
+                      width: screenWidth,
+                      height: totalMapHeight,
+                      child: Stack(
+                        children: [
+                          // Background Biomes & Curved Trail Road
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _bobController,
+                              builder: (context, _) {
+                                return CustomPaint(
+                                  painter: _AdventureMapRoadPainter(
+                                    totalDays: _totalDays,
+                                    currentDay: targetActiveDay,
+                                    screenWidth: screenWidth,
+                                    nodeSpacingY: _nodeSpacingY,
+                                    topPadding: _topPadding,
+                                    ruleNodeY: _ruleNodeY,
+                                    hasAcceptedRules: _effectiveRulesAccepted,
+                                    expandedActiveGap: _expandedActiveGap,
+                                    activeSubStepCompletedCount: completedSubSteps,
+                                    animationValue: _bobController.value,
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
+                          ),
+
+                          // Biome Zone Banners & Scenery Props
+                          ..._buildBiomeProps(screenWidth),
+
+                          // 🏡 Viewport-Culled 90 Progressive Architectural English Houses & 3D Level Nodes
+                          // User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu"
+                          Positioned.fill(
+                            child: AnimatedBuilder(
+                              animation: _scrollController,
+                              builder: (context, _) {
+                                final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 999999.0;
+                                final screenH = MediaQuery.of(context).size.height / _mapZoomScale;
+                                final minY = scrollOffset / _mapZoomScale;
+                                final maxY = minY + screenH;
+
+                                return Stack(
+                                  children: [
+                                    // 🏡 90 Progressive Architectural English Houses (Viewport Culled)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildRoadmapHouse(day, screenWidth, targetActiveDay),
+
+                                    // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
+                                    for (int day = 1; day <= _totalDays; day++)
+                                      if (_isDayInViewport(day, minY, maxY))
+                                        _buildLevelNode(day, screenWidth, targetActiveDay),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+
+                          // 📚 Minimal Syllabus Track Selector Menu directly above Rules / Level 1 Node (Audio Directive!)
+                          _buildSyllabusSelectorMenu(screenWidth),
+
+                          // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
+                          _buildRuleLevelNode(screenWidth),
+
+                          // Bouncing Animated Character Avatar at Current Level or Rules Node
+                          _buildAnimatedAvatar(screenWidth, targetActiveDay),
+                        ],
                       ),
                     ),
-
-                    // Biome Zone Banners & Scenery Props
-                    ..._buildBiomeProps(screenWidth),
-
-                    // 🏡 Viewport-Culled 90 Progressive Architectural English Houses & 3D Level Nodes
-                    // User Audio Directive: "hang aavaruthu... lightweight aayirikkanam... lazy loading okke koduthittu"
-                    Positioned.fill(
-                      child: AnimatedBuilder(
-                        animation: _scrollController,
-                        builder: (context, _) {
-                          final scrollOffset = _scrollController.hasClients ? _scrollController.offset : 999999.0;
-                          final screenH = MediaQuery.of(context).size.height;
-                          final minY = scrollOffset;
-                          final maxY = scrollOffset + screenH;
-
-                          return Stack(
-                            children: [
-                              // 🏡 90 Progressive Architectural English Houses (Viewport Culled)
-                              for (int day = 1; day <= _totalDays; day++)
-                                if (_isDayInViewport(day, minY, maxY))
-                                  _buildRoadmapHouse(day, screenWidth, targetActiveDay),
-
-                              // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
-                              for (int day = 1; day <= _totalDays; day++)
-                                if (_isDayInViewport(day, minY, maxY))
-                                  _buildLevelNode(day, screenWidth, targetActiveDay),
-                            ],
-                          );
-                        },
-                      ),
-                    ),
-
-                    // 📚 Minimal Syllabus Track Selector Menu directly above Rules / Level 1 Node (Audio Directive!)
-                    _buildSyllabusSelectorMenu(screenWidth),
-
-                    // 📜 Special "Rule" Level Node (Audio Directive: Before Level 1, show Rule level)
-                    _buildRuleLevelNode(screenWidth),
-
-                    // In-Path Syllabus 17 Sub-Steps for the active day along the climbing trail (Audio Directive)
-                    ..._buildActiveSubStepNodes(screenWidth, targetActiveDay),
-
-                    // Bouncing Animated Character Avatar at Current Level, Sub-Step or Rules Node
-                    _buildAnimatedAvatar(screenWidth, targetActiveDay),
-                  ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ),
 
               // Subtle non-blocking loading shimmer beneath top HUD
               if (_isLoading || _isRefreshing)
@@ -6115,7 +6129,10 @@ class _AdventureMapRoadPainter extends CustomPainter {
     // 4. Draw Scenery props (pine trees, campsites, crystals)
     _paintWorldDecorations(canvas, size);
 
-    // 5. Draw Cobblestone Mountain Trail with flickering torches
+    // 5. Draw Cascading Waterfall (User Audio Directive: "മലയിൽ വെള്ളച്ചാട്ടം വേണം")
+    _paintWaterfall(canvas, size);
+
+    // 6. Draw Cobblestone Mountain Trail with flickering torches
     _paintCobblestoneRoad(canvas);
   }
 
@@ -6196,6 +6213,51 @@ class _AdventureMapRoadPainter extends CustomPainter {
     canvas.drawPath(
       snowCrest,
       Paint()..color = Colors.white.withValues(alpha: 0.75),
+    );
+  }
+
+  /// 🌊 Living Cascading Waterfall on Mountain 1 ("മലയിൽ വെള്ളച്ചാട്ടം വേണം")
+  void _paintWaterfall(Canvas canvas, Size size) {
+    final peakY = _getNodeY(2) + 40.0;
+    final baseY = _getNodeY(1) + 120.0;
+    final totalFallHeight = baseY - peakY;
+    if (totalFallHeight <= 0) return;
+
+    final fallX = screenWidth * 0.74;
+
+    // Wet rock backing
+    final wetRockPath = Path()
+      ..moveTo(fallX - 16, peakY - 10)
+      ..lineTo(fallX + 20, peakY - 10)
+      ..lineTo(fallX + 24, baseY + 10)
+      ..lineTo(fallX - 22, baseY + 10)
+      ..close();
+    canvas.drawPath(
+      wetRockPath,
+      Paint()..color = const Color(0xFF0F172A).withValues(alpha: 0.8),
+    );
+
+    // Falling water stream
+    final waterPath = Path()
+      ..moveTo(fallX - 8, peakY)
+      ..quadraticBezierTo(fallX + 6, (peakY + baseY) / 2, fallX - 14, baseY)
+      ..lineTo(fallX + 16, baseY)
+      ..quadraticBezierTo(fallX + 18, (peakY + baseY) / 2, fallX + 10, peakY)
+      ..close();
+
+    final waterPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [Color(0xFFE0F2FE), Color(0xFF38BDF8), Color(0xFF00E5FF)],
+      ).createShader(Rect.fromLTWH(fallX - 14, peakY, 30, totalFallHeight));
+    canvas.drawPath(waterPath, waterPaint);
+
+    // Splash ripples at base
+    final poolCenter = Offset(fallX, baseY + 8);
+    canvas.drawOval(
+      Rect.fromCenter(center: poolCenter, width: 68, height: 26),
+      Paint()..color = const Color(0xFF0284C7).withValues(alpha: 0.85),
     );
   }
 
@@ -6395,29 +6457,13 @@ class _AdventureMapRoadPainter extends CustomPainter {
         if (day < currentDay && hasAcceptedRules) completedPath.moveTo(p1.dx, p1.dy);
       }
 
-      // If this is the active current day, the path routes through the 17 in-path sub-steps (User Audio Directive!)
-      if (day == currentDay && currentDay < totalDays) {
-        for (int s = 1; s <= 17; s++) {
-          final sx = _getSubStepX(day, s);
-          final sy = _getSubStepY(day, s);
-          fullPath.lineTo(sx, sy);
-          if (hasAcceptedRules && s <= activeSubStepCompletedCount) {
-            completedPath.lineTo(sx, sy);
-          }
-        }
-        fullPath.lineTo(p2.dx, p2.dy);
-        if (hasAcceptedRules && activeSubStepCompletedCount >= 17) {
-          completedPath.lineTo(p2.dx, p2.dy);
-        }
-      } else {
-        // Natural serpentine mountain switchback curve
-        final midY = (p1.dy + p2.dy) / 2;
-        final curveDir = (day % 2 == 0) ? -24.0 : 24.0;
-        final midX = ((p1.dx + p2.dx) / 2) + curveDir;
-        fullPath.quadraticBezierTo(midX, midY, p2.dx, p2.dy);
-        if (day < currentDay && hasAcceptedRules) {
-          completedPath.quadraticBezierTo(midX, midY, p2.dx, p2.dy);
-        }
+      // Natural serpentine mountain switchback curve connecting houses
+      final midY = (p1.dy + p2.dy) / 2;
+      final curveDir = (day % 2 == 0) ? -28.0 : 28.0;
+      final midX = ((p1.dx + p2.dx) / 2) + curveDir;
+      fullPath.quadraticBezierTo(midX, midY, p2.dx, p2.dy);
+      if (day < currentDay && hasAcceptedRules) {
+        completedPath.quadraticBezierTo(midX, midY, p2.dx, p2.dy);
       }
     }
 
