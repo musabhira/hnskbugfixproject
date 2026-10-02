@@ -4,16 +4,17 @@ import 'dart:math' as math;
 /// Core progression, score thresholds, star ratings, and 9-tier English defense gauntlets (Levels 1 to 90).
 class PocketScoreLevelEngine {
   /// Base points required for the first level jump (Level 1 -> 2)
-  static const int kBasePointsPerLevel = 200;
+  /// Scaled to ~500-600 PS earned from completing the 17 daily sub-steps (User Audio Directive)
+  static const int kBasePointsPerLevel = 500;
   /// Incremental point growth per subsequent level to ensure progressive difficulty (Audio Directive)
-  static const int kLevelPointsGrowth = 15;
+  static const int kLevelPointsGrowth = 20;
   static const int kMaxLevel = 91;
 
   /// Precomputed cumulative thresholds for Levels 1 to 91.
   /// Level 1: 0 PTS
-  /// Level 2: 200 PTS (Gap: 200)
-  /// Level 3: 415 PTS (Gap: 215)
-  /// Level 4: 645 PTS (Gap: 230)
+  /// Level 2: 500 PTS (Gap: 500)
+  /// Level 3: 1,020 PTS (Gap: 520)
+  /// Level 4: 1,560 PTS (Gap: 540)
   /// ...
   /// Level 91: 78,075 PTS (PALACE RAID: Supreme Sovereign Attack)
   static final List<int> _levelThresholds = () {

@@ -28,7 +28,6 @@ import 'day90_master_certificate_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'pocket_syllabus_repository.dart';
 import 'pocket_practice_speaking_card.dart';
-import 'pocket_12_tenses_practice_card.dart';
 import 'pocket_fluency_gym_detail_page.dart';
 import 'pocket_level_exam_dialog.dart';
 import 'pocket_alphabet_phonics_game_page.dart';
@@ -49,6 +48,7 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.da
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_match/stage_peer_matchmaker.dart';
 import 'career_adventure/cyber_vocab_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -280,6 +280,15 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   double get _ruleNodeY => _getNodeY(1) + 200.0; // Positioned below Day 1 at the bottom
   final Map<String, bool> _subStepFlags = {};
   bool _hasInitiallyScrolled = false;
+  int? _adminSelectedDay;
+
+  /// 🔐 Master Admin check for musabthonippadam@gmail.com (Audio Directive: all days & steps unlocked)
+  bool get _isMasterAdmin {
+    final email = _supabase.auth.currentUser?.email;
+    return AdminAuthService.isMasterAdminEmail(email);
+  }
+
+  bool get _effectiveRulesAccepted => _hasAcceptedRules || _isMasterAdmin;
 
   @override
   void initState() {
@@ -320,6 +329,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   bool _isDayWaitingForMidnight(int day) {
+    if (_isMasterAdmin) return false; // 🔐 Master Admin bypasses all midnight locks
     if (_isSubscribed) return false; // VIP Subscribers bypass the 24-hour midnight wait lock!
     if (day != _lastCompletedDay + 1) return false;
     if (_lastCompletedDateStr == null) return false;
@@ -347,7 +357,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// 2. Level N-1 has been COMPLETED with exam passed
   /// 3. Pocket Score >= getRequiredScoreForLevel(N)
   /// 4. Not waiting for midnight digestion interval
+  /// 🔐 Note: musabthonippadam@gmail.com (Master Admin) bypasses all locks instantly!
   bool _isDayUnlocked(int day, int currentDay) {
+    if (_isMasterAdmin) return true; // 🔐 Master admin bypass (musabthonippadam@gmail.com): All 90 days unlocked!
     if (day == 1) return _hasAcceptedRules;
     // Sequential prerequisite check: previous level MUST be completed!
     if (!_isDayCompleted(day - 1)) return false;
@@ -571,9 +583,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// Handler when an in-path sub-step is completed
   Future<void> _onSubStepFinished(int day, int stepIndex) async {
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+    int pointsAwarded = (stepIndex == 17) ? 120 : 30;
     if (uid != null && uid.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
+      final alreadyDone = prefs.getBool('pocket_day_${uid}_${day}_step_${stepIndex}_done') == true;
       await prefs.setBool('pocket_day_${uid}_${day}_step_${stepIndex}_done', true);
+
+      // Award marks / Pocket Score for each step (User audio directive: 500-600 PS per day)
+      // Steps 1 to 16 = 30 PS each, Step 17 Mastery Exam = 120 PS bonus (Total: 600 PS/day)
+      if (!alreadyDone) {
+        await PocketFortressDefenseService.recordTrainingPoints(pointsAwarded, uid);
+      }
+
       // Passing the 17th step (Mastery Exam) certifies Day and unlocks the next house gate!
       if (stepIndex == 17) {
         await prefs.setBool('pocket_day_${uid}_${day}_completed', true);
@@ -589,13 +610,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         SnackBar(
           content: Row(
             children: [
-              const Text('✨', style: TextStyle(fontSize: 18)),
+              const Text('🪙', style: TextStyle(fontSize: 18)),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
                   stepIndex == 17
-                      ? '🎉 Day $day Mastered! House ${day + 1} Gate is now Unlocked!'
-                      : 'Step $stepIndex / 17 Completed! Keep climbing up the trail 🚀',
+                      ? '🎉 Day $day Mastered! +$pointsAwarded PS 🪙 • House ${day + 1} Gate Unlocked!'
+                      : 'Step $stepIndex / 17 Done! +$pointsAwarded PS 🪙 Keep climbing up the trail 🚀',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -1078,6 +1099,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   /// Returns the 17 sequential sub-steps along the climbing mountain trail (User Audio Directive!)
   List<InPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
+    final bool admin = _isMasterAdmin;
     return [
       InPathSubStep(
         stepIndex: 1,
@@ -1086,7 +1108,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '📖',
         color: const Color(0xFFA855F7),
         isCompleted: _subStepFlags['step_1'] ?? false,
-        isUnlocked: _hasAcceptedRules,
+        isUnlocked: admin || _effectiveRulesAccepted,
         onAction: () => _launchStep1_Theory(day),
       ),
       InPathSubStep(
@@ -1096,7 +1118,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '🧠',
         color: const Color(0xFFFF8906),
         isCompleted: _subStepFlags['step_2'] ?? false,
-        isUnlocked: _subStepFlags['step_1'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_1'] ?? false),
         onAction: () => _launchStep2_Vocab(day),
       ),
       InPathSubStep(
@@ -1106,7 +1128,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '🔤',
         color: const Color(0xFFFF9100),
         isCompleted: _subStepFlags['step_3'] ?? false,
-        isUnlocked: _subStepFlags['step_2'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_2'] ?? false),
         onAction: () => _launchStep3_Phonics(day, level),
       ),
       InPathSubStep(
@@ -1116,7 +1138,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '🎙️',
         color: const Color(0xFF10B981),
         isCompleted: _subStepFlags['step_4'] ?? false,
-        isUnlocked: _subStepFlags['step_3'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_3'] ?? false),
         onAction: () => _launchStep4_FluencyGym(day, level),
       ),
       InPathSubStep(
@@ -1126,7 +1148,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '⚡',
         color: const Color(0xFFFFD700),
         isCompleted: _subStepFlags['step_5'] ?? false,
-        isUnlocked: _subStepFlags['step_4'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_4'] ?? false),
         onAction: () => _launchStep5_SecretCode(day),
       ),
       InPathSubStep(
@@ -1136,7 +1158,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '🏗️',
         color: const Color(0xFF00E5FF),
         isCompleted: _subStepFlags['step_6'] ?? false,
-        isUnlocked: _subStepFlags['step_5'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_5'] ?? false),
         onAction: () => _launchStep6_SentenceBuilder(day),
       ),
       InPathSubStep(
@@ -1146,7 +1168,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '💬',
         color: const Color(0xFFFF6D00),
         isCompleted: _subStepFlags['step_7'] ?? false,
-        isUnlocked: _subStepFlags['step_6'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_6'] ?? false),
         onAction: () => _launchStep7_Slang(day),
       ),
       InPathSubStep(
@@ -1156,7 +1178,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '🎤',
         color: const Color(0xFFE040FB),
         isCompleted: _subStepFlags['step_8'] ?? false,
-        isUnlocked: _subStepFlags['step_7'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_7'] ?? false),
         onAction: () => _launchStep8_Speaking(day),
       ),
       InPathSubStep(
@@ -1166,7 +1188,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '⏳',
         color: const Color(0xFFFFC107),
         isCompleted: _subStepFlags['step_9'] ?? false,
-        isUnlocked: _subStepFlags['step_8'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_8'] ?? false),
         onAction: () => _launchStep9_TimeMachine(day),
       ),
       InPathSubStep(
@@ -1176,7 +1198,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '💬',
         color: const Color(0xFFFFFC00),
         isCompleted: _subStepFlags['step_10'] ?? false,
-        isUnlocked: _subStepFlags['step_9'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_9'] ?? false),
         onAction: () => _launchStep10_CommunityChat(day),
       ),
       InPathSubStep(
@@ -1186,7 +1208,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '🎙️',
         color: const Color(0xFF38BDF8),
         isCompleted: _subStepFlags['step_11'] ?? false,
-        isUnlocked: _subStepFlags['step_10'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_10'] ?? false),
         onAction: () => _launchStep11_PeerCall(day),
       ),
       InPathSubStep(
@@ -1196,7 +1218,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '🎮',
         color: const Color(0xFFE11D48),
         isCompleted: _subStepFlags['step_12'] ?? false,
-        isUnlocked: _subStepFlags['step_11'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_11'] ?? false),
         onAction: () => _launchStep12_AdventureQuest(day),
       ),
       InPathSubStep(
@@ -1206,7 +1228,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '📖',
         color: const Color(0xFF60A5FA),
         isCompleted: _subStepFlags['step_13'] ?? false,
-        isUnlocked: _subStepFlags['step_12'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_12'] ?? false),
         onAction: () => _launchStep13_ReadingStory(day),
       ),
       InPathSubStep(
@@ -1216,7 +1238,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '⚡',
         color: const Color(0xFF00FFCC),
         isCompleted: _subStepFlags['step_14'] ?? false,
-        isUnlocked: _subStepFlags['step_13'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_13'] ?? false),
         onAction: () => _launchStep14_CodeEnglish(day),
       ),
       InPathSubStep(
@@ -1226,7 +1248,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '⚡',
         color: const Color(0xFFFFB300),
         isCompleted: _subStepFlags['step_15'] ?? false,
-        isUnlocked: _subStepFlags['step_14'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_14'] ?? false),
         onAction: () => _launchStep15_Shortcut(day),
       ),
       InPathSubStep(
@@ -1236,7 +1258,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '🛡️',
         color: const Color(0xFF8B5CF6),
         isCompleted: _subStepFlags['step_16'] ?? false,
-        isUnlocked: _subStepFlags['step_15'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_15'] ?? false),
         onAction: () => _launchStep16_DefenseShield(day),
       ),
       InPathSubStep(
@@ -1246,7 +1268,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         icon: '🎓',
         color: const Color(0xFF10B981),
         isCompleted: _subStepFlags['step_17'] ?? false,
-        isUnlocked: _subStepFlags['step_16'] ?? false,
+        isUnlocked: admin || (_subStepFlags['step_16'] ?? false),
         onAction: () => _launchStep17_MasteryExam(day, level),
       ),
     ];
@@ -2084,6 +2106,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         _progress ?? UserLearningProgress(lastActiveDate: DateTime.now());
     final screenWidth = MediaQuery.of(context).size.width;
     final totalMapHeight = _ruleNodeY + _bottomPadding;
+    final targetActiveDay = _adminSelectedDay ?? prog.currentDay;
 
     int completedSubSteps = 0;
     for (int s = 1; s <= 17; s++) {
@@ -2114,12 +2137,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       child: CustomPaint(
                         painter: _AdventureMapRoadPainter(
                           totalDays: _totalDays,
-                          currentDay: prog.currentDay,
+                          currentDay: targetActiveDay,
                           screenWidth: screenWidth,
                           nodeSpacingY: _nodeSpacingY,
                           topPadding: _topPadding,
                           ruleNodeY: _ruleNodeY,
-                          hasAcceptedRules: _hasAcceptedRules,
+                          hasAcceptedRules: _effectiveRulesAccepted,
                           expandedActiveGap: _expandedActiveGap,
                           activeSubStepCompletedCount: completedSubSteps,
                         ),
@@ -2145,12 +2168,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                               // 🏡 90 Progressive Architectural English Houses (Viewport Culled)
                               for (int day = 1; day <= _totalDays; day++)
                                 if (_isDayInViewport(day, minY, maxY))
-                                  _buildRoadmapHouse(day, screenWidth, prog.currentDay),
+                                  _buildRoadmapHouse(day, screenWidth, targetActiveDay),
 
                               // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
                               for (int day = 1; day <= _totalDays; day++)
                                 if (_isDayInViewport(day, minY, maxY))
-                                  _buildLevelNode(day, screenWidth, prog.currentDay),
+                                  _buildLevelNode(day, screenWidth, targetActiveDay),
                             ],
                           );
                         },
@@ -2164,10 +2187,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     _buildRuleLevelNode(screenWidth),
 
                     // In-Path Syllabus 17 Sub-Steps for the active day along the climbing trail (Audio Directive)
-                    ..._buildActiveSubStepNodes(screenWidth, prog.currentDay),
+                    ..._buildActiveSubStepNodes(screenWidth, targetActiveDay),
 
                     // Bouncing Animated Character Avatar at Current Level, Sub-Step or Rules Node
-                    _buildAnimatedAvatar(screenWidth, prog.currentDay),
+                    _buildAnimatedAvatar(screenWidth, targetActiveDay),
                   ],
                 ),
               ),
@@ -2263,10 +2286,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       InkWell(
                         onTap: () {
                           HapticFeedback.mediumImpact();
-                          if (!_hasAcceptedRules) {
+                          if (!_effectiveRulesAccepted) {
                             PocketWorldGameRulesModal.show(
                               context,
-                              currentDay: prog.currentDay,
+                              currentDay: targetActiveDay,
                               onPledgeAccepted: () {
                                 setState(() => _hasAcceptedRules = true);
                                 _loadData();
@@ -2274,8 +2297,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             );
                             return;
                           }
-                          _scrollToDay(prog.currentDay, animate: true);
-                          _navigateToMissionPage(prog.currentDay);
+                          _scrollToDay(targetActiveDay, animate: true);
+                          _navigateToMissionPage(targetActiveDay);
                         },
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
@@ -2295,13 +2318,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                !_hasAcceptedRules ? Icons.menu_book_rounded : Icons.play_arrow_rounded,
+                                !_effectiveRulesAccepted ? Icons.menu_book_rounded : Icons.play_arrow_rounded,
                                 color: Colors.black,
                                 size: 16,
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                !_hasAcceptedRules ? 'Rules 📜' : 'Mission ${prog.currentDay}',
+                                !_effectiveRulesAccepted ? 'Rules 📜' : 'Mission $targetActiveDay',
                                 style: GoogleFonts.outfit(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w800,
@@ -2424,7 +2447,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4), width: 0.8),
                   ),
                   child: Text(
-                    'Day ${prog.currentDay}',
+                    _isMasterAdmin && _adminSelectedDay != null
+                        ? 'Day $_adminSelectedDay'
+                        : 'Day ${prog.currentDay}',
                     style: GoogleFonts.outfit(
                       color: const Color(0xFFFFD700),
                       fontSize: 11.5,
@@ -2432,6 +2457,31 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                 ),
+                if (_isMasterAdmin)
+                  Container(
+                    margin: const EdgeInsets.only(left: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFD97706).withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: const Color(0xFFF59E0B), width: 0.9),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('👑', style: TextStyle(fontSize: 10)),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Admin All Unlocked',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFF59E0B),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 9.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 const SizedBox(width: 8),
 
                 // 🪙 Pocket Score (PS) & 🏆 Trophies Capsule (Audio Directive: Show PS, Coins, and Trophies count)
@@ -3357,7 +3407,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       child: GestureDetector(
         onTap: () {
           HapticFeedback.lightImpact();
-          if (!_hasAcceptedRules && day == 1) {
+          if (!_effectiveRulesAccepted && day == 1) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: const Color(0xFF131722),
@@ -3391,6 +3441,35 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 setState(() => _hasAcceptedRules = true);
                 _loadData();
               },
+            );
+            return;
+          }
+          if (_isMasterAdmin) {
+            setState(() {
+              _adminSelectedDay = day;
+            });
+            final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+            if (uid != null) {
+              SharedPreferences.getInstance().then((prefs) {
+                final Map<String, bool> subFlags = {};
+                for (int step = 1; step <= 17; step++) {
+                  final flagKey = 'pocket_day_${uid}_${day}_step_${step}_done';
+                  subFlags['step_$step'] = prefs.getBool(flagKey) ?? false;
+                }
+                if (mounted) setState(() {
+                  _subStepFlags.clear();
+                  _subStepFlags.addAll(subFlags);
+                });
+              });
+            }
+            _scrollToDay(day, animate: true);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('👑 Admin (musabthonippadam@gmail.com): Selected Day $day • All 17 Steps Ready!'),
+                duration: const Duration(seconds: 1),
+                backgroundColor: const Color(0xFFD97706),
+                behavior: SnackBarBehavior.floating,
+              ),
             );
             return;
           }
@@ -3738,7 +3817,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       child: GestureDetector(
         onTap: () {
           HapticFeedback.lightImpact();
-          if (!_hasAcceptedRules && day == 1) {
+          if (!_effectiveRulesAccepted && day == 1) {
             PocketWorldGameRulesModal.show(
               context,
               currentDay: currentDay,
@@ -3746,6 +3825,35 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 setState(() => _hasAcceptedRules = true);
                 _loadData();
               },
+            );
+            return;
+          }
+          if (_isMasterAdmin) {
+            setState(() {
+              _adminSelectedDay = day;
+            });
+            final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+            if (uid != null) {
+              SharedPreferences.getInstance().then((prefs) {
+                final Map<String, bool> subFlags = {};
+                for (int step = 1; step <= 17; step++) {
+                  final flagKey = 'pocket_day_${uid}_${day}_step_${step}_done';
+                  subFlags['step_$step'] = prefs.getBool(flagKey) ?? false;
+                }
+                if (mounted) setState(() {
+                  _subStepFlags.clear();
+                  _subStepFlags.addAll(subFlags);
+                });
+              });
+            }
+            _scrollToDay(day, animate: true);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('👑 Admin (musabthonippadam@gmail.com): Selected Day $day • All 17 Steps Ready!'),
+                duration: const Duration(seconds: 1),
+                backgroundColor: const Color(0xFFD97706),
+                behavior: SnackBarBehavior.floating,
+              ),
             );
             return;
           }
@@ -4303,6 +4411,398 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
+  /// 👑 Stage Character Evolution Node right before Step 1 along the mountain trail (User Audio Directive!)
+  /// "Aa 1-mthe steppinu munne cheriya oru card ittittu, aa cardil tap cheythu kazhinju kazhinja aa avatar-ukal kaanum. 'Achieve - aa avatar achieve cheythu' ennullathu."
+  Widget _buildAvatarEvolutionNode({
+    required int day,
+    required double x,
+    required double y,
+    required double screenWidth,
+  }) {
+    const nodeSize = 52.0;
+    final isRightSide = x >= screenWidth / 2;
+    final labelWidth = 142.0;
+    final avatarConfig = _getAvatarForDay(day);
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: SizedBox(
+        width: nodeSize,
+        height: nodeSize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            // Side Label Card
+            Positioned(
+              left: isRightSide ? (-labelWidth - 10.0) : (nodeSize + 10.0),
+              top: 0.0,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  _showAvatarAchievementDialog(day);
+                },
+                child: Container(
+                  width: labelWidth,
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF2E1065), Color(0xFF1E1B4B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          const Text('👑', style: TextStyle(fontSize: 12)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              'Day $day Hero Avatar',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFFFFD700),
+                                fontWeight: FontWeight.w900,
+                                fontSize: 10.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Achieved! Tap to View 🔥',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+            // Pulsing Flame Aura around the Avatar Stone
+            AnimatedBuilder(
+              animation: _bobController,
+              builder: (context, _) {
+                final scale = 1.0 + (_bobController.value * 0.18);
+                return Transform.scale(
+                  scale: scale,
+                  child: Container(
+                    width: nodeSize + 8,
+                    height: nodeSize + 8,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFFFF8906).withValues(alpha: 0.7 - (_bobController.value * 0.3)),
+                        width: 2.0,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            // Avatar Stone Button
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                _showAvatarAchievementDialog(day);
+              },
+              child: Container(
+                width: nodeSize,
+                height: nodeSize,
+                padding: const EdgeInsets.all(3.0),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFFF6D00)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  border: Border.all(color: Colors.white, width: 2.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFF8906).withValues(alpha: 0.6),
+                      blurRadius: 12,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: ClipOval(
+                  child: VectorAvatarWidget(
+                    config: avatarConfig,
+                    size: nodeSize - 6,
+                    showAura: false,
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom "EVO" Badge
+            Positioned(
+              bottom: -7,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0F172A),
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                ),
+                child: Text(
+                  'EVO ⚡',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 8.5,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// 🎯 Celebratory Hero Avatar Achievement & Stage Showcase Modal (User Audio Directive!)
+  void _showAvatarAchievementDialog(int day) {
+    HapticFeedback.heavyImpact();
+    final avatarConfig = _getAvatarForDay(day);
+    final stage = LearningMilestoneStage.getStageForDay(day);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+          decoration: BoxDecoration(
+            color: const Color(0xFF131728),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFF8906).withValues(alpha: 0.4),
+                blurRadius: 24,
+                spreadRadius: 2,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.8),
+                blurRadius: 16,
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Header Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF8906).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFFFFD700), width: 1.0),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🔥', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 6),
+                        Text(
+                          'DAY $day HERO AVATAR ACHIEVED',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Hero Avatar Showcase with Flaming Ring
+                  Container(
+                    width: 104,
+                    height: 104,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const RadialGradient(
+                        colors: [Color(0xFFFFFC00), Color(0xFFFF6D00)],
+                      ),
+                      border: Border.all(color: Colors.white, width: 3.5),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFF8906).withValues(alpha: 0.6),
+                          blurRadius: 20,
+                          spreadRadius: 3,
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: VectorAvatarWidget(
+                        config: avatarConfig,
+                        size: 98,
+                        showAura: true,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // Stage Title & Evolution Tier
+                  Text(
+                    stage.stageName,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${stage.fluencyTier.toUpperCase()} • STAGE ${((day - 1) ~/ 10) + 1} ARCHITECTURE',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF38BDF8),
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Feature Cards
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          children: [
+                            const Text('🏡', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'House Stage: ${((day - 1) ~/ 10) + 1} of 9 Progressive Estates',
+                                style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text('🪙', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Day Reward Target: ~600 Pocket Score across 17 steps',
+                                style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 11.5, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Text('⚡', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Level Mastery Exam: Step 17 unlocks House ${day + 1} Gate',
+                                style: GoogleFonts.inter(color: const Color(0xFF10B981), fontSize: 11.5, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // Continue to Step 1 Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFFC00),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        elevation: 4,
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _startActiveSubStep(day);
+                      },
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.play_arrow_rounded, color: Colors.black, size: 20),
+                          const SizedBox(width: 6),
+                          Text(
+                            'START STEP 1 • CLIMB THE TRAIL',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   /// 🎯 In-Path Sub-Step Node rendered directly on the climbing road (User Audio Directive!)
   Widget _buildSubStepNode({
     required InPathSubStep step,
@@ -4523,10 +5023,23 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   /// Builds the 17 in-path sub-step milestone nodes for the active day along the climbing path (User Audio Directive!)
   List<Widget> _buildActiveSubStepNodes(double screenWidth, int activeDay) {
-    if (activeDay >= _totalDays || !_hasAcceptedRules) return [];
+    if (activeDay >= _totalDays || !_effectiveRulesAccepted) return [];
 
     final subSteps = _getSubStepsForDay(activeDay, _currentLearnerLevel);
     final List<Widget> widgets = [];
+
+    // 👑 Stage Character Evolution Node right before Step 1 (User Audio Directive!)
+    // "Aa 1-mthe steppinu munne cheriya oru card ittittu, aa cardil tap cheythu kazhinju kazhinja aa avatar-ukal kaanum. 'Achieve - aa avatar achieve cheythu' ennullathu."
+    final avatarNodeY = _getNodeY(activeDay) - ((0.45 / 18.0) * (_nodeSpacingY + _expandedActiveGap));
+    final avatarNodeX = _getSubStepX(activeDay, 0, screenWidth);
+    widgets.add(
+      _buildAvatarEvolutionNode(
+        day: activeDay,
+        x: avatarNodeX,
+        y: avatarNodeY,
+        screenWidth: screenWidth,
+      ),
+    );
 
     // Find the first unlocked but incomplete step
     int currentActiveStepIndex = -1;
@@ -4560,7 +5073,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// The active character avatar standing on today's node (or on active in-path sub-step or Rules node before start).
   /// User audio requirement: Before level 1 start, the avatar stands on the Rules node!
   Widget _buildAnimatedAvatar(double screenWidth, int currentDay) {
-    final bool atRuleNode = !_hasAcceptedRules;
+    final bool atRuleNode = !_effectiveRulesAccepted;
     double x;
     double y;
     int activeSubStep = 0;
@@ -4588,8 +5101,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final avatarConfig = _getAvatarForDay(atRuleNode ? 1 : currentDay);
 
     return Positioned(
-      left: x - 48,
-      top: y - 114,
+      left: x - 54,
+      top: y - 128,
       child: AnimatedBuilder(
         animation: _bobController,
         builder: (context, child) {
@@ -4599,7 +5112,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Speech bubble - Tap to view Rules or NFT Collectible Card!
+              // Speech bubble - Tap to view Rules or Avatar Achievement!
               GestureDetector(
                 onTap: () {
                   if (atRuleNode) {
@@ -4612,7 +5125,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       },
                     );
                   } else {
-                    _openAvatarCard(currentDay);
+                    _showAvatarAchievementDialog(currentDay);
                   }
                 },
                 child: Container(
@@ -4632,19 +5145,19 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(atRuleNode ? '📜' : (activeSubStep > 0 ? '⚡' : '🏡'),
+                      Text(atRuleNode ? '📜' : (activeSubStep > 0 ? '🔥' : '🏡'),
                           style: const TextStyle(fontSize: 11)),
                       const SizedBox(width: 4),
                       Text(
                         atRuleNode
                             ? 'Rules & Pledge • Tap to Start 📜'
                             : (activeSubStep > 0
-                                ? 'Day $currentDay • Step $activeSubStep / 17 ⚡'
+                                ? 'Day $currentDay • Step $activeSubStep / 17 🔥'
                                 : 'Day $currentDay • At Estate Front Door 🏡'),
                         style: GoogleFonts.outfit(
                           color: Colors.black,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10.5,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 11,
                         ),
                       ),
                     ],
@@ -4653,7 +5166,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               ),
               const SizedBox(height: 5),
 
-              // Bobbing Avatar Character
+              // Bobbing Avatar Character (Heroic 76px size with dual fiery glow as requested in audio)
               Transform.translate(
                 offset: Offset(0, -bobY),
                 child: GestureDetector(
@@ -4668,27 +5181,33 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         },
                       );
                     } else {
-                      _openAvatarCard(currentDay);
+                      _showAvatarAchievementDialog(currentDay);
                     }
                   },
                   child: Container(
-                    width: 60,
-                    height: 60,
+                    width: 76,
+                    height: 76,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: const Color(0xFFFFFC00), width: 2.5),
+                          color: const Color(0xFFFFFC00), width: 3.0),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
-                          blurRadius: 14,
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.65),
+                          blurRadius: 18,
+                          spreadRadius: 2,
+                        ),
+                        BoxShadow(
+                          color: const Color(0xFFFF5722).withValues(alpha: 0.45),
+                          blurRadius: 26,
+                          spreadRadius: 4,
                         ),
                       ],
                     ),
                     child: ClipOval(
                       child: VectorAvatarWidget(
                         config: avatarConfig,
-                        size: 56,
+                        size: 70,
                         showAura: true,
                       ),
                     ),
@@ -4700,8 +5219,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               Transform.scale(
                 scale: shadowScale,
                 child: Container(
-                  width: 36,
-                  height: 8,
+                  width: 46,
+                  height: 9,
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.45),
                     borderRadius: BorderRadius.circular(4),
