@@ -379,36 +379,6 @@ class _PocketDailyMissionRoadmapWidgetState
             ],
           ),
 
-          if (isMasterAdmin) ...[
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF8B5CF6).withValues(alpha: 0.22),
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
-                  color: const Color(0xFFA78BFA),
-                  width: 0.9,
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('🧪', style: TextStyle(fontSize: 11)),
-                  const SizedBox(width: 5),
-                  Text(
-                    'DEVELOPER TEST ACCESS (musabthonippadam@gmail.com): ALL STEPS UNLOCKED',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFFE9D5FF),
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
 
           const SizedBox(height: 8),
           // Gradient Progress Line

@@ -710,7 +710,7 @@ class _PresidentAndAdminSettingsSectionState
                       ],
                     ),
                     Text(
-                      'Super Admin Control • musabthonippadam@gmail.com',
+                      'Super Admin Control',
                       style: GoogleFonts.inter(
                         color: Colors.white54,
                         fontSize: 10.5,

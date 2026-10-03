@@ -69,54 +69,32 @@ class PocketScoreLevelEngine {
   }
 
   /// 🏆 Returns minimum PocketTalk Spoken Trophies required to unlock a specific level.
-  /// User directive:
-  /// - Levels 1 to 4: 0 Trophies (Open to start)
-  /// - Level 5: 1 Trophy required (1 completed 4-day spoken pact)
-  /// - Level 10: 2 Trophies required
-  /// - Level 15: 3 Trophies required ...
-  /// - Scale progressively up to 150 Trophies by Level 90
+  /// User directive: "Trophy restriction illa tto. Trophy restriction illa. Pocket score base cheythittu keri povaa."
+  /// Trophy requirement is completely removed.
   static int getRequiredTrophiesForLevel(int level) {
-    if (level < 5) return 0;
-    if (level < 10) return 1;
-    if (level < 15) return 2;
-    if (level < 20) return 3;
-    if (level < 30) return 5;
-    if (level < 45) return 10;
-    if (level < 60) return 20;
-    if (level < 75) return 50;
-    if (level < 90) return 100;
-    return 150; // Capstone Graduation
+    return 0;
   }
 
-  /// Verifies whether the player has satisfied BOTH Pocket Score AND Spoken Trophies to unlock a target level
+  /// Verifies whether the player has satisfied Pocket Score requirement to unlock a target level
   static ({bool isUnlocked, int missingScore, int missingTrophies, String requirementMessage}) checkLevelUnlockEligibility({
     required int currentScore,
     required int currentTrophies,
     required int targetLevel,
   }) {
     final reqScore = getRequiredScoreForLevel(targetLevel);
-    final reqTrophies = getRequiredTrophiesForLevel(targetLevel);
-
     final missingScore = math.max(0, reqScore - currentScore);
-    final missingTrophies = math.max(0, reqTrophies - currentTrophies);
 
-    final isUnlocked = missingScore == 0 && missingTrophies == 0;
+    final isUnlocked = missingScore == 0;
 
     String msg = '';
     if (!isUnlocked) {
-      if (missingScore > 0 && missingTrophies > 0) {
-        msg = 'Requires $reqScore PTS and 🏆$reqTrophies Spoken Trophies ($missingScore PTS & $missingTrophies Trophies needed)';
-      } else if (missingScore > 0) {
-        msg = 'Requires $reqScore PTS ($missingScore PTS needed)';
-      } else {
-        msg = 'Requires 🏆$reqTrophies Spoken Trophies earned via 4-Day PocketTalk chats ($missingTrophies needed)';
-      }
+      msg = 'Requires $reqScore PTS ($missingScore PTS needed)';
     }
 
     return (
       isUnlocked: isUnlocked,
       missingScore: missingScore,
-      missingTrophies: missingTrophies,
+      missingTrophies: 0,
       requirementMessage: msg,
     );
   }

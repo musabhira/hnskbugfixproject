@@ -392,27 +392,53 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
     });
     _recordSwiped(candidate.userId);
 
-    // If it's a real user ID, request the pact and send mate request notification
-    if (!candidate.userId.startsWith('candidate_deck_')) {
-      await PocketTrophyService.requestPact(
-        myId: myId,
-        otherUserId: candidate.userId,
-      );
+    String myName = 'Pocket Mate';
+    try {
+      final p = await _supabase.from('profile').select('name').eq('user_id', myId).maybeSingle();
+      if (p != null && p['name'] != null) myName = p['name'];
+    } catch (_) {}
 
-      String myName = 'Pocket Mate';
-      try {
-        final p = await _supabase.from('profile').select('name').eq('user_id', myId).maybeSingle();
-        if (p != null && p['name'] != null) myName = p['name'];
-      } catch (_) {}
+    await PocketTrophyService.requestPact(
+      myId: myId,
+      otherUserId: candidate.userId,
+    );
 
-      await PocketMateService.sendMateRequest(
-        senderId: myId,
-        receiverId: candidate.userId,
-        senderName: myName,
-        message: 'Challenged you to a 4-Day Spoken English Pact ⚡ (15 mins/day). Check your Pocket Talk tab!',
-        contextType: 'pocket_talk',
-      );
-    }
+    await PocketMateService.sendMateRequest(
+      senderId: myId,
+      receiverId: candidate.userId,
+      senderName: myName,
+      message: 'Challenged you to a 4-Day Spoken English Pact ⚡ (15 mins/day). Check your Pocket Talk tab!',
+      contextType: 'pocket_talk',
+    );
+
+    // Ensure conversation exists so it appears instantly under Sent tab
+    try {
+      final nowIso = DateTime.now().toIso8601String();
+      final existing = await _supabase
+          .from('conversations')
+          .select('id')
+          .or('and(user1_id.eq.$myId,user2_id.eq.${candidate.userId}),and(user1_id.eq.${candidate.userId},user2_id.eq.$myId)')
+          .maybeSingle();
+      if (existing == null) {
+        await _supabase.from('conversations').insert({
+          'user1_id': myId,
+          'user2_id': candidate.userId,
+          'last_message': '⚡ Challenged to a 4-Day Spoken English Pact (15m/day)',
+          'last_message_time': nowIso,
+          'last_sender_id': myId,
+          'unread_count': 0,
+          'updated_at': nowIso,
+          'is_group': false,
+        });
+      } else {
+        await _supabase.from('conversations').update({
+          'last_message': '⚡ Challenged to a 4-Day Spoken English Pact (15m/day)',
+          'last_message_time': nowIso,
+          'last_sender_id': myId,
+          'updated_at': nowIso,
+        }).eq('id', existing['id']);
+      }
+    } catch (_) {}
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -459,21 +485,19 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
     });
     _recordSwiped(candidate.userId);
 
-    if (!candidate.userId.startsWith('candidate_deck_')) {
-      String myName = 'Pocket Mate';
-      try {
-        final p = await _supabase.from('profile').select('name').eq('user_id', myId).maybeSingle();
-        if (p != null && p['name'] != null) myName = p['name'];
-      } catch (_) {}
+    String myName = 'Pocket Mate';
+    try {
+      final p = await _supabase.from('profile').select('name').eq('user_id', myId).maybeSingle();
+      if (p != null && p['name'] != null) myName = p['name'];
+    } catch (_) {}
 
-      await PocketMateService.sendMateRequest(
-        senderId: myId,
-        receiverId: candidate.userId,
-        senderName: myName,
-        message: 'Sent you a Mate connection request from Pocket Talk Cards! 🤝',
-        contextType: 'mate_request',
-      );
-    }
+    await PocketMateService.sendMateRequest(
+      senderId: myId,
+      receiverId: candidate.userId,
+      senderName: myName,
+      message: 'Sent you a Mate connection request from Pocket Talk Cards! 🤝',
+      contextType: 'mate_request',
+    );
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -7118,7 +7118,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                   borderRadius: BorderRadius.circular(4),
                 ),
                 child: Text(
-                  'musabthonippadam@gmail.com',
+                  'ADMIN',
                   style: GoogleFonts.firaCode(
                     color: Colors.amber,
                     fontSize: 8.5,

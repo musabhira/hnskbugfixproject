@@ -519,12 +519,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     _checkMateStatus();
     _startPactActiveTracker();
 
-    // ⌨️ Auto-open keyboard when entering chat
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        _focusNode.requestFocus();
-      }
-    });
+    // Do NOT auto-focus keyboard on chat entry (User Audio Directive: avoids obscuring messages)
 
     _scrollController.addListener(() {
       if (_scrollController.hasClients) {
@@ -552,15 +547,6 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
         safeSetState(() => _showEmojiPicker = false);
       }
     });
-
-    // Auto-focus keyboard on personal chat entry for snappy instant messaging
-    if (widget.groupId.startsWith('p:')) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _focusNode.requestFocus();
-        }
-      });
-    }
 
     // Cleanup trigger
     Future.microtask(() => ref

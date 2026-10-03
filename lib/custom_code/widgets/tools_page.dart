@@ -1592,8 +1592,8 @@ class _TaskManagerScreenState extends State<ToolsPage> {
         'subtitle': 'Fort Knox Security',
         'icon': Icons.lock_person_rounded,
         'category': 'Security',
-        'color': const Color(0xFF64748B),
-        'gradient': [const Color(0xFF334155), const Color(0xFF0F172A)],
+        'color': const Color(0xFFFFFC00),
+        'gradient': [const Color(0xFFFFFC00), const Color(0xFFFFB300)],
         'avatar': const VectorAvatarConfig(
           outfitStyle: 'secret_agent_suit',
           auraStyle: 'obsidian_stealth',

@@ -140,6 +140,30 @@ class PocketMateService {
         await prefs.setStringList('sent_mate_requests_$senderId', sentList);
       }
 
+      // Cache full sent request for instant display in Sent tab
+      try {
+        final cacheStr = prefs.getString('sent_requests_cache_$senderId');
+        List<Map<String, dynamic>> cache = [];
+        if (cacheStr != null && cacheStr.isNotEmpty) {
+          cache = List<Map<String, dynamic>>.from(json.decode(cacheStr));
+        }
+        cache.removeWhere((x) =>
+            x['user_id'] == receiverId || x['receiver_id'] == receiverId);
+        cache.insert(0, {
+          'id': 'sent_${DateTime.now().millisecondsSinceEpoch}',
+          'user_id': receiverId,
+          'receiver_id': receiverId,
+          'sender_id': senderId,
+          'type': 'mate_request',
+          'context_type': contextType ?? 'mate_request',
+          'message': message ?? defaultMsg,
+          'status': 'pending',
+          'created_at': DateTime.now().toIso8601String(),
+        });
+        await prefs.setString('sent_requests_cache_$senderId',
+            json.encode(cache.take(50).toList()));
+      } catch (_) {}
+
       return true;
     } catch (e) {
       debugPrint('Error sending mate request: $e');
@@ -433,6 +457,9 @@ class PocketMateService {
   /// Fetch all sent requests by currentUser (both pending and recent)
   static Future<List<Map<String, dynamic>>> getSentRequests(String myId) async {
     if (myId.isEmpty) return [];
+    final List<Map<String, dynamic>> sentRequests = [];
+    final Set<String> seenReceiverIds = {};
+
     try {
       final response = await _supabase
           .from('notifications')
@@ -441,30 +468,56 @@ class PocketMateService {
           .eq('type', 'mate_request')
           .order('created_at', ascending: false);
 
-      final List<Map<String, dynamic>> sentRequests = [];
       for (final r in (response as List)) {
         final req = Map<String, dynamic>.from(r);
         final receiverId = req['user_id']?.toString() ?? '';
         if (receiverId.isNotEmpty) {
-          final profileRes = await _supabase
-              .from('profiles')
-              .select('name, profile_image_url')
-              .eq('id', receiverId)
-              .maybeSingle();
-          if (profileRes != null) {
-            req['receiver_name'] = profileRes['name'] ?? 'Poket Mate';
-            req['receiver_profile_image'] = profileRes['profile_image_url'];
-          } else {
-            req['receiver_name'] = 'Poket Mate';
+          seenReceiverIds.add(receiverId);
+          try {
+            final profileRes = await _supabase
+                .from('profile')
+                .select('name, display_name, profile_picture_url, avatar_url')
+                .eq('user_id', receiverId)
+                .maybeSingle();
+            if (profileRes != null) {
+              req['receiver_name'] = profileRes['display_name'] ??
+                  profileRes['name'] ??
+                  'Pocket Mate';
+              req['receiver_profile_image'] =
+                  profileRes['profile_picture_url'] ?? profileRes['avatar_url'];
+            } else {
+              req['receiver_name'] = 'Pocket Mate';
+            }
+          } catch (_) {
+            req['receiver_name'] = 'Pocket Mate';
           }
         }
         sentRequests.add(req);
       }
-      return sentRequests;
     } catch (e) {
-      debugPrint('Error fetching sent requests: $e');
-      return [];
+      debugPrint('Error fetching sent requests from DB: $e');
     }
+
+    // Merge with locally cached sent requests
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final cacheStr = prefs.getString('sent_requests_cache_$myId');
+      if (cacheStr != null && cacheStr.isNotEmpty) {
+        final localList =
+            List<Map<String, dynamic>>.from(json.decode(cacheStr));
+        for (final item in localList) {
+          final recId = item['user_id']?.toString() ??
+              item['receiver_id']?.toString() ??
+              '';
+          if (recId.isNotEmpty && !seenReceiverIds.contains(recId)) {
+            seenReceiverIds.add(recId);
+            sentRequests.add(item);
+          }
+        }
+      }
+    } catch (_) {}
+
+    return sentRequests;
   }
 
   /// Fetch all pending connection requests for a user (combining Supabase & Local Robot requests)
