@@ -503,12 +503,21 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
     final attacksUsed = await PocketFortressDefenseService.getDailyAttacksUsedToday();
     final isDailyLimitReached = attacksUsed >= PocketFortressDefenseService.kDailyMaxAttacks;
 
+    final bool isTargetVip = widget.neighbor.isVip;
     final questions = widget.neighbor.isPresident
         ? await PocketFortressDefenseService.loadPresidentialGauntletQuestions()
-        : await PocketFortressDefenseService.loadGauntletQuestionsForStage(
-            widget.neighbor.day,
-            isNeighbor: true,
-          );
+        : isTargetVip
+            ? [
+                ...(await PocketFortressDefenseService.loadPresidentialEscortGuardQuestions()),
+                ...(await PocketFortressDefenseService.loadGauntletQuestionsForStage(
+                  widget.neighbor.day,
+                  isNeighbor: true,
+                )),
+              ]
+            : await PocketFortressDefenseService.loadGauntletQuestionsForStage(
+                widget.neighbor.day,
+                isNeighbor: true,
+              );
 
     // Randomize option order dynamically across A, B, C, D
     final randomizedQuestions = questions.map((q) {
@@ -1172,8 +1181,8 @@ class _PocketCitadelAttackPageState extends State<PocketCitadelAttackPage>
                           if (!isPresident && (_isDefenderDamaged || _isTargetProtected))
                             _buildPostAttackDamageEffects(houseLeft, houseTop, houseW, houseH),
 
-                          // 3B. Emergency Cordon (only for non-president damaged houses)
-                          if (!isPresident && (_isDefenderDamaged || _isTargetProtected))
+                          // 3B. Emergency Cordon & VIP Presidential Escort Guard
+                          if (!isPresident && (_isDefenderDamaged || _isTargetProtected || widget.neighbor.isVip))
                             _buildPresidentialSecurityLayer(houseLeft, houseTop, houseW, houseH, groundY, worldW),
 
                           // 3D. 🛡️ Active Iron Dome Interception Missile & Blast Effect

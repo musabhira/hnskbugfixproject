@@ -14,7 +14,13 @@ class HousePromoCampaign {
   final String ctaText;
   final String webCheckoutUrl;
   final int inAppMonthlyPrice;
+  final int inAppMonthlyRetailPrice;
+  final int inAppQuarterlyPrice; // 90-Day Fluency Pass
+  final int inAppQuarterlyRetailPrice;
   final int inAppYearlyPrice;
+  final int inAppYearlyRetailPrice;
+  final int certificateUnlockPrice;
+  final int certificateRetailPrice;
   final String upiId;
   final String targetPlatform; // 'all', 'ios', 'android'
   final bool isActive;
@@ -27,7 +33,13 @@ class HousePromoCampaign {
     required this.ctaText,
     required this.webCheckoutUrl,
     required this.inAppMonthlyPrice,
+    this.inAppMonthlyRetailPrice = 999,
+    this.inAppQuarterlyPrice = 799,
+    this.inAppQuarterlyRetailPrice = 4999,
     required this.inAppYearlyPrice,
+    this.inAppYearlyRetailPrice = 9999,
+    this.certificateUnlockPrice = 149,
+    this.certificateRetailPrice = 999,
     required this.upiId,
     required this.targetPlatform,
     required this.isActive,
@@ -41,7 +53,13 @@ class HousePromoCampaign {
         'cta_text': ctaText,
         'web_checkout_url': webCheckoutUrl,
         'monthly_price': inAppMonthlyPrice,
+        'monthly_retail_price': inAppMonthlyRetailPrice,
+        'quarterly_price': inAppQuarterlyPrice,
+        'quarterly_retail_price': inAppQuarterlyRetailPrice,
         'yearly_price': inAppYearlyPrice,
+        'yearly_retail_price': inAppYearlyRetailPrice,
+        'certificate_price': certificateUnlockPrice,
+        'certificate_retail_price': certificateRetailPrice,
         'upi_id': upiId,
         'target_platform': targetPlatform,
         'is_active': isActive,
@@ -50,15 +68,21 @@ class HousePromoCampaign {
   factory HousePromoCampaign.fromJson(Map<String, dynamic> json) {
     return HousePromoCampaign(
       id: json['id']?.toString() ?? 'default_pro',
-      title: json['title']?.toString() ?? 'Upgrade to Pocket Mates Pro ✨',
+      title: json['title']?.toString() ?? 'Upgrade to Poket VIP ✨',
       subtitle: json['subtitle']?.toString() ??
-          '100% Ad-Free • Unlimited AI • 1000+ Free Classics & Pro Tools',
-      discountBadge: json['discount_badge']?.toString() ?? 'LIMITED OFFER: 50% OFF',
-      ctaText: json['cta_text']?.toString() ?? 'Claim Pro Offer',
+          '100% Ad-Free • Instant 90-Day Binge Mode • Golden Verified Tick • Elite Presidential Escort Guard',
+      discountBadge: json['discount_badge']?.toString() ?? 'LIMITED OFFER: 84% OFF',
+      ctaText: json['cta_text']?.toString() ?? 'Claim Poket VIP Offer',
       webCheckoutUrl: json['web_checkout_url']?.toString() ??
           'https://pocketmates.app/premium?ref=app_promo',
-      inAppMonthlyPrice: int.tryParse(json['monthly_price']?.toString() ?? '199') ?? 199,
-      inAppYearlyPrice: int.tryParse(json['yearly_price']?.toString() ?? '1799') ?? 1799,
+      inAppMonthlyPrice: int.tryParse(json['monthly_price']?.toString() ?? '249') ?? 249,
+      inAppMonthlyRetailPrice: int.tryParse(json['monthly_retail_price']?.toString() ?? '999') ?? 999,
+      inAppQuarterlyPrice: int.tryParse(json['quarterly_price']?.toString() ?? '799') ?? 799,
+      inAppQuarterlyRetailPrice: int.tryParse(json['quarterly_retail_price']?.toString() ?? '4999') ?? 4999,
+      inAppYearlyPrice: int.tryParse(json['yearly_price']?.toString() ?? '1699') ?? 1699,
+      inAppYearlyRetailPrice: int.tryParse(json['yearly_retail_price']?.toString() ?? '9999') ?? 9999,
+      certificateUnlockPrice: int.tryParse(json['certificate_price']?.toString() ?? '149') ?? 149,
+      certificateRetailPrice: int.tryParse(json['certificate_retail_price']?.toString() ?? '999') ?? 999,
       upiId: json['upi_id']?.toString() ?? 'pocketmates@upi',
       targetPlatform: json['target_platform']?.toString() ?? 'all',
       isActive: json['is_active'] == true || json['is_active'] == 1 || json['is_active'] == 'true',
@@ -76,13 +100,19 @@ class MonetizationService {
 
   HousePromoCampaign _cachedCampaign = const HousePromoCampaign(
     id: 'default_pro',
-    title: 'Unlock Pocket Mates VIP Pro 🚀',
-    subtitle: 'Zero Ads • Unlimited AI • 70k+ Books • 4K Poster Studio & Offline Tools',
-    discountBadge: 'SPECIAL DEAL • 50% OFF',
-    ctaText: 'Upgrade Now',
+    title: 'Unlock Poket VIP 🚀',
+    subtitle: 'Zero Ads • Instant Binge Mode • Golden Verified Tick • Presidential Guard & C2 Diploma',
+    discountBadge: 'SPECIAL DEAL • 84% OFF',
+    ctaText: 'Upgrade to Poket VIP',
     webCheckoutUrl: 'https://pocketmates.app/premium',
-    inAppMonthlyPrice: 199,
-    inAppYearlyPrice: 1799,
+    inAppMonthlyPrice: 249,
+    inAppMonthlyRetailPrice: 999,
+    inAppQuarterlyPrice: 799,
+    inAppQuarterlyRetailPrice: 4999,
+    inAppYearlyPrice: 1699,
+    inAppYearlyRetailPrice: 9999,
+    certificateUnlockPrice: 149,
+    certificateRetailPrice: 999,
     upiId: 'pocketmates@upi',
     targetPlatform: 'all',
     isActive: true,

@@ -6,11 +6,11 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
-import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
 import 'pocket_syllabus_repository.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'learning_service.dart';
 import 'pocket_mission_curriculum_registry.dart';
+import '../subscription_page.dart';
 
 /// 🎓 Model for an End-of-Level Exam Question
 class LevelExamQuestion {
@@ -59,15 +59,17 @@ class PocketLevelExamDialog extends StatefulWidget {
   static Future<bool> show(
     BuildContext context, {
     required int level,
-    LearnerLevel trackLevel = LearnerLevel.zero,
+    LearnerLevel? trackLevel,
     VoidCallback? onExamPassed,
   }) async {
+    final effectiveTrack = trackLevel ?? await PocketSyllabusRepository.getSavedLevel();
+    if (!context.mounted) return false;
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => PocketLevelExamDialog(
         level: level,
-        trackLevel: trackLevel,
+        trackLevel: effectiveTrack,
         onExamPassed: onExamPassed,
       ),
     );
@@ -248,44 +250,6 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
     }
 
     widget.onExamPassed?.call();
-  }
-
-  Future<void> _handleUnlockNextLevelInstantWithAd() async {
-    HapticFeedback.mediumImpact();
-    final nav = Navigator.of(context);
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final watched = await PocketAdService().showVideoAd(
-      context: context,
-      placementTitle: 'Instant Next Level Unlock',
-    );
-
-    if (watched) {
-      final uid = SupaFlow.client.auth.currentUser?.id;
-      if (uid != null) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.remove('learning_day_${uid}_${widget.level}_completed_date');
-      }
-
-      scaffoldMessenger.showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              const Text('⚡', style: TextStyle(fontSize: 20)),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Ad Reward Claimed! Level ${widget.level + 1} unlocked immediately!',
-                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: const Color(0xFF10B981),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      nav.pop(true);
-    }
   }
 
   /// 🎯 Adaptive Question Generator based on Level & Syllabus Track
@@ -30151,7 +30115,7 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      'Pass: 50% (3/5)',
+                      'Pass Mark: 60% (3/5)',
                       style: GoogleFonts.inter(color: const Color(0xFFFFFC00), fontSize: 10, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -30442,6 +30406,28 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
                   ],
                 ),
               ),
+              if (!isPassed)
+                Container(
+                  margin: const EdgeInsets.only(top: 10),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFDC2626).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('🔒', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'Pass mark is 60% (At least 3 out of 5 required). House ${widget.level + 1} will unlock only after you pass this Gate Exam! Check your mistakes below and retry.',
+                          style: GoogleFonts.inter(color: const Color(0xFFFCA5A5), fontSize: 11, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               const SizedBox(height: 12),
 
               // Title for Detailed Corrections List
@@ -30632,10 +30618,16 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
                     ),
                     Expanded(
                       child: TextButton.icon(
-                        onPressed: _handleUnlockNextLevelInstantWithAd,
-                        icon: const Icon(Icons.play_circle_fill_rounded, size: 14, color: Color(0xFFFFD700)),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                          );
+                        },
+                        icon: const Icon(Icons.workspace_premium_rounded, size: 14, color: Color(0xFFFFD700)),
                         label: Text(
-                          'INSTANT UNLOCK 🎬',
+                          'BINGE PASS 👑',
                           style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold),
                         ),
                       ),

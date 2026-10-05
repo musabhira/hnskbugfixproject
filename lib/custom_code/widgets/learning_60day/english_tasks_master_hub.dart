@@ -32,7 +32,6 @@ import 'pocket_fluency_gym_detail_page.dart';
 import 'pocket_level_exam_dialog.dart';
 import 'pocket_alphabet_phonics_game_page.dart';
 import 'zero_foundation_curriculum_db.dart';
-import 'pocket_mission_curriculum_1_18.dart';
 import 'pocket_mission_curriculum_registry.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:flame/components.dart' show Vector2;
@@ -48,7 +47,6 @@ import 'pocket_time_machine_practice_card.dart';
 import 'pocket_code_english_decoder_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/english_match/stage_peer_matchmaker.dart';
 import 'career_adventure/cyber_vocab_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 
@@ -711,6 +709,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       context,
       day: day,
       userId: widget.userId ?? _supabase.auth.currentUser?.id,
+      initialLevel: _currentLearnerLevel,
       onCompleted: () async {
         await _onSubStepFinished(day, 1);
       },
@@ -1024,14 +1023,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     await _onSubStepFinished(day, 10);
   }
 
-  // 11: Peer Call / 1-on-1 English Talk
+  // 11: AI Speech Practice Lab (Replaced broken phone call!)
   Future<void> _launchStep11_PeerCall(int day) async {
     HapticFeedback.lightImpact();
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const StagePeerMatchmakerPage()),
+    await _openCardPage(
+      title: 'AI Speech Practice Lab',
+      stepTag: 'STEP 11',
+      accentColor: const Color(0xFF38BDF8),
+      childBuilder: (ctx, markDone) => PocketPracticeSpeakingCard(
+        day: day,
+        isCompleted: _subStepFlags['step_11'] ?? false,
+        onCompleted: (val) async {
+          if (val) {
+            await _onSubStepFinished(day, 11);
+            markDone(true);
+          }
+        },
+      ),
     );
-    await _onSubStepFinished(day, 11);
   }
 
   // 12: Daily 2D Adventure Quest
@@ -1211,9 +1220,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       ),
       InPathSubStep(
         stepIndex: 11,
-        title: '1-on-1 English Call',
-        subtitle: 'Live conversation partner practice',
-        icon: '🎙️',
+        title: 'AI Speech Practice Lab',
+        subtitle: 'Listen, repeat & AI pronunciation scoring',
+        icon: '🗣️',
         color: const Color(0xFF38BDF8),
         isCompleted: _subStepFlags['step_11'] ?? false,
         isUnlocked: admin || (_subStepFlags['step_10'] ?? false),
@@ -1638,142 +1647,190 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
                 const SizedBox(height: 12),
 
-                // ⚔️ Direct Citadel Attack Action (User Audio Directive: Matchmaking + Shuffle + Direct Attack)
-                StatefulBuilder(
-                  builder: (context, setModalState) {
-                    return FutureBuilder<PocketNeighbor>(
-                      future: PocketFortressDefenseService.getRecommendedRivalTarget(
-                        userDay: day,
-                        shuffleOffset: _levelRivalShuffleSeed,
-                      ),
-                      builder: (context, snapshot) {
-                        final rival = snapshot.data;
-                        final targetLevel = rival?.day ?? PocketFortressDefenseService.getRecommendedTargetLevel(day);
-                        final rivalName = rival?.name ?? 'Challenger Lvl $targetLevel';
-                        final isRobo = rival?.isPocketRobo ?? false;
+                // ⚔️ Direct Citadel Attack Action (User Audio Directive: House 4+ Attack Arena)
+                if (day >= 4) ...[
+                  StatefulBuilder(
+                    builder: (context, setModalState) {
+                      return FutureBuilder<PocketNeighbor>(
+                        future: PocketFortressDefenseService.getRecommendedRivalTarget(
+                          userDay: day,
+                          shuffleOffset: _levelRivalShuffleSeed,
+                        ),
+                        builder: (context, snapshot) {
+                          final rival = snapshot.data;
+                          final targetLevel = rival?.day ?? PocketFortressDefenseService.getRecommendedTargetLevel(day);
+                          final rivalName = rival?.name ?? 'Challenger Lvl $targetLevel';
+                          final isRobo = rival?.isPocketRobo ?? false;
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                const Color(0xFF881337).withValues(alpha: 0.35),
-                                const Color(0xFF4C0519).withValues(alpha: 0.5),
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  const Color(0xFF881337).withValues(alpha: 0.35),
+                                  const Color(0xFF4C0519).withValues(alpha: 0.5),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: const Color(0xFFFB7185).withValues(alpha: 0.4), width: 1.2),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE11D48).withValues(alpha: 0.25),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Text(isRobo ? '🤖' : '⚔️', style: const TextStyle(fontSize: 18)),
+                                ),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Text(
+                                            'CITADEL RAID CHALLENGE',
+                                            style: GoogleFonts.outfit(
+                                              color: const Color(0xFFFECDD3),
+                                              fontSize: 9.5,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: 0.5,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          InkWell(
+                                            onTap: () {
+                                              HapticFeedback.selectionClick();
+                                              setModalState(() {
+                                                _levelRivalShuffleSeed++;
+                                              });
+                                            },
+                                            borderRadius: BorderRadius.circular(6),
+                                            child: Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                              decoration: BoxDecoration(
+                                                color: Colors.white.withValues(alpha: 0.12),
+                                                borderRadius: BorderRadius.circular(4),
+                                              ),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: const [
+                                                  Icon(Icons.shuffle_rounded, size: 10, color: Color(0xFFFDA4AF)),
+                                                  SizedBox(width: 2),
+                                                  Text('Reroll 🎲', style: TextStyle(color: Color(0xFFFDA4AF), fontSize: 8.5, fontWeight: FontWeight.bold)),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        '$rivalName (Lvl $targetLevel)',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 12.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      Text(
+                                        isRobo ? '🤖 AI Robot Citadel • Balanced Fair Defense' : '👤 Real Human House • Higher Loot',
+                                        style: const TextStyle(
+                                          color: Colors.white60,
+                                          fontSize: 9.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () async {
+                                    final hubContext = context;
+                                    Navigator.pop(ctx);
+                                    HapticFeedback.heavyImpact();
+                                    final activeRival = rival ?? await PocketFortressDefenseService.getRecommendedRivalTarget(userDay: day);
+                                    if (!mounted || !hubContext.mounted) return;
+                                    PocketCitadelAttackPage.openForUser(
+                                      hubContext,
+                                      userId: activeRival.id,
+                                      neighbor: activeRival,
+                                      attackerDay: day,
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFE11D48),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    elevation: 0,
+                                  ),
+                                  child: Text(
+                                    'ATTACK ⚔️',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                ),
                               ],
                             ),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: const Color(0xFFFB7185).withValues(alpha: 0.4), width: 1.2),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ] else ...[
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: Colors.amber.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
                           ),
-                          child: Row(
+                          child: const Text('🔒', style: TextStyle(fontSize: 14)),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE11D48).withValues(alpha: 0.25),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Text(isRobo ? '🤖' : '⚔️', style: const TextStyle(fontSize: 18)),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'CITADEL RAID CHALLENGE',
-                                          style: GoogleFonts.outfit(
-                                            color: const Color(0xFFFECDD3),
-                                            fontSize: 9.5,
-                                            fontWeight: FontWeight.w900,
-                                            letterSpacing: 0.5,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 6),
-                                        InkWell(
-                                          onTap: () {
-                                            HapticFeedback.selectionClick();
-                                            setModalState(() {
-                                              _levelRivalShuffleSeed++;
-                                            });
-                                          },
-                                          borderRadius: BorderRadius.circular(6),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white.withValues(alpha: 0.12),
-                                              borderRadius: BorderRadius.circular(4),
-                                            ),
-                                            child: Row(
-                                              mainAxisSize: MainAxisSize.min,
-                                              children: const [
-                                                Icon(Icons.shuffle_rounded, size: 10, color: Color(0xFFFDA4AF)),
-                                                SizedBox(width: 2),
-                                                Text('Reroll 🎲', style: TextStyle(color: Color(0xFFFDA4AF), fontSize: 8.5, fontWeight: FontWeight.bold)),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      '$rivalName (Lvl $targetLevel)',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontSize: 12.5,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    Text(
-                                      isRobo ? '🤖 AI Robot Citadel • Balanced Fair Defense' : '👤 Real Human House • Higher Loot',
-                                      style: const TextStyle(
-                                        color: Colors.white60,
-                                        fontSize: 9.5,
-                                      ),
-                                    ),
-                                  ],
+                              Text(
+                                'HOUSE RAIDS UNLOCK AT HOUSE 4',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFBBF24),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 0.5,
                                 ),
                               ),
-                              ElevatedButton(
-                                onPressed: () async {
-                                  final hubContext = context;
-                                  Navigator.pop(ctx);
-                                  HapticFeedback.heavyImpact();
-                                  final activeRival = rival ?? await PocketFortressDefenseService.getRecommendedRivalTarget(userDay: day);
-                                  if (!mounted || !hubContext.mounted) return;
-                                  PocketCitadelAttackPage.openForUser(
-                                    hubContext,
-                                    userId: activeRival.id,
-                                    neighbor: activeRival,
-                                    attackerDay: day,
-                                  );
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFE11D48),
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                  elevation: 0,
-                                ),
-                                child: Text(
-                                  'ATTACK ⚔️',
-                                  style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 12,
-                                  ),
+                              Text(
+                                'Master foundational grammar in Houses 1–3 first. Level 4–10+ student fortresses unlock at Day 4!',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white60,
+                                  fontSize: 10,
                                 ),
                               ),
                             ],
                           ),
-                        );
-                      },
-                    );
-                  },
-                ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
 
                 // Action Buttons
                 if (isCurrent || isUnlocked) ...[
@@ -1885,52 +1942,67 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   if (_isDayWaitingForMidnight(day)) ...[
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.amber.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
                       ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      child: Column(
                         children: [
-                          const Text('⏳', style: TextStyle(fontSize: 14)),
-                          const SizedBox(width: 6),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text('⏳', style: TextStyle(fontSize: 16)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'House $day Unlocks At Midnight',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
                           Text(
-                            'Unlocks at midnight • ${Learning60DayService.formatRemainingCountdown(_timeUntilMidnight)}',
+                            Learning60DayService.formatRemainingCountdown(_timeUntilMidnight),
                             style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFD700),
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              letterSpacing: 1.2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Free learners pace at 1 House per day to build retention.',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.inter(
+                              color: Colors.white54,
+                              fontSize: 11,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
 
-                    // 🎬 Option A: Watch Short Video Ad to Unlock Now
+                    // 👑 Poket VIP: Instant Binge Mode
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
-                        onPressed: () async {
+                        onPressed: () {
                           Navigator.pop(ctx);
-                          final watched = await PocketAdService().showVideoAd(
-                            context: context,
-                            placementTitle: 'Instant Next Level Unlock',
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
                           );
-                          if (watched) {
-                            final uid = widget.userId ?? _supabase.auth.currentUser?.id;
-                            if (uid != null) {
-                              final prefs = await SharedPreferences.getInstance();
-                              await prefs.remove('learning_day_${uid}_${day - 1}_completed_date');
-                            }
-                            await _loadData();
-                          }
                         },
-                        icon: const Icon(Icons.play_circle_fill_rounded, size: 17, color: Colors.black),
+                        icon: const Icon(Icons.workspace_premium_rounded, size: 18, color: Colors.black),
                         label: Text(
-                          '🎬 WATCH AD • UNLOCK INSTANTLY',
+                          '👑 UNLOCK INSTANT BINGE MODE • Poket VIP',
                           style: GoogleFonts.outfit(
                             color: Colors.black,
                             fontWeight: FontWeight.w900,
@@ -1941,39 +2013,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFFFFD700),
                           foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
-                          elevation: 0,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // ⚡ Option B: Pocket VIP Binge Pass Button (₹199/mo)
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          Navigator.pop(ctx);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (_) => const SubscriptionPage()),
-                          );
-                        },
-                        icon: const Icon(Icons.bolt_rounded, size: 17, color: Color(0xFF00E5FF)),
-                        label: Text(
-                          '⚡ FAST-TRACK NOW • Pocket VIP ₹199',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF00E5FF),
-                            fontWeight: FontWeight.w900,
-                            fontSize: 12,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Color(0xFF00E5FF)),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          elevation: 2,
                         ),
                       ),
                     ),
@@ -2005,6 +2047,334 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               ],
             ),
           ),
+        );
+      },
+    );
+  }
+
+  /// ⚔️ Citadel Matchmaking Modal (User Audio Directive: House 4+ Attack Arena)
+  /// Features target rival matchmaking (Levels 4 to 10+), profile details, 🎲 Reroll/Shuffle, and direct attack launcher.
+  void _showCitadelMatchmakingModal(int userDay) {
+    HapticFeedback.mediumImpact();
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (modalCtx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFF1E112A), Color(0xFF0F0B18)],
+                ),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                border: Border.all(color: const Color(0xFFFB7185).withValues(alpha: 0.35), width: 1.5),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFE11D48).withValues(alpha: 0.25),
+                    blurRadius: 20,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Handle
+                    Container(
+                      width: 44,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.white24,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Header
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE11D48).withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Text('⚔️', style: TextStyle(fontSize: 20)),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'CITADEL RAID ARENA',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFDA4AF),
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              Text(
+                                'Attack Rival Student Fortresses (Lvl 4–10+)',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => Navigator.pop(modalCtx),
+                          icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 20),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Rival Card Builder
+                    FutureBuilder<PocketNeighbor>(
+                      future: PocketFortressDefenseService.getRecommendedRivalTarget(
+                        userDay: userDay,
+                        shuffleOffset: _levelRivalShuffleSeed,
+                      ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return Container(
+                            height: 140,
+                            alignment: Alignment.center,
+                            child: const CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Color(0xFFFB7185),
+                            ),
+                          );
+                        }
+
+                        final rival = snapshot.data;
+                        final targetLevel = rival?.day ?? PocketFortressDefenseService.getRecommendedTargetLevel(userDay);
+                        final rivalName = rival?.name ?? 'Challenger Lvl $targetLevel';
+                        final isRobo = rival?.isPocketRobo ?? false;
+                        final bio = (rival != null && rival.statusMessage.isNotEmpty)
+                            ? rival.statusMessage
+                            : (isRobo ? 'Pocket AI Sentinel • Automated 4-Defense Trap System' : 'Dedicated English Learner');
+
+                        return Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                const Color(0xFF881337).withValues(alpha: 0.4),
+                                const Color(0xFF4C0519).withValues(alpha: 0.6),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFFB7185).withValues(alpha: 0.4),
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  // Avatar
+                                  Container(
+                                    width: 52,
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xFFFDA4AF),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: ClipOval(
+                                      child: VectorAvatarWidget(
+                                        config: _getAvatarForDay(targetLevel),
+                                        size: 52,
+                                        showAura: false,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              isRobo ? '🤖 AI ROBOT CITADEL' : '👤 RIVAL LEARNER',
+                                              style: GoogleFonts.outfit(
+                                                color: const Color(0xFFFECDD3),
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w800,
+                                                letterSpacing: 0.6,
+                                              ),
+                                            ),
+                                            const Spacer(),
+                                            Container(
+                                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                              decoration: BoxDecoration(
+                                                color: const Color(0xFFE11D48).withValues(alpha: 0.3),
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: Text(
+                                                'House Lvl $targetLevel',
+                                                style: GoogleFonts.outfit(
+                                                  color: const Color(0xFFFDA4AF),
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w900,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 3),
+                                        Text(
+                                          rivalName,
+                                          style: GoogleFonts.outfit(
+                                            color: Colors.white,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          bio,
+                                          style: GoogleFonts.inter(
+                                            color: Colors.white60,
+                                            fontSize: 11,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Matchmaking Stats / Loot Bar
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.25),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Text('🪙 ', style: TextStyle(fontSize: 12)),
+                                        Text('+50 Coins', style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 11, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    Container(width: 1, height: 14, color: Colors.white12),
+                                    Row(
+                                      children: [
+                                        const Text('🏆 ', style: TextStyle(fontSize: 12)),
+                                        Text('+30 Trophies', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                    Container(width: 1, height: 14, color: Colors.white12),
+                                    Row(
+                                      children: [
+                                        const Text('🛡️ ', style: TextStyle(fontSize: 12)),
+                                        Text('4 Trap Shields', style: GoogleFonts.outfit(color: const Color(0xFF34D399), fontSize: 11, fontWeight: FontWeight.bold)),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 14),
+
+                              // Actions: Shuffle / Launch
+                              Row(
+                                children: [
+                                  OutlinedButton.icon(
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      setModalState(() {
+                                        _levelRivalShuffleSeed++;
+                                      });
+                                    },
+                                    icon: const Icon(Icons.shuffle_rounded, size: 14, color: Color(0xFFFDA4AF)),
+                                    label: Text(
+                                      'Reroll 🎲',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFFFDA4AF),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: const BorderSide(color: Color(0xFFFDA4AF)),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: ElevatedButton.icon(
+                                      onPressed: () async {
+                                        final hubContext = context;
+                                        Navigator.pop(modalCtx);
+                                        HapticFeedback.heavyImpact();
+                                        final activeRival = rival ?? await PocketFortressDefenseService.getRecommendedRivalTarget(userDay: userDay);
+                                        if (!mounted || !hubContext.mounted) return;
+                                        PocketCitadelAttackPage.openForUser(
+                                          hubContext,
+                                          userId: activeRival.id,
+                                          neighbor: activeRival,
+                                          attackerDay: userDay,
+                                        );
+                                      },
+                                      icon: const Icon(Icons.flash_on_rounded, size: 16),
+                                      label: Text(
+                                        'LAUNCH RAID ⚔️',
+                                        style: GoogleFonts.outfit(
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 13,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFFE11D48),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(vertical: 11),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                        elevation: 2,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -2122,6 +2492,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                               for (int day = 1; day <= _totalDays; day++)
                                 if (_isDayInViewport(day, minY, maxY))
                                   _buildRoadmapHouse(day, screenWidth, targetActiveDay),
+
+                              // 🏰 Fortress Exam Gates & Stone Walls between Houses (User Audio Directive!)
+                              for (int day = 1; day < _totalDays; day++)
+                                if (_isDayInViewport(day, minY, maxY))
+                                  _buildRoadmapGate(day, screenWidth, targetActiveDay),
 
                               // Interactive 3D Level Nodes (Days 1 to 90) (Viewport Culled)
                               for (int day = 1; day <= _totalDays; day++)
@@ -2647,6 +3022,78 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           'Store',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFFFD700),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+
+                // ⚔️ Citadel Raid Quick Launch (Audio Directive: House 4+ Attack Arena)
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    if (prog.currentDay < 4) {
+                      ScaffoldMessenger.of(context).clearSnackBars();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: const Color(0xFF1E293B),
+                          content: Row(
+                            children: const [
+                              Text('🛡️ ', style: TextStyle(fontSize: 16)),
+                              Expanded(
+                                child: Text(
+                                  'Citadel Raids unlock at House 4! Complete houses 1-3 first.',
+                                  style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                          duration: const Duration(seconds: 2),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    } else {
+                      _showCitadelMatchmakingModal(prog.currentDay);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: prog.currentDay >= 4
+                            ? [const Color(0xFFE11D48), const Color(0xFF9F1239)]
+                            : [Colors.white12, Colors.white10],
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: prog.currentDay >= 4
+                            ? const Color(0xFFFB7185).withValues(alpha: 0.6)
+                            : Colors.white24,
+                        width: 0.8,
+                      ),
+                      boxShadow: prog.currentDay >= 4
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFFE11D48).withValues(alpha: 0.35),
+                                blurRadius: 6,
+                                offset: const Offset(0, 1),
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(prog.currentDay >= 4 ? '⚔️' : '🔒', style: const TextStyle(fontSize: 11)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Raid',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                           ),
@@ -4088,6 +4535,262 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
+  /// 🏰 Stone Wall Barrier & Fortress Exam Gate between House $day and House ${day + 1}
+  /// User Audio Directive:
+  /// "ടാർഗറ്റ് പേജിൽ ഒന്നാമത്തെ വീടിന്റെ അപ്പുറത്ത് എന്ത് ചെയ്യുക? ഒരു മതില്... മതിലല്ല, ഒരു ഗേറ്റ് വയ്ക്കുക.
+  /// ചെറിയ മതിലുപോലെ ഇങ്ങനെ ഇതാക്കി വയ്ക്കുക. ഗേറ്റ് വയ്ക്കുക. ആ ഗേറ്റ് അൺലോക്ക് ആവണം എന്നുണ്ടെങ്കിൽ ചെറിയൊരു സ്റ്റെപ്പ് കൊടുക്കുക.
+  /// അത് എക്സാം ആയിരിക്കും. എക്സാം സ്റ്റെപ്പ് ആണ്! ഒന്നാമത്തെ ഡേയിൽ പഠിച്ച കാര്യങ്ങളായിരിക്കും എക്സാമിൽ ഉണ്ടാവുക.
+  /// എക്സാം സെറ്റ് ആക്കുക. അതിനുശേഷമായിരിക്കും രണ്ടാമത്തേത് അൺലോക്ക് ആയിട്ട് കാണിക്കേണ്ടത്."
+  Widget _buildRoadmapGate(int day, double screenWidth, int currentDay) {
+    if (day >= _totalDays) return const SizedBox.shrink();
+
+    final isCompleted = _isDayCompleted(day);
+    final isCurrent = (day == currentDay);
+    final isUnlocked = isCompleted || _isMasterAdmin;
+
+    // Midpoint along the mountain trail between day and day + 1
+    final gateY = _getNodeY(day) - (_nodeSpacingY * 0.52);
+    final gateX = _getNodeXFractional(day + 0.48, screenWidth);
+
+    final double gateWidth = (screenWidth * 0.72).clamp(240.0, 280.0);
+    const double gateHeight = 64.0;
+    final double gateLeft = (gateX - (gateWidth / 2.0)).clamp(8.0, screenWidth - gateWidth - 8.0);
+    final double gateTop = gateY - (gateHeight / 2.0);
+
+    return Positioned(
+      left: gateLeft,
+      top: gateTop,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          HapticFeedback.heavyImpact();
+          if (isUnlocked) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        '🔓 Day $day Mastery Exam Passed! House ${day + 1} Gate is open!',
+                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+            return;
+          }
+
+          // Open the Level Mastery Exam Dialog!
+          _launchStep17_MasteryExam(day, _currentLearnerLevel);
+        },
+        child: SizedBox(
+          width: gateWidth,
+          height: gateHeight,
+          child: Stack(
+            clipBehavior: Clip.none,
+            alignment: Alignment.center,
+            children: [
+              // 1. Left & Right Flanking Stone Fortress Walls with Battlements
+              Row(
+                children: [
+                  // Left Stone Wall Segment
+                  Expanded(
+                    child: Container(
+                      height: 28,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF1E293B),
+                            Color(0xFF334155),
+                            Color(0xFF475569),
+                          ],
+                        ),
+                        borderRadius: const BorderRadius.horizontal(left: Radius.circular(8)),
+                        border: Border.all(color: Colors.white24, width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: List.generate(
+                          3,
+                          (i) => Container(
+                            width: 6,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Center Gate Gap (where the arched gateway sits)
+                  const SizedBox(width: 80),
+
+                  // Right Stone Wall Segment
+                  Expanded(
+                    child: Container(
+                      height: 28,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF475569),
+                            Color(0xFF334155),
+                            Color(0xFF1E293B),
+                          ],
+                        ),
+                        borderRadius: const BorderRadius.horizontal(right: Radius.circular(8)),
+                        border: Border.all(color: Colors.white24, width: 1.2),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: List.generate(
+                          3,
+                          (i) => Container(
+                            width: 6,
+                            height: 10,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(2),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // 2. Central Arched Gate Structure
+              Container(
+                width: 82,
+                height: 56,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: isUnlocked
+                        ? [const Color(0xFF047857), const Color(0xFF064E3B)]
+                        : [const Color(0xFF1E293B), const Color(0xFF0F172A)],
+                  ),
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(26), bottom: Radius.circular(8)),
+                  border: Border.all(
+                    color: isUnlocked
+                        ? const Color(0xFF10B981)
+                        : (isCurrent ? const Color(0xFFFFD700) : Colors.white30),
+                    width: 2.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: isUnlocked
+                          ? const Color(0xFF10B981).withValues(alpha: 0.4)
+                          : (isCurrent
+                              ? const Color(0xFFFFD700).withValues(alpha: 0.3)
+                              : Colors.black.withValues(alpha: 0.4)),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Iron bars pattern
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: List.generate(
+                        4,
+                        (i) => Container(
+                          width: 1.5,
+                          height: 38,
+                          color: isUnlocked ? const Color(0xFF34D399) : Colors.white24,
+                        ),
+                      ),
+                    ),
+
+                    // Central Lock or Unlock Emblem
+                    Icon(
+                      isUnlocked ? Icons.lock_open_rounded : Icons.lock_rounded,
+                      color: isUnlocked ? const Color(0xFF6EE7B7) : const Color(0xFFFFD700),
+                      size: 24,
+                    ),
+                  ],
+                ),
+              ),
+
+              // 3. Floating Interactive Exam Badge above Gate
+              Positioned(
+                top: -8,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isUnlocked
+                          ? const Color(0xFF10B981)
+                          : (isCurrent ? const Color(0xFFFFD700) : Colors.white38),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        blurRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        isUnlocked ? '✨' : '📝',
+                        style: const TextStyle(fontSize: 9),
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        isUnlocked ? 'GATE OPEN • DAY $day ✓' : 'GATE $day EXAM (PASS: 60%)',
+                        style: GoogleFonts.outfit(
+                          color: isUnlocked
+                              ? const Color(0xFF34D399)
+                              : (isCurrent ? const Color(0xFFFFD700) : Colors.white70),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   /// 🏡 Shows rich details sheet for the English Architectural House along the mountain path
   // ignore: unused_element
   void _showHouseDetailsSheet(int day) {
@@ -4396,13 +5099,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   void _showLevelLockedToast(int day) {
     HapticFeedback.selectionClick();
     final reqScore = PocketScoreLevelEngine.getRequiredScoreForLevel(day);
-    String message = 'Day $day is locked!';
+    String message = 'House $day is locked!';
+    bool canTakeGateExam = false;
+
     if (day > 1 && !_isDayCompleted(day - 1)) {
-      message = '🔒 Complete Day ${day - 1} and pass its exam first to unlock Day $day!';
+      message = '🔒 House $day is locked! You must pass the Gate ${day - 1} Exam (Pass Mark: 60%) to unlock House $day!';
+      canTakeGateExam = true;
     } else if (_unifiedPocketScore < reqScore) {
       final missing = reqScore - _unifiedPocketScore;
       message = '🪙 Requires $reqScore Pocket Score (Need $missing more PS). Complete previous missions to earn PS!';
     }
+
+    ScaffoldMessenger.of(context).clearSnackBars();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         backgroundColor: const Color(0xFF0F172A),
@@ -4411,6 +5119,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           borderRadius: BorderRadius.circular(12),
           side: const BorderSide(color: Color(0xFFFFD700), width: 1.0),
         ),
+        action: canTakeGateExam
+            ? SnackBarAction(
+                label: 'GATE ${day - 1} EXAM 📝',
+                textColor: const Color(0xFFFFD700),
+                onPressed: () => _launchStep17_MasteryExam(day - 1, _currentLearnerLevel),
+              )
+            : null,
         content: Row(
           children: [
             const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 16),

@@ -22,6 +22,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_missi
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/career_adventure/cyber_vocab_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_level_exam_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_practice_speaking_card.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/auth/supabase_auth/auth_util.dart';
@@ -198,7 +200,9 @@ class _PocketDayOpenWorldAdventurePageState
     return Offset(x, y);
   }
 
-  Future<void> _loadState() async {
+  bool _hasInitialPositioned = false;
+
+  Future<void> _loadState({bool preserveCarPosition = false}) async {
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
 
@@ -208,34 +212,58 @@ class _PocketDayOpenWorldAdventurePageState
       flags['step_$step'] = prefs.getBool(key) ?? false;
     }
 
+    // 🛡️ Sequential integrity sanitization:
+    // Ensure genuine step progression (Step 1 -> Step 2 -> Step 3...).
+    // If an earlier step is incomplete, clean up any orphaned future step ticks!
+    bool hadIncomplete = false;
+    for (int step = 1; step <= 17; step++) {
+      if (!hadIncomplete) {
+        if (!(flags['step_$step'] ?? false)) {
+          hadIncomplete = true;
+        }
+      } else {
+        if (flags['step_$step'] == true) {
+          flags['step_$step'] = false;
+          final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${step}_done';
+          await prefs.remove(key);
+        }
+      }
+    }
+
     if (mounted) {
+      final activeStep = _findFirstIncompleteStep(flags);
+
       setState(() {
         _subStepFlags.clear();
         _subStepFlags.addAll(flags);
         _isLoading = false;
+        _currentLedgeStep = activeStep;
       });
 
-      final activeStep = _firstIncompleteStep;
-      _currentLedgeStep = activeStep;
+      // User Audio Directive: Don't always reset car to House 1 start!
+      // On page entry, position car directly at current active incomplete step!
+      if (!preserveCarPosition && !_hasInitialPositioned) {
+        _hasInitialPositioned = true;
+        final targetPos = getStepPosition(activeStep);
+        final targetX = targetPos.dx - 48.0;
+        _playerX = targetX;
+        _prevPlayerX = targetX;
 
-      // Start vehicle near House 1 and drive smoothly to active step on first load
-      final spawnX = 340.0;
-      _playerX = spawnX;
-      _prevPlayerX = spawnX;
-
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _focusOnPoint(spawnX, getGroundY(spawnX), scale: _zoomScale, animate: false);
-        _driveToStep(activeStep, openActivityOnArrival: false);
-      });
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _focusOnPoint(targetX, getGroundY(targetX), scale: _zoomScale, animate: false);
+        });
+      }
     }
   }
 
-  int get _firstIncompleteStep {
+  int _findFirstIncompleteStep(Map<String, bool> flags) {
     for (int s = 1; s <= 17; s++) {
-      if (!(_subStepFlags['step_$s'] ?? false)) return s;
+      if (!(flags['step_$s'] ?? false)) return s;
     }
     return 17;
   }
+
+  int get _firstIncompleteStep => _findFirstIncompleteStep(_subStepFlags);
 
   void _driveToStep(int stepIndex, {bool openActivityOnArrival = false}) {
     if (!mounted) return;
@@ -338,7 +366,8 @@ class _PocketDayOpenWorldAdventurePageState
     }
 
     HapticFeedback.heavyImpact();
-    await _loadState();
+    // Preserve car position during flag refresh!
+    await _loadState(preserveCarPosition: true);
 
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -366,7 +395,7 @@ class _PocketDayOpenWorldAdventurePageState
         ),
       );
 
-      // Auto-drive to next step
+      // Auto-drive forward to next step from current location
       if (stepIndex < 17) {
         _driveToStep(stepIndex + 1, openActivityOnArrival: false);
       } else {
@@ -827,145 +856,263 @@ class _PocketDayOpenWorldAdventurePageState
     final isDone = _subStepFlags['step_$stepIndex'] ?? false;
     final isPrevDone =
         stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false);
-    final isUnlocked = isPrevDone || _isMasterAdmin;
+    // Strict sequential unlocking:
+    // A step is ONLY unlocked if the immediate previous step is done.
+    final isUnlocked = isPrevDone;
     final isCurrent = isUnlocked && !isDone;
     const nodeSize = 54.0;
+    const containerWidth = 140.0;
 
     final stepInfo = _getStepDetails(stepIndex);
 
     return Positioned(
-      left: pos.dx - (nodeSize / 2),
+      left: pos.dx - (containerWidth / 2),
       top: pos.dy - nodeSize - 20.0,
-      child: GestureDetector(
-        onTap: () {
-          HapticFeedback.mediumImpact();
-          if (!isUnlocked) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('🔒 Complete Step ${stepIndex - 1} first to unlock!'),
-                duration: const Duration(seconds: 1),
-                behavior: SnackBarBehavior.floating,
-              ),
-            );
-            return;
-          }
-          // Drive smoothly to this step then open activity
-          _driveToStep(stepIndex, openActivityOnArrival: true);
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // Floating Step Title Pill
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              margin: const EdgeInsets.only(bottom: 4),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A).withValues(alpha: 0.94),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: isCurrent
-                      ? const Color(0xFFFFFC00)
-                      : (isDone ? const Color(0xFF10B981) : Colors.white24),
-                  width: 1.2,
+      width: containerWidth,
+      child: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          // 1. 🔥 Animated Prominent Green Arrow hovering ABOVE node (User Audio Directive!)
+          // Swaying back and forth ("ഇങ്ങനെ ഇങ്ങനെ ആടിക്കൊണ്ടിരിക്കുക") with gentle bounce and green glow
+          if (isCurrent)
+            Positioned(
+              top: -44.0,
+              child: IgnorePointer(
+                child: AnimatedBuilder(
+                  animation: _ambientAnimController,
+                  builder: (context, _) {
+                    final t = _ambientAnimController.value;
+                    // Bouncing up and down:
+                    final bounce = math.sin(t * math.pi * 6) * 4.5;
+                    // Oscillating / Swaying back and forth:
+                    final sway = math.sin(t * math.pi * 4) * 0.22;
+                    // Pulsing green glow:
+                    final glow = 0.70 + (math.sin(t * math.pi * 6) * 0.30);
+
+                    return Transform.translate(
+                      offset: Offset(0, -bounce),
+                      child: Transform.rotate(
+                        angle: sway,
+                        alignment: Alignment.bottomCenter,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF34D399),
+                                    Color(0xFF10B981),
+                                    Color(0xFF047857),
+                                  ],
+                                ),
+                                border: Border.all(color: Colors.white, width: 2.2),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF10B981).withValues(alpha: glow),
+                                    blurRadius: 16,
+                                    spreadRadius: 3,
+                                  ),
+                                  BoxShadow(
+                                    color: const Color(0xFF34D399).withValues(alpha: 0.45),
+                                    blurRadius: 24,
+                                    spreadRadius: 6,
+                                  ),
+                                ],
+                              ),
+                              child: const Icon(
+                                Icons.arrow_downward_rounded,
+                                color: Colors.white,
+                                size: 24,
+                              ),
+                            ),
+                            // Downward pointing beacon tip
+                            Transform.translate(
+                              offset: const Offset(0, -3),
+                              child: Icon(
+                                Icons.arrow_drop_down_rounded,
+                                color: const Color(0xFF10B981),
+                                size: 20,
+                                shadows: [
+                                  Shadow(
+                                    color: const Color(0xFF10B981).withValues(alpha: glow),
+                                    blurRadius: 8,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.4),
-                    blurRadius: 5,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(stepInfo.icon, style: const TextStyle(fontSize: 11)),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Step $stepIndex: ${stepInfo.title}',
-                    style: GoogleFonts.outfit(
-                      color: isCurrent
-                          ? const Color(0xFFFFFC00)
-                          : (isDone ? const Color(0xFF6EE7B7) : Colors.white70),
-                      fontSize: 9.5,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
               ),
             ),
 
-            // Stepping Stone Node Milestone Pedestal
-            SizedBox(
-              width: nodeSize,
-              height: nodeSize,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  if (isCurrent)
-                    AnimatedBuilder(
-                      animation: _ambientAnimController,
-                      builder: (context, _) {
-                        final pulse = 1.0 + (math.sin(_ambientAnimController.value * math.pi * 4) * 0.12);
-                        return Transform.scale(
-                          scale: pulse,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.7),
-                                width: 3.0,
-                              ),
+          // 2. The Main Milestone Pedestal & Title Pill (Exact uniform baseline for all 17 nodes!)
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              HapticFeedback.mediumImpact();
+              if (!isUnlocked) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Row(
+                      children: [
+                        const Icon(Icons.lock_rounded, color: Color(0xFFFFD700), size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '🔒 Step ${stepIndex - 1} പൂർത്തിയാക്കിയ ശേഷം മാത്രമേ Step $stepIndex അൺലോക്ക് ചെയ്യാനാകൂ! (Complete Step ${stepIndex - 1} first)',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  Container(
-                    width: nodeSize,
-                    height: nodeSize,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: isDone
-                            ? [const Color(0xFF10B981), const Color(0xFF047857)]
-                            : (isCurrent
-                                ? [const Color(0xFFFFFC00), const Color(0xFFFF8906)]
-                                : [const Color(0xFF334155), const Color(0xFF1E293B)]),
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      border: Border.all(
-                        color: isDone
-                            ? const Color(0xFF6EE7B7)
-                            : (isCurrent ? Colors.white : Colors.white24),
-                        width: 2.2,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: isCurrent
-                              ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
-                              : Colors.black.withValues(alpha: 0.4),
-                          blurRadius: isCurrent ? 12 : 6,
                         ),
                       ],
                     ),
-                    child: Center(
-                      child: isDone
-                          ? const Icon(Icons.check_rounded, color: Colors.white, size: 26)
-                          : (isUnlocked
-                              ? Text(
-                                  stepInfo.icon,
-                                  style: const TextStyle(fontSize: 22),
-                                )
-                              : const Icon(Icons.lock_rounded,
-                                  color: Colors.white38, size: 18)),
-                    ),
+                    backgroundColor: const Color(0xFF1E2438),
+                    duration: const Duration(seconds: 2),
+                    behavior: SnackBarBehavior.floating,
                   ),
-                ],
-              ),
+                );
+                return;
+              }
+              // Immediately reposition buggy smoothly
+              _driveToStep(stepIndex, openActivityOnArrival: false);
+              // Immediately launch activity on tap (User Audio Directive: "ടാപ്പ് ചെയ്യുമ്പോൾ തന്നെ പേജ് വരണം")
+              _launchStepActivity(stepIndex);
+            },
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Floating Step Title Pill (Safely constrained to prevent RenderFlex overflow)
+                Container(
+                  constraints: const BoxConstraints(maxWidth: 136),
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  margin: const EdgeInsets.only(bottom: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isCurrent
+                          ? const Color(0xFFFFFC00)
+                          : (isDone ? const Color(0xFF10B981) : Colors.white24),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.4),
+                        blurRadius: 5,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(stepInfo.icon, style: const TextStyle(fontSize: 11)),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          'Step $stepIndex: ${stepInfo.title}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.outfit(
+                            color: isCurrent
+                                ? const Color(0xFFFFFC00)
+                                : (isDone ? const Color(0xFF6EE7B7) : Colors.white70),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Stepping Stone Node Milestone Pedestal
+                SizedBox(
+                  width: nodeSize,
+                  height: nodeSize,
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      if (isCurrent)
+                        AnimatedBuilder(
+                          animation: _ambientAnimController,
+                          builder: (context, _) {
+                            final pulse = 1.0 + (math.sin(_ambientAnimController.value * math.pi * 4) * 0.12);
+                            return Transform.scale(
+                              scale: pulse,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.7),
+                                    width: 3.0,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      Container(
+                        width: nodeSize,
+                        height: nodeSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: LinearGradient(
+                            colors: isDone
+                                ? [const Color(0xFF10B981), const Color(0xFF047857)]
+                                : (isCurrent
+                                    ? [const Color(0xFFFFFC00), const Color(0xFFFF8906)]
+                                    : [const Color(0xFF334155), const Color(0xFF1E293B)]),
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          border: Border.all(
+                            color: isDone
+                                ? const Color(0xFF6EE7B7)
+                                : (isCurrent ? Colors.white : Colors.white24),
+                            width: 2.2,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: isCurrent
+                                  ? const Color(0xFFFFFC00).withValues(alpha: 0.5)
+                                  : Colors.black.withValues(alpha: 0.4),
+                              blurRadius: isCurrent ? 12 : 6,
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: isDone
+                              ? const Icon(Icons.check_rounded, color: Colors.white, size: 26)
+                              : (isUnlocked
+                                  ? Text(
+                                      stepInfo.icon,
+                                      style: const TextStyle(fontSize: 22),
+                                    )
+                                  : const Icon(Icons.lock_rounded,
+                                      color: Colors.white38, size: 18)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -993,7 +1140,7 @@ class _PocketDayOpenWorldAdventurePageState
       case 10:
         return const _StepInfo('Community Chat', '💬', Color(0xFFFFFC00));
       case 11:
-        return const _StepInfo('1-on-1 English Call', '📞', Color(0xFF38BDF8));
+        return const _StepInfo('AI Speech Lab', '🗣️', Color(0xFF38BDF8));
       case 12:
         return const _StepInfo('Cyber Vocab Quest', '🎮', Color(0xFFE11D48));
       case 13:
@@ -1187,7 +1334,24 @@ class _PocketDayOpenWorldAdventurePageState
         break;
 
       case 8:
-        _onStepCompleted(8);
+        await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (ctx) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: PocketPracticeSpeakingCard(
+              day: day,
+              isCompleted: _subStepFlags['step_8'] ?? false,
+              onCompleted: (val) {
+                if (val) {
+                  Navigator.pop(ctx);
+                  _onStepCompleted(8);
+                }
+              },
+            ),
+          ),
+        );
         break;
 
       case 9:
@@ -1214,11 +1378,62 @@ class _PocketDayOpenWorldAdventurePageState
         break;
 
       case 10:
-        _onStepCompleted(10);
+        await showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: const Color(0xFF1E293B),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Row(
+              children: [
+                const Text('💬', style: TextStyle(fontSize: 22)),
+                const SizedBox(width: 8),
+                Text('Community Chat Practice',
+                    style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            content: Text(
+              'Engage with your fellow English learners in the Community Group. Share today\'s vocabulary word or greeting!',
+              style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(ctx),
+                child: Text('LATER', style: GoogleFonts.outfit(color: Colors.white54)),
+              ),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981)),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _onStepCompleted(10);
+                },
+                icon: const Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
+                label: Text('I PARTICIPATED ✓', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+              ),
+            ],
+          ),
+        );
         break;
 
       case 11:
-        _onStepCompleted(11);
+        // User Audio Directive: 1-on-1 English phone call replaced with AI Speech Lab!
+        await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (ctx) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: PocketPracticeSpeakingCard(
+              day: day,
+              isCompleted: _subStepFlags['step_11'] ?? false,
+              onCompleted: (val) {
+                if (val) {
+                  Navigator.pop(ctx);
+                  _onStepCompleted(11);
+                }
+              },
+            ),
+          ),
+        );
         break;
 
       case 12:
@@ -1230,6 +1445,7 @@ class _PocketDayOpenWorldAdventurePageState
         break;
 
       case 13:
+        await PocketReadingLibraryModal.show(context, currentDay: day);
         _onStepCompleted(13);
         break;
 
@@ -1242,7 +1458,16 @@ class _PocketDayOpenWorldAdventurePageState
         break;
 
       case 15:
-        _onStepCompleted(15);
+        final res = await PocketFluencyGymDetailPage.open(
+          context,
+          day: day,
+          selectedLanguage: 'Malayalam',
+          isInitiallyCompleted: _subStepFlags['step_15'] ?? false,
+          onCompleted: (val) {
+            if (val) _onStepCompleted(15);
+          },
+        );
+        if (res == true) _onStepCompleted(15);
         break;
 
       case 16:

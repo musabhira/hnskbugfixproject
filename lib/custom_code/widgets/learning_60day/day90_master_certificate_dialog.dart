@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
@@ -6,6 +7,12 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:in_app_purchase/in_app_purchase.dart';
+import 'package:pocket_mates_app/services/iap_service.dart';
+import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
+import '/backend/supabase/supabase.dart';
 
 /// 🎓 Day 90–91 Official Certificate of Fluency Mastery & Sovereign Constitution Completion
 class Day90MasterCertificateDialog extends StatefulWidget {
@@ -44,6 +51,206 @@ class Day90MasterCertificateDialog extends StatefulWidget {
 class _Day90MasterCertificateDialogState extends State<Day90MasterCertificateDialog> {
   final GlobalKey _certKey = GlobalKey();
   bool _isExporting = false;
+  bool _hasAccess = false;
+  int _certPrice = 149;
+  int _certRetailPrice = 999;
+  StreamSubscription<PurchaseDetails>? _purchaseSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAccess();
+    _purchaseSub = IAPService().purchaseStream.listen((purchase) {
+      if (purchase.status == PurchaseStatus.purchased ||
+          purchase.status == PurchaseStatus.restored) {
+        _checkAccess().then((_) {
+          if (_hasAccess && mounted) {
+            _downloadCertificate();
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _purchaseSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _checkAccess() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final isVip = prefs.getBool('is_vip') ?? false;
+      final hasCert = prefs.getBool('has_purchased_c2_certificate') ?? false;
+      final campaign = await MonetizationService().getActiveCampaign();
+
+      final email = SupaFlow.client.auth.currentUser?.email;
+      final isAdmin = email != null &&
+          (email == 'musabthonippadam@gmail.com' || email.contains('mussabira'));
+
+      if (mounted) {
+        setState(() {
+          _hasAccess = isVip || hasCert || isAdmin;
+          _certPrice = campaign.certificateUnlockPrice;
+          _certRetailPrice = campaign.certificateRetailPrice;
+        });
+      }
+    } catch (_) {}
+  }
+
+  void _showCertificateUnlockModal() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (ctx) {
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 36),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Unlock Official C2 Mastery Diploma',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'Congratulations on completing all 90 days! Download your cryptographically verified CEFR C2 English Grandmaster Diploma for your CV, LinkedIn, and portfolio.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(fontSize: 13, color: Colors.white70, height: 1.4),
+              ),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Standalone Certificate Pass',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          'One-time lifetime unlock',
+                          style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                        ),
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          '₹$_certRetailPrice',
+                          style: GoogleFonts.outfit(
+                            fontSize: 13,
+                            color: Colors.white38,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          '₹$_certPrice',
+                          style: GoogleFonts.outfit(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: const Color(0xFFFFD700),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () async {
+                    Navigator.pop(ctx);
+                    final initiated = await IAPService().buyVipSubscription(planType: 'certificate');
+                    if (!initiated && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(Platform.isIOS
+                              ? 'Connecting to App Store In-App Purchases...'
+                              : 'Connecting to Google Play...'),
+                          backgroundColor: const Color(0xFF1E293B),
+                        ),
+                      );
+                    }
+                  },
+                  icon: Icon(Platform.isIOS ? Icons.apple_rounded : Icons.shop_two_rounded, size: 20),
+                  label: Text(
+                    Platform.isIOS
+                        ? 'Unlock with Apple Pay • ₹$_certPrice'
+                        : 'Unlock with Google Play • ₹$_certPrice',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+                  );
+                },
+                child: Text(
+                  'Or get Poket VIP Pass (Free Certificate Included) 👑',
+                  style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.w600, fontSize: 13),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Future<File?> _captureCertificateImage() async {
     try {
@@ -67,6 +274,10 @@ class _Day90MasterCertificateDialogState extends State<Day90MasterCertificateDia
   }
 
   Future<void> _downloadCertificate() async {
+    if (!_hasAccess) {
+      _showCertificateUnlockModal();
+      return;
+    }
     setState(() => _isExporting = true);
     HapticFeedback.mediumImpact();
 
@@ -122,6 +333,10 @@ class _Day90MasterCertificateDialogState extends State<Day90MasterCertificateDia
   }
 
   Future<void> _shareCertificate() async {
+    if (!_hasAccess) {
+      _showCertificateUnlockModal();
+      return;
+    }
     setState(() => _isExporting = true);
     HapticFeedback.mediumImpact();
 

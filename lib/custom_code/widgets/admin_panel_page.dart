@@ -98,7 +98,19 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   final TextEditingController _promoWebUrlController = TextEditingController();
   final TextEditingController _promoMonthlyPriceController =
       TextEditingController();
+  final TextEditingController _promoMonthlyRetailPriceController =
+      TextEditingController();
+  final TextEditingController _promoQuarterlyPriceController =
+      TextEditingController();
+  final TextEditingController _promoQuarterlyRetailPriceController =
+      TextEditingController();
   final TextEditingController _promoYearlyPriceController =
+      TextEditingController();
+  final TextEditingController _promoYearlyRetailPriceController =
+      TextEditingController();
+  final TextEditingController _promoCertPriceController =
+      TextEditingController();
+  final TextEditingController _promoCertRetailPriceController =
       TextEditingController();
   final TextEditingController _promoUpiIdController = TextEditingController();
   String _promoTargetPlatform = 'all';
@@ -187,7 +199,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       _promoCtaController.text = campaign.ctaText;
       _promoWebUrlController.text = campaign.webCheckoutUrl;
       _promoMonthlyPriceController.text = campaign.inAppMonthlyPrice.toString();
+      _promoMonthlyRetailPriceController.text = campaign.inAppMonthlyRetailPrice.toString();
+      _promoQuarterlyPriceController.text = campaign.inAppQuarterlyPrice.toString();
+      _promoQuarterlyRetailPriceController.text = campaign.inAppQuarterlyRetailPrice.toString();
       _promoYearlyPriceController.text = campaign.inAppYearlyPrice.toString();
+      _promoYearlyRetailPriceController.text = campaign.inAppYearlyRetailPrice.toString();
+      _promoCertPriceController.text = campaign.certificateUnlockPrice.toString();
+      _promoCertRetailPriceController.text = campaign.certificateRetailPrice.toString();
       _promoUpiIdController.text = campaign.upiId;
       _promoTargetPlatform = campaign.targetPlatform;
       _promoIsActive = campaign.isActive;
@@ -199,20 +217,32 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     final updated = HousePromoCampaign(
       id: _adminCampaign?.id ?? 'default_pro',
       title: _promoTitleController.text.trim().isEmpty
-          ? 'Upgrade to Pocket Mates Pro'
+          ? 'Upgrade to Poket VIP'
           : _promoTitleController.text.trim(),
       subtitle: _promoSubtitleController.text.trim(),
       discountBadge: _promoBadgeController.text.trim(),
       ctaText: _promoCtaController.text.trim().isEmpty
-          ? 'Claim Offer'
+          ? 'Claim Poket VIP Offer'
           : _promoCtaController.text.trim(),
       webCheckoutUrl: _promoWebUrlController.text.trim().isEmpty
           ? 'https://pocketmates.app/premium'
           : _promoWebUrlController.text.trim(),
       inAppMonthlyPrice:
-          int.tryParse(_promoMonthlyPriceController.text.trim()) ?? 49,
+          int.tryParse(_promoMonthlyPriceController.text.trim()) ?? 249,
+      inAppMonthlyRetailPrice:
+          int.tryParse(_promoMonthlyRetailPriceController.text.trim()) ?? 999,
+      inAppQuarterlyPrice:
+          int.tryParse(_promoQuarterlyPriceController.text.trim()) ?? 799,
+      inAppQuarterlyRetailPrice:
+          int.tryParse(_promoQuarterlyRetailPriceController.text.trim()) ?? 4999,
       inAppYearlyPrice:
-          int.tryParse(_promoYearlyPriceController.text.trim()) ?? 399,
+          int.tryParse(_promoYearlyPriceController.text.trim()) ?? 1699,
+      inAppYearlyRetailPrice:
+          int.tryParse(_promoYearlyRetailPriceController.text.trim()) ?? 9999,
+      certificateUnlockPrice:
+          int.tryParse(_promoCertPriceController.text.trim()) ?? 149,
+      certificateRetailPrice:
+          int.tryParse(_promoCertRetailPriceController.text.trim()) ?? 999,
       upiId: _promoUpiIdController.text.trim().isEmpty
           ? 'pocketmates@upi'
           : _promoUpiIdController.text.trim(),
@@ -241,7 +271,13 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
     _promoCtaController.dispose();
     _promoWebUrlController.dispose();
     _promoMonthlyPriceController.dispose();
+    _promoMonthlyRetailPriceController.dispose();
+    _promoQuarterlyPriceController.dispose();
+    _promoQuarterlyRetailPriceController.dispose();
     _promoYearlyPriceController.dispose();
+    _promoYearlyRetailPriceController.dispose();
+    _promoCertPriceController.dispose();
+    _promoCertRetailPriceController.dispose();
     _promoUpiIdController.dispose();
     _presidentVibeCaptionController.dispose();
     _presidentVibeMediaUrlController.dispose();
@@ -7383,18 +7419,92 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
               _promoWebUrlController, Icons.link_rounded),
           const SizedBox(height: 12),
 
-          Row(
-            children: [
-              Expanded(
-                child: _buildMonetizationInput('Monthly (₹)',
-                    _promoMonthlyPriceController, Icons.currency_rupee_rounded),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildMonetizationInput('Yearly (₹)',
-                    _promoYearlyPriceController, Icons.calendar_today_rounded),
-              ),
-            ],
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.04),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: const [
+                    Text('💰', style: TextStyle(fontSize: 16)),
+                    SizedBox(width: 8),
+                    Text(
+                      'Poket VIP Subscription Pricing (Offer vs Strikethrough Retail)',
+                      style: TextStyle(color: Color(0xFFFFFC00), fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Tier 1: 1 Month
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMonetizationInput('1 Month Offer (₹)',
+                          _promoMonthlyPriceController, Icons.currency_rupee_rounded),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildMonetizationInput('1 Month Retail Strike (₹)',
+                          _promoMonthlyRetailPriceController, Icons.price_change_outlined),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Tier 2: 90-Day Course Pass
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMonetizationInput('⭐ 90-Day Pass Offer (₹)',
+                          _promoQuarterlyPriceController, Icons.star_rounded),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildMonetizationInput('90-Day Retail Strike (₹)',
+                          _promoQuarterlyRetailPriceController, Icons.price_change_outlined),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Tier 3: 1 Year VIP
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMonetizationInput('1 Year Offer (₹)',
+                          _promoYearlyPriceController, Icons.calendar_today_rounded),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildMonetizationInput('1 Year Retail Strike (₹)',
+                          _promoYearlyRetailPriceController, Icons.price_change_outlined),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Tier 4: Standalone Certificate
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildMonetizationInput('Certificate Offer (₹)',
+                          _promoCertPriceController, Icons.workspace_premium_rounded),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildMonetizationInput('Cert Retail Strike (₹)',
+                          _promoCertRetailPriceController, Icons.price_change_outlined),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
           _buildMonetizationInput('Direct UPI ID (for Android Intent)',

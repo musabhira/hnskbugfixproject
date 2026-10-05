@@ -8,6 +8,9 @@ import 'pocket_world_street_page.dart';
 import 'pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'pocket_defense_question_bank.dart';
+import 'daily_vocab_item.dart';
+import 'pocket_90day_vocab_curriculum.dart';
+import 'pocket_master_curriculum_90.dart';
 
 /// 🎩 President of Pocket World's Official Decree & Anti-Cheat Verdict
 class PresidentVerdict {
@@ -618,24 +621,21 @@ class PocketFortressDefenseService {
   /// - Level 51+ User: Target Level 85-90
   static int getRecommendedTargetLevel(int userDay) {
     final day = userDay.clamp(1, 90);
-    if (day == 1) {
-      return 5; // Level 1 beginner attacks Level 5 (balanced, fair challenge)
-    } else if (day == 2) {
-      return 6;
-    } else if (day <= 4) {
-      return 8 + (day % 2); // 8 or 9
-    } else if (day <= 7) {
-      return 10 + (day % 3); // 10 to 12
+    if (day < 4) {
+      return 4; // House 4 minimum combat tier
+    } else if (day <= 6) {
+      // Audio Directive: Level 4 to 10 combat
+      return 4 + (day % 4); // 4 to 7
     } else if (day <= 10) {
-      return 15 + (day % 4); // 15 to 18
+      return 7 + (day % 4); // 7 to 10
     } else if (day <= 20) {
-      return 25 + ((day - 10) * 1.5).round().clamp(0, 15); // 25 to 40
+      return 15 + ((day - 10) * 1.5).round().clamp(0, 15); // 15 to 30
     } else if (day <= 35) {
-      return 45 + ((day - 20) * 1.2).round().clamp(0, 18); // 45 to 63
+      return 35 + ((day - 20) * 1.2).round().clamp(0, 18); // 35 to 53
     } else if (day <= 50) {
-      return 70 + ((day - 35) * 1.2).round().clamp(0, 20); // 70 to 90
+      return 60 + ((day - 35) * 1.2).round().clamp(0, 20); // 60 to 80
     } else {
-      return math.min(90, 85 + (day % 6)); // 85 to 90
+      return math.min(90, 80 + (day % 11)); // 80 to 90
     }
   }
 
@@ -650,7 +650,7 @@ class PocketFortressDefenseService {
     bool forceRobot = false,
   }) async {
     final baseTargetLevel = getRecommendedTargetLevel(userDay);
-    final targetLevel = (baseTargetLevel + ((shuffleOffset ?? 0) % 5)).clamp(1, 90);
+    final targetLevel = (baseTargetLevel + ((shuffleOffset ?? 0) % 5)).clamp(4, 90);
     final preferRobot = forceRobot || (shuffleOffset != null && shuffleOffset.isOdd);
 
     // 1. Try finding human player near target level (if not forced to robot)
@@ -1144,13 +1144,22 @@ class PocketFortressDefenseService {
         return q.trapType == trapId || q.category == template.category;
       }).toList();
 
-      // For neighbor raids, fill with curated challenges if neighbor has not armed all slots
-      if (isNeighbor && matched.length < qPerTrap) {
-        final curated = getCuratedQuestionsForTrap(trapId);
-        for (final cq in curated) {
+      // Auto-arm with computer-planned defense questions grounded in day's study if slots are not fully armed
+      if (matched.length < qPerTrap) {
+        final autoQuestions = getComputerPlannedDefenseForDay(stage);
+        for (final aq in autoQuestions) {
           if (matched.length >= qPerTrap) break;
-          if (!matched.any((m) => m.question == cq.question)) {
-            matched.add(cq);
+          if (!matched.any((m) => m.question == aq.question)) {
+            matched.add(aq);
+          }
+        }
+        if (matched.length < qPerTrap) {
+          final curated = getCuratedQuestionsForTrap(trapId);
+          for (final cq in curated) {
+            if (matched.length >= qPerTrap) break;
+            if (!matched.any((m) => m.question == cq.question)) {
+              matched.add(cq);
+            }
           }
         }
       }
@@ -2177,11 +2186,123 @@ class PocketFortressDefenseService {
           }
         }
       } catch (_) {}
-      return []; // Self-built defense: User begins with empty unlocked slots!
+      // User house has no custom defense yet: Auto-plan 4 curriculum questions for this house!
+      return getComputerPlannedDefenseForDay(stage).take(maxAllowed).toList();
     }
 
-    // Default curated questions only for neighbor houses
+    // Default curated questions for neighbor houses
+    final autoQuestions = getComputerPlannedDefenseForDay(stage);
+    if (autoQuestions.isNotEmpty) {
+      return autoQuestions.take(maxAllowed).toList();
+    }
     return _getDefaultQuestions(maxAllowed);
+  }
+
+  /// 🛡️ Computer-Planned Default 4-Question Defense for Any House (1 to 90)
+  /// User Audio Directive:
+  /// "ഇനി അഥവാ ഡിഫൻസ് അവർക്ക് എഡിറ്റ് ചെയ്യാണ്ട ലെവൽ ഇല്ലാന്നുണ്ടെങ്കിൽ
+  ///  കമ്പ്യൂട്ടർ തന്നെ പ്ലാൻ ചെയ്തു വെക്കണം ട്ടോ... നമ്മൾ തന്നെ പ്ലാൻ ചെയ്തു വെക്കണം.
+  ///  ഒരു നാലെണ്ണം ഓൾറെഡി സജഷൻ ആയിട്ട് സെറ്റാക്കി വെക്കണം ക്വസ്റ്റ്യൻസുകൾ...
+  ///  അവർക്ക് കിട്ടിയില്ല എന്നുണ്ടെങ്കിൽ ആ ക്വസ്റ്റ്യൻസ് അവർക്ക് ഇട്ടിട്ട് ഡിഫൻസ് സിസ്റ്റം ബിൽഡ് ചെയ്യാൻ പറ്റും..."
+  static List<HouseShieldQuestion> getComputerPlannedDefenseForDay(int day) {
+    final effectiveDay = day.clamp(1, 90);
+    final masterDay = PocketMasterCurriculum90.getDay(effectiveDay);
+    final vocabList = Pocket90DayVocabCurriculum.getVocabForDay(effectiveDay);
+    final v1 = vocabList.isNotEmpty
+        ? vocabList[0]
+        : const DailyVocabItem(
+            word: 'Master',
+            partOfSpeech: 'verb',
+            definition: 'To become skilled in',
+            malayalamMeaning: 'നൈപുണ്യം നേടുക',
+            exampleSentence: 'Master English every day.',
+            phonetic: '/ˈmɑː.stər/',
+          );
+
+    final List<HouseShieldQuestion> questions = [];
+
+    // Q1: Vocabulary Meaning from Day's Lesson
+    final q1Challenge = PocketDefenseQuestionBank.getDayLessonChallenge(effectiveDay, gateId: 'vocab_gate');
+    questions.add(
+      HouseShieldQuestion(
+        id: 'auto_day_${effectiveDay}_vocab',
+        question: q1Challenge['question'] as String,
+        options: List<String>.from(q1Challenge['options'] as List),
+        correctIndex: q1Challenge['correctIndex'] as int,
+        explanation: q1Challenge['explanation'] as String,
+        category: 'vocab_gate',
+        trapType: 'vocab_gate',
+        isPresidentApproved: true,
+      ),
+    );
+
+    // Q2: Grammar & Tense from Day's Master Curriculum
+    String grammarQ;
+    String grammarCorrect;
+    List<String> grammarWrongs;
+    String grammarExp;
+
+    if (masterDay.commonMistakes.isNotEmpty && masterDay.mistakeCorrections.isNotEmpty) {
+      final mistake = masterDay.commonMistakes.first.replaceAll('❌', '').replaceAll('"', '').trim();
+      final correction = masterDay.mistakeCorrections.first.replaceAll('✅', '').replaceAll('"', '').trim();
+      grammarQ = 'Day $effectiveDay Grammar: Spot the correct sentence for "${masterDay.grammarConcept}":';
+      grammarCorrect = correction;
+      grammarWrongs = [mistake, 'She do not understand this.', 'Yesterday I will go there.'];
+      grammarExp = masterDay.theoryExplanationEn.isNotEmpty
+          ? masterDay.theoryExplanationEn
+          : 'Rule: $correction is the natural, grammatically correct form.';
+    } else {
+      grammarQ = 'Day $effectiveDay Grammar: Complete the sentence using the correct form of "${v1.word}":\n"She ___ English diligently."';
+      grammarCorrect = '${v1.word.toLowerCase()}s';
+      grammarWrongs = ['${v1.word.toLowerCase()}ed tomorrow', 'is ${v1.word.toLowerCase()}', 'are ${v1.word.toLowerCase()}ing'];
+      grammarExp = 'In Simple Present tense with third person singular (He/She), add "-s" or "-es" to the verb.';
+    }
+
+    final allGrammarOpts = [grammarCorrect, ...grammarWrongs.take(3)]..shuffle(math.Random(effectiveDay * 7));
+    questions.add(
+      HouseShieldQuestion(
+        id: 'auto_day_${effectiveDay}_grammar',
+        question: grammarQ,
+        options: allGrammarOpts,
+        correctIndex: allGrammarOpts.indexOf(grammarCorrect),
+        explanation: grammarExp,
+        category: 'grammar_defusal',
+        trapType: 'grammar_defusal',
+        isPresidentApproved: true,
+      ),
+    );
+
+    // Q3: Fill in the blank sentence context from Day's study
+    final q3Challenge = PocketDefenseQuestionBank.getDayLessonChallenge(effectiveDay, gateId: 'speed_blitz');
+    questions.add(
+      HouseShieldQuestion(
+        id: 'auto_day_${effectiveDay}_speed',
+        question: q3Challenge['question'] as String,
+        options: List<String>.from(q3Challenge['options'] as List),
+        correctIndex: q3Challenge['correctIndex'] as int,
+        explanation: q3Challenge['explanation'] as String,
+        category: 'speed_blitz',
+        trapType: 'speed_blitz',
+        isPresidentApproved: true,
+      ),
+    );
+
+    // Q4: Idiom / Practical Conversational Nuance
+    final q4Challenge = PocketDefenseQuestionBank.getRandomChallenge('idiom_shield', day: effectiveDay);
+    questions.add(
+      HouseShieldQuestion(
+        id: 'auto_day_${effectiveDay}_idiom',
+        question: q4Challenge['question'] as String,
+        options: List<String>.from(q4Challenge['options'] as List),
+        correctIndex: q4Challenge['correctIndex'] as int,
+        explanation: q4Challenge['explanation'] as String,
+        category: 'idiom_shield',
+        trapType: 'idiom_shield',
+        isPresidentApproved: true,
+      ),
+    );
+
+    return questions;
   }
 
   /// Save custom shield questions locally and sync to Supabase
@@ -2333,6 +2454,43 @@ class PocketFortressDefenseService {
       );
     }
     return presidential250;
+  }
+
+  /// 🛡️ Presidential Escort Guard: 10 Elite Outer Perimeter Defense Trials for VIP Houses
+  static Future<List<HouseShieldQuestion>> loadPresidentialEscortGuardQuestions() async {
+    const trapTypes = [
+      'syntax_wall',
+      'grammar_sentry',
+      'collocation_ram',
+      'idiom_maze',
+      'tense_fortress',
+    ];
+
+    final List<HouseShieldQuestion> pool = [];
+    for (final t in trapTypes) {
+      pool.addAll(getCuratedQuestionsForTrap(t));
+    }
+    if (pool.isEmpty) {
+      pool.addAll(_getDefaultQuestions(20));
+    }
+
+    final List<HouseShieldQuestion> escortQuestions = [];
+    for (int i = 0; i < 10; i++) {
+      final base = pool[i % pool.length];
+      escortQuestions.add(
+        HouseShieldQuestion(
+          id: 'vip_escort_guard_${i + 1}_${base.id}',
+          question: '🛡️ [POKET VIP PRESIDENTIAL ESCORT GUARD ${i + 1}/10]\n${base.question}',
+          options: List<String>.from(base.options),
+          correctIndex: base.correctIndex,
+          explanation: base.explanation,
+          category: base.category,
+          trapType: 'presidential_escort',
+          gameFormat: base.gameFormat,
+        ),
+      );
+    }
+    return escortQuestions;
   }
 
   // ============================================================

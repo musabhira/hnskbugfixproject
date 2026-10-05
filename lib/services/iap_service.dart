@@ -11,9 +11,12 @@ class IAPService {
   IAPService._internal();
 
   static const String vipMonthlyProductId = 'poketmates_vip_monthly';
+  static const String vipQuarterlyProductId = 'poketmates_vip_quarterly'; // 90-Day Full Pass
   static const String vipYearlyProductId = 'poketmates_vip_yearly';
+  static const String certificateProductId = 'poketmates_c2_certificate';
 
-  final InAppPurchase _iap = InAppPurchase.instance;
+  InAppPurchase? _iapInstance;
+  InAppPurchase get _iap => _iapInstance ??= InAppPurchase.instance;
   StreamSubscription<List<PurchaseDetails>>? _subscription;
   
   List<ProductDetails> _products = [];
@@ -30,14 +33,20 @@ class IAPService {
 
   Future<void> initialize() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      _isVipActive = prefs.getBool('is_vip') ?? false;
+
+      if (!Platform.isAndroid && !Platform.isIOS) {
+        debugPrint('IAPService: In-App Purchases are only supported on Android & iOS mobile platforms.');
+        _available = false;
+        return;
+      }
+
       _available = await _iap.isAvailable();
       if (!_available) {
         debugPrint('IAPService: Store not available on this platform/device');
         return;
       }
-
-      final prefs = await SharedPreferences.getInstance();
-      _isVipActive = prefs.getBool('is_vip') ?? false;
 
       final Stream<List<PurchaseDetails>> purchaseUpdated = _iap.purchaseStream;
       _subscription = purchaseUpdated.listen(
@@ -52,8 +61,13 @@ class IAPService {
         },
       );
 
-      // Pre-fetch default VIP subscriptions
-      await fetchProducts([vipMonthlyProductId, vipYearlyProductId]);
+      // Pre-fetch default VIP subscriptions and certificate
+      await fetchProducts([
+        vipMonthlyProductId,
+        vipQuarterlyProductId,
+        vipYearlyProductId,
+        certificateProductId,
+      ]);
     } catch (e) {
       debugPrint('IAPService initialize exception: $e');
     }
@@ -84,8 +98,15 @@ class IAPService {
   }
 
   /// Initiates subscription purchase through Google Play or Apple App Store
-  Future<bool> buyVipSubscription({bool isYearly = false}) async {
-    final targetId = isYearly ? vipYearlyProductId : vipMonthlyProductId;
+  Future<bool> buyVipSubscription({bool isYearly = false, String planType = 'monthly'}) async {
+    String targetId = vipMonthlyProductId;
+    if (planType == 'quarterly') {
+      targetId = vipQuarterlyProductId;
+    } else if (planType == 'yearly' || isYearly) {
+      targetId = vipYearlyProductId;
+    } else if (planType == 'certificate') {
+      targetId = certificateProductId;
+    }
     
     if (!_available) {
       debugPrint('IAPService: Store billing not available');
@@ -94,7 +115,12 @@ class IAPService {
 
     // Refresh products if not cached
     if (_products.isEmpty) {
-      await fetchProducts([vipMonthlyProductId, vipYearlyProductId]);
+      await fetchProducts([
+        vipMonthlyProductId,
+        vipQuarterlyProductId,
+        vipYearlyProductId,
+        certificateProductId,
+      ]);
     }
 
     final product = getProduct(targetId);
@@ -151,21 +177,38 @@ class IAPService {
   Future<void> _verifyAndGrantAccess(PurchaseDetails purchase) async {
     try {
       final isVipProduct = purchase.productID == vipMonthlyProductId ||
+          purchase.productID == vipQuarterlyProductId ||
           purchase.productID == vipYearlyProductId;
+      final isCertificateProduct = purchase.productID == certificateProductId ||
+          purchase.productID == 'poketmates_certificate_c2';
 
-      if (isVipProduct) {
+      final prefs = await SharedPreferences.getInstance();
+      final supabase = SupaFlow.client;
+      final userId = supabase.auth.currentUser?.id;
+
+      if (isCertificateProduct) {
+        // Unlock C2 Certificate permanently
+        await prefs.setBool('has_purchased_c2_certificate', true);
+        if (userId != null) {
+          try {
+            await supabase.from('profile').update({
+              'has_purchased_c2_certificate': true,
+              'updated_at': DateTime.now().toIso8601String(),
+            }).eq('user_id', userId);
+          } catch (_) {}
+        }
+        debugPrint('IAPService: C2 Certificate permanently unlocked for $userId 🎓');
+      } else if (isVipProduct) {
         // 1. Update Local Preferences immediately
-        final prefs = await SharedPreferences.getInstance();
         await prefs.setString('handskill_plan', 'pro');
         await prefs.setBool('is_vip', true);
         await prefs.setBool('is_ad_free', true);
+        await prefs.setBool('has_purchased_c2_certificate', true); // Free with VIP!
         await prefs.setString('vip_product_id', purchase.productID);
         await prefs.setString('vip_purchased_at', DateTime.now().toIso8601String());
         _isVipActive = true;
 
         // 2. Sync to Supabase user profile & entitlements
-        final supabase = SupaFlow.client;
-        final userId = supabase.auth.currentUser?.id;
         if (userId != null) {
           await supabase.from('profile').update({
             'is_vip': true,
@@ -173,14 +216,21 @@ class IAPService {
             'subscription_status': 'active',
             'vip_product_id': purchase.productID,
             'verified': true,
+            'has_purchased_c2_certificate': true,
             'updated_at': DateTime.now().toIso8601String(),
           }).eq('user_id', userId);
 
           // Record transaction in user_subscriptions table if exists
           try {
+            String planName = 'monthly';
+            if (purchase.productID == vipQuarterlyProductId) {
+              planName = 'quarterly_90day';
+            } else if (purchase.productID == vipYearlyProductId) {
+              planName = 'annual';
+            }
             await supabase.from('user_subscriptions').upsert({
               'user_id': userId,
-              'plan': purchase.productID == vipYearlyProductId ? 'annual' : 'monthly',
+              'plan': planName,
               'status': 'active',
               'store': Platform.isIOS ? 'apple_app_store' : 'google_play',
               'transaction_id': purchase.purchaseID ?? 'sub_${DateTime.now().millisecondsSinceEpoch}',

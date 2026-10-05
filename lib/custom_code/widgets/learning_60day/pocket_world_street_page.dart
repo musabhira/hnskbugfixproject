@@ -33,6 +33,7 @@ class PocketNeighbor {
   final bool isDamaged;
   final int hp;
   final int maxHp;
+  final bool isVip;
 
   const PocketNeighbor({
     required this.id,
@@ -50,6 +51,7 @@ class PocketNeighbor {
     this.isDamaged = false,
     this.hp = 100,
     this.maxHp = 100,
+    this.isVip = false,
   });
 
   /// 🏛️ Official Sovereign Citadel Neighbor representation for The President

@@ -3148,7 +3148,7 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
           const SizedBox(height: 14),
 
-          // Avatar & Stats Row (Clean Split Layout)
+          // Avatar & Stats Row (Clean Instagram-style Layout)
           Row(
             children: [
               _buildAvatarWidget(
@@ -3156,17 +3156,57 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 dividerColor: dividerColor,
                 textColor: textColor,
                 activeStage: activeStage,
-                size: 84,
+                size: 80,
               ),
               const SizedBox(width: 14),
               Expanded(
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Mates", _followersCount > 0 ? _followersCount : _friendsCount, textColor, activeStage))),
-                    const SizedBox(width: 8),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildPocketScoreStatItem(_pocketScore, activeStage))),
-                    const SizedBox(width: 8),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildAchievementsStatItem(textColor, activeStage, activeStage.day))),
+                    Expanded(
+                      child: _buildInstagramStatColumn(
+                        label: 'Mates',
+                        count: _followersCount > 0 ? _followersCount : _friendsCount,
+                        textColor: textColor,
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildInstagramStatColumn(
+                        label: 'Pocket Score',
+                        count: _pocketScore,
+                        textColor: const Color(0xFFFFD700),
+                        onTap: () {
+                          HapticFeedback.selectionClick();
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('🪙 Pocket Score: $_pocketScore PTS • Stage ${activeStage.stageNumber}',
+                                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                              backgroundColor: const Color(0xFF0F172A),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: _buildInstagramStatColumn(
+                        label: 'Trophies',
+                        count: () {
+                          final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+                          final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+                          if (isRobot) {
+                            final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(activeStage.day);
+                            final tc = PocketRobotService.getTrophiesForRobot(robot) + (activeStage.day >= 90 ? 1 : 0);
+                            return tc < 1 && activeStage.day >= 90 ? 1 : tc;
+                          } else {
+                            final base = activeStage.day >= 90 ? 6 : (activeStage.day >= 60 ? 5 : (activeStage.day >= 30 ? 4 : (activeStage.day >= 21 ? 3 : (activeStage.day >= 15 ? 2 : 1))));
+                            return base + _pocketTrophyCount;
+                          }
+                        }(),
+                        textColor: textColor,
+                        onTap: () => _showAchievementsModal(activeStage.day, _pocketScore),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -3872,23 +3912,33 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
   }
 
   Widget _buildVerifiedGoldenTick({double size = 18}) {
-    return ShaderMask(
-      shaderCallback: (Rect bounds) {
-        return const LinearGradient(
-          colors: [
-            Color(0xFFFFF176),
-            Color(0xFFFFD700),
-            Color(0xFFFFA000),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ).createShader(bounds);
-      },
-      child: Icon(
-        Icons.verified_rounded,
-        color: Colors.white,
-        size: size,
-      ),
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return const LinearGradient(
+              colors: [
+                Color(0xFFFFF176),
+                Color(0xFFFFD700),
+                Color(0xFFFFA000),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ).createShader(bounds);
+          },
+          child: Icon(
+            Icons.verified_rounded,
+            color: Colors.white,
+            size: size,
+          ),
+        ),
+        const SizedBox(width: 3),
+        const Text(
+          '👑',
+          style: TextStyle(fontSize: 13),
+        ),
+      ],
     );
   }
 
@@ -4356,6 +4406,55 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               fontWeight: FontWeight.w900,
               fontSize: 10.5,
               letterSpacing: 0.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInstagramStatColumn({
+    required String label,
+    required int count,
+    required Color textColor,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: TweenAnimationBuilder<int>(
+              tween: IntTween(begin: 0, end: count),
+              duration: const Duration(milliseconds: 800),
+              curve: Curves.easeOutCubic,
+              builder: (context, val, child) {
+                return Text(
+                  _formatCount(val),
+                  style: GoogleFonts.outfit(
+                    color: textColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.3,
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 3),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              label,
+              style: GoogleFonts.inter(
+                color: Colors.white70,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],

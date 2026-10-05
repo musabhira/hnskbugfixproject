@@ -1,4 +1,6 @@
 import 'dart:math' as math;
+import 'daily_vocab_item.dart';
+import 'pocket_90day_vocab_curriculum.dart';
 import 'pocket_fortress_defense_service.dart';
 
 /// 🛡️ Pocket Defense Question Bank: Free AI & Default Engine
@@ -521,8 +523,71 @@ class PocketDefenseQuestionBank {
     },
   ];
 
-  /// 🎯 Get a random, fully validated defense challenge for any gate
-  static Map<String, dynamic> getRandomChallenge(String gateId, {int day = 1}) {
+  /// 🎯 Generate a defense challenge strictly grounded in what the learner studied on [day]
+  /// Eliminates static, generic demos across all days as requested by user.
+  static Map<String, dynamic> getDayLessonChallenge(int day, {String? gateId}) {
+    final vocabList = Pocket90DayVocabCurriculum.getVocabForDay(day);
+    if (vocabList.isEmpty) {
+      return getRandomChallenge(gateId ?? 'vocab_gate', day: day, forceGeneric: true);
+    }
+
+    // Pick a primary target word from today's lesson
+    final primaryIndex = _random.nextInt(vocabList.length);
+    final primaryItem = vocabList[primaryIndex];
+
+    // Pick 3 distractors from the rest of the day's vocabulary
+    final remainingItems = List<DailyVocabItem>.from(vocabList)..removeAt(primaryIndex);
+    remainingItems.shuffle(_random);
+    final distractors = remainingItems.take(3).toList();
+
+    // Alternate challenge style:
+    // Type A: Fill in the blank from today's lesson example sentence
+    // Type B: Meaning & Malayalam context challenge
+    final bool useSentenceBlank = _random.nextBool() && primaryItem.exampleSentence.isNotEmpty;
+
+    if (useSentenceBlank) {
+      final targetWord = primaryItem.word;
+      final blankedSentence = primaryItem.exampleSentence.replaceAll(
+        RegExp(r'\b' + RegExp.escape(targetWord) + r'\b', caseSensitive: false),
+        '______',
+      );
+
+      final wrongs = distractors.map((d) => d.word).toList();
+      while (wrongs.length < 3) {
+        wrongs.add('option_${wrongs.length + 1}');
+      }
+
+      return _shuffleAndFormat(
+        question: 'Day $day Lesson: Complete the sentence from today\'s class:\n"$blankedSentence"',
+        correct: targetWord,
+        wrongs: wrongs,
+        explanation: 'From Day $day study: "${primaryItem.exampleSentence}" (${primaryItem.malayalamMeaning}).',
+        category: gateId ?? 'vocab_gate',
+      );
+    } else {
+      final correctDef = primaryItem.definition;
+      final wrongs = distractors.map((d) => d.definition).toList();
+      while (wrongs.length < 3) {
+        wrongs.add('Alternative meaning ${wrongs.length + 1}');
+      }
+
+      return _shuffleAndFormat(
+        question: 'Day $day Lesson: What is the meaning of "${primaryItem.word}"?',
+        correct: '$correctDef (${primaryItem.malayalamMeaning})',
+        wrongs: wrongs,
+        explanation: 'From Day $day study: "${primaryItem.word}" means $correctDef (${primaryItem.malayalamMeaning}). Example: ${primaryItem.exampleSentence}',
+        category: gateId ?? 'vocab_gate',
+      );
+    }
+  }
+
+  /// 🎯 Get a random defense challenge, prioritizing the learner's active day
+  static Map<String, dynamic> getRandomChallenge(String gateId, {int day = 1, bool forceGeneric = false}) {
+    // If not forced generic and gate is vocab_gate or day is positive, ground in today's lesson
+    if (!forceGeneric && gateId == 'vocab_gate' && day >= 1 && day <= 90) {
+      return getDayLessonChallenge(day, gateId: gateId);
+    }
+
     List<Map<String, dynamic>> rawList;
 
     switch (gateId) {

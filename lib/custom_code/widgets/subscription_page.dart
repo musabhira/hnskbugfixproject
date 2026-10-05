@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:pocket_mates_app/services/iap_service.dart';
+import 'package:pocket_mates_app/custom_code/services/monetization_service.dart';
 
 class SubscriptionPage extends StatefulWidget {
   final double? width;
@@ -26,67 +28,93 @@ class _SubscriptionPageState extends State<SubscriptionPage>
   final List<Map<String, dynamic>> _plans = [
     {
       'id': 'free',
-      'name': 'Free Mate',
-      'tagline': 'English Practice with Community Ads',
+      'name': 'Free Learner',
+      'tagline': 'Daily English with Cooldown Timer & Ads',
       'monthlyPrice': 0,
-      'yearlyPrice': 0,
-      'trialPrice': 0,
+      'retailPrice': 0,
+      'discountBadge': null,
+      'periodText': '',
       'color': const Color(0xFF6B7280),
       'gradientColors': [Color(0xFF374151), Color(0xFF1F2937)],
       'icon': Icons.public_rounded,
       'popular': false,
       'features': [
-        {'text': '1-on-1 English Voice & Video Calls (Ad-Supported)', 'included': true},
-        {'text': 'Daily AI English Practice (15 mins)', 'included': true},
-        {'text': 'Built-in Useful Daily & Media Tools', 'included': true},
+        {'text': '1 House Level per Day (Midnight Timer)', 'included': true},
+        {'text': '1-on-1 English Practice (Ad-Supported)', 'included': true},
+        {'text': '15-Minute Daily Speaking Chat Limit', 'included': true},
         {'text': '100% Ad-Free Experience', 'included': false},
-        {'text': 'Priority Instant Matchmaking', 'included': false},
-        {'text': 'AI Grammar & Fluency Reports', 'included': false},
-        {'text': 'Gender & Country Partner Filters', 'included': false},
-        {'text': 'Golden Mate VIP Badge & Halo', 'included': false},
+        {'text': '⚡ Instant Binge Mode (All 90 Houses)', 'included': false},
+        {'text': '👑 Golden Verified VIP Tick & Badge', 'included': false},
+        {'text': '🛡️ Presidential Escort Guard (10 Qs)', 'included': false},
+        {'text': '📜 Official Day 90 C2 Diploma Included', 'included': false},
       ],
     },
     {
-      'id': 'pro',
-      'name': 'Pocket VIP Fluency Pass',
-      'tagline': '₹199/mo • 90-Day Binge Pass + AI Coach',
-      'monthlyPrice': 199,
-      'yearlyPrice': 1499,
-      'trialPrice': 199,
+      'id': 'monthly',
+      'name': 'Poket VIP Monthly',
+      'tagline': '₹249/mo • 100% Ad-Free + Instant Binge Access',
+      'monthlyPrice': 249,
+      'retailPrice': 999,
+      'discountBadge': 'SAVE 75%',
+      'periodText': '/month',
+      'color': const Color(0xFF38BDF8),
+      'gradientColors': [Color(0xFF0284C7), Color(0xFF0369A1)],
+      'icon': Icons.flash_on_rounded,
+      'popular': false,
+      'features': [
+        {'text': '🚫 100% Ad-Free Everywhere (Zero Interruptions)', 'included': true},
+        {'text': '⚡ Instant 90-Day Binge Mode (No Waiting Locks)', 'included': true},
+        {'text': '👑 Golden Verified VIP Tick & Badge', 'included': true},
+        {'text': '🛡️ Presidential Escort Guard (10 Bonus Defense Qs)', 'included': true},
+        {'text': '🎙️ Unlimited AI Pronunciation & Voice Coach', 'included': true},
+        {'text': '💬 Unlimited Random Speaking Chat (No Daily Limit)', 'included': true},
+        {'text': '📜 Official Verified Day 90 C2 Diploma Included', 'included': true},
+        {'text': 'Priority Instant Peer Matchmaking Routing', 'included': true},
+      ],
+    },
+    {
+      'id': 'quarterly',
+      'name': '⭐ 90-Day Fluency Pass',
+      'tagline': '₹799 (One-Time) • Best Value for 90-Day Mastery!',
+      'monthlyPrice': 799,
+      'retailPrice': 4999,
+      'discountBadge': 'BEST VALUE • SAVE 84%',
+      'periodText': 'for 3 Months',
       'color': const Color(0xFFFFD700),
       'gradientColors': [Color(0xFFFFD700), Color(0xFFF59E0B)],
       'icon': Icons.workspace_premium_rounded,
       'popular': true,
       'features': [
-        {'text': '⚡ 90-Day Fast-Track (No 24-Hour Wait Locks)', 'included': true},
-        {'text': '🛡️ Citadel Shield & Streak Freeze Insurance', 'included': true},
-        {'text': '🚫 100% Ad-Free Experience Everywhere', 'included': true},
-        {'text': '🎙️ AI Pronunciation & Spoken English Coach', 'included': true},
-        {'text': '🐉 Exclusive 24K Gold Dragon & Phoenix Skins', 'included': true},
-        {'text': '🏎️ Sovereign Phantom VIP Limousine Motorcade', 'included': true},
-        {'text': '📜 Cryptographic Verified Day 90 Diploma', 'included': true},
-        {'text': 'Priority Instant Peer Matchmaking Routing', 'included': true},
+        {'text': '⚡ Complete 90-Day Fluency Journey (All 90 Houses)', 'included': true},
+        {'text': '🚫 100% Zero Ads for the Entire 3 Months', 'included': true},
+        {'text': '👑 Golden Verified VIP Tick across Entire App', 'included': true},
+        {'text': '🛡️ Presidential Escort Guard (10 Bonus Defense Qs)', 'included': true},
+        {'text': '📜 Free High-Res Cryptographic C2 Mastery Diploma', 'included': true},
+        {'text': '🎙️ Unlimited AI Voice Practice & Speaking Simulators', 'included': true},
+        {'text': '💬 Unlimited Community Speaking & Peer Practice', 'included': true},
+        {'text': 'Exclusive 24/7 Streak Protector & Cloud Backup', 'included': true},
       ],
     },
     {
-      'id': 'business',
-      'name': 'Pocket Master VIP (Yearly)',
-      'tagline': '₹1,499/year • Full Year Mastery + Resume Diploma',
-      'monthlyPrice': 1499,
-      'yearlyPrice': 1499,
-      'trialPrice': 1499,
+      'id': 'yearly',
+      'name': 'Poket VIP Annual Master',
+      'tagline': '₹1,699/year • Full Year VIP Mastery + Resume Diploma',
+      'monthlyPrice': 1699,
+      'retailPrice': 9999,
+      'discountBadge': 'SAVE 83%',
+      'periodText': '/year',
       'color': const Color(0xFFEC4899),
       'gradientColors': [Color(0xFFDB2777), Color(0xFF9D174D)],
       'icon': Icons.stars_rounded,
       'popular': false,
       'features': [
         {'text': 'Full Year 100% Ad-Free VIP Pass', 'included': true},
-        {'text': 'All Pocket VIP Pro Features Included', 'included': true},
+        {'text': 'All 90-Day Fluency Pass Features Included', 'included': true},
         {'text': 'IELTS & Job Interview Speaking Simulators', 'included': true},
         {'text': 'Unlimited AI Pronunciation Scoring', 'included': true},
-        {'text': 'Exclusive Diamond Mate Crown Profile', 'included': true},
-        {'text': 'Official Presidential Verified Diploma', 'included': true},
-        {'text': 'Full Access to All 90 Days Without Limits', 'included': true},
+        {'text': '👑 Golden Verified VIP Tick & Elite Crown Profile', 'included': true},
+        {'text': 'Official Cryptographic Day 90 C2 Diploma Included', 'included': true},
+        {'text': 'Full Access to All Future Masterclass Expansions', 'included': true},
         {'text': '24/7 Priority Support & Streak Protector', 'included': true},
       ],
     },
@@ -111,7 +139,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('🎉 Poket VIP Successfully Activated via Google Play!'),
+              content: Text('🎉 Poket VIP Successfully Activated!'),
               backgroundColor: Color(0xFF10B981),
             ),
           );
@@ -129,9 +157,28 @@ class _SubscriptionPageState extends State<SubscriptionPage>
 
   Future<void> _loadCurrentPlan() async {
     final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _currentPlan = prefs.getString('handskill_plan') ?? 'free';
-    });
+    final campaign = await MonetizationService().getActiveCampaign();
+    if (mounted) {
+      setState(() {
+        _currentPlan = prefs.getString('handskill_plan') ?? 'free';
+        // Dynamically reflect active prices from admin campaign
+        for (final p in _plans) {
+          if (p['id'] == 'monthly') {
+            p['monthlyPrice'] = campaign.inAppMonthlyPrice;
+            p['retailPrice'] = campaign.inAppMonthlyRetailPrice;
+            p['tagline'] = '₹${campaign.inAppMonthlyPrice}/mo • 100% Ad-Free + Instant Binge Access';
+          } else if (p['id'] == 'quarterly') {
+            p['monthlyPrice'] = campaign.inAppQuarterlyPrice;
+            p['retailPrice'] = campaign.inAppQuarterlyRetailPrice;
+            p['tagline'] = '₹${campaign.inAppQuarterlyPrice} (One-Time) • Best Value for 90-Day Mastery!';
+          } else if (p['id'] == 'yearly') {
+            p['monthlyPrice'] = campaign.inAppYearlyPrice;
+            p['retailPrice'] = campaign.inAppYearlyRetailPrice;
+            p['tagline'] = '₹${campaign.inAppYearlyPrice}/year • Full Year VIP + C2 Diploma Included';
+          }
+        }
+      });
+    }
   }
 
   Future<void> _selectPlan(String planId) async {
@@ -202,12 +249,18 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                   final messenger = ScaffoldMessenger.of(context);
                   Navigator.pop(ctx);
                   HapticFeedback.mediumImpact();
-                  final initiated = await IAPService().buyVipSubscription(isYearly: _isYearly);
+                  final planType = plan['id'] as String? ?? (_isYearly ? 'yearly' : 'monthly');
+                  final initiated = await IAPService().buyVipSubscription(
+                    isYearly: _isYearly,
+                    planType: planType,
+                  );
                   if (!initiated && mounted) {
                     messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Store billing loading... You can also use Direct UPI below.'),
-                        backgroundColor: Color(0xFF1E293B),
+                      SnackBar(
+                        content: Text(Platform.isIOS
+                            ? 'Connecting to App Store In-App Purchases...'
+                            : 'Google Play Billing loading... You can also use Direct UPI below.'),
+                        backgroundColor: const Color(0xFF1E293B),
                       ),
                     );
                   }
@@ -230,7 +283,11 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           color: const Color(0xFFFFD700).withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Icon(Icons.shop_two_rounded, color: Color(0xFFFFD700), size: 26),
+                        child: Icon(
+                          Platform.isIOS ? Icons.apple_rounded : Icons.shop_two_rounded,
+                          color: const Color(0xFFFFD700),
+                          size: 26,
+                        ),
                       ),
                       const SizedBox(width: 14),
                       Expanded(
@@ -238,7 +295,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Google Play Billing ⚡',
+                              Platform.isIOS ? 'Apple Pay (App Store) 🍏' : 'Google Play Billing ⚡',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontWeight: FontWeight.bold,
@@ -246,7 +303,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                               ),
                             ),
                             Text(
-                              '1-Tap Secure Payment • Official Store Checkout',
+                              Platform.isIOS
+                                  ? '1-Tap Apple Touch/Face ID • Official In-App Purchase'
+                                  : '1-Tap Secure Payment • Official Store Checkout',
                               style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
                             ),
                           ],
@@ -259,64 +318,66 @@ class _SubscriptionPageState extends State<SubscriptionPage>
               ),
               const SizedBox(height: 12),
 
-              // Option 2: Direct Indian UPI (GPay / PhonePe / Paytm)
-              InkWell(
-                onTap: () {
-                  Navigator.pop(ctx);
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    backgroundColor: const Color(0xFF131722),
-                    shape: const RoundedRectangleBorder(
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+              // Option 2: Direct Indian UPI (Android only - hidden on iOS for App Store compliance)
+              if (!Platform.isIOS) ...[
+                InkWell(
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: const Color(0xFF131722),
+                      shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                      ),
+                      builder: (_) => _buildDirectUpiPaymentSheet(plan, price),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1A1D2B),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white12),
                     ),
-                    builder: (_) => _buildDirectUpiPaymentSheet(plan, price),
-                  );
-                },
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1D2B),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF0F9D58).withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F9D58).withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF0F9D58), size: 26),
                         ),
-                        child: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF0F9D58), size: 26),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Direct Indian UPI (GPay / PhonePe)',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Direct Indian UPI (GPay / PhonePe)',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                ),
                               ),
-                            ),
-                            Text(
-                              'Pay via any UPI App • Instant activation',
-                              style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
-                            ),
-                          ],
+                              Text(
+                                'Pay via any UPI App • Instant activation',
+                                style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 14),
-                    ],
+                        const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white54, size: 14),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
+              ],
             ],
           ),
         );
@@ -1136,28 +1197,30 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                       ),
                       child: Icon(plan['icon'] as IconData, color: color, size: 24),
                     ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
+                          Wrap(
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            spacing: 6,
+                            runSpacing: 4,
                             children: [
                               Text(
                                 plan['name'] as String,
                                 style: GoogleFonts.outfit(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
-                              if (isPopular) ...[
-                                const SizedBox(width: 8),
+                              if (isPopular)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
                                   decoration: BoxDecoration(
                                     color: color,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(6),
                                   ),
                                   child: Text(
                                     'POPULAR',
@@ -1168,21 +1231,56 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                                     ),
                                   ),
                                 ),
-                              ],
                             ],
                           ),
+                          const SizedBox(height: 3),
                           Text(
                             plan['tagline'] as String,
-                            style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
+                            style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11.5),
                           ),
                         ],
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
+                        if (plan['retailPrice'] != null && (plan['retailPrice'] as int) > 0)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '₹${plan['retailPrice']}',
+                                style: GoogleFonts.outfit(
+                                  fontSize: 12,
+                                  color: Colors.white38,
+                                  decoration: TextDecoration.lineThrough,
+                                  decorationColor: Colors.white38,
+                                ),
+                              ),
+                              if (plan['discountBadge'] != null) ...[
+                                const SizedBox(width: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                    border: Border.all(color: const Color(0xFF10B981), width: 0.8),
+                                  ),
+                                  child: Text(
+                                    plan['discountBadge'] as String,
+                                    style: GoogleFonts.outfit(
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: const Color(0xFF10B981),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
                         Text(
-                          price == 0 ? 'FREE' : (plan['trialPrice'] != null && plan['trialPrice'] > 0 ? '₹${plan['trialPrice']}' : '₹$price'),
+                          price == 0 ? 'FREE' : '₹$price',
                           style: GoogleFonts.outfit(
                             fontSize: 22,
                             fontWeight: FontWeight.w800,
@@ -1191,7 +1289,9 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                         ),
                         if (price > 0)
                           Text(
-                            (plan['trialPrice'] != null && plan['trialPrice'] > 0) ? '1st month' : (_isYearly ? '/year' : '/month'),
+                            plan['periodText'] != null && (plan['periodText'] as String).isNotEmpty
+                                ? plan['periodText'] as String
+                                : (_isYearly ? '/year' : '/month'),
                             style: GoogleFonts.outfit(color: Colors.white38, fontSize: 11),
                           ),
                       ],
@@ -1259,19 +1359,25 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            included ? Icons.check_circle_rounded : Icons.cancel_rounded,
-            size: 16,
-            color: included ? planColor : Colors.white12,
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(
+              included ? Icons.check_circle_rounded : Icons.cancel_rounded,
+              size: 16,
+              color: included ? planColor : Colors.white12,
+            ),
           ),
           const SizedBox(width: 10),
-          Text(
-            feature['text'] as String,
-            style: GoogleFonts.outfit(
-              color: included ? Colors.white70 : Colors.white24,
-              fontSize: 13,
-              decoration: included ? null : TextDecoration.lineThrough,
+          Expanded(
+            child: Text(
+              feature['text'] as String,
+              style: GoogleFonts.outfit(
+                color: included ? Colors.white70 : Colors.white24,
+                fontSize: 13,
+                decoration: included ? null : TextDecoration.lineThrough,
+              ),
             ),
           ),
         ],

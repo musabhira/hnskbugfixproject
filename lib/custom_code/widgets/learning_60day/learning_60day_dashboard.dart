@@ -1008,7 +1008,7 @@ class _Learning60DayDashboardSheetState extends State<Learning60DayDashboardShee
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Poket VIP Gold Pass (₹199)',
+                              'Poket VIP Pass',
                               style: GoogleFonts.outfit(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,

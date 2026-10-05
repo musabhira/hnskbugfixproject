@@ -337,6 +337,74 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
     return PocketDefenseQuestionBank.getRandomChallenge(gateId, day: day);
   }
 
+  /// ⚡ Arm defense immediately using the curriculum studied on widget.userDay
+  void _armWithTodayLesson() {
+    HapticFeedback.mediumImpact();
+    final selectedGate = _gateDefinitions[_selectedGateIdx];
+    final gateId = selectedGate['id'] as String;
+    final challenge = PocketDefenseQuestionBank.getDayLessonChallenge(widget.userDay, gateId: gateId);
+
+    setState(() {
+      _questionCtrl.text = challenge['question'] ?? '';
+      final opts = List<String>.from(challenge['options'] ?? []);
+      for (int i = 0; i < 4; i++) {
+        _optionCtrls[i].text = i < opts.length ? opts[i] : '';
+      }
+      _correctIndex = (challenge['correctIndex'] is num)
+          ? (challenge['correctIndex'] as num).toInt()
+          : 0;
+      _explanationCtrl.text = challenge['explanation'] ?? '';
+      _resetDemoState();
+    });
+
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('🛡️ Day ${widget.userDay} lesson challenge loaded! Tap Deploy to arm your house.'),
+        backgroundColor: const Color(0xFF10B981),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+  /// 🤖 Auto-Arm 4 Computer-Planned Suggested Questions (Audio Directive)
+  /// If the player hasn't customized their defense or wants a ready-made setup,
+  /// the system pre-plans and provisions 4 tailored defense questions for their day.
+  Future<void> _autoArmWithComputerSuggestions() async {
+    HapticFeedback.heavyImpact();
+    setState(() => _isDeploying = true);
+    final computerQuestions = PocketFortressDefenseService.getComputerPlannedDefenseForDay(widget.userDay);
+    await PocketFortressDefenseService.saveShieldQuestions(computerQuestions);
+    try {
+      final myId = SupaFlow.client.auth.currentUser?.id;
+      if (myId != null) {
+        final payload = {'house_shield_questions': computerQuestions.map((q) => q.toJson()).toList()};
+        try {
+          await SupaFlow.client.from('profile').update(payload).eq('user_id', myId);
+        } catch (_) {
+          await SupaFlow.client.from('profile').update(payload).eq('id', myId);
+        }
+      }
+    } catch (e) {
+      debugPrint('Sync computer suggestions error: $e');
+    }
+    if (mounted) {
+      setState(() {
+        _questions = computerQuestions;
+        _isDeploying = false;
+      });
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('🤖 4 Computer Suggested Questions deployed for Day ${widget.userDay}!'),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      _tabController.animateTo(2); // Switch to My Shields tab
+    }
+  }
+
   Future<void> _deployShieldQuestion() async {
     setState(() => _inlineError = null);
     final questionText = _questionCtrl.text.trim();
@@ -686,12 +754,81 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
 
   // --- WIDGET BUILDERS ---
 
+  /// 🛡️ House Defense Explanation Card (Malayalam & English)
+  /// Explains clearly to the user why defense exists and how it protects their house coins/stars
+  Widget _buildWhyDefenseCard() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            const Color(0xFF0284C7).withValues(alpha: 0.2),
+            const Color(0xFF1E293B),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text('🛡️', style: TextStyle(fontSize: 14)),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Why House Defense? (വീടിന്റെ സുരക്ഷ എന്തിന്?)',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      'Protect your daily coins & stars from rival raids',
+                      style: GoogleFonts.inter(color: Colors.white60, fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'നിങ്ങൾ ഓരോ ദിവസവും പഠിച്ചു നേടുന്ന കോയിനുകളും ട്രഷറുകളും നിങ്ങളുടെ ഈ വീട്ടിലാണ് സൂക്ഷിക്കുന്നത്. മറ്റ് എതിരാളികൾക്ക് നിങ്ങളുടെ വീട് അറ്റാക്ക് ചെയ്തു കോയിനുകൾ അപഹരിക്കാൻ ശ്രമിക്കാം!\n\n'
+            'നിങ്ങൾ ഇന്ന് പഠിച്ച ഇംഗ്ലീഷ് പാഠങ്ങളിൽ നിന്ന് (Day ${widget.userDay}) ഡിഫൻസ് ഷീൽഡ് നിർമ്മിക്കുക. എതിരാളികൾ ഈ ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകാൻ പരാജയപ്പെടുമ്പോൾ, നിങ്ങളുടെ വീട് 100% സുരക്ഷിതമാകും, ഒപ്പം നിങ്ങൾക്ക് ബോണസ് റിവാർഡും ലഭിക്കും!',
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 10.5,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildCrafterTab(bool canAddNewSlot, Map<String, dynamic> selectedGate) {
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 🛡️ House Defense Purpose Card (Malayalam & English explanation requested by user)
+          _buildWhyDefenseCard(),
+
           // Edit Banner or Slot Locked Notice
           if (_isEditMode) ...[
             Container(
@@ -877,6 +1014,128 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                         : const Icon(Icons.auto_awesome, size: 13),
                     label: Text(
                       _isAiGenerating ? 'Thinking...' : 'Generate',
+                      style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // ⚡ Arm with Today's Lesson Quick Button (Direct Audio Request: "അവർ പഠിച്ചതിൽ നിന്നിട്ടുള്ള കാര്യങ്ങളാണ് വരേണ്ടത്")
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF10B981).withValues(alpha: 0.22),
+                  const Color(0xFF0F172A),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.45)),
+            ),
+            child: Row(
+              children: [
+                const Text('⚡', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Arm with Day ${widget.userDay} Lesson',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF34D399),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'ഇന്നത്തെ പാഠത്തിൽ നിന്ന് ഓട്ടോ-സെറ്റ് ചെയ്യുക',
+                        style: const TextStyle(color: Colors.white60, fontSize: 9.5),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 30,
+                  child: ElevatedButton.icon(
+                    onPressed: _armWithTodayLesson,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    icon: const Icon(Icons.flash_on_rounded, size: 14),
+                    label: Text(
+                      'Auto-Arm',
+                      style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 🤖 Auto-Arm 4 Computer Suggestions (Direct Audio Directive: "കമ്പ്യൂട്ടർ തന്നെ പ്ലാൻ ചെയ്തു വെക്കണം 4 ക്വസ്റ്റ്യൻസ്")
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF38BDF8).withValues(alpha: 0.18),
+                  const Color(0xFF0F172A),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              children: [
+                const Text('🤖', style: TextStyle(fontSize: 16)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Auto-Arm 4 Computer Suggestions',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        'കമ്പ്യൂട്ടർ തയ്യാറാക്കിയ 4 ഡിഫൻസ് ക്വസ്റ്റ്യൻസ് ഓട്ടോ-സെറ്റ് ചെയ്യുക',
+                        style: const TextStyle(color: Colors.white60, fontSize: 9.5),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 30,
+                  child: ElevatedButton.icon(
+                    onPressed: _isDeploying ? null : _autoArmWithComputerSuggestions,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0284C7),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      elevation: 0,
+                    ),
+                    icon: _isDeploying
+                        ? const SizedBox(
+                            width: 12,
+                            height: 12,
+                            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 1.5),
+                          )
+                        : const Icon(Icons.shield_outlined, size: 13),
+                    label: Text(
+                      'Load 4 Qs',
                       style: GoogleFonts.outfit(fontSize: 11, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -1111,15 +1370,37 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
   /// ഡെമോ എന്ന രീതിയിൽ എന്തെങ്കിലും കൊടുത്താൽ അടിപൊളി ആവും. ക്വസ്റ്റ്യൻ ആഡ് ചെയ്യുന്നതിനനുസരിച്ച് ലൈവ് ഡെമോ"
   Widget _buildInteractiveDemoTab(Map<String, dynamic> selectedGate) {
     final gateColor = selectedGate['color'] as Color;
-    final questionText = _questionCtrl.text.trim().isNotEmpty
-        ? _questionCtrl.text.trim()
-        : (selectedGate['demo'] as String).split('\n').first.replaceFirst('Demo: ', '');
+    final gateId = selectedGate['id'] as String;
 
-    final options = _optionCtrls.map((c) => c.text.trim()).toList();
-    final hasCustomOptions = options.any((o) => o.isNotEmpty);
-    final demoOptions = hasCustomOptions
-        ? options.where((o) => o.isNotEmpty).toList()
-        : ['Option A (Sample)', 'Option B (Sample)', 'Option C (Sample)', 'Option D (Sample)'];
+    final customQ = _questionCtrl.text.trim();
+    final customOptions = _optionCtrls.map((c) => c.text.trim()).where((o) => o.isNotEmpty).toList();
+    final bool hasCustom = customQ.isNotEmpty && customOptions.length >= 2;
+
+    Map<String, dynamic>? dayLessonChallenge;
+    if (!hasCustom) {
+      dayLessonChallenge = PocketDefenseQuestionBank.getDayLessonChallenge(
+        widget.userDay,
+        gateId: gateId,
+      );
+    }
+
+    final questionText = hasCustom
+        ? customQ
+        : (dayLessonChallenge?['question'] as String? ?? 'Day ${widget.userDay} Defense Challenge');
+
+    final demoOptions = hasCustom
+        ? customOptions
+        : (dayLessonChallenge?['options'] != null
+            ? List<String>.from(dayLessonChallenge!['options'] as List)
+            : ['Option A', 'Option B', 'Option C', 'Option D']);
+
+    final demoCorrectIdx = hasCustom
+        ? _correctIndex
+        : (dayLessonChallenge?['correctIndex'] as int? ?? 0);
+
+    final demoExpText = _explanationCtrl.text.trim().isNotEmpty
+        ? _explanationCtrl.text.trim()
+        : (dayLessonChallenge?['explanation'] as String? ?? '');
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -1262,7 +1543,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                 ...List.generate(demoOptions.length, (idx) {
                   final letter = String.fromCharCode(65 + idx);
                   final isSelected = _demoSelectedOption == idx;
-                  final isCorrectOption = idx == _correctIndex;
+                  final isCorrectOption = idx == demoCorrectIdx;
 
                   Color btnBorder = Colors.white12;
                   Color btnBg = const Color(0xFF1E293B);
@@ -1284,7 +1565,7 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                     onTap: () {
                       setState(() {
                         _demoSelectedOption = idx;
-                        _demoResultSuccess = idx == _correctIndex;
+                        _demoResultSuccess = idx == demoCorrectIdx;
                       });
                       HapticFeedback.lightImpact();
                     },
@@ -1380,10 +1661,10 @@ class _PocketDefenseTrapModalState extends State<PocketDefenseTrapModal>
                               : 'Attacker got hit by your trap! House HP protected and vault coins secured.',
                           style: const TextStyle(color: Colors.white70, fontSize: 11),
                         ),
-                        if (_explanationCtrl.text.trim().isNotEmpty) ...[
+                        if (demoExpText.isNotEmpty) ...[
                           const SizedBox(height: 4),
                           Text(
-                            'Rule Note: ${_explanationCtrl.text.trim()}',
+                            'Lesson Note: $demoExpText',
                             style: const TextStyle(color: Colors.white60, fontSize: 10.5, fontStyle: FontStyle.italic),
                           ),
                         ],

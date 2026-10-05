@@ -467,7 +467,7 @@ class _VideoAdModalState extends State<_VideoAdModal> {
                     const Icon(Icons.bolt_rounded, color: Color(0xFFFFD700), size: 14),
                     const SizedBox(width: 4),
                     Text(
-                      'Tired of ads? Remove all ads for ₹199 (VIP) ➔',
+                      'Tired of ads? Remove all ads with Poket VIP ➔',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
                         fontSize: 11.5,
