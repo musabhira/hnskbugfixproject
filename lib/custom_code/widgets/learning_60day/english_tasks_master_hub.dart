@@ -2054,6 +2054,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
   /// ⚔️ Citadel Matchmaking Modal (User Audio Directive: House 4+ Attack Arena)
   /// Features target rival matchmaking (Levels 4 to 10+), profile details, 🎲 Reroll/Shuffle, and direct attack launcher.
+  // ignore: unused_element
   void _showCitadelMatchmakingModal(int userDay) {
     HapticFeedback.mediumImpact();
     showModalBottomSheet(
@@ -4500,7 +4501,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
     final bool areHouseTasksDone = _isMasterAdmin || isCompleted || (isCurrent && (_subStepFlags['step_16'] == true || completedTasks >= 16));
     final bool isExamReady = !isCompleted && isCurrent && areHouseTasksDone;
-    final bool isUnlocked = isCompleted || _isMasterAdmin;
 
     // Exact midpoint along the mountain trail between house day and house day + 1
     final gateY = _getNodeY(day) - (_nodeSpacingY * 0.50);
