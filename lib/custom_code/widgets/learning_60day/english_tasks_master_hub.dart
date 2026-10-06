@@ -3016,7 +3016,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     PocketArsenalStoreModal.show(
                       context,
                       currentDay: prog.currentDay,
-                      onPurchased: () => setState(() {}),
+                      onPurchased: () async {
+                        await _loadData();
+                      },
                     );
                   },
                   child: Container(
@@ -3035,78 +3037,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           'Store',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFFFFD700),
-                            fontWeight: FontWeight.bold,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-
-                // ⚔️ Citadel Raid Quick Launch (Audio Directive: House 4+ Attack Arena)
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.mediumImpact();
-                    if (prog.currentDay < 4) {
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: const Color(0xFF1E293B),
-                          content: Row(
-                            children: const [
-                              Text('🛡️ ', style: TextStyle(fontSize: 16)),
-                              Expanded(
-                                child: Text(
-                                  'Citadel Raids unlock at House 4! Complete houses 1-3 first.',
-                                  style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                            ],
-                          ),
-                          duration: const Duration(seconds: 2),
-                          behavior: SnackBarBehavior.floating,
-                        ),
-                      );
-                    } else {
-                      _showCitadelMatchmakingModal(prog.currentDay);
-                    }
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: prog.currentDay >= 4
-                            ? [const Color(0xFFE11D48), const Color(0xFF9F1239)]
-                            : [Colors.white12, Colors.white10],
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: prog.currentDay >= 4
-                            ? const Color(0xFFFB7185).withValues(alpha: 0.6)
-                            : Colors.white24,
-                        width: 0.8,
-                      ),
-                      boxShadow: prog.currentDay >= 4
-                          ? [
-                              BoxShadow(
-                                color: const Color(0xFFE11D48).withValues(alpha: 0.35),
-                                blurRadius: 6,
-                                offset: const Offset(0, 1),
-                              ),
-                            ]
-                          : null,
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(prog.currentDay >= 4 ? '⚔️' : '🔒', style: const TextStyle(fontSize: 11)),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Raid',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
                             fontWeight: FontWeight.bold,
                             fontSize: 11,
                           ),
@@ -4561,7 +4491,16 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     final isCompleted = _isDayCompleted(day);
     final isCurrent = (day == currentDay);
-    final isUnlocked = isCompleted || _isMasterAdmin;
+
+    int completedTasks = 0;
+    if (isCurrent) {
+      for (int s = 1; s <= 16; s++) {
+        if (_subStepFlags['step_$s'] == true) completedTasks++;
+      }
+    }
+    final bool areHouseTasksDone = _isMasterAdmin || isCompleted || (isCurrent && (_subStepFlags['step_16'] == true || completedTasks >= 16));
+    final bool isExamReady = !isCompleted && isCurrent && areHouseTasksDone;
+    final bool isUnlocked = isCompleted || _isMasterAdmin;
 
     // Exact midpoint along the mountain trail between house day and house day + 1
     final gateY = _getNodeY(day) - (_nodeSpacingY * 0.50);
@@ -4579,7 +4518,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         behavior: HitTestBehavior.opaque,
         onTap: () {
           HapticFeedback.heavyImpact();
-          if (isUnlocked) {
+          if (isCompleted) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: const Color(0xFF10B981),
@@ -4597,6 +4536,55 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ],
                 ),
+              ),
+            );
+            return;
+          }
+
+          // Strict Locking: Gate N requires completing all prior houses and current house tasks
+          if (day > currentDay) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF1E293B),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                content: Row(
+                  children: [
+                    const Text('🔒', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Gate $day is locked! Complete House $currentDay & pass previous gates first.',
+                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 2),
+              ),
+            );
+            return;
+          }
+
+          if (!areHouseTasksDone) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                backgroundColor: const Color(0xFF1E293B),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                content: Row(
+                  children: [
+                    const Text('🔒', style: TextStyle(fontSize: 18)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Complete all House $day tasks first to unlock Gate $day Exam! ($completedTasks/16 done)',
+                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ],
+                ),
+                duration: const Duration(seconds: 2),
               ),
             );
             return;
@@ -4706,26 +4694,28 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: isUnlocked
+                    colors: isCompleted
                         ? [const Color(0xFF047857), const Color(0xFF064E3B)]
-                        : [const Color(0xFF1E293B), const Color(0xFF0F172A)],
+                        : (isExamReady
+                            ? [const Color(0xFFB45309), const Color(0xFF78350F)]
+                            : [const Color(0xFF1E293B), const Color(0xFF0F172A)]),
                   ),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(26), bottom: Radius.circular(8)),
                   border: Border.all(
-                    color: isUnlocked
+                    color: isCompleted
                         ? const Color(0xFF10B981)
-                        : (isCurrent ? const Color(0xFFFFD700) : Colors.white30),
-                    width: 2.0,
+                        : (isExamReady ? const Color(0xFFFFD700) : Colors.white24),
+                    width: isExamReady || isCompleted ? 2.0 : 1.2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: isUnlocked
+                      color: isCompleted
                           ? const Color(0xFF10B981).withValues(alpha: 0.4)
-                          : (isCurrent
-                              ? const Color(0xFFFFD700).withValues(alpha: 0.3)
+                          : (isExamReady
+                              ? const Color(0xFFFFD700).withValues(alpha: 0.4)
                               : Colors.black.withValues(alpha: 0.4)),
-                      blurRadius: 10,
-                      spreadRadius: 1,
+                      blurRadius: isExamReady ? 14 : 10,
+                      spreadRadius: isExamReady ? 2 : 1,
                     ),
                   ],
                 ),
@@ -4740,16 +4730,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         (i) => Container(
                           width: 1.5,
                           height: 38,
-                          color: isUnlocked ? const Color(0xFF34D399) : Colors.white24,
+                          color: isCompleted
+                              ? const Color(0xFF34D399)
+                              : (isExamReady ? const Color(0xFFFFD700).withValues(alpha: 0.5) : Colors.white12),
                         ),
                       ),
                     ),
 
                     // Central Lock or Unlock Emblem
                     Icon(
-                      isUnlocked ? Icons.lock_open_rounded : Icons.lock_rounded,
-                      color: isUnlocked ? const Color(0xFF6EE7B7) : const Color(0xFFFFD700),
-                      size: 24,
+                      isCompleted
+                          ? Icons.lock_open_rounded
+                          : (isExamReady ? Icons.edit_note_rounded : Icons.lock_rounded),
+                      color: isCompleted
+                          ? const Color(0xFF6EE7B7)
+                          : (isExamReady ? const Color(0xFFFFFC00) : Colors.white38),
+                      size: isExamReady ? 26 : 24,
                     ),
                   ],
                 ),
@@ -4764,9 +4760,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     color: const Color(0xFF0F172A),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
-                      color: isUnlocked
+                      color: isCompleted
                           ? const Color(0xFF10B981)
-                          : (isCurrent ? const Color(0xFFFFD700) : Colors.white38),
+                          : (isExamReady ? const Color(0xFFFFD700) : Colors.white24),
                       width: 1.2,
                     ),
                     boxShadow: [
@@ -4780,16 +4776,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        isUnlocked ? '✨' : '📝',
+                        isCompleted ? '✨' : (isExamReady ? '📝' : '🔒'),
                         style: const TextStyle(fontSize: 9),
                       ),
                       const SizedBox(width: 4),
                       Text(
-                        isUnlocked ? 'GATE OPEN • DAY $day ✓' : 'GATE $day EXAM (PASS: 60%)',
+                        isCompleted
+                            ? 'GATE OPEN • DAY $day ✓'
+                            : (isExamReady
+                                ? 'GATE $day EXAM READY • TAP TO START'
+                                : (day == currentDay
+                                    ? 'GATE $day LOCKED • $completedTasks/16 TASKS'
+                                    : 'GATE $day LOCKED')),
                         style: GoogleFonts.outfit(
-                          color: isUnlocked
+                          color: isCompleted
                               ? const Color(0xFF34D399)
-                              : (isCurrent ? const Color(0xFFFFD700) : Colors.white70),
+                              : (isExamReady ? const Color(0xFFFFD700) : Colors.white54),
                           fontSize: 8.5,
                           fontWeight: FontWeight.w900,
                           letterSpacing: 0.4,
