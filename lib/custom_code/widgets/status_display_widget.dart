@@ -46,6 +46,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_score_level_engine.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/pocket_homes_reels_feed_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/president/presidential_security_forces.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
 import 'dart:async';
 
@@ -4513,7 +4514,14 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         final houseId = meta?['house_id']?.toString() ?? 'resident';
         final String? paletteId = meta?['palette_id']?.toString();
         final isDamaged = meta?['is_damaged'] == true;
-        final isPresident = houseId == 'pocket_president';
+        final isPresident = houseId == 'pocket_president' || meta?['is_president'] == true;
+        final bool isVip = isPresident ||
+            meta?['is_vip'] == true ||
+            residentRank.toLowerCase().contains('sovereign') ||
+            residentRank.toLowerCase().contains('c2') ||
+            residentRank.toLowerCase().contains('master') ||
+            residentRank.toLowerCase().contains('legend') ||
+            residentDay >= 60;
 
         // 🌟 Full-Screen Immersive Citadel Home Story
         content = Container(
@@ -4678,6 +4686,57 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   ),
                 ),
 
+                // 🛡️ Top VIP Protection Banner (Per User Directive)
+                if (isVip)
+                  Positioned(
+                    top: MediaQuery.of(context).padding.top + 108,
+                    left: 20,
+                    right: 20,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              const Color(0xFF1E293B).withValues(alpha: 0.95),
+                              const Color(0xFF0F172A).withValues(alpha: 0.95),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: const Color(0xFF38BDF8),
+                            width: 1.4,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                              blurRadius: 14,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Text('🛡️', style: TextStyle(fontSize: 13)),
+                            const SizedBox(width: 6),
+                            Text(
+                              'VIP CITADEL • HIGH SECURITY ZONE',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF7DD3FC),
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.6,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Text('🪖', style: TextStyle(fontSize: 13)),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
                 // 🏠 4. Full & Prominent FlameEnglishHouseWidget in screen center
                 Positioned(
                   top: MediaQuery.of(context).padding.top + 105,
@@ -4687,107 +4746,120 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                   child: Center(
                     child: SizedBox(
                       width: MediaQuery.of(context).size.width * 0.94,
-                      child: IgnorePointer(
-                        child: FlameEnglishHouseWidget(
-                          currentDay: residentDay,
-                          streak: residentStreak,
-                          isDamaged: isDamaged,
-                          houseId: houseId,
-                          paletteId: paletteId,
-                          isPresident: isPresident,
-                        ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          IgnorePointer(
+                            child: FlameEnglishHouseWidget(
+                              currentDay: residentDay,
+                              streak: residentStreak,
+                              isDamaged: isDamaged,
+                              houseId: houseId,
+                              paletteId: paletteId,
+                              isPresident: isPresident,
+                            ),
+                          ),
+                          // 🛡️ VIP Protective Dome Perimeter
+                          if (isVip)
+                            IgnorePointer(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(36),
+                                  border: Border.all(
+                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.45),
+                                    width: 2.0,
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF0284C7).withValues(alpha: 0.22),
+                                      blurRadius: 28,
+                                      spreadRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                     ),
                   ),
                 ),
 
-                // 📜 5. Bottom Floating Card with Thought Caption & "Visit Home" CTA
+                // 🪖 Soldiers Surrounding VIP Home ("പട്ടാളക്കാരെ ചുറ്റും കാണിക്കണം")
+                if (isVip) ...[
+                  // Left Army Soldier
+                  Positioned(
+                    bottom: MediaQuery.of(context).padding.bottom + 142,
+                    left: 16,
+                    child: const ArmySoldierGuardWidget(
+                      isLeft: false,
+                      vocalText: 'VIP PROTOCOL 🪖',
+                    ),
+                  ),
+                  // Right Army Soldier
+                  Positioned(
+                    bottom: MediaQuery.of(context).padding.bottom + 142,
+                    right: 16,
+                    child: const ArmySoldierGuardWidget(
+                      isLeft: true,
+                      vocalText: 'ARMED DEFENSE 🛑',
+                    ),
+                  ),
+                ],
+
+                // 🏠 5. Bottom "Visit Home" Button ONLY (Per User Directive: Title removed completely)
                 Positioned(
                   bottom: MediaQuery.of(context).padding.bottom + 68,
-                  left: 16,
-                  right: 16,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.72),
-                      borderRadius: BorderRadius.circular(22),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.15),
-                        width: 1.2,
+                  left: 20,
+                  right: 20,
+                  child: Center(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        _togglePause();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PocketHomesReelsFeedWidget(
+                              initialHouseId: houseId,
+                            ),
+                          ),
+                        ).then((_) => _togglePause());
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 13),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
+                          ),
+                          borderRadius: BorderRadius.circular(28),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
+                              blurRadius: 18,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.home_work_rounded, color: Colors.black, size: 20),
+                            const SizedBox(width: 9),
+                            Text(
+                              'Visit Home',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            const Icon(Icons.arrow_forward_rounded, color: Colors.black87, size: 16),
+                          ],
+                        ),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.5),
-                          blurRadius: 18,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (thoughtContent.isNotEmpty) ...[
-                          Text(
-                            thoughtContent,
-                            style: GoogleFonts.inter(
-                              color: Colors.white.withValues(alpha: 0.95),
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.w500,
-                              height: 1.35,
-                            ),
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                        GestureDetector(
-                          behavior: HitTestBehavior.opaque,
-                          onTap: () {
-                            _togglePause();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => PocketHomesReelsFeedWidget(
-                                  initialHouseId: houseId,
-                                ),
-                              ),
-                            ).then((_) => _togglePause());
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                colors: [Color(0xFFFFFC00), Color(0xFFFFB700)],
-                              ),
-                              borderRadius: BorderRadius.circular(24),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.home_work_rounded, color: Colors.black, size: 18),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Visit Home',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.black,
-                                    fontSize: 13.5,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                 ),

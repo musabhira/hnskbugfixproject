@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 🌐 Interactive Native Language Selection Modal
@@ -24,7 +23,7 @@ class PocketLanguageSelectionDialog extends StatefulWidget {
       'code': 'Hindi',
       'name': 'हिन्दी',
       'englishName': 'Hindi',
-      'flag': '🇮🇳',
+      'flag': '🪷',
       'desc': 'सरल हिन्दी में सम्पूर्ण व्याख्या और अभ्यास',
     },
     {

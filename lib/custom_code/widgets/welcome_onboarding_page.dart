@@ -859,12 +859,10 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   Future<void> _initBgm() async {
     try {
-      if (PocketGameAudioService.instance.isMutedNotifier.value) {
-        await PocketGameAudioService.instance.toggleMute();
-      }
-      _isAudioMuted = PocketGameAudioService.instance.isMutedNotifier.value;
+      await PocketGameAudioService.instance.setMuted(false, persist: false);
+      _isAudioMuted = false;
       await PocketGameAudioService.instance.setVolume(0.16);
-      await PocketGameAudioService.instance.playNextShuffleTrack(mood: 'happy');
+      await PocketGameAudioService.instance.playAmbientAppTheme();
     } catch (e) {
       debugPrint('Non-critical BGM note: $e');
     }
@@ -3236,24 +3234,26 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         await prefs.setString('favorited_tools_${user.id}', jsonEncode(favTools));
       }
 
-      // 4. Schedule Alarms for all routine items where hasAlarm == true!
-      for (int i = 0; i < _onboardingRoutineItems.length; i++) {
-        final item = _onboardingRoutineItems[i];
-        if (item.hasAlarm) {
-          final notifId = item.isStudySlot ? 7777 : (8000 + i);
-          await PushNotificationService.scheduleDailyNotification(
-            id: notifId,
-            title: item.isStudySlot
-                ? '⏰ English Speaking Practice Time!'
-                : '⏰ ${item.title}',
-            body: item.isStudySlot
-                ? 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥'
-                : (item.description ?? 'Scheduled routine reminder'),
-            hour: item.startTime.hour,
-            minute: item.startTime.minute,
-            payload: 'tool_Schedule',
-            isAlarm: true,
-          );
+      // 4. Schedule Alarms for all routine items where hasAlarm == true! (Android only as requested)
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        for (int i = 0; i < _onboardingRoutineItems.length; i++) {
+          final item = _onboardingRoutineItems[i];
+          if (item.hasAlarm) {
+            final notifId = item.isStudySlot ? 7777 : (8000 + i);
+            await PushNotificationService.scheduleDailyNotification(
+              id: notifId,
+              title: item.isStudySlot
+                  ? '⏰ English Speaking Practice Time!'
+                  : '⏰ ${item.title}',
+              body: item.isStudySlot
+                  ? 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥'
+                  : (item.description ?? 'Scheduled routine reminder'),
+              hour: item.startTime.hour,
+              minute: item.startTime.minute,
+              payload: 'tool_Schedule',
+              isAlarm: true,
+            );
+          }
         }
       }
     } catch (e) {

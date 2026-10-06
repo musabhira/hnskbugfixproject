@@ -115,7 +115,7 @@ class PocketDailyMissionPage extends StatefulWidget {
   static const Map<String, String> kLanguageLabels = {
     'Malayalam': '🇮🇳 മലയാളം',
     'Tamil': '🇮🇳 தமிழ்',
-    'Hindi': '🇮🇳 हिन्दी',
+    'Hindi': '🪷 हिन्दी',
     'Telugu': '🇮🇳 తెలుగు',
     'Kannada': '🇮🇳 ಕನ್ನಡ',
     'English': '🇬🇧 English',
