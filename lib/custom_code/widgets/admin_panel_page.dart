@@ -8320,26 +8320,52 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                           children: [
                             Row(
                               children: [
-                                CircleAvatar(
-                                  radius: 20,
-                                  backgroundColor: const Color(0xFF1E293B),
-                                  backgroundImage: (avatarUrl != null &&
-                                          avatarUrl.toString().isNotEmpty)
-                                      ? NetworkImage(avatarUrl.toString())
-                                      : null,
-                                  child: (avatarUrl == null ||
-                                          avatarUrl.toString().isEmpty)
-                                      ? Text(
-                                          citizenName.isNotEmpty
-                                              ? citizenName[0].toUpperCase()
-                                              : 'C',
-                                          style: const TextStyle(
-                                            color: Color(0xFFFFD700),
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 16,
-                                          ),
-                                        )
-                                      : null,
+                                GestureDetector(
+                                  onTap: () {
+                                    final uid = (inq['user_id'] ?? '').toString();
+                                    if (uid.isNotEmpty) {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => VerfiedSwitchPage(userId: uid),
+                                        ),
+                                      );
+                                    }
+                                  },
+                                  child: Stack(
+                                    alignment: Alignment.bottomRight,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 20,
+                                        backgroundColor: const Color(0xFF1E293B),
+                                        backgroundImage: (avatarUrl != null &&
+                                                avatarUrl.toString().isNotEmpty)
+                                            ? NetworkImage(avatarUrl.toString())
+                                            : null,
+                                        child: (avatarUrl == null ||
+                                                avatarUrl.toString().isEmpty)
+                                            ? Text(
+                                                citizenName.isNotEmpty
+                                                    ? citizenName[0].toUpperCase()
+                                                    : 'C',
+                                                style: const TextStyle(
+                                                  color: Color(0xFFFFD700),
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 16,
+                                                ),
+                                              )
+                                            : null,
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(2),
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFF0F172A),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(Icons.open_in_new_rounded, size: 9, color: Color(0xFFFFD700)),
+                                      ),
+                                    ],
+                                  ),
                                 ),
                                 const SizedBox(width: 12),
                                 Expanded(
@@ -8751,6 +8777,21 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                             ),
                           ],
                         ),
+                      ),
+                      IconButton(
+                        tooltip: 'View Citizen Profile',
+                        icon: const Icon(Icons.person_pin_rounded,
+                            color: Color(0xFFFFD700), size: 22),
+                        onPressed: () {
+                          if (targetId.isNotEmpty) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VerfiedSwitchPage(userId: targetId),
+                              ),
+                            );
+                          }
+                        },
                       ),
                       IconButton(
                         icon: const Icon(Icons.close_rounded,

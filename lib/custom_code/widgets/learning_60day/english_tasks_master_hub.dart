@@ -273,8 +273,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   int _levelRivalShuffleSeed = 0;
 
   // Spacing & node dimensions for upward climbing roadmap with 90 English Houses
-  // User audio directive: "Steps okke detail page-il mathi. Puthiya plan. Main target page-il veedukal direct aayi kaanikkuka."
-  static const double _nodeSpacingY = 320.0;
+  // User audio directive: "ഒരു വീട് കഴിഞ്ഞ് ഒരു ഗ്യാപ്പ് ഇട്ടിട്ട് ഗേറ്റ്. ഇപ്പോൾ ഭയങ്കര congested ആയി കിടക്കുന്നുണ്ട്. Distance double/triple ആക്കുക."
+  static const double _nodeSpacingY = 560.0;
   static const double _expandedActiveGap = 0.0;
   static const double _topPadding = 480.0; // Summit apex spacing with Citadel Palace
   static const double _bottomPadding = 320.0;
@@ -2861,19 +2861,24 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Row 1: Compact 90-Day Mission Badge + Stats + Actions
-            Row(
-              children: [
-                if (canPop) ...[
-                  IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_rounded,
-                        color: Colors.white, size: 16),
-                    onPressed: () => Navigator.pop(context),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                  const SizedBox(width: 6),
-                ],
+            // Row 1: Compact 90-Day Mission Badge + Stats + Actions (Scaled via FittedBox to eliminate right RenderFlex overflow)
+            SizedBox(
+              width: double.infinity,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Row(
+                  children: [
+                    if (canPop) ...[
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_rounded,
+                            color: Colors.white, size: 16),
+                        onPressed: () => Navigator.pop(context),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                      const SizedBox(width: 6),
+                    ],
 
                 // Minimal Day Badge
                 Container(
@@ -3134,6 +3139,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ],
             ),
+          ),
+        ),
 
             const SizedBox(height: 6),
 
@@ -4548,9 +4555,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final isCurrent = (day == currentDay);
     final isUnlocked = isCompleted || _isMasterAdmin;
 
-    // Midpoint along the mountain trail between day and day + 1
-    final gateY = _getNodeY(day) - (_nodeSpacingY * 0.52);
-    final gateX = _getNodeXFractional(day + 0.48, screenWidth);
+    // Exact midpoint along the mountain trail between house day and house day + 1
+    final gateY = _getNodeY(day) - (_nodeSpacingY * 0.50);
+    final gateX = _getNodeXFractional(day + 0.50, screenWidth);
 
     final double gateWidth = (screenWidth * 0.72).clamp(240.0, 280.0);
     const double gateHeight = 64.0;

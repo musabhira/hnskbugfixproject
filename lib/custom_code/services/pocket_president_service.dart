@@ -228,35 +228,39 @@ class PocketPresidentService {
     final updatedHistory = [message, ...history];
     await prefs.setString(key, jsonEncode(updatedHistory));
 
-    // 2. Register inquiry in Master Inquiries List for Admin Panel
+    // 2. Fetch sender profile details to enrich report metadata
+    String userName = 'Citizen';
+    String? userAvatar;
+    int learningDay = 1;
+    try {
+      final prof = await SupaFlow.client
+          .from('profile')
+          .select('id, user_id, name, first_name, username, profile_image_url, learning_day')
+          .or('user_id.eq.$userId,id.eq.$userId')
+          .maybeSingle();
+      if (prof != null) {
+        final n = (prof['name'] ?? prof['username'] ?? prof['first_name'] ?? '').toString().trim();
+        if (n.isNotEmpty) userName = n;
+        userAvatar = prof['profile_image_url']?.toString();
+        if (prof['learning_day'] != null) {
+          learningDay = (prof['learning_day'] as num).toInt();
+        }
+      }
+    } catch (_) {}
+
+    // 3. Register inquiry in Master Inquiries List for Admin Panel
     await _recordMasterInquiry(
       userId: userId,
+      userName: userName,
+      userAvatar: userAvatar,
+      learningDay: learningDay,
       lastMessage: messageText,
       timestamp: now,
     );
 
-    // 3. Sync to Supabase reports table for cross-device Admin Panel support
+    // 4. Sync to Supabase reports table for cross-device Admin Panel support
     try {
       final supabase = SupaFlow.client;
-      // Fetch user profile info with real name
-      String userName = 'Citizen';
-      String? userAvatar;
-      int learningDay = 1;
-      try {
-        final prof = await supabase
-            .from('profile')
-            .select('name, first_name, profile_image_url, learning_day')
-            .eq('user_id', userId)
-            .maybeSingle();
-        if (prof != null) {
-          final n = (prof['name'] ?? prof['first_name'] ?? '').toString().trim();
-          if (n.isNotEmpty) userName = n;
-          userAvatar = prof['profile_image_url']?.toString();
-          if (prof['learning_day'] != null) {
-            learningDay = (prof['learning_day'] as num).toInt();
-          }
-        }
-      } catch (_) {}
 
       // Check if report row already exists for this citizen inquiry
       final existingReport = await supabase
@@ -735,10 +739,11 @@ class PocketPresidentService {
         try {
           final profs = await supabase
               .from('profile')
-              .select('user_id, name, first_name, profile_image_url, learning_day, english_level')
+              .select('id, user_id, name, first_name, username, profile_image_url, learning_day, english_level')
               .inFilter('user_id', reporterIds.toSet().toList());
           for (var p in profs) {
-            profileMap[p['user_id'].toString()] = p;
+            if (p['user_id'] != null) profileMap[p['user_id'].toString()] = p;
+            if (p['id'] != null) profileMap[p['id'].toString()] = p;
           }
         } catch (e) {
           debugPrint('Error batch-fetching citizen profiles: $e');
@@ -755,15 +760,17 @@ class PocketPresidentService {
 
         final isGeneralReport = row['content_type'] != 'president_inquiry';
         final desc = row['description'] ?? row['reason'] ?? '';
-        final reporterId = (row['reporter_id'] ?? '').toString();
+        final reporterId = (row['reporter_id'] ?? row['user_id'] ?? '').toString();
         final prof = profileMap[reporterId];
 
         String realName = '';
         if (prof != null) {
-          realName = (prof['name'] ?? prof['first_name'] ?? '').toString().trim();
+          final n = (prof['name'] ?? prof['username'] ?? prof['first_name'] ?? '').toString().trim();
+          if (n.isNotEmpty && n != 'Citizen') realName = n;
         }
         if (realName.isEmpty) {
-          realName = (extra['user_name'] ?? '').toString().trim();
+          final en = (extra['user_name'] ?? '').toString().trim();
+          if (en.isNotEmpty && en != 'Citizen') realName = en;
         }
         if (realName.isEmpty || realName == 'Citizen' || realName.startsWith('Citizen (')) {
           realName = reporterId.length > 5 ? 'Citizen ${reporterId.substring(0, 5)}' : 'Citizen';
@@ -819,6 +826,9 @@ class PocketPresidentService {
     required String userId,
     required String lastMessage,
     required DateTime timestamp,
+    String? userName,
+    String? userAvatar,
+    int? learningDay,
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -826,9 +836,14 @@ class PocketPresidentService {
       List<dynamic> list = raw != null && raw.isNotEmpty ? jsonDecode(raw) : [];
 
       final existingIndex = list.indexWhere((i) => i['user_id'] == userId);
+      final finalName = (userName != null && userName.isNotEmpty && userName != 'Citizen')
+          ? userName
+          : (userId.length > 5 ? 'Citizen ${userId.substring(0, 5)}' : 'Citizen');
       final inquiryData = {
         'user_id': userId,
-        'user_name': 'Citizen ${userId.length > 5 ? userId.substring(0, 5) : userId}',
+        'user_name': finalName,
+        'user_avatar': userAvatar,
+        'learning_day': learningDay ?? 1,
         'last_message': lastMessage,
         'status': 'pending',
         'created_at': timestamp.toIso8601String(),

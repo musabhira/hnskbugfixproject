@@ -52,7 +52,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     {
       'id': 'monthly',
       'name': 'Poket VIP Monthly',
-      'tagline': '₹249/mo • 100% Ad-Free + Instant Binge Access',
+      'tagline': 'Binge Mode • 100% Ad-Free Everywhere',
       'monthlyPrice': 249,
       'retailPrice': 999,
       'discountBadge': 'SAVE 75%',
@@ -74,11 +74,11 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     },
     {
       'id': 'quarterly',
-      'name': '⭐ 90-Day Fluency Pass',
-      'tagline': '₹799 (One-Time) • Best Value for 90-Day Mastery!',
+      'name': '90-Day Fluency Pass',
+      'tagline': 'Complete 90-Day Mastery • All 90 Houses',
       'monthlyPrice': 799,
       'retailPrice': 4999,
-      'discountBadge': 'BEST VALUE • SAVE 84%',
+      'discountBadge': 'SAVE 84%',
       'periodText': 'for 3 Months',
       'color': const Color(0xFFFFD700),
       'gradientColors': [Color(0xFFFFD700), Color(0xFFF59E0B)],
@@ -98,7 +98,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     {
       'id': 'yearly',
       'name': 'Poket VIP Annual Master',
-      'tagline': '₹1,699/year • Full Year VIP Mastery + Resume Diploma',
+      'tagline': 'Full Year Mastery • Day 90 C2 Diploma',
       'monthlyPrice': 1699,
       'retailPrice': 9999,
       'discountBadge': 'SAVE 83%',
@@ -897,41 +897,53 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                     end: Alignment.bottomCenter,
                   ),
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(height: 48),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFFFD700).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
-                      ),
-                      child: Text(
-                        '✦ POKET MATES FLUENT PRO',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 2,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 48),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.3)),
+                        ),
+                        child: Text(
+                          '✦ POKET MATES FLUENT PRO',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 2,
+                          ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Master Spoken English',
-                      style: GoogleFonts.outfit(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
+                      const SizedBox(height: 12),
+                      Text(
+                        'Master Spoken English',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
                       ),
-                    ),
-                    Text(
-                      '100% Ad-Free calls, AI grammar feedback & global mates',
-                      style: GoogleFonts.outfit(color: Colors.white54, fontSize: 14),
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      Text(
+                        '100% Ad-Free calls, AI grammar feedback & global mates',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white60,
+                          fontSize: 13.5,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1176,7 +1188,7 @@ class _SubscriptionPageState extends State<SubscriptionPage>
             children: [
               // Header
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: (plan['gradientColors'] as List<Color>)
@@ -1187,68 +1199,99 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                   ),
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                 ),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(14),
+                    // Top Badges Row (Ensures badges never cram or squash title text)
+                    if (isPopular || plan['discountBadge'] != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: Row(
+                          children: [
+                            if (isPopular)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: color,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  '★ MOST POPULAR',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.black,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ),
+                            if (isPopular && plan['discountBadge'] != null)
+                              const SizedBox(width: 8),
+                            if (plan['discountBadge'] != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(color: const Color(0xFF10B981), width: 1),
+                                ),
+                                child: Text(
+                                  plan['discountBadge'] as String,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.w900,
+                                    color: const Color(0xFF34D399),
+                                    letterSpacing: 0.3,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                      child: Icon(plan['icon'] as IconData, color: color, size: 24),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Wrap(
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            spacing: 6,
-                            runSpacing: 4,
+
+                    // Main Row: Icon + Title/Subtitle on Left, Clear Price on Right
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(plan['icon'] as IconData, color: color, size: 24),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 plan['name'] as String,
                                 style: GoogleFonts.outfit(
-                                  fontSize: 16,
+                                  fontSize: 16.5,
                                   fontWeight: FontWeight.bold,
                                   color: Colors.white,
                                 ),
                               ),
-                              if (isPopular)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                                  decoration: BoxDecoration(
-                                    color: color,
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    'POPULAR',
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
-                                    ),
-                                  ),
+                              const SizedBox(height: 3),
+                              Text(
+                                plan['tagline'] as String,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white60,
+                                  fontSize: 11.5,
                                 ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 3),
-                          Text(
-                            plan['tagline'] as String,
-                            style: GoogleFonts.outfit(color: Colors.white54, fontSize: 11.5),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        if (plan['retailPrice'] != null && (plan['retailPrice'] as int) > 0)
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (plan['retailPrice'] != null && (plan['retailPrice'] as int) > 0)
                               Text(
                                 '₹${plan['retailPrice']}',
                                 style: GoogleFonts.outfit(
@@ -1258,42 +1301,28 @@ class _SubscriptionPageState extends State<SubscriptionPage>
                                   decorationColor: Colors.white38,
                                 ),
                               ),
-                              if (plan['discountBadge'] != null) ...[
-                                const SizedBox(width: 4),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(4),
-                                    border: Border.all(color: const Color(0xFF10B981), width: 0.8),
-                                  ),
-                                  child: Text(
-                                    plan['discountBadge'] as String,
-                                    style: GoogleFonts.outfit(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                      color: const Color(0xFF10B981),
-                                    ),
-                                  ),
+                            Text(
+                              price == 0 ? 'FREE' : '₹$price',
+                              style: GoogleFonts.outfit(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: color,
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                            if (price > 0)
+                              Text(
+                                plan['periodText'] != null && (plan['periodText'] as String).isNotEmpty
+                                    ? plan['periodText'] as String
+                                    : (_isYearly ? '/year' : '/month'),
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white54,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
                                 ),
-                              ],
-                            ],
-                          ),
-                        Text(
-                          price == 0 ? 'FREE' : '₹$price',
-                          style: GoogleFonts.outfit(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: color,
-                          ),
+                              ),
+                          ],
                         ),
-                        if (price > 0)
-                          Text(
-                            plan['periodText'] != null && (plan['periodText'] as String).isNotEmpty
-                                ? plan['periodText'] as String
-                                : (_isYearly ? '/year' : '/month'),
-                            style: GoogleFonts.outfit(color: Colors.white38, fontSize: 11),
-                          ),
                       ],
                     ),
                   ],

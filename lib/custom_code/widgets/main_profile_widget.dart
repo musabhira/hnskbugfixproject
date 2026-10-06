@@ -2849,14 +2849,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: Row(
-                  children: [
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Mates", _followersCount > 0 ? _followersCount : _friendsCount, textColor, activeStage))),
-                    const SizedBox(width: 8),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildPocketScoreStatItem(_pocketScore, activeStage))),
-                    const SizedBox(width: 8),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildAchievementsStatItem(textColor, activeStage, activeStage.day))),
-                  ],
+                child: _buildUnifiedStatsRow(
+                  textColor: textColor,
+                  activeStage: activeStage,
                 ),
               ),
             ],
@@ -2902,14 +2897,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           child: Row(
             children: [
               Expanded(
-                child: Row(
-                  children: [
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildStatItem("Mates", _followersCount > 0 ? _followersCount : _friendsCount, textColor, activeStage))),
-                    const SizedBox(width: 8),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildPocketScoreStatItem(_pocketScore, activeStage))),
-                    const SizedBox(width: 8),
-                    Expanded(child: FittedBox(fit: BoxFit.scaleDown, child: _buildAchievementsStatItem(textColor, activeStage, activeStage.day))),
-                  ],
+                child: _buildUnifiedStatsRow(
+                  textColor: textColor,
+                  activeStage: activeStage,
                 ),
               ),
               const SizedBox(width: 14),
@@ -2992,15 +2982,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: activeStage.buttonColor.withValues(alpha: 0.4), width: 1.2),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _buildStatItem("Mates", _followersCount > 0 ? _followersCount : _friendsCount, textColor, activeStage),
-                Container(width: 1, height: 28, color: activeStage.buttonColor.withValues(alpha: 0.3)),
-                _buildPocketScoreStatItem(_pocketScore, activeStage),
-                Container(width: 1, height: 28, color: activeStage.buttonColor.withValues(alpha: 0.3)),
-                _buildAchievementsStatItem(textColor, activeStage, activeStage.day),
-              ],
+            child: _buildUnifiedStatsRow(
+              textColor: textColor,
+              activeStage: activeStage,
             ),
           ),
         ),
@@ -3160,54 +3144,9 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
               ),
               const SizedBox(width: 14),
               Expanded(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: _buildInstagramStatColumn(
-                        label: 'Mates',
-                        count: _followersCount > 0 ? _followersCount : _friendsCount,
-                        textColor: textColor,
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildInstagramStatColumn(
-                        label: 'Pocket Score',
-                        count: _pocketScore,
-                        textColor: const Color(0xFFFFD700),
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('🪙 Pocket Score: $_pocketScore PTS • Stage ${activeStage.stageNumber}',
-                                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-                              backgroundColor: const Color(0xFF0F172A),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    Expanded(
-                      child: _buildInstagramStatColumn(
-                        label: 'Trophies',
-                        count: () {
-                          final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
-                          final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
-                          if (isRobot) {
-                            final robot = PocketRobotService.getRobotById(userId) ?? PocketRobotService.getRobotByLevel(activeStage.day);
-                            final tc = PocketRobotService.getTrophiesForRobot(robot) + (activeStage.day >= 90 ? 1 : 0);
-                            return tc < 1 && activeStage.day >= 90 ? 1 : tc;
-                          } else {
-                            final base = activeStage.day >= 90 ? 6 : (activeStage.day >= 60 ? 5 : (activeStage.day >= 30 ? 4 : (activeStage.day >= 21 ? 3 : (activeStage.day >= 15 ? 2 : 1))));
-                            return base + _pocketTrophyCount;
-                          }
-                        }(),
-                        textColor: textColor,
-                        onTap: () => _showAchievementsModal(activeStage.day, _pocketScore),
-                      ),
-                    ),
-                  ],
+                child: _buildUnifiedStatsRow(
+                  textColor: textColor,
+                  activeStage: activeStage,
                 ),
               ),
             ],
@@ -4410,6 +4349,78 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
           ),
         ],
       ),
+    );
+  }
+
+  /// 👑 Instagram-Style Clean 3-Column Profile Stats Bar (Mates, PS, Trophies)
+  /// User audio directive: "Pocket Score peruthu poyi. PS ennu churukki koduthal mathi. Ella levelukalilum Instagram pole same length aakkuka."
+  Widget _buildUnifiedStatsRow({
+    required Color textColor,
+    required LearningMilestoneStage activeStage,
+  }) {
+    final trophyCount = () {
+      final isUuid = RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(userId);
+      final isRobot = PocketRobotService.isRobotId(userId) || !isUuid;
+      if (isRobot) {
+        final robot = PocketRobotService.getRobotById(userId) ??
+            PocketRobotService.getRobotByLevel(activeStage.day);
+        final tc = PocketRobotService.getTrophiesForRobot(robot) +
+            (activeStage.day >= 90 ? 1 : 0);
+        return tc < 1 && activeStage.day >= 90 ? 1 : tc;
+      } else {
+        final base = activeStage.day >= 90
+            ? 6
+            : (activeStage.day >= 60
+                ? 5
+                : (activeStage.day >= 30
+                    ? 4
+                    : (activeStage.day >= 21
+                        ? 3
+                        : (activeStage.day >= 15 ? 2 : 1))));
+        return base + _pocketTrophyCount;
+      }
+    }();
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Expanded(
+          child: _buildInstagramStatColumn(
+            label: 'Mates',
+            count: _followersCount > 0 ? _followersCount : _friendsCount,
+            textColor: textColor,
+          ),
+        ),
+        Expanded(
+          child: _buildInstagramStatColumn(
+            label: 'PS',
+            count: _pocketScore,
+            textColor: const Color(0xFFFFD700),
+            onTap: () {
+              HapticFeedback.selectionClick();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '🪙 Pocket Score: $_pocketScore PTS • Level ${activeStage.stageNumber}',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                  ),
+                  backgroundColor: const Color(0xFF0F172A),
+                  behavior: SnackBarBehavior.floating,
+                ),
+              );
+            },
+          ),
+        ),
+        Expanded(
+          child: _buildInstagramStatColumn(
+            label: 'Trophies',
+            count: trophyCount,
+            textColor: textColor,
+            onTap: () =>
+                _showAchievementsModal(activeStage.day, _pocketScore),
+          ),
+        ),
+      ],
     );
   }
 
