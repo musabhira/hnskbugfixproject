@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 import '/auth/supabase_auth/auth_util.dart';
 import '/backend/supabase/supabase.dart';
@@ -119,6 +120,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   static const bool kEnableAppleSignIn = false;
   static const bool kEnableGoogleSignIn = false;
 
+  // TTS & Interactive Avatar State
+  FlutterTts? _flutterTts;
+  bool _isAvatarSpeaking = false;
+  String _generatedPassword = '';
+
   // Onboarding Selections
   String _selectedNativeLanguage = 'Hindi';
   final String _selectedTargetLanguage = 'English';
@@ -146,7 +152,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   // Options Data
   final List<Map<String, String>> _nativeLanguages = [
-    {'code': 'Hindi', 'name': 'हिन्दी (Hindi)', 'flag': '🇮🇳'},
+    {'code': 'Hindi', 'name': 'हिन्दी (Hindi)', 'flag': '🪷'},
     {'code': 'Tamil', 'name': 'தமிழ் (Tamil)', 'flag': '🦚'},
     {'code': 'Malayalam', 'name': 'മലയാളം (Malayalam)', 'flag': '🌴'},
     {'code': 'Kannada', 'name': 'ಕನ್ನಡ (Kannada)', 'flag': '🌸'},
@@ -312,7 +318,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     super.initState();
     _initHeroAnimation();
     _initBgm();
+    _initTts();
     _initHouseWorld();
+    _generateNewPassword();
     _generateOnboardingRoutine();
     _emailFocusNode.addListener(_handleFieldFocus);
     _passwordFocusNode.addListener(_handleFieldFocus);
@@ -851,11 +859,126 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   Future<void> _initBgm() async {
     try {
+      if (PocketGameAudioService.instance.isMutedNotifier.value) {
+        await PocketGameAudioService.instance.toggleMute();
+      }
       _isAudioMuted = PocketGameAudioService.instance.isMutedNotifier.value;
-      await PocketGameAudioService.instance.playAmbientAppTheme();
+      await PocketGameAudioService.instance.setVolume(0.16);
+      await PocketGameAudioService.instance.playNextShuffleTrack(mood: 'happy');
     } catch (e) {
       debugPrint('Non-critical BGM note: $e');
     }
+  }
+
+  // 🔑 Secure Random Password Generation for Onboarding
+  String _createRandomSecurePassword() {
+    final rand = math.Random();
+    const letters = 'abcdefghjkmnpqrstuvwxyz';
+    const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const symbols = '!@#*';
+    final num = 100 + rand.nextInt(900);
+    final l1 = letters[rand.nextInt(letters.length)];
+    final u1 = uppers[rand.nextInt(uppers.length)];
+    final s1 = symbols[rand.nextInt(symbols.length)];
+    return 'Pocket$num$s1$u1$l1';
+  }
+
+  void _generateNewPassword() {
+    setState(() {
+      _generatedPassword = _createRandomSecurePassword();
+      if (_isSignUpMode) {
+        _passwordController.text = _generatedPassword;
+      }
+    });
+  }
+
+  // 🗣️ Text-to-Speech Engine for Interactive Cyber Cat Avatar
+  Future<void> _initTts() async {
+    try {
+      _flutterTts = FlutterTts();
+      await _flutterTts!.setLanguage("en-US");
+      await _flutterTts!.setSpeechRate(0.48);
+      await _flutterTts!.setPitch(1.05);
+      await _flutterTts!.setVolume(1.0);
+
+      _flutterTts!.setStartHandler(() {
+        if (mounted) setState(() => _isAvatarSpeaking = true);
+      });
+      _flutterTts!.setCompletionHandler(() {
+        if (mounted) setState(() => _isAvatarSpeaking = false);
+      });
+      _flutterTts!.setCancelHandler(() {
+        if (mounted) setState(() => _isAvatarSpeaking = false);
+      });
+      _flutterTts!.setErrorHandler((msg) {
+        if (mounted) setState(() => _isAvatarSpeaking = false);
+      });
+    } catch (e) {
+      debugPrint('TTS init error: $e');
+    }
+  }
+
+  String _getPromptForStep(int step) {
+    switch (step) {
+      case 0:
+        return "Hi there! Welcome to Pocket Mates! Master English speaking naturally with bite-sized daily practice.";
+      case 1:
+        return "Let's answer 5 quick questions to personalize your English learning plan.";
+      case 2:
+        return "What is your native language?";
+      case 3:
+        return "How did you hear about Pocket Mates?";
+      case 4:
+        return "What is your current English speaking level?";
+      case 5:
+        return "What is your primary goal for learning English?";
+      case 6:
+        return "What is your daily routine or occupation?";
+      case 7:
+        return "What time of day works best for your daily English practice?";
+      case 8:
+        return "How much time can you commit each day to practice speaking?";
+      case 9:
+        return "Here is your personalized daily routine and study schedule. Take a look!";
+      case 10:
+        return "Turn on reminders so you never miss your daily speaking practice.";
+      case 11:
+        return "Pocket Mates is your personal speaking partner. Practice anytime, anywhere!";
+      case 12:
+        return "Make a 3-month commitment to speaking, and watch your confidence grow!";
+      case 13:
+        return "Choose your plan to unlock interactive lessons and unlimited conversations.";
+      case 14:
+        return "How would you like to start your English journey today?";
+      case 15:
+        return "Awesome! Your personalized English plan is ready. Let's create your account to begin!";
+      default:
+        return "Let's continue your English learning journey!";
+    }
+  }
+
+  Future<void> _speakText(String text) async {
+    if (_flutterTts == null) return;
+    try {
+      await _flutterTts!.stop();
+      final clean = text
+          .replaceAll(
+              RegExp(r'[\u{1F300}-\u{1FAFF}|\u{2600}-\u{27BF}]', unicode: true),
+              '')
+          .replaceAll('\n', ' ')
+          .replaceAll(RegExp(r'\s+'), ' ')
+          .trim();
+      if (clean.isNotEmpty) {
+        await _flutterTts!.speak(clean);
+      }
+    } catch (e) {
+      debugPrint('TTS speak error: $e');
+    }
+  }
+
+  Future<void> _speakStepPrompt(int step) async {
+    final prompt = _getPromptForStep(step);
+    await _speakText(prompt);
   }
 
   void _toggleAudioMute() {
@@ -866,6 +989,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
   @override
   void dispose() {
+    _flutterTts?.stop();
     _emailFocusNode.removeListener(_handleFieldFocus);
     _passwordFocusNode.removeListener(_handleFieldFocus);
     _emailFocusNode.dispose();
@@ -899,6 +1023,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       if (nextStep >= 2 && !_isHouseRevealed) {
         _revealHouse();
       }
+      _speakStepPrompt(nextStep);
     }
   }
 
@@ -949,13 +1074,16 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   void _prevStep() {
     HapticFeedback.lightImpact();
     if (_currentStep > 0) {
-      setState(() => _currentStep--);
+      final prevStep = _currentStep - 1;
+      setState(() => _currentStep = prevStep);
       _pageController.animateToPage(
-        _currentStep,
+        prevStep,
         duration: const Duration(milliseconds: 320),
         curve: Curves.easeInOutCubic,
       );
+      _speakStepPrompt(prevStep);
     } else {
+      _flutterTts?.stop();
       setState(() => _mode = WelcomeMode.welcome);
     }
   }
@@ -1077,24 +1205,26 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       // Also set for guest fallback
       await prefs.setString('favorited_tools_guest', jsonEncode(favTools));
 
-      // 🔔 3. Schedule Recurring Study Notification Alarm for all active alarms
-      for (int i = 0; i < _onboardingRoutineItems.length; i++) {
-        final item = _onboardingRoutineItems[i];
-        if (item.hasAlarm) {
-          final notifId = item.isStudySlot ? 7777 : (8000 + i);
-          await PushNotificationService.scheduleDailyNotification(
-            id: notifId,
-            title: item.isStudySlot
-                ? '⏰ English Speaking Practice Time!'
-                : '⏰ ${item.title}',
-            body: item.isStudySlot
-                ? 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥'
-                : (item.description ?? 'Scheduled routine reminder'),
-            hour: item.startTime.hour,
-            minute: item.startTime.minute,
-            payload: 'tool_Schedule',
-            isAlarm: true,
-          );
+      // 🔔 3. Schedule Recurring Study Notification Alarm for all active alarms (Android only as requested)
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        for (int i = 0; i < _onboardingRoutineItems.length; i++) {
+          final item = _onboardingRoutineItems[i];
+          if (item.hasAlarm) {
+            final notifId = item.isStudySlot ? 7777 : (8000 + i);
+            await PushNotificationService.scheduleDailyNotification(
+              id: notifId,
+              title: item.isStudySlot
+                  ? '⏰ English Speaking Practice Time!'
+                  : '⏰ ${item.title}',
+              body: item.isStudySlot
+                  ? 'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥'
+                  : (item.description ?? 'Scheduled routine reminder'),
+              hour: item.startTime.hour,
+              minute: item.startTime.minute,
+              payload: 'tool_Schedule',
+              isAlarm: true,
+            );
+          }
         }
       }
     } catch (e) {
@@ -1138,6 +1268,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   }
 
   Future<void> _handleEmailAuth() async {
+    if (_isSignUpMode) {
+      _passwordController.text = _generatedPassword;
+    }
     if (!_loginFormKey.currentState!.validate()) return;
     if (_isSignUpMode && !_agreedToTerms) {
       setState(() {
@@ -1464,6 +1597,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           _mode = WelcomeMode.onboarding;
                           _currentStep = 0;
                         });
+                        _speakStepPrompt(0);
                       },
                     ),
 
@@ -1991,23 +2125,18 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   // --- Step 0: Welcome Greeting ---
   Widget _buildStep0Greeting() {
     return _buildStepContainer(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          _buildStarterAvatar(size: 68),
-          const SizedBox(height: 16),
-          _buildMascotSpeechBubble("Hi there! Welcome to PoketMates 👋"),
-          const SizedBox(height: 14),
-          Text(
-            "Master English speaking naturally with bite-sized daily practice and real conversation.",
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: const Color(0xFFA1A1AA),
-              fontSize: 13.5,
-              height: 1.4,
-            ),
+      title: "Hi there! Welcome to Pocket Mates 👋",
+      mascotHint:
+          "Master English speaking naturally with bite-sized daily practice and real conversation.",
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: _buildStarterAvatar(
+            size: 96,
+            isSpeaking: _isAvatarSpeaking,
+            onReplay: () => _speakStepPrompt(0),
           ),
-        ],
+        ),
       ),
       onContinue: _nextStep,
       buttonText: 'GET STARTED',
@@ -2017,34 +2146,24 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   // --- Step 1: Questions Intro ---
   Widget _buildStep1QuestionsIntro() {
     return _buildStepContainer(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
+      title: "5 quick questions to personalize your plan 🎯",
+      mascotHint:
+          "We'll tune your daily topics, high-impact vocabulary, and speaking level.",
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Container(
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: const Color(0xFF1E293B),
-              border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+              border: Border.all(color: const Color(0xFF38BDF8), width: 2),
             ),
             child: const Icon(Icons.tune_rounded,
-                color: Color(0xFF38BDF8), size: 30),
+                color: Color(0xFF38BDF8), size: 34),
           ),
-          const SizedBox(height: 16),
-          _buildMascotSpeechBubble(
-              "5 quick questions to personalize your plan 🎯"),
-          const SizedBox(height: 14),
-          Text(
-            "We'll tune your daily topics, high-impact vocabulary, and speaking level.",
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: const Color(0xFFA1A1AA),
-              fontSize: 13.5,
-              height: 1.4,
-            ),
-          ),
-        ],
+        ),
       ),
       onContinue: _nextStep,
       buttonText: 'CONTINUE',
@@ -3788,12 +3907,15 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   // --- Step 6: Notifications ---
   Widget _buildStep6Notifications() {
     return _buildStepContainer(
+      title: "Stay on track with gentle reminders ⏰",
+      mascotHint:
+          "Pocket Mates can send friendly daily reminders to protect your speaking streak.",
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          const SizedBox(height: 16),
           Container(
-            width: 68,
-            height: 68,
+            width: 76,
+            height: 76,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: const Color(0xFF18181B),
@@ -3807,21 +3929,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               ],
             ),
             child: const Icon(Icons.notifications_active_rounded,
-                color: Color(0xFF58CC02), size: 34),
+                color: Color(0xFF58CC02), size: 38),
           ),
-          const SizedBox(height: 16),
-          _buildMascotSpeechBubble("Stay on track with gentle reminders ⏰"),
-          const SizedBox(height: 12),
-          Text(
-            "PoketMates can send friendly daily reminders to protect your speaking streak.",
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
-              color: const Color(0xFFA1A1AA),
-              fontSize: 13.5,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 24),
           _buildDuolingoButton(
             label: 'ALLOW NOTIFICATIONS',
             backgroundColor: const Color(0xFF58CC02),
@@ -3833,6 +3943,24 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     await PushNotificationService.requestPermissionExplicitly();
                 final prefs = await SharedPreferences.getInstance();
                 await prefs.setBool('pm_notifications_enabled', granted);
+                if (granted &&
+                    !kIsWeb &&
+                    defaultTargetPlatform == TargetPlatform.android) {
+                  final studySlot = _onboardingRoutineItems.firstWhere(
+                    (it) => it.isStudySlot,
+                    orElse: () => _onboardingRoutineItems.first,
+                  );
+                  await PushNotificationService.scheduleDailyNotification(
+                    id: 7777,
+                    title: '⏰ English Speaking Practice Time!',
+                    body:
+                        'Time for your daily English speaking session! Hop in, practice with friends and keep your streak strong! 🔥',
+                    hour: studySlot.startTime.hour,
+                    minute: studySlot.startTime.minute,
+                    payload: 'tool_Schedule',
+                    isAlarm: true,
+                  );
+                }
               } catch (_) {}
               _nextStep();
             },
@@ -4463,34 +4591,38 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                             const SizedBox(height: 12),
 
                             // Password Field
-                            TextFormField(
-                              controller: _passwordController,
-                              focusNode: _passwordFocusNode,
-                              obscureText: _obscurePassword,
-                              textInputAction: TextInputAction.done,
-                              onFieldSubmitted: (_) => _handleEmailAuth(),
-                              style: GoogleFonts.inter(
-                                  color: Colors.white, fontSize: 14),
-                              decoration: _inputDecoration(
-                                hint: 'Password (min 6 characters)',
-                                icon: Icons.lock_outline_rounded,
-                                suffixIcon: IconButton(
-                                  icon: Icon(
-                                    _obscurePassword
-                                        ? Icons.visibility_off
-                                        : Icons.visibility,
-                                    color: const Color(0xFFA1A1AA),
-                                    size: 19,
+                            if (!_isSignUpMode) ...[
+                              TextFormField(
+                                controller: _passwordController,
+                                focusNode: _passwordFocusNode,
+                                obscureText: _obscurePassword,
+                                textInputAction: TextInputAction.done,
+                                onFieldSubmitted: (_) => _handleEmailAuth(),
+                                style: GoogleFonts.inter(
+                                    color: Colors.white, fontSize: 14),
+                                decoration: _inputDecoration(
+                                  hint: 'Password (min 6 characters)',
+                                  icon: Icons.lock_outline_rounded,
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_off
+                                          : Icons.visibility,
+                                      color: const Color(0xFFA1A1AA),
+                                      size: 19,
+                                    ),
+                                    onPressed: () => setState(() =>
+                                        _obscurePassword = !_obscurePassword),
                                   ),
-                                  onPressed: () => setState(() =>
-                                      _obscurePassword = !_obscurePassword),
                                 ),
+                                validator: (val) =>
+                                    (val == null || val.length < 6)
+                                        ? 'Password must be 6+ chars'
+                                        : null,
                               ),
-                              validator: (val) =>
-                                  (val == null || val.length < 6)
-                                      ? 'Password must be 6+ chars'
-                                      : null,
-                            ),
+                            ] else ...[
+                              _buildGeneratedPasswordCard(),
+                            ],
 
                             // 📜 Terms & Conditions Checkbox (App Store & Play Store mandatory)
                             if (_isSignUpMode) ...[
@@ -4801,35 +4933,14 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (title != null) ...[
-            Text(
-              title,
-              style: GoogleFonts.outfit(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                letterSpacing: -0.2,
-              ),
+            _buildChatSpeechHeader(
+              promptText: title,
+              hintText: mascotHint,
             ),
-            const SizedBox(height: 4),
-          ],
-          if (mascotHint != null) ...[
-            Row(
-              children: [
-                _buildStarterAvatar(size: 22),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    mascotHint,
-                    style: GoogleFonts.inter(
-                      color: const Color(0xFFA1A1AA),
-                      fontSize: 12.5,
-                      height: 1.25,
-                    ),
-                  ),
-                ),
-              ],
+          ] else if (mascotHint != null) ...[
+            _buildChatSpeechHeader(
+              promptText: mascotHint,
             ),
-            const SizedBox(height: 10),
           ],
           Expanded(
             child: SingleChildScrollView(
@@ -4854,19 +4965,27 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   }
 
   // 👤 Starter Avatar Widget
-  Widget _buildStarterAvatar({double size = 80}) {
-    return Container(
+  Widget _buildStarterAvatar({
+    double size = 80,
+    bool isSpeaking = false,
+    VoidCallback? onReplay,
+  }) {
+    final avatarWidget = Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-            color: const Color(0xFFFACC15), width: size > 40 ? 1.8 : 1.2),
+          color: isSpeaking ? const Color(0xFF10B981) : const Color(0xFFFACC15),
+          width: size > 40 ? (isSpeaking ? 2.5 : 1.8) : 1.2,
+        ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFACC15).withValues(alpha: 0.25),
-            blurRadius: size * 0.2,
-            spreadRadius: 1,
+            color: isSpeaking
+                ? const Color(0xFF10B981).withValues(alpha: 0.5)
+                : const Color(0xFFFACC15).withValues(alpha: 0.25),
+            blurRadius: isSpeaking ? size * 0.35 : size * 0.2,
+            spreadRadius: isSpeaking ? 2 : 1,
           ),
         ],
       ),
@@ -4876,6 +4995,157 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           size: size,
           showAura: false,
         ),
+      ),
+    );
+
+    if (onReplay == null) return avatarWidget;
+
+    return GestureDetector(
+      onTap: onReplay,
+      child: avatarWidget,
+    );
+  }
+
+  // 🐱 Conversational Chat Speech Header with Cyber Cat Mascot & Audio Replay
+  Widget _buildChatSpeechHeader({
+    required String promptText,
+    String? hintText,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Cyber Cat Mascot with speaking wave badge
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              _speakText(promptText);
+            },
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                _buildStarterAvatar(
+                  size: 46,
+                  isSpeaking: _isAvatarSpeaking,
+                ),
+                Positioned(
+                  bottom: -2,
+                  right: -2,
+                  child: Container(
+                    padding: const EdgeInsets.all(3.5),
+                    decoration: BoxDecoration(
+                      color: _isAvatarSpeaking
+                          ? const Color(0xFF10B981)
+                          : const Color(0xFF1E293B),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      _isAvatarSpeaking
+                          ? Icons.volume_up_rounded
+                          : Icons.play_arrow_rounded,
+                      size: 11,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+
+          // Conversational Chat Speech Bubble
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                _speakText(promptText);
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B).withValues(alpha: 0.95),
+                  borderRadius: const BorderRadius.only(
+                    topRight: Radius.circular(16),
+                    bottomLeft: Radius.circular(16),
+                    bottomRight: Radius.circular(16),
+                    topLeft: Radius.circular(4),
+                  ),
+                  border: Border.all(
+                    color: _isAvatarSpeaking
+                        ? const Color(0xFF10B981).withValues(alpha: 0.6)
+                        : Colors.white.withValues(alpha: 0.14),
+                    width: 1.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.25),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            promptText,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14.5,
+                              fontWeight: FontWeight.w700,
+                              letterSpacing: -0.2,
+                              height: 1.25,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Icon(
+                            Icons.volume_up_rounded,
+                            size: 13,
+                            color: _isAvatarSpeaking
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFA1A1AA),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (hintText != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        hintText,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFFA1A1AA),
+                          fontSize: 12,
+                          height: 1.2,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -4905,6 +5175,147 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           fontWeight: FontWeight.w600,
           height: 1.35,
         ),
+      ),
+    );
+  }
+
+  Widget _buildGeneratedPasswordCard() {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFF10B981).withValues(alpha: 0.6),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: 0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.vpn_key_rounded,
+                  color: Color(0xFF10B981), size: 18),
+              const SizedBox(width: 8),
+              Text(
+                'Auto-Generated Secure Password 🔑',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF10B981),
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded,
+                    color: Color(0xFFA1A1AA), size: 18),
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+                tooltip: 'Regenerate password',
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  _generateNewPassword();
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SelectableText(
+                    _generatedPassword,
+                    style: GoogleFonts.firaCode(
+                      color: Colors.white,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+                InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    Clipboard.setData(ClipboardData(text: _generatedPassword));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Row(
+                          children: [
+                            const Icon(Icons.check_circle_rounded,
+                                color: Color(0xFF10B981), size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Password copied to clipboard! Keep it safe.',
+                              style: GoogleFonts.inter(
+                                  color: Colors.white, fontSize: 13),
+                            ),
+                          ],
+                        ),
+                        backgroundColor: const Color(0xFF1E293B),
+                        duration: const Duration(seconds: 2),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10)),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.copy_rounded,
+                            color: Colors.white, size: 13),
+                        const SizedBox(width: 4),
+                        Text(
+                          'COPY',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'We generated this password for you. Tap COPY to save it for future logins.',
+            style: GoogleFonts.inter(
+              color: const Color(0xFFA1A1AA),
+              fontSize: 11.5,
+              height: 1.3,
+            ),
+          ),
+        ],
       ),
     );
   }
