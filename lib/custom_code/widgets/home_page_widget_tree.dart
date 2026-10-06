@@ -966,9 +966,6 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       case 'Drawing Tool':
         page = const DrawingPage();
         break;
-      case 'Dual Recorder':
-        page = const DualVideoRecorderWidget();
-        break;
       case 'Schedule':
         initialTab = 0;
         break;
@@ -1884,9 +1881,13 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             // Button 2: Pocket Talk (Opens 3D Swipable Cards)
             Expanded(
               child: GestureDetector(
-                onTap: () {
+                onTap: () async {
                   HapticFeedback.mediumImpact();
-                  PocketTalkCardSwiperDialog.show(context);
+                  await PocketTalkCardSwiperDialog.show(context);
+                  await _refreshPocketTalkPeers();
+                  await _loadPendingRequests();
+                  ref.read(conversationsProvider.notifier).refreshNow();
+                  if (mounted) setState(() {});
                 },
                 child: Container(
                   height: 42,
@@ -4174,7 +4175,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         }
                         final isPT = _pocketTalkPeerIds.contains(c.id) ||
                             (c.lastMessage?.contains('PocketTalk') == true ||
-                                c.lastMessage?.contains('Pocket Talk') == true);
+                                c.lastMessage?.contains('Pocket Talk') == true ||
+                                c.lastMessage?.contains('Spoken English Pact') == true);
                         if (!isPT) return false;
 
                         final isActive = _pocketTalkActivePeerIds.contains(c.id);
@@ -4189,6 +4191,40 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           return isActive;
                         }
                       }).toList();
+
+                      // If in Sent tab, ensure all sent Pocket Talk requests from _sentRequests are present
+                      if (_pocketTalkSubTabIndex == 1) {
+                        final existingIds = activeFiltered.map((c) => c.id).toSet();
+                        for (final req in _sentRequests) {
+                          final recId = req['user_id']?.toString() ?? req['receiver_id']?.toString() ?? '';
+                          final ctxType = req['context_type']?.toString() ?? '';
+                          final msg = req['message']?.toString() ?? '';
+                          final isPtReq = ctxType == 'pocket_talk' ||
+                              _pocketTalkPendingPeerIds.contains(recId) ||
+                              msg.contains('Spoken English Pact') ||
+                              msg.contains('Pocket Talk');
+                          if (recId.isNotEmpty && isPtReq && !existingIds.contains(recId)) {
+                            existingIds.add(recId);
+                            final sentAt = req['created_at'] != null
+                                ? DateTime.tryParse(req['created_at'].toString()) ?? DateTime.now()
+                                : DateTime.now();
+                            activeFiltered.add(
+                              ChatConversation(
+                                id: recId,
+                                name: req['receiver_name']?.toString() ?? 'Pocket Talk Partner',
+                                imageUrl: req['receiver_profile_image']?.toString() ?? req['receiver_avatar']?.toString(),
+                                lastMessage: '⚡ Challenged to a 4-Day Spoken English Pact (Pending)',
+                                lastMessageTime: sentAt,
+                                unreadCount: 0,
+                                otherUnreadCount: 0,
+                                isGroup: false,
+                                lastSenderId: myUid,
+                                isOnline: false,
+                              ),
+                            );
+                          }
+                        }
+                      }
                     }
 
                     if (activeFiltered.isNotEmpty) {

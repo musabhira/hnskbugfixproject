@@ -265,7 +265,13 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
             if (_engine.isInRoom && _engine.currentSpace?.id == space.id) {
               PocketAudioRoomSheet.show(context);
             } else {
-              await _engine.joinSpace(space, initialRole: AudioRole.listener);
+              final myId = Supabase.instance.client.auth.currentUser?.id;
+              final role = (space.hostUserId == myId)
+                  ? AudioRole.host
+                  : (space.participantCount < space.speakerLimit
+                      ? AudioRole.speaker
+                      : AudioRole.listener);
+              await _engine.joinSpace(space, initialRole: role);
               if (mounted) {
                 PocketAudioRoomSheet.show(context);
               }

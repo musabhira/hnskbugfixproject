@@ -86,12 +86,14 @@ class PocketMateService {
     required String senderId,
     required String receiverId,
     String? senderName,
+    String? receiverName,
+    String? receiverAvatarUrl,
     String? message,
-    String? contextType, // 'anonymous_chat', 'gallery_market', 'stranger_match'
+    String? contextType, // 'anonymous_chat', 'gallery_market', 'stranger_match', 'pocket_talk'
   }) async {
     if (senderId.isEmpty || receiverId.isEmpty) return false;
     try {
-      // If sending to a robot, enqueue with human-like response delay
+      // If sending to a robot or local candidate, enqueue with human-like response delay
       if (PocketRobotService.isRobotId(receiverId) ||
           !RegExp(r'^[0-9a-fA-F-]{36}$').hasMatch(receiverId)) {
         await PocketRobotService.enqueueUserRequestToRobot(
@@ -103,6 +105,36 @@ class PocketMateService {
           sentList.add(receiverId);
           await prefs.setStringList('sent_mate_requests_$senderId', sentList);
         }
+
+        // Cache full sent request for instant display in Sent tab
+        try {
+          final cacheStr = prefs.getString('sent_requests_cache_$senderId');
+          List<Map<String, dynamic>> cache = [];
+          if (cacheStr != null && cacheStr.isNotEmpty) {
+            cache = List<Map<String, dynamic>>.from(json.decode(cacheStr));
+          }
+          cache.removeWhere((x) =>
+              x['user_id'] == receiverId || x['receiver_id'] == receiverId);
+          cache.insert(0, {
+            'id': 'sent_${DateTime.now().millisecondsSinceEpoch}',
+            'user_id': receiverId,
+            'receiver_id': receiverId,
+            'sender_id': senderId,
+            'receiver_name': receiverName ??
+                (PocketRobotService.getRobotById(receiverId)?.name ??
+                    'Pocket Mate'),
+            'receiver_profile_image': receiverAvatarUrl ??
+                PocketRobotService.getRobotById(receiverId)?.avatarUrl,
+            'type': 'mate_request',
+            'context_type': contextType ?? 'mate_request',
+            'message': message ?? 'Challenged to Pocket Talk',
+            'status': 'pending',
+            'created_at': DateTime.now().toIso8601String(),
+          });
+          await prefs.setString('sent_requests_cache_$senderId',
+              json.encode(cache.take(50).toList()));
+        } catch (_) {}
+
         return true;
       }
 
@@ -154,6 +186,8 @@ class PocketMateService {
           'user_id': receiverId,
           'receiver_id': receiverId,
           'sender_id': senderId,
+          'receiver_name': receiverName,
+          'receiver_profile_image': receiverAvatarUrl,
           'type': 'mate_request',
           'context_type': contextType ?? 'mate_request',
           'message': message ?? defaultMsg,

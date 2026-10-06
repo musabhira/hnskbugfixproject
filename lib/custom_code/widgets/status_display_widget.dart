@@ -3848,12 +3848,15 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                               Row(
                                 children: [
                                   if (widget.statusGroup['is_group'] == true) ...[
-                                    Text(
-                                      profile['name'] ?? 'Group',
-                                      style: const TextStyle(
-                                        color: Colors.white70,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 14,
+                                    Flexible(
+                                      child: Text(
+                                        profile['name'] ?? 'Group',
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 13,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                     const Padding(
@@ -3871,12 +3874,55 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                             'Unknown',
                                         style: const TextStyle(
                                           color: Colors.white,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.bold,
                                           fontSize: 15,
+                                          letterSpacing: -0.2,
                                         ),
+                                        maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
+                                  ),
+                                  if (currentStatus['profile']?['is_verified'] == true) ...[
+                                    const SizedBox(width: 4),
+                                    const Icon(Icons.verified, color: Color(0xFF38BDF8), size: 14),
+                                  ],
+                                ],
+                              ),
+                              const SizedBox(height: 3),
+                              Row(
+                                children: [
+                                  Text(
+                                    _getTimeAgo(currentStatus['created_at']),
+                                    style: TextStyle(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.65),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Builder(
+                                    builder: (context) {
+                                      final rawMeta = currentStatus['metadata'];
+                                      final meta = rawMeta is Map ? rawMeta : null;
+                                      final bool isPriv = meta != null && (meta['is_private'] == true || meta['is_private'] == 'true');
+                                      return Container(
+                                        width: 6.5,
+                                        height: 6.5,
+                                        decoration: BoxDecoration(
+                                          color: isPriv ? const Color(0xFF38BDF8) : const Color(0xFF10B981),
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: (isPriv ? const Color(0xFF38BDF8) : const Color(0xFF10B981)).withValues(alpha: 0.8),
+                                              blurRadius: 4,
+                                              spreadRadius: 0.5,
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
                                   ),
                                   if (!isOwnStatus && !_isAuthorMate) ...[
                                     const SizedBox(width: 8),
@@ -3884,7 +3930,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                       onTap: _isMateRequestSent ? null : _sendAddMateFromStatus,
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
-                                            horizontal: 8, vertical: 3),
+                                            horizontal: 7, vertical: 2.5),
                                         decoration: BoxDecoration(
                                           color: _isMateRequestSent
                                               ? Colors.white.withValues(alpha: 0.18)
@@ -3898,7 +3944,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                               _isMateRequestSent
                                                   ? Icons.check
                                                   : Icons.person_add_rounded,
-                                              size: 11,
+                                              size: 10,
                                               color: _isMateRequestSent
                                                   ? Colors.white70
                                                   : Colors.black,
@@ -3909,7 +3955,7 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                                   ? 'Requested'
                                                   : 'Add Mate',
                                               style: TextStyle(
-                                                fontSize: 10.5,
+                                                fontSize: 10,
                                                 fontWeight: FontWeight.bold,
                                                 color: _isMateRequestSent
                                                   ? Colors.white70
@@ -3921,105 +3967,73 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                       ),
                                     ),
                                   ],
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _getTimeAgo(currentStatus['created_at']),
-                                    style: TextStyle(
-                                      color:
-                                          Colors.white.withValues(alpha: 0.6),
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Builder(
-                                    builder: (context) {
-                                      final rawMeta = currentStatus['metadata'];
-                                      final meta = rawMeta is Map ? rawMeta : null;
-                                      final bool isPriv = meta != null && (meta['is_private'] == true || meta['is_private'] == 'true');
-                                      return Container(
-                                        width: 7.5,
-                                        height: 7.5,
-                                        decoration: BoxDecoration(
-                                          color: isPriv ? const Color(0xFF38BDF8) : const Color(0xFF10B981),
-                                          shape: BoxShape.circle,
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: (isPriv ? const Color(0xFF38BDF8) : const Color(0xFF10B981)).withValues(alpha: 0.85),
-                                              blurRadius: 5,
-                                              spreadRadius: 1,
-                                            ),
-                                          ],
+                                ],
+                              ),
+                              if (currentStatus['mentioned_group_id'] != null ||
+                                  currentStatus['mentioned_profile_id'] != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 2),
+                                  child: Row(
+                                    children: [
+                                      if (currentStatus['mentioned_group_id'] != null)
+                                        FutureBuilder(
+                                          future: supabase
+                                              .from('groups')
+                                              .select('name')
+                                              .eq('id',
+                                                  currentStatus[
+                                                      'mentioned_group_id'])
+                                              .maybeSingle(),
+                                          builder: (context, snapshot) {
+                                            if (!snapshot.hasData ||
+                                                snapshot.data == null) {
+                                              return const SizedBox.shrink();
+                                            }
+                                            final gName =
+                                                snapshot.data!['name'] ?? '';
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 2, right: 6),
+                                              child: _buildMentionTag(
+                                                  gName, Icons.groups_rounded,
+                                                  isUnderName: true),
+                                            );
+                                          },
                                         ),
-                                      );
-                                    },
+                                      if (currentStatus['mentioned_profile_id'] != null)
+                                        FutureBuilder(
+                                          future: supabase
+                                              .from('profile')
+                                              .select('name')
+                                              .eq('id',
+                                                  currentStatus[
+                                                      'mentioned_profile_id'])
+                                              .maybeSingle(),
+                                          builder: (context, snapshot) {
+                                            if (!snapshot.hasData ||
+                                                snapshot.data == null) {
+                                              return const SizedBox.shrink();
+                                            }
+                                            final pName =
+                                                snapshot.data!['name'] ?? '';
+                                            return Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 2, right: 6),
+                                              child: _buildMentionTag(
+                                                  pName, Icons.person,
+                                                  isUnderName: true),
+                                            );
+                                          },
+                                        ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  // Group Mention Tag
-                                  if (currentStatus['mentioned_group_id'] !=
-                                      null)
-                                    FutureBuilder(
-                                      future: supabase
-                                          .from('groups')
-                                          .select('name')
-                                          .eq('id',
-                                              currentStatus[
-                                                  'mentioned_group_id'])
-                                          .maybeSingle(),
-                                      builder: (context, snapshot) {
-                                        if (!snapshot.hasData ||
-                                            snapshot.data == null) {
-                                          return const SizedBox.shrink();
-                                        }
-                                        final gName =
-                                            snapshot.data!['name'] ?? '';
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 4, right: 8),
-                                          child: _buildMentionTag(
-                                              gName, Icons.groups_rounded,
-                                              isUnderName: true),
-                                        );
-                                      },
-                                    ),
-                                  // User Mention Tag
-                                  if (currentStatus['mentioned_profile_id'] !=
-                                      null)
-                                    FutureBuilder(
-                                      future: supabase
-                                          .from('profile')
-                                          .select('name')
-                                          .eq('id',
-                                              currentStatus[
-                                                  'mentioned_profile_id'])
-                                          .maybeSingle(),
-                                      builder: (context, snapshot) {
-                                        if (!snapshot.hasData ||
-                                            snapshot.data == null) {
-                                          return const SizedBox.shrink();
-                                        }
-                                        final pName =
-                                            snapshot.data!['name'] ?? '';
-                                        return Padding(
-                                          padding: const EdgeInsets.only(
-                                              top: 4, right: 8),
-                                          child: _buildMentionTag(
-                                              pName, Icons.person,
-                                              isUnderName: true),
-                                        );
-                                      },
-                                    ),
-                                ],
-                              ),
+                                ),
                             ],
                           ),
                         ),
-                        const Spacer(),
+                        const SizedBox(width: 8),
                         // View Count (Only show for own status)
-                        if (isOwnStatus)
+                        if (isOwnStatus) ...[
                           GestureDetector(
                             onTap: () => _loadViewers(
                               currentStatus['id'],
@@ -4027,20 +4041,23 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                             ),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
+                                horizontal: 10,
+                                vertical: 5,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withValues(alpha: 0.5),
-                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.black.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.15),
+                                ),
                               ),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   const Icon(
-                                    Icons.visibility,
+                                    Icons.visibility_rounded,
                                     color: Colors.white,
-                                    size: 16,
+                                    size: 14,
                                   ),
                                   const SizedBox(width: 4),
                                   Text(
@@ -4048,43 +4065,75 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 14,
+                                      fontSize: 13,
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                           ),
-                        const SizedBox(width: 8),
+                          const SizedBox(width: 6),
+                        ],
                         ValueListenableBuilder<bool>(
                           valueListenable: PocketGameAudioService.instance.isMutedNotifier,
                           builder: (context, isMuted, _) {
-                            return IconButton(
-                              onPressed: () {
+                            return GestureDetector(
+                              onTap: () {
                                 HapticFeedback.lightImpact();
                                 PocketGameAudioService.instance.toggleMute();
                               },
-                              icon: Icon(
-                                isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                                color: isMuted ? Colors.white54 : const Color(0xFFFFFC00),
-                                size: 22,
+                              child: Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.35),
+                                  shape: BoxShape.circle,
+                                ),
+                                alignment: Alignment.center,
+                                child: Icon(
+                                  isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
+                                  color: isMuted ? Colors.white70 : const Color(0xFFFFFC00),
+                                  size: 18,
+                                ),
                               ),
-                              padding: EdgeInsets.zero,
-                              constraints: const BoxConstraints(),
                             );
                           },
                         ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          onPressed: () => _showStatusOptionsMenu(currentStatus, profile, isOwnStatus),
-                          icon: const Icon(Icons.more_vert, color: Colors.white),
-                          padding: EdgeInsets.zero,
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: () => _showStatusOptionsMenu(currentStatus, profile, isOwnStatus),
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.35),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.more_vert_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
                         ),
-                        const SizedBox(width: 8),
-                        IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close, color: Colors.white),
-                          padding: EdgeInsets.zero,
+                        const SizedBox(width: 6),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            width: 32,
+                            height: 32,
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.35),
+                              shape: BoxShape.circle,
+                            ),
+                            alignment: Alignment.center,
+                            child: const Icon(
+                              Icons.close_rounded,
+                              color: Colors.white,
+                              size: 18,
+                            ),
+                          ),
                         ),
                       ],
                     ),

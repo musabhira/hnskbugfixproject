@@ -407,6 +407,8 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
       senderId: myId,
       receiverId: candidate.userId,
       senderName: myName,
+      receiverName: candidate.name,
+      receiverAvatarUrl: candidate.avatarUrl,
       message: 'Challenged you to a 4-Day Spoken English Pact ⚡ (15 mins/day). Check your Pocket Talk tab!',
       contextType: 'pocket_talk',
     );
@@ -495,6 +497,8 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
       senderId: myId,
       receiverId: candidate.userId,
       senderName: myName,
+      receiverName: candidate.name,
+      receiverAvatarUrl: candidate.avatarUrl,
       message: 'Sent you a Mate connection request from Pocket Talk Cards! 🤝',
       contextType: 'mate_request',
     );

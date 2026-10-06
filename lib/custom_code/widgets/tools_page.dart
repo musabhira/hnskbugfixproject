@@ -19,7 +19,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 import 'dart:math';
 import '/custom_code/widgets/ai_prompt_service.dart';
-import '/custom_code/widgets/dual_video_recorder.dart';
 import '/custom_code/widgets/learning_60day/english_tasks_master_hub.dart';
 import '/custom_code/widgets/pocket_library_page.dart';
 import '/custom_code/widgets/voice_accent_coach_page.dart';
@@ -1604,24 +1603,6 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             context,
             MaterialPageRoute(
                 builder: (context) => const PasswordGeneratorPage())),
-      },
-      {
-        'title': 'Dual Recorder',
-        'subtitle': 'YouTube & Reels',
-        'icon': Icons.videocam_rounded,
-        'category': 'Video',
-        'color': const Color(0xFFEF4444),
-        'gradient': [const Color(0xFFEF4444), const Color(0xFFF97316)],
-        'avatar': const VectorAvatarConfig(
-          outfitStyle: 'cyberpunk_jacket',
-          auraStyle: 'comic_boom',
-          hairStyle: 'anime_spiky',
-          faceShape: 'sharp',
-        ),
-        'onTap': () => Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const DualVideoRecorderWidget())),
       },
       {
         'title': 'Schedule',

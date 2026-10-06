@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -156,6 +157,47 @@ class AudioSpaceModel {
   }
 }
 
+/// 💬 SpaceChatMessage
+/// Ephemeral in-room live chat message. Auto-expires in 30 minutes.
+class SpaceChatMessage {
+  final String id;
+  final String senderId;
+  final String senderName;
+  final String? senderAvatar;
+  final String text;
+  final DateTime sentAt;
+
+  SpaceChatMessage({
+    required this.id,
+    required this.senderId,
+    required this.senderName,
+    this.senderAvatar,
+    required this.text,
+    required this.sentAt,
+  });
+
+  bool get isExpired =>
+      DateTime.now().difference(sentAt).inMinutes >= 30;
+
+  Map<String, dynamic> toMap() => {
+    'id': id,
+    'sender_id': senderId,
+    'sender_name': senderName,
+    'sender_avatar': senderAvatar,
+    'text': text,
+    'sent_at': sentAt.toIso8601String(),
+  };
+
+  factory SpaceChatMessage.fromMap(Map<String, dynamic> map) => SpaceChatMessage(
+    id: map['id']?.toString() ?? '',
+    senderId: map['sender_id']?.toString() ?? '',
+    senderName: map['sender_name']?.toString() ?? 'Mate',
+    senderAvatar: map['sender_avatar']?.toString(),
+    text: map['text']?.toString() ?? '',
+    sentAt: DateTime.tryParse(map['sent_at']?.toString() ?? '') ?? DateTime.now(),
+  );
+}
+
 /// 🎙️ PocketAudioSpaceEngine
 /// Zero-Cost Multi-Peer Mesh Audio Engine using WebRTC + Supabase Realtime Broadcast & Presence.
 class PocketAudioSpaceEngine extends ChangeNotifier {
@@ -213,6 +255,40 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
   String? get myUserId => _myUserId;
   String _myUserName = 'English Mate';
   String? _myAvatarUrl;
+
+  // Ephemeral in-room live chat (Auto-expires in 30 minutes, 100% ephemeral in-memory)
+  final List<SpaceChatMessage> _chatMessages = [];
+  List<SpaceChatMessage> get chatMessages {
+    _pruneExpiredMessages();
+    return List.unmodifiable(_chatMessages);
+  }
+
+  void _pruneExpiredMessages() {
+    _chatMessages.removeWhere((m) => m.isExpired);
+  }
+
+  void sendChatMessage(String text) {
+    final trimmed = text.trim();
+    if (trimmed.isEmpty || _myUserId == null || _roomChannel == null) return;
+
+    final msg = SpaceChatMessage(
+      id: 'msg_${DateTime.now().millisecondsSinceEpoch}_${_myUserId!.substring(0, math.min(6, _myUserId!.length))}',
+      senderId: _myUserId!,
+      senderName: _myUserName,
+      senderAvatar: _myAvatarUrl,
+      text: trimmed,
+      sentAt: DateTime.now(),
+    );
+
+    _chatMessages.add(msg);
+    _pruneExpiredMessages();
+    notifyListeners();
+
+    _roomChannel?.sendBroadcastMessage(
+      event: 'chat_message',
+      payload: msg.toMap(),
+    );
+  }
 
   final Map<String, dynamic> _iceConfig = {
     'iceServers': [
@@ -369,6 +445,19 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
           .onBroadcast(event: 'space_ended', callback: (payload) {
             leaveSpace(wasEndedByHost: true);
           })
+          // Live In-Room Chat broadcast
+          .onBroadcast(event: 'chat_message', callback: (payload) {
+            try {
+              final msg = SpaceChatMessage.fromMap(payload);
+              if (msg.senderId != _myUserId) {
+                _chatMessages.add(msg);
+                _pruneExpiredMessages();
+                notifyListeners();
+              }
+            } catch (e) {
+              debugPrint('PocketAudioSpaceEngine: Error handling chat message: $e');
+            }
+          })
           // Presence sync
           .onPresenceSync((_) {
             _syncPresence();
@@ -449,6 +538,8 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
         _localStream!.getAudioTracks().first.enabled = !_isMicMuted;
       }
 
+      _applySpeakerphone();
+
       // Attach audio tracks to any existing peer connections
       if (_localStream != null) {
         for (final pc in _peerConnections.values) {
@@ -462,7 +553,7 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
 
   /// Helper to attach local audio tracks to a peer connection safely
   Future<void> _attachLocalTracksToPc(RTCPeerConnection pc) async {
-    if (_localStream != null && isSpeaker) {
+    if (_localStream != null) {
       try {
         final senders = await pc.getSenders();
         for (final track in _localStream!.getAudioTracks()) {
@@ -478,8 +569,10 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
   }
 
   /// Toggle Mute/Unmute microphone
-  void toggleMic() {
-    if (_myRole == AudioRole.listener) return;
+  void toggleMic() async {
+    if (_localStream == null) {
+      await _acquireMicrophone();
+    }
     _isMicMuted = !_isMicMuted;
 
     if (_localStream != null && _localStream!.getAudioTracks().isNotEmpty) {
@@ -624,12 +717,10 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     _participants.clear();
     _participants.addAll(updated);
 
-    // If I am a speaker or host, initiate connections with newly discovered participants
-    if (isSpeaker) {
-      for (final peerId in _participants.keys) {
-        if (peerId != _myUserId && !_peerConnections.containsKey(peerId)) {
-          _setupPeerConnectionForUser(peerId);
-        }
+    // Connect with all discovered participants so audio flows bidirectionally to/from all peers
+    for (final peerId in _participants.keys) {
+      if (peerId != _myUserId && !_peerConnections.containsKey(peerId)) {
+        _setupPeerConnectionForUser(peerId);
       }
     }
 
@@ -674,15 +765,18 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
       };
 
       pc.onTrack = (RTCTrackEvent event) {
+        if (event.track.kind == 'audio') {
+          event.track.enabled = true;
+        }
         if (event.streams.isNotEmpty) {
           final stream = event.streams[0];
           for (final track in stream.getAudioTracks()) {
             track.enabled = true;
           }
           _remoteStreams[peerId] = stream;
-          _applySpeakerphone();
-          notifyListeners();
         }
+        _applySpeakerphone();
+        notifyListeners();
       };
 
       pc.onAddStream = (MediaStream stream) {
@@ -698,7 +792,7 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
         debugPrint('PocketAudioSpaceEngine: Peer $peerId state -> $state');
       };
 
-      // Add local audio stream if I am on stage
+      // Add local audio stream if available
       await _attachLocalTracksToPc(pc);
 
       // Deterministic negotiation: higher userId sends offer
@@ -898,6 +992,7 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
 
     _currentSpace = null;
     _participants.clear();
+    _chatMessages.clear();
     _myRole = AudioRole.listener;
     _isMicMuted = false;
     _handRaised = false;

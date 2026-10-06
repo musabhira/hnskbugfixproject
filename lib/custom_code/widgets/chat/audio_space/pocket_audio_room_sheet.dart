@@ -31,6 +31,9 @@ class PocketAudioRoomSheet extends StatefulWidget {
 class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet>
     with SingleTickerProviderStateMixin {
   final PocketAudioSpaceEngine _engine = PocketAudioSpaceEngine.instance;
+  bool _showChat = false;
+  final TextEditingController _chatController = TextEditingController();
+  final ScrollController _chatScrollController = ScrollController();
 
   @override
   void initState() {
@@ -41,6 +44,8 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet>
   @override
   void dispose() {
     _engine.removeListener(_onEngineUpdate);
+    _chatController.dispose();
+    _chatScrollController.dispose();
     super.dispose();
   }
 
@@ -85,33 +90,35 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet>
           // 1. Drag handle & Header bar
           _buildHeader(context, space),
 
-          // 2. Main Stage & Audience Content
+          // 2. Main Stage & Audience Content OR Live Ephemeral Chat
           Expanded(
             child: _engine.isConnecting
                 ? _buildConnectingState()
-                : SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Room Category & Topic Card
-                        _buildTopicBanner(space!),
+                : _showChat
+                    ? _buildLiveChatView(context)
+                    : SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Room Category & Topic Card
+                            _buildTopicBanner(space!),
 
-                        const SizedBox(height: 20),
+                            const SizedBox(height: 20),
 
-                        // Stage (Active Speakers)
-                        _buildStageSection(),
+                            // Stage (Active Speakers)
+                            _buildStageSection(),
 
-                        const SizedBox(height: 28),
+                            const SizedBox(height: 28),
 
-                        // Audience (Listeners)
-                        _buildAudienceSection(),
+                            // Audience (Listeners)
+                            _buildAudienceSection(),
 
-                        const SizedBox(height: 100), // padding for floating bottom bar
-                      ],
-                    ),
-                  ),
+                            const SizedBox(height: 100), // padding for floating bottom bar
+                          ],
+                        ),
+                      ),
           ),
 
           // 3. Bottom Clubhouse Action Bar
@@ -668,15 +675,35 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Left: Speakerphone toggle
+          // Left 1: Speakerphone toggle
           IconButton(
             onPressed: () => _engine.toggleSpeakerphone(),
             icon: Icon(
               isSpeakerOn ? Icons.volume_up_rounded : Icons.phone_in_talk_rounded,
               color: isSpeakerOn ? const Color(0xFFFFFC00) : Colors.white60,
-              size: 26,
+              size: 24,
             ),
             tooltip: isSpeakerOn ? 'Speakerphone ON' : 'Earpiece Mode',
+          ),
+
+          // Left 2: Live In-Room Chat Toggle (30m auto-clear)
+          IconButton(
+            onPressed: () => setState(() => _showChat = !_showChat),
+            icon: Badge(
+              isLabelVisible: _engine.chatMessages.isNotEmpty,
+              backgroundColor: const Color(0xFFFFFC00),
+              textColor: Colors.black,
+              label: Text(
+                '${_engine.chatMessages.length}',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 10),
+              ),
+              child: Icon(
+                _showChat ? Icons.chat_bubble_rounded : Icons.chat_bubble_outline_rounded,
+                color: _showChat ? const Color(0xFFFFFC00) : Colors.white60,
+                size: 23,
+              ),
+            ),
+            tooltip: 'Live Chat (30m Ephemeral)',
           ),
 
           // Center Action:
@@ -686,7 +713,7 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet>
             GestureDetector(
               onTap: () => _engine.toggleMic(),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                 decoration: BoxDecoration(
                   color: isMuted
                       ? const Color(0xFFEF4444).withValues(alpha: 0.15)
@@ -703,15 +730,15 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet>
                     Icon(
                       isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
                       color: isMuted ? const Color(0xFFEF4444) : const Color(0xFF10B981),
-                      size: 22,
+                      size: 20,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 6),
                     Text(
                       isMuted ? 'Muted' : 'Speaking',
                       style: GoogleFonts.outfit(
                         color: isMuted ? const Color(0xFFEF4444) : const Color(0xFF10B981),
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 13.5,
                       ),
                     ),
                   ],
@@ -722,7 +749,7 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet>
             GestureDetector(
               onTap: () => _engine.toggleHandRaise(),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
                 decoration: BoxDecoration(
                   color: handRaised
                       ? const Color(0xFFFFFC00).withValues(alpha: 0.2)
@@ -736,14 +763,14 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text('✋', style: TextStyle(fontSize: handRaised ? 18 : 16)),
-                    const SizedBox(width: 8),
+                    Text('✋', style: TextStyle(fontSize: handRaised ? 17 : 15)),
+                    const SizedBox(width: 6),
                     Text(
-                      handRaised ? 'Hand Raised' : 'Raise Hand',
+                      handRaised ? 'Raised' : 'Raise Hand',
                       style: GoogleFonts.outfit(
                         color: handRaised ? const Color(0xFFFFFC00) : Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontSize: 14,
+                        fontSize: 13.5,
                       ),
                     ),
                   ],
@@ -755,14 +782,264 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet>
           if (isSpeaker && !_engine.isHost)
             TextButton.icon(
               onPressed: () => _engine.demoteSpeakerToListener(_engine.myUserId!),
-              icon: const Icon(Icons.arrow_downward_rounded, color: Colors.white54, size: 16),
+              icon: const Icon(Icons.arrow_downward_rounded, color: Colors.white54, size: 15),
               label: Text(
                 'Quiet',
-                style: GoogleFonts.outfit(color: Colors.white54, fontSize: 13),
+                style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
               ),
             )
           else
-            const SizedBox(width: 48), // Spacer to balance layout
+            const SizedBox(width: 36), // Spacer to balance layout
+        ],
+      ),
+    );
+  }
+
+  /// 💬 Live In-Room Ephemeral Chat View
+  Widget _buildLiveChatView(BuildContext context) {
+    final messages = _engine.chatMessages;
+
+    return Container(
+      color: const Color(0xFF0F172A),
+      child: Column(
+        children: [
+          // Chat Top Header
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1E293B),
+              border: Border(bottom: BorderSide(color: Color(0xFF334155), width: 0.8)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.bolt_rounded, color: Color(0xFFFFFC00), size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  'Live In-Room Chat',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    'Auto-clears in 30m',
+                    style: GoogleFonts.inter(color: Colors.white54, fontSize: 10),
+                  ),
+                ),
+                const Spacer(),
+                GestureDetector(
+                  onTap: () => setState(() => _showChat = false),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.mic_rounded, size: 13, color: Color(0xFFFFFC00)),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Stage',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFFC00),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Message List
+          Expanded(
+            child: messages.isEmpty
+                ? Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.chat_bubble_outline_rounded,
+                            color: Colors.white24, size: 48),
+                        const SizedBox(height: 12),
+                        Text(
+                          'No messages yet',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white54,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Chat while you talk! Messages vanish after 30 minutes.',
+                          style: GoogleFonts.inter(
+                            color: Colors.white38,
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    controller: _chatScrollController,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final msg = messages[index];
+                      final isMe = msg.senderId == _engine.myUserId;
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment:
+                              isMe ? MainAxisAlignment.end : MainAxisAlignment.start,
+                          children: [
+                            if (!isMe) ...[
+                              CircleAvatar(
+                                radius: 14,
+                                backgroundColor: const Color(0xFF334155),
+                                backgroundImage: (msg.senderAvatar != null &&
+                                        msg.senderAvatar!.isNotEmpty)
+                                    ? CachedNetworkImageProvider(msg.senderAvatar!)
+                                    : null,
+                                child: (msg.senderAvatar == null ||
+                                        msg.senderAvatar!.isEmpty)
+                                    ? Text(
+                                        msg.senderName.isNotEmpty
+                                            ? msg.senderName[0].toUpperCase()
+                                            : 'M',
+                                        style: const TextStyle(
+                                            color: Colors.white, fontSize: 11),
+                                      )
+                                    : null,
+                              ),
+                              const SizedBox(width: 8),
+                            ],
+                            Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 8),
+                                decoration: BoxDecoration(
+                                  color: isMe
+                                      ? const Color(0xFFFFFC00)
+                                      : const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(14),
+                                  border: Border.all(
+                                    color: isMe
+                                        ? const Color(0xFFFFFC00)
+                                        : const Color(0xFF334155),
+                                    width: 0.8,
+                                  ),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: isMe
+                                      ? CrossAxisAlignment.end
+                                      : CrossAxisAlignment.start,
+                                  children: [
+                                    if (!isMe)
+                                      Padding(
+                                        padding: const EdgeInsets.only(bottom: 2),
+                                        child: Text(
+                                          msg.senderName,
+                                          style: GoogleFonts.outfit(
+                                            color: const Color(0xFF38BDF8),
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ),
+                                    Text(
+                                      msg.text,
+                                      style: GoogleFonts.inter(
+                                        color: isMe ? Colors.black : Colors.white,
+                                        fontSize: 13,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+          ),
+
+          // Chat Input Row
+          Container(
+            padding: EdgeInsets.fromLTRB(12, 8, 12, 8 + MediaQuery.of(context).viewInsets.bottom),
+            decoration: const BoxDecoration(
+              color: Color(0xFF1E293B),
+              border: Border(top: BorderSide(color: Color(0xFF334155), width: 0.8)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _chatController,
+                    style: const TextStyle(color: Colors.white, fontSize: 14),
+                    decoration: InputDecoration(
+                      hintText: 'Type in English...',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 14),
+                      filled: true,
+                      fillColor: const Color(0xFF0F172A),
+                      contentPadding:
+                          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(24),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onSubmitted: (val) {
+                      if (val.trim().isNotEmpty) {
+                        _engine.sendChatMessage(val);
+                        _chatController.clear();
+                        Future.delayed(const Duration(milliseconds: 100), () {
+                          if (_chatScrollController.hasClients) {
+                            _chatScrollController.jumpTo(
+                                _chatScrollController.position.maxScrollExtent);
+                          }
+                        });
+                      }
+                    },
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  onPressed: () {
+                    final text = _chatController.text.trim();
+                    if (text.isNotEmpty) {
+                      _engine.sendChatMessage(text);
+                      _chatController.clear();
+                      Future.delayed(const Duration(milliseconds: 100), () {
+                        if (_chatScrollController.hasClients) {
+                          _chatScrollController.jumpTo(
+                              _chatScrollController.position.maxScrollExtent);
+                        }
+                      });
+                    }
+                  },
+                  icon: const Icon(Icons.send_rounded,
+                      color: Color(0xFFFFFC00), size: 22),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
