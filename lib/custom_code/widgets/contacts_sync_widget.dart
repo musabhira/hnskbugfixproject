@@ -29,24 +29,50 @@ class _ContactsSyncWidgetState extends State<ContactsSyncWidget> {
   @override
   void initState() {
     super.initState();
-    _checkPermission();
+    _checkPermissionSilently();
   }
 
-  Future<void> _checkPermission() async {
+  Future<void> _checkPermissionSilently() async {
+    try {
+      // Check permission status without triggering OS dialog on screen load
+      final status = await FlutterContacts.permissions.check(PermissionType.read);
+      final hasPerm = status == PermissionStatus.granted || status == PermissionStatus.limited;
+      if (mounted) {
+        setState(() {
+          _hasPermission = hasPerm;
+        });
+        if (hasPerm) {
+          _fetchAndMatchContacts();
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _hasPermission = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _requestPermissionWithDisclosure() async {
     try {
       final status = await FlutterContacts.permissions.request(PermissionType.read);
       final hasPerm = status == PermissionStatus.granted || status == PermissionStatus.limited;
-      setState(() {
-        _hasPermission = hasPerm;
-      });
-      if (hasPerm) {
-        _fetchAndMatchContacts();
+      if (mounted) {
+        setState(() {
+          _hasPermission = hasPerm;
+        });
+        if (hasPerm) {
+          _fetchAndMatchContacts();
+        }
       }
     } catch (e) {
-      setState(() {
-        _hasPermission = false;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _hasPermission = false;
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -258,9 +284,9 @@ class _ContactsSyncWidgetState extends State<ContactsSyncWidget> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Sync your contacts to find people you know on Pocketmates.',
+              'Pocket Mates accesses your contacts only to help you find and connect with friends who are already on the platform. Your contacts are never sold, shared, or stored outside your device.',
               textAlign: TextAlign.center,
-              style: GoogleFonts.outfit(color: isDark ? Colors.white70 : Colors.black54),
+              style: GoogleFonts.outfit(color: isDark ? Colors.white70 : Colors.black54, fontSize: 13, height: 1.4),
             ),
             const SizedBox(height: 16),
             ElevatedButton(
@@ -268,7 +294,7 @@ class _ContactsSyncWidgetState extends State<ContactsSyncWidget> {
                 backgroundColor: isDark ? const Color(0xFFFFFC00) : const Color(0xFFFFFC00),
                 foregroundColor: Colors.black,
               ),
-              onPressed: _checkPermission,
+              onPressed: _requestPermissionWithDisclosure,
               child: const Text('Sync Contacts'),
             ),
           ],

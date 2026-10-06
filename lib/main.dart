@@ -25,8 +25,13 @@ void main() {
 
     // Catch synchronous framework-level errors
     FlutterError.onError = (FlutterErrorDetails details) {
+      final exceptionStr = details.exceptionAsString();
+      // Suppress known benign framework debug assertion on desktop mouse pointer tracking
+      if (exceptionStr.contains('mouse_tracker.dart') && exceptionStr.contains('_debugDuringDeviceUpdate')) {
+        return;
+      }
       FlutterError.presentError(details);
-      debugPrint('Main: FlutterError caught: ${details.exceptionAsString()}');
+      debugPrint('Main: FlutterError caught: $exceptionStr');
     };
 
     // Catch asynchronous uncaught errors and prevent process termination

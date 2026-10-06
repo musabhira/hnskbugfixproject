@@ -2668,18 +2668,26 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
               final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
               final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
-              _scrollController.jumpTo(targetOffset);
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (_scrollController.hasClients) {
+                  _scrollController.jumpTo(targetOffset);
+                }
+              });
             },
             onTapDown: (details) {
               if (!_scrollController.hasClients) return;
               final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
               final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
               final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
-              _scrollController.animateTo(
-                targetOffset,
-                duration: const Duration(milliseconds: 320),
-                curve: Curves.easeOutCubic,
-              );
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (_scrollController.hasClients) {
+                  _scrollController.animateTo(
+                    targetOffset,
+                    duration: const Duration(milliseconds: 320),
+                    curve: Curves.easeOutCubic,
+                  );
+                }
+              });
             },
             child: Container(
               width: 32,

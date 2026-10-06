@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/subscription_page.dart';
 
 class HousePromoCampaign {
   final String id;
@@ -202,22 +203,16 @@ class MonetizationService {
   }
 
   /// Platform-Smart Checkout Execution:
-  /// - On iOS: Apple anti-steering compliance -> Opens official Web Checkout in external browser.
-  /// - On Android: Provides choice between direct UPI sheet and Web Checkout.
+  /// Routes directly to official In-App Purchase SubscriptionPage for Google Play & App Store compliance
   Future<void> launchCheckout(
     BuildContext context, {
     Map<String, dynamic>? customPlan,
   }) async {
-    final campaign = await getActiveCampaign();
-
-    if (Platform.isIOS) {
-      // iOS Strict Guideline Compliance: Route user to external web checkout portal
-      await openWebCheckout(campaign.webCheckoutUrl);
-    } else {
-      // Android / Other: Show direct in-app checkout option with instant Web fallback
-      if (!context.mounted) return;
-      _showAndroidCheckoutSheet(context, campaign, customPlan);
-    }
+    if (!context.mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const SubscriptionPage()),
+    );
   }
 
   /// Open external Web Checkout portal

@@ -181,6 +181,8 @@ class _SubscriptionPageState extends State<SubscriptionPage>
     }
   }
 
+  static const bool _allowDirectUpi = false; // Strictly false for official Google Play & Apple App Store compliance
+
   Future<void> _selectPlan(String planId) async {
     if (planId == _currentPlan) return;
 
@@ -203,7 +205,29 @@ class _SubscriptionPageState extends State<SubscriptionPage>
 
     if (!mounted) return;
 
-    // Duolingo-style Payment Selector (Google Play / Apple In-App Purchase + Direct UPI)
+    // Google Play Store Policy: Must use Google Play In-App Billing for digital goods
+    if (!_allowDirectUpi) {
+      final messenger = ScaffoldMessenger.of(context);
+      HapticFeedback.mediumImpact();
+      final planType = plan['id'] as String? ?? (_isYearly ? 'yearly' : 'monthly');
+      final initiated = await IAPService().buyVipSubscription(
+        isYearly: _isYearly,
+        planType: planType,
+      );
+      if (!initiated && mounted) {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(Platform.isIOS
+                ? 'Connecting to App Store In-App Purchases...'
+                : 'Connecting to Google Play In-App Billing...'),
+            backgroundColor: const Color(0xFF1E293B),
+          ),
+        );
+      }
+      return;
+    }
+
+    // Direct UPI mode (only for external non-Play Store builds)
     showModalBottomSheet(
       context: context,
       backgroundColor: const Color(0xFF131722),
