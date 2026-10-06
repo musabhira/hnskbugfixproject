@@ -115,8 +115,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
-  // Feature Flag: Apple Sign-In
+  // Feature Flags: Social Logins
   static const bool kEnableAppleSignIn = false;
+  static const bool kEnableGoogleSignIn = false;
 
   // Onboarding Selections
   String _selectedNativeLanguage = 'Hindi';
@@ -4183,15 +4184,18 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           ),
           const SizedBox(height: 20),
 
-          // Google 1-Tap Button
-          _buildSocialButton(
-            label: 'Save with Google',
-            iconWidget: const FaIcon(FontAwesomeIcons.google,
-                color: Color(0xFFDB4437), size: 19),
-            backgroundColor: Colors.white,
-            textColor: Colors.black87,
-            onPressed: _handleGoogleSignIn,
-          ),
+          if (kEnableGoogleSignIn) ...[
+            // Google 1-Tap Button
+            _buildSocialButton(
+              label: 'Save with Google',
+              iconWidget: const FaIcon(FontAwesomeIcons.google,
+                  color: Color(0xFFDB4437), size: 19),
+              backgroundColor: Colors.white,
+              textColor: Colors.black87,
+              onPressed: _handleGoogleSignIn,
+            ),
+            const SizedBox(height: 10),
+          ],
 
           const SizedBox(height: 10),
 
@@ -4350,18 +4354,21 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                             ),
                             const SizedBox(height: 22),
 
-                            // Google Sign In
-                            _buildSocialButton(
-                              label: 'Continue with Google',
-                              iconWidget: const FaIcon(
-                                FontAwesomeIcons.google,
-                                color: Color(0xFFDB4437),
-                                size: 19,
+                            if (kEnableGoogleSignIn) ...[
+                              // Google Sign In
+                              _buildSocialButton(
+                                label: 'Continue with Google',
+                                iconWidget: const FaIcon(
+                                  FontAwesomeIcons.google,
+                                  color: Color(0xFFDB4437),
+                                  size: 19,
+                                ),
+                                backgroundColor: Colors.white,
+                                textColor: Colors.black87,
+                                onPressed: _handleGoogleSignIn,
                               ),
-                              backgroundColor: Colors.white,
-                              textColor: Colors.black87,
-                              onPressed: _handleGoogleSignIn,
-                            ),
+                              const SizedBox(height: 10),
+                            ],
 
                             if (kEnableAppleSignIn) ...[
                               const SizedBox(height: 10),
@@ -4378,29 +4385,31 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                               ),
                             ],
 
-                            const SizedBox(height: 18),
-                            Row(
-                              children: [
-                                const Expanded(
-                                    child: Divider(color: Color(0xFF27272A))),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
-                                  child: Text(
-                                    'OR WITH EMAIL',
-                                    style: GoogleFonts.inter(
-                                      color: const Color(0xFF71717A),
-                                      fontSize: 10.5,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: 1.0,
+                            if (kEnableGoogleSignIn || kEnableAppleSignIn) ...[
+                              const SizedBox(height: 18),
+                              Row(
+                                children: [
+                                  const Expanded(
+                                      child: Divider(color: Color(0xFF27272A))),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12),
+                                    child: Text(
+                                      'OR WITH EMAIL',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF71717A),
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 1.0,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                const Expanded(
-                                    child: Divider(color: Color(0xFF27272A))),
-                              ],
-                            ),
-                            const SizedBox(height: 18),
+                                  const Expanded(
+                                      child: Divider(color: Color(0xFF27272A))),
+                                ],
+                              ),
+                              const SizedBox(height: 18),
+                            ],
 
                             // Error Message Banner
                             if (_errorMessage != null) ...[
