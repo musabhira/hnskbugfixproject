@@ -11,6 +11,8 @@ import 'pocket_fortress_defense_service.dart';
 import 'learning_service.dart';
 import 'pocket_mission_curriculum_registry.dart';
 import 'pocket_day1_tutor_curriculum.dart';
+import 'pocket_90day_vocab_curriculum.dart';
+import 'pocket_level_milestone_vibe_card_dialog.dart';
 import '../subscription_page.dart';
 
 /// 🎓 Model for an End-of-Level Exam Question
@@ -210,7 +212,8 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
       }
     }
 
-    final passMark = (_questions.length / 2).ceil(); // 50% pass mark (3/5)
+    // 🌟 User Audio Directive: Exactly 8 Questions per Exam, Minimum 5/8 to Pass!
+    const passMark = 5;
     final isPassed = correctCount >= passMark;
 
     setState(() {
@@ -255,9 +258,11 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
 
   /// 🎯 Adaptive Question Generator based on Level & Syllabus Track
   List<LevelExamQuestion> _generateQuestionsForLevel(int level, LearnerLevel track) {
+    List<LevelExamQuestion> rawList = [];
+
     if (level == 1) {
       final examQuestions = Day1Curriculum.getExam();
-      return examQuestions.map((eq) => LevelExamQuestion(
+      rawList = examQuestions.map((eq) => LevelExamQuestion(
         id: 'day1_exam_${eq.index}',
         question: eq.questionEn,
         options: eq.options,
@@ -266,44 +271,125 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
         hint: eq.questionMl,
         category: 'House 1 Gatekeeper',
       )).toList();
-    }
-
-    if (level >= 1 && level <= 90) {
+    } else if (level >= 1 && level <= 90) {
       switch (track) {
         case LearnerLevel.zero:
-          return _buildZeroFoundationQuestionsForDay(level);
+          rawList = _buildZeroFoundationQuestionsForDay(level);
+          break;
         case LearnerLevel.beginner:
-          return _buildBeginnerQuestionsForDay(level);
+          rawList = _buildBeginnerQuestionsForDay(level);
+          break;
         case LearnerLevel.elementary:
-          return _buildElementaryQuestionsForDay(level);
+          rawList = _buildElementaryQuestionsForDay(level);
+          break;
         case LearnerLevel.middle:
-          return _buildMiddleQuestionsForDay(level);
+          rawList = _buildMiddleQuestionsForDay(level);
+          break;
         case LearnerLevel.advanced:
-          return _buildAdvancedQuestionsForDay(level);
+          rawList = _buildAdvancedQuestionsForDay(level);
+          break;
         case LearnerLevel.expert:
-          return _buildExpertQuestionsForDay(level);
+          rawList = _buildExpertQuestionsForDay(level);
+          break;
       }
     }
 
-    final curriculumQuestions = _buildCurriculumQuestionsForLevel(level);
-    if (curriculumQuestions.length >= 5) {
-      return curriculumQuestions;
+    if (rawList.isEmpty) {
+      rawList = _buildCurriculumQuestionsForLevel(level);
     }
 
-    switch (track) {
-      case LearnerLevel.zero:
-        return _buildZeroFoundationQuestionsForDay(1);
-      case LearnerLevel.beginner:
-        return _buildBeginnerQuestionsForDay(1);
-      case LearnerLevel.elementary:
-        return _buildElementaryQuestionsForDay(1);
-      case LearnerLevel.middle:
-        return _buildMiddleQuestionsForDay(1);
-      case LearnerLevel.advanced:
-        return _buildAdvancedQuestionsForDay(1);
-      case LearnerLevel.expert:
-        return _buildExpertQuestionsForDay(1);
+    // 🌟 User Audio Directive: Exactly 8 Questions per Exam across all 90 Days!
+    return _ensureExactly8Questions(rawList, level);
+  }
+
+  /// 🌟 Guarantees exactly 8 distinct questions per exam for any level (Days 1 to 90)
+  List<LevelExamQuestion> _ensureExactly8Questions(List<LevelExamQuestion> base, int level) {
+    if (base.length == 8) return base;
+    if (base.length > 8) return base.sublist(0, 8);
+
+    final result = List<LevelExamQuestion>.from(base);
+    final vocab = Pocket90DayVocabCurriculum.getVocabForDay(level);
+
+    int vocabIdx = 0;
+    while (result.length < 8) {
+      final qNum = result.length + 1;
+      if (vocabIdx < vocab.length) {
+        final item = vocab[vocabIdx];
+        if (qNum == 6) {
+          result.add(
+            LevelExamQuestion(
+              id: 'q_gen_${level}_6',
+              question: 'What is the meaning of "${item.word}" in Malayalam?',
+              options: [
+                item.malayalamMeaning,
+                'വിരുദ്ധമായ അർത്ഥം (Opposite)',
+                'മറ്റൊരു പദം (Different term)',
+                'അപ്രസക്തമായ വാക്ക് (Irrelevant)',
+              ],
+              correctIndex: 0,
+              explanation: '"${item.word}" translates to "${item.malayalamMeaning}".',
+              hint: item.definition,
+              category: 'Vocab',
+            ),
+          );
+        } else if (qNum == 7) {
+          final exampleSentence = item.exampleSentence;
+          final blankSentence = exampleSentence.replaceAll(RegExp(r'\b' + RegExp.escape(item.word) + r'\b', caseSensitive: false), '_____');
+          result.add(
+            LevelExamQuestion(
+              id: 'q_gen_${level}_7',
+              question: 'Complete the sentence: "$blankSentence"',
+              options: [
+                item.word,
+                'wrongly',
+                'quickly',
+                'happily',
+              ],
+              correctIndex: 0,
+              explanation: '"${item.word}" correctly completes the sentence: "$exampleSentence"',
+              hint: 'Today\'s core vocabulary word.',
+              category: 'Syntax',
+            ),
+          );
+        } else {
+          result.add(
+            LevelExamQuestion(
+              id: 'q_gen_${level}_$qNum',
+              question: 'How do you use "${item.word}" in conversation?',
+              options: [
+                item.exampleSentence,
+                'I not speak ${item.word}',
+                'The word ${item.word} is no good',
+                'Never use ${item.word} anywhere',
+              ],
+              correctIndex: 0,
+              explanation: 'A natural conversational example: "${item.exampleSentence}".',
+              hint: 'Look for the natural grammatically correct sentence.',
+              category: 'Speaking',
+            ),
+          );
+        }
+        vocabIdx++;
+      } else {
+        result.add(
+          LevelExamQuestion(
+            id: 'q_gen_${level}_$qNum',
+            question: 'Which of the following is a grammatically correct English sentence for Day $level?',
+            options: [
+              'She speaks English with confidence and clarity.',
+              'She speaking English not good.',
+              'She speaked English wrongly.',
+              'She don\'t speaks English well.',
+            ],
+            correctIndex: 0,
+            explanation: '"She speaks English with confidence and clarity" follows correct third-person singular subject-verb agreement.',
+            hint: 'Third person singular "she" takes the verb with -s.',
+            category: 'Grammar',
+          ),
+        );
+      }
     }
+    return result;
   }
 
   // ==========================================
@@ -30597,6 +30683,35 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
 
               // Action Buttons
               if (isPassed) ...[
+                // 📸 Share Milestone Card to Vibes (Audio Directive!)
+                SizedBox(
+                  width: double.infinity,
+                  height: 46,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0284C7),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      elevation: 4,
+                    ),
+                    icon: const Icon(Icons.photo_camera_rounded, color: Colors.white, size: 20),
+                    label: Text(
+                      'SHARE CARD TO VIBES 📸 (സ്റ്റാറ്റസ് ഇടുക)',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                    ),
+                    onPressed: () {
+                      PocketLevelMilestoneVibeCardDialog.show(
+                        context,
+                        level: widget.level,
+                        score: _score,
+                        total: _questions.length,
+                        onContinue: () => Navigator.pop(context, true),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 8),
+
                 SizedBox(
                   width: double.infinity,
                   height: 44,
@@ -30665,7 +30780,7 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
                     },
                     icon: const Icon(Icons.refresh_rounded, size: 18),
                     label: Text(
-                      'RETRY EXAM TO PASS (3/5 NEEDED) ↺',
+                      'RETRY EXAM TO PASS (MINIMUM 5/8 NEEDED) ↺',
                       style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 12.5),
                     ),
                   ),
