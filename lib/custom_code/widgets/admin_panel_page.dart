@@ -2678,12 +2678,12 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   Future<String?> _uploadFile(
       {required String bucketName, required FileType fileType}) async {
     try {
-      final result = await FilePicker.pickFiles(type: fileType);
-      if (result.isEmpty || result.first.path == null) {
+      final result = await FilePicker.platform.pickFiles(type: fileType);
+      if (result == null || result.files.isEmpty || result.files.first.path == null) {
         return null;
       }
 
-      final pickedFile = result.first;
+      final pickedFile = result.files.first;
       final path = pickedFile.path!;
       final file = File(path);
       final name =
