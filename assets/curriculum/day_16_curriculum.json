@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 16,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-16-v1",
+    "topic": {
+      "en": "Spatial Prepositions: In, On, Under, Behind",
+      "ml": "വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ",
+      "hi": "Spatial Prepositions: In, On, Under, Behind",
+      "ta": "Spatial Prepositions: In, On, Under, Behind"
+    },
+    "unlockRule": "Unlocks after passing Day 15 Exam. Day 17 unlocks after scoring 70%+ in Day 16 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 282,
+    "totalCoinsReward": 66
+  },
+  "grammarRule": {
+    "formula": "Under, Behind, In front of, Next to",
+    "explanation": {
+      "ml": "വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ എന്ന വിഷയത്തിൽ Under, Behind, In front of, Next to എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Under, Behind, In front of, Next to correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Put it on the table.",
+      "en": "Golden Rule: Practice 'Put it on the table.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "put",
+        "v2": "put",
+        "v3": "put",
+        "meaning": {
+          "ml": "വെയ്ക്കുക",
+          "hi": "रखना",
+          "ta": "வை"
+        },
+        "example": "Put it on the table.",
+        "exampleMl": "വെയ്ക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "hide",
+        "v2": "hid",
+        "v3": "hidden",
+        "meaning": {
+          "ml": "ഒളിക്കുക",
+          "hi": "छिपाना",
+          "ta": "மறை"
+        },
+        "example": "Hide under the bed.",
+        "exampleMl": "ഒളിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "stand",
+        "v2": "stood",
+        "v3": "stood",
+        "meaning": {
+          "ml": "നിൽക്കുക",
+          "hi": "खड़े होना",
+          "ta": "நில்"
+        },
+        "example": "Stand in front of me.",
+        "exampleMl": "നിൽക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "sit",
+        "v2": "sat",
+        "v3": "sat",
+        "meaning": {
+          "ml": "ഇരിക്കുക",
+          "hi": "बैठना",
+          "ta": "அமர் / உட்காரு"
+        },
+        "example": "Sit next to him.",
+        "exampleMl": "ഇരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "box",
+        "meaning": {
+          "ml": "പെട്ടി",
+          "hi": "പെട്ടി",
+          "ta": "പെട്ടി"
+        },
+        "example": "Could you point out a box for me?"
+      },
+      {
+        "word": "corner",
+        "meaning": {
+          "ml": "മൂല",
+          "hi": "മൂല",
+          "ta": "മൂല"
+        },
+        "example": "Could you point out a corner for me?"
+      },
+      {
+        "word": "wall",
+        "meaning": {
+          "ml": "മതിൽ",
+          "hi": "മതിൽ",
+          "ta": "മതിൽ"
+        },
+        "example": "Could you point out a wall for me?"
+      },
+      {
+        "word": "floor",
+        "meaning": {
+          "ml": "തറ",
+          "hi": "തറ",
+          "ta": "തറ"
+        },
+        "example": "Could you point out a floor for me?"
+      },
+      {
+        "word": "roof",
+        "meaning": {
+          "ml": "മേൽക്കൂര",
+          "hi": "മേൽക്കൂര",
+          "ta": "മേൽക്കൂര"
+        },
+        "example": "Could you point out a roof for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Spatial Prepositions: In, On, Under, Behind",
+        "ml": "പാഠം: വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "box",
+        "corner",
+        "wall",
+        "floor",
+        "roof"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Put it on the table.",
+        "Hide under the bed.",
+        "Stand in front of me."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Spatial Prepositions: In, On, Under, Behind",
+        "ml": "റീഡിങ് റൂം: വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Put it on the table.",
+          "meaningMl": "വെയ്ക്കുക - Put it on the table.",
+          "audioPrompt": "Put it on the table."
+        },
+        {
+          "text": "Hide under the bed.",
+          "meaningMl": "ഒളിക്കുക - Hide under the bed.",
+          "audioPrompt": "Hide under the bed."
+        },
+        {
+          "text": "Daily practice of Spatial Prepositions: In, On, Under, Behind gives you great confidence in English.",
+          "meaningMl": "വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Spatial Prepositions: In, On, Under, Behind gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Put it on the table.'",
+          "targetSentence": "Put it on the table."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Hide under the bed.'",
+          "targetSentence": "Hide under the bed."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Spatial Prepositions: In, On, Under, Behind in 1-2 fluent sentences.",
+          "targetSentence": "Stand in front of me."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d16_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "She is good at English.",
+            "She is good in English.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "She is good at English.",
+          "explanation": "Use good at for a skill or subject."
+        },
+        {
+          "id": "trap_d16_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d16_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 16, I practiced Spatial Prepositions: In, On, Under, Behind! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Spatial Prepositions: In, On, Under, Behind for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Spatial Prepositions: In, On, Under, Behind in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Spatial Prepositions: In, On, Under, Behind.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 16 Gate Exam (5 Qs)",
+        "ml": "ഡേ 16 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'put':",
+          "options": [
+            "വെയ്ക്കുക",
+            "ഭക്ഷണം",
+            "സന്തോഷം",
+            "യാത്ര"
+          ],
+          "answer": "വെയ്ക്കുക"
+        },
+        {
+          "q": "Complete the sentence: '_____ it on the table.'",
+          "options": [
+            "were put",
+            "is put",
+            "puting",
+            "put"
+          ],
+          "answer": "put"
+        },
+        {
+          "q": "What is the past form (V2) of 'hide'?",
+          "options": [
+            "None",
+            "hideedx",
+            "hides",
+            "hid"
+          ],
+          "answer": "hid"
+        },
+        {
+          "q": "Which English word means 'പെട്ടി'?",
+          "options": [
+            "station",
+            "box",
+            "airport",
+            "journey"
+          ],
+          "answer": "box"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "He do not put yesterday.",
+            "I am put every time wrongly.",
+            "Put it on the table.",
+            "We was put tomorrow."
+          ],
+          "answer": "Put it on the table."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 16 with 70%+ to keep your streak and unlock Day 17!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

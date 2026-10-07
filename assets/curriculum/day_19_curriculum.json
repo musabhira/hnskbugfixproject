@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 19,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-19-v1",
+    "topic": {
+      "en": "Expressing Needs & Desires: Need vs Want",
+      "ml": "ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും",
+      "hi": "Expressing Needs & Desires: Need vs Want",
+      "ta": "Expressing Needs & Desires: Need vs Want"
+    },
+    "unlockRule": "Unlocks after passing Day 18 Exam. Day 20 unlocks after scoring 70%+ in Day 19 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 288,
+    "totalCoinsReward": 69
+  },
+  "grammarRule": {
+    "formula": "Need to + V1 vs Want to + V1",
+    "explanation": {
+      "ml": "ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും എന്ന വിഷയത്തിൽ Need to + V1 vs Want to + V1 എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Need to + V1 vs Want to + V1 correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I need to buy medicine.",
+      "en": "Golden Rule: Practice 'I need to buy medicine.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "need",
+        "v2": "needed",
+        "v3": "needed",
+        "meaning": {
+          "ml": "ആവശ്യമായി വരിക",
+          "hi": "ज़रूरत होना",
+          "ta": "தேவைப்படு"
+        },
+        "example": "I need to buy medicine.",
+        "exampleMl": "ആവശ്യമായി വരിക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "want",
+        "v2": "wanted",
+        "v3": "wanted",
+        "meaning": {
+          "ml": "ആഗ്രഹിക്കുക",
+          "hi": "चाहना",
+          "ta": "விரும்பு"
+        },
+        "example": "I want to learn English.",
+        "exampleMl": "ആഗ്രഹിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "wish",
+        "v2": "wished",
+        "v3": "wished",
+        "meaning": {
+          "ml": "ആശംസിക്കുക / ആഗ്രഹിക്കുക",
+          "hi": "इच्छा करना",
+          "ta": "வாழ்த்து"
+        },
+        "example": "I wish you success.",
+        "exampleMl": "ആഗ്രഹിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "hope",
+        "v2": "hoped",
+        "v3": "hoped",
+        "meaning": {
+          "ml": "പ്രതീക്ഷിക്കുക",
+          "hi": "उम्मीद करना",
+          "ta": "நம்பு"
+        },
+        "example": "I hope it works.",
+        "exampleMl": "പ്രതീക്ഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "need",
+        "meaning": {
+          "ml": "ആവശ്യം",
+          "hi": "ആവശ്യം",
+          "ta": "ആവശ്യം"
+        },
+        "example": "Could you point out a need for me?"
+      },
+      {
+        "word": "wish",
+        "meaning": {
+          "ml": "ആഗ്രഹം",
+          "hi": "ആഗ്രഹം",
+          "ta": "ആഗ്രഹം"
+        },
+        "example": "Could you point out a wish for me?"
+      },
+      {
+        "word": "plan",
+        "meaning": {
+          "ml": "പദ്ധതി",
+          "hi": "പദ്ധതി",
+          "ta": "പദ്ധതി"
+        },
+        "example": "Could you point out a plan for me?"
+      },
+      {
+        "word": "goal",
+        "meaning": {
+          "ml": "ലക്ഷ്യം",
+          "hi": "ലക്ഷ്യം",
+          "ta": "ലക്ഷ്യം"
+        },
+        "example": "Could you point out a goal for me?"
+      },
+      {
+        "word": "dream",
+        "meaning": {
+          "ml": "സ്വപ്നം",
+          "hi": "സ്വപ്നം",
+          "ta": "സ്വപ്നം"
+        },
+        "example": "Could you point out a dream for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Expressing Needs & Desires: Need vs Want",
+        "ml": "പാഠം: ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "need",
+        "wish",
+        "plan",
+        "goal",
+        "dream"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I need to buy medicine.",
+        "I want to learn English.",
+        "I wish you success."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Expressing Needs & Desires: Need vs Want",
+        "ml": "റീഡിങ് റൂം: ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I need to buy medicine.",
+          "meaningMl": "ആവശ്യമായി വരിക - I need to buy medicine.",
+          "audioPrompt": "I need to buy medicine."
+        },
+        {
+          "text": "I want to learn English.",
+          "meaningMl": "ആഗ്രഹിക്കുക - I want to learn English.",
+          "audioPrompt": "I want to learn English."
+        },
+        {
+          "text": "Daily practice of Expressing Needs & Desires: Need vs Want gives you great confidence in English.",
+          "meaningMl": "ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Expressing Needs & Desires: Need vs Want gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I need to buy medicine.'",
+          "targetSentence": "I need to buy medicine."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'I want to learn English.'",
+          "targetSentence": "I want to learn English."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Expressing Needs & Desires: Need vs Want in 1-2 fluent sentences.",
+          "targetSentence": "I wish you success."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d19_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He goes to work every day.",
+            "He go to work every day.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He goes to work every day.",
+          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+        },
+        {
+          "id": "trap_d19_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d19_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 19, I practiced Expressing Needs & Desires: Need vs Want! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Expressing Needs & Desires: Need vs Want for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Expressing Needs & Desires: Need vs Want in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Expressing Needs & Desires: Need vs Want.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 19 Gate Exam (5 Qs)",
+        "ml": "ഡേ 19 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'need':",
+          "options": [
+            "യാത്ര",
+            "ഭക്ഷണം",
+            "ആവശ്യമായി വരിക",
+            "സന്തോഷം"
+          ],
+          "answer": "ആവശ്യമായി വരിക"
+        },
+        {
+          "q": "Complete the sentence: 'I _____ to buy medicine.'",
+          "options": [
+            "need",
+            "needing",
+            "is need",
+            "were need"
+          ],
+          "answer": "need"
+        },
+        {
+          "q": "What is the past form (V2) of 'want'?",
+          "options": [
+            "None",
+            "wanted",
+            "wants",
+            "wantedx"
+          ],
+          "answer": "wanted"
+        },
+        {
+          "q": "Which English word means 'ആവശ്യം'?",
+          "options": [
+            "need",
+            "success",
+            "knowledge",
+            "courage"
+          ],
+          "answer": "need"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was need tomorrow.",
+            "He do not need yesterday.",
+            "I am need every time wrongly.",
+            "I need to buy medicine."
+          ],
+          "answer": "I need to buy medicine."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 19 with 70%+ to keep your streak and unlock Day 20!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

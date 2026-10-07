@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 21,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-21-v1",
+    "topic": {
+      "en": "Asking Questions: What & Where",
+      "ml": "What & Where ചോദ്യങ്ങൾ",
+      "hi": "Asking Questions: What & Where",
+      "ta": "Asking Questions: What & Where"
+    },
+    "unlockRule": "Unlocks after passing Day 20 Exam. Day 22 unlocks after scoring 70%+ in Day 21 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 292,
+    "totalCoinsReward": 71
+  },
+  "grammarRule": {
+    "formula": "What is...? / Where is...?",
+    "explanation": {
+      "ml": "What & Where ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ What is...? / Where is...? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use What is...? / Where is...? correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Ask a question.",
+      "en": "Golden Rule: Practice 'Ask a question.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "ask",
+        "v2": "asked",
+        "v3": "asked",
+        "meaning": {
+          "ml": "ചോദിക്കുക",
+          "hi": "पूछना",
+          "ta": "கேள்"
+        },
+        "example": "Ask a question.",
+        "exampleMl": "ചോദിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "search",
+        "v2": "searched",
+        "v3": "searched",
+        "meaning": {
+          "ml": "തിരയുക",
+          "hi": "खोजना",
+          "ta": "தேடு"
+        },
+        "example": "Search for the keys.",
+        "exampleMl": "തിരയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "lose",
+        "v2": "lost",
+        "v3": "lost",
+        "meaning": {
+          "ml": "നഷ്ടപ്പെടുക",
+          "hi": "खोना",
+          "ta": "இழ / தொலை"
+        },
+        "example": "Where did you lose it?",
+        "exampleMl": "നഷ്ടപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "locate",
+        "v2": "located",
+        "v3": "located",
+        "meaning": {
+          "ml": "കണ്ടെത്തുക",
+          "hi": "पता लगाना",
+          "ta": "கண்டுபிடி"
+        },
+        "example": "Locate the shop.",
+        "exampleMl": "കണ്ടെത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "what",
+        "meaning": {
+          "ml": "എന്ത്",
+          "hi": "എന്ത്",
+          "ta": "എന്ത്"
+        },
+        "example": "Could you point out a what for me?"
+      },
+      {
+        "word": "where",
+        "meaning": {
+          "ml": "എവിടെ",
+          "hi": "എവിടെ",
+          "ta": "എവിടെ"
+        },
+        "example": "Could you point out a where for me?"
+      },
+      {
+        "word": "place",
+        "meaning": {
+          "ml": "സ്ഥലം",
+          "hi": "സ്ഥലം",
+          "ta": "സ്ഥലം"
+        },
+        "example": "Could you point out a place for me?"
+      },
+      {
+        "word": "address",
+        "meaning": {
+          "ml": "മേൽവിലാസം",
+          "hi": "മേൽവിലാസം",
+          "ta": "മേൽവിലാസം"
+        },
+        "example": "Could you point out an address for me?"
+      },
+      {
+        "word": "map",
+        "meaning": {
+          "ml": "മാപ്പ്",
+          "hi": "മാപ്പ്",
+          "ta": "മാപ്പ്"
+        },
+        "example": "Could you point out a map for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Asking Questions: What & Where",
+        "ml": "പാഠം: What & Where ചോദ്യങ്ങൾ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "what",
+        "where",
+        "place",
+        "address",
+        "map"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Ask a question.",
+        "Search for the keys.",
+        "Where did you lose it?"
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Asking Questions: What & Where",
+        "ml": "റീഡിങ് റൂം: What & Where ചോദ്യങ്ങൾ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Ask a question.",
+          "meaningMl": "ചോദിക്കുക - Ask a question.",
+          "audioPrompt": "Ask a question."
+        },
+        {
+          "text": "Search for the keys.",
+          "meaningMl": "തിരയുക - Search for the keys.",
+          "audioPrompt": "Search for the keys."
+        },
+        {
+          "text": "Daily practice of Asking Questions: What & Where gives you great confidence in English.",
+          "meaningMl": "What & Where ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Asking Questions: What & Where gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Ask a question.'",
+          "targetSentence": "Ask a question."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Search for the keys.'",
+          "targetSentence": "Search for the keys."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Asking Questions: What & Where in 1-2 fluent sentences.",
+          "targetSentence": "Where did you lose it?"
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d21_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "We discussed the plan.",
+            "We discussed about the plan.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "We discussed the plan.",
+          "explanation": "Discuss already includes the idea of about."
+        },
+        {
+          "id": "trap_d21_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d21_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 21, I practiced Asking Questions: What & Where! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Asking Questions: What & Where for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Asking Questions: What & Where in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Asking Questions: What & Where.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 21 Gate Exam (5 Qs)",
+        "ml": "ഡേ 21 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'ask':",
+          "options": [
+            "സന്തോഷം",
+            "ചോദിക്കുക",
+            "യാത്ര",
+            "ഭക്ഷണം"
+          ],
+          "answer": "ചോദിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: '_____ a question.'",
+          "options": [
+            "ask",
+            "asking",
+            "is ask",
+            "were ask"
+          ],
+          "answer": "ask"
+        },
+        {
+          "q": "What is the past form (V2) of 'search'?",
+          "options": [
+            "None",
+            "searchedx",
+            "searchs",
+            "searched"
+          ],
+          "answer": "searched"
+        },
+        {
+          "q": "Which English word means 'എന്ത്'?",
+          "options": [
+            "what",
+            "knowledge",
+            "schedule",
+            "routine"
+          ],
+          "answer": "what"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "I am ask every time wrongly.",
+            "We was ask tomorrow.",
+            "He do not ask yesterday.",
+            "Ask a question."
+          ],
+          "answer": "Ask a question."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 21 with 70%+ to keep your streak and unlock Day 22!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

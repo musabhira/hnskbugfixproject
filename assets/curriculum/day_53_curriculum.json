@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 53,
+    "house": 2,
+    "houseTitle": {
+      "en": "House 2: Real-World Social & Time Travel",
+      "ml": "ഹൗസ് 2: പുറംലോകവും ഭൂത-ഭാവി കാലങ്ങളും",
+      "hi": "हाउस 2: वास्तविक दुनिया और समय यात्रा",
+      "ta": "ஹவுஸ் 2: நிஜ உலகம் மற்றும் காலப் பயணம்"
+    },
+    "version": "day-53-v1",
+    "topic": {
+      "en": "Handling Complaints & Polite Feedback",
+      "ml": "പരാതികളും ഫീഡ്ബാക്കും",
+      "hi": "Handling Complaints & Polite Feedback",
+      "ta": "Handling Complaints & Polite Feedback"
+    },
+    "unlockRule": "Unlocks after passing Day 52 Exam. Day 54 unlocks after scoring 70%+ in Day 53 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 356,
+    "totalCoinsReward": 103
+  },
+  "grammarRule": {
+    "formula": "I am afraid there is a problem with...",
+    "explanation": {
+      "ml": "പരാതികളും ഫീഡ്ബാക്കും എന്ന വിഷയത്തിൽ I am afraid there is a problem with... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use I am afraid there is a problem with... correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I have a small complaint.",
+      "en": "Golden Rule: Practice 'I have a small complaint.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "complain",
+        "v2": "complained",
+        "v3": "complained",
+        "meaning": {
+          "ml": "പരാതിപ്പെടുക",
+          "hi": "പരാതിപ്പെടുക",
+          "ta": "പരാതിപ്പെടുക"
+        },
+        "example": "I have a small complaint.",
+        "exampleMl": "പരാതിപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "replace",
+        "v2": "replaced",
+        "v3": "replaced",
+        "meaning": {
+          "ml": "മാറ്റി നൽകുക",
+          "hi": "മാറ്റി നൽകുക",
+          "ta": "മാറ്റി നൽകുക"
+        },
+        "example": "Could you replace this?",
+        "exampleMl": "മാറ്റി നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "fix",
+        "v2": "fixed",
+        "v3": "fixed",
+        "meaning": {
+          "ml": "നന്നാക്കുക",
+          "hi": "നന്നാക്കുക",
+          "ta": "നന്നാക്കുക"
+        },
+        "example": "Please fix the issue.",
+        "exampleMl": "നന്നാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "refund",
+        "v2": "refunded",
+        "v3": "refunded",
+        "meaning": {
+          "ml": "പണം തിരികെ നൽകുക",
+          "hi": "പണം തിരികെ നൽകുക",
+          "ta": "പണം തിരികെ നൽകുക"
+        },
+        "example": "Can I get a refund?",
+        "exampleMl": "പണം തിരികെ നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "issue",
+        "meaning": {
+          "ml": "പ്രശ്നം",
+          "hi": "പ്രശ്നം",
+          "ta": "പ്രശ്നം"
+        },
+        "example": "Could you point out an issue for me?"
+      },
+      {
+        "word": "damage",
+        "meaning": {
+          "ml": "കേടുപാട്",
+          "hi": "കേടുപാട്",
+          "ta": "കേടുപാട്"
+        },
+        "example": "Could you point out a damage for me?"
+      },
+      {
+        "word": "service",
+        "meaning": {
+          "ml": "സേവനം",
+          "hi": "സേവനം",
+          "ta": "സേവനം"
+        },
+        "example": "Could you point out a service for me?"
+      },
+      {
+        "word": "feedback",
+        "meaning": {
+          "ml": "ഫീഡ്ബാക്ക്",
+          "hi": "प्रतिक्रिया",
+          "ta": "கருத்து"
+        },
+        "example": "Constructive feedback helps you grow."
+      },
+      {
+        "word": "manager",
+        "meaning": {
+          "ml": "മാനേജർ",
+          "hi": "മാനേജർ",
+          "ta": "മാനേജർ"
+        },
+        "example": "Could you point out a manager for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Handling Complaints & Polite Feedback",
+        "ml": "പാഠം: പരാതികളും ഫീഡ്ബാക്കും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "issue",
+        "damage",
+        "service",
+        "feedback",
+        "manager"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I have a small complaint.",
+        "Could you replace this?",
+        "Please fix the issue."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Handling Complaints & Polite Feedback",
+        "ml": "റീഡിങ് റൂം: പരാതികളും ഫീഡ്ബാക്കും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I have a small complaint.",
+          "meaningMl": "പരാതിപ്പെടുക - I have a small complaint.",
+          "audioPrompt": "I have a small complaint."
+        },
+        {
+          "text": "Could you replace this?",
+          "meaningMl": "മാറ്റി നൽകുക - Could you replace this?",
+          "audioPrompt": "Could you replace this?"
+        },
+        {
+          "text": "Daily practice of Handling Complaints & Polite Feedback gives you great confidence in English.",
+          "meaningMl": "പരാതികളും ഫീഡ്ബാക്കും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Handling Complaints & Polite Feedback gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I have a small complaint.'",
+          "targetSentence": "I have a small complaint."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Could you replace this?'",
+          "targetSentence": "Could you replace this?"
+        },
+        "higher": {
+          "prompt": "Explain your thought on Handling Complaints & Polite Feedback in 1-2 fluent sentences.",
+          "targetSentence": "Please fix the issue."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d53_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He is married to a teacher.",
+            "He is married with a teacher.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He is married to a teacher.",
+          "explanation": "Use married to when naming a spouse."
+        },
+        {
+          "id": "trap_d53_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d53_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 53, I practiced Handling Complaints & Polite Feedback! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Handling Complaints & Polite Feedback for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Handling Complaints & Polite Feedback in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Handling Complaints & Polite Feedback.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 53 Gate Exam (5 Qs)",
+        "ml": "ഡേ 53 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'complain':",
+          "options": [
+            "ഭക്ഷണം",
+            "പരാതിപ്പെടുക",
+            "സന്തോഷം",
+            "യാത്ര"
+          ],
+          "answer": "പരാതിപ്പെടുക"
+        },
+        {
+          "q": "Complete the sentence: 'I have a small _____t.'",
+          "options": [
+            "complaining",
+            "were complain",
+            "complain",
+            "is complain"
+          ],
+          "answer": "complain"
+        },
+        {
+          "q": "What is the past form (V2) of 'replace'?",
+          "options": [
+            "replaced",
+            "replaces",
+            "replaceedx",
+            "None"
+          ],
+          "answer": "replaced"
+        },
+        {
+          "q": "Which English word means 'പ്രശ്നം'?",
+          "options": [
+            "issue",
+            "schedule",
+            "progress",
+            "partner"
+          ],
+          "answer": "issue"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was complain tomorrow.",
+            "I have a small complaint.",
+            "I am complain every time wrongly.",
+            "He do not complain yesterday."
+          ],
+          "answer": "I have a small complaint."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 53 with 70%+ to keep your streak and unlock Day 54!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

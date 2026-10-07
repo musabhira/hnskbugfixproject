@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 76,
+    "house": 3,
+    "houseTitle": {
+      "en": "House 3: Professional Fluency & Career Mastery",
+      "ml": "ഹൗസ് 3: ഫ്ലുവെൻസി, കരിയർ & ഇന്റർവ്യൂ മാസ്റ്ററി",
+      "hi": "हाउस 3: व्यावसायिक प्रवाह और करियर महारत",
+      "ta": "ஹவுஸ் 3: தொழில்முறை சரளமும் வேலை நேர்காணலும்"
+    },
+    "version": "day-76-v1",
+    "topic": {
+      "en": "Office Small Talk & Break Room English",
+      "ml": "ഓഫീസിലെ സൗഹൃദ സംഭാഷണം",
+      "hi": "Office Small Talk & Break Room English",
+      "ta": "Office Small Talk & Break Room English"
+    },
+    "unlockRule": "Unlocks after passing Day 75 Exam. Day 77 unlocks after scoring 70%+ in Day 76 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 402,
+    "totalCoinsReward": 126
+  },
+  "grammarRule": {
+    "formula": "Casual Workplace Interaction: Projects, Weekend, Coffee",
+    "explanation": {
+      "ml": "ഓഫീസിലെ സൗഹൃദ സംഭാഷണം എന്ന വിഷയത്തിൽ Casual Workplace Interaction: Projects, Weekend, Coffee എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Casual Workplace Interaction: Projects, Weekend, Coffee correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Let's grab a coffee.",
+      "en": "Golden Rule: Practice 'Let's grab a coffee.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "grab",
+        "v2": "grabbed",
+        "v3": "grabbed",
+        "meaning": {
+          "ml": "കുടിക്കുക",
+          "hi": "കുടിക്കുക",
+          "ta": "കുടിക്കുക"
+        },
+        "example": "Let's grab a coffee.",
+        "exampleMl": "കുടിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "catch up",
+        "v2": "caught up",
+        "v3": "caught up",
+        "meaning": {
+          "ml": "വിശേഷങ്ങൾ പങ്കിടുക",
+          "hi": "വിശേഷങ്ങൾ പങ്കിടുക",
+          "ta": "വിശേഷങ്ങൾ പങ്കിടുക"
+        },
+        "example": "Good to catch up with you.",
+        "exampleMl": "വിശേഷങ്ങൾ പങ്കിടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "wrap up",
+        "v2": "wrapped up",
+        "v3": "wrapped up",
+        "meaning": {
+          "ml": "പൂർത്തിയാക്കുക",
+          "hi": "പൂർത്തിയാക്കുക",
+          "ta": "പൂർത്തിയാക്കുക"
+        },
+        "example": "Let's wrap up this task.",
+        "exampleMl": "പൂർത്തിയാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "head out",
+        "v2": "headed out",
+        "v3": "headed out",
+        "meaning": {
+          "ml": "ഇറങ്ങുക",
+          "hi": "ഇറങ്ങുക",
+          "ta": "ഇറങ്ങുക"
+        },
+        "example": "Are you heading out now?",
+        "exampleMl": "ഇറങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "coffee",
+        "meaning": {
+          "ml": "കോഫി",
+          "hi": "കോഫി",
+          "ta": "കോഫി"
+        },
+        "example": "Could you point out a coffee for me?"
+      },
+      {
+        "word": "weekend",
+        "meaning": {
+          "ml": "വാരാന്ത്യം",
+          "hi": "വാരാന്ത്യം",
+          "ta": "വാരാന്ത്യം"
+        },
+        "example": "Could you point out a weekend for me?"
+      },
+      {
+        "word": "project",
+        "meaning": {
+          "ml": "പ്രോജക്ട്",
+          "hi": "പ്രോജക്ട്",
+          "ta": "പ്രോജക്ട്"
+        },
+        "example": "Could you point out a project for me?"
+      },
+      {
+        "word": "break",
+        "meaning": {
+          "ml": "ഇടവേള",
+          "hi": "ഇടവേള",
+          "ta": "ഇടവേള"
+        },
+        "example": "Could you point out a break for me?"
+      },
+      {
+        "word": "colleague",
+        "meaning": {
+          "ml": "സഹപ്രവർത്തകൻ",
+          "hi": "സഹപ്രവർത്തകൻ",
+          "ta": "സഹപ്രവർത്തകൻ"
+        },
+        "example": "Could you point out a colleague for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Office Small Talk & Break Room English",
+        "ml": "പാഠം: ഓഫീസിലെ സൗഹൃദ സംഭാഷണം"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "coffee",
+        "weekend",
+        "project",
+        "break",
+        "colleague"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Let's grab a coffee.",
+        "Good to catch up with you.",
+        "Let's wrap up this task."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Office Small Talk & Break Room English",
+        "ml": "റീഡിങ് റൂം: ഓഫീസിലെ സൗഹൃദ സംഭാഷണം"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Let's grab a coffee.",
+          "meaningMl": "കുടിക്കുക - Let's grab a coffee.",
+          "audioPrompt": "Let's grab a coffee."
+        },
+        {
+          "text": "Good to catch up with you.",
+          "meaningMl": "വിശേഷങ്ങൾ പങ്കിടുക - Good to catch up with you.",
+          "audioPrompt": "Good to catch up with you."
+        },
+        {
+          "text": "Daily practice of Office Small Talk & Break Room English gives you great confidence in English.",
+          "meaningMl": "ഓഫീസിലെ സൗഹൃദ സംഭാഷണം ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Office Small Talk & Break Room English gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Let's grab a coffee.'",
+          "targetSentence": "Let's grab a coffee."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Good to catch up with you.'",
+          "targetSentence": "Good to catch up with you."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Office Small Talk & Break Room English in 1-2 fluent sentences.",
+          "targetSentence": "Let's wrap up this task."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d76_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "She is good at English.",
+            "She is good in English.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "She is good at English.",
+          "explanation": "Use good at for a skill or subject."
+        },
+        {
+          "id": "trap_d76_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d76_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 76, I practiced Office Small Talk & Break Room English! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Office Small Talk & Break Room English for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Office Small Talk & Break Room English in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Office Small Talk & Break Room English.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 76 Gate Exam (5 Qs)",
+        "ml": "ഡേ 76 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'grab':",
+          "options": [
+            "കുടിക്കുക",
+            "സന്തോഷം",
+            "ഭക്ഷണം",
+            "യാത്ര"
+          ],
+          "answer": "കുടിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'Let's _____ a coffee.'",
+          "options": [
+            "grabing",
+            "were grab",
+            "is grab",
+            "grab"
+          ],
+          "answer": "grab"
+        },
+        {
+          "q": "What is the past form (V2) of 'catch up'?",
+          "options": [
+            "caught up",
+            "catch ups",
+            "catch upedx",
+            "None"
+          ],
+          "answer": "caught up"
+        },
+        {
+          "q": "Which English word means 'കോഫി'?",
+          "options": [
+            "journey",
+            "airport",
+            "station",
+            "coffee"
+          ],
+          "answer": "coffee"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was grab tomorrow.",
+            "Let's grab a coffee.",
+            "I am grab every time wrongly.",
+            "He do not grab yesterday."
+          ],
+          "answer": "Let's grab a coffee."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 76 with 70%+ to keep your streak and unlock Day 77!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

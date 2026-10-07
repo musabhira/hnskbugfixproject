@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'package:flutter/services.dart';
+
+import 'pocket_day_curriculum_service.dart';
 
 /// 📜 Central Day 1 JSON Curriculum Loader & Accessor
 /// User Audio Directive:
@@ -12,8 +13,7 @@ class Day1CurriculumJsonData {
   static Future<Map<String, dynamic>> load() async {
     if (_cachedJson != null) return _cachedJson!;
     try {
-      final jsonString = await rootBundle.loadString('assets/curriculum/day_1_curriculum.json');
-      _cachedJson = json.decode(jsonString) as Map<String, dynamic>;
+      _cachedJson = await PocketDayCurriculumService.loadRequiredDayCurriculum(1);
       return _cachedJson!;
     } catch (_) {
       // Fallback to static raw json
@@ -580,58 +580,33 @@ class Day1CurriculumJsonData {
       "stepNumber": 8,
       "id": "step_8_pocket_talk",
       "title": {
-        "en": "PocketTalk: Request a Mate (4-Day Pact)",
-        "ml": "പോക്കറ്റ് ടോക്ക്: മേറ്റിന് റിക്വസ്റ്റ് അയക്കുക ⚡",
-        "hi": "पॉकेटटॉक: साथी से अनुरोध करें",
-        "ta": "பாக்கெட்டாக்: நண்பருக்கு கோரிக்கை அனுப்பவும்"
+        "en": "PocketTalk & Community Chat",
+        "ml": "പോക്കറ്റ് ടോക്ക് & കമ്മ്യൂണിറ്റി ചാറ്റ് ⚡💬",
+        "hi": "पॉकेटटॉक और कम्युनिटी चैट",
+        "ta": "பாக்கெட்டாக் & சமூக அரட்டை"
       },
       "icon": "⚡",
       "gameType": "pocket_talk_action",
       "description": {
-        "en": "Open PocketTalk swiper, swipe profiles, and send a 4-Day Spoken English Pact request to an active mate!",
-        "ml": "പോക്കറ്റ് ടോക്ക് സ്വൈപ്പ് കാർഡ് തുറന്ന് ഒരു ആക്ടീവ് മേറ്റിന് 4-ദിവസത്തെ സ്പോക്കൺ പാക്ട് റിക്വസ്റ്റ് അയക്കുക!",
-        "hi": "पॉकेटटॉक स्वाइप करें और 4-दिवसीय स्पोकन पैक्ट का अनुरोध भेजें!",
-        "ta": "பாக்கெட்டாக் ஸ்வைப் செய்து 4 நாள் பேசும் ஒப்பந்த கோரிக்கையை அனுப்பவும்!"
+        "en": "Find your spoken practice mate via PocketTalk and chat in the community English Hub room!",
+        "ml": "പോക്കറ്റ് ടോക്ക് വഴി ഒരു സ്പോക്കൺ പാർട്ണറെ കണ്ടെത്തുക, ഗ്രൂപ്പിൽ ഹലോ പറയുക!",
+        "hi": "पॉकेटटॉक स्वाइप करें और कम्युनिटी चैट में शामिल हों!",
+        "ta": "பாக்கெட்டாக் நண்பரைத் தேடுங்கள் அல்லது சமூக அரட்டையில் இணையுங்கள்!"
       },
       "action": {
         "targetRoute": "pocket_talk_card_swiper",
+        "communityRoute": "community_chat_page",
         "promptText": {
-          "en": "Swipe cards to find your dedicated spoken practice mate!",
-          "ml": "കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് നിങ്ങളുടെ സ്പോക്കൺ പാർട്ണറെ കണ്ടെത്തുക!",
-          "hi": "कार्ड स्वाइप करें और साथी खोजें!",
-          "ta": "கார்டுகளை ஸ்வைப் செய்து நண்பரைத் தேர்ந்தெடுக்கவும்!"
+          "en": "Swipe cards to find your mate or post in the English Hub!",
+          "ml": "മേറ്റിനെ കണ്ടെത്തുക അല്ലെങ്കിൽ ഗ്രൂപ്പ് ചാറ്റിൽ സംസാരിക്കുക!",
+          "hi": "साथी खोजें या कम्युनिटी चैट में शामिल हों!",
+          "ta": "நண்பரைத் தேடுங்கள் அல்லது அரட்டையில் இணையுங்கள்!"
         }
       }
     },
     {
       "stepNumber": 9,
-      "id": "step_9_community_chat",
-      "title": {
-        "en": "Community Group Chat (English Hub)",
-        "ml": "കമ്മ്യൂണിറ്റി ഗ്രൂപ്പ് ചാറ്റ് (ഇംഗ്ലീഷ് ഹബ്) 💬",
-        "hi": "कम्युनिटी ग्रुप चैट",
-        "ta": "சமூக குழு அரட்டை"
-      },
-      "icon": "💬",
-      "gameType": "community_chat_action",
-      "description": {
-        "en": "Join thousands of active learners in the community room and post your Day 1 English introduction!",
-        "ml": "കമ്മ്യൂണിറ്റി റൂമിൽ പ്രവേശിച്ച് ഗ്രൂപ്പിൽ ഹലോ പറയുകയും സ്വയം പരിചയപ്പെടുത്തുകയും ചെയ്യുക!",
-        "hi": "कम्युनिटी रूम में शामिल हों और अपना परिचय दें!",
-        "ta": "சமூக குழுவில் சேர்ந்து உங்களை அறிமுகப்படுத்துங்கள்!"
-      },
-      "action": {
-        "targetRoute": "community_chat_page",
-        "suggestedMessages": [
-          "Hi everyone! 👋 I am learning English on Day 1!",
-          "Hello friends! 🌟 Glad to be part of the English Hub from Kerala!",
-          "Hey mates! Practicing daily vocab words: apple, book, water, grapes! 🍇"
-        ]
-      }
-    },
-    {
-      "stepNumber": 10,
-      "id": "step_10_house_defense",
+      "id": "step_9_house_defense",
       "title": {
         "en": "House Defense Shield & Citadel Combat",
         "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ് & അറ്റാക്ക് കോംബാറ്റ് 🛡️",

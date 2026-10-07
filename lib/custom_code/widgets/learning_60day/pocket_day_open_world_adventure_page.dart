@@ -28,6 +28,12 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_tutor_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_interactive_flow_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/community_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/english_match/anonymous_english_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/meadow_runner_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart'
     show CruisingBoat, CruisingBoatType, FlyingBird, JumpDustParticle;
 
@@ -93,6 +99,7 @@ class _PocketDayOpenWorldAdventurePageState
   // ignore: unused_field
   bool _isDriving = false;
   int _currentLedgeStep = 1;
+  List<Map<String, dynamic>>? _runtimeSteps;
 
   // Collectibles / FX
   final List<JumpDustParticle> _dustParticles = [];
@@ -142,6 +149,19 @@ class _PocketDayOpenWorldAdventurePageState
     );
 
     _loadState();
+    _loadRuntimeCurriculum();
+  }
+
+  Future<void> _loadRuntimeCurriculum() async {
+    final data = await PocketDayCurriculumService.loadDayCurriculum(widget.day);
+    final rawSteps = data?['steps'] as List<dynamic>?;
+    if (rawSteps == null || !mounted) return;
+    setState(() {
+      _runtimeSteps = rawSteps
+          .whereType<Map>()
+          .map((step) => Map<String, dynamic>.from(step))
+          .toList();
+    });
   }
 
   void _onAmbientTick() {
@@ -191,7 +211,7 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   Day1Track _day1Track = Day1Track.middle;
-  int get _totalSteps => widget.day == 1 ? 8 : 17;
+  int get _totalSteps => _runtimeSteps?.length ?? (widget.day == 1 ? 10 : 17);
 
   /// Exact coordinate of milestone step on the mountain slope
   static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
@@ -1189,6 +1209,16 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   _StepInfo _getStepDetails(int s) {
+    final runtimeSteps = _runtimeSteps;
+    if (runtimeSteps != null && s >= 1 && s <= runtimeSteps.length) {
+      final step = runtimeSteps[s - 1];
+      final title = PocketDayCurriculumService.getLocalizedText(step['title']);
+      return _StepInfo(
+        title.isEmpty ? 'Learning Step $s' : title,
+        step['icon']?.toString() ?? '📚',
+        _runtimeStepColor(s),
+      );
+    }
     if (widget.day == 1) {
       final steps = Day1Curriculum.getSteps(_day1Track);
       if (s >= 1 && s <= steps.length) {
@@ -1234,6 +1264,22 @@ class _PocketDayOpenWorldAdventurePageState
       default:
         return const _StepInfo('Practice Ledge', '⭐', Colors.white);
     }
+  }
+
+  Color _runtimeStepColor(int step) {
+    const colors = <Color>[
+      Color(0xFF00F0FF),
+      Color(0xFFFF8906),
+      Color(0xFF38BDF8),
+      Color(0xFF10B981),
+      Color(0xFF60A5FA),
+      Color(0xFFEC4899),
+      Color(0xFF8B5CF6),
+      Color(0xFFF59E0B),
+      Color(0xFFFFFC00),
+      Color(0xFF10B981),
+    ];
+    return colors[(step - 1) % colors.length];
   }
 
   Future<void> _launchStepActivity(int s) async {

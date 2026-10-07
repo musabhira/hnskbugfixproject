@@ -46,14 +46,14 @@ class PocketHomeVisitModal extends StatefulWidget {
     int userCurrentDay = 1,
     String? currentUserId,
   }) {
-    return showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (_) => PocketHomeVisitModal(
-        day: day,
-        userCurrentDay: userCurrentDay,
-        currentUserId: currentUserId,
+    return Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PocketHomeVisitModal(
+          day: day,
+          userCurrentDay: userCurrentDay,
+          currentUserId: currentUserId,
+        ),
       ),
     );
   }
@@ -164,7 +164,6 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
 
   void _attackOwner(HomeOwnerEntry owner) {
     HapticFeedback.heavyImpact();
-    Navigator.of(context).pop(); // dismiss modal
     PocketCitadelAttackPage.openForUser(
       context,
       userId: owner.id,
@@ -174,379 +173,629 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(widget.day);
-    final palette =
-        HousePalette.presets[(widget.day - 1) % HousePalette.presets.length];
-    final screenH = MediaQuery.of(context).size.height;
-    final modalH = (screenH * 0.88).clamp(520.0, 720.0);
+  List<Widget> _buildClouds() {
+    return [
+      Positioned(
+        top: 85,
+        left: 20,
+        child: _buildCloudPill(width: 90, height: 28, opacity: 0.65),
+      ),
+      Positioned(
+        top: 130,
+        right: 40,
+        child: _buildCloudPill(width: 120, height: 34, opacity: 0.55),
+      ),
+      Positioned(
+        top: 190,
+        left: 80,
+        child: _buildCloudPill(width: 75, height: 24, opacity: 0.45),
+      ),
+    ];
+  }
 
+  Widget _buildCloudPill({required double width, required double height, required double opacity}) {
     return Container(
-      height: modalH,
-      decoration: const BoxDecoration(
-        color: Color(0xFF0F172A),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: opacity),
+        borderRadius: BorderRadius.circular(height / 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black54,
-            blurRadius: 28,
-            offset: Offset(0, -4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          // Drag handle
-          Center(
-            child: Container(
-              margin: const EdgeInsets.only(top: 10, bottom: 8),
-              width: 44,
-              height: 4.5,
-              decoration: BoxDecoration(
-                color: Colors.white24,
-                borderRadius: BorderRadius.circular(3),
-              ),
-            ),
-          ),
-
-          // Header
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1E293B),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
-                  ),
-                  child: const Text('🏰', style: TextStyle(fontSize: 18)),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        estateTitle,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      Text(
-                        'Pinch to Zoom & Pan Architecture • Duel Home Owners',
-                        style: GoogleFonts.inter(
-                          color: Colors.white54,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.close_rounded, color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-
-          const Divider(color: Colors.white12, height: 16),
-
-          // 1. Zoomable & Pannable Visual House Architecture Canvas
-          Container(
-            height: 200,
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFF1E1B4B), Color(0xFF0F172A)],
-              ),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white12, width: 1),
-            ),
-            child: Stack(
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(18),
-                  child: InteractiveViewer(
-                    minScale: 0.8,
-                    maxScale: 3.0,
-                    boundaryMargin: const EdgeInsets.all(60),
-                    child: Center(
-                      child: CustomPaint(
-                        size: const Size(280, 160),
-                        painter: HouseMasterPainter(
-                          day: widget.day,
-                          palette: palette,
-                          isPresident: (widget.day >= 90),
-                          lightsOn: true,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 8,
-                  left: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.pinch_rounded,
-                            size: 13, color: Color(0xFF38BDF8)),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Pinch to Zoom / Drag to Pan',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white70,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // 2. Search Bar for Home Owners
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Container(
-              height: 42,
-              decoration: BoxDecoration(
-                color: const Color(0xFF1E293B),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.white10),
-              ),
-              child: TextField(
-                controller: _searchController,
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
-                decoration: InputDecoration(
-                  hintText: 'Search Home Owners & Guardians...',
-                  hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
-                  prefixIcon: const Icon(Icons.search_rounded,
-                      color: Color(0xFF38BDF8), size: 18),
-                  suffixIcon: _searchController.text.isNotEmpty
-                      ? IconButton(
-                          icon: const Icon(Icons.clear_rounded,
-                              color: Colors.white54, size: 16),
-                          onPressed: () {
-                            _searchController.clear();
-                          },
-                        )
-                      : null,
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                ),
-              ),
-            ),
-          ),
-
-          const SizedBox(height: 8),
-
-          // Section Title: Home Owners
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
-            child: Row(
-              children: [
-                Text(
-                  'HOME OWNERS & GUARDIANS',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 11.5,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.8,
-                  ),
-                ),
-                const SizedBox(width: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Text(
-                    '${_filteredOwners.length}',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF60A5FA),
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // 3. Owners List with Attack Button
-          Expanded(
-            child: _isLoading
-                ? const Center(
-                    child: CircularProgressIndicator(
-                      color: Color(0xFFFFD700),
-                      strokeWidth: 2,
-                    ),
-                  )
-                : _filteredOwners.isEmpty
-                    ? Center(
-                        child: Text(
-                          'No home owners found matching "$_searchQuery"',
-                          style: GoogleFonts.inter(
-                            color: Colors.white38,
-                            fontSize: 12,
-                          ),
-                        ),
-                      )
-                    : ListView.separated(
-                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-                        itemCount: _filteredOwners.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          final owner = _filteredOwners[index];
-                          final avatarConfig =
-                              VectorAvatarConfig.getEvolutionAvatarForStage(owner.day);
-
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1E293B),
-                              borderRadius: BorderRadius.circular(14),
-                              border: Border.all(
-                                color: owner.isRobot
-                                    ? Colors.white10
-                                    : const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                                width: 0.9,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                // Avatar
-                                ClipOval(
-                                  child: Container(
-                                    width: 38,
-                                    height: 38,
-                                    color: const Color(0xFF0F172A),
-                                    child: owner.avatarUrl != null &&
-                                            owner.avatarUrl!.startsWith('http')
-                                        ? Image.network(
-                                            owner.avatarUrl!,
-                                            fit: BoxFit.cover,
-                                            errorBuilder: (_, __, ___) =>
-                                                VectorAvatarWidget(
-                                              config: avatarConfig,
-                                              size: 38,
-                                              showAura: false,
-                                            ),
-                                          )
-                                        : VectorAvatarWidget(
-                                            config: avatarConfig,
-                                            size: 38,
-                                            showAura: false,
-                                          ),
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-
-                                // Details
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Flexible(
-                                            child: Text(
-                                              owner.name,
-                                              style: GoogleFonts.outfit(
-                                                color: Colors.white,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w700,
-                                              ),
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                          if (owner.isRobot) ...[
-                                            const SizedBox(width: 4),
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                  horizontal: 4, vertical: 1),
-                                              decoration: BoxDecoration(
-                                                color: Colors.blueGrey.withValues(alpha: 0.3),
-                                                borderRadius: BorderRadius.circular(4),
-                                              ),
-                                              child: const Text('BOT',
-                                                  style: TextStyle(
-                                                      color: Colors.white54,
-                                                      fontSize: 8,
-                                                      fontWeight: FontWeight.bold)),
-                                            ),
-                                          ],
-                                        ],
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        'House ${owner.day} • ${owner.score} PS 🪙',
-                                        style: GoogleFonts.inter(
-                                          color: const Color(0xFFFFD700),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                // ⚔️ Attack Button
-                                ElevatedButton.icon(
-                                  onPressed: () => _attackOwner(owner),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFFDC2626),
-                                    foregroundColor: Colors.white,
-                                    elevation: 0,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 7),
-                                    minimumSize: Size.zero,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                  ),
-                                  icon: const Text('⚔️', style: TextStyle(fontSize: 11)),
-                                  label: Text(
-                                    'Attack',
-                                    style: GoogleFonts.outfit(
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 11.5,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+            color: Colors.white.withValues(alpha: 0.3),
+            blurRadius: 10,
+            spreadRadius: 2,
           ),
         ],
       ),
     );
   }
+
+  @override
+  Widget build(BuildContext context) {
+    final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(widget.day);
+    final palette =
+        HousePalette.presets[(widget.day - 1) % HousePalette.presets.length];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0F172A),
+      body: Stack(
+        children: [
+          // 1. Living World Atmosphere: Sky Gradient
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFF0284C7), // Azure sky
+                    Color(0xFF38BDF8),
+                    Color(0xFFBAE6FD),
+                    Color(0xFF86EFAC), // Soft green horizon
+                  ],
+                  stops: [0.0, 0.40, 0.68, 1.0],
+                ),
+              ),
+            ),
+          ),
+
+          // 2. Glowing Sun in the Sky
+          Positioned(
+            top: 55,
+            right: 40,
+            child: Container(
+              width: 76,
+              height: 76,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: const RadialGradient(
+                  colors: [
+                    Color(0xFFFEF08A),
+                    Color(0xFFFBBF24),
+                    Colors.transparent,
+                  ],
+                  stops: [0.35, 0.72, 1.0],
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFFBBF24).withValues(alpha: 0.45),
+                    blurRadius: 36,
+                    spreadRadius: 12,
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 3. Floating Clouds
+          ..._buildClouds(),
+
+          // 4. Rolling Green Hills & Ground Courtyard
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: 380,
+            child: CustomPaint(
+              painter: _HillsAndGroundPainter(),
+            ),
+          ),
+
+          // 5. Interactive Zoomable & Pannable House Architecture Canvas
+          Positioned.fill(
+            bottom: 140, // Space above collapsed bottom drawer
+            child: InteractiveViewer(
+              minScale: 0.7,
+              maxScale: 2.8,
+              boundaryMargin: const EdgeInsets.all(120),
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CustomPaint(
+                      size: const Size(320, 230),
+                      painter: HouseMasterPainter(
+                        day: widget.day,
+                        palette: palette,
+                        isPresident: (widget.day >= 90),
+                        lightsOn: true,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    // Estate Stage Banner
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                        borderRadius: BorderRadius.circular(22),
+                        border: Border.all(color: const Color(0xFFFFD700), width: 1.6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.45),
+                            blurRadius: 14,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🏰', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 8),
+                          Text(
+                            estateTitle,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD700),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'DAY ${widget.day}',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Pinch guidance pill
+          Positioned(
+            top: 110,
+            left: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A).withValues(alpha: 0.75),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.pinch_rounded, size: 14, color: Color(0xFF38BDF8)),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Pinch to Zoom • Drag to Pan',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white70,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 6. Top Glassmorphic Navigation Bar
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                child: Row(
+                  children: [
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0F172A).withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(18),
+                          border: Border.all(color: Colors.white24),
+                        ),
+                        child: Row(
+                          children: [
+                            const Text('🏡', style: TextStyle(fontSize: 18)),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'HOME VISIT • DAY ${widget.day}',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontSize: 13.5,
+                                      fontWeight: FontWeight.w900,
+                                    ),
+                                  ),
+                                  Text(
+                                    estateTitle,
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white70,
+                                      fontSize: 11,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // 7. Draggable Sliding Drawer: Citadel Owners & Guardians
+          DraggableScrollableSheet(
+            initialChildSize: 0.28,
+            minChildSize: 0.22,
+            maxChildSize: 0.88,
+            snap: true,
+            snapSizes: const [0.28, 0.65, 0.88],
+            builder: (context, scrollController) {
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF0F172A),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black87,
+                      blurRadius: 30,
+                      offset: Offset(0, -6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    // Drag Handle
+                    Center(
+                      child: Container(
+                        margin: const EdgeInsets.only(top: 10, bottom: 8),
+                        width: 44,
+                        height: 4.5,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      ),
+                    ),
+
+                    // Sheet Header
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                            ),
+                            child: const Text('🏰', style: TextStyle(fontSize: 18)),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        'DAY ${widget.day} CITADEL RESIDENTS',
+                                        style: GoogleFonts.outfit(
+                                          color: Colors.white,
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        '${_filteredOwners.length}',
+                                        style: GoogleFonts.outfit(
+                                          color: const Color(0xFF60A5FA),
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Text(
+                                  'Swipe up to duel home owners • Challenge citadels',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white54,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const Divider(color: Colors.white12, height: 16),
+
+                    // Search Bar
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E293B),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: TextField(
+                          controller: _searchController,
+                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                          decoration: InputDecoration(
+                            hintText: 'Search Home Owners & Guardians...',
+                            hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                            prefixIcon: const Icon(Icons.search_rounded,
+                                color: Color(0xFF38BDF8), size: 18),
+                            suffixIcon: _searchController.text.isNotEmpty
+                                ? IconButton(
+                                    icon: const Icon(Icons.clear_rounded,
+                                        color: Colors.white54, size: 16),
+                                    onPressed: () {
+                                      _searchController.clear();
+                                    },
+                                  )
+                                : null,
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 8),
+
+                    // Owners List with Vector Avatar and Citadel Attack Button
+                    Expanded(
+                      child: _isLoading
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFFFFD700),
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : _filteredOwners.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    'No home owners found matching "$_searchQuery"',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white38,
+                                      fontSize: 12,
+                                    ),
+                                  ),
+                                )
+                              : ListView.separated(
+                                  controller: scrollController,
+                                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+                                  itemCount: _filteredOwners.length,
+                                  separatorBuilder: (_, __) => const SizedBox(height: 8),
+                                  itemBuilder: (context, index) {
+                                    final owner = _filteredOwners[index];
+                                    final avatarConfig =
+                                        VectorAvatarConfig.getEvolutionAvatarForStage(owner.day);
+
+                                    return Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF1E293B),
+                                        borderRadius: BorderRadius.circular(14),
+                                        border: Border.all(
+                                          color: owner.isRobot
+                                              ? Colors.white10
+                                              : const Color(0xFF38BDF8).withValues(alpha: 0.3),
+                                          width: 0.9,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          // Stage Vector Avatar
+                                          ClipOval(
+                                            child: Container(
+                                              width: 40,
+                                              height: 40,
+                                              color: const Color(0xFF0F172A),
+                                              child: owner.avatarUrl != null &&
+                                                      owner.avatarUrl!.startsWith('http')
+                                                  ? Image.network(
+                                                      owner.avatarUrl!,
+                                                      fit: BoxFit.cover,
+                                                      errorBuilder: (_, __, ___) =>
+                                                          VectorAvatarWidget(
+                                                        config: avatarConfig,
+                                                        size: 40,
+                                                        showAura: false,
+                                                      ),
+                                                    )
+                                                  : VectorAvatarWidget(
+                                                      config: avatarConfig,
+                                                      size: 40,
+                                                      showAura: false,
+                                                    ),
+                                            ),
+                                          ),
+                                          const SizedBox(width: 12),
+
+                                          // Details
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Flexible(
+                                                      child: Text(
+                                                        owner.name,
+                                                        style: GoogleFonts.outfit(
+                                                          color: Colors.white,
+                                                          fontSize: 13,
+                                                          fontWeight: FontWeight.w700,
+                                                        ),
+                                                        maxLines: 1,
+                                                        overflow: TextOverflow.ellipsis,
+                                                      ),
+                                                    ),
+                                                    if (owner.isRobot) ...[
+                                                      const SizedBox(width: 4),
+                                                      Container(
+                                                        padding: const EdgeInsets.symmetric(
+                                                            horizontal: 4, vertical: 1),
+                                                        decoration: BoxDecoration(
+                                                          color: Colors.blueGrey.withValues(alpha: 0.3),
+                                                          borderRadius: BorderRadius.circular(4),
+                                                        ),
+                                                        child: const Text('BOT',
+                                                            style: TextStyle(
+                                                                color: Colors.white54,
+                                                                fontSize: 8,
+                                                                fontWeight: FontWeight.bold)),
+                                                      ),
+                                                    ],
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 2),
+                                                Text(
+                                                  'House ${owner.day} • ${owner.score} PS 🪙',
+                                                  style: GoogleFonts.inter(
+                                                    color: const Color(0xFFFFD700),
+                                                    fontSize: 11,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+
+                                          // ⚔️ Attack Citadel Button
+                                          ElevatedButton.icon(
+                                            onPressed: () => _attackOwner(owner),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: const Color(0xFFDC2626),
+                                              foregroundColor: Colors.white,
+                                              elevation: 0,
+                                              padding: const EdgeInsets.symmetric(
+                                                  horizontal: 10, vertical: 7),
+                                              minimumSize: Size.zero,
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                              ),
+                                            ),
+                                            icon: const Text('⚔️', style: TextStyle(fontSize: 11)),
+                                            label: Text(
+                                              'Attack',
+                                              style: GoogleFonts.outfit(
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 11.5,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    );
+                                  },
+                                ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 🌄 Custom Painter for Living World Hills and Ground Cobblestone
+class _HillsAndGroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+
+    // Distant dark green hill
+    final hillPaint1 = Paint()..color = const Color(0xFF15803D);
+    final path1 = Path()
+      ..moveTo(0, h * 0.45)
+      ..quadraticBezierTo(w * 0.35, h * 0.25, w * 0.7, h * 0.42)
+      ..quadraticBezierTo(w * 0.88, h * 0.50, w, h * 0.46)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+    canvas.drawPath(path1, hillPaint1);
+
+    // Foreground lush green hill
+    final hillPaint2 = Paint()..color = const Color(0xFF16A34A);
+    final path2 = Path()
+      ..moveTo(0, h * 0.55)
+      ..quadraticBezierTo(w * 0.25, h * 0.48, w * 0.55, h * 0.58)
+      ..quadraticBezierTo(w * 0.82, h * 0.65, w, h * 0.52)
+      ..lineTo(w, h)
+      ..lineTo(0, h)
+      ..close();
+    canvas.drawPath(path2, hillPaint2);
+
+    // Ground Courtyard Platform (Warm stone cobblestone)
+    final groundPaint = Paint()..color = const Color(0xFF334155);
+    final groundRect = Rect.fromLTWH(0, h * 0.72, w, h * 0.28);
+    canvas.drawRect(groundRect, groundPaint);
+
+    // Decorative ground grass edge line
+    final linePaint = Paint()
+      ..color = const Color(0xFF22C55E)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+    canvas.drawLine(Offset(0, h * 0.72), Offset(w, h * 0.72), linePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

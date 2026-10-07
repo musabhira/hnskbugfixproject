@@ -2,688 +2,471 @@
   "course": {
     "name": "90-Day English Game",
     "day": 1,
-    "version": "final-day-1-v1",
-    "principle": "One day, one main English topic, learned through gameplay.",
-    "day1_topic": "ME + BASIC ENGLISH",
-    "unlockRule": "Day 2 unlocks only after passing the Day 1 track exam."
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-1-v1",
+    "topic": {
+      "en": "Me & Identity",
+      "ml": "ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും",
+      "hi": "Me & Identity",
+      "ta": "Me & Identity"
+    },
+    "unlockRule": "Unlocks after passing Day 0 Exam. Day 2 unlocks after scoring 70%+ in Day 1 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 252,
+    "totalCoinsReward": 51
   },
-  "tracks": [
-    {
-      "id": "zero",
-      "name": "Zero Foundation",
-      "startingPoint": "No basic English; may begin from ABC.",
-      "day1_outcome": "Recognize first English letters and basic words, understand very simple spoken prompts, and use first English expressions.",
-      "lesson": {
-        "topic": "Alphabet, sounds and first words",
-        "activeLetters": [
-          "A",
-          "B",
-          "C",
-          "D",
-          "E",
-          "F"
-        ],
-        "letterWords": [
-          [
-            "A",
-            "/æ/",
-            "Apple"
-          ],
-          [
-            "B",
-            "/b/",
-            "Ball"
-          ],
-          [
-            "C",
-            "/k/",
-            "Cat"
-          ],
-          [
-            "D",
-            "/d/",
-            "Dog"
-          ],
-          [
-            "E",
-            "/e/",
-            "Egg"
-          ],
-          [
-            "F",
-            "/f/",
-            "Fish"
-          ]
-        ]
-      },
-      "vocabulary": [
-        {
-          "word": "apple",
-          "meaning": "ആപ്പിൾ",
-          "phonetic": "/ˈæp.əl/",
-          "example": "I eat an apple."
-        },
-        {
-          "word": "ball",
-          "meaning": "പന്ത്",
-          "phonetic": "/bɔːl/",
-          "example": "This is a ball."
-        },
-        {
-          "word": "cat",
-          "meaning": "പൂച്ച",
-          "phonetic": "/kæt/",
-          "example": "I see a cat."
-        },
-        {
-          "word": "dog",
-          "meaning": "നായ",
-          "phonetic": "/dɒɡ/",
-          "example": "The dog is friendly."
-        },
-        {
-          "word": "book",
-          "meaning": "പുസ്തകം",
-          "phonetic": "/bʊk/",
-          "example": "This is my book."
-        },
-        {
-          "word": "water",
-          "meaning": "വെള്ളം",
-          "phonetic": "/ˈwɔː.tər/",
-          "example": "I drink water."
-        },
-        {
-          "word": "pen",
-          "meaning": "പേന",
-          "phonetic": "/pen/",
-          "example": "This is a pen."
-        },
-        {
-          "word": "house",
-          "meaning": "വീട്",
-          "phonetic": "/haʊs/",
-          "example": "This is my house."
-        }
-      ],
-      "communicationTargets": [
-        "Hi.",
-        "Hello.",
-        "My name is ___."
-      ]
+  "grammarRule": {
+    "formula": "Am/Is/Are & Phonics",
+    "explanation": {
+      "ml": "ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും എന്ന വിഷയത്തിൽ Am/Is/Are & Phonics എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Am/Is/Are & Phonics correctly in spoken English."
     },
-    {
-      "id": "middle",
-      "name": "Middle / Core English",
-      "startingPoint": "Knows ABC and some common English words; can understand simple English.",
-      "day1_outcome": "Introduce self with simple sentences, answer basic personal questions, and build correct everyday sentences.",
-      "lesson": {
-        "topic": "Self introduction and basic sentence patterns",
-        "patterns": [
-          "My name is ___.",
-          "I am ___.",
-          "I am from ___.",
-          "I live in ___.",
-          "I like ___."
-        ]
-      },
-      "vocabulary": [
-        {
-          "word": "name",
-          "meaning": "പേര്",
-          "example": "My name is Alex."
-        },
-        {
-          "word": "from",
-          "meaning": "നിന്ന് / നിന്നുള്ള",
-          "example": "I am from India."
-        },
-        {
-          "word": "live",
-          "meaning": "താമസിക്കുക",
-          "example": "I live in Kerala."
-        },
-        {
-          "word": "work",
-          "meaning": "ജോലി ചെയ്യുക",
-          "example": "I work from home."
-        },
-        {
-          "word": "study",
-          "meaning": "പഠിക്കുക",
-          "example": "I study English."
-        },
-        {
-          "word": "like",
-          "meaning": "ഇഷ്ടപ്പെടുക",
-          "example": "I like music."
-        },
-        {
-          "word": "friend",
-          "meaning": "സുഹൃത്ത്",
-          "example": "He is my friend."
-        },
-        {
-          "word": "learn",
-          "meaning": "പഠിക്കുക",
-          "example": "I learn English every day."
-        },
-        {
-          "word": "home",
-          "meaning": "വീട്",
-          "example": "I am at home."
-        },
-        {
-          "word": "country",
-          "meaning": "രാജ്യം",
-          "example": "India is my country."
-        }
-      ],
-      "communicationTargets": [
-        "Hi! My name is ___.",
-        "I am from ___.",
-        "What is your name?",
-        "Where are you from?",
-        "What do you like?"
-      ]
-    },
-    {
-      "id": "higher",
-      "name": "Higher English",
-      "startingPoint": "Can already communicate with basic English; needs better vocabulary and natural expression.",
-      "day1_outcome": "Introduce self naturally, use richer everyday vocabulary, understand context, and respond more naturally.",
-      "lesson": {
-        "topic": "Natural self-introduction and vocabulary upgrade",
-        "upgrades": [
-          [
-            "I am a developer.",
-            "I'm a software developer."
-          ],
-          [
-            "I like technology.",
-            "I'm really interested in technology."
-          ],
-          [
-            "I work on an app.",
-            "I'm currently working on an app."
-          ]
-        ]
-      },
-      "vocabulary": [
-        {
-          "word": "introduce",
-          "meaning": "പരിചയപ്പെടുത്തുക",
-          "example": "Let me introduce myself."
-        },
-        {
-          "word": "background",
-          "meaning": "പശ്ചാത്തലം",
-          "example": "Tell me about your background."
-        },
-        {
-          "word": "currently",
-          "meaning": "ഇപ്പോൾ / നിലവിൽ",
-          "example": "I'm currently working on an app."
-        },
-        {
-          "word": "interested",
-          "meaning": "താൽപര്യമുള്ള",
-          "example": "I'm interested in technology."
-        },
-        {
-          "word": "experience",
-          "meaning": "അനുഭവം",
-          "example": "I have experience in software development."
-        },
-        {
-          "word": "communication",
-          "meaning": "ആശയവിനിമയം",
-          "example": "Communication is important."
-        },
-        {
-          "word": "improve",
-          "meaning": "മെച്ചപ്പെടുത്തുക",
-          "example": "I want to improve my English."
-        },
-        {
-          "word": "goal",
-          "meaning": "ലക്ഷ്യം",
-          "example": "My goal is to speak English confidently."
-        },
-        {
-          "word": "develop",
-          "meaning": "വികസിപ്പിക്കുക",
-          "example": "I develop mobile apps."
-        },
-        {
-          "word": "project",
-          "meaning": "പദ്ധതി / പ്രോജക്ട്",
-          "example": "I'm working on a new project."
-        }
-      ],
-      "communicationTargets": [
-        "Tell me about yourself.",
-        "What are you currently working on?",
-        "What are you interested in?",
-        "Ask one natural follow-up question."
-      ]
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I am happy.",
+      "en": "Golden Rule: Practice 'I am happy.' with zero hesitation."
     }
-  ],
-  "coreGameFlow": [
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "be",
+        "v2": "was",
+        "v3": "been",
+        "meaning": {
+          "ml": "ആയിരിക്കുക",
+          "hi": "होना",
+          "ta": "இரு"
+        },
+        "example": "I am happy.",
+        "exampleMl": "ആയിരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "call",
+        "v2": "called",
+        "v3": "called",
+        "meaning": {
+          "ml": "വിളിക്കുക",
+          "hi": "बुलाना / कॉल करना",
+          "ta": "அழை"
+        },
+        "example": "Call my name.",
+        "exampleMl": "വിളിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "have",
+        "v2": "had",
+        "v3": "had",
+        "meaning": {
+          "ml": "ഉണ്ടായിരിക്കുക",
+          "hi": "पास होना",
+          "ta": "இரு / கொண்டிரு"
+        },
+        "example": "I have a pen.",
+        "exampleMl": "ഉണ്ടായിരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "see",
+        "v2": "saw",
+        "v3": "seen",
+        "meaning": {
+          "ml": "കാണുക",
+          "hi": "देखना",
+          "ta": "பார்"
+        },
+        "example": "I see you.",
+        "exampleMl": "കാണുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "name",
+        "meaning": {
+          "ml": "പേര്",
+          "hi": "नाम",
+          "ta": "பெயர்"
+        },
+        "example": "My name is Arun."
+      },
+      {
+        "word": "apple",
+        "meaning": {
+          "ml": "ആപ്പിൾ",
+          "hi": "सेब",
+          "ta": "ஆப்பிள்"
+        },
+        "example": "An apple is red and sweet."
+      },
+      {
+        "word": "book",
+        "meaning": {
+          "ml": "പുസ്തകം",
+          "hi": "किताब",
+          "ta": "புத்தகம்"
+        },
+        "example": "This book teaches good manners."
+      },
+      {
+        "word": "friend",
+        "meaning": {
+          "ml": "സുഹൃത്ത്",
+          "hi": "दोस्त",
+          "ta": "நண்பன்"
+        },
+        "example": "A true friend supports you."
+      },
+      {
+        "word": "water",
+        "meaning": {
+          "ml": "വെള്ളം",
+          "hi": "पानी",
+          "ta": "தண்ணீர்"
+        },
+        "example": "Drink clean water."
+      }
+    ]
+  },
+  "steps": [
     {
-      "step": 1,
-      "id": "welcome_and_goal",
-      "name": "Welcome + Today's Goal",
-      "gameRole": "Tutorial entry",
-      "sharedActions": [
-        "Spawn player in Day 1 Home",
-        "Tutor NPC greets player",
-        "Show progress 0%",
-        "Show one clear Day 1 goal",
-        "Start button"
-      ]
-    },
-    {
-      "step": 2,
-      "id": "tutor_lesson",
-      "name": "Tutor Lesson",
-      "gameRole": "Teach today's one topic",
-      "sharedActions": [
-        "Tutor demonstrates with visual objects/NPC dialogue",
-        "Play native audio",
-        "Show only the minimum explanation needed",
-        "Let player interact after each concept"
-      ]
-    },
-    {
-      "step": 3,
-      "id": "daily_vocabulary",
-      "name": "Daily Vocabulary",
-      "gameRole": "Build today's vocabulary through interaction",
-      "sharedActions": [
-        "Show track-specific words",
-        "Each word uses See -> Hear -> Meaning -> Example -> Use",
-        "Avoid random word memorization",
-        "Mark each mastered word"
-      ]
-    },
-    {
-      "step": 4,
-      "id": "hunt_game",
-      "name": "Game 1: Hunt",
-      "gameRole": "Explore and find target letters/words/meanings",
-      "mechanics": [
-        "2D movement",
-        "Target highlighting",
-        "Object interaction",
-        "Collect target",
-        "Immediate feedback",
-        "XP reward"
-      ]
-    },
-    {
-      "step": 5,
-      "id": "match_build_game",
-      "name": "Game 2: Match + Build",
-      "gameRole": "Convert recognition into active use",
-      "mechanics": [
-        "Match object to word",
-        "Arrange letters",
-        "Arrange words",
-        "Build sentence",
-        "Upgrade sentence for higher track"
-      ]
-    },
-    {
-      "step": 6,
-      "id": "reading_listening",
-      "name": "Reading + Listening Room",
-      "gameRole": "Understand simple English and hear correct pronunciation",
-      "mechanics": [
-        "Short content",
-        "Native audio",
-        "Tap-to-hear",
-        "Read aloud option",
-        "1-3 comprehension questions"
-      ]
-    },
-    {
-      "step": 7,
-      "id": "spoken_lab",
-      "name": "Speaking Mission",
-      "gameRole": "Make player say today's English",
-      "mechanics": [
-        "Tutor plays model audio",
-        "Player repeats or answers",
-        "Voice recording where enabled",
-        "Basic feedback",
-        "Complete 3-6 short speaking tasks"
-      ]
-    },
-    {
-      "step": 8,
-      "id": "social_practice",
-      "name": "Mate Practice",
-      "gameRole": "Move learned English into real communication",
-      "mechanics": [
-        "Random partner option",
-        "PocketTalk/Mate request option",
-        "Provide starter prompts matched to track",
-        "Reward completion, not perfection"
-      ],
-      "track_examples": {
-        "zero": [
-          "Hi.",
-          "My name is ___."
-        ],
-        "middle": [
-          "Hi! My name is ___. Where are you from?"
-        ],
-        "higher": [
-          "Hi! I'm ___. What are you currently working on?"
-        ]
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Me & Identity",
+        "ml": "പാഠം: ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
       }
     },
     {
-      "step": 9,
-      "id": "community_mission",
-      "name": "Community English Mission",
-      "gameRole": "Use English publicly in a safe, simple task",
-      "mechanics": [
-        "Open English community",
-        "Post one track-specific message",
-        "Optional reply to another learner",
-        "Mark mission complete"
-      ]
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
     },
     {
-      "step": 10,
-      "id": "attack_and_home_defense",
-      "name": "Attack + Home Defense",
-      "gameRole": "Turn learned English into game progression",
-      "mechanics": [
-        "Player enters training attack",
-        "Today's questions cause attack damage",
-        "Player installs/updates learned defense questions",
-        "Correct answer = successful attack/defense",
-        "Wrong answer = retry with hint",
-        "Show reward"
-      ]
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "name",
+        "apple",
+        "book",
+        "friend",
+        "water"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I am happy.",
+        "Call my name.",
+        "I have a pen."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Me & Identity",
+        "ml": "റീഡിങ് റൂം: ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I am happy.",
+          "meaningMl": "ആയിരിക്കുക - I am happy.",
+          "audioPrompt": "I am happy."
+        },
+        {
+          "text": "Call my name.",
+          "meaningMl": "വിളിക്കുക - Call my name.",
+          "audioPrompt": "Call my name."
+        },
+        {
+          "text": "Daily practice of Me & Identity gives you great confidence in English.",
+          "meaningMl": "ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Me & Identity gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I am happy.'",
+          "targetSentence": "I am happy."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Call my name.'",
+          "targetSentence": "Call my name."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Me & Identity in 1-2 fluent sentences.",
+          "targetSentence": "I have a pen."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d1_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He goes to work every day.",
+            "He go to work every day.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He goes to work every day.",
+          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+        },
+        {
+          "id": "trap_d1_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d1_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "type": "raid_battle",
+      "gameType": "citadel_attack_raid",
+      "title": {
+        "en": "Citadel Attack Raids",
+        "ml": "സിറ്റാഡൽ ആക്രമണ റെയ്ഡുകൾ"
+      },
+      "icon": "⚔️",
+      "canBeSkipped": true,
+      "xpReward": 0,
+      "passScore": 100,
+      "is_unlocked": false,
+      "unlock_condition": "Unlocks on Day 4",
+      "attackConfig": {
+        "isUnlocked": false,
+        "unlocksOnDay": 4
+      },
+      "description": {
+        "en": "Raids unlock on Day 4. Build your defense first.",
+        "ml": "റെയ്ഡുകൾ ഡേ 4-ൽ അൺലോക്ക് ചെയ്യും. ആദ്യം പ്രതിരോധം ഒരുക്കുക."
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": true,
+          "unlocksOnDay": 10,
+          "lockedMessage": "🌱 Stranger voice calls unlock on Day 10! Practice privately with Tutor Robot today.",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 1, I practiced Me & Identity! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Me & Identity for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Me & Identity in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Me & Identity.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 1 Gate Exam (5 Qs)",
+        "ml": "ഡേ 1 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'be':",
+          "options": [
+            "യാത്ര",
+            "ആയിരിക്കുക",
+            "സന്തോഷം",
+            "ഭക്ഷണം"
+          ],
+          "answer": "ആയിരിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'I am happy.'",
+          "options": [
+            "being",
+            "be",
+            "were be",
+            "is be"
+          ],
+          "answer": "be"
+        },
+        {
+          "q": "What is the past form (V2) of 'call'?",
+          "options": [
+            "calledx",
+            "calls",
+            "None",
+            "called"
+          ],
+          "answer": "called"
+        },
+        {
+          "q": "Which English word means 'പേര്'?",
+          "options": [
+            "routine",
+            "knowledge",
+            "name",
+            "schedule"
+          ],
+          "answer": "name"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was be tomorrow.",
+            "He do not be yesterday.",
+            "I am be every time wrongly.",
+            "I am happy."
+          ],
+          "answer": "I am happy."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 1 with 70%+ to keep your streak and unlock Day 2!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
     }
   ],
-  "track_step_content": {
-    "zero": {
-      "step_1": "Tutor introduces English and today's alphabet goal.",
-      "step_2": "Teach A-F with sound + object; preview A-Z only.",
-      "step_3": "Use 8 daily words: apple, ball, cat, dog, book, water, pen, house.",
-      "step_4": "Find A-F and selected objects in the Home map.",
-      "step_5": "Match A->Apple, B->Ball, C->Cat; build CAT, DOG, PEN.",
-      "step_6": "Listen to short words/sentences and identify the correct object.",
-      "step_7": "Say Hi, Hello, My name is ___.",
-      "step_8": "Send a greeting and name to a Mate.",
-      "step_9": "Post a simple Day 1 introduction in Community.",
-      "step_10": "Solve letter/word questions in attack and install 5 easy defense challenges."
-    },
-    "middle": {
-      "step_1": "Tutor explains that today is about introducing yourself.",
-      "step_2": "Teach five basic sentence patterns through NPC dialogue.",
-      "step_3": "Use 10 personal-information words in context.",
-      "step_4": "Explore the Home and find objects connected to everyday life.",
-      "step_5": "Build My name is ___. / I am from ___. / I live in ___. / I like ___.",
-      "step_6": "Listen to a short self-introduction and answer simple questions.",
-      "step_7": "Complete a 3-question spoken NPC conversation.",
-      "step_8": "Introduce yourself to a Mate and ask one question.",
-      "step_9": "Post a 2-3 sentence English introduction in Community.",
-      "step_10": "Solve sentence and basic-question attack challenges; install 5 defense questions."
-    },
-    "higher": {
-      "step_1": "Tutor explains that today's goal is natural self-introduction.",
-      "step_2": "Teach basic-to-natural sentence upgrades.",
-      "step_3": "Use 10 higher-use vocabulary words in natural context.",
-      "step_4": "Explore and answer contextual object questions.",
-      "step_5": "Upgrade simple sentences into more natural versions.",
-      "step_6": "Listen to natural short speech and answer meaning/context questions.",
-      "step_7": "Give a 20-60 second natural self-introduction.",
-      "step_8": "Start a conversation and ask one follow-up question based on the Mate's answer.",
-      "step_9": "Post a natural introduction or discussion starter in Community.",
-      "step_10": "Solve contextual/natural-English attack challenges; install 5 higher-level defense questions."
-    }
-  },
-  "daily_completion_rules": {
-    "required_steps": [
-      1,
-      2,
-      3,
-      4,
-      5,
-      6,
-      7,
-      8,
-      9,
-      10,
-      "exam"
-    ],
-    "soft_fail": "A failed mini-game can be retried without blocking the day.",
-    "hard_gate": "Only the final Day 1 exam blocks Day 2 unlock.",
-    "recommended_exam_pass_percentage": 70,
-    "if_exam_failed": "Give targeted review from mistakes, then allow retry.",
-    "completion_reward": [
-      "XP",
-      "Coins",
-      "Day 1 completion badge progress",
-      "Home defense progress",
-      "Streak +1"
-    ]
-  },
-  "exams": {
-    "zero": {
-      "title": "Day 1 Zero Foundation Exam",
-      "questions": [
-        {
-          "q": "Listen and identify the letter: B",
-          "type": "audio_choice",
-          "skill": "letter_recognition"
-        },
-        {
-          "q": "Which letter starts Apple?",
-          "type": "choice",
-          "options": [
-            "A",
-            "B",
-            "C",
-            "D"
-          ],
-          "answer": "A",
-          "skill": "letter_word"
-        },
-        {
-          "q": "Match B to its object",
-          "type": "match",
-          "answer": "Ball",
-          "skill": "vocabulary"
-        },
-        {
-          "q": "Find the word DOG",
-          "type": "visual_choice",
-          "skill": "word_recognition"
-        },
-        {
-          "q": "Build C + A + T",
-          "type": "build",
-          "answer": "CAT",
-          "skill": "spelling"
-        },
-        {
-          "q": "Listen to 'E' and select E",
-          "type": "audio_choice",
-          "answer": "E",
-          "skill": "listening"
-        },
-        {
-          "q": "Which word matches the 🛏️ object?",
-          "type": "choice",
-          "options": [
-            "Bed",
-            "Book",
-            "Ball",
-            "Dog"
-          ],
-          "answer": "Bed",
-          "skill": "vocabulary"
-        },
-        {
-          "q": "Final task: find A, find Apple, then say 'Apple'",
-          "type": "game_plus_speaking",
-          "skill": "integrated"
-        }
-      ]
-    },
-    "middle": {
-      "title": "Day 1 Middle/Core Exam",
-      "questions": [
-        {
-          "q": "Choose the correct answer to 'What's your name?'",
-          "type": "choice",
-          "answer": "My name is Alex.",
-          "skill": "conversation"
-        },
-        {
-          "q": "Complete: I ___ from India.",
-          "type": "fill",
-          "answer": "am",
-          "skill": "grammar"
-        },
-        {
-          "q": "Build: I / live / in / Kerala",
-          "type": "build",
-          "answer": "I live in Kerala.",
-          "skill": "sentence_building"
-        },
-        {
-          "q": "Choose the correct answer to 'Where are you from?'",
-          "type": "choice",
-          "answer": "I'm from India.",
-          "skill": "conversation"
-        },
-        {
-          "q": "Complete: Where do you ___?",
-          "type": "fill",
-          "answer": "live",
-          "skill": "vocabulary"
-        },
-        {
-          "q": "Listen to a short introduction and identify where the speaker is from",
-          "type": "listening",
-          "skill": "listening"
-        },
-        {
-          "q": "Build: I / like / music",
-          "type": "build",
-          "answer": "I like music.",
-          "skill": "sentence_building"
-        },
-        {
-          "q": "Final task: complete a 3-question self-introduction with an NPC",
-          "type": "speaking_conversation",
-          "skill": "communication"
-        }
-      ]
-    },
-    "higher": {
-      "title": "Day 1 Higher English Exam",
-      "questions": [
-        {
-          "q": "Choose the most natural self-introduction",
-          "type": "context_choice",
-          "skill": "natural_english"
-        },
-        {
-          "q": "Choose the best use of 'currently'",
-          "type": "context_choice",
-          "skill": "vocabulary"
-        },
-        {
-          "q": "Upgrade: I work on an app.",
-          "type": "sentence_upgrade",
-          "acceptedAnswers": [
-            "I'm currently working on an app.",
-            "I am currently working on an app."
-          ],
-          "skill": "natural_english"
-        },
-        {
-          "q": "Listen and identify what the speaker is currently working on",
-          "type": "listening",
-          "skill": "listening"
-        },
-        {
-          "q": "Choose the most appropriate response to 'What are you interested in?'",
-          "type": "context_choice",
-          "skill": "communication"
-        },
-        {
-          "q": "Choose the stronger use of 'experience'",
-          "type": "context_choice",
-          "skill": "vocabulary"
-        },
-        {
-          "q": "Start a short conversation with an NPC and ask a follow-up question",
-          "type": "conversation",
-          "skill": "communication"
-        },
-        {
-          "q": "Final speaking task: introduce yourself naturally for 30-60 seconds",
-          "type": "speaking",
-          "skill": "fluency"
-        }
-      ]
-    }
-  },
-  "progress_and_feedback": {
-    "daily_progress_categories": [
-      "Lesson",
-      "Vocabulary",
-      "Game",
-      "Listening",
-      "Speaking",
-      "Communication",
-      "Exam"
-    ],
-    "end_screen": {
-      "title": "DAY 1 COMPLETE",
-      "must_show": [
-        "What you learned",
-        "Vocabulary count",
-        "Speaking completed",
-        "Games completed",
-        "Attack/Defense completed",
-        "Exam score",
-        "Next day unlock status"
-      ]
-    },
-    "zero_example": "Today you learned your first English letters and words.",
-    "middle_example": "Today you learned to introduce yourself in English.",
-    "higher_example": "Today you learned to introduce yourself more naturally and use better vocabulary."
-  },
-  "implementation_notes": {
-    "engine": "Flutter + Flame 2D",
-    "world_model": "One reusable 2D world with track-specific content injected into the same quest engine.",
-    "content_model": "Track -> Day -> Step -> Activity -> Question/Prompt -> Reward",
-    "difficulty": "Zero/Middle/Higher changes content difficulty, not the core game controls.",
-    "principle": "Do not overload Day 1. The player should leave with one clear measurable English skill improvement.",
-    "existing_system_alignment": [
-      "Alphabet/phonics",
-      "50+ vocabulary bank",
-      "Letter and Word Hunt",
-      "Match and Sentence Builder",
-      "Reading Room",
-      "Spoken Speech Lab",
-      "Random Partner Call",
-      "PocketTalk",
-      "Community Chat",
-      "House Defense",
-      "House 1 Final Gate Exam"
-    ],
-    "source_note": "These existing Day 1 systems are present in the uploaded Day 1 data and are being reorganized here into a cleaner three-track final flow."
+  "topic": {
+    "en": "Me & Identity (First Words & Alphabet)",
+    "ml": "ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും (അക്ഷരങ്ങളും ആദ്യ വാക്കുകളും)",
+    "hi": "मैं और बुनियादी अंग्रेजी",
+    "ta": "நானும் அடிப்படை ஆங்கிலமும்"
   }
 }

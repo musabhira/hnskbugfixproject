@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 27,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-27-v1",
+    "topic": {
+      "en": "Health, Body & Minor Ailments",
+      "ml": "ആരോഗ്യവും അസുഖങ്ങളും",
+      "hi": "Health, Body & Minor Ailments",
+      "ta": "Health, Body & Minor Ailments"
+    },
+    "unlockRule": "Unlocks after passing Day 26 Exam. Day 28 unlocks after scoring 70%+ in Day 27 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 304,
+    "totalCoinsReward": 77
+  },
+  "grammarRule": {
+    "formula": "I have a headache / stomach ache / fever",
+    "explanation": {
+      "ml": "ആരോഗ്യവും അസുഖങ്ങളും എന്ന വിഷയത്തിൽ I have a headache / stomach ache / fever എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use I have a headache / stomach ache / fever correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: My knee hurts.",
+      "en": "Golden Rule: Practice 'My knee hurts.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "hurt",
+        "v2": "hurt",
+        "v3": "hurt",
+        "meaning": {
+          "ml": "വേദനിക്കുക",
+          "hi": "चोट लगना / दर्द होना",
+          "ta": "வலி"
+        },
+        "example": "My knee hurts.",
+        "exampleMl": "വേദനിക്കൽ എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "ache",
+        "v2": "ached",
+        "v3": "ached",
+        "meaning": {
+          "ml": "വേദനിക്കുക",
+          "hi": "വേദനിക്കുക",
+          "ta": "വേദനിക്കുക"
+        },
+        "example": "My head aches.",
+        "exampleMl": "വേദനിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "cough",
+        "v2": "coughed",
+        "v3": "coughed",
+        "meaning": {
+          "ml": "ചുമയ്ക്കുക",
+          "hi": "खाँसना",
+          "ta": "இருமு"
+        },
+        "example": "He is coughing.",
+        "exampleMl": "ചുമയ്ക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "rest",
+        "v2": "rested",
+        "v3": "rested",
+        "meaning": {
+          "ml": "വിശ്രമിക്കുക",
+          "hi": "വിശ്രമിക്കുക",
+          "ta": "വിശ്രമിക്കുക"
+        },
+        "example": "Take complete rest.",
+        "exampleMl": "വിശ്രമിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "headache",
+        "meaning": {
+          "ml": "തലവേദന",
+          "hi": "തലവേദന",
+          "ta": "തലവേദന"
+        },
+        "example": "Could you point out a headache for me?"
+      },
+      {
+        "word": "fever",
+        "meaning": {
+          "ml": "പനി",
+          "hi": "പനി",
+          "ta": "പനി"
+        },
+        "example": "Could you point out a fever for me?"
+      },
+      {
+        "word": "cold",
+        "meaning": {
+          "ml": "ജലദോഷം",
+          "hi": "ജലദോഷം",
+          "ta": "ജലദോഷം"
+        },
+        "example": "Could you point out a cold for me?"
+      },
+      {
+        "word": "pain",
+        "meaning": {
+          "ml": "വേദന",
+          "hi": "വേദന",
+          "ta": "വേദന"
+        },
+        "example": "Could you point out a pain for me?"
+      },
+      {
+        "word": "doctor",
+        "meaning": {
+          "ml": "ഡോക്ടർ",
+          "hi": "ഡോക്ടർ",
+          "ta": "ഡോക്ടർ"
+        },
+        "example": "Could you point out a doctor for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Health, Body & Minor Ailments",
+        "ml": "പാഠം: ആരോഗ്യവും അസുഖങ്ങളും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "headache",
+        "fever",
+        "cold",
+        "pain",
+        "doctor"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "My knee hurts.",
+        "My head aches.",
+        "He is coughing."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Health, Body & Minor Ailments",
+        "ml": "റീഡിങ് റൂം: ആരോഗ്യവും അസുഖങ്ങളും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "My knee hurts.",
+          "meaningMl": "വേദനിക്കൽ - My knee hurts.",
+          "audioPrompt": "My knee hurts."
+        },
+        {
+          "text": "My head aches.",
+          "meaningMl": "വേദനിക്കുക - My head aches.",
+          "audioPrompt": "My head aches."
+        },
+        {
+          "text": "Daily practice of Health, Body & Minor Ailments gives you great confidence in English.",
+          "meaningMl": "ആരോഗ്യവും അസുഖങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Health, Body & Minor Ailments gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'My knee hurts.'",
+          "targetSentence": "My knee hurts."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'My head aches.'",
+          "targetSentence": "My head aches."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Health, Body & Minor Ailments in 1-2 fluent sentences.",
+          "targetSentence": "He is coughing."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d27_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "We discussed the plan.",
+            "We discussed about the plan.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "We discussed the plan.",
+          "explanation": "Discuss already includes the idea of about."
+        },
+        {
+          "id": "trap_d27_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d27_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 27, I practiced Health, Body & Minor Ailments! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Health, Body & Minor Ailments for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Health, Body & Minor Ailments in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Health, Body & Minor Ailments.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 27 Gate Exam (5 Qs)",
+        "ml": "ഡേ 27 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'hurt':",
+          "options": [
+            "ഭക്ഷണം",
+            "യാത്ര",
+            "സന്തോഷം",
+            "വേദനിക്കുക"
+          ],
+          "answer": "വേദനിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'My knee _____s.'",
+          "options": [
+            "hurt",
+            "hurting",
+            "were hurt",
+            "is hurt"
+          ],
+          "answer": "hurt"
+        },
+        {
+          "q": "What is the past form (V2) of 'ache'?",
+          "options": [
+            "ached",
+            "aches",
+            "None",
+            "acheedx"
+          ],
+          "answer": "ached"
+        },
+        {
+          "q": "Which English word means 'തലവേദന'?",
+          "options": [
+            "headache",
+            "airport",
+            "journey",
+            "success"
+          ],
+          "answer": "headache"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was hurt tomorrow.",
+            "I am hurt every time wrongly.",
+            "My knee hurts.",
+            "He do not hurt yesterday."
+          ],
+          "answer": "My knee hurts."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 27 with 70%+ to keep your streak and unlock Day 28!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

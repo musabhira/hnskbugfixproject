@@ -4,6 +4,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'pocket_master_curriculum_90.dart';
+import 'curriculum_data/pocket_day_curriculum_service.dart';
 
 /// 🧠 Learner Proficiency Level
 enum PocketLearnerLevel {
@@ -52,8 +53,82 @@ class _PocketDayDetailOverviewPageState
   void initState() {
     super.initState();
     _dayData = PocketMasterCurriculum90.getDay(widget.day);
+    _loadRuntimeCurriculum();
     _initTts();
     _loadUserLevel();
+  }
+
+  /// The JSON curriculum is authoritative. The legacy in-memory model is used
+  /// only until the asset has loaded, then receives a display-model projection.
+  Future<void> _loadRuntimeCurriculum() async {
+    final data = await PocketDayCurriculumService.loadDayCurriculum(widget.day);
+    if (data == null || !mounted) return;
+
+    final course = data['course'] as Map<String, dynamic>? ?? const {};
+    final grammar = data['grammarRule'] as Map<String, dynamic>? ?? const {};
+    final vocabulary = data['vocabulary'] as Map<String, dynamic>? ?? const {};
+    final steps = (data['steps'] as List<dynamic>? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
+    final builder = steps.where(
+        (step) => step['gameType'] == 'word_catcher_builder').cast<Map<String, dynamic>>();
+    final spoken = steps.where(
+        (step) => step['gameType'] == 'speech_analyzer').cast<Map<String, dynamic>>();
+    final social = steps.where(
+        (step) => step['gameType'] == 'social_arena').cast<Map<String, dynamic>>();
+
+    final items = <CurriculumVocabItem>[];
+    for (final verb in vocabulary['verbs'] as List<dynamic>? ?? const []) {
+      if (verb is! Map<String, dynamic>) continue;
+      items.add(CurriculumVocabItem(
+        word: verb['v1']?.toString() ?? '',
+        phonetic: '',
+        partOfSpeech: 'verb',
+        meaningEn: '',
+        meaningMl: PocketDayCurriculumService.getLocalizedText(verb['meaning'], lang: 'ml'),
+        exampleEn: verb['example']?.toString() ?? '',
+        exampleMl: verb['exampleMl']?.toString() ?? '',
+      ));
+    }
+    for (final noun in vocabulary['nouns'] as List<dynamic>? ?? const []) {
+      if (noun is! Map<String, dynamic>) continue;
+      items.add(CurriculumVocabItem(
+        word: noun['word']?.toString() ?? '',
+        phonetic: '',
+        partOfSpeech: 'noun',
+        meaningEn: '',
+        meaningMl: PocketDayCurriculumService.getLocalizedText(noun['meaning'], lang: 'ml'),
+        exampleEn: noun['example']?.toString() ?? '',
+      ));
+    }
+
+    final builderStep = builder.isEmpty ? const <String, dynamic>{} : builder.first;
+    final spokenStep = spoken.isEmpty ? const <String, dynamic>{} : spoken.first;
+    final socialStep = social.isEmpty ? const <String, dynamic>{} : social.first;
+    final voiceTasks = spokenStep['voiceTasks'] as Map<String, dynamic>? ?? const {};
+    final middleVoice = voiceTasks['middle'] as Map<String, dynamic>? ?? const {};
+    final socialConfig = socialStep['socialConfig'] as Map<String, dynamic>? ?? const {};
+    final middleSocial = socialConfig['middleTrack'] as Map<String, dynamic>? ?? const {};
+
+    setState(() {
+      _dayData = _dayData.copyWith(
+        title: PocketDayCurriculumService.getLocalizedText(course['topic']),
+        phaseName: PocketDayCurriculumService.getLocalizedText(course['houseTitle']),
+        focusArea: PocketDayCurriculumService.getLocalizedText(course['topic']),
+        grammarConcept: grammar['formula']?.toString() ?? '',
+        theoryConcept: grammar['formula']?.toString() ?? '',
+        theoryExplanationEn: PocketDayCurriculumService.getLocalizedText(grammar['explanation']),
+        theoryExplanationMl: PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'ml'),
+        vocabulary: items,
+        sentenceEvolution: (builderStep['challengePatterns'] as List<dynamic>? ?? const [])
+            .map((pattern) => pattern.toString())
+            .toList(),
+        speakingDrill: middleVoice['targetSentence']?.toString() ?? '',
+        dailyChallenge: middleVoice['prompt']?.toString() ?? '',
+        peerChatMission: middleSocial['englishHubPrompt']?.toString() ?? '',
+        xpReward: course['totalXpReward'] as int? ?? _dayData.xpReward,
+      );
+    });
   }
 
   @override

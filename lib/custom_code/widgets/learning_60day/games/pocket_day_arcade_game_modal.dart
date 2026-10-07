@@ -6,6 +6,7 @@ import '../pocket_90day_vocab_curriculum.dart';
 import 'meadow_runner_game_page.dart';
 import 'word_catcher_game_page.dart';
 import 'word_catcher_models.dart';
+import 'town_quest_dialogue_game_page.dart';
 
 /// 🎮 2D Open-World Daily Arcade Game Modal
 ///
@@ -153,23 +154,40 @@ class PocketDayArcadeGameModal extends StatelessWidget {
             ),
             const SizedBox(height: 18),
 
-            // GAME 1 CARD
-            _buildGameCard(
-              context,
-              spec: game1,
-              isFirst: true,
-              accentColor: const Color(0xFF38BDF8),
-              onPlay: () => _launchGame1(context),
-            ),
-            const SizedBox(height: 12),
+            Flexible(
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // GAME 1 CARD
+                    _buildGameCard(
+                      context,
+                      spec: game1,
+                      isFirst: true,
+                      accentColor: const Color(0xFF38BDF8),
+                      onPlay: () => _launchGame1(context),
+                    ),
+                    const SizedBox(height: 12),
 
-            // GAME 2 CARD
-            _buildGameCard(
-              context,
-              spec: game2,
-              isFirst: false,
-              accentColor: const Color(0xFF10B981),
-              onPlay: () => _launchGame2(context),
+                    // GAME 2 CARD
+                    _buildGameCard(
+                      context,
+                      spec: game2,
+                      isFirst: false,
+                      accentColor: const Color(0xFF10B981),
+                      onPlay: () => _launchGame2(context),
+                    ),
+                    const SizedBox(height: 12),
+
+                    // GAME 3: TOWN QUEST RPG
+                    _buildTownQuestCard(
+                      context,
+                      accentColor: const Color(0xFFFFB703),
+                      onPlay: () => _launchTownQuest(context),
+                    ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
@@ -349,6 +367,118 @@ class PocketDayArcadeGameModal extends StatelessWidget {
           levelData: levelData,
           preferredLanguage: 'Malayalam',
           onCompleted: (_) => onGameFinished?.call(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTownQuestCard(
+    BuildContext context, {
+    required Color accentColor,
+    required VoidCallback onPlay,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0B132B).withValues(alpha: 0.8),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: accentColor.withValues(alpha: 0.4), width: 1.4),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🏙️', style: TextStyle(fontSize: 26)),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          'GAME 3: TOWN QUEST RPG',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: accentColor.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'NEW 🌟',
+                            style: GoogleFonts.outfit(
+                              color: accentColor,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      'Open-World 2D Dialogue Quest',
+                      style: GoogleFonts.inter(
+                        color: Colors.white60,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'നഗരത്തിലൂടെ നടന്ന് ആളുകളുമായി യഥാർത്ഥ ഇംഗ്ലീഷിൽ സംസാരിക്കുക!',
+            style: GoogleFonts.inter(
+              color: const Color(0xFFE2E8F0),
+              fontSize: 12,
+              height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 10),
+          SizedBox(
+            width: double.infinity,
+            height: 38,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: accentColor,
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              onPressed: onPlay,
+              icon: const Icon(Icons.explore_rounded, size: 18),
+              label: Text(
+                'EXPLORE TOWN QUEST ➔',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 12),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _launchTownQuest(BuildContext context) {
+    HapticFeedback.heavyImpact();
+    Navigator.pop(context);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TownQuestDialogueGamePage(
+          day: day,
+          nativeLanguage: 'Malayalam',
+          onGameFinished: onGameFinished,
         ),
       ),
     );

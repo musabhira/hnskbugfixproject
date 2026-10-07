@@ -2679,11 +2679,11 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       {required String bucketName, required FileType fileType}) async {
     try {
       final result = await FilePicker.pickFiles(type: fileType);
-      if (result == null || result.files.isEmpty || result.files.first.path == null) {
+      if (result.isEmpty || result.first.path == null) {
         return null;
       }
 
-      final pickedFile = result.files.first;
+      final pickedFile = result.first;
       final path = pickedFile.path!;
       final file = File(path);
       final name =

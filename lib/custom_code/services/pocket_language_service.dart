@@ -8,7 +8,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 /// Guarantees that users selecting Hindi or Tamil NEVER see hardcoded Malayalam text!
 class PocketLanguageService {
   static final ValueNotifier<String> activeLanguageNotifier =
-      ValueNotifier<String>('Hindi');
+      ValueNotifier<String>('Malayalam');
 
   static const String kPrefNativeLang = 'pm_native_language';
   static const String kPrefMissionLang = 'pocket_mission_pref_lang';
@@ -32,8 +32,8 @@ class PocketLanguageService {
       if (savedLang != null && savedLang.isNotEmpty) {
         activeLanguageNotifier.value = _normalizeLanguage(savedLang);
       } else {
-        // Default for Indian Market: Hindi
-        activeLanguageNotifier.value = 'Hindi';
+        // Default language: Malayalam
+        activeLanguageNotifier.value = 'Malayalam';
       }
       _initialized = true;
     } catch (e) {

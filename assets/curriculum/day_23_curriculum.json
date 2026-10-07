@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 23,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-23-v1",
+    "topic": {
+      "en": "Asking Questions: Who & Which",
+      "ml": "Who & Which ചോദ്യങ്ങൾ",
+      "hi": "Asking Questions: Who & Which",
+      "ta": "Asking Questions: Who & Which"
+    },
+    "unlockRule": "Unlocks after passing Day 22 Exam. Day 24 unlocks after scoring 70%+ in Day 23 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 296,
+    "totalCoinsReward": 73
+  },
+  "grammarRule": {
+    "formula": "Who is that? / Which one do you like?",
+    "explanation": {
+      "ml": "Who & Which ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ Who is that? / Which one do you like? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Who is that? / Which one do you like? correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Who did you meet?",
+      "en": "Golden Rule: Practice 'Who did you meet?' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "meet",
+        "v2": "met",
+        "v3": "met",
+        "meaning": {
+          "ml": "കണ്ടുമുട്ടുക",
+          "hi": "मिलना",
+          "ta": "சந்தி"
+        },
+        "example": "Who did you meet?",
+        "exampleMl": "കണ്ടുമുട്ടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "pick",
+        "v2": "picked",
+        "v3": "picked",
+        "meaning": {
+          "ml": "തിരഞ്ഞെടുക്കുക",
+          "hi": "उठाना / चुनना",
+          "ta": "தேர்ந்தெடு"
+        },
+        "example": "Which color do you pick?",
+        "exampleMl": "തിരഞ്ഞെടുക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "know",
+        "v2": "knew",
+        "v3": "known",
+        "meaning": {
+          "ml": "അറിയുക",
+          "hi": "जानना",
+          "ta": "அறி / தெரி"
+        },
+        "example": "Who knows the answer?",
+        "exampleMl": "അറിയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "bring",
+        "v2": "brought",
+        "v3": "brought",
+        "meaning": {
+          "ml": "കൊണ്ടുവരിക",
+          "hi": "लाना",
+          "ta": "கொண்டு வா"
+        },
+        "example": "Who brought this?",
+        "exampleMl": "കൊണ്ടുവരിക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "who",
+        "meaning": {
+          "ml": "ആര്",
+          "hi": "ആര്",
+          "ta": "ആര്"
+        },
+        "example": "Could you point out a who for me?"
+      },
+      {
+        "word": "which",
+        "meaning": {
+          "ml": "ഏത്",
+          "hi": "ഏത്",
+          "ta": "ഏത്"
+        },
+        "example": "Could you point out a which for me?"
+      },
+      {
+        "word": "person",
+        "meaning": {
+          "ml": "വ്യക്തി",
+          "hi": "വ്യക്തി",
+          "ta": "വ്യക്തി"
+        },
+        "example": "Could you point out a person for me?"
+      },
+      {
+        "word": "choice",
+        "meaning": {
+          "ml": "തിരഞ്ഞെടുപ്പ്",
+          "hi": "തിരഞ്ഞെടുപ്പ്",
+          "ta": "തിരഞ്ഞെടുപ്പ്"
+        },
+        "example": "Could you point out a choice for me?"
+      },
+      {
+        "word": "item",
+        "meaning": {
+          "ml": "വസ്തു",
+          "hi": "വസ്തു",
+          "ta": "വസ്തു"
+        },
+        "example": "Could you point out an item for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Asking Questions: Who & Which",
+        "ml": "പാഠം: Who & Which ചോദ്യങ്ങൾ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "who",
+        "which",
+        "person",
+        "choice",
+        "item"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Who did you meet?",
+        "Which color do you pick?",
+        "Who knows the answer?"
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Asking Questions: Who & Which",
+        "ml": "റീഡിങ് റൂം: Who & Which ചോദ്യങ്ങൾ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Who did you meet?",
+          "meaningMl": "കണ്ടുമുട്ടുക - Who did you meet?",
+          "audioPrompt": "Who did you meet?"
+        },
+        {
+          "text": "Which color do you pick?",
+          "meaningMl": "തിരഞ്ഞെടുക്കുക - Which color do you pick?",
+          "audioPrompt": "Which color do you pick?"
+        },
+        {
+          "text": "Daily practice of Asking Questions: Who & Which gives you great confidence in English.",
+          "meaningMl": "Who & Which ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Asking Questions: Who & Which gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Who did you meet?'",
+          "targetSentence": "Who did you meet?"
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Which color do you pick?'",
+          "targetSentence": "Which color do you pick?"
+        },
+        "higher": {
+          "prompt": "Explain your thought on Asking Questions: Who & Which in 1-2 fluent sentences.",
+          "targetSentence": "Who knows the answer?"
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d23_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He is married to a teacher.",
+            "He is married with a teacher.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He is married to a teacher.",
+          "explanation": "Use married to when naming a spouse."
+        },
+        {
+          "id": "trap_d23_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d23_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 23, I practiced Asking Questions: Who & Which! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Asking Questions: Who & Which for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Asking Questions: Who & Which in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Asking Questions: Who & Which.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 23 Gate Exam (5 Qs)",
+        "ml": "ഡേ 23 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'meet':",
+          "options": [
+            "കണ്ടുമുട്ടുക",
+            "സന്തോഷം",
+            "യാത്ര",
+            "ഭക്ഷണം"
+          ],
+          "answer": "കണ്ടുമുട്ടുക"
+        },
+        {
+          "q": "Complete the sentence: 'Who did you _____?'",
+          "options": [
+            "were meet",
+            "meeting",
+            "is meet",
+            "meet"
+          ],
+          "answer": "meet"
+        },
+        {
+          "q": "What is the past form (V2) of 'pick'?",
+          "options": [
+            "picked",
+            "picks",
+            "pickedx",
+            "None"
+          ],
+          "answer": "picked"
+        },
+        {
+          "q": "Which English word means 'ആര്'?",
+          "options": [
+            "progress",
+            "who",
+            "schedule",
+            "partner"
+          ],
+          "answer": "who"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "I am meet every time wrongly.",
+            "Who did you meet?",
+            "We was meet tomorrow.",
+            "He do not meet yesterday."
+          ],
+          "answer": "Who did you meet?"
+        }
+      ],
+      "description": {
+        "en": "Pass Day 23 with 70%+ to keep your streak and unlock Day 24!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

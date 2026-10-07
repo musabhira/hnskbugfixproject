@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 88,
+    "house": 3,
+    "houseTitle": {
+      "en": "House 3: Professional Fluency & Career Mastery",
+      "ml": "ഹൗസ് 3: ഫ്ലുവെൻസി, കരിയർ & ഇന്റർവ്യൂ മാസ്റ്ററി",
+      "hi": "हाउस 3: व्यावसायिक प्रवाह और करियर महारत",
+      "ta": "ஹவுஸ் 3: தொழில்முறை சரளமும் வேலை நேர்காணலும்"
+    },
+    "version": "day-88-v1",
+    "topic": {
+      "en": "Essential Workplace Phrasal Verbs",
+      "ml": "ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ",
+      "hi": "Essential Workplace Phrasal Verbs",
+      "ta": "Essential Workplace Phrasal Verbs"
+    },
+    "unlockRule": "Unlocks after passing Day 87 Exam. Day 89 unlocks after scoring 70%+ in Day 88 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 426,
+    "totalCoinsReward": 138
+  },
+  "grammarRule": {
+    "formula": "Figure out, Look into, Call off, Follow up, Carry on",
+    "explanation": {
+      "ml": "ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ എന്ന വിഷയത്തിൽ Figure out, Look into, Call off, Follow up, Carry on എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Figure out, Look into, Call off, Follow up, Carry on correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I figured out the solution.",
+      "en": "Golden Rule: Practice 'I figured out the solution.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "figure out",
+        "v2": "figured out",
+        "v3": "figured out",
+        "meaning": {
+          "ml": "കണ്ടെത്തുക",
+          "hi": "समाधान निकालना",
+          "ta": "கண்டுபிடி"
+        },
+        "example": "I figured out the solution.",
+        "exampleMl": "കണ്ടെത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "look into",
+        "v2": "looked into",
+        "v3": "looked into",
+        "meaning": {
+          "ml": "അന്വേഷിക്കുക",
+          "hi": "जाँच करना",
+          "ta": "ஆராய்"
+        },
+        "example": "We will look into the matter.",
+        "exampleMl": "അന്വേഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "call off",
+        "v2": "called off",
+        "v3": "called off",
+        "meaning": {
+          "ml": "റദ്ദാക്കുക",
+          "hi": "रद्द करना",
+          "ta": "ரத்து செய்"
+        },
+        "example": "They called off the strike.",
+        "exampleMl": "റദ്ദാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "follow up",
+        "v2": "followed up",
+        "v3": "followed up",
+        "meaning": {
+          "ml": "തുടർനടപടി സ്വീകരിക്കുക",
+          "hi": "अनुवर्ती कार्रवाई करना",
+          "ta": "பின்தொடர்"
+        },
+        "example": "Follow up with the customer.",
+        "exampleMl": "തുടർനടപടി സ്വീകരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "phrasal verb",
+        "meaning": {
+          "ml": "ഫ്രേസൽ വെർബ്",
+          "hi": "वाक्यांश क्रिया",
+          "ta": "சொற்றொடர் வினை"
+        },
+        "example": "Phrasal verbs make your English natural."
+      },
+      {
+        "word": "solution",
+        "meaning": {
+          "ml": "പരിഹാരം",
+          "hi": "समाधान",
+          "ta": "தீர்வு"
+        },
+        "example": "We found a simple solution to the problem."
+      },
+      {
+        "word": "meeting",
+        "meaning": {
+          "ml": "മീറ്റിംഗ്",
+          "hi": "बैठक",
+          "ta": "கூட்டம்"
+        },
+        "example": "The team meeting starts at ten o'clock."
+      },
+      {
+        "word": "customer",
+        "meaning": {
+          "ml": "ഉപഭോക്താവ്",
+          "hi": "ग्राहक",
+          "ta": "வாடிக்கையாளர்"
+        },
+        "example": "Always listen to the customer with care."
+      },
+      {
+        "word": "matter",
+        "meaning": {
+          "ml": "കാര്യം / വിഷയം",
+          "hi": "मामला",
+          "ta": "விஷயம்"
+        },
+        "example": "Let us discuss this serious matter."
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Essential Workplace Phrasal Verbs",
+        "ml": "പാഠം: ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "phrasal verb",
+        "solution",
+        "meeting",
+        "customer",
+        "matter"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I figured out the solution.",
+        "We will look into the matter.",
+        "They called off the strike."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Essential Workplace Phrasal Verbs",
+        "ml": "റീഡിങ് റൂം: ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I figured out the solution.",
+          "meaningMl": "കണ്ടെത്തുക - I figured out the solution.",
+          "audioPrompt": "I figured out the solution."
+        },
+        {
+          "text": "We will look into the matter.",
+          "meaningMl": "അന്വേഷിക്കുക - We will look into the matter.",
+          "audioPrompt": "We will look into the matter."
+        },
+        {
+          "text": "Daily practice of Essential Workplace Phrasal Verbs gives you great confidence in English.",
+          "meaningMl": "ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Essential Workplace Phrasal Verbs gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I figured out the solution.'",
+          "targetSentence": "I figured out the solution."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'We will look into the matter.'",
+          "targetSentence": "We will look into the matter."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Essential Workplace Phrasal Verbs in 1-2 fluent sentences.",
+          "targetSentence": "They called off the strike."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d88_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "She is good at English.",
+            "She is good in English.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "She is good at English.",
+          "explanation": "Use good at for a skill or subject."
+        },
+        {
+          "id": "trap_d88_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d88_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 88, I practiced Essential Workplace Phrasal Verbs! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Essential Workplace Phrasal Verbs for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Essential Workplace Phrasal Verbs in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Essential Workplace Phrasal Verbs.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 88 Gate Exam (5 Qs)",
+        "ml": "ഡേ 88 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'figure out':",
+          "options": [
+            "ഭക്ഷണം",
+            "യാത്ര",
+            "സന്തോഷം",
+            "കണ്ടെത്തുക"
+          ],
+          "answer": "കണ്ടെത്തുക"
+        },
+        {
+          "q": "Complete the sentence: 'I figured out the solution.'",
+          "options": [
+            "figure out",
+            "figure outing",
+            "is figure out",
+            "were figure out"
+          ],
+          "answer": "figure out"
+        },
+        {
+          "q": "What is the past form (V2) of 'look into'?",
+          "options": [
+            "looked into",
+            "look intos",
+            "look intoedx",
+            "None"
+          ],
+          "answer": "looked into"
+        },
+        {
+          "q": "Which English word means 'ഫ്രേസൽ വെർബ്'?",
+          "options": [
+            "phrasal verb",
+            "courage",
+            "journey",
+            "success"
+          ],
+          "answer": "phrasal verb"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "I figured out the solution.",
+            "We was figure out tomorrow.",
+            "I am figure out every time wrongly.",
+            "He do not figure out yesterday."
+          ],
+          "answer": "I figured out the solution."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 88 with 70%+ to keep your streak and unlock Day 89!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

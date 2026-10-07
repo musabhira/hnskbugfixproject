@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 24,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-24-v1",
+    "topic": {
+      "en": "Asking Questions: How & How Much",
+      "ml": "How & How Much ചോദ്യങ്ങൾ",
+      "hi": "Asking Questions: How & How Much",
+      "ta": "Asking Questions: How & How Much"
+    },
+    "unlockRule": "Unlocks after passing Day 23 Exam. Day 25 unlocks after scoring 70%+ in Day 24 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 298,
+    "totalCoinsReward": 74
+  },
+  "grammarRule": {
+    "formula": "How are you? / How much does it cost?",
+    "explanation": {
+      "ml": "How & How Much ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ How are you? / How much does it cost? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use How are you? / How much does it cost? correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: How much does it cost?",
+      "en": "Golden Rule: Practice 'How much does it cost?' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "cost",
+        "v2": "cost",
+        "v3": "cost",
+        "meaning": {
+          "ml": "വിലയാകുക",
+          "hi": "कीमत होना",
+          "ta": "விலை ஆகு"
+        },
+        "example": "How much does it cost?",
+        "exampleMl": "വിലയാകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "measure",
+        "v2": "measured",
+        "v3": "measured",
+        "meaning": {
+          "ml": "അളക്കുക",
+          "hi": "मापना",
+          "ta": "அள"
+        },
+        "example": "How far is the town?",
+        "exampleMl": "അളക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "feel",
+        "v2": "felt",
+        "v3": "felt",
+        "meaning": {
+          "ml": "തോന്നുക",
+          "hi": "महसूस करना",
+          "ta": "உணர்"
+        },
+        "example": "How do you feel?",
+        "exampleMl": "തോന്നുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "weigh",
+        "v2": "weighed",
+        "v3": "weighed",
+        "meaning": {
+          "ml": "ഭാരം തൂക്കുക",
+          "hi": "वजन करना",
+          "ta": "எடை போடு"
+        },
+        "example": "How much does it weigh?",
+        "exampleMl": "ഭാരം തൂക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "how",
+        "meaning": {
+          "ml": "എങ്ങനെ",
+          "hi": "എങ്ങനെ",
+          "ta": "എങ്ങനെ"
+        },
+        "example": "Could you point out a how for me?"
+      },
+      {
+        "word": "distance",
+        "meaning": {
+          "ml": "ദൂരം",
+          "hi": "ദൂരം",
+          "ta": "ദൂരം"
+        },
+        "example": "Could you point out a distance for me?"
+      },
+      {
+        "word": "weight",
+        "meaning": {
+          "ml": "ഭാരം",
+          "hi": "ഭാരം",
+          "ta": "ഭാരം"
+        },
+        "example": "Could you point out a weight for me?"
+      },
+      {
+        "word": "speed",
+        "meaning": {
+          "ml": "വേഗത",
+          "hi": "വേഗത",
+          "ta": "വേഗത"
+        },
+        "example": "Could you point out a speed for me?"
+      },
+      {
+        "word": "cost",
+        "meaning": {
+          "ml": "ചെലവ്",
+          "hi": "ചെലവ്",
+          "ta": "ചെലവ്"
+        },
+        "example": "Could you point out a cost for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Asking Questions: How & How Much",
+        "ml": "പാഠം: How & How Much ചോദ്യങ്ങൾ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "how",
+        "distance",
+        "weight",
+        "speed",
+        "cost"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "How much does it cost?",
+        "How far is the town?",
+        "How do you feel?"
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Asking Questions: How & How Much",
+        "ml": "റീഡിങ് റൂം: How & How Much ചോദ്യങ്ങൾ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "How much does it cost?",
+          "meaningMl": "വിലയാകുക - How much does it cost?",
+          "audioPrompt": "How much does it cost?"
+        },
+        {
+          "text": "How far is the town?",
+          "meaningMl": "അളക്കുക - How far is the town?",
+          "audioPrompt": "How far is the town?"
+        },
+        {
+          "text": "Daily practice of Asking Questions: How & How Much gives you great confidence in English.",
+          "meaningMl": "How & How Much ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Asking Questions: How & How Much gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'How much does it cost?'",
+          "targetSentence": "How much does it cost?"
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'How far is the town?'",
+          "targetSentence": "How far is the town?"
+        },
+        "higher": {
+          "prompt": "Explain your thought on Asking Questions: How & How Much in 1-2 fluent sentences.",
+          "targetSentence": "How do you feel?"
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d24_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "I have two brothers.",
+            "I am having two brothers.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "I have two brothers.",
+          "explanation": "Use have, not am having, for possession."
+        },
+        {
+          "id": "trap_d24_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d24_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 24, I practiced Asking Questions: How & How Much! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Asking Questions: How & How Much for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Asking Questions: How & How Much in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Asking Questions: How & How Much.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 24 Gate Exam (5 Qs)",
+        "ml": "ഡേ 24 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'cost':",
+          "options": [
+            "വിലയാകുക",
+            "സന്തോഷം",
+            "യാത്ര",
+            "ഭക്ഷണം"
+          ],
+          "answer": "വിലയാകുക"
+        },
+        {
+          "q": "Complete the sentence: 'How much does it _____?'",
+          "options": [
+            "costing",
+            "cost",
+            "is cost",
+            "were cost"
+          ],
+          "answer": "cost"
+        },
+        {
+          "q": "What is the past form (V2) of 'measure'?",
+          "options": [
+            "None",
+            "measureedx",
+            "measures",
+            "measured"
+          ],
+          "answer": "measured"
+        },
+        {
+          "q": "Which English word means 'എങ്ങനെ'?",
+          "options": [
+            "progress",
+            "how",
+            "station",
+            "partner"
+          ],
+          "answer": "how"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was cost tomorrow.",
+            "He do not cost yesterday.",
+            "I am cost every time wrongly.",
+            "How much does it cost?"
+          ],
+          "answer": "How much does it cost?"
+        }
+      ],
+      "description": {
+        "en": "Pass Day 24 with 70%+ to keep your streak and unlock Day 25!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

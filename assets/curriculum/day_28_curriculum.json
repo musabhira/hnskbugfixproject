@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 28,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-28-v1",
+    "topic": {
+      "en": "At the Pharmacy & Medicine",
+      "ml": "മരുന്നുകടയും കുറിപ്പടിയും",
+      "hi": "At the Pharmacy & Medicine",
+      "ta": "At the Pharmacy & Medicine"
+    },
+    "unlockRule": "Unlocks after passing Day 27 Exam. Day 29 unlocks after scoring 70%+ in Day 28 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 306,
+    "totalCoinsReward": 78
+  },
+  "grammarRule": {
+    "formula": "Dosage instructions: Before/After food, Twice daily",
+    "explanation": {
+      "ml": "മരുന്നുകടയും കുറിപ്പടിയും എന്ന വിഷയത്തിൽ Dosage instructions: Before/After food, Twice daily എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Dosage instructions: Before/After food, Twice daily correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Take this after food.",
+      "en": "Golden Rule: Practice 'Take this after food.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "take",
+        "v2": "took",
+        "v3": "taken",
+        "meaning": {
+          "ml": "എടുക്കുക",
+          "hi": "लेना",
+          "ta": "எடு"
+        },
+        "example": "Take this after food.",
+        "exampleMl": "കഴിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "prescribe",
+        "v2": "prescribed",
+        "v3": "prescribed",
+        "meaning": {
+          "ml": "കുറിച്ചു നൽകുക",
+          "hi": "दवा लिखना",
+          "ta": "பரிந்துரை"
+        },
+        "example": "Doctor prescribed pills.",
+        "exampleMl": "കുറിച്ചു നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "heal",
+        "v2": "healed",
+        "v3": "healed",
+        "meaning": {
+          "ml": "സുഖപ്പെടുക",
+          "hi": "ठीक होना",
+          "ta": "குணமாகு"
+        },
+        "example": "It will heal fast.",
+        "exampleMl": "സുഖപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "swallow",
+        "v2": "swallowed",
+        "v3": "swallowed",
+        "meaning": {
+          "ml": "വിഴുങ്ങുക",
+          "hi": "निगलना",
+          "ta": "விழுங்கு"
+        },
+        "example": "Swallow with water.",
+        "exampleMl": "വിഴുങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "tablet",
+        "meaning": {
+          "ml": "ഗുളിക",
+          "hi": "ഗുളിക",
+          "ta": "ഗുളിക"
+        },
+        "example": "Could you point out a tablet for me?"
+      },
+      {
+        "word": "syrup",
+        "meaning": {
+          "ml": "സിറപ്പ്",
+          "hi": "സിറപ്പ്",
+          "ta": "സിറപ്പ്"
+        },
+        "example": "Could you point out a syrup for me?"
+      },
+      {
+        "word": "pharmacy",
+        "meaning": {
+          "ml": "മെഡിക്കൽ ഷോപ്പ്",
+          "hi": "മെഡിക്കൽ ഷോപ്പ്",
+          "ta": "മെഡിക്കൽ ഷോപ്പ്"
+        },
+        "example": "Could you point out a pharmacy for me?"
+      },
+      {
+        "word": "dose",
+        "meaning": {
+          "ml": "അളവ്",
+          "hi": "അളവ്",
+          "ta": "അളവ്"
+        },
+        "example": "Could you point out a dose for me?"
+      },
+      {
+        "word": "prescription",
+        "meaning": {
+          "ml": "കുറിപ്പടി",
+          "hi": "കുറിപ്പടി",
+          "ta": "കുറിപ്പടി"
+        },
+        "example": "Could you point out a prescription for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: At the Pharmacy & Medicine",
+        "ml": "പാഠം: മരുന്നുകടയും കുറിപ്പടിയും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "tablet",
+        "syrup",
+        "pharmacy",
+        "dose",
+        "prescription"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Take this after food.",
+        "Doctor prescribed pills.",
+        "It will heal fast."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: At the Pharmacy & Medicine",
+        "ml": "റീഡിങ് റൂം: മരുന്നുകടയും കുറിപ്പടിയും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Take this after food.",
+          "meaningMl": "കഴിക്കുക - Take this after food.",
+          "audioPrompt": "Take this after food."
+        },
+        {
+          "text": "Doctor prescribed pills.",
+          "meaningMl": "കുറിച്ചു നൽകുക - Doctor prescribed pills.",
+          "audioPrompt": "Doctor prescribed pills."
+        },
+        {
+          "text": "Daily practice of At the Pharmacy & Medicine gives you great confidence in English.",
+          "meaningMl": "മരുന്നുകടയും കുറിപ്പടിയും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of At the Pharmacy & Medicine gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Take this after food.'",
+          "targetSentence": "Take this after food."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Doctor prescribed pills.'",
+          "targetSentence": "Doctor prescribed pills."
+        },
+        "higher": {
+          "prompt": "Explain your thought on At the Pharmacy & Medicine in 1-2 fluent sentences.",
+          "targetSentence": "It will heal fast."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d28_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "She is good at English.",
+            "She is good in English.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "She is good at English.",
+          "explanation": "Use good at for a skill or subject."
+        },
+        {
+          "id": "trap_d28_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d28_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 28, I practiced At the Pharmacy & Medicine! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss At the Pharmacy & Medicine for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on At the Pharmacy & Medicine in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on At the Pharmacy & Medicine.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 28 Gate Exam (5 Qs)",
+        "ml": "ഡേ 28 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'take':",
+          "options": [
+            "ഭക്ഷണം",
+            "യാത്ര",
+            "സന്തോഷം",
+            "എടുക്കുക"
+          ],
+          "answer": "എടുക്കുക"
+        },
+        {
+          "q": "Complete the sentence: '_____ this after food.'",
+          "options": [
+            "were take",
+            "is take",
+            "take",
+            "takeing"
+          ],
+          "answer": "take"
+        },
+        {
+          "q": "What is the past form (V2) of 'prescribe'?",
+          "options": [
+            "prescribeedx",
+            "prescribes",
+            "None",
+            "prescribed"
+          ],
+          "answer": "prescribed"
+        },
+        {
+          "q": "Which English word means 'ഗുളിക'?",
+          "options": [
+            "journey",
+            "courage",
+            "success",
+            "tablet"
+          ],
+          "answer": "tablet"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "He do not take yesterday.",
+            "Take this after food.",
+            "We was take tomorrow.",
+            "I am take every time wrongly."
+          ],
+          "answer": "Take this after food."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 28 with 70%+ to keep your streak and unlock Day 29!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

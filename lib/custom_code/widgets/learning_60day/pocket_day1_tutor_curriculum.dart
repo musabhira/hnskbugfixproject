@@ -421,7 +421,7 @@ class Day1Curriculum {
   static List<Day1DefenseQuestion> getDefenseQuestions([Day1Track? track]) {
     final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
     final step10 = rawSteps.firstWhere(
-      (s) => s['id'] == 'step_10_house_defense' || s['stepNumber'] == 10,
+      (s) => s['id'] == 'step_9_house_defense' || s['id'] == 'step_10_house_defense' || s['gameType'] == 'house_defense' || s['stepNumber'] == 9 || s['stepNumber'] == 10,
       orElse: () => <String, dynamic>{},
     ) as Map<String, dynamic>;
     final traps = step10['defenseTraps'] as List<dynamic>? ?? [];
@@ -516,7 +516,7 @@ class Day1Curriculum {
   static List<Day1AttackChallenge> getAttackChallenges([Day1Track? track]) {
     final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
     final step10 = rawSteps.firstWhere(
-      (s) => s['id'] == 'step_10_house_defense' || s['stepNumber'] == 10,
+      (s) => s['id'] == 'step_9_house_defense' || s['id'] == 'step_10_house_defense' || s['gameType'] == 'house_defense' || s['stepNumber'] == 9 || s['stepNumber'] == 10,
       orElse: () => <String, dynamic>{},
     ) as Map<String, dynamic>;
     final combat = step10['combatTest'] as Map<String, dynamic>? ?? {};

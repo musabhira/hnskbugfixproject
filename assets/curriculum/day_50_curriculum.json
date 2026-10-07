@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 50,
+    "house": 2,
+    "houseTitle": {
+      "en": "House 2: Real-World Social & Time Travel",
+      "ml": "ഹൗസ് 2: പുറംലോകവും ഭൂത-ഭാവി കാലങ്ങളും",
+      "hi": "हाउस 2: वास्तविक दुनिया और समय यात्रा",
+      "ta": "ஹவுஸ் 2: நிஜ உலகம் மற்றும் காலப் பயணம்"
+    },
+    "version": "day-50-v1",
+    "topic": {
+      "en": "Compulsion & Rules: Must vs Have to",
+      "ml": "നിർബന്ധങ്ങൾ: Must vs Have to",
+      "hi": "Compulsion & Rules: Must vs Have to",
+      "ta": "Compulsion & Rules: Must vs Have to"
+    },
+    "unlockRule": "Unlocks after passing Day 49 Exam. Day 51 unlocks after scoring 70%+ in Day 50 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 350,
+    "totalCoinsReward": 100
+  },
+  "grammarRule": {
+    "formula": "Must (Personal/Strict) vs Have to (External rule)",
+    "explanation": {
+      "ml": "നിർബന്ധങ്ങൾ: Must vs Have to എന്ന വിഷയത്തിൽ Must (Personal/Strict) vs Have to (External rule) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Must (Personal/Strict) vs Have to (External rule) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: You must follow rules.",
+      "en": "Golden Rule: Practice 'You must follow rules.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "follow",
+        "v2": "followed",
+        "v3": "followed",
+        "meaning": {
+          "ml": "പിന്തുടരുക",
+          "hi": "अनुसरण करना",
+          "ta": "பின்பற்று"
+        },
+        "example": "You must follow rules.",
+        "exampleMl": "പാലിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "wear",
+        "v2": "wore",
+        "v3": "worn",
+        "meaning": {
+          "ml": "ധരിക്കുക",
+          "hi": "पहनना",
+          "ta": "அணி"
+        },
+        "example": "You must wear a helmet.",
+        "exampleMl": "ധരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "submit",
+        "v2": "submitted",
+        "v3": "submitted",
+        "meaning": {
+          "ml": "സമർപ്പിക്കുക",
+          "hi": "സമർപ്പിക്കുക",
+          "ta": "സമർപ്പിക്കുക"
+        },
+        "example": "I have to submit today.",
+        "exampleMl": "സമർപ്പിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "obey",
+        "v2": "obeyed",
+        "v3": "obeyed",
+        "meaning": {
+          "ml": "അനുസരിക്കുക",
+          "hi": "അനുസരിക്കുക",
+          "ta": "അനുസരിക്കുക"
+        },
+        "example": "We must obey traffic.",
+        "exampleMl": "അനുസരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "rule",
+        "meaning": {
+          "ml": "നിയമം",
+          "hi": "നിയമം",
+          "ta": "നിയമം"
+        },
+        "example": "Could you point out a rule for me?"
+      },
+      {
+        "word": "law",
+        "meaning": {
+          "ml": "നിയമം",
+          "hi": "നിയമം",
+          "ta": "നിയമം"
+        },
+        "example": "Could you point out a law for me?"
+      },
+      {
+        "word": "helmet",
+        "meaning": {
+          "ml": "ഹെൽമെറ്റ്",
+          "hi": "ഹെൽമെറ്റ്",
+          "ta": "ഹെൽമെറ്റ്"
+        },
+        "example": "Could you point out a helmet for me?"
+      },
+      {
+        "word": "duty",
+        "meaning": {
+          "ml": "കടമ",
+          "hi": "കടമ",
+          "ta": "കടമ"
+        },
+        "example": "Could you point out a duty for me?"
+      },
+      {
+        "word": "license",
+        "meaning": {
+          "ml": "ലൈസൻസ്",
+          "hi": "ലൈസൻസ്",
+          "ta": "ലൈസൻസ്"
+        },
+        "example": "Could you point out a license for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Compulsion & Rules: Must vs Have to",
+        "ml": "പാഠം: നിർബന്ധങ്ങൾ: Must vs Have to"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "rule",
+        "law",
+        "helmet",
+        "duty",
+        "license"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "You must follow rules.",
+        "You must wear a helmet.",
+        "I have to submit today."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Compulsion & Rules: Must vs Have to",
+        "ml": "റീഡിങ് റൂം: നിർബന്ധങ്ങൾ: Must vs Have to"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "You must follow rules.",
+          "meaningMl": "പാലിക്കുക - You must follow rules.",
+          "audioPrompt": "You must follow rules."
+        },
+        {
+          "text": "You must wear a helmet.",
+          "meaningMl": "ധരിക്കുക - You must wear a helmet.",
+          "audioPrompt": "You must wear a helmet."
+        },
+        {
+          "text": "Daily practice of Compulsion & Rules: Must vs Have to gives you great confidence in English.",
+          "meaningMl": "നിർബന്ധങ്ങൾ: Must vs Have to ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Compulsion & Rules: Must vs Have to gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'You must follow rules.'",
+          "targetSentence": "You must follow rules."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'You must wear a helmet.'",
+          "targetSentence": "You must wear a helmet."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Compulsion & Rules: Must vs Have to in 1-2 fluent sentences.",
+          "targetSentence": "I have to submit today."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d50_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "Did you go to the market?",
+            "Did you went to the market?",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "Did you go to the market?",
+          "explanation": "After did, use the base verb (V1), not the past form."
+        },
+        {
+          "id": "trap_d50_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d50_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 50, I practiced Compulsion & Rules: Must vs Have to! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Compulsion & Rules: Must vs Have to for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Compulsion & Rules: Must vs Have to in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Compulsion & Rules: Must vs Have to.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 50 Gate Exam (5 Qs)",
+        "ml": "ഡേ 50 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'follow':",
+          "options": [
+            "ഭക്ഷണം",
+            "യാത്ര",
+            "സന്തോഷം",
+            "പിന്തുടരുക"
+          ],
+          "answer": "പിന്തുടരുക"
+        },
+        {
+          "q": "Complete the sentence: 'You must _____ rules.'",
+          "options": [
+            "follow",
+            "were follow",
+            "following",
+            "is follow"
+          ],
+          "answer": "follow"
+        },
+        {
+          "q": "What is the past form (V2) of 'wear'?",
+          "options": [
+            "wore",
+            "wears",
+            "None",
+            "wearedx"
+          ],
+          "answer": "wore"
+        },
+        {
+          "q": "Which English word means 'നിയമം'?",
+          "options": [
+            "knowledge",
+            "courage",
+            "rule",
+            "routine"
+          ],
+          "answer": "rule"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "He do not follow yesterday.",
+            "I am follow every time wrongly.",
+            "You must follow rules.",
+            "We was follow tomorrow."
+          ],
+          "answer": "You must follow rules."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 50 with 70%+ to keep your streak and unlock Day 51!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

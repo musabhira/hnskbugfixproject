@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 71,
+    "house": 3,
+    "houseTitle": {
+      "en": "House 3: Professional Fluency & Career Mastery",
+      "ml": "ഹൗസ് 3: ഫ്ലുവെൻസി, കരിയർ & ഇന്റർവ്യൂ മാസ്റ്ററി",
+      "hi": "हाउस 3: व्यावसायिक प्रवाह और करियर महारत",
+      "ta": "ஹவுஸ் 3: தொழில்முறை சரளமும் வேலை நேர்காணலும்"
+    },
+    "version": "day-71-v1",
+    "topic": {
+      "en": "Modals of Probability: May, Might, Could",
+      "ml": "സാധ്യതകൾ: May, Might, Could",
+      "hi": "Modals of Probability: May, Might, Could",
+      "ta": "Modals of Probability: May, Might, Could"
+    },
+    "unlockRule": "Unlocks after passing Day 70 Exam. Day 72 unlocks after scoring 70%+ in Day 71 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 392,
+    "totalCoinsReward": 121
+  },
+  "grammarRule": {
+    "formula": "Expressing 50% vs 30% Probability",
+    "explanation": {
+      "ml": "സാധ്യതകൾ: May, Might, Could എന്ന വിഷയത്തിൽ Expressing 50% vs 30% Probability എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Expressing 50% vs 30% Probability correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: It might rain this evening.",
+      "en": "Golden Rule: Practice 'It might rain this evening.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "rain",
+        "v2": "rained",
+        "v3": "rained",
+        "meaning": {
+          "ml": "പെയ്യുക",
+          "hi": "बारिश होना",
+          "ta": "மழை பெய்"
+        },
+        "example": "It might rain this evening.",
+        "exampleMl": "മഴ പെയ്തേക്കാം എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "visit",
+        "v2": "visited",
+        "v3": "visited",
+        "meaning": {
+          "ml": "വന്നേക്കാം",
+          "hi": "വന്നേക്കാം",
+          "ta": "വന്നേക്കാം"
+        },
+        "example": "He may visit us today.",
+        "exampleMl": "വന്നേക്കാം എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "succeed",
+        "v2": "succeeded",
+        "v3": "succeeded",
+        "meaning": {
+          "ml": "വിജയിച്ചേക്കാം",
+          "hi": "വിജയിച്ചേക്കാം",
+          "ta": "വിജയിച്ചേക്കാം"
+        },
+        "example": "The plan could succeed.",
+        "exampleMl": "വിജയിച്ചേക്കാം എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "delay",
+        "v2": "delayed",
+        "v3": "delayed",
+        "meaning": {
+          "ml": "വൈകിക്കുക",
+          "hi": "देरी करना",
+          "ta": "தாமதப்படுத்து"
+        },
+        "example": "The train might be delayed.",
+        "exampleMl": "വൈകിയേക്കാം എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "probability",
+        "meaning": {
+          "ml": "സാധ്യത",
+          "hi": "സാധ്യത",
+          "ta": "സാധ്യത"
+        },
+        "example": "Could you point out a probability for me?"
+      },
+      {
+        "word": "guess",
+        "meaning": {
+          "ml": "ഊഹം",
+          "hi": "ഊഹം",
+          "ta": "ഊഹം"
+        },
+        "example": "Could you point out a guess for me?"
+      },
+      {
+        "word": "chance",
+        "meaning": {
+          "ml": "അവസരം",
+          "hi": "അവസരം",
+          "ta": "അവസരം"
+        },
+        "example": "Could you point out a chance for me?"
+      },
+      {
+        "word": "doubt",
+        "meaning": {
+          "ml": "സംശയം",
+          "hi": "സംശയം",
+          "ta": "സംശയം"
+        },
+        "example": "Could you point out a doubt for me?"
+      },
+      {
+        "word": "weather",
+        "meaning": {
+          "ml": "കാലാവസ്ഥ",
+          "hi": "കാലാവസ്ഥ",
+          "ta": "കാലാവസ്ഥ"
+        },
+        "example": "Could you point out a weather for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Modals of Probability: May, Might, Could",
+        "ml": "പാഠം: സാധ്യതകൾ: May, Might, Could"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "probability",
+        "guess",
+        "chance",
+        "doubt",
+        "weather"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "It might rain this evening.",
+        "He may visit us today.",
+        "The plan could succeed."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Modals of Probability: May, Might, Could",
+        "ml": "റീഡിങ് റൂം: സാധ്യതകൾ: May, Might, Could"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "It might rain this evening.",
+          "meaningMl": "മഴ പെയ്തേക്കാം - It might rain this evening.",
+          "audioPrompt": "It might rain this evening."
+        },
+        {
+          "text": "He may visit us today.",
+          "meaningMl": "വന്നേക്കാം - He may visit us today.",
+          "audioPrompt": "He may visit us today."
+        },
+        {
+          "text": "Daily practice of Modals of Probability: May, Might, Could gives you great confidence in English.",
+          "meaningMl": "സാധ്യതകൾ: May, Might, Could ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Modals of Probability: May, Might, Could gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'It might rain this evening.'",
+          "targetSentence": "It might rain this evening."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'He may visit us today.'",
+          "targetSentence": "He may visit us today."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Modals of Probability: May, Might, Could in 1-2 fluent sentences.",
+          "targetSentence": "The plan could succeed."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d71_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He is married to a teacher.",
+            "He is married with a teacher.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He is married to a teacher.",
+          "explanation": "Use married to when naming a spouse."
+        },
+        {
+          "id": "trap_d71_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d71_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 71, I practiced Modals of Probability: May, Might, Could! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Modals of Probability: May, Might, Could for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Modals of Probability: May, Might, Could in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Modals of Probability: May, Might, Could.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 71 Gate Exam (5 Qs)",
+        "ml": "ഡേ 71 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'rain':",
+          "options": [
+            "യാത്ര",
+            "സന്തോഷം",
+            "ഭക്ഷണം",
+            "പെയ്യുക"
+          ],
+          "answer": "പെയ്യുക"
+        },
+        {
+          "q": "Complete the sentence: 'It might _____ this evening.'",
+          "options": [
+            "rain",
+            "raining",
+            "is rain",
+            "were rain"
+          ],
+          "answer": "rain"
+        },
+        {
+          "q": "What is the past form (V2) of 'visit'?",
+          "options": [
+            "visitedx",
+            "visits",
+            "None",
+            "visited"
+          ],
+          "answer": "visited"
+        },
+        {
+          "q": "Which English word means 'സാധ്യത'?",
+          "options": [
+            "routine",
+            "schedule",
+            "knowledge",
+            "probability"
+          ],
+          "answer": "probability"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "I am rain every time wrongly.",
+            "It might rain this evening.",
+            "He do not rain yesterday.",
+            "We was rain tomorrow."
+          ],
+          "answer": "It might rain this evening."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 71 with 70%+ to keep your streak and unlock Day 72!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

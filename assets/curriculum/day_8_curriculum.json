@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 8,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-8-v1",
+    "topic": {
+      "en": "Numbers, Counting & Plurals",
+      "ml": "സംഖ്യകളും എണ്ണലും",
+      "hi": "Numbers, Counting & Plurals",
+      "ta": "Numbers, Counting & Plurals"
+    },
+    "unlockRule": "Unlocks after passing Day 7 Exam. Day 9 unlocks after scoring 70%+ in Day 8 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 266,
+    "totalCoinsReward": 58
+  },
+  "grammarRule": {
+    "formula": "Singular vs Plural Nouns (-s / -es)",
+    "explanation": {
+      "ml": "സംഖ്യകളും എണ്ണലും എന്ന വിഷയത്തിൽ Singular vs Plural Nouns (-s / -es) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Singular vs Plural Nouns (-s / -es) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Count the coins.",
+      "en": "Golden Rule: Practice 'Count the coins.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "count",
+        "v2": "counted",
+        "v3": "counted",
+        "meaning": {
+          "ml": "എണ്ണുക",
+          "hi": "गिनना",
+          "ta": "எண்ணு"
+        },
+        "example": "Count the coins.",
+        "exampleMl": "എണ്ണുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "add",
+        "v2": "added",
+        "v3": "added",
+        "meaning": {
+          "ml": "കൂട്ടിച്ചേർക്കുക",
+          "hi": "जोड़ना",
+          "ta": "சேர்"
+        },
+        "example": "Add two spoons.",
+        "exampleMl": "കൂട്ടിച്ചേർക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "buy",
+        "v2": "bought",
+        "v3": "bought",
+        "meaning": {
+          "ml": "വാങ്ങുക",
+          "hi": "खरीदना",
+          "ta": "வாங்கு"
+        },
+        "example": "Buy three pens.",
+        "exampleMl": "വാങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "pay",
+        "v2": "paid",
+        "v3": "paid",
+        "meaning": {
+          "ml": "പണം നൽകുക",
+          "hi": "भुगतान करना",
+          "ta": "பணம் செலுத்து"
+        },
+        "example": "Pay ten rupees.",
+        "exampleMl": "പണം നൽകുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "number",
+        "meaning": {
+          "ml": "സംഖ്യ",
+          "hi": "സംഖ്യ",
+          "ta": "സംഖ്യ"
+        },
+        "example": "Could you point out a number for me?"
+      },
+      {
+        "word": "money",
+        "meaning": {
+          "ml": "പണം",
+          "hi": "പണം",
+          "ta": "പണം"
+        },
+        "example": "Could you point out a money for me?"
+      },
+      {
+        "word": "coin",
+        "meaning": {
+          "ml": "നാണയം",
+          "hi": "നാണയം",
+          "ta": "നാണയം"
+        },
+        "example": "Could you point out a coin for me?"
+      },
+      {
+        "word": "price",
+        "meaning": {
+          "ml": "വില",
+          "hi": "വില",
+          "ta": "വില"
+        },
+        "example": "Could you point out a price for me?"
+      },
+      {
+        "word": "total",
+        "meaning": {
+          "ml": "ആകെ",
+          "hi": "ആകെ",
+          "ta": "ആകെ"
+        },
+        "example": "Could you point out a total for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Numbers, Counting & Plurals",
+        "ml": "പാഠം: സംഖ്യകളും എണ്ണലും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "number",
+        "money",
+        "coin",
+        "price",
+        "total"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Count the coins.",
+        "Add two spoons.",
+        "Buy three pens."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Numbers, Counting & Plurals",
+        "ml": "റീഡിങ് റൂം: സംഖ്യകളും എണ്ണലും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Count the coins.",
+          "meaningMl": "എണ്ണുക - Count the coins.",
+          "audioPrompt": "Count the coins."
+        },
+        {
+          "text": "Add two spoons.",
+          "meaningMl": "കൂട്ടിച്ചേർക്കുക - Add two spoons.",
+          "audioPrompt": "Add two spoons."
+        },
+        {
+          "text": "Daily practice of Numbers, Counting & Plurals gives you great confidence in English.",
+          "meaningMl": "സംഖ്യകളും എണ്ണലും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Numbers, Counting & Plurals gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Count the coins.'",
+          "targetSentence": "Count the coins."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Add two spoons.'",
+          "targetSentence": "Add two spoons."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Numbers, Counting & Plurals in 1-2 fluent sentences.",
+          "targetSentence": "Buy three pens."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d8_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "Did you go to the market?",
+            "Did you went to the market?",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "Did you go to the market?",
+          "explanation": "After did, use the base verb (V1), not the past form."
+        },
+        {
+          "id": "trap_d8_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d8_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": true,
+          "unlocksOnDay": 10,
+          "lockedMessage": "🌱 Stranger voice calls unlock on Day 10! Practice privately with Tutor Robot today.",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 8, I practiced Numbers, Counting & Plurals! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Numbers, Counting & Plurals for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Numbers, Counting & Plurals in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Numbers, Counting & Plurals.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 8 Gate Exam (5 Qs)",
+        "ml": "ഡേ 8 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'count':",
+          "options": [
+            "ഭക്ഷണം",
+            "എണ്ണുക",
+            "സന്തോഷം",
+            "യാത്ര"
+          ],
+          "answer": "എണ്ണുക"
+        },
+        {
+          "q": "Complete the sentence: '_____ the coins.'",
+          "options": [
+            "count",
+            "counting",
+            "were count",
+            "is count"
+          ],
+          "answer": "count"
+        },
+        {
+          "q": "What is the past form (V2) of 'add'?",
+          "options": [
+            "adds",
+            "addedx",
+            "added",
+            "None"
+          ],
+          "answer": "added"
+        },
+        {
+          "q": "Which English word means 'സംഖ്യ'?",
+          "options": [
+            "courage",
+            "success",
+            "journey",
+            "number"
+          ],
+          "answer": "number"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "Count the coins.",
+            "I am count every time wrongly.",
+            "He do not count yesterday.",
+            "We was count tomorrow."
+          ],
+          "answer": "Count the coins."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 8 with 70%+ to keep your streak and unlock Day 9!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

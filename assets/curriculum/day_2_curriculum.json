@@ -1,0 +1,466 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 2,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-2-v1",
+    "topic": {
+      "en": "Where I Am From & Locations",
+      "ml": "നാടും സ്ഥലങ്ങളും",
+      "hi": "Where I Am From & Locations",
+      "ta": "Where I Am From & Locations"
+    },
+    "unlockRule": "Unlocks after passing Day 1 Exam. Day 3 unlocks after scoring 70%+ in Day 2 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 254,
+    "totalCoinsReward": 52
+  },
+  "grammarRule": {
+    "formula": "From, In, At (Origins & Locations)",
+    "explanation": {
+      "ml": "നാടും സ്ഥലങ്ങളും എന്ന വിഷയത്തിൽ From, In, At (Origins & Locations) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use From, In, At (Origins & Locations) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I live in Kerala.",
+      "en": "Golden Rule: Practice 'I live in Kerala.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "live",
+        "v2": "lived",
+        "v3": "lived",
+        "meaning": {
+          "ml": "താമസിക്കുക",
+          "hi": "रहना",
+          "ta": "வாழ் / வசி"
+        },
+        "example": "I live in Kerala.",
+        "exampleMl": "താമസിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "stay",
+        "v2": "stayed",
+        "v3": "stayed",
+        "meaning": {
+          "ml": "നിൽക്കുക / താമസിക്കുക",
+          "hi": "ठहरना",
+          "ta": "தங்கு"
+        },
+        "example": "I stay at home.",
+        "exampleMl": "നിൽക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "come",
+        "v2": "came",
+        "v3": "come",
+        "meaning": {
+          "ml": "വരുക",
+          "hi": "आना",
+          "ta": "வா"
+        },
+        "example": "Come to my house.",
+        "exampleMl": "വരുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "reach",
+        "v2": "reached",
+        "v3": "reached",
+        "meaning": {
+          "ml": "എത്തിച്ചേരുക",
+          "hi": "पहुँचना",
+          "ta": "சேர் / வந்தடை"
+        },
+        "example": "Reach on time.",
+        "exampleMl": "എത്തിച്ചേരുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "home",
+        "meaning": {
+          "ml": "വീട്",
+          "hi": "घर",
+          "ta": "வீடு"
+        },
+        "example": "My home is cozy and warm."
+      },
+      {
+        "word": "city",
+        "meaning": {
+          "ml": "നഗരം",
+          "hi": "शहर",
+          "ta": "நகரம்"
+        },
+        "example": "Kochi is a lively coastal city."
+      },
+      {
+        "word": "village",
+        "meaning": {
+          "ml": "ഗ്രാമം",
+          "hi": "गाँव",
+          "ta": "கிராமம்"
+        },
+        "example": "Birds sing in the quiet village."
+      },
+      {
+        "word": "country",
+        "meaning": {
+          "ml": "രാജ്യം",
+          "hi": "देश",
+          "ta": "நாடு"
+        },
+        "example": "India has rich cultural heritage."
+      },
+      {
+        "word": "street",
+        "meaning": {
+          "ml": "തെരുവ്",
+          "hi": "सड़क",
+          "ta": "தெரு"
+        },
+        "example": "Walk along the tree-lined street."
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Where I Am From & Locations",
+        "ml": "പാഠം: നാടും സ്ഥലങ്ങളും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "home",
+        "city",
+        "village",
+        "country",
+        "street"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I live in Kerala.",
+        "I stay at home.",
+        "Come to my house."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Where I Am From & Locations",
+        "ml": "റീഡിങ് റൂം: നാടും സ്ഥലങ്ങളും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I live in Kerala.",
+          "meaningMl": "താമസിക്കുക - I live in Kerala.",
+          "audioPrompt": "I live in Kerala."
+        },
+        {
+          "text": "I stay at home.",
+          "meaningMl": "നിൽക്കുക - I stay at home.",
+          "audioPrompt": "I stay at home."
+        },
+        {
+          "text": "Daily practice of Where I Am From & Locations gives you great confidence in English.",
+          "meaningMl": "നാടും സ്ഥലങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Where I Am From & Locations gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I live in Kerala.'",
+          "targetSentence": "I live in Kerala."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'I stay at home.'",
+          "targetSentence": "I stay at home."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Where I Am From & Locations in 1-2 fluent sentences.",
+          "targetSentence": "Come to my house."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d2_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "Did you go to the market?",
+            "Did you went to the market?",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "Did you go to the market?",
+          "explanation": "After did, use the base verb (V1), not the past form."
+        },
+        {
+          "id": "trap_d2_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d2_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "type": "raid_battle",
+      "gameType": "citadel_attack_raid",
+      "title": {
+        "en": "Citadel Attack Raids",
+        "ml": "സിറ്റാഡൽ ആക്രമണ റെയ്ഡുകൾ"
+      },
+      "icon": "⚔️",
+      "canBeSkipped": true,
+      "xpReward": 0,
+      "passScore": 100,
+      "is_unlocked": false,
+      "unlock_condition": "Unlocks on Day 4",
+      "attackConfig": {
+        "isUnlocked": false,
+        "unlocksOnDay": 4
+      },
+      "description": {
+        "en": "Raids unlock on Day 4. Build your defense first.",
+        "ml": "റെയ്ഡുകൾ ഡേ 4-ൽ അൺലോക്ക് ചെയ്യും. ആദ്യം പ്രതിരോധം ഒരുക്കുക."
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": true,
+          "unlocksOnDay": 10,
+          "lockedMessage": "🌱 Stranger voice calls unlock on Day 10! Practice privately with Tutor Robot today.",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 2, I practiced Where I Am From & Locations! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Where I Am From & Locations for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Where I Am From & Locations in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Where I Am From & Locations.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 2 Gate Exam (5 Qs)",
+        "ml": "ഡേ 2 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'live':",
+          "options": [
+            "ഭക്ഷണം",
+            "താമസിക്കുക",
+            "സന്തോഷം",
+            "യാത്ര"
+          ],
+          "answer": "താമസിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'I _____ in Kerala.'",
+          "options": [
+            "live",
+            "liveing",
+            "were live",
+            "is live"
+          ],
+          "answer": "live"
+        },
+        {
+          "q": "What is the past form (V2) of 'stay'?",
+          "options": [
+            "stays",
+            "stayedx",
+            "stayed",
+            "None"
+          ],
+          "answer": "stayed"
+        },
+        {
+          "q": "Which English word means 'വീട്'?",
+          "options": [
+            "progress",
+            "routine",
+            "schedule",
+            "home"
+          ],
+          "answer": "home"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was live tomorrow.",
+            "He do not live yesterday.",
+            "I am live every time wrongly.",
+            "I live in Kerala."
+          ],
+          "answer": "I live in Kerala."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 2 with 70%+ to keep your streak and unlock Day 3!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 87,
+    "house": 3,
+    "houseTitle": {
+      "en": "House 3: Professional Fluency & Career Mastery",
+      "ml": "ഹൗസ് 3: ഫ്ലുവെൻസി, കരിയർ & ഇന്റർവ്യൂ മാസ്റ്ററി",
+      "hi": "हाउस 3: व्यावसायिक प्रवाह और करियर महारत",
+      "ta": "ஹவுஸ் 3: தொழில்முறை சரளமும் வேலை நேர்காணலும்"
+    },
+    "version": "day-87-v1",
+    "topic": {
+      "en": "Native Everyday Idioms: Volume 2",
+      "ml": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2",
+      "hi": "Native Everyday Idioms: Volume 2",
+      "ta": "Native Everyday Idioms: Volume 2"
+    },
+    "unlockRule": "Unlocks after passing Day 86 Exam. Day 88 unlocks after scoring 70%+ in Day 87 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 424,
+    "totalCoinsReward": 137
+  },
+  "grammarRule": {
+    "formula": "Under the weather, Hit the nail on the head, Once in a blue moon",
+    "explanation": {
+      "ml": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2 എന്ന വിഷയത്തിൽ Under the weather, Hit the nail on the head, Once in a blue moon എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Under the weather, Hit the nail on the head, Once in a blue moon correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: You hit the nail on the head.",
+      "en": "Golden Rule: Practice 'You hit the nail on the head.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "hit",
+        "v2": "hit",
+        "v3": "hit",
+        "meaning": {
+          "ml": "കൃത്യമായി പറയുക",
+          "hi": "കൃത്യമായി പറയുക",
+          "ta": "കൃത്യമായി പറയുക"
+        },
+        "example": "You hit the nail on the head.",
+        "exampleMl": "കൃത്യമായി പറയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "miss",
+        "v2": "missed",
+        "v3": "missed",
+        "meaning": {
+          "ml": "നഷ്ടപ്പെടുക",
+          "hi": "നഷ്ടപ്പെടുക",
+          "ta": "നഷ്ടപ്പെടുക"
+        },
+        "example": "Don't miss the boat.",
+        "exampleMl": "നഷ്ടപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "burn",
+        "v2": "burnt",
+        "v3": "burnt",
+        "meaning": {
+          "ml": "അദ്ധ്വാനിക്കുക",
+          "hi": "അദ്ധ്വാനിക്കുക",
+          "ta": "അദ്ധ്വാനിക്കുക"
+        },
+        "example": "Burn the midnight oil.",
+        "exampleMl": "അദ്ധ്വാനിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "see",
+        "v2": "saw",
+        "v3": "seen",
+        "meaning": {
+          "ml": "കാണുക",
+          "hi": "देखना",
+          "ta": "பார்"
+        },
+        "example": "We see eye to eye.",
+        "exampleMl": "യോജിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "idiom",
+        "meaning": {
+          "ml": "ശൈലി",
+          "hi": "ശൈലി",
+          "ta": "ശൈലി"
+        },
+        "example": "Could you point out an idiom for me?"
+      },
+      {
+        "word": "metaphor",
+        "meaning": {
+          "ml": "ഉപമ",
+          "hi": "ഉപമ",
+          "ta": "ഉപമ"
+        },
+        "example": "Could you point out a metaphor for me?"
+      },
+      {
+        "word": "conversation",
+        "meaning": {
+          "ml": "സംഭാഷണം",
+          "hi": "സംഭാഷണം",
+          "ta": "സംഭാഷണം"
+        },
+        "example": "Could you point out a conversation for me?"
+      },
+      {
+        "word": "richness",
+        "meaning": {
+          "ml": "സമ്പന്നത",
+          "hi": "സമ്പന്നത",
+          "ta": "സമ്പന്നത"
+        },
+        "example": "Could you point out a richness for me?"
+      },
+      {
+        "word": "fluency",
+        "meaning": {
+          "ml": "ഫ്ലുവെൻസി",
+          "hi": "ഫ്ലുവെൻസി",
+          "ta": "ഫ്ലുവെൻസി"
+        },
+        "example": "Could you point out a fluency for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Native Everyday Idioms: Volume 2",
+        "ml": "പാഠം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "idiom",
+        "metaphor",
+        "conversation",
+        "richness",
+        "fluency"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "You hit the nail on the head.",
+        "Don't miss the boat.",
+        "Burn the midnight oil."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Native Everyday Idioms: Volume 2",
+        "ml": "റീഡിങ് റൂം: സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "You hit the nail on the head.",
+          "meaningMl": "കൃത്യമായി പറയുക - You hit the nail on the head.",
+          "audioPrompt": "You hit the nail on the head."
+        },
+        {
+          "text": "Don't miss the boat.",
+          "meaningMl": "നഷ്ടപ്പെടുക - Don't miss the boat.",
+          "audioPrompt": "Don't miss the boat."
+        },
+        {
+          "text": "Daily practice of Native Everyday Idioms: Volume 2 gives you great confidence in English.",
+          "meaningMl": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2 ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Native Everyday Idioms: Volume 2 gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'You hit the nail on the head.'",
+          "targetSentence": "You hit the nail on the head."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Don't miss the boat.'",
+          "targetSentence": "Don't miss the boat."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Native Everyday Idioms: Volume 2 in 1-2 fluent sentences.",
+          "targetSentence": "Burn the midnight oil."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d87_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "We discussed the plan.",
+            "We discussed about the plan.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "We discussed the plan.",
+          "explanation": "Discuss already includes the idea of about."
+        },
+        {
+          "id": "trap_d87_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d87_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 87, I practiced Native Everyday Idioms: Volume 2! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Native Everyday Idioms: Volume 2 for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Native Everyday Idioms: Volume 2 in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Native Everyday Idioms: Volume 2.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 87 Gate Exam (5 Qs)",
+        "ml": "ഡേ 87 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'hit':",
+          "options": [
+            "യാത്ര",
+            "സന്തോഷം",
+            "കൃത്യമായി പറയുക",
+            "ഭക്ഷണം"
+          ],
+          "answer": "കൃത്യമായി പറയുക"
+        },
+        {
+          "q": "Complete the sentence: 'You _____ the nail on the head.'",
+          "options": [
+            "hit",
+            "hiting",
+            "is hit",
+            "were hit"
+          ],
+          "answer": "hit"
+        },
+        {
+          "q": "What is the past form (V2) of 'miss'?",
+          "options": [
+            "misss",
+            "missed",
+            "missedx",
+            "None"
+          ],
+          "answer": "missed"
+        },
+        {
+          "q": "Which English word means 'ശൈലി'?",
+          "options": [
+            "idiom",
+            "airport",
+            "journey",
+            "success"
+          ],
+          "answer": "idiom"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "I am hit every time wrongly.",
+            "He do not hit yesterday.",
+            "We was hit tomorrow.",
+            "You hit the nail on the head."
+          ],
+          "answer": "You hit the nail on the head."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 87 with 70%+ to keep your streak and unlock Day 88!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

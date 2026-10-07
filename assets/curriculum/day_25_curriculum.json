@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 25,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-25-v1",
+    "topic": {
+      "en": "Buying Groceries & Market Talk",
+      "ml": "കടയും പച്ചക്കറി വാങ്ങലും",
+      "hi": "Buying Groceries & Market Talk",
+      "ta": "Buying Groceries & Market Talk"
+    },
+    "unlockRule": "Unlocks after passing Day 24 Exam. Day 26 unlocks after scoring 70%+ in Day 25 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 300,
+    "totalCoinsReward": 75
+  },
+  "grammarRule": {
+    "formula": "Quantity Words: Kilo, Packet, Bottle, Dozen",
+    "explanation": {
+      "ml": "കടയും പച്ചക്കറി വാങ്ങലും എന്ന വിഷയത്തിൽ Quantity Words: Kilo, Packet, Bottle, Dozen എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Quantity Words: Kilo, Packet, Bottle, Dozen correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: He sells fresh fruits.",
+      "en": "Golden Rule: Practice 'He sells fresh fruits.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "sell",
+        "v2": "sold",
+        "v3": "sold",
+        "meaning": {
+          "ml": "വിൽക്കുക",
+          "hi": "बेचना",
+          "ta": "விற்பனை செய்"
+        },
+        "example": "He sells fresh fruits.",
+        "exampleMl": "വിൽക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "bargain",
+        "v2": "bargained",
+        "v3": "bargained",
+        "meaning": {
+          "ml": "വിലപേശുക",
+          "hi": "मोलभाव करना",
+          "ta": "பேரம் பேசு"
+        },
+        "example": "Don't bargain here.",
+        "exampleMl": "വിലപേശുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "carry",
+        "v2": "carried",
+        "v3": "carried",
+        "meaning": {
+          "ml": "ചുമക്കുക",
+          "hi": "ले जाना",
+          "ta": "சும"
+        },
+        "example": "Carry the grocery bag.",
+        "exampleMl": "ചുമക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "check",
+        "v2": "checked",
+        "v3": "checked",
+        "meaning": {
+          "ml": "പരിശോധിക്കുക",
+          "hi": "जाँच करना",
+          "ta": "சரிபார்"
+        },
+        "example": "Check the bill.",
+        "exampleMl": "പരിശോധിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "market",
+        "meaning": {
+          "ml": "ചന്ത",
+          "hi": "ചന്ത",
+          "ta": "ചന്ത"
+        },
+        "example": "Could you point out a market for me?"
+      },
+      {
+        "word": "shop",
+        "meaning": {
+          "ml": "കട",
+          "hi": "കട",
+          "ta": "കട"
+        },
+        "example": "Could you point out a shop for me?"
+      },
+      {
+        "word": "vegetable",
+        "meaning": {
+          "ml": "പച്ചക്കറി",
+          "hi": "പച്ചക്കറി",
+          "ta": "പച്ചക്കറി"
+        },
+        "example": "Could you point out a vegetable for me?"
+      },
+      {
+        "word": "fruit",
+        "meaning": {
+          "ml": "പഴം",
+          "hi": "പഴം",
+          "ta": "പഴം"
+        },
+        "example": "Could you point out a fruit for me?"
+      },
+      {
+        "word": "bill",
+        "meaning": {
+          "ml": "ബിൽ",
+          "hi": "ബിൽ",
+          "ta": "ബിൽ"
+        },
+        "example": "Could you point out a bill for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Buying Groceries & Market Talk",
+        "ml": "പാഠം: കടയും പച്ചക്കറി വാങ്ങലും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "market",
+        "shop",
+        "vegetable",
+        "fruit",
+        "bill"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "He sells fresh fruits.",
+        "Don't bargain here.",
+        "Carry the grocery bag."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Buying Groceries & Market Talk",
+        "ml": "റീഡിങ് റൂം: കടയും പച്ചക്കറി വാങ്ങലും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "He sells fresh fruits.",
+          "meaningMl": "വിൽക്കുക - He sells fresh fruits.",
+          "audioPrompt": "He sells fresh fruits."
+        },
+        {
+          "text": "Don't bargain here.",
+          "meaningMl": "വിലപേശുക - Don't bargain here.",
+          "audioPrompt": "Don't bargain here."
+        },
+        {
+          "text": "Daily practice of Buying Groceries & Market Talk gives you great confidence in English.",
+          "meaningMl": "കടയും പച്ചക്കറി വാങ്ങലും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Buying Groceries & Market Talk gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'He sells fresh fruits.'",
+          "targetSentence": "He sells fresh fruits."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Don't bargain here.'",
+          "targetSentence": "Don't bargain here."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Buying Groceries & Market Talk in 1-2 fluent sentences.",
+          "targetSentence": "Carry the grocery bag."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d25_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He goes to work every day.",
+            "He go to work every day.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He goes to work every day.",
+          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+        },
+        {
+          "id": "trap_d25_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d25_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 25, I practiced Buying Groceries & Market Talk! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Buying Groceries & Market Talk for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Buying Groceries & Market Talk in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Buying Groceries & Market Talk.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 25 Gate Exam (5 Qs)",
+        "ml": "ഡേ 25 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'sell':",
+          "options": [
+            "യാത്ര",
+            "സന്തോഷം",
+            "വിൽക്കുക",
+            "ഭക്ഷണം"
+          ],
+          "answer": "വിൽക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'He _____s fresh fruits.'",
+          "options": [
+            "selling",
+            "is sell",
+            "were sell",
+            "sell"
+          ],
+          "answer": "sell"
+        },
+        {
+          "q": "What is the past form (V2) of 'bargain'?",
+          "options": [
+            "bargained",
+            "None",
+            "bargains",
+            "bargainedx"
+          ],
+          "answer": "bargained"
+        },
+        {
+          "q": "Which English word means 'ചന്ത'?",
+          "options": [
+            "market",
+            "station",
+            "partner",
+            "airport"
+          ],
+          "answer": "market"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was sell tomorrow.",
+            "He sells fresh fruits.",
+            "I am sell every time wrongly.",
+            "He do not sell yesterday."
+          ],
+          "answer": "He sells fresh fruits."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 25 with 70%+ to keep your streak and unlock Day 26!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 13,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-13-v1",
+    "topic": {
+      "en": "Habits with Do vs Does",
+      "ml": "Do vs Does ശീലങ്ങൾ",
+      "hi": "Habits with Do vs Does",
+      "ta": "Habits with Do vs Does"
+    },
+    "unlockRule": "Unlocks after passing Day 12 Exam. Day 14 unlocks after scoring 70%+ in Day 13 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 276,
+    "totalCoinsReward": 63
+  },
+  "grammarRule": {
+    "formula": "Do with I/You/We/They | Does with He/She/It",
+    "explanation": {
+      "ml": "Do vs Does ശീലങ്ങൾ എന്ന വിഷയത്തിൽ Do with I/You/We/They | Does with He/She/It എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Do with I/You/We/They | Does with He/She/It correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: He works hard.",
+      "en": "Golden Rule: Practice 'He works hard.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "work",
+        "v2": "worked",
+        "v3": "worked",
+        "meaning": {
+          "ml": "ജോലി ചെയ്യുക",
+          "hi": "काम करना",
+          "ta": "வேலை செய்"
+        },
+        "example": "He works hard.",
+        "exampleMl": "ജോലി ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "study",
+        "v2": "studied",
+        "v3": "studied",
+        "meaning": {
+          "ml": "പഠിക്കുക",
+          "hi": "अध्ययन करना",
+          "ta": "படி"
+        },
+        "example": "She studies well.",
+        "exampleMl": "പഠിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "play",
+        "v2": "played",
+        "v3": "played",
+        "meaning": {
+          "ml": "കളിക്കുക",
+          "hi": "खेलना",
+          "ta": "விளையாடு"
+        },
+        "example": "They play football.",
+        "exampleMl": "കളിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "know",
+        "v2": "knew",
+        "v3": "known",
+        "meaning": {
+          "ml": "അറിയുക",
+          "hi": "जानना",
+          "ta": "அறி / தெரி"
+        },
+        "example": "Do you know him?",
+        "exampleMl": "അറിയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "habit",
+        "meaning": {
+          "ml": "ശീലം",
+          "hi": "ശീലം",
+          "ta": "ശീലം"
+        },
+        "example": "Could you point out a habit for me?"
+      },
+      {
+        "word": "routine",
+        "meaning": {
+          "ml": "പതിവ്",
+          "hi": "പതിവ്",
+          "ta": "പതിവ്"
+        },
+        "example": "Could you point out a routine for me?"
+      },
+      {
+        "word": "duty",
+        "meaning": {
+          "ml": "കടമ",
+          "hi": "കടമ",
+          "ta": "കടമ"
+        },
+        "example": "Could you point out a duty for me?"
+      },
+      {
+        "word": "job",
+        "meaning": {
+          "ml": "ജോലി",
+          "hi": "ജോലി",
+          "ta": "ജോലി"
+        },
+        "example": "Could you point out a job for me?"
+      },
+      {
+        "word": "skill",
+        "meaning": {
+          "ml": "കഴിവ്",
+          "hi": "കഴിവ്",
+          "ta": "കഴിവ്"
+        },
+        "example": "Could you point out a skill for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Habits with Do vs Does",
+        "ml": "പാഠം: Do vs Does ശീലങ്ങൾ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "habit",
+        "routine",
+        "duty",
+        "job",
+        "skill"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "He works hard.",
+        "She studies well.",
+        "They play football."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Habits with Do vs Does",
+        "ml": "റീഡിങ് റൂം: Do vs Does ശീലങ്ങൾ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "He works hard.",
+          "meaningMl": "ജോലി ചെയ്യുക - He works hard.",
+          "audioPrompt": "He works hard."
+        },
+        {
+          "text": "She studies well.",
+          "meaningMl": "പഠിക്കുക - She studies well.",
+          "audioPrompt": "She studies well."
+        },
+        {
+          "text": "Daily practice of Habits with Do vs Does gives you great confidence in English.",
+          "meaningMl": "Do vs Does ശീലങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Habits with Do vs Does gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'He works hard.'",
+          "targetSentence": "He works hard."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'She studies well.'",
+          "targetSentence": "She studies well."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Habits with Do vs Does in 1-2 fluent sentences.",
+          "targetSentence": "They play football."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d13_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He goes to work every day.",
+            "He go to work every day.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He goes to work every day.",
+          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+        },
+        {
+          "id": "trap_d13_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d13_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 13, I practiced Habits with Do vs Does! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Habits with Do vs Does for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Habits with Do vs Does in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Habits with Do vs Does.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 13 Gate Exam (5 Qs)",
+        "ml": "ഡേ 13 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'work':",
+          "options": [
+            "യാത്ര",
+            "ജോലി ചെയ്യുക",
+            "സന്തോഷം",
+            "ഭക്ഷണം"
+          ],
+          "answer": "ജോലി ചെയ്യുക"
+        },
+        {
+          "q": "Complete the sentence: 'He _____s hard.'",
+          "options": [
+            "working",
+            "is work",
+            "were work",
+            "work"
+          ],
+          "answer": "work"
+        },
+        {
+          "q": "What is the past form (V2) of 'study'?",
+          "options": [
+            "studied",
+            "studyedx",
+            "None",
+            "studys"
+          ],
+          "answer": "studied"
+        },
+        {
+          "q": "Which English word means 'ശീലം'?",
+          "options": [
+            "partner",
+            "progress",
+            "schedule",
+            "habit"
+          ],
+          "answer": "habit"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was work tomorrow.",
+            "He do not work yesterday.",
+            "I am work every time wrongly.",
+            "He works hard."
+          ],
+          "answer": "He works hard."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 13 with 70%+ to keep your streak and unlock Day 14!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 9,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-9-v1",
+    "topic": {
+      "en": "Colors & Appearance",
+      "ml": "നിറങ്ങളും രൂപങ്ങളും",
+      "hi": "Colors & Appearance",
+      "ta": "Colors & Appearance"
+    },
+    "unlockRule": "Unlocks after passing Day 8 Exam. Day 10 unlocks after scoring 70%+ in Day 9 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 268,
+    "totalCoinsReward": 59
+  },
+  "grammarRule": {
+    "formula": "Adjectives before Nouns (Red car, Big house)",
+    "explanation": {
+      "ml": "നിറങ്ങളും രൂപങ്ങളും എന്ന വിഷയത്തിൽ Adjectives before Nouns (Red car, Big house) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Adjectives before Nouns (Red car, Big house) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Look at the red bird.",
+      "en": "Golden Rule: Practice 'Look at the red bird.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "look",
+        "v2": "looked",
+        "v3": "looked",
+        "meaning": {
+          "ml": "നോക്കുക",
+          "hi": "देखना",
+          "ta": "பார்"
+        },
+        "example": "Look at the red bird.",
+        "exampleMl": "നോക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "wear",
+        "v2": "wore",
+        "v3": "worn",
+        "meaning": {
+          "ml": "ധരിക്കുക",
+          "hi": "पहनना",
+          "ta": "அணி"
+        },
+        "example": "Wear a blue shirt.",
+        "exampleMl": "ധരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "paint",
+        "v2": "painted",
+        "v3": "painted",
+        "meaning": {
+          "ml": "പെയിന്റ് ചെയ്യുക",
+          "hi": "रंगना",
+          "ta": "வண்ணம் தீட்டு"
+        },
+        "example": "Paint it green.",
+        "exampleMl": "പെയിന്റ് ചെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "shine",
+        "v2": "shone",
+        "v3": "shone",
+        "meaning": {
+          "ml": "തിളങ്ങുക",
+          "hi": "चमकना",
+          "ta": "ஒளிரு"
+        },
+        "example": "Stars shine bright.",
+        "exampleMl": "തിളങ്ങുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "color",
+        "meaning": {
+          "ml": "നിറം",
+          "hi": "നിറം",
+          "ta": "നിറം"
+        },
+        "example": "Could you point out a color for me?"
+      },
+      {
+        "word": "red",
+        "meaning": {
+          "ml": "ചുവപ്പ്",
+          "hi": "ചുവപ്പ്",
+          "ta": "ചുവപ്പ്"
+        },
+        "example": "Could you point out a red for me?"
+      },
+      {
+        "word": "blue",
+        "meaning": {
+          "ml": "നീല",
+          "hi": "നീല",
+          "ta": "നീല"
+        },
+        "example": "Could you point out a blue for me?"
+      },
+      {
+        "word": "green",
+        "meaning": {
+          "ml": "പച്ച",
+          "hi": "പച്ച",
+          "ta": "പച്ച"
+        },
+        "example": "Could you point out a green for me?"
+      },
+      {
+        "word": "black",
+        "meaning": {
+          "ml": "കറുപ്പ്",
+          "hi": "കറുപ്പ്",
+          "ta": "കറുപ്പ്"
+        },
+        "example": "Could you point out a black for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Colors & Appearance",
+        "ml": "പാഠം: നിറങ്ങളും രൂപങ്ങളും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "color",
+        "red",
+        "blue",
+        "green",
+        "black"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Look at the red bird.",
+        "Wear a blue shirt.",
+        "Paint it green."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Colors & Appearance",
+        "ml": "റീഡിങ് റൂം: നിറങ്ങളും രൂപങ്ങളും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Look at the red bird.",
+          "meaningMl": "നോക്കുക - Look at the red bird.",
+          "audioPrompt": "Look at the red bird."
+        },
+        {
+          "text": "Wear a blue shirt.",
+          "meaningMl": "ധരിക്കുക - Wear a blue shirt.",
+          "audioPrompt": "Wear a blue shirt."
+        },
+        {
+          "text": "Daily practice of Colors & Appearance gives you great confidence in English.",
+          "meaningMl": "നിറങ്ങളും രൂപങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Colors & Appearance gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Look at the red bird.'",
+          "targetSentence": "Look at the red bird."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Wear a blue shirt.'",
+          "targetSentence": "Wear a blue shirt."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Colors & Appearance in 1-2 fluent sentences.",
+          "targetSentence": "Paint it green."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d9_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "We discussed the plan.",
+            "We discussed about the plan.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "We discussed the plan.",
+          "explanation": "Discuss already includes the idea of about."
+        },
+        {
+          "id": "trap_d9_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d9_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": true,
+          "unlocksOnDay": 10,
+          "lockedMessage": "🌱 Stranger voice calls unlock on Day 10! Practice privately with Tutor Robot today.",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 9, I practiced Colors & Appearance! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Colors & Appearance for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Colors & Appearance in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Colors & Appearance.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 9 Gate Exam (5 Qs)",
+        "ml": "ഡേ 9 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'look':",
+          "options": [
+            "ഭക്ഷണം",
+            "സന്തോഷം",
+            "നോക്കുക",
+            "യാത്ര"
+          ],
+          "answer": "നോക്കുക"
+        },
+        {
+          "q": "Complete the sentence: '_____ at the red bird.'",
+          "options": [
+            "were look",
+            "looking",
+            "look",
+            "is look"
+          ],
+          "answer": "look"
+        },
+        {
+          "q": "What is the past form (V2) of 'wear'?",
+          "options": [
+            "wears",
+            "None",
+            "wore",
+            "wearedx"
+          ],
+          "answer": "wore"
+        },
+        {
+          "q": "Which English word means 'നിറം'?",
+          "options": [
+            "color",
+            "success",
+            "courage",
+            "knowledge"
+          ],
+          "answer": "color"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "He do not look yesterday.",
+            "I am look every time wrongly.",
+            "Look at the red bird.",
+            "We was look tomorrow."
+          ],
+          "answer": "Look at the red bird."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 9 with 70%+ to keep your streak and unlock Day 10!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

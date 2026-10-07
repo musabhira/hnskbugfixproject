@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 35,
+    "house": 2,
+    "houseTitle": {
+      "en": "House 2: Real-World Social & Time Travel",
+      "ml": "ഹൗസ് 2: പുറംലോകവും ഭൂത-ഭാവി കാലങ്ങളും",
+      "hi": "हाउस 2: वास्तविक दुनिया और समय यात्रा",
+      "ta": "ஹவுஸ் 2: நிஜ உலகம் மற்றும் காலப் பயணம்"
+    },
+    "version": "day-35-v1",
+    "topic": {
+      "en": "Yesterday's Full Story",
+      "ml": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം",
+      "hi": "Yesterday's Full Story",
+      "ta": "Yesterday's Full Story"
+    },
+    "unlockRule": "Unlocks after passing Day 34 Exam. Day 36 unlocks after scoring 70%+ in Day 35 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 320,
+    "totalCoinsReward": 85
+  },
+  "grammarRule": {
+    "formula": "Time Sequencers: In the morning, Then, Later",
+    "explanation": {
+      "ml": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം എന്ന വിഷയത്തിൽ Time Sequencers: In the morning, Then, Later എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Time Sequencers: In the morning, Then, Later correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Yesterday I woke at 7.",
+      "en": "Golden Rule: Practice 'Yesterday I woke at 7.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "wake",
+        "v2": "woke",
+        "v3": "woken",
+        "meaning": {
+          "ml": "ഉണരുക",
+          "hi": "जागना",
+          "ta": "விழி / எழுந்திரு"
+        },
+        "example": "Yesterday I woke at 7.",
+        "exampleMl": "ഉണർന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "reach",
+        "v2": "reached",
+        "v3": "reached",
+        "meaning": {
+          "ml": "എത്തിച്ചേരുക",
+          "hi": "पहुँचना",
+          "ta": "சேர் / வந்தடை"
+        },
+        "example": "I reached office late.",
+        "exampleMl": "എത്തി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "complete",
+        "v2": "completed",
+        "v3": "completed",
+        "meaning": {
+          "ml": "പൂർത്തിയാക്കി",
+          "hi": "പൂർത്തിയാക്കി",
+          "ta": "പൂർത്തിയാക്കി"
+        },
+        "example": "I completed the task.",
+        "exampleMl": "പൂർത്തിയാക്കി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "return",
+        "v2": "returned",
+        "v3": "returned",
+        "meaning": {
+          "ml": "തിരികെ എത്തുക",
+          "hi": "लौटना",
+          "ta": "திரும்பி வா"
+        },
+        "example": "I returned at 8 PM.",
+        "exampleMl": "മടങ്ങി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "day",
+        "meaning": {
+          "ml": "ദിവസം",
+          "hi": "ദിവസം",
+          "ta": "ദിവസം"
+        },
+        "example": "Could you point out a day for me?"
+      },
+      {
+        "word": "routine",
+        "meaning": {
+          "ml": "പതിവ്",
+          "hi": "പതിവ്",
+          "ta": "പതിവ്"
+        },
+        "example": "Could you point out a routine for me?"
+      },
+      {
+        "word": "work",
+        "meaning": {
+          "ml": "ജോലി",
+          "hi": "ജോലി",
+          "ta": "ജോലി"
+        },
+        "example": "Could you point out a work for me?"
+      },
+      {
+        "word": "traffic",
+        "meaning": {
+          "ml": "ട്രാഫിക്",
+          "hi": "ട്രാഫിക്",
+          "ta": "ട്രാഫിക്"
+        },
+        "example": "Could you point out a traffic for me?"
+      },
+      {
+        "word": "dinner",
+        "meaning": {
+          "ml": "അത്താഴം",
+          "hi": "അത്താഴം",
+          "ta": "അത്താഴം"
+        },
+        "example": "Could you point out a dinner for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Yesterday's Full Story",
+        "ml": "പാഠം: ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "day",
+        "routine",
+        "work",
+        "traffic",
+        "dinner"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Yesterday I woke at 7.",
+        "I reached office late.",
+        "I completed the task."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Yesterday's Full Story",
+        "ml": "റീഡിങ് റൂം: ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Yesterday I woke at 7.",
+          "meaningMl": "ഉണർന്നു - Yesterday I woke at 7.",
+          "audioPrompt": "Yesterday I woke at 7."
+        },
+        {
+          "text": "I reached office late.",
+          "meaningMl": "എത്തി - I reached office late.",
+          "audioPrompt": "I reached office late."
+        },
+        {
+          "text": "Daily practice of Yesterday's Full Story gives you great confidence in English.",
+          "meaningMl": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Yesterday's Full Story gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Yesterday I woke at 7.'",
+          "targetSentence": "Yesterday I woke at 7."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'I reached office late.'",
+          "targetSentence": "I reached office late."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Yesterday's Full Story in 1-2 fluent sentences.",
+          "targetSentence": "I completed the task."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d35_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He is married to a teacher.",
+            "He is married with a teacher.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He is married to a teacher.",
+          "explanation": "Use married to when naming a spouse."
+        },
+        {
+          "id": "trap_d35_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d35_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 35, I practiced Yesterday's Full Story! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Yesterday's Full Story for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Yesterday's Full Story in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Yesterday's Full Story.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 35 Gate Exam (5 Qs)",
+        "ml": "ഡേ 35 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'wake':",
+          "options": [
+            "ഭക്ഷണം",
+            "ഉണരുക",
+            "സന്തോഷം",
+            "യാത്ര"
+          ],
+          "answer": "ഉണരുക"
+        },
+        {
+          "q": "Complete the sentence: 'Yesterday I woke at 7.'",
+          "options": [
+            "is wake",
+            "were wake",
+            "wakeing",
+            "wake"
+          ],
+          "answer": "wake"
+        },
+        {
+          "q": "What is the past form (V2) of 'reach'?",
+          "options": [
+            "reachedx",
+            "None",
+            "reachs",
+            "reached"
+          ],
+          "answer": "reached"
+        },
+        {
+          "q": "Which English word means 'ദിവസം'?",
+          "options": [
+            "airport",
+            "station",
+            "partner",
+            "day"
+          ],
+          "answer": "day"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "Yesterday I woke at 7.",
+            "I am wake every time wrongly.",
+            "He do not wake yesterday.",
+            "We was wake tomorrow."
+          ],
+          "answer": "Yesterday I woke at 7."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 35 with 70%+ to keep your streak and unlock Day 36!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

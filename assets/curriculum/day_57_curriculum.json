@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 57,
+    "house": 2,
+    "houseTitle": {
+      "en": "House 2: Real-World Social & Time Travel",
+      "ml": "ഹൗസ് 2: പുറംലോകവും ഭൂത-ഭാവി കാലങ്ങളും",
+      "hi": "हाउस 2: वास्तविक दुनिया और समय यात्रा",
+      "ta": "ஹவுஸ் 2: நிஜ உலகம் மற்றும் காலப் பயணம்"
+    },
+    "version": "day-57-v1",
+    "topic": {
+      "en": "Doctor Consultation: Explaining Symptoms",
+      "ml": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ",
+      "hi": "Doctor Consultation: Explaining Symptoms",
+      "ta": "Doctor Consultation: Explaining Symptoms"
+    },
+    "unlockRule": "Unlocks after passing Day 56 Exam. Day 58 unlocks after scoring 70%+ in Day 57 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 364,
+    "totalCoinsReward": 107
+  },
+  "grammarRule": {
+    "formula": "I have been having this pain since yesterday",
+    "explanation": {
+      "ml": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ എന്ന വിഷയത്തിൽ I have been having this pain since yesterday എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use I have been having this pain since yesterday correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Doctor examined my chest.",
+      "en": "Golden Rule: Practice 'Doctor examined my chest.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "examine",
+        "v2": "examined",
+        "v3": "examined",
+        "meaning": {
+          "ml": "പരിശോധിക്കുക",
+          "hi": "പരിശോധിക്കുക",
+          "ta": "പരിശോധിക്കുക"
+        },
+        "example": "Doctor examined my chest.",
+        "exampleMl": "പരിശോധിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "suffer",
+        "v2": "suffered",
+        "v3": "suffered",
+        "meaning": {
+          "ml": "കഷ്ടപ്പെടുക",
+          "hi": "കഷ്ടപ്പെടുക",
+          "ta": "കഷ്ടപ്പെടുക"
+        },
+        "example": "I am suffering from flu.",
+        "exampleMl": "കഷ്ടപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "recover",
+        "v2": "recovered",
+        "v3": "recovered",
+        "meaning": {
+          "ml": "സുഖപ്പെടുക",
+          "hi": "സുഖപ്പെടുക",
+          "ta": "സുഖപ്പെടുക"
+        },
+        "example": "You will recover soon.",
+        "exampleMl": "സുഖപ്പെടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "inject",
+        "v2": "injected",
+        "v3": "injected",
+        "meaning": {
+          "ml": "കുത്തിവെയ്ക്കുക",
+          "hi": "കുത്തിവെയ്ക്കുക",
+          "ta": "കുത്തിവെയ്ക്കുക"
+        },
+        "example": "Nurse injected medicine.",
+        "exampleMl": "കുത്തിവെയ്ക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "symptom",
+        "meaning": {
+          "ml": "ലക്ഷണം",
+          "hi": "ലക്ഷണം",
+          "ta": "ലക്ഷണം"
+        },
+        "example": "Could you point out a symptom for me?"
+      },
+      {
+        "word": "clinic",
+        "meaning": {
+          "ml": "ക്ലിനിക്ക്",
+          "hi": "ക്ലിനിക്ക്",
+          "ta": "ക്ലിനിക്ക്"
+        },
+        "example": "Could you point out a clinic for me?"
+      },
+      {
+        "word": "infection",
+        "meaning": {
+          "ml": "അണുബാധ",
+          "hi": "അണുബാധ",
+          "ta": "അണുബാധ"
+        },
+        "example": "Could you point out an infection for me?"
+      },
+      {
+        "word": "rest",
+        "meaning": {
+          "ml": "വിശ്രമം",
+          "hi": "വിശ്രമം",
+          "ta": "വിശ്രമം"
+        },
+        "example": "Could you point out a rest for me?"
+      },
+      {
+        "word": "health",
+        "meaning": {
+          "ml": "ആരോഗ്യം",
+          "hi": "ആരോഗ്യം",
+          "ta": "ആരോഗ്യം"
+        },
+        "example": "Could you point out a health for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Doctor Consultation: Explaining Symptoms",
+        "ml": "പാഠം: ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "symptom",
+        "clinic",
+        "infection",
+        "rest",
+        "health"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Doctor examined my chest.",
+        "I am suffering from flu.",
+        "You will recover soon."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Doctor Consultation: Explaining Symptoms",
+        "ml": "റീഡിങ് റൂം: ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Doctor examined my chest.",
+          "meaningMl": "പരിശോധിക്കുക - Doctor examined my chest.",
+          "audioPrompt": "Doctor examined my chest."
+        },
+        {
+          "text": "I am suffering from flu.",
+          "meaningMl": "കഷ്ടപ്പെടുക - I am suffering from flu.",
+          "audioPrompt": "I am suffering from flu."
+        },
+        {
+          "text": "Daily practice of Doctor Consultation: Explaining Symptoms gives you great confidence in English.",
+          "meaningMl": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Doctor Consultation: Explaining Symptoms gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Doctor examined my chest.'",
+          "targetSentence": "Doctor examined my chest."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'I am suffering from flu.'",
+          "targetSentence": "I am suffering from flu."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Doctor Consultation: Explaining Symptoms in 1-2 fluent sentences.",
+          "targetSentence": "You will recover soon."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d57_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "We discussed the plan.",
+            "We discussed about the plan.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "We discussed the plan.",
+          "explanation": "Discuss already includes the idea of about."
+        },
+        {
+          "id": "trap_d57_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d57_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 57, I practiced Doctor Consultation: Explaining Symptoms! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Doctor Consultation: Explaining Symptoms for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Doctor Consultation: Explaining Symptoms in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Doctor Consultation: Explaining Symptoms.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 57 Gate Exam (5 Qs)",
+        "ml": "ഡേ 57 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'examine':",
+          "options": [
+            "സന്തോഷം",
+            "പരിശോധിക്കുക",
+            "ഭക്ഷണം",
+            "യാത്ര"
+          ],
+          "answer": "പരിശോധിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'Doctor _____d my chest.'",
+          "options": [
+            "were examine",
+            "examineing",
+            "examine",
+            "is examine"
+          ],
+          "answer": "examine"
+        },
+        {
+          "q": "What is the past form (V2) of 'suffer'?",
+          "options": [
+            "suffered",
+            "sufferedx",
+            "suffers",
+            "None"
+          ],
+          "answer": "suffered"
+        },
+        {
+          "q": "Which English word means 'ലക്ഷണം'?",
+          "options": [
+            "symptom",
+            "airport",
+            "success",
+            "journey"
+          ],
+          "answer": "symptom"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "Doctor examined my chest.",
+            "I am examine every time wrongly.",
+            "He do not examine yesterday.",
+            "We was examine tomorrow."
+          ],
+          "answer": "Doctor examined my chest."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 57 with 70%+ to keep your streak and unlock Day 58!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

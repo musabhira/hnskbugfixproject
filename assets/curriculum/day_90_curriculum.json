@@ -1,0 +1,476 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 90,
+    "house": 3,
+    "houseTitle": {
+      "en": "House 3: Professional Fluency & Career Mastery",
+      "ml": "ഹൗസ് 3: ഫ്ലുവെൻസി, കരിയർ & ഇന്റർവ്യൂ മാസ്റ്ററി",
+      "hi": "हाउस 3: व्यावसायिक प्रवाह और करियर महारत",
+      "ta": "ஹவுஸ் 3: தொழில்முறை சரளமும் வேலை நேர்காணலும்"
+    },
+    "version": "day-90-v1",
+    "topic": {
+      "en": "Grand Graduation Day & Lifetime Mastery",
+      "ml": "90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി",
+      "hi": "Grand Graduation Day & Lifetime Mastery",
+      "ta": "Grand Graduation Day & Lifetime Mastery"
+    },
+    "unlockRule": "Unlocks after passing Day 89 Exam. Completing Day 90 starts the certificate_review_flow and marks the course_completed.",
+    "passPercentage": 70,
+    "totalXpReward": 430,
+    "totalCoinsReward": 140
+  },
+  "grammarRule": {
+    "formula": "90-Day Spoken English Master Badge & Lifetime Fluency",
+    "explanation": {
+      "ml": "90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി എന്ന വിഷയത്തിൽ 90-Day Spoken English Master Badge & Lifetime Fluency എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use 90-Day Spoken English Master Badge & Lifetime Fluency correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I completed the 90-day journey!",
+      "en": "Golden Rule: Practice 'I completed the 90-day journey!' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "graduate",
+        "v2": "graduated",
+        "v3": "graduated",
+        "meaning": {
+          "ml": "വിജയകരമായി പൂർത്തിയാക്കുക",
+          "hi": "स्नातक होना / पूरा करना",
+          "ta": "பட்டம் பெறு"
+        },
+        "example": "I completed the 90-day journey!",
+        "exampleMl": "വിജയകരമായി പൂർത്തിയാക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "master",
+        "v2": "mastered",
+        "v3": "mastered",
+        "meaning": {
+          "ml": "സ്വായത്തമാക്കുക",
+          "hi": "महारत हासिल करना",
+          "ta": "முழுமை பெறு"
+        },
+        "example": "I have achieved spoken English confidence.",
+        "exampleMl": "സ്വായത്തമാക്കി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "speak",
+        "v2": "spoke",
+        "v3": "spoken",
+        "meaning": {
+          "ml": "സംസാരിക്കുക",
+          "hi": "बोलना",
+          "ta": "பேசு"
+        },
+        "example": "I speak English boldly.",
+        "exampleMl": "സംസാരിക്കുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "succeed",
+        "v2": "succeeded",
+        "v3": "succeeded",
+        "meaning": {
+          "ml": "വിജയം നേടി",
+          "hi": "വിജയം നേടി",
+          "ta": "വിജയം നേടി"
+        },
+        "example": "We succeeded together.",
+        "exampleMl": "വിജയം നേടി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "certificate",
+        "meaning": {
+          "ml": "സർട്ടിഫിക്കറ്റ്",
+          "hi": "प्रमाणपत्र",
+          "ta": "சான்றிதழ்"
+        },
+        "example": "Receive your 90-Day Fluency certificate."
+      },
+      {
+        "word": "trophy",
+        "meaning": {
+          "ml": "ട്രോഫി",
+          "hi": "ट्रॉफी",
+          "ta": "வெற்றிக் கோப்பை"
+        },
+        "example": "Win the House Master trophy."
+      },
+      {
+        "word": "mastery",
+        "meaning": {
+          "ml": "മാസ്റ്ററി",
+          "hi": "മാസ്റ്ററി",
+          "ta": "മാസ്റ്ററി"
+        },
+        "example": "Could you point out a mastery for me?"
+      },
+      {
+        "word": "journey",
+        "meaning": {
+          "ml": "യാത്ര",
+          "hi": "യാത്ര",
+          "ta": "യാത്ര"
+        },
+        "example": "Could you point out a journey for me?"
+      },
+      {
+        "word": "freedom",
+        "meaning": {
+          "ml": "സ്വാതന്ത്ര്യം",
+          "hi": "സ്വാതന്ത്ര്യം",
+          "ta": "സ്വാതന്ത്ര്യം"
+        },
+        "example": "Could you point out a freedom for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Grand Graduation Day & Lifetime Mastery",
+        "ml": "പാഠം: 90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "certificate",
+        "trophy",
+        "mastery",
+        "journey",
+        "freedom"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I completed the 90-day journey!",
+        "I have achieved spoken English confidence.",
+        "I speak English boldly."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Grand Graduation Day & Lifetime Mastery",
+        "ml": "റീഡിങ് റൂം: 90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I completed the 90-day journey!",
+          "meaningMl": "വിജയകരമായി പൂർത്തിയാക്കുക - I completed the 90-day journey!",
+          "audioPrompt": "I completed the 90-day journey!"
+        },
+        {
+          "text": "I have achieved spoken English confidence.",
+          "meaningMl": "ആത്മവിശ്വാസത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കാൻ ഞാൻ കഴിവ് നേടി.",
+          "audioPrompt": "I have achieved spoken English confidence."
+        },
+        {
+          "text": "Daily practice of Grand Graduation Day & Lifetime Mastery gives you great confidence in English.",
+          "meaningMl": "90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Grand Graduation Day & Lifetime Mastery gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I completed the 90-day journey!'",
+          "targetSentence": "I completed the 90-day journey!"
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'I have achieved spoken English confidence.'",
+          "targetSentence": "I have achieved spoken English confidence."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Grand Graduation Day & Lifetime Mastery in 1-2 fluent sentences.",
+          "targetSentence": "I speak English boldly."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d90_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "I have two brothers.",
+            "I am having two brothers.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "I have two brothers.",
+          "explanation": "Use have, not am having, for possession."
+        },
+        {
+          "id": "trap_d90_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d90_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 90, I practiced Grand Graduation Day & Lifetime Mastery! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Grand Graduation Day & Lifetime Mastery for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Grand Graduation Day & Lifetime Mastery in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Grand Graduation Day & Lifetime Mastery.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "90-Day Graduation Assessment",
+        "ml": "ഡേ 90 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "assessmentType": "listening_discrimination",
+          "audioPrompt": "Listen: “I have worked here for three years.”",
+          "q": "Choose the sentence you hear.",
+          "options": [
+            "I have worked here for three years.",
+            "I have work here for three years.",
+            "I am working here since three years.",
+            "I worked here since three years."
+          ],
+          "answer": "I have worked here for three years."
+        },
+        {
+          "assessmentType": "repair_correction",
+          "q": "Choose the corrected sentence.",
+          "options": [
+            "I discussed the proposal with my manager.",
+            "I discussed about the proposal with my manager.",
+            "I have discussed about the proposal to my manager.",
+            "I discussed the proposal to my manager yesterday."
+          ],
+          "answer": "I discussed the proposal with my manager."
+        },
+        {
+          "assessmentType": "pragmatic_response",
+          "q": "Choose the most appropriate spoken response.",
+          "options": [
+            "I see your point; however, I recommend a different approach.",
+            "I am not agree with you.",
+            "Your idea is wrong.",
+            "I recommend to change it."
+          ],
+          "answer": "I see your point; however, I recommend a different approach."
+        },
+        {
+          "assessmentType": "spoken_response",
+          "responseMode": "speech",
+          "q": "Give a 45-second professional introduction: your experience, one strength, and a goal for the next year.",
+          "options": [
+            "Record my response",
+            "Skip speaking",
+            "Read silently",
+            "Use a translation app"
+          ],
+          "answer": "Record my response",
+          "expectedElements": [
+            "clear complete sentences",
+            "relevant details",
+            "intelligible speech"
+          ]
+        },
+        {
+          "assessmentType": "cumulative_grammar",
+          "q": "Choose the grammatically correct sentence.",
+          "options": [
+            "If I had more time, I would prepare a fuller report.",
+            "If I would have more time, I will prepare a fuller report.",
+            "If I had more time, I will prepare a fuller report.",
+            "If I have more time, I would prepared a fuller report."
+          ],
+          "answer": "If I had more time, I would prepare a fuller report."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 90 with 70%+ to keep your streak, review your certificate, and complete the course.",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

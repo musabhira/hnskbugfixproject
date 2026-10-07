@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 61,
+    "house": 3,
+    "houseTitle": {
+      "en": "House 3: Professional Fluency & Career Mastery",
+      "ml": "ഹൗസ് 3: ഫ്ലുവെൻസി, കരിയർ & ഇന്റർവ്യൂ മാസ്റ്ററി",
+      "hi": "हाउस 3: व्यावसायिक प्रवाह और करियर महारत",
+      "ta": "ஹவுஸ் 3: தொழில்முறை சரளமும் வேலை நேர்காணலும்"
+    },
+    "version": "day-61-v1",
+    "topic": {
+      "en": "Present Perfect: Have/Has + V3",
+      "ml": "ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3",
+      "hi": "Present Perfect: Have/Has + V3",
+      "ta": "Present Perfect: Have/Has + V3"
+    },
+    "unlockRule": "Unlocks after passing Day 60 Exam. Day 62 unlocks after scoring 70%+ in Day 61 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 372,
+    "totalCoinsReward": 111
+  },
+  "grammarRule": {
+    "formula": "Have/Has + V3 (Action completed with present connection)",
+    "explanation": {
+      "ml": "ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3 എന്ന വിഷയത്തിൽ Have/Has + V3 (Action completed with present connection) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Have/Has + V3 (Action completed with present connection) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I have finished my work.",
+      "en": "Golden Rule: Practice 'I have finished my work.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "finish",
+        "v2": "finished",
+        "v3": "finished",
+        "meaning": {
+          "ml": "തീർക്കുക",
+          "hi": "खत्म करना",
+          "ta": "முடி"
+        },
+        "example": "I have finished my work.",
+        "exampleMl": "പൂർത്തിയാക്കി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "eat",
+        "v2": "ate",
+        "v3": "eaten",
+        "meaning": {
+          "ml": "കഴിക്കുക",
+          "hi": "खाना",
+          "ta": "சாப்பிடு"
+        },
+        "example": "She has eaten lunch.",
+        "exampleMl": "കഴിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "clean",
+        "v2": "cleaned",
+        "v3": "cleaned",
+        "meaning": {
+          "ml": "വൃത്തിയാക്കുക",
+          "hi": "साफ़ करना",
+          "ta": "சுத்தம் செய்"
+        },
+        "example": "We have cleaned the room.",
+        "exampleMl": "വൃത്തിയാക്കി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "write",
+        "v2": "wrote",
+        "v3": "written",
+        "meaning": {
+          "ml": "എഴുതിക്കഴിഞ്ഞു",
+          "hi": "എഴുതിക്കഴിഞ്ഞു",
+          "ta": "എഴുതിക്കഴിഞ്ഞു"
+        },
+        "example": "He has written the email.",
+        "exampleMl": "എഴുതിക്കഴിഞ്ഞു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "action",
+        "meaning": {
+          "ml": "പ്രവൃത്തി",
+          "hi": "പ്രവൃത്തി",
+          "ta": "പ്രവൃത്തി"
+        },
+        "example": "Could you point out an action for me?"
+      },
+      {
+        "word": "result",
+        "meaning": {
+          "ml": "ഫലം",
+          "hi": "ഫലം",
+          "ta": "ഫലം"
+        },
+        "example": "Could you point out a result for me?"
+      },
+      {
+        "word": "completion",
+        "meaning": {
+          "ml": "പൂർത്തീകരണം",
+          "hi": "പൂർത്തീകരണം",
+          "ta": "പൂർത്തീകരണം"
+        },
+        "example": "Could you point out a completion for me?"
+      },
+      {
+        "word": "task",
+        "meaning": {
+          "ml": "ജോലി",
+          "hi": "ജോലി",
+          "ta": "ജോലി"
+        },
+        "example": "Could you point out a task for me?"
+      },
+      {
+        "word": "status",
+        "meaning": {
+          "ml": "അവസ്ഥ",
+          "hi": "അവസ്ഥ",
+          "ta": "അവസ്ഥ"
+        },
+        "example": "Could you point out a status for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Present Perfect: Have/Has + V3",
+        "ml": "പാഠം: ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "action",
+        "result",
+        "completion",
+        "task",
+        "status"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I have finished my work.",
+        "She has eaten lunch.",
+        "We have cleaned the room."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Present Perfect: Have/Has + V3",
+        "ml": "റീഡിങ് റൂം: ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I have finished my work.",
+          "meaningMl": "പൂർത്തിയാക്കി - I have finished my work.",
+          "audioPrompt": "I have finished my work."
+        },
+        {
+          "text": "She has eaten lunch.",
+          "meaningMl": "കഴിച്ചു - She has eaten lunch.",
+          "audioPrompt": "She has eaten lunch."
+        },
+        {
+          "text": "Daily practice of Present Perfect: Have/Has + V3 gives you great confidence in English.",
+          "meaningMl": "ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3 ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Present Perfect: Have/Has + V3 gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I have finished my work.'",
+          "targetSentence": "I have finished my work."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'She has eaten lunch.'",
+          "targetSentence": "She has eaten lunch."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Present Perfect: Have/Has + V3 in 1-2 fluent sentences.",
+          "targetSentence": "We have cleaned the room."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d61_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He goes to work every day.",
+            "He go to work every day.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He goes to work every day.",
+          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+        },
+        {
+          "id": "trap_d61_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d61_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 61, I practiced Present Perfect: Have/Has + V3! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Present Perfect: Have/Has + V3 for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Present Perfect: Have/Has + V3 in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Present Perfect: Have/Has + V3.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 61 Gate Exam (5 Qs)",
+        "ml": "ഡേ 61 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'finish':",
+          "options": [
+            "യാത്ര",
+            "സന്തോഷം",
+            "ഭക്ഷണം",
+            "തീർക്കുക"
+          ],
+          "answer": "തീർക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'I have _____ed my work.'",
+          "options": [
+            "were finish",
+            "is finish",
+            "finishing",
+            "finish"
+          ],
+          "answer": "finish"
+        },
+        {
+          "q": "What is the past form (V2) of 'eat'?",
+          "options": [
+            "eats",
+            "ate",
+            "eatedx",
+            "None"
+          ],
+          "answer": "ate"
+        },
+        {
+          "q": "Which English word means 'പ്രവൃത്തി'?",
+          "options": [
+            "schedule",
+            "action",
+            "knowledge",
+            "routine"
+          ],
+          "answer": "action"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "I have finished my work.",
+            "I am finish every time wrongly.",
+            "He do not finish yesterday.",
+            "We was finish tomorrow."
+          ],
+          "answer": "I have finished my work."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 61 with 70%+ to keep your streak and unlock Day 62!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

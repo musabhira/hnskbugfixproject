@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 10,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-10-v1",
+    "topic": {
+      "en": "Telling Time & Days",
+      "ml": "സമയവും ദിവസങ്ങളും",
+      "hi": "Telling Time & Days",
+      "ta": "Telling Time & Days"
+    },
+    "unlockRule": "Unlocks after passing Day 9 Exam. Day 11 unlocks after scoring 70%+ in Day 10 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 270,
+    "totalCoinsReward": 60
+  },
+  "grammarRule": {
+    "formula": "Prepositions of Time: At 5 PM, On Monday, In May",
+    "explanation": {
+      "ml": "സമയവും ദിവസങ്ങളും എന്ന വിഷയത്തിൽ Prepositions of Time: At 5 PM, On Monday, In May എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Prepositions of Time: At 5 PM, On Monday, In May correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Start at 9 AM.",
+      "en": "Golden Rule: Practice 'Start at 9 AM.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "start",
+        "v2": "started",
+        "v3": "started",
+        "meaning": {
+          "ml": "ആരംഭിക്കുക",
+          "hi": "शुरू करना",
+          "ta": "தொடங்கு"
+        },
+        "example": "Start at 9 AM.",
+        "exampleMl": "ആരംഭിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "finish",
+        "v2": "finished",
+        "v3": "finished",
+        "meaning": {
+          "ml": "തീർക്കുക",
+          "hi": "खत्म करना",
+          "ta": "முடி"
+        },
+        "example": "Finish on Monday.",
+        "exampleMl": "തീർക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "wait",
+        "v2": "waited",
+        "v3": "waited",
+        "meaning": {
+          "ml": "കാത്തിരിക്കുക",
+          "hi": "प्रतीक्षा करना",
+          "ta": "காத்திரு"
+        },
+        "example": "Wait for 10 minutes.",
+        "exampleMl": "കാത്തിരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "hurry",
+        "v2": "hurried",
+        "v3": "hurried",
+        "meaning": {
+          "ml": "തിടുക്കം കൂട്ടുക",
+          "hi": "जल्दी करना",
+          "ta": "அவசரப்படு"
+        },
+        "example": "Hurry up, time is up.",
+        "exampleMl": "തിടുക്കം കൂട്ടുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "today",
+        "meaning": {
+          "ml": "ഇന്ന്",
+          "hi": "ഇന്ന്",
+          "ta": "ഇന്ന്"
+        },
+        "example": "Could you point out a today for me?"
+      },
+      {
+        "word": "tomorrow",
+        "meaning": {
+          "ml": "നാളെ",
+          "hi": "നാളെ",
+          "ta": "നാളെ"
+        },
+        "example": "Could you point out a tomorrow for me?"
+      },
+      {
+        "word": "yesterday",
+        "meaning": {
+          "ml": "ഇന്നലെ",
+          "hi": "ഇന്നലെ",
+          "ta": "ഇന്നലെ"
+        },
+        "example": "Could you point out a yesterday for me?"
+      },
+      {
+        "word": "week",
+        "meaning": {
+          "ml": "ആഴ്ച",
+          "hi": "ആഴ്ച",
+          "ta": "ആഴ്ച"
+        },
+        "example": "Could you point out a week for me?"
+      },
+      {
+        "word": "hour",
+        "meaning": {
+          "ml": "മണിക്കൂർ",
+          "hi": "മണിക്കൂർ",
+          "ta": "മണിക്കൂർ"
+        },
+        "example": "Could you point out a hour for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Telling Time & Days",
+        "ml": "പാഠം: സമയവും ദിവസങ്ങളും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "today",
+        "tomorrow",
+        "yesterday",
+        "week",
+        "hour"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Start at 9 AM.",
+        "Finish on Monday.",
+        "Wait for 10 minutes."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Telling Time & Days",
+        "ml": "റീഡിങ് റൂം: സമയവും ദിവസങ്ങളും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Start at 9 AM.",
+          "meaningMl": "ആരംഭിക്കുക - Start at 9 AM.",
+          "audioPrompt": "Start at 9 AM."
+        },
+        {
+          "text": "Finish on Monday.",
+          "meaningMl": "തീർക്കുക - Finish on Monday.",
+          "audioPrompt": "Finish on Monday."
+        },
+        {
+          "text": "Daily practice of Telling Time & Days gives you great confidence in English.",
+          "meaningMl": "സമയവും ദിവസങ്ങളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Telling Time & Days gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Start at 9 AM.'",
+          "targetSentence": "Start at 9 AM."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Finish on Monday.'",
+          "targetSentence": "Finish on Monday."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Telling Time & Days in 1-2 fluent sentences.",
+          "targetSentence": "Wait for 10 minutes."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d10_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "She is good at English.",
+            "She is good in English.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "She is good at English.",
+          "explanation": "Use good at for a skill or subject."
+        },
+        {
+          "id": "trap_d10_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d10_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 10, I practiced Telling Time & Days! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Telling Time & Days for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Telling Time & Days in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Telling Time & Days.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 10 Gate Exam (5 Qs)",
+        "ml": "ഡേ 10 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'start':",
+          "options": [
+            "യാത്ര",
+            "സന്തോഷം",
+            "ആരംഭിക്കുക",
+            "ഭക്ഷണം"
+          ],
+          "answer": "ആരംഭിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: '_____ at 9 AM.'",
+          "options": [
+            "were start",
+            "start",
+            "starting",
+            "is start"
+          ],
+          "answer": "start"
+        },
+        {
+          "q": "What is the past form (V2) of 'finish'?",
+          "options": [
+            "finishedx",
+            "None",
+            "finishs",
+            "finished"
+          ],
+          "answer": "finished"
+        },
+        {
+          "q": "Which English word means 'ഇന്ന്'?",
+          "options": [
+            "today",
+            "routine",
+            "courage",
+            "knowledge"
+          ],
+          "answer": "today"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "Start at 9 AM.",
+            "I am start every time wrongly.",
+            "He do not start yesterday.",
+            "We was start tomorrow."
+          ],
+          "answer": "Start at 9 AM."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 10 with 70%+ to keep your streak and unlock Day 11!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

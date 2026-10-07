@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 67,
+    "house": 3,
+    "houseTitle": {
+      "en": "House 3: Professional Fluency & Career Mastery",
+      "ml": "ഹൗസ് 3: ഫ്ലുവെൻസി, കരിയർ & ഇന്റർവ്യൂ മാസ്റ്ററി",
+      "hi": "हाउस 3: व्यावसायिक प्रवाह और करियर महारत",
+      "ta": "ஹவுஸ் 3: தொழில்முறை சரளமும் வேலை நேர்காணலும்"
+    },
+    "version": "day-67-v1",
+    "topic": {
+      "en": "Connecting Ideas: Because & So",
+      "ml": "കാരണവും ഫലവും പറയൽ (Because & So)",
+      "hi": "Connecting Ideas: Because & So",
+      "ta": "Connecting Ideas: Because & So"
+    },
+    "unlockRule": "Unlocks after passing Day 66 Exam. Day 68 unlocks after scoring 70%+ in Day 67 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 384,
+    "totalCoinsReward": 117
+  },
+  "grammarRule": {
+    "formula": "Cause (Because) vs Result (So)",
+    "explanation": {
+      "ml": "കാരണവും ഫലവും പറയൽ (Because & So) എന്ന വിഷയത്തിൽ Cause (Because) vs Result (So) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Cause (Because) vs Result (So) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I studied hard, so I passed.",
+      "en": "Golden Rule: Practice 'I studied hard, so I passed.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "study",
+        "v2": "studied",
+        "v3": "studied",
+        "meaning": {
+          "ml": "പഠിക്കുക",
+          "hi": "अध्ययन करना",
+          "ta": "படி"
+        },
+        "example": "I studied hard, so I passed.",
+        "exampleMl": "പഠിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "tire",
+        "v2": "tired",
+        "v3": "tired",
+        "meaning": {
+          "ml": "ക്ഷീണിച്ചു",
+          "hi": "ക്ഷീണിച്ചു",
+          "ta": "ക്ഷീണിച്ചു"
+        },
+        "example": "I was tired, so I slept.",
+        "exampleMl": "ക്ഷീണിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "succeed",
+        "v2": "succeeded",
+        "v3": "succeeded",
+        "meaning": {
+          "ml": "വിജയിച്ചു",
+          "hi": "വിജയിച്ചു",
+          "ta": "വിജയിച്ചു"
+        },
+        "example": "He succeeded because he persisted.",
+        "exampleMl": "വിജയിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "improve",
+        "v2": "improved",
+        "v3": "improved",
+        "meaning": {
+          "ml": "മെച്ചപ്പെട്ടു",
+          "hi": "മെച്ചപ്പെട്ടു",
+          "ta": "മെച്ചപ്പെട്ടു"
+        },
+        "example": "English improved because I practiced.",
+        "exampleMl": "മെച്ചപ്പെട്ടു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "reason",
+        "meaning": {
+          "ml": "കാരണം",
+          "hi": "കാരണം",
+          "ta": "കാരണം"
+        },
+        "example": "Could you point out a reason for me?"
+      },
+      {
+        "word": "result",
+        "meaning": {
+          "ml": "ഫലം",
+          "hi": "ഫലം",
+          "ta": "ഫലം"
+        },
+        "example": "Could you point out a result for me?"
+      },
+      {
+        "word": "effort",
+        "meaning": {
+          "ml": "പ്രയത്നം",
+          "hi": "പ്രയത്നം",
+          "ta": "പ്രയത്നം"
+        },
+        "example": "Could you point out an effort for me?"
+      },
+      {
+        "word": "success",
+        "meaning": {
+          "ml": "വിജയം",
+          "hi": "വിജയം",
+          "ta": "വിജയം"
+        },
+        "example": "Could you point out a success for me?"
+      },
+      {
+        "word": "connection",
+        "meaning": {
+          "ml": "ബന്ധം",
+          "hi": "ബന്ധം",
+          "ta": "ബന്ധം"
+        },
+        "example": "Could you point out a connection for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Connecting Ideas: Because & So",
+        "ml": "പാഠം: കാരണവും ഫലവും പറയൽ (Because & So)"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "reason",
+        "result",
+        "effort",
+        "success",
+        "connection"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I studied hard, so I passed.",
+        "I was tired, so I slept.",
+        "He succeeded because he persisted."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Connecting Ideas: Because & So",
+        "ml": "റീഡിങ് റൂം: കാരണവും ഫലവും പറയൽ (Because & So)"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I studied hard, so I passed.",
+          "meaningMl": "പഠിച്ചു - I studied hard, so I passed.",
+          "audioPrompt": "I studied hard, so I passed."
+        },
+        {
+          "text": "I was tired, so I slept.",
+          "meaningMl": "ക്ഷീണിച്ചു - I was tired, so I slept.",
+          "audioPrompt": "I was tired, so I slept."
+        },
+        {
+          "text": "Daily practice of Connecting Ideas: Because & So gives you great confidence in English.",
+          "meaningMl": "കാരണവും ഫലവും പറയൽ (Because & So) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Connecting Ideas: Because & So gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I studied hard, so I passed.'",
+          "targetSentence": "I studied hard, so I passed."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'I was tired, so I slept.'",
+          "targetSentence": "I was tired, so I slept."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Connecting Ideas: Because & So in 1-2 fluent sentences.",
+          "targetSentence": "He succeeded because he persisted."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d67_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He goes to work every day.",
+            "He go to work every day.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He goes to work every day.",
+          "explanation": "With he/she/it in the present simple, add -s or -es to the verb."
+        },
+        {
+          "id": "trap_d67_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d67_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 67, I practiced Connecting Ideas: Because & So! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Connecting Ideas: Because & So for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Connecting Ideas: Because & So in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Connecting Ideas: Because & So.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 67 Gate Exam (5 Qs)",
+        "ml": "ഡേ 67 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'study':",
+          "options": [
+            "പഠിക്കുക",
+            "സന്തോഷം",
+            "യാത്ര",
+            "ഭക്ഷണം"
+          ],
+          "answer": "പഠിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'I studied hard, so I passed.'",
+          "options": [
+            "study",
+            "studying",
+            "is study",
+            "were study"
+          ],
+          "answer": "study"
+        },
+        {
+          "q": "What is the past form (V2) of 'tire'?",
+          "options": [
+            "tired",
+            "None",
+            "tires",
+            "tireedx"
+          ],
+          "answer": "tired"
+        },
+        {
+          "q": "Which English word means 'കാരണം'?",
+          "options": [
+            "airport",
+            "success",
+            "reason",
+            "journey"
+          ],
+          "answer": "reason"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "I studied hard, so I passed.",
+            "We was study tomorrow.",
+            "He do not study yesterday.",
+            "I am study every time wrongly."
+          ],
+          "answer": "I studied hard, so I passed."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 67 with 70%+ to keep your streak and unlock Day 68!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

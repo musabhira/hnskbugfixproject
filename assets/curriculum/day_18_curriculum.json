@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 18,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-18-v1",
+    "topic": {
+      "en": "Polite Requests: Can you / Could you?",
+      "ml": "വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ",
+      "hi": "Polite Requests: Can you / Could you?",
+      "ta": "Polite Requests: Can you / Could you?"
+    },
+    "unlockRule": "Unlocks after passing Day 17 Exam. Day 19 unlocks after scoring 70%+ in Day 18 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 286,
+    "totalCoinsReward": 68
+  },
+  "grammarRule": {
+    "formula": "Could you please + V1 (Polite Requests)",
+    "explanation": {
+      "ml": "വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ Could you please + V1 (Polite Requests) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Could you please + V1 (Polite Requests) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Could you pass the salt?",
+      "en": "Golden Rule: Practice 'Could you pass the salt?' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "pass",
+        "v2": "passed",
+        "v3": "passed",
+        "meaning": {
+          "ml": "വിജയിക്കുക",
+          "hi": "उत्तीर्ण होना",
+          "ta": "தேர்ச்சி பெறு"
+        },
+        "example": "Could you pass the salt?",
+        "exampleMl": "കൈമാറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "repeat",
+        "v2": "repeated",
+        "v3": "repeated",
+        "meaning": {
+          "ml": "ആവർത്തിക്കുക",
+          "hi": "दोहराना",
+          "ta": "மீண்டும் சொல்"
+        },
+        "example": "Could you repeat that?",
+        "exampleMl": "ആവർത്തിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "explain",
+        "v2": "explained",
+        "v3": "explained",
+        "meaning": {
+          "ml": "വിശദീകരിക്കുക",
+          "hi": "समझाना",
+          "ta": "விளக்கு"
+        },
+        "example": "Please explain this.",
+        "exampleMl": "വിശദീകരിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "send",
+        "v2": "sent",
+        "v3": "sent",
+        "meaning": {
+          "ml": "അയക്കുക",
+          "hi": "भेजना",
+          "ta": "அனுப்பு"
+        },
+        "example": "Could you send the file?",
+        "exampleMl": "അയക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "favor",
+        "meaning": {
+          "ml": "സഹായം",
+          "hi": "സഹായം",
+          "ta": "സഹായം"
+        },
+        "example": "Could you point out a favor for me?"
+      },
+      {
+        "word": "message",
+        "meaning": {
+          "ml": "സന്ദേശം",
+          "hi": "സന്ദേശം",
+          "ta": "സന്ദേശം"
+        },
+        "example": "Could you point out a message for me?"
+      },
+      {
+        "word": "request",
+        "meaning": {
+          "ml": "അഭ്യർത്ഥന",
+          "hi": "അഭ്യർത്ഥന",
+          "ta": "അഭ്യർത്ഥന"
+        },
+        "example": "Could you point out a request for me?"
+      },
+      {
+        "word": "file",
+        "meaning": {
+          "ml": "ഫയൽ",
+          "hi": "ഫയൽ",
+          "ta": "ഫയൽ"
+        },
+        "example": "Could you point out a file for me?"
+      },
+      {
+        "word": "link",
+        "meaning": {
+          "ml": "ലിങ്ക്",
+          "hi": "ലിങ്ക്",
+          "ta": "ലിങ്ക്"
+        },
+        "example": "Could you point out a link for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Polite Requests: Can you / Could you?",
+        "ml": "പാഠം: വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "favor",
+        "message",
+        "request",
+        "file",
+        "link"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Could you pass the salt?",
+        "Could you repeat that?",
+        "Please explain this."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Polite Requests: Can you / Could you?",
+        "ml": "റീഡിങ് റൂം: വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Could you pass the salt?",
+          "meaningMl": "കൈമാറുക - Could you pass the salt?",
+          "audioPrompt": "Could you pass the salt?"
+        },
+        {
+          "text": "Could you repeat that?",
+          "meaningMl": "ആവർത്തിക്കുക - Could you repeat that?",
+          "audioPrompt": "Could you repeat that?"
+        },
+        {
+          "text": "Daily practice of Polite Requests: Can you / Could you? gives you great confidence in English.",
+          "meaningMl": "വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Polite Requests: Can you / Could you? gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Could you pass the salt?'",
+          "targetSentence": "Could you pass the salt?"
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Could you repeat that?'",
+          "targetSentence": "Could you repeat that?"
+        },
+        "higher": {
+          "prompt": "Explain your thought on Polite Requests: Can you / Could you? in 1-2 fluent sentences.",
+          "targetSentence": "Please explain this."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d18_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "I have two brothers.",
+            "I am having two brothers.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "I have two brothers.",
+          "explanation": "Use have, not am having, for possession."
+        },
+        {
+          "id": "trap_d18_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d18_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 18, I practiced Polite Requests: Can you / Could you?! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Polite Requests: Can you / Could you? for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Polite Requests: Can you / Could you? in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Polite Requests: Can you / Could you?.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 18 Gate Exam (5 Qs)",
+        "ml": "ഡേ 18 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'pass':",
+          "options": [
+            "സന്തോഷം",
+            "ഭക്ഷണം",
+            "യാത്ര",
+            "വിജയിക്കുക"
+          ],
+          "answer": "വിജയിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'Could you _____ the salt?'",
+          "options": [
+            "pass",
+            "passing",
+            "were pass",
+            "is pass"
+          ],
+          "answer": "pass"
+        },
+        {
+          "q": "What is the past form (V2) of 'repeat'?",
+          "options": [
+            "None",
+            "repeated",
+            "repeatedx",
+            "repeats"
+          ],
+          "answer": "repeated"
+        },
+        {
+          "q": "Which English word means 'സഹായം'?",
+          "options": [
+            "favor",
+            "journey",
+            "courage",
+            "success"
+          ],
+          "answer": "favor"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was pass tomorrow.",
+            "He do not pass yesterday.",
+            "I am pass every time wrongly.",
+            "Could you pass the salt?"
+          ],
+          "answer": "Could you pass the salt?"
+        }
+      ],
+      "description": {
+        "en": "Pass Day 18 with 70%+ to keep your streak and unlock Day 19!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

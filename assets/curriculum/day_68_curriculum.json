@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 68,
+    "house": 3,
+    "houseTitle": {
+      "en": "House 3: Professional Fluency & Career Mastery",
+      "ml": "ഹൗസ് 3: ഫ്ലുവെൻസി, കരിയർ & ഇന്റർവ്യൂ മാസ്റ്ററി",
+      "hi": "हाउस 3: व्यावसायिक प्रवाह और करियर महारत",
+      "ta": "ஹவுஸ் 3: தொழில்முறை சரளமும் வேலை நேர்காணலும்"
+    },
+    "version": "day-68-v1",
+    "topic": {
+      "en": "Contrast Connectors: Although, However, But",
+      "ml": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However)",
+      "hi": "Contrast Connectors: Although, However, But",
+      "ta": "Contrast Connectors: Although, However, But"
+    },
+    "unlockRule": "Unlocks after passing Day 67 Exam. Day 69 unlocks after scoring 70%+ in Day 68 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 386,
+    "totalCoinsReward": 118
+  },
+  "grammarRule": {
+    "formula": "Although + Clause (Although it rained, we enjoyed)",
+    "explanation": {
+      "ml": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However) എന്ന വിഷയത്തിൽ Although + Clause (Although it rained, we enjoyed) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Although + Clause (Although it rained, we enjoyed) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Although he tried, it was hard.",
+      "en": "Golden Rule: Practice 'Although he tried, it was hard.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "try",
+        "v2": "tried",
+        "v3": "tried",
+        "meaning": {
+          "ml": "ശ്രമിച്ചു",
+          "hi": "ശ്രമിച്ചു",
+          "ta": "ശ്രമിച്ചു"
+        },
+        "example": "Although he tried, it was hard.",
+        "exampleMl": "ശ്രമിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "continue",
+        "v2": "continued",
+        "v3": "continued",
+        "meaning": {
+          "ml": "തുടർന്നു",
+          "hi": "തുടർന്നു",
+          "ta": "തുടർന്നു"
+        },
+        "example": "However, we continued forward.",
+        "exampleMl": "തുടർന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "win",
+        "v2": "won",
+        "v3": "won",
+        "meaning": {
+          "ml": "ജയിച്ചു",
+          "hi": "ജയിച്ചു",
+          "ta": "ജയിച്ചു"
+        },
+        "example": "Although tired, they won.",
+        "exampleMl": "ജയിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "learn",
+        "v2": "learned",
+        "v3": "learned",
+        "meaning": {
+          "ml": "പഠിച്ചു",
+          "hi": "പഠിച്ചു",
+          "ta": "പഠിച്ചു"
+        },
+        "example": "It was tough; however, I learned.",
+        "exampleMl": "പഠിച്ചു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "contrast",
+        "meaning": {
+          "ml": "വൈരുദ്ധ്യം",
+          "hi": "വൈരുദ്ധ്യം",
+          "ta": "വൈരുദ്ധ്യം"
+        },
+        "example": "Could you point out a contrast for me?"
+      },
+      {
+        "word": "challenge",
+        "meaning": {
+          "ml": "വെല്ലുവിളി",
+          "hi": "വെല്ലുവിളി",
+          "ta": "വെല്ലുവിളി"
+        },
+        "example": "Could you point out a challenge for me?"
+      },
+      {
+        "word": "effort",
+        "meaning": {
+          "ml": "ശ്രമം",
+          "hi": "ശ്രമം",
+          "ta": "ശ്രമം"
+        },
+        "example": "Could you point out an effort for me?"
+      },
+      {
+        "word": "victory",
+        "meaning": {
+          "ml": "വിജയം",
+          "hi": "വിജയം",
+          "ta": "വിജയം"
+        },
+        "example": "Could you point out a victory for me?"
+      },
+      {
+        "word": "fact",
+        "meaning": {
+          "ml": "വസ്തുത",
+          "hi": "വസ്തുത",
+          "ta": "വസ്തുത"
+        },
+        "example": "Could you point out a fact for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Contrast Connectors: Although, However, But",
+        "ml": "പാഠം: വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However)"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "contrast",
+        "challenge",
+        "effort",
+        "victory",
+        "fact"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Although he tried, it was hard.",
+        "However, we continued forward.",
+        "Although tired, they won."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Contrast Connectors: Although, However, But",
+        "ml": "റീഡിങ് റൂം: വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However)"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Although he tried, it was hard.",
+          "meaningMl": "ശ്രമിച്ചു - Although he tried, it was hard.",
+          "audioPrompt": "Although he tried, it was hard."
+        },
+        {
+          "text": "However, we continued forward.",
+          "meaningMl": "തുടർന്നു - However, we continued forward.",
+          "audioPrompt": "However, we continued forward."
+        },
+        {
+          "text": "Daily practice of Contrast Connectors: Although, However, But gives you great confidence in English.",
+          "meaningMl": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Contrast Connectors: Although, However, But gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Although he tried, it was hard.'",
+          "targetSentence": "Although he tried, it was hard."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'However, we continued forward.'",
+          "targetSentence": "However, we continued forward."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Contrast Connectors: Although, However, But in 1-2 fluent sentences.",
+          "targetSentence": "Although tired, they won."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d68_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "Did you go to the market?",
+            "Did you went to the market?",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "Did you go to the market?",
+          "explanation": "After did, use the base verb (V1), not the past form."
+        },
+        {
+          "id": "trap_d68_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d68_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 68, I practiced Contrast Connectors: Although, However, But! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Contrast Connectors: Although, However, But for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Contrast Connectors: Although, However, But in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Contrast Connectors: Although, However, But.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 68 Gate Exam (5 Qs)",
+        "ml": "ഡേ 68 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'try':",
+          "options": [
+            "ഭക്ഷണം",
+            "സന്തോഷം",
+            "യാത്ര",
+            "ശ്രമിച്ചു"
+          ],
+          "answer": "ശ്രമിച്ചു"
+        },
+        {
+          "q": "Complete the sentence: 'Although he tried, it was hard.'",
+          "options": [
+            "were try",
+            "try",
+            "trying",
+            "is try"
+          ],
+          "answer": "try"
+        },
+        {
+          "q": "What is the past form (V2) of 'continue'?",
+          "options": [
+            "None",
+            "continueedx",
+            "continues",
+            "continued"
+          ],
+          "answer": "continued"
+        },
+        {
+          "q": "Which English word means 'വൈരുദ്ധ്യം'?",
+          "options": [
+            "contrast",
+            "journey",
+            "success",
+            "courage"
+          ],
+          "answer": "contrast"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was try tomorrow.",
+            "I am try every time wrongly.",
+            "He do not try yesterday.",
+            "Although he tried, it was hard."
+          ],
+          "answer": "Although he tried, it was hard."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 68 with 70%+ to keep your streak and unlock Day 69!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

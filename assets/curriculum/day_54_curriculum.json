@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 54,
+    "house": 2,
+    "houseTitle": {
+      "en": "House 2: Real-World Social & Time Travel",
+      "ml": "ഹൗസ് 2: പുറംലോകവും ഭൂത-ഭാവി കാലങ്ങളും",
+      "hi": "हाउस 2: वास्तविक दुनिया और समय यात्रा",
+      "ta": "ஹவுஸ் 2: நிஜ உலகம் மற்றும் காலப் பயணம்"
+    },
+    "version": "day-54-v1",
+    "topic": {
+      "en": "Banking & Money Transactions",
+      "ml": "ബാങ്കും പണമിടപാടുകളും",
+      "hi": "Banking & Money Transactions",
+      "ta": "Banking & Money Transactions"
+    },
+    "unlockRule": "Unlocks after passing Day 53 Exam. Day 55 unlocks after scoring 70%+ in Day 54 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 358,
+    "totalCoinsReward": 104
+  },
+  "grammarRule": {
+    "formula": "Deposit, Withdraw, Transfer, UPI & Balance",
+    "explanation": {
+      "ml": "ബാങ്കും പണമിടപാടുകളും എന്ന വിഷയത്തിൽ Deposit, Withdraw, Transfer, UPI & Balance എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Deposit, Withdraw, Transfer, UPI & Balance correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Deposit money in account.",
+      "en": "Golden Rule: Practice 'Deposit money in account.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "deposit",
+        "v2": "deposited",
+        "v3": "deposited",
+        "meaning": {
+          "ml": "നിക്ഷേപിക്കുക",
+          "hi": "നിക്ഷേപിക്കുക",
+          "ta": "നിക്ഷേപിക്കുക"
+        },
+        "example": "Deposit money in account.",
+        "exampleMl": "നിക്ഷേപിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "withdraw",
+        "v2": "withdrew",
+        "v3": "withdrawn",
+        "meaning": {
+          "ml": "പിൻവലിക്കുക",
+          "hi": "പിൻവലിക്കുക",
+          "ta": "പിൻവലിക്കുക"
+        },
+        "example": "Withdraw cash from ATM.",
+        "exampleMl": "പിൻവലിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "transfer",
+        "v2": "transferred",
+        "v3": "transferred",
+        "meaning": {
+          "ml": "കൈമാറുക",
+          "hi": "കൈമാറുക",
+          "ta": "കൈമാറുക"
+        },
+        "example": "Transfer via UPI.",
+        "exampleMl": "കൈമാറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "save",
+        "v2": "saved",
+        "v3": "saved",
+        "meaning": {
+          "ml": "സൂക്ഷിക്കുക",
+          "hi": "സൂക്ഷിക്കുക",
+          "ta": "സൂക്ഷിക്കുക"
+        },
+        "example": "Save monthly income.",
+        "exampleMl": "സൂക്ഷിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "bank",
+        "meaning": {
+          "ml": "ബാങ്ക്",
+          "hi": "ബാങ്ക്",
+          "ta": "ബാങ്ക്"
+        },
+        "example": "Could you point out a bank for me?"
+      },
+      {
+        "word": "account",
+        "meaning": {
+          "ml": "അക്കൗണ്ട്",
+          "hi": "അക്കൗണ്ട്",
+          "ta": "അക്കൗണ്ട്"
+        },
+        "example": "Could you point out an account for me?"
+      },
+      {
+        "word": "atm",
+        "meaning": {
+          "ml": "എടിഎം",
+          "hi": "എടിഎം",
+          "ta": "എടിഎം"
+        },
+        "example": "Could you point out an atm for me?"
+      },
+      {
+        "word": "balance",
+        "meaning": {
+          "ml": "ബാക്കി തുക",
+          "hi": "ബാക്കി തുക",
+          "ta": "ബാക്കി തുക"
+        },
+        "example": "Could you point out a balance for me?"
+      },
+      {
+        "word": "cash",
+        "meaning": {
+          "ml": "പണം",
+          "hi": "പണം",
+          "ta": "പണം"
+        },
+        "example": "Could you point out a cash for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Banking & Money Transactions",
+        "ml": "പാഠം: ബാങ്കും പണമിടപാടുകളും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "bank",
+        "account",
+        "atm",
+        "balance",
+        "cash"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Deposit money in account.",
+        "Withdraw cash from ATM.",
+        "Transfer via UPI."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Banking & Money Transactions",
+        "ml": "റീഡിങ് റൂം: ബാങ്കും പണമിടപാടുകളും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Deposit money in account.",
+          "meaningMl": "നിക്ഷേപിക്കുക - Deposit money in account.",
+          "audioPrompt": "Deposit money in account."
+        },
+        {
+          "text": "Withdraw cash from ATM.",
+          "meaningMl": "പിൻവലിക്കുക - Withdraw cash from ATM.",
+          "audioPrompt": "Withdraw cash from ATM."
+        },
+        {
+          "text": "Daily practice of Banking & Money Transactions gives you great confidence in English.",
+          "meaningMl": "ബാങ്കും പണമിടപാടുകളും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Banking & Money Transactions gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Deposit money in account.'",
+          "targetSentence": "Deposit money in account."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Withdraw cash from ATM.'",
+          "targetSentence": "Withdraw cash from ATM."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Banking & Money Transactions in 1-2 fluent sentences.",
+          "targetSentence": "Transfer via UPI."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d54_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "I have two brothers.",
+            "I am having two brothers.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "I have two brothers.",
+          "explanation": "Use have, not am having, for possession."
+        },
+        {
+          "id": "trap_d54_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d54_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 54, I practiced Banking & Money Transactions! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Banking & Money Transactions for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Banking & Money Transactions in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Banking & Money Transactions.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 54 Gate Exam (5 Qs)",
+        "ml": "ഡേ 54 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'deposit':",
+          "options": [
+            "നിക്ഷേപിക്കുക",
+            "സന്തോഷം",
+            "യാത്ര",
+            "ഭക്ഷണം"
+          ],
+          "answer": "നിക്ഷേപിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: '_____ money in account.'",
+          "options": [
+            "deposit",
+            "depositing",
+            "is deposit",
+            "were deposit"
+          ],
+          "answer": "deposit"
+        },
+        {
+          "q": "What is the past form (V2) of 'withdraw'?",
+          "options": [
+            "withdrew",
+            "withdraws",
+            "withdrawedx",
+            "None"
+          ],
+          "answer": "withdrew"
+        },
+        {
+          "q": "Which English word means 'ബാങ്ക്'?",
+          "options": [
+            "station",
+            "partner",
+            "progress",
+            "bank"
+          ],
+          "answer": "bank"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was deposit tomorrow.",
+            "He do not deposit yesterday.",
+            "I am deposit every time wrongly.",
+            "Deposit money in account."
+          ],
+          "answer": "Deposit money in account."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 54 with 70%+ to keep your streak and unlock Day 55!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

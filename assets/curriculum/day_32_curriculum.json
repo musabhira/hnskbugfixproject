@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 32,
+    "house": 2,
+    "houseTitle": {
+      "en": "House 2: Real-World Social & Time Travel",
+      "ml": "ഹൗസ് 2: പുറംലോകവും ഭൂത-ഭാവി കാലങ്ങളും",
+      "hi": "हाउस 2: वास्तविक दुनिया और समय यात्रा",
+      "ta": "ஹவுஸ் 2: நிஜ உலகம் மற்றும் காலப் பயணம்"
+    },
+    "version": "day-32-v1",
+    "topic": {
+      "en": "Past Actions: Simple Past V2",
+      "ml": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2)",
+      "hi": "Past Actions: Simple Past V2",
+      "ta": "Past Actions: Simple Past V2"
+    },
+    "unlockRule": "Unlocks after passing Day 31 Exam. Day 33 unlocks after scoring 70%+ in Day 32 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 314,
+    "totalCoinsReward": 82
+  },
+  "grammarRule": {
+    "formula": "Subject + V2 past verb (I visited, I bought)",
+    "explanation": {
+      "ml": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2) എന്ന വിഷയത്തിൽ Subject + V2 past verb (I visited, I bought) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Subject + V2 past verb (I visited, I bought) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I visited Munnar.",
+      "en": "Golden Rule: Practice 'I visited Munnar.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "visit",
+        "v2": "visited",
+        "v3": "visited",
+        "meaning": {
+          "ml": "സന്ദർശിക്കുക",
+          "hi": "സന്ദർശിക്കുക",
+          "ta": "സന്ദർശിക്കുക"
+        },
+        "example": "I visited Munnar.",
+        "exampleMl": "സന്ദർശിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "cook",
+        "v2": "cooked",
+        "v3": "cooked",
+        "meaning": {
+          "ml": "പാകം ചെയ്യുക",
+          "hi": "पकाना",
+          "ta": "சமை"
+        },
+        "example": "Mom cooked biryani.",
+        "exampleMl": "പാകം ചെയ്തു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "buy",
+        "v2": "bought",
+        "v3": "bought",
+        "meaning": {
+          "ml": "വാങ്ങുക",
+          "hi": "खरीदना",
+          "ta": "வாங்கு"
+        },
+        "example": "I bought a shirt.",
+        "exampleMl": "വാങ്ങി എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "watch",
+        "v2": "watched",
+        "v3": "watched",
+        "meaning": {
+          "ml": "കാണുക",
+          "hi": "देखना",
+          "ta": "பார்"
+        },
+        "example": "We watched a movie.",
+        "exampleMl": "കണ്ടു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "yesterday",
+        "meaning": {
+          "ml": "ഇന്നലെ",
+          "hi": "ഇന്നലെ",
+          "ta": "ഇന്നലെ"
+        },
+        "example": "Could you point out a yesterday for me?"
+      },
+      {
+        "word": "trip",
+        "meaning": {
+          "ml": "യാത്ര",
+          "hi": "യാത്ര",
+          "ta": "യാത്ര"
+        },
+        "example": "Could you point out a trip for me?"
+      },
+      {
+        "word": "dinner",
+        "meaning": {
+          "ml": "അത്താഴം",
+          "hi": "അത്താഴം",
+          "ta": "അത്താഴം"
+        },
+        "example": "Could you point out a dinner for me?"
+      },
+      {
+        "word": "show",
+        "meaning": {
+          "ml": "ഷോ",
+          "hi": "ഷോ",
+          "ta": "ഷോ"
+        },
+        "example": "Could you point out a show for me?"
+      },
+      {
+        "word": "event",
+        "meaning": {
+          "ml": "പരിപാടി",
+          "hi": "പരിപാടി",
+          "ta": "പരിപാടി"
+        },
+        "example": "Could you point out an event for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Past Actions: Simple Past V2",
+        "ml": "പാഠം: ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2)"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "yesterday",
+        "trip",
+        "dinner",
+        "show",
+        "event"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I visited Munnar.",
+        "Mom cooked biryani.",
+        "I bought a shirt."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Past Actions: Simple Past V2",
+        "ml": "റീഡിങ് റൂം: ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2)"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I visited Munnar.",
+          "meaningMl": "സന്ദർശിക്കുക - I visited Munnar.",
+          "audioPrompt": "I visited Munnar."
+        },
+        {
+          "text": "Mom cooked biryani.",
+          "meaningMl": "പാകം ചെയ്തു - Mom cooked biryani.",
+          "audioPrompt": "Mom cooked biryani."
+        },
+        {
+          "text": "Daily practice of Past Actions: Simple Past V2 gives you great confidence in English.",
+          "meaningMl": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2) ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Past Actions: Simple Past V2 gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I visited Munnar.'",
+          "targetSentence": "I visited Munnar."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Mom cooked biryani.'",
+          "targetSentence": "Mom cooked biryani."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Past Actions: Simple Past V2 in 1-2 fluent sentences.",
+          "targetSentence": "I bought a shirt."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d32_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "Did you go to the market?",
+            "Did you went to the market?",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "Did you go to the market?",
+          "explanation": "After did, use the base verb (V1), not the past form."
+        },
+        {
+          "id": "trap_d32_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d32_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 32, I practiced Past Actions: Simple Past V2! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Past Actions: Simple Past V2 for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Past Actions: Simple Past V2 in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Past Actions: Simple Past V2.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 32 Gate Exam (5 Qs)",
+        "ml": "ഡേ 32 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'visit':",
+          "options": [
+            "സന്ദർശിക്കുക",
+            "സന്തോഷം",
+            "യാത്ര",
+            "ഭക്ഷണം"
+          ],
+          "answer": "സന്ദർശിക്കുക"
+        },
+        {
+          "q": "Complete the sentence: 'I _____ed Munnar.'",
+          "options": [
+            "is visit",
+            "were visit",
+            "visit",
+            "visiting"
+          ],
+          "answer": "visit"
+        },
+        {
+          "q": "What is the past form (V2) of 'cook'?",
+          "options": [
+            "None",
+            "cookedx",
+            "cooks",
+            "cooked"
+          ],
+          "answer": "cooked"
+        },
+        {
+          "q": "Which English word means 'ഇന്നലെ'?",
+          "options": [
+            "yesterday",
+            "routine",
+            "progress",
+            "schedule"
+          ],
+          "answer": "yesterday"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "He do not visit yesterday.",
+            "We was visit tomorrow.",
+            "I visited Munnar.",
+            "I am visit every time wrongly."
+          ],
+          "answer": "I visited Munnar."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 32 with 70%+ to keep your streak and unlock Day 33!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

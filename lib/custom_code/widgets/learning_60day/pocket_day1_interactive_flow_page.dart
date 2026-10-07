@@ -14,10 +14,13 @@ import 'package:pocket_mates_app/custom_code/widgets/english_match/anonymous_eng
 import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
 import 'pocket_day1_tutor_curriculum.dart';
 import 'curriculum_data/day_1_curriculum_data.dart';
+import 'curriculum_data/pocket_day_curriculum_service.dart';
+import 'curriculum_data/day1_az_and_300vocab_data.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_language_selection_dialog.dart';
 import 'pocket_day1_diagnostic_sheet.dart';
 import 'pocket_level_exam_dialog.dart';
+import 'pocket_citadel_attack_page.dart';
 import 'games/meadow_runner_game_page.dart';
 import 'games/word_catcher_game_page.dart';
 import 'games/word_catcher_models.dart';
@@ -102,6 +105,15 @@ class _PocketDay1InteractiveFlowPageState
   // Native language
   String _nativeLanguage = 'Malayalam';
 
+  // Step 1 Letters Carousel State
+  int _letterIndex = 0;
+  bool _step1GridView = false;
+
+  // Step 2 Vocab Bank Carousel & Filter State
+  int _vocabIndex = 0;
+  bool _step2GridView = false;
+  String _selectedVocabCategory = 'All';
+
   // Animation controllers
   late AnimationController _pulseController;
 
@@ -145,23 +157,37 @@ class _PocketDay1InteractiveFlowPageState
     )..repeat(reverse: true);
 
     _speech = stt.SpeechToText();
+    _loadRuntimeCurriculum();
     _initAudioAndSpeech();
     _loadState();
     _triggerAutoSpeechForStep(_activeStep);
   }
 
+  /// Populates the universal JSON cache before legacy synchronous Day-1
+  /// widgets resolve their curriculum data.
+  Future<void> _loadRuntimeCurriculum() async {
+    try {
+      await PocketDayCurriculumService.preloadDay(1);
+      if (mounted) setState(() {});
+    } catch (_) {
+      // The compatibility adapter retains its existing local fallback.
+    }
+  }
+
   void _triggerAutoSpeechForStep(int step) {
     if (!_autoSpeechEnabled) return;
-    Future.delayed(const Duration(milliseconds: 700), () {
+    Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted || !_autoSpeechEnabled) return;
       if (step == 1) {
-        _speak('Letters and Phonics. A for Apple, B for Ball, C for Cat, D for Dog, E for Egg, F for Fish.');
+        final currentLetter = Day1AlphabetData.lettersAtoZ[_letterIndex % Day1AlphabetData.lettersAtoZ.length];
+        _speak('${currentLetter['letter']} for ${currentLetter['word']}.');
       } else if (step == 2) {
-        _speak('Vocabulary Words. Apple, Book, Water, Cat, Dog, Door, Tea, Food, Money, Friend.');
+        final currentWord = Day1VocabBankData.words300[_vocabIndex % Day1VocabBankData.words300.length];
+        _speak('${currentWord['word']}.');
       } else if (step == 3) {
-        _speak('Game 1: Letter Hunt Run. Tap the matching letters as fast as you can!');
+        _speak('Game 1: Letter Hunt Run.');
       } else if (step == 4) {
-        _speak('Game 2: Match and Sentence Builder. Build the sentence correctly!');
+        _speak('Game 2: Word Catcher and Sentence Builder.');
       }
     });
   }
@@ -519,7 +545,7 @@ class _PocketDay1InteractiveFlowPageState
 
   Widget _buildTopBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: const BoxDecoration(
         color: Color(0xFF0F172A),
         border: Border(bottom: BorderSide(color: Colors.white10)),
@@ -527,29 +553,40 @@ class _PocketDay1InteractiveFlowPageState
       child: Row(
         children: [
           IconButton(
-            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+            icon: const Icon(Icons.arrow_back_rounded, color: Colors.white, size: 22),
             onPressed: () => Navigator.pop(context),
             visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
           ),
+          const SizedBox(width: 8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'DAY 1: ME + BASIC ENGLISH',
+                  'DAY 1 • BASIC ENGLISH',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
                   ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  'ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും',
-                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                  _nativeLanguage == 'Malayalam'
+                      ? 'അടിസ്ഥാന ഇംഗ്ലീഷ്'
+                      : 'Basic English',
+                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 10.5),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
           ),
+          const SizedBox(width: 6),
           // Language selector
           GestureDetector(
             onTap: () async {
@@ -564,21 +601,30 @@ class _PocketDay1InteractiveFlowPageState
               });
             },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
               decoration: BoxDecoration(
                 color: Colors.white10,
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.white24),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   const Text('🌐', style: TextStyle(fontSize: 12)),
-                  const SizedBox(width: 4),
-                  Text(_nativeLanguage, style: GoogleFonts.outfit(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                  const SizedBox(width: 3),
+                  Text(
+                    _nativeLanguage == 'Malayalam' ? 'മലയാളം' : _nativeLanguage,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ],
               ),
             ),
           ),
+          const SizedBox(width: 6),
           // 🔊 Audio Mute / Unmute Toggle Button
           GestureDetector(
             onTap: () {
@@ -605,15 +651,16 @@ class _PocketDay1InteractiveFlowPageState
                 ),
               ),
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
                     _autoSpeechEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
                     color: _autoSpeechEnabled ? const Color(0xFF10B981) : Colors.white60,
-                    size: 13,
+                    size: 14,
                   ),
                   const SizedBox(width: 3),
                   Text(
-                    _autoSpeechEnabled ? 'AUDIO' : 'OFF',
+                    _autoSpeechEnabled ? 'ON' : 'OFF',
                     style: GoogleFonts.outfit(
                       color: _autoSpeechEnabled ? const Color(0xFF10B981) : Colors.white60,
                       fontSize: 10,
@@ -624,82 +671,67 @@ class _PocketDay1InteractiveFlowPageState
               ),
             ),
           ),
-          const SizedBox(width: 5),
-          // Pre-check button
-          GestureDetector(
-            onTap: () async {
-              final res = await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
-              if (res != null) {
-                final skip1 = res['skipStep1'] ?? false;
-                final skip2 = res['skipStep2'] ?? false;
-                if (skip1 && skip2) {
-                  setState(() => _activeStep = 3);
-                } else if (skip1) {
-                  setState(() => _activeStep = 2);
+          const SizedBox(width: 4),
+          // More Menu (Track Switcher / Level Check) - compact 3 dots icon!
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert_rounded, color: Colors.white70, size: 20),
+            color: const Color(0xFF1E293B),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            onSelected: (val) async {
+              if (val == 'level_check') {
+                final res = await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
+                if (res != null) {
+                  final skip1 = res['skipStep1'] ?? false;
+                  final skip2 = res['skipStep2'] ?? false;
+                  if (skip1 && skip2) {
+                    setState(() => _activeStep = 3);
+                  } else if (skip1) {
+                    setState(() => _activeStep = 2);
+                  }
+                }
+              } else if (val == 'switch_track') {
+                final selected = await showModalBottomSheet<Day1Track>(
+                  context: context,
+                  backgroundColor: const Color(0xFF0F172A),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (ctx) => _buildTrackSelectionModal(),
+                );
+                if (selected != null && selected != _currentTrack) {
+                  HapticFeedback.selectionClick();
+                  final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+                  final prefs = await SharedPreferences.getInstance();
+                  await prefs.setString('pocket_day1_selected_track_${uid ?? "guest"}', selected.name);
+                  setState(() {
+                    _currentTrack = selected;
+                    _activeStep = 1;
+                  });
                 }
               }
             },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: const Color(0xFF38BDF8)),
-              ),
-              child: Row(
-                children: [
-                  const Text('🎯', style: TextStyle(fontSize: 12)),
-                  const SizedBox(width: 3),
-                  Text('Level Check', style: GoogleFonts.outfit(color: const Color(0xFF7DD3FC), fontSize: 11, fontWeight: FontWeight.bold)),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(width: 6),
-          // 🚀 3-Track Master Switcher (Zero, Middle, Higher)
-          GestureDetector(
-            onTap: () async {
-              final selected = await showModalBottomSheet<Day1Track>(
-                context: context,
-                backgroundColor: const Color(0xFF0F172A),
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'switch_track',
+                child: Row(
+                  children: [
+                    Text(_currentTrack.badge, style: GoogleFonts.outfit(color: _currentTrack.color, fontWeight: FontWeight.bold, fontSize: 12)),
+                    const Spacer(),
+                    const Icon(Icons.swap_horiz_rounded, size: 16, color: Colors.white70),
+                  ],
                 ),
-                builder: (ctx) => _buildTrackSelectionModal(),
-              );
-              if (selected != null && selected != _currentTrack) {
-                HapticFeedback.selectionClick();
-                final uid = widget.userId ?? _supabase.auth.currentUser?.id;
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setString('pocket_day1_selected_track_${uid ?? "guest"}', selected.name);
-                setState(() {
-                  _currentTrack = selected;
-                  _activeStep = 1;
-                });
-              }
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-              decoration: BoxDecoration(
-                color: _currentTrack.color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: _currentTrack.color, width: 1.2),
               ),
-              child: Row(
-                children: [
-                  Text(
-                    _currentTrack.badge,
-                    style: GoogleFonts.outfit(
-                      color: _currentTrack.color,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
-                    ),
-                  ),
-                  const SizedBox(width: 2),
-                  Icon(Icons.arrow_drop_down_rounded, color: _currentTrack.color, size: 16),
-                ],
+              PopupMenuItem(
+                value: 'level_check',
+                child: Row(
+                  children: [
+                    const Text('🎯 Level Check', style: TextStyle(color: Color(0xFF7DD3FC), fontSize: 12, fontWeight: FontWeight.bold)),
+                    const Spacer(),
+                    const Icon(Icons.chevron_right_rounded, size: 16, color: Colors.white70),
+                  ],
+                ),
               ),
-            ),
+            ],
           ),
         ],
       ),
@@ -956,7 +988,6 @@ class _PocketDay1InteractiveFlowPageState
       case 8:
         return _buildStep8PocketTalk(step);
       case 9:
-        return _buildStep9CommunityChat(step);
       case 10:
         return _buildStep10HouseDefense(step);
       default:
@@ -967,8 +998,21 @@ class _PocketDay1InteractiveFlowPageState
   // -------------------------------------------------------------
   // STEP 1: ALPHABET & PHONICS (With skippable banner)
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // STEP 1: ALPHABET & PHONICS (Full 26 Letters A-Z with Card Mode)
+  // -------------------------------------------------------------
   Widget _buildStep1Alphabet(Day1StepModel step) {
-    final items = (step.data['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    final letters = Day1AlphabetData.lettersAtoZ;
+    final current = letters[_letterIndex.clamp(0, letters.length - 1)];
+    final letter = current['letter']?.toString() ?? 'A';
+    final sound = current['sound']?.toString() ?? '';
+    final word = current['word']?.toString() ?? '';
+    final emoji = current['emoji']?.toString() ?? '🍎';
+    final meaning = current['meaning'] is Map
+        ? Day1CurriculumJsonData.getLocalizedString(current['meaning'], lang: _nativeLanguage)
+        : current['meaning']?.toString() ?? '';
+    final exEn = current['exampleEn']?.toString() ?? '';
+    final exMl = current['exampleMl']?.toString() ?? '';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -979,11 +1023,11 @@ class _PocketDay1InteractiveFlowPageState
           subtext: 'You can skip letters and start with vocabulary!',
           onSkip: () => _markStepCompleted(1),
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 12),
 
-        // CyberCat greeting
+        // Tutor Bar & View Mode Toggle
         Container(
-          padding: const EdgeInsets.all(14),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: const Color(0xFF1E293B),
             borderRadius: BorderRadius.circular(16),
@@ -991,100 +1035,409 @@ class _PocketDay1InteractiveFlowPageState
           ),
           child: Row(
             children: [
-              VectorAvatarWidget(config: VectorAvatarConfig.defaultConfig, size: 48),
-              const SizedBox(width: 12),
+              VectorAvatarWidget(config: VectorAvatarConfig.defaultConfig, size: 38),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('CyberCat Tutor 🐱', style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 13)),
+                    Text('CyberCat Tutor 🐱',
+                        style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5)),
                     Text(
-                      'Tap each letter card to hear the sound, word, and native meaning!',
-                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                      _step1GridView
+                          ? 'Tap any letter in the grid to jump and listen!'
+                          : 'Press NEXT to learn each letter and sound!',
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
                     ),
                   ],
                 ),
+              ),
+              IconButton(
+                icon: Icon(
+                  _step1GridView ? Icons.view_carousel_rounded : Icons.grid_view_rounded,
+                  color: const Color(0xFF38BDF8),
+                  size: 22,
+                ),
+                tooltip: _step1GridView ? 'Card View' : 'Grid View',
+                onPressed: () {
+                  setState(() => _step1GridView = !_step1GridView);
+                },
               ),
             ],
           ),
         ),
         const SizedBox(height: 14),
 
-        // Letter Cards
-        ...items.map((item) {
-          final letter = item['letter']?.toString() ?? '';
-          final sound = item['sound']?.toString() ?? '';
-          final word = item['word']?.toString() ?? '';
-          final emoji = item['emoji']?.toString() ?? '';
-          final voice = item['voice']?.toString() ?? '';
-          final meaning = Day1CurriculumJsonData.getLocalizedString(item['meaning'], lang: _nativeLanguage);
-          final example = item['example'];
-          final exEn = example is Map ? (example['en']?.toString() ?? '') : (example?.toString() ?? '');
+        if (_step1GridView)
+          // 🔠 Full 26 Letters Grid View
+          _buildStep1GridView(letters)
+        else
+          // 📇 Interactive Card Carousel Mode (1 by 1 with Next / Prev)
+          _buildStep1CardView(letters, current, letter, sound, word, emoji, meaning, exEn, exMl),
+      ],
+    );
+  }
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white12),
+  Widget _buildStep1CardView(
+    List<Map<String, dynamic>> letters,
+    Map<String, dynamic> current,
+    String letter,
+    String sound,
+    String word,
+    String emoji,
+    String meaning,
+    String exEn,
+    String exMl,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          // Letter progress indicator
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  'LETTER ${_letterIndex + 1} OF ${letters.length}',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF7DD3FC),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              // Pronounce Speaker Button
+              IconButton(
+                icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 28),
+                onPressed: () => _speak('$letter for $word. $sound.'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Progress Bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: (_letterIndex + 1) / letters.length,
+              minHeight: 5,
+              backgroundColor: Colors.white12,
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
             ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF38BDF8).withValues(alpha: 0.20),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFF38BDF8)),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    letter,
-                    style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 24, fontWeight: FontWeight.w900),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Text(emoji, style: const TextStyle(fontSize: 28)),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text('$letter for $word', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                          const SizedBox(width: 6),
-                          Text(sound, style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.w600)),
-                        ],
-                      ),
-                      Text(meaning, style: GoogleFonts.inter(color: Colors.white60, fontSize: 11.5)),
-                      if (exEn.isNotEmpty)
-                        Text('• $exEn', style: GoogleFonts.inter(color: const Color(0xFF7DD3FC), fontSize: 11)),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700)),
-                  onPressed: () => _speak(voice.isNotEmpty ? voice : '$letter. $word.'),
+          ),
+          const SizedBox(height: 20),
+
+          // Big Letter Showcase Box
+          Container(
+            width: 96,
+            height: 96,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+              ),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFF7DD3FC), width: 2),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF0284C7).withValues(alpha: 0.4),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
                 ),
               ],
             ),
-          );
-        }),
+            alignment: Alignment.center,
+            child: Text(
+              letter,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 56,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Phonics Sound Pill
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+            ),
+            child: Text(
+              'Sound: $sound',
+              style: GoogleFonts.inter(
+                color: const Color(0xFFFFD700),
+                fontSize: 13,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Word & Emoji
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(emoji, style: const TextStyle(fontSize: 32)),
+              const SizedBox(width: 10),
+              Text(
+                '$letter for $word',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+
+          // Meaning
+          Text(
+            meaning,
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Example Sentence Box
+          if (exEn.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    '💬 "$exEn"',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFBAE6FD),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (exMl.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      exMl,
+                      style: GoogleFonts.inter(
+                        color: Colors.white54,
+                        fontSize: 11,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          const SizedBox(height: 22),
+
+          // ⬅️ PREV and NEXT ➔ Controls
+          Row(
+            children: [
+              // PREV Button
+              Expanded(
+                flex: 1,
+                child: OutlinedButton.icon(
+                  onPressed: _letterIndex > 0
+                      ? () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _letterIndex--;
+                          });
+                          if (_autoSpeechEnabled) {
+                            final prev = letters[_letterIndex];
+                            _speak('${prev['letter']} for ${prev['word']}.');
+                          }
+                        }
+                      : null,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white24),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                  label: Text('PREV', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // NEXT Button (or FINISH if on Z)
+              Expanded(
+                flex: 2,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    if (_letterIndex < letters.length - 1) {
+                      setState(() {
+                        _letterIndex++;
+                      });
+                      if (_autoSpeechEnabled) {
+                        final next = letters[_letterIndex];
+                        _speak('${next['letter']} for ${next['word']}.');
+                      }
+                    } else {
+                      // Finished all 26 letters!
+                      _markStepCompleted(1);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _letterIndex == letters.length - 1
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF0284C7),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: Icon(
+                    _letterIndex == letters.length - 1
+                        ? Icons.check_circle_rounded
+                        : Icons.arrow_forward_rounded,
+                    size: 18,
+                  ),
+                  label: Text(
+                    _letterIndex == letters.length - 1 ? 'FINISH LETTERS ✓' : 'NEXT LETTER ➔',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep1GridView(List<Map<String, dynamic>> letters) {
+    return Column(
+      children: [
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 0.88,
+          ),
+          itemCount: letters.length,
+          itemBuilder: (context, index) {
+            final item = letters[index];
+            final l = item['letter']?.toString() ?? '';
+            final em = item['emoji']?.toString() ?? '';
+            final w = item['word']?.toString() ?? '';
+            final isSelected = index == _letterIndex;
+
+            return GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                setState(() {
+                  _letterIndex = index;
+                  _step1GridView = false;
+                });
+                _speak('$l for $w.');
+              },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? const Color(0xFF0284C7).withValues(alpha: 0.3)
+                      : const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                padding: const EdgeInsets.all(6),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(l, style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 20, fontWeight: FontWeight.w900)),
+                    const SizedBox(height: 2),
+                    Text(em, style: const TextStyle(fontSize: 16)),
+                    const SizedBox(height: 2),
+                    Text(
+                      w,
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 9.5, fontWeight: FontWeight.bold),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton.icon(
+          onPressed: () => setState(() => _step1GridView = false),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1E293B),
+            foregroundColor: Colors.white,
+          ),
+          icon: const Icon(Icons.arrow_back_rounded, size: 16),
+          label: const Text('Back to Card View'),
+        ),
       ],
     );
   }
 
   // -------------------------------------------------------------
-  // STEP 2: 50+ VOCABULARY WORDS (With skippable banner)
+  // STEP 2: 300+ VOCABULARY WORDS (Interactive Card & Browse Mode)
   // -------------------------------------------------------------
   Widget _buildStep2VocabBank(Day1StepModel step) {
-    final words = (step.data['words'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    final filtered = words.where((w) {
-      final name = w['word']?.toString().toLowerCase() ?? '';
-      return name.contains(_vocabSearchQuery.toLowerCase());
+    final allWords = Day1VocabBankData.words300;
+    final filtered = allWords.where((w) {
+      final matchesCat = _selectedVocabCategory == 'All' ||
+          (w['category']?.toString().toLowerCase() == _selectedVocabCategory.toLowerCase());
+      if (!matchesCat) return false;
+      if (_vocabSearchQuery.isEmpty) return true;
+      final q = _vocabSearchQuery.toLowerCase();
+      final wordName = w['word']?.toString().toLowerCase() ?? '';
+      final meaningStr = w['meaning']?.toString().toLowerCase() ?? '';
+      return wordName.contains(q) || meaningStr.contains(q);
     }).toList();
 
     return Column(
@@ -1092,40 +1445,346 @@ class _PocketDay1InteractiveFlowPageState
       children: [
         // Skip Banner
         _buildSkipOptionBanner(
-          text: 'Already know 50+ basic words?',
-          subtext: 'Apple, Book, Water, Grapes, Bed, Crow... Skip to interactive games!',
+          text: 'Already know basic vocabulary?',
+          subtext: '300+ everyday words! Skip anytime to jump to 2D Arcade Games!',
           onSkip: () => _markStepCompleted(2),
-        ),
-        const SizedBox(height: 14),
-
-        // Search Bar
-        TextField(
-          style: const TextStyle(color: Colors.white),
-          decoration: InputDecoration(
-            hintText: 'Search 50+ words (e.g. Bed, Crow, Water)...',
-            hintStyle: const TextStyle(color: Colors.white38),
-            prefixIcon: const Icon(Icons.search, color: Color(0xFF38BDF8)),
-            filled: true,
-            fillColor: const Color(0xFF1E293B),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-          ),
-          onChanged: (val) => setState(() => _vocabSearchQuery = val),
         ),
         const SizedBox(height: 12),
 
-        Text(
-          '📚 Word Bank (${filtered.length} words):',
-          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold),
+        // Search Bar & View Mode Toggle
+        Row(
+          children: [
+            Expanded(
+              child: Container(
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: TextField(
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    hintText: 'Search 300+ words (Water, Food, Bed)...',
+                    hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                    prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF38BDF8), size: 18),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 11),
+                  ),
+                  onChanged: (val) {
+                    setState(() {
+                      _vocabSearchQuery = val;
+                      _vocabIndex = 0;
+                    });
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            // Toggle Card vs List View
+            IconButton(
+              icon: Icon(
+                _step2GridView ? Icons.view_carousel_rounded : Icons.list_alt_rounded,
+                color: const Color(0xFF38BDF8),
+                size: 24,
+              ),
+              tooltip: _step2GridView ? 'Card Mode' : 'List Mode',
+              onPressed: () {
+                setState(() => _step2GridView = !_step2GridView);
+              },
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
 
-        // Word Grid / List
-        ...filtered.map((w) {
+        // Category Filter Pills
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: Day1VocabBankData.categories.map((cat) {
+              final isSel = _selectedVocabCategory == cat;
+              return Padding(
+                padding: const EdgeInsets.only(right: 6),
+                child: ChoiceChip(
+                  label: Text(cat),
+                  labelStyle: GoogleFonts.outfit(
+                    color: isSel ? Colors.black : Colors.white70,
+                    fontSize: 11,
+                    fontWeight: isSel ? FontWeight.w900 : FontWeight.w600,
+                  ),
+                  selected: isSel,
+                  selectedColor: const Color(0xFFFFD700),
+                  backgroundColor: const Color(0xFF1E293B),
+                  side: BorderSide(
+                    color: isSel ? const Color(0xFFFFD700) : Colors.white10,
+                  ),
+                  onSelected: (val) {
+                    if (val) {
+                      setState(() {
+                        _selectedVocabCategory = cat;
+                        _vocabIndex = 0;
+                      });
+                    }
+                  },
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        if (filtered.isEmpty)
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Text(
+                'No words matching "$_vocabSearchQuery"',
+                style: GoogleFonts.inter(color: Colors.white38, fontSize: 13),
+              ),
+            ),
+          )
+        else if (_step2GridView)
+          // 📋 List Browse Mode
+          _buildStep2ListView(filtered)
+        else
+          // 📇 Interactive Flashcard Mode (One by One with Next ➔)
+          _buildStep2CardView(filtered),
+      ],
+    );
+  }
+
+  Widget _buildStep2CardView(List<Map<String, dynamic>> words) {
+    final curIdx = _vocabIndex.clamp(0, words.length - 1);
+    final current = words[curIdx];
+    final word = current['word']?.toString() ?? '';
+    final emoji = current['emoji']?.toString() ?? '✨';
+    final phonetic = current['phonetic']?.toString() ?? '';
+    final category = current['category']?.toString() ?? 'General';
+    final meaning = current['meaning']?.toString() ?? '';
+    final example = current['example']?.toString() ?? '';
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          // Word count progress & speaker
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                ),
+                child: Text(
+                  'WORD ${curIdx + 1} OF ${words.length}',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF7DD3FC),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 28),
+                onPressed: () => _speak('$word. $example'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+
+          // Progress Bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: (curIdx + 1) / words.length,
+              minHeight: 5,
+              backgroundColor: Colors.white12,
+              valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF38BDF8)),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Big Emoji & Category
+          Text(emoji, style: const TextStyle(fontSize: 48)),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            decoration: BoxDecoration(
+              color: Colors.white10,
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Text(
+              category,
+              style: GoogleFonts.outfit(color: Colors.white60, fontSize: 10.5, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // English Word
+          Text(
+            word,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 32,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 4),
+
+          // Phonetic
+          Text(
+            phonetic,
+            style: GoogleFonts.inter(
+              color: const Color(0xFFFFD700),
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Native Malayalam Meaning
+          Text(
+            meaning,
+            style: GoogleFonts.inter(
+              color: const Color(0xFF6EE7B7),
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          // Example Sentence Box
+          if (example.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white10),
+              ),
+              child: Text(
+                '💬 "$example"',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFBAE6FD),
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          const SizedBox(height: 22),
+
+          // ⬅️ PREV and NEXT ➔ Controls
+          Row(
+            children: [
+              // PREV Button
+              Expanded(
+                flex: 1,
+                child: OutlinedButton.icon(
+                  onPressed: curIdx > 0
+                      ? () {
+                          HapticFeedback.selectionClick();
+                          setState(() {
+                            _vocabIndex = curIdx - 1;
+                          });
+                          if (_autoSpeechEnabled) {
+                            final prev = words[_vocabIndex];
+                            _speak('${prev['word']}.');
+                          }
+                        }
+                      : null,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Colors.white24),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                  label: Text('PREV', style: GoogleFonts.outfit(fontWeight: FontWeight.w800)),
+                ),
+              ),
+              const SizedBox(width: 12),
+
+              // NEXT Button (or FINISH if at end)
+              Expanded(
+                flex: 2,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    if (curIdx < words.length - 1) {
+                      setState(() {
+                        _vocabIndex = curIdx + 1;
+                      });
+                      if (_autoSpeechEnabled) {
+                        final next = words[_vocabIndex];
+                        _speak('${next['word']}.');
+                      }
+                    } else {
+                      // Finished vocabulary bank!
+                      _markStepCompleted(2);
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: curIdx == words.length - 1
+                        ? const Color(0xFF10B981)
+                        : const Color(0xFF0284C7),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  icon: Icon(
+                    curIdx == words.length - 1
+                        ? Icons.check_circle_rounded
+                        : Icons.arrow_forward_rounded,
+                    size: 18,
+                  ),
+                  label: Text(
+                    curIdx == words.length - 1 ? 'FINISH VOCABULARY ✓' : 'NEXT WORD ➔',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStep2ListView(List<Map<String, dynamic>> words) {
+    return Column(
+      children: [
+        ...words.map((w) {
           final word = w['word']?.toString() ?? '';
           final emoji = w['emoji']?.toString() ?? '✨';
           final phonetic = w['phonetic']?.toString() ?? '';
-          final meaning = Day1CurriculumJsonData.getLocalizedString(w['meaning'], lang: _nativeLanguage);
+          final meaning = w['meaning']?.toString() ?? '';
           final example = w['example']?.toString() ?? '';
 
           return Container(
@@ -1159,12 +1818,22 @@ class _PocketDay1InteractiveFlowPageState
                 ),
                 IconButton(
                   icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
-                  onPressed: () => _speak(word),
+                  onPressed: () => _speak('$word. $example'),
                 ),
               ],
             ),
           );
         }),
+        const SizedBox(height: 12),
+        ElevatedButton.icon(
+          onPressed: () => setState(() => _step2GridView = false),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF1E293B),
+            foregroundColor: Colors.white,
+          ),
+          icon: const Icon(Icons.arrow_back_rounded, size: 16),
+          label: const Text('Back to Card View'),
+        ),
       ],
     );
   }
@@ -1176,17 +1845,26 @@ class _PocketDay1InteractiveFlowPageState
     final rounds = (step.data['rounds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     if (rounds.isEmpty) return const SizedBox.shrink();
 
-    return MeadowRunnerGamePage(
-      rounds: rounds,
-      initialRound: _huntRound,
-      nativeLanguage: _nativeLanguage,
-      isFullscreen: false,
-      onRoundCompleted: (round) {
-        setState(() => _huntRound = round + 1);
-      },
-      onAllCompleted: () {
-        _markStepCompleted(3);
-      },
+    final screenH = MediaQuery.of(context).size.height;
+    final gameH = (screenH * 0.70).clamp(460.0, 620.0);
+
+    return SizedBox(
+      height: gameH,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: MeadowRunnerGamePage(
+          rounds: rounds,
+          initialRound: _huntRound,
+          nativeLanguage: _nativeLanguage,
+          isFullscreen: false,
+          onRoundCompleted: (round) {
+            setState(() => _huntRound = round + 1);
+          },
+          onAllCompleted: () {
+            _markStepCompleted(3);
+          },
+        ),
+      ),
     );
   }
 
@@ -1907,19 +2585,45 @@ class _PocketDay1InteractiveFlowPageState
                 style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
               ),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFF59E0B),
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: () async {
-                  await PocketTalkCardSwiperDialog.show(context);
-                  _markStepCompleted(8);
-                },
-                icon: const Icon(Icons.swipe_rounded),
-                label: Text('OPEN POCKETTALK SWIPER ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFF59E0B),
+                        foregroundColor: Colors.black,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () async {
+                        await PocketTalkCardSwiperDialog.show(context);
+                        _markStepCompleted(8);
+                      },
+                      icon: const Icon(Icons.swipe_rounded, size: 16),
+                      label: Text('POCKETTALK ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 11.5)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF6366F1),
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                      ),
+                      onPressed: () async {
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const CommunityChatPage()),
+                        );
+                        _markStepCompleted(8);
+                      },
+                      icon: const Icon(Icons.forum_rounded, size: 16),
+                      label: Text('GROUP CHAT ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 11.5)),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -1951,59 +2655,7 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   // -------------------------------------------------------------
-  // STEP 9: COMMUNITY GROUP CHAT
-  // -------------------------------------------------------------
-  Widget _buildStep9CommunityChat(Day1StepModel step) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF6366F1)),
-          ),
-          child: Column(
-            children: [
-              const Text('💬', style: TextStyle(fontSize: 40)),
-              const SizedBox(height: 12),
-              Text(
-                'English Hub Group Chat',
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'Step into the community room and post your Day 1 English introduction message!',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF6366F1),
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const CommunityChatPage()),
-                  );
-                  _markStepCompleted(9);
-                },
-                icon: const Icon(Icons.forum_rounded),
-                label: Text('ENTER COMMUNITY ROOM ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  // -------------------------------------------------------------
-  // STEP 10: HOUSE DEFENSE SHIELD & CITADEL COMBAT
+  // STEP 9/10: HOUSE DEFENSE SHIELD & CITADEL COMBAT
   // -------------------------------------------------------------
   Widget _buildStep10HouseDefense(Day1StepModel step) {
     final traps = (step.data['defenseTraps'] as List?)?.cast<Map<String, dynamic>>() ?? [];
@@ -2012,6 +2664,78 @@ class _PocketDay1InteractiveFlowPageState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 🏰 DIRECT CITADEL DEFENSE LAUNCHER (User Audio Directive!)
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF7C3AED), Color(0xFF4338CA)],
+            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF7C3AED).withValues(alpha: 0.45),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                const Text('🛡️', style: TextStyle(fontSize: 34)),
+                const SizedBox(height: 8),
+                Text(
+                  'FORTIFY HOUSE 1 CITADEL DEFENSE',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 16,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'വീടിന് ഡിഫൻസ് ട്രാപ്പുകൾ നൽകി പ്രൊഫൈൽ ഷീൽഡ് സെറ്റ് ചെയ്യുക!',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(vertical: 13),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: () async {
+                      final myId = widget.userId ?? _supabase.auth.currentUser?.id;
+                      if (myId != null && myId.isNotEmpty) {
+                        await PocketCitadelAttackPage.openForUser(
+                          context,
+                          userId: myId,
+                          attackerDay: 1,
+                          isDefenseMode: true,
+                        );
+                        _markStepCompleted(9);
+                      }
+                    },
+                    icon: const Icon(Icons.shield_rounded, color: Colors.black),
+                    label: Text(
+                      'ENTER DEFENSE SYSTEM NOW ➔',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+
         // Combat Test
         Container(
           padding: const EdgeInsets.all(16),

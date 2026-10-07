@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 65,
+    "house": 3,
+    "houseTitle": {
+      "en": "House 3: Professional Fluency & Career Mastery",
+      "ml": "ഹൗസ് 3: ഫ്ലുവെൻസി, കരിയർ & ഇന്റർവ്യൂ മാസ്റ്ററി",
+      "hi": "हाउस 3: व्यावसायिक प्रवाह और करियर महारत",
+      "ta": "ஹவுஸ் 3: தொழில்முறை சரளமும் வேலை நேர்காணலும்"
+    },
+    "version": "day-65-v1",
+    "topic": {
+      "en": "Present Perfect Continuous: Have been doing",
+      "ml": "തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ",
+      "hi": "Present Perfect Continuous: Have been doing",
+      "ta": "Present Perfect Continuous: Have been doing"
+    },
+    "unlockRule": "Unlocks after passing Day 64 Exam. Day 66 unlocks after scoring 70%+ in Day 65 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 380,
+    "totalCoinsReward": 115
+  },
+  "grammarRule": {
+    "formula": "Have/Has been + V-ing (Action started in past and still continuing)",
+    "explanation": {
+      "ml": "തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ എന്ന വിഷയത്തിൽ Have/Has been + V-ing (Action started in past and still continuing) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Have/Has been + V-ing (Action started in past and still continuing) correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: I have been learning English for months.",
+      "en": "Golden Rule: Practice 'I have been learning English for months.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "learn",
+        "v2": "learned",
+        "v3": "learned",
+        "meaning": {
+          "ml": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു",
+          "hi": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു",
+          "ta": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു"
+        },
+        "example": "I have been learning English for months.",
+        "exampleMl": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "practice",
+        "v2": "practiced",
+        "v3": "practiced",
+        "meaning": {
+          "ml": "പരിശീലിച്ചുവരുന്നു",
+          "hi": "പരിശീലിച്ചുവരുന്നു",
+          "ta": "പരിശീലിച്ചുവരുന്നു"
+        },
+        "example": "He has been practicing speaking.",
+        "exampleMl": "പരിശീലിച്ചുവരുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "rain",
+        "v2": "rained",
+        "v3": "rained",
+        "meaning": {
+          "ml": "പെയ്യുക",
+          "hi": "बारिश होना",
+          "ta": "மழை பெய்"
+        },
+        "example": "It has been raining since morning.",
+        "exampleMl": "പെയ്തുകൊണ്ടേയിരിക്കുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "work",
+        "v2": "worked",
+        "v3": "worked",
+        "meaning": {
+          "ml": "ജോലി ചെയ്യുക",
+          "hi": "काम करना",
+          "ta": "வேலை செய்"
+        },
+        "example": "I have been working on this code.",
+        "exampleMl": "ജോലി ചെയ്തുകൊണ്ടിരിക്കുന്നു എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "progress",
+        "meaning": {
+          "ml": "പുരോഗതി",
+          "hi": "പുരോഗതി",
+          "ta": "പുരോഗതി"
+        },
+        "example": "Could you point out a progress for me?"
+      },
+      {
+        "word": "continuity",
+        "meaning": {
+          "ml": "തുടർച്ച",
+          "hi": "തുടർച്ച",
+          "ta": "തുടർച്ച"
+        },
+        "example": "Could you point out a continuity for me?"
+      },
+      {
+        "word": "habit",
+        "meaning": {
+          "ml": "ശീലം",
+          "hi": "ശീലം",
+          "ta": "ശീലം"
+        },
+        "example": "Could you point out a habit for me?"
+      },
+      {
+        "word": "effort",
+        "meaning": {
+          "ml": "ശ്രമം",
+          "hi": "ശ്രമം",
+          "ta": "ശ്രമം"
+        },
+        "example": "Could you point out an effort for me?"
+      },
+      {
+        "word": "streak",
+        "meaning": {
+          "ml": "സ്ട്രോക്ക്",
+          "hi": "സ്ട്രോക്ക്",
+          "ta": "സ്ട്രോക്ക്"
+        },
+        "example": "Could you point out a streak for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Present Perfect Continuous: Have been doing",
+        "ml": "പാഠം: തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "progress",
+        "continuity",
+        "habit",
+        "effort",
+        "streak"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "I have been learning English for months.",
+        "He has been practicing speaking.",
+        "It has been raining since morning."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Present Perfect Continuous: Have been doing",
+        "ml": "റീഡിങ് റൂം: തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "I have been learning English for months.",
+          "meaningMl": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു - I have been learning English for months.",
+          "audioPrompt": "I have been learning English for months."
+        },
+        {
+          "text": "He has been practicing speaking.",
+          "meaningMl": "പരിശീലിച്ചുവരുന്നു - He has been practicing speaking.",
+          "audioPrompt": "He has been practicing speaking."
+        },
+        {
+          "text": "Daily practice of Present Perfect Continuous: Have been doing gives you great confidence in English.",
+          "meaningMl": "തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Present Perfect Continuous: Have been doing gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'I have been learning English for months.'",
+          "targetSentence": "I have been learning English for months."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'He has been practicing speaking.'",
+          "targetSentence": "He has been practicing speaking."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Present Perfect Continuous: Have been doing in 1-2 fluent sentences.",
+          "targetSentence": "It has been raining since morning."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d65_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He is married to a teacher.",
+            "He is married with a teacher.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He is married to a teacher.",
+          "explanation": "Use married to when naming a spouse."
+        },
+        {
+          "id": "trap_d65_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d65_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 65, I practiced Present Perfect Continuous: Have been doing! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Present Perfect Continuous: Have been doing for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Present Perfect Continuous: Have been doing in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Present Perfect Continuous: Have been doing.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 65 Gate Exam (5 Qs)",
+        "ml": "ഡേ 65 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'learn':",
+          "options": [
+            "പഠിച്ചുകൊണ്ടിരിക്കുന്നു",
+            "ഭക്ഷണം",
+            "സന്തോഷം",
+            "യാത്ര"
+          ],
+          "answer": "പഠിച്ചുകൊണ്ടിരിക്കുന്നു"
+        },
+        {
+          "q": "Complete the sentence: 'I have been _____ing English for months.'",
+          "options": [
+            "learn",
+            "learning",
+            "were learn",
+            "is learn"
+          ],
+          "answer": "learn"
+        },
+        {
+          "q": "What is the past form (V2) of 'practice'?",
+          "options": [
+            "practices",
+            "practiceedx",
+            "None",
+            "practiced"
+          ],
+          "answer": "practiced"
+        },
+        {
+          "q": "Which English word means 'പുരോഗതി'?",
+          "options": [
+            "partner",
+            "progress",
+            "airport",
+            "station"
+          ],
+          "answer": "progress"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "We was learn tomorrow.",
+            "He do not learn yesterday.",
+            "I am learn every time wrongly.",
+            "I have been learning English for months."
+          ],
+          "answer": "I have been learning English for months."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 65 with 70%+ to keep your streak and unlock Day 66!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

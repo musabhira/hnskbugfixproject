@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 12,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-12-v1",
+    "topic": {
+      "en": "Evening Leisure & Family Time",
+      "ml": "വൈകുന്നേര ശീലങ്ങൾ",
+      "hi": "Evening Leisure & Family Time",
+      "ta": "Evening Leisure & Family Time"
+    },
+    "unlockRule": "Unlocks after passing Day 11 Exam. Day 13 unlocks after scoring 70%+ in Day 12 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 274,
+    "totalCoinsReward": 62
+  },
+  "grammarRule": {
+    "formula": "Habitual Verbs in Daily Routine",
+    "explanation": {
+      "ml": "വൈകുന്നേര ശീലങ്ങൾ എന്ന വിഷയത്തിൽ Habitual Verbs in Daily Routine എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use Habitual Verbs in Daily Routine correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: Return home at 6.",
+      "en": "Golden Rule: Practice 'Return home at 6.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "return",
+        "v2": "returned",
+        "v3": "returned",
+        "meaning": {
+          "ml": "തിരികെ എത്തുക",
+          "hi": "लौटना",
+          "ta": "திரும்பி வா"
+        },
+        "example": "Return home at 6.",
+        "exampleMl": "തിരികെ എത്തുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "relax",
+        "v2": "relaxed",
+        "v3": "relaxed",
+        "meaning": {
+          "ml": "വിശ്രമിക്കുക",
+          "hi": "आराम करना",
+          "ta": "ஓய்வெடு"
+        },
+        "example": "Relax for an hour.",
+        "exampleMl": "വിശ്രമിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "watch",
+        "v2": "watched",
+        "v3": "watched",
+        "meaning": {
+          "ml": "കാണുക",
+          "hi": "देखना",
+          "ta": "பார்"
+        },
+        "example": "Watch evening news.",
+        "exampleMl": "കാണുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "read",
+        "v2": "read",
+        "v3": "read",
+        "meaning": {
+          "ml": "വായിക്കുക",
+          "hi": "पढ़ना",
+          "ta": "படி / வாசி"
+        },
+        "example": "Read a book.",
+        "exampleMl": "വായിക്കുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "evening",
+        "meaning": {
+          "ml": "വൈകുന്നേരം",
+          "hi": "വൈകുന്നേരം",
+          "ta": "വൈകുന്നേരം"
+        },
+        "example": "Could you point out an evening for me?"
+      },
+      {
+        "word": "tea",
+        "meaning": {
+          "ml": "ചായ",
+          "hi": "ചായ",
+          "ta": "ചായ"
+        },
+        "example": "Could you point out a tea for me?"
+      },
+      {
+        "word": "news",
+        "meaning": {
+          "ml": "വാർത്ത",
+          "hi": "വാർത്ത",
+          "ta": "വാർത്ത"
+        },
+        "example": "Could you point out a news for me?"
+      },
+      {
+        "word": "music",
+        "meaning": {
+          "ml": "സംഗീതം",
+          "hi": "സംഗീതം",
+          "ta": "സംഗീതം"
+        },
+        "example": "Could you point out a music for me?"
+      },
+      {
+        "word": "rest",
+        "meaning": {
+          "ml": "വിശ്രമം",
+          "hi": "വിശ്രമം",
+          "ta": "വിശ്രമം"
+        },
+        "example": "Could you point out a rest for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Evening Leisure & Family Time",
+        "ml": "പാഠം: വൈകുന്നേര ശീലങ്ങൾ"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "evening",
+        "tea",
+        "news",
+        "music",
+        "rest"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "Return home at 6.",
+        "Relax for an hour.",
+        "Watch evening news."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Evening Leisure & Family Time",
+        "ml": "റീഡിങ് റൂം: വൈകുന്നേര ശീലങ്ങൾ"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "Return home at 6.",
+          "meaningMl": "തിരികെ എത്തുക - Return home at 6.",
+          "audioPrompt": "Return home at 6."
+        },
+        {
+          "text": "Relax for an hour.",
+          "meaningMl": "വിശ്രമിക്കുക - Relax for an hour.",
+          "audioPrompt": "Relax for an hour."
+        },
+        {
+          "text": "Daily practice of Evening Leisure & Family Time gives you great confidence in English.",
+          "meaningMl": "വൈകുന്നേര ശീലങ്ങൾ ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Evening Leisure & Family Time gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'Return home at 6.'",
+          "targetSentence": "Return home at 6."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Relax for an hour.'",
+          "targetSentence": "Relax for an hour."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Evening Leisure & Family Time in 1-2 fluent sentences.",
+          "targetSentence": "Watch evening news."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d12_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "I have two brothers.",
+            "I am having two brothers.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "I have two brothers.",
+          "explanation": "Use have, not am having, for possession."
+        },
+        {
+          "id": "trap_d12_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d12_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 12, I practiced Evening Leisure & Family Time! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Evening Leisure & Family Time for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Evening Leisure & Family Time in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Evening Leisure & Family Time.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 12 Gate Exam (5 Qs)",
+        "ml": "ഡേ 12 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'return':",
+          "options": [
+            "തിരികെ എത്തുക",
+            "സന്തോഷം",
+            "ഭക്ഷണം",
+            "യാത്ര"
+          ],
+          "answer": "തിരികെ എത്തുക"
+        },
+        {
+          "q": "Complete the sentence: '_____ home at 6.'",
+          "options": [
+            "were return",
+            "is return",
+            "returning",
+            "return"
+          ],
+          "answer": "return"
+        },
+        {
+          "q": "What is the past form (V2) of 'relax'?",
+          "options": [
+            "None",
+            "relaxed",
+            "relaxs",
+            "relaxedx"
+          ],
+          "answer": "relaxed"
+        },
+        {
+          "q": "Which English word means 'വൈകുന്നേരം'?",
+          "options": [
+            "schedule",
+            "progress",
+            "evening",
+            "routine"
+          ],
+          "answer": "evening"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "Return home at 6.",
+            "We was return tomorrow.",
+            "I am return every time wrongly.",
+            "He do not return yesterday."
+          ],
+          "answer": "Return home at 6."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 12 with 70%+ to keep your streak and unlock Day 13!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}

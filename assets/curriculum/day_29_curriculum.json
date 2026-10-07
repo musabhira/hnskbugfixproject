@@ -1,0 +1,464 @@
+{
+  "course": {
+    "name": "90-Day English Game",
+    "day": 29,
+    "house": 1,
+    "houseTitle": {
+      "en": "House 1: Foundation & Daily Living",
+      "ml": "ഹൗസ് 1: അടിസ്ഥാനവും ദൈനംദിന ജീവിതവും",
+      "hi": "हाउस 1: आधार और दैनिक जीवन",
+      "ta": "ஹவுஸ் 1: அடிப்படையும் அன்றாட வாழ்க்கையும்"
+    },
+    "version": "day-29-v1",
+    "topic": {
+      "en": "Weather, Climate & Nature",
+      "ml": "കാലാവസ്ഥയും പ്രകൃതിയും",
+      "hi": "Weather, Climate & Nature",
+      "ta": "Weather, Climate & Nature"
+    },
+    "unlockRule": "Unlocks after passing Day 28 Exam. Day 30 unlocks after scoring 70%+ in Day 29 Exam.",
+    "passPercentage": 70,
+    "totalXpReward": 308,
+    "totalCoinsReward": 79
+  },
+  "grammarRule": {
+    "formula": "It is sunny / rainy / cloudy / humid",
+    "explanation": {
+      "ml": "കാലാവസ്ഥയും പ്രകൃതിയും എന്ന വിഷയത്തിൽ It is sunny / rainy / cloudy / humid എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
+      "en": "Learn how to use It is sunny / rainy / cloudy / humid correctly in spoken English."
+    },
+    "goldenTip": {
+      "ml": "💡 ടിപ്പ്: It is raining outside.",
+      "en": "Golden Rule: Practice 'It is raining outside.' with zero hesitation."
+    }
+  },
+  "vocabulary": {
+    "verbs": [
+      {
+        "v1": "rain",
+        "v2": "rained",
+        "v3": "rained",
+        "meaning": {
+          "ml": "പെയ്യുക",
+          "hi": "बारिश होना",
+          "ta": "மழை பெய்"
+        },
+        "example": "It is raining outside.",
+        "exampleMl": "പെയ്യുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "blow",
+        "v2": "blew",
+        "v3": "blown",
+        "meaning": {
+          "ml": "വീശുക",
+          "hi": "हवा चलना",
+          "ta": "வீசு"
+        },
+        "example": "Cool wind is blowing.",
+        "exampleMl": "വീശുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "freeze",
+        "v2": "froze",
+        "v3": "frozen",
+        "meaning": {
+          "ml": "തണുത്തുറയുക",
+          "hi": "जमना",
+          "ta": "உறை"
+        },
+        "example": "It is freezing cold.",
+        "exampleMl": "തണുത്തുറയുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      },
+      {
+        "v1": "change",
+        "v2": "changed",
+        "v3": "changed",
+        "meaning": {
+          "ml": "മാറുക",
+          "hi": "बदलना",
+          "ta": "மாறு"
+        },
+        "example": "Weather changes fast.",
+        "exampleMl": "മാറുക എന്ന അർത്ഥത്തിൽ ഉപയോഗിക്കുന്നു."
+      }
+    ],
+    "nouns": [
+      {
+        "word": "weather",
+        "meaning": {
+          "ml": "കാലാവസ്ഥ",
+          "hi": "കാലാവസ്ഥ",
+          "ta": "കാലാവസ്ഥ"
+        },
+        "example": "Could you point out a weather for me?"
+      },
+      {
+        "word": "rain",
+        "meaning": {
+          "ml": "മഴ",
+          "hi": "മഴ",
+          "ta": "മഴ"
+        },
+        "example": "Could you point out a rain for me?"
+      },
+      {
+        "word": "sun",
+        "meaning": {
+          "ml": "വെയിൽ",
+          "hi": "വെയിൽ",
+          "ta": "വെയിൽ"
+        },
+        "example": "Could you point out a sun for me?"
+      },
+      {
+        "word": "wind",
+        "meaning": {
+          "ml": "കാറ്റ്",
+          "hi": "കാറ്റ്",
+          "ta": "കാറ്റ്"
+        },
+        "example": "Could you point out a wind for me?"
+      },
+      {
+        "word": "cloud",
+        "meaning": {
+          "ml": "മേഘം",
+          "hi": "മേഘം",
+          "ta": "മേഘം"
+        },
+        "example": "Could you point out a cloud for me?"
+      }
+    ]
+  },
+  "steps": [
+    {
+      "stepNumber": 1,
+      "id": "step_1_concept_room",
+      "title": {
+        "en": "Concept Room: Weather, Climate & Nature",
+        "ml": "പാഠം: കാലാവസ്ഥയും പ്രകൃതിയും"
+      },
+      "icon": "🏛️",
+      "gameType": "tutor_concept",
+      "canBeSkipped": false,
+      "xpReward": 25,
+      "passScore": 100,
+      "description": {
+        "en": "Interactive Tutor explains today's grammar & spoken formula.",
+        "ml": "ഇന്നത്തെ ഗ്രാമർ റൂളും ഫോർമുലയും ട്യൂട്ടർ മലയാളത്തിൽ പറഞ്ഞു തരുന്നു."
+      }
+    },
+    {
+      "stepNumber": 2,
+      "id": "step_2_vocab_vault",
+      "title": {
+        "en": "Vocabulary: Verbs & Key Words",
+        "ml": "പദസമ്പത്ത്: ക്രിയകളും പദങ്ങളും"
+      },
+      "icon": "📦",
+      "gameType": "vocab_vault",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 80,
+      "description": {
+        "en": "Learn 4 key verbs (V1, V2, V3) and essential topic nouns.",
+        "ml": "4 അത്യാവശ്യ ക്രിയകളും (V1, V2, V3) വിഷയ പദങ്ങളും ഓഡിയോയോടെ പഠിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 3,
+      "id": "step_3_game_hunt",
+      "title": {
+        "en": "Game 1: Meadow Runner Hunt",
+        "ml": "ഗെയിം 1: വേഡ് ഹണ്ട് റണ്ണർ"
+      },
+      "icon": "🏃",
+      "gameType": "meadow_runner_hunt",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 70,
+      "targetObjects": [
+        "weather",
+        "rain",
+        "sun",
+        "wind",
+        "cloud"
+      ],
+      "description": {
+        "en": "Dodge obstacles and grab target words in the 2D world.",
+        "ml": "2D ലോകത്ത് ഓടി നടന്ന് ഇന്നത്തെ പ്രധാന വാക്കുകൾ ശേഖരിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 4,
+      "id": "step_4_game_builder",
+      "title": {
+        "en": "Game 2: Sentence Constructor",
+        "ml": "ഗെയിം 2: സെന്റൻസ് ബിൽഡർ"
+      },
+      "icon": "🧩",
+      "gameType": "word_catcher_builder",
+      "canBeSkipped": false,
+      "xpReward": 40,
+      "passScore": 80,
+      "challengePatterns": [
+        "It is raining outside.",
+        "Cool wind is blowing.",
+        "It is freezing cold."
+      ],
+      "description": {
+        "en": "Assemble falling words into correct sentences.",
+        "ml": "വാക്കുകൾ ക്രമമായി അടുക്കി ശരിയായ വാചകം നിർമ്മിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 5,
+      "id": "step_5_reading_room",
+      "title": {
+        "en": "Reading Room: Weather, Climate & Nature",
+        "ml": "റീഡിങ് റൂം: കാലാവസ്ഥയും പ്രകൃതിയും"
+      },
+      "icon": "📖",
+      "gameType": "reading_listening",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 75,
+      "sentences": [
+        {
+          "text": "It is raining outside.",
+          "meaningMl": "പെയ്യുക - It is raining outside.",
+          "audioPrompt": "It is raining outside."
+        },
+        {
+          "text": "Cool wind is blowing.",
+          "meaningMl": "വീശുക - Cool wind is blowing.",
+          "audioPrompt": "Cool wind is blowing."
+        },
+        {
+          "text": "Daily practice of Weather, Climate & Nature gives you great confidence in English.",
+          "meaningMl": "കാലാവസ്ഥയും പ്രകൃതിയും ദിവസേന പരിശീലിക്കുന്നത് ഇംഗ്ലീഷിൽ വലിയ ആത്മവിശ്വാസം നൽകുന്നു.",
+          "audioPrompt": "Daily practice of Weather, Climate & Nature gives you great confidence in English."
+        }
+      ],
+      "description": {
+        "en": "Listen to native audio, then tap microphone to read aloud.",
+        "ml": "ഓഡിയോ ശ്രദ്ധിച്ചു കേട്ട് മൈക്കിലൂടെ ഉറക്കെ വായിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 6,
+      "id": "step_6_spoken_lab",
+      "title": {
+        "en": "Spoken Speech Lab",
+        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+      },
+      "icon": "🎙️",
+      "gameType": "speech_analyzer",
+      "canBeSkipped": false,
+      "xpReward": 35,
+      "passScore": 70,
+      "voiceTasks": {
+        "zero": {
+          "prompt": "Repeat clearly with Tutor Robot: 'It is raining outside.'",
+          "targetSentence": "It is raining outside."
+        },
+        "middle": {
+          "prompt": "Speak today's core sentence: 'Cool wind is blowing.'",
+          "targetSentence": "Cool wind is blowing."
+        },
+        "higher": {
+          "prompt": "Explain your thought on Weather, Climate & Nature in 1-2 fluent sentences.",
+          "targetSentence": "It is freezing cold."
+        }
+      },
+      "description": {
+        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
+        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+      }
+    },
+    {
+      "stepNumber": 7,
+      "id": "step_7_house_defense",
+      "title": {
+        "en": "House Defense Shield",
+        "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ്"
+      },
+      "icon": "🛡️",
+      "gameType": "house_defense_trap_builder",
+      "canBeSkipped": false,
+      "xpReward": 30,
+      "passScore": 100,
+      "traps": [
+        {
+          "id": "trap_d29_1",
+          "question": "Choose the natural, correct sentence.",
+          "options": [
+            "He is married to a teacher.",
+            "He is married with a teacher.",
+            "She go to the market yesterday.",
+            "I discussed about it yesterday."
+          ],
+          "answer": "He is married to a teacher.",
+          "explanation": "Use married to when naming a spouse."
+        },
+        {
+          "id": "trap_d29_2",
+          "question": "Complete the correction: “Did she ___ the email?”",
+          "options": [
+            "send",
+            "sent",
+            "sends",
+            "sending"
+          ],
+          "answer": "send",
+          "explanation": "After did, use the base form: did she send?"
+        },
+        {
+          "id": "trap_d29_3",
+          "question": "Choose the correct preposition: “Please reply ___ this message.”",
+          "options": [
+            "to",
+            "on",
+            "at",
+            "with"
+          ],
+          "answer": "to",
+          "explanation": "We reply to a message, email, or question."
+        }
+      ],
+      "description": {
+        "en": "Install 3 English grammar trap questions to shield your house against raids.",
+        "ml": "നിങ്ങളുടെ വീട് സംരക്ഷിക്കാൻ 3 ഇംഗ്ലീഷ് ചോദ്യങ്ങൾ ഡിഫൻസ് ട്രാപ്പുകളാക്കുക."
+      }
+    },
+    {
+      "stepNumber": 8,
+      "id": "step_attack_raids",
+      "title": {
+        "en": "⚔️ Citadel Attack Raids (Active)",
+        "ml": "⚔️ സിറ്റാഡൽ അറ്റാക്ക് (സജീവം)"
+      },
+      "icon": "⚔️",
+      "gameType": "citadel_attack_raid",
+      "canBeSkipped": false,
+      "xpReward": 45,
+      "passScore": 100,
+      "attackConfig": {
+        "isUnlocked": true,
+        "targetHousesAvailable": 3,
+        "objective": "Raid rival houses by solving English grammar questions to plunder coins & trophies!"
+      },
+      "description": {
+        "en": "Raid rival learner houses by solving grammar challenges!",
+        "ml": "ഇംഗ്ലീഷ് ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകി എതിരാളികളുടെ വീടുകൾ റെയ്ഡ് ചെയ്യുക!"
+      }
+    },
+    {
+      "stepNumber": 9,
+      "id": "step_social_arena",
+      "title": {
+        "en": "Community & Social Arena",
+        "ml": "സോഷ്യൽ അരീന & കൂട്ടുകാർ"
+      },
+      "icon": "🤝",
+      "gameType": "social_arena",
+      "canBeSkipped": true,
+      "xpReward": 30,
+      "passScore": 100,
+      "socialConfig": {
+        "zeroTrack": {
+          "isLocked": false,
+          "unlocksOnDay": 10,
+          "lockedMessage": "",
+          "alternativeAction": "robot_voice_practice"
+        },
+        "middleTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Post in English Hub: 'Today on Day 29, I practiced Weather, Climate & Nature! What are your thoughts?'",
+          "randomCallPrompt": "Connect on an anonymous call to discuss Weather, Climate & Nature for 2 minutes.",
+          "pocketTalkPrompt": "Swipe to find a practice partner from Kerala/India."
+        },
+        "higherTrack": {
+          "isLocked": false,
+          "englishHubPrompt": "Lead a professional discussion topic on Weather, Climate & Nature in English Hub.",
+          "randomCallPrompt": "Connect a 3-minute voice conversation on Weather, Climate & Nature.",
+          "pocketTalkPrompt": "Send a 4-Day Spoken Pact request to a fellow fluent speaker."
+        }
+      },
+      "description": {
+        "en": "Connect with real learners or chat with your AI Robot.",
+        "ml": "മറ്റു പഠിതാക്കളുമായി സംസാരിക്കുക അല്ലെങ്കിൽ റോബോട്ടിനൊപ്പം പരിശീലിക്കുക."
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_daily_exam",
+      "title": {
+        "en": "Day 29 Gate Exam (5 Qs)",
+        "ml": "ഡേ 29 ഗേറ്റ് എക്സാം"
+      },
+      "icon": "🎓",
+      "gameType": "daily_exam",
+      "canBeSkipped": false,
+      "xpReward": 50,
+      "passScore": 70,
+      "examQuestions": [
+        {
+          "q": "Choose the correct meaning for 'rain':",
+          "options": [
+            "ഭക്ഷണം",
+            "യാത്ര",
+            "സന്തോഷം",
+            "പെയ്യുക"
+          ],
+          "answer": "പെയ്യുക"
+        },
+        {
+          "q": "Complete the sentence: 'It is _____ing outside.'",
+          "options": [
+            "were rain",
+            "is rain",
+            "raining",
+            "rain"
+          ],
+          "answer": "rain"
+        },
+        {
+          "q": "What is the past form (V2) of 'blow'?",
+          "options": [
+            "blew",
+            "blows",
+            "blowedx",
+            "None"
+          ],
+          "answer": "blew"
+        },
+        {
+          "q": "Which English word means 'കാലാവസ്ഥ'?",
+          "options": [
+            "weather",
+            "success",
+            "courage",
+            "knowledge"
+          ],
+          "answer": "weather"
+        },
+        {
+          "q": "Which sentence is grammatically correct for today's lesson?",
+          "options": [
+            "It is raining outside.",
+            "He do not rain yesterday.",
+            "We was rain tomorrow.",
+            "I am rain every time wrongly."
+          ],
+          "answer": "It is raining outside."
+        }
+      ],
+      "description": {
+        "en": "Pass Day 29 with 70%+ to keep your streak and unlock Day 30!",
+        "ml": "70% മാർക്കോടെ ജയിച്ച് സ്ട്രീക്ക് നിലനിർത്തുക, അടുത്ത ദിവസം അൺലോക്ക് ചെയ്യുക!"
+      }
+    }
+  ]
+}
