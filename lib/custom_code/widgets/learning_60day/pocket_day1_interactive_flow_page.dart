@@ -18,6 +18,9 @@ import 'pocket_fortress_defense_service.dart';
 import 'pocket_language_selection_dialog.dart';
 import 'pocket_day1_diagnostic_sheet.dart';
 import 'pocket_level_exam_dialog.dart';
+import 'games/meadow_runner_game_page.dart';
+import 'games/word_catcher_game_page.dart';
+import 'games/word_catcher_models.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
@@ -1167,86 +1170,28 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   // -------------------------------------------------------------
-  // STEP 3: GAME 1 - LETTER & WORD HUNT (6 Rounds)
+  // STEP 3: GAME 1 - 2D OPEN-WORLD MEADOW RUNNER (6 Rounds)
   // -------------------------------------------------------------
   Widget _buildStep3GameHunt(Day1StepModel step) {
     final rounds = (step.data['rounds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     if (rounds.isEmpty) return const SizedBox.shrink();
 
-    final currentRoundData = rounds[_huntRound % rounds.length];
-    final prompt = Day1CurriculumJsonData.getLocalizedString(currentRoundData['prompt'], lang: _nativeLanguage);
-    final options = (currentRoundData['options'] as List?)?.map((e) => e.toString()).toList() ?? [];
-    final correct = currentRoundData['correct']?.toString() ?? '';
-
-    return Column(
-      children: [
-        // Round Indicator
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFFF59E0B)),
-          ),
-          child: Text(
-            '🔍 ROUND ${_huntRound + 1} OF ${rounds.length}',
-            style: GoogleFonts.outfit(color: const Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 12),
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        Text(
-          prompt,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.outfit(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900),
-        ),
-        const SizedBox(height: 20),
-
-        // 4 Option Grid
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 2.2,
-          ),
-          itemCount: options.length,
-          itemBuilder: (ctx, idx) {
-            final opt = options[idx];
-            return ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF1E293B),
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                  side: const BorderSide(color: Colors.white12),
-                ),
-              ),
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                if (opt == correct) {
-                  _speak('Correct! $opt');
-                  if (_huntRound < rounds.length - 1) {
-                    setState(() => _huntRound++);
-                  } else {
-                    _markStepCompleted(3);
-                  }
-                } else {
-                  _speak('Try again!');
-                }
-              },
-              child: Text(opt, style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
-            );
-          },
-        ),
-      ],
+    return MeadowRunnerGamePage(
+      rounds: rounds,
+      initialRound: _huntRound,
+      nativeLanguage: _nativeLanguage,
+      isFullscreen: false,
+      onRoundCompleted: (round) {
+        setState(() => _huntRound = round + 1);
+      },
+      onAllCompleted: () {
+        _markStepCompleted(3);
+      },
     );
   }
 
   // -------------------------------------------------------------
-  // STEP 4: GAME 2 - MATCH & SENTENCE BUILDER (6 Rounds)
+  // STEP 4: GAME 2 - 2D WORD CATCHER & SENTENCE BUILDER (6 Rounds)
   // -------------------------------------------------------------
   Widget _buildStep4GameMatchBuild(Day1StepModel step) {
     final rounds = (step.data['rounds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
@@ -1258,6 +1203,113 @@ class _PocketDay1InteractiveFlowPageState
 
     return Column(
       children: [
+        // 🌟 2D Open-World Arcade Launcher Banner ("ആകാശത്തുനിന്നും വീഴുന്ന വാക്കുകൾ പിടിക്കുക")
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF0284C7), Color(0xFF10B981)],
+            ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xFFFFD700), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                blurRadius: 16,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.25),
+                      shape: BoxShape.circle,
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text('🎮', style: TextStyle(fontSize: 26)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '2D OPEN-WORLD WORD CATCHER',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.6,
+                          ),
+                        ),
+                        Text(
+                          'ആകാശത്തുനിന്നും വീഴുന്ന വാക്കുകൾ ബാസ്കറ്റിൽ പിടിക്കുക! (Full Screen 2D Arcade)',
+                          style: GoogleFonts.inter(
+                            color: Colors.white,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: const Color(0xFF0F172A),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    elevation: 4,
+                  ),
+                  icon: const Icon(Icons.play_circle_fill_rounded, size: 22, color: Color(0xFF0F172A)),
+                  label: Text(
+                    'PLAY FULLSCREEN 2D ARCADE ➔',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 13,
+                      letterSpacing: 0.6,
+                    ),
+                  ),
+                  onPressed: () async {
+                    HapticFeedback.heavyImpact();
+                    final result = await Navigator.push<bool>(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WordCatcherGamePage(
+                          levelData: kWordCatcherLevel1Data,
+                          preferredLanguage: _nativeLanguage,
+                          onCompleted: (xp) {
+                            _markStepCompleted(4);
+                          },
+                        ),
+                      ),
+                    );
+                    if (result == true) {
+                      _markStepCompleted(4);
+                    }
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 20),
+
         // Round Indicator
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
@@ -1271,14 +1323,14 @@ class _PocketDay1InteractiveFlowPageState
             style: GoogleFonts.outfit(color: const Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 12),
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
 
         Text(
           prompt,
           textAlign: TextAlign.center,
           style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 18),
 
         if (type == 'match') ...[
           // Match Object options
@@ -1293,12 +1345,17 @@ class _PocketDay1InteractiveFlowPageState
                   backgroundColor: const Color(0xFF1E293B),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    side: BorderSide(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.35),
+                    ),
+                  ),
                 ),
                 onPressed: () {
                   HapticFeedback.mediumImpact();
                   if (optStr == correct) {
-                    _speak('Correct match!');
+                    _speak('Correct match! $optStr');
                     if (_matchBuildRound < rounds.length - 1) {
                       setState(() => _matchBuildRound++);
                     } else {
@@ -1320,7 +1377,7 @@ class _PocketDay1InteractiveFlowPageState
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+              border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.6)),
             ),
             child: Text(
               _assembledWords.isEmpty ? 'Tap words below in order...' : _assembledWords.join(' '),
@@ -1337,8 +1394,16 @@ class _PocketDay1InteractiveFlowPageState
             children: ((rData['scrambled'] as List?) ?? []).map((w) {
               final wordStr = w.toString();
               return ActionChip(
-                backgroundColor: const Color(0xFF334155),
-                label: Text(wordStr, style: const TextStyle(color: Colors.white, fontSize: 14)),
+                backgroundColor: const Color(0xFF047857),
+                side: const BorderSide(color: Color(0xFF34D399), width: 1.2),
+                label: Text(
+                  wordStr,
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
                 onPressed: () {
                   HapticFeedback.selectionClick();
                   setState(() {
@@ -1360,9 +1425,10 @@ class _PocketDay1InteractiveFlowPageState
             }).toList(),
           ),
           const SizedBox(height: 10),
-          TextButton(
+          TextButton.icon(
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white60, size: 16),
             onPressed: () => setState(() => _assembledWords.clear()),
-            child: const Text('Reset Words ↺', style: TextStyle(color: Colors.white60)),
+            label: const Text('Reset Words ↺', style: TextStyle(color: Colors.white60)),
           ),
         ],
       ],
