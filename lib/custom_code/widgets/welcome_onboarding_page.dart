@@ -1106,6 +1106,14 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       await prefs.setInt('pm_streak_days', 1);
 
       final user = SupaFlow.client.auth.currentUser;
+      final trackStr = (resolvedLvl == LearnerLevel.zero)
+          ? 'zero'
+          : ((resolvedLvl == LearnerLevel.advanced ||
+                  resolvedLvl == LearnerLevel.expert)
+              ? 'higher'
+              : 'middle');
+      await prefs.setString(
+          'pocket_day1_selected_track_${user?.id ?? "guest"}', trackStr);
       if (user != null) {
         await prefs.setBool('pm_onboarding_seen_${user.id}', true);
         await SupaFlow.client.from('profile').upsert({

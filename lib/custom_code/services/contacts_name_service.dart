@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -24,7 +25,7 @@ class ContactsNameService {
   List<Map<String, dynamic>> get matchedProfiles => List.unmodifiable(_matchedProfiles);
   List<String> get allSyncedContactUserIds => _userIdToContactName.keys.toList();
 
-  /// Initialize local contact mappings and trigger background Supabase sync
+  /// Initialize local contact mappings and trigger background Supabase sync if permitted
   Future<void> initialize() async {
     if (_isInitialized) return;
     try {
@@ -39,11 +40,84 @@ class ContactsNameService {
 
       _isInitialized = true;
 
-      // Automatically sync contacts with Supabase in background
-      syncContactsWithSupabase();
+      // Google Play Policy: Never prompt for permissions unannounced on app start!
+      // Only sync if user has already granted permission previously.
+      if (!kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.android ||
+              defaultTargetPlatform == TargetPlatform.iOS)) {
+        final hasPerm = await FlutterContacts.permissions.check(PermissionType.read);
+        if (hasPerm == PermissionStatus.granted || hasPerm == PermissionStatus.limited) {
+          syncContactsWithSupabase();
+        }
+      }
     } catch (e) {
       debugPrint('ContactsNameService initialization error: $e');
     }
+  }
+
+  /// 🛡️ Prominent Disclosure Request for Contacts (Mandatory for Google Play Store!)
+  static Future<bool> requestContactsWithDisclosure(BuildContext context) async {
+    if (kIsWeb) return false;
+
+    // Check if already granted
+    final currentStatus = await FlutterContacts.permissions.check(PermissionType.read);
+    if (currentStatus == PermissionStatus.granted || currentStatus == PermissionStatus.limited) {
+      await ContactsNameService().syncContactsWithSupabase();
+      return true;
+    }
+
+    // Show Google Play compliant Prominent In-App Disclosure before system dialog
+    if (context.mounted) {
+      final shouldRequest = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          backgroundColor: const Color(0xFF1E293B),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: const [
+              Icon(Icons.contacts_rounded, color: Color(0xFF38BDF8), size: 24),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Find Friends in Contacts',
+                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 17),
+                ),
+              ),
+            ],
+          ),
+          content: const Text(
+            'Pocket Mates accesses your contacts to check if any of your friends are already learning English on the app and allow you to connect with them.\n\n'
+            'Your contact phone numbers are securely matched and are never sold or shared with third parties.',
+            style: TextStyle(color: Colors.white70, fontSize: 13.5, height: 1.4),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Not Now', style: TextStyle(color: Colors.white60)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF38BDF8),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Agree & Continue', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldRequest != true) return false;
+    }
+
+    final hasPerm = await FlutterContacts.permissions.request(PermissionType.read);
+    if (hasPerm == PermissionStatus.granted || hasPerm == PermissionStatus.limited) {
+      await ContactsNameService().syncContactsWithSupabase();
+      return true;
+    }
+    return false;
   }
 
   /// 🔄 Synchronize local phone contacts with registered Supabase profiles.

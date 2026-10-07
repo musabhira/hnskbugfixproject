@@ -4,8 +4,556 @@ import 'pocket_syllabus_repository.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'daily_vocab_item.dart';
 import 'pocket_master_curriculum_90.dart';
+import 'curriculum_data/day_1_curriculum_data.dart';
 
-/// 🎮 Game Type for Turn 4 in Day 1 Tutor session
+/// 🎯 3 Clear Syllabus Tracks for Day 1
+/// User Directive:
+/// - 1. Zero Level — ABC മുതൽ
+/// - 2. Middle Level — basic English അറിയാം
+/// - 3. Higher Level — English അറിയാം, പക്ഷേ vocabulary + natural communication improve ചെയ്യണം
+/// - Main Topic: "ME + BASIC ENGLISH"
+/// - 8 Core Steps per track
+enum Day1Track {
+  zero,
+  middle,
+  higher;
+
+  static Day1Track fromLevel(LearnerLevel level) {
+    switch (level) {
+      case LearnerLevel.zero:
+        return Day1Track.zero;
+      case LearnerLevel.beginner:
+      case LearnerLevel.elementary:
+      case LearnerLevel.middle:
+        return Day1Track.middle;
+      case LearnerLevel.advanced:
+      case LearnerLevel.expert:
+        return Day1Track.higher;
+    }
+  }
+
+  static Day1Track fromLearnerLevel(LearnerLevel level) => fromLevel(level);
+
+  LearnerLevel toLearnerLevel() {
+    switch (this) {
+      case Day1Track.zero:
+        return LearnerLevel.zero;
+      case Day1Track.middle:
+        return LearnerLevel.middle;
+      case Day1Track.higher:
+        return LearnerLevel.advanced;
+    }
+  }
+
+  String get displayNameEn {
+    switch (this) {
+      case Day1Track.zero:
+        return 'Zero Level (ABC & Phonics)';
+      case Day1Track.middle:
+        return 'Middle Level (Self Introduction)';
+      case Day1Track.higher:
+        return 'Higher Level (Natural Communication)';
+    }
+  }
+
+  String get displayNameMl {
+    switch (this) {
+      case Day1Track.zero:
+        return 'Zero Level (ABC മുതൽ)';
+      case Day1Track.middle:
+        return 'Middle Level (സ്വന്തം കാര്യം പറയൽ)';
+      case Day1Track.higher:
+        return 'Higher Level (സ്വാഭാവിക സംഭാഷണം)';
+    }
+  }
+
+  String get badge {
+    switch (this) {
+      case Day1Track.zero:
+        return '🌱 Zero Level';
+      case Day1Track.middle:
+        return '💬 Middle Level';
+      case Day1Track.higher:
+        return '💎 Higher Level';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case Day1Track.zero:
+        return const Color(0xFF10B981);
+      case Day1Track.middle:
+        return const Color(0xFF38BDF8);
+      case Day1Track.higher:
+        return const Color(0xFFA855F7);
+    }
+  }
+
+  String get topicEn {
+    switch (this) {
+      case Day1Track.zero:
+        return 'ME + BASIC ENGLISH';
+      case Day1Track.middle:
+        return 'SELF INTRODUCTION';
+      case Day1Track.higher:
+        return 'NATURAL SELF-INTRODUCTION + BETTER VOCABULARY';
+    }
+  }
+
+  String get topicMl {
+    switch (this) {
+      case Day1Track.zero:
+        return 'ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും';
+      case Day1Track.middle:
+        return 'സ്വയം പരിചയപ്പെടുത്തൽ';
+      case Day1Track.higher:
+        return 'സ്വാഭാവികമായ സ്വയം പരിചയപ്പെടുത്തൽ & മികച്ച പദാവലി';
+    }
+  }
+
+  String get goalEn {
+    switch (this) {
+      case Day1Track.zero:
+        return 'Learn your first English letters and words';
+      case Day1Track.middle:
+        return 'I can introduce myself in simple English';
+      case Day1Track.higher:
+        return 'I can introduce myself naturally and with better English';
+    }
+  }
+
+  String get goalMl {
+    switch (this) {
+      case Day1Track.zero:
+        return 'ആദ്യത്തെ ഇംഗ്ലീഷ് അക്ഷരങ്ങളും വാക്കുകളും പഠിക്കുക';
+      case Day1Track.middle:
+        return 'സ്വന്തം കാര്യം ലളിതമായ ഇംഗ്ലീഷിൽ പറയാൻ കഴിയുക';
+      case Day1Track.higher:
+        return 'കൂടുതൽ സ്വാഭാവികമായും മികച്ച വാക്കുകളോടെയും സംസാരിക്കുക';
+    }
+  }
+}
+
+/// 📋 Model for each of the 9 Core Steps in Day 1 (User Audio Directive: 9 Steps per Day)
+class Day1StepModel {
+  final int stepNumber; // 1 to 9
+  final String titleEn;
+  final String titleMl;
+  final String icon;
+  final String type; // 'enter', 'tutor', 'game_hunt', 'game_match', 'reading', 'vocab', 'chat', 'community_chat', 'defense'
+  final String descriptionEn;
+  final String descriptionMl;
+  final Map<String, dynamic> data;
+
+  const Day1StepModel({
+    required this.stepNumber,
+    required this.titleEn,
+    required this.titleMl,
+    required this.icon,
+    required this.type,
+    required this.descriptionEn,
+    required this.descriptionMl,
+    required this.data,
+  });
+
+  String get title => titleEn;
+  String get description => descriptionEn;
+  Color get color {
+    switch (stepNumber) {
+      case 1:
+        return const Color(0xFF38BDF8); // Sky blue
+      case 2:
+        return const Color(0xFF3B82F6); // Royal blue
+      case 3:
+        return const Color(0xFFF59E0B); // Amber
+      case 4:
+        return const Color(0xFF10B981); // Emerald
+      case 5:
+        return const Color(0xFF06B6D4); // Cyan (Reading)
+      case 6:
+        return const Color(0xFFEC4899); // Pink (Vocab)
+      case 7:
+        return const Color(0xFF8B5CF6); // Purple (Voice)
+      case 8:
+        return const Color(0xFF6366F1); // Indigo (Community Chat)
+      case 9:
+        return const Color(0xFFE11D48); // Crimson Rose (House Defense)
+      default:
+        return const Color(0xFF3B82F6);
+    }
+  }
+}
+
+/// 📖 Model for Day 1 Gamified Reading Challenge
+class Day1ReadingPassage {
+  final String titleEn;
+  final String titleMl;
+  final String contentEn;
+  final String contentMl;
+  final List<String> sentencesEn;
+  final List<String> sentencesMl;
+  final String questionEn;
+  final String questionMl;
+  final List<String> options;
+  final int correctOptionIndex;
+  final String explanationEn;
+  final String explanationMl;
+
+  const Day1ReadingPassage({
+    required this.titleEn,
+    required this.titleMl,
+    required this.contentEn,
+    required this.contentMl,
+    required this.sentencesEn,
+    required this.sentencesMl,
+    required this.questionEn,
+    required this.questionMl,
+    required this.options,
+    required this.correctOptionIndex,
+    required this.explanationEn,
+    required this.explanationMl,
+  });
+}
+
+/// 🛡️ Model for Day 1 House Defense Question
+class Day1DefenseQuestion {
+  final String questionEn;
+  final String questionMl;
+  final List<String> options;
+  final int correctIndex;
+  final String explanationEn;
+  final String explanationMl;
+
+  const Day1DefenseQuestion({
+    required this.questionEn,
+    required this.questionMl,
+    required this.options,
+    required this.correctIndex,
+    required this.explanationEn,
+    required this.explanationMl,
+  });
+}
+
+/// 📚 Model for Day 1 Daily Vocabulary Word
+class Day1VocabWord {
+  final String word;
+  final String phonetic;
+  final String emoji;
+  final String meaningEn;
+  final String meaningMl;
+  final String meaningHi;
+  final String meaningTa;
+  final String exampleEn;
+  final String exampleMl;
+  final String? contextQuestion;
+  final String? contextAnswer;
+
+  const Day1VocabWord({
+    required this.word,
+    required this.phonetic,
+    required this.emoji,
+    required this.meaningEn,
+    required this.meaningMl,
+    this.meaningHi = '',
+    this.meaningTa = '',
+    required this.exampleEn,
+    required this.exampleMl,
+    this.contextQuestion,
+    this.contextAnswer,
+  });
+
+  String getMeaningForLang(String lang) {
+    final l = lang.toLowerCase();
+    if (l.contains('malay') || l == 'ml') return meaningMl;
+    if (l.contains('hind') || l == 'hi') return meaningHi.isNotEmpty ? meaningHi : meaningEn;
+    if (l.contains('tamil') || l == 'ta') return meaningTa.isNotEmpty ? meaningTa : meaningEn;
+    return meaningEn;
+  }
+}
+
+/// 🎓 Model for Day 1 Final Exam Question
+class Day1ExamQuestion {
+  final int index;
+  final String questionEn;
+  final String questionMl;
+  final String type; // 'audio_choice', 'find_object', 'match', 'build', 'listen_word', 'speak_phrase', 'choice', 'fill', 'arrange'
+  final String? audioText;
+  final List<String> options;
+  final dynamic correctAnswer;
+  final String explanationEn;
+  final String explanationMl;
+
+  const Day1ExamQuestion({
+    required this.index,
+    required this.questionEn,
+    required this.questionMl,
+    required this.type,
+    this.audioText,
+    required this.options,
+    required this.correctAnswer,
+    required this.explanationEn,
+    required this.explanationMl,
+  });
+}
+
+/// ⚔️ Model for Day 1 Attack & Defense Revision Challenge
+class Day1AttackChallenge {
+  final String promptEn;
+  final String promptMl;
+  final String type; // 'find', 'match', 'complete', 'choice'
+  final List<String> options;
+  final String correctAnswer;
+  final String explanationEn;
+  final String explanationMl;
+
+  const Day1AttackChallenge({
+    required this.promptEn,
+    required this.promptMl,
+    required this.type,
+    required this.options,
+    required this.correctAnswer,
+    required this.explanationEn,
+    required this.explanationMl,
+  });
+}
+
+/// 🌟 Central Day 1 Master Curriculum Repository (100% JSON-Driven)
+/// User Audio Directive:
+/// - Single track! No Expert/Zero distinction anymore.
+/// - Pre-check allows skipping Step 1 (Alphabet) & Step 2 (Vocab).
+/// - 100% of data (steps, vocab, games, reading, combat, and exam) lives in JSON.
+/// - Day 2 can be passed as a matching JSON.
+class Day1Curriculum {
+  // -------------------------------------------------------------
+  // 1. STEPS (100% JSON-Driven from Day1CurriculumJsonData)
+  // -------------------------------------------------------------
+  static List<Day1StepModel> getSteps([Day1Track? track]) {
+    final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
+    return rawSteps.map((s) {
+      final map = s as Map<String, dynamic>;
+      final stepNum = map['stepNumber'] as int? ?? 1;
+      final titleEn = Day1CurriculumJsonData.getLocalizedString(map['title'], lang: 'en');
+      final titleMl = Day1CurriculumJsonData.getLocalizedString(map['title'], lang: 'ml');
+      final descEn = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'en');
+      final descMl = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'ml');
+      final icon = map['icon']?.toString() ?? '📚';
+      final gameType = map['gameType']?.toString() ?? 'generic';
+
+      return Day1StepModel(
+        stepNumber: stepNum,
+        titleEn: titleEn,
+        titleMl: titleMl,
+        icon: icon,
+        type: gameType,
+        descriptionEn: descEn,
+        descriptionMl: descMl,
+        data: Map<String, dynamic>.from(map),
+      );
+    }).toList();
+  }
+
+  // -------------------------------------------------------------
+  // 2. READING PASSAGE (From Step 5 in JSON)
+  // -------------------------------------------------------------
+  static Day1ReadingPassage getReadingPassage([Day1Track? track]) {
+    final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
+    final step5 = rawSteps.firstWhere(
+      (s) => s['id'] == 'step_5_reading_book' || s['stepNumber'] == 5,
+      orElse: () => <String, dynamic>{},
+    ) as Map<String, dynamic>;
+    final passage = step5['passage'] as Map<String, dynamic>? ?? {};
+    final bookTitleEn = Day1CurriculumJsonData.getLocalizedString(passage['bookTitle'], lang: 'en');
+    final bookTitleMl = Day1CurriculumJsonData.getLocalizedString(passage['bookTitle'], lang: 'ml');
+    final rawSentences = passage['sentences'] as List<dynamic>? ?? [];
+    final sentencesEn = rawSentences.map((e) => Day1CurriculumJsonData.getLocalizedString(e, lang: 'en')).toList();
+    final sentencesMl = rawSentences.map((e) => Day1CurriculumJsonData.getLocalizedString(e, lang: 'ml')).toList();
+
+    final questions = passage['comprehensionQuestions'] as List<dynamic>? ?? [];
+    final q1 = (questions.isNotEmpty ? questions[0] : {}) as Map<String, dynamic>;
+    final qEn = Day1CurriculumJsonData.getLocalizedString(q1['question'], lang: 'en');
+    final qMl = Day1CurriculumJsonData.getLocalizedString(q1['question'], lang: 'ml');
+    final options = (q1['options'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+    final correctIdx = q1['correctIndex'] as int? ?? 0;
+    final expEn = Day1CurriculumJsonData.getLocalizedString(q1['explanation'], lang: 'en');
+    final expMl = Day1CurriculumJsonData.getLocalizedString(q1['explanation'], lang: 'ml');
+
+    return Day1ReadingPassage(
+      titleEn: bookTitleEn,
+      titleMl: bookTitleMl,
+      contentEn: sentencesEn.join(' '),
+      contentMl: sentencesMl.join(' '),
+      sentencesEn: sentencesEn,
+      sentencesMl: sentencesMl,
+      questionEn: qEn,
+      questionMl: qMl,
+      options: options.isNotEmpty ? options : ['A', 'B', 'C'],
+      correctOptionIndex: correctIdx,
+      explanationEn: expEn,
+      explanationMl: expMl,
+    );
+  }
+
+  // -------------------------------------------------------------
+  // 3. DEFENSE QUESTIONS (From Step 10 defenseTraps in JSON)
+  // -------------------------------------------------------------
+  static List<Day1DefenseQuestion> getDefenseQuestions([Day1Track? track]) {
+    final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
+    final step10 = rawSteps.firstWhere(
+      (s) => s['id'] == 'step_10_house_defense' || s['stepNumber'] == 10,
+      orElse: () => <String, dynamic>{},
+    ) as Map<String, dynamic>;
+    final traps = step10['defenseTraps'] as List<dynamic>? ?? [];
+    return traps.map((t) {
+      final map = t as Map<String, dynamic>;
+      final qEn = Day1CurriculumJsonData.getLocalizedString(map['question'], lang: 'en');
+      final qMl = Day1CurriculumJsonData.getLocalizedString(map['question'], lang: 'ml');
+      final options = (map['options'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+      final correctIdx = map['correctIndex'] as int? ?? 0;
+      final expEn = Day1CurriculumJsonData.getLocalizedString(map['explanation'], lang: 'en');
+      final expMl = Day1CurriculumJsonData.getLocalizedString(map['explanation'], lang: 'ml');
+      return Day1DefenseQuestion(
+        questionEn: qEn,
+        questionMl: qMl,
+        options: options,
+        correctIndex: correctIdx,
+        explanationEn: expEn,
+        explanationMl: expMl,
+      );
+    }).toList();
+  }
+
+  // -------------------------------------------------------------
+  // 4. VOCABULARY (50+ words from Step 2 in JSON)
+  // -------------------------------------------------------------
+  static List<Day1VocabWord> getVocabulary([Day1Track? track]) {
+    final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
+    final step2 = rawSteps.firstWhere(
+      (s) => s['id'] == 'step_2_vocab_50' || s['stepNumber'] == 2,
+      orElse: () => <String, dynamic>{},
+    ) as Map<String, dynamic>;
+    final words = step2['words'] as List<dynamic>? ?? [];
+    return words.map((w) {
+      final map = w as Map<String, dynamic>;
+      final word = map['word']?.toString() ?? '';
+      final phonetic = map['phonetic']?.toString() ?? '';
+      final emoji = map['emoji']?.toString() ?? '✨';
+      final meaning = map['meaning'] as Map<String, dynamic>? ?? {};
+      final meaningEn = meaning['en']?.toString() ?? word;
+      final meaningMl = meaning['ml']?.toString() ?? '';
+      final meaningHi = meaning['hi']?.toString() ?? '';
+      final meaningTa = meaning['ta']?.toString() ?? '';
+      final example = map['example'];
+      final exampleEn = example is Map ? (example['en']?.toString() ?? '') : (example?.toString() ?? '');
+      final exampleMl = example is Map ? (example['ml']?.toString() ?? '') : '';
+
+      return Day1VocabWord(
+        word: word,
+        phonetic: phonetic,
+        emoji: emoji,
+        meaningEn: meaningEn,
+        meaningMl: meaningMl,
+        meaningHi: meaningHi,
+        meaningTa: meaningTa,
+        exampleEn: exampleEn,
+        exampleMl: exampleMl,
+      );
+    }).toList();
+  }
+
+  // -------------------------------------------------------------
+  // 5. HOUSE 1 GATE EXAM (8 questions from JSON)
+  // -------------------------------------------------------------
+  static List<Day1ExamQuestion> getExam([Day1Track? track]) {
+    final examMap = Day1CurriculumJsonData.rawMap['houseGateExam'] as Map<String, dynamic>? ?? {};
+    final questions = examMap['questions'] as List<dynamic>? ?? [];
+    return questions.map((q) {
+      final map = q as Map<String, dynamic>;
+      final id = map['id'] as int? ?? 1;
+      final qEn = Day1CurriculumJsonData.getLocalizedString(map['question'], lang: 'en');
+      final qMl = Day1CurriculumJsonData.getLocalizedString(map['question'], lang: 'ml');
+      final options = (map['options'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+      final correctIdx = map['correctIndex'] as int? ?? 0;
+      final expEn = Day1CurriculumJsonData.getLocalizedString(map['explanation'], lang: 'en');
+      final expMl = Day1CurriculumJsonData.getLocalizedString(map['explanation'], lang: 'ml');
+      return Day1ExamQuestion(
+        index: id,
+        questionEn: qEn,
+        questionMl: qMl,
+        type: 'choice',
+        options: options,
+        correctAnswer: correctIdx,
+        explanationEn: expEn,
+        explanationMl: expMl,
+      );
+    }).toList();
+  }
+
+  // -------------------------------------------------------------
+  // 6. ATTACK CHALLENGES (Citadel Combat + Traps from JSON)
+  // -------------------------------------------------------------
+  static List<Day1AttackChallenge> getAttackChallenges([Day1Track? track]) {
+    final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
+    final step10 = rawSteps.firstWhere(
+      (s) => s['id'] == 'step_10_house_defense' || s['stepNumber'] == 10,
+      orElse: () => <String, dynamic>{},
+    ) as Map<String, dynamic>;
+    final combat = step10['combatTest'] as Map<String, dynamic>? ?? {};
+    final list = <Day1AttackChallenge>[];
+    if (combat.isNotEmpty) {
+      list.add(Day1AttackChallenge(
+        promptEn: Day1CurriculumJsonData.getLocalizedString(combat['challenge'], lang: 'en'),
+        promptMl: Day1CurriculumJsonData.getLocalizedString(combat['challenge'], lang: 'ml'),
+        type: 'choice',
+        options: (combat['options'] as List<dynamic>? ?? []).map((e) => e.toString()).toList(),
+        correctAnswer: combat['correct']?.toString() ?? '',
+        explanationEn: 'Hit the opponent citadel!',
+        explanationMl: 'എതിരാളിയെ കൃത്യമായി അറ്റാക്ക് ചെയ്യുക!',
+      ));
+    }
+    final traps = step10['defenseTraps'] as List<dynamic>? ?? [];
+    for (final t in traps) {
+      final map = t as Map<String, dynamic>;
+      final opts = (map['options'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+      final cIdx = map['correctIndex'] as int? ?? 0;
+      final correctStr = cIdx < opts.length ? opts[cIdx] : '';
+      list.add(Day1AttackChallenge(
+        promptEn: Day1CurriculumJsonData.getLocalizedString(map['question'], lang: 'en'),
+        promptMl: Day1CurriculumJsonData.getLocalizedString(map['question'], lang: 'ml'),
+        type: 'choice',
+        options: opts,
+        correctAnswer: correctStr,
+        explanationEn: Day1CurriculumJsonData.getLocalizedString(map['explanation'], lang: 'en'),
+        explanationMl: Day1CurriculumJsonData.getLocalizedString(map['explanation'], lang: 'ml'),
+      ));
+    }
+    return list;
+  }
+
+  // -------------------------------------------------------------
+  // 7. COMPLETION SUMMARY (Day 1 Achievement feel)
+  // -------------------------------------------------------------
+  static Map<String, dynamic> getCompletionSummary([Day1Track? track]) {
+    return {
+      'title': '🎉 YOU COMPLETED DAY 1!',
+      'badge': '🏆 HOUSE 1 MASTERED',
+      'points': '+200 PS',
+      'learnedBullets': [
+        'Letters & Phonics Foundation (Step 1)',
+        '50+ Everyday Vocabularies (Apple, Book, Water, Grapes, Bed, Crow...)',
+        'Word Hunt & Sentence Construction Puzzles',
+        'Story Reading & Voice Practice',
+        'Live Random Call & PocketTalk Mate Pact',
+        'Community Chat Group Intro',
+        'House Defense Traps & Iron Citadel Combat',
+        'House 1 Gate Exam Passed ➔ House 2 Unlocked!',
+      ],
+      'messageEn': "Congratulations! You have mastered Day 1 through games, real speaking, and social interactions. House 2 is now unlocked!",
+      'messageMl': "അഭിനന്ദനങ്ങൾ! ഗെയിമുകളിലൂടെയും സംസാരത്തിലൂടെയും നിങ്ങൾ ഡേ 1 പൂർത്തിയാക്കി. ഇനി അടുത്ത വീട് (ഹൗസ് 2) നിങ്ങൾക്കായി തുറന്നു!",
+      'nextDayStatus': 'House 2 (Day 2) ➔ Unlocked! 🔓',
+    };
+  }
+}
+
 enum Day1GameType {
   soundBubblePop, // Level 1 (Zero): Tap floating sound bubbles & voice shadow
   sentenceTrainPuzzle, // Level 2 (Beginner): Train bogie word ordering & speak
@@ -1453,4 +2001,3 @@ class PocketDay1TutorCurriculum {
 }
 
 typedef Pocket90DayTutorCurriculum = PocketDay1TutorCurriculum;
-

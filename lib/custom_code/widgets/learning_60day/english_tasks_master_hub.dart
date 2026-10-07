@@ -18,6 +18,7 @@ import 'pocket_arsenal_store_modal.dart';
 import 'pocket_daily_mission_page.dart';
 import 'pocket_score_level_engine.dart';
 import 'pocket_world_game_rules_modal.dart';
+import 'pocket_day1_diagnostic_sheet.dart';
 import 'package:pocket_mates_app/custom_code/widgets/report_dailoge.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/widgets/ads/pocket_ad_service.dart';
@@ -49,6 +50,8 @@ import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.da
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
 import 'career_adventure/cyber_vocab_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
+import 'pocket_day1_tutor_curriculum.dart';
+import 'pocket_day1_interactive_flow_page.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -521,18 +524,20 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     return _topPadding + (daysFromTop * _nodeSpacingY);
   }
 
-  double _getSubStepY(int activeDay, int stepNumber) {
-    final fraction = stepNumber / 18.0;
+  double _getSubStepY(int activeDay, int stepNumber, {int totalSteps = 17}) {
+    final denom = (totalSteps + 1).toDouble();
+    final fraction = stepNumber / denom;
     return _getNodeY(activeDay) - (fraction * (_nodeSpacingY + _expandedActiveGap));
   }
 
-  double _getSubStepX(int activeDay, int stepNumber, double screenWidth) {
-    final fraction = stepNumber / 18.0;
+  double _getSubStepX(int activeDay, int stepNumber, double screenWidth, {int totalSteps = 17}) {
+    final denom = (totalSteps + 1).toDouble();
+    final fraction = stepNumber / denom;
     final startX = _getNodeX(activeDay, screenWidth);
     final endX = _getNodeX(activeDay + 1, screenWidth);
     final linearX = startX + (endX - startX) * fraction;
     final amplitude = (screenWidth - 150) / 2;
-    // 3 winding mountain switchback S-curves along the 17 steps
+    // Winding mountain switchback S-curves along the steps
     final wave = math.sin(fraction * math.pi * 3.0) * (amplitude * 0.72);
     return (linearX + wave).clamp(65.0, screenWidth - 65.0);
   }
@@ -1114,9 +1119,64 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     }
   }
 
-  /// Returns the 17 sequential sub-steps along the climbing mountain trail (User Audio Directive!)
+  /// Returns the sequential sub-steps along the climbing mountain trail (User Audio Directive!)
   List<InPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
     final bool admin = _isMasterAdmin;
+    if (day == 1) {
+      final track = Day1Track.fromLearnerLevel(level);
+      return Day1Curriculum.getSteps(track).map((step) {
+        final flagKey = 'step_${step.stepNumber}';
+        final isComp = _subStepFlags[flagKey] ?? false;
+        final isUnlocked = admin ||
+            step.stepNumber == 1 ||
+            (_subStepFlags['step_${step.stepNumber - 1}'] ?? false);
+        return InPathSubStep(
+          stepIndex: step.stepNumber,
+          title: step.title,
+          subtitle: step.description,
+          icon: step.icon,
+          color: step.color,
+          isCompleted: isComp,
+          isUnlocked: isUnlocked,
+          onAction: () async {
+            int targetStepNumber = step.stepNumber;
+            if (step.stepNumber == 1 && !isComp) {
+              final prefs = await SharedPreferences.getInstance();
+              final uid = widget.userId ?? 'guest';
+              final diagDone = prefs.getBool('pm_day1_diagnostic_done_$uid') ?? false;
+              if (!diagDone && mounted) {
+                final diag = await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
+                if (diag != null) {
+                  final skip1 = diag['skipStep1'] ?? false;
+                  final skip2 = diag['skipStep2'] ?? false;
+                  if (skip1 && skip2) {
+                    await _onSubStepFinished(1, 1);
+                    await _onSubStepFinished(1, 2);
+                    targetStepNumber = 3;
+                  } else if (skip1) {
+                    await _onSubStepFinished(1, 1);
+                    targetStepNumber = 2;
+                  }
+                }
+              }
+            }
+            if (!mounted) return;
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => PocketDay1InteractiveFlowPage(
+                  initialTrack: track,
+                  initialStep: targetStepNumber,
+                  onStepFinished: (s) => _onSubStepFinished(1, s),
+                  onCompleted: () => _completeTodayTasks(),
+                ),
+              ),
+            );
+            await _loadData();
+          },
+        );
+      }).toList();
+    }
     return [
       InPathSubStep(
         stepIndex: 1,
@@ -2644,107 +2704,109 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// User Audio Directive: "Scroll cheyyan vendittu side-il oru scrolling bar vekkuka. Mobile-il ullavarkkum speed-il mele scroll cheythu ariyaan vendittu."
   Widget _buildFastScrollScrubber(double screenWidth, double screenHeight) {
     final topPadding = MediaQuery.of(context).padding.top;
-    final scrubberTop = topPadding + 115.0;
-    final scrubberBottom = 110.0;
-    final scrubberHeight = (screenHeight - scrubberTop - scrubberBottom).clamp(160.0, 680.0);
+    final scrubberTop = topPadding + 65.0; // Moved upwards per User Audio directive!
+    final scrubberBottom = 90.0;
+    final scrubberHeight = (screenHeight - scrubberTop - scrubberBottom).clamp(160.0, 720.0);
 
     return Positioned(
       right: 5,
       top: scrubberTop,
+      width: 34,
       height: scrubberHeight,
-      child: AnimatedBuilder(
-        animation: _scrollController,
-        builder: (context, _) {
-          double fraction = 1.0;
-          if (_scrollController.hasClients && _scrollController.position.maxScrollExtent > 0) {
-            fraction = (_scrollController.offset / _scrollController.position.maxScrollExtent).clamp(0.0, 1.0);
-          }
-          // Inverted map: offset 0 is Day 90 (summit), offset max is Day 1 (valley)
-          final approximateDay = ((1.0 - fraction) * 89 + 1).round().clamp(1, 90);
-
-          return GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onVerticalDragUpdate: (details) {
-              if (!_scrollController.hasClients) return;
-              final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
-              final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
-              final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (_scrollController.hasClients) {
-                  _scrollController.jumpTo(targetOffset);
-                }
-              });
-            },
-            onTapDown: (details) {
-              if (!_scrollController.hasClients) return;
-              final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
-              final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
-              final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (_scrollController.hasClients) {
-                  _scrollController.animateTo(
-                    targetOffset,
-                    duration: const Duration(milliseconds: 320),
-                    curve: Curves.easeOutCubic,
-                  );
-                }
-              });
-            },
-            child: Container(
-              width: 32,
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F1524).withValues(alpha: 0.88),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.4),
-                  width: 1.2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 10,
-                    offset: const Offset(0, 3),
-                  ),
-                ],
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onVerticalDragUpdate: (details) {
+          if (!_scrollController.hasClients) return;
+          final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
+          final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
+          final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients) {
+              _scrollController.jumpTo(targetOffset);
+            }
+          });
+        },
+        onTapDown: (details) {
+          if (!_scrollController.hasClients) return;
+          final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
+          final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
+          final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (_scrollController.hasClients) {
+              _scrollController.animateTo(
+                targetOffset,
+                duration: const Duration(milliseconds: 320),
+                curve: Curves.easeOutCubic,
+              );
+            }
+          });
+        },
+        child: Container(
+          width: 34,
+          height: scrubberHeight,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F1524).withValues(alpha: 0.88),
+            borderRadius: BorderRadius.circular(17),
+            border: Border.all(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 10,
+                offset: const Offset(0, 3),
               ),
-              child: Stack(
-                alignment: Alignment.topCenter,
-                children: [
-                  // Top milestone: Summit Citadel
-                  const Positioned(
-                    top: 6,
-                    child: Text('🏰', style: TextStyle(fontSize: 10)),
+            ],
+          ),
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              // Top milestone: Summit Citadel
+              const Positioned(
+                top: 6,
+                child: Text('🏰', style: TextStyle(fontSize: 10)),
+              ),
+              Positioned(
+                top: scrubberHeight * 0.33,
+                child: Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white30,
                   ),
-                  Positioned(
-                    top: scrubberHeight * 0.33,
-                    child: Container(
-                      width: 5,
-                      height: 5,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white30,
-                      ),
-                    ),
+                ),
+              ),
+              Positioned(
+                top: scrubberHeight * 0.66,
+                child: Container(
+                  width: 5,
+                  height: 5,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white30,
                   ),
-                  Positioned(
-                    top: scrubberHeight * 0.66,
-                    child: Container(
-                      width: 5,
-                      height: 5,
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white30,
-                      ),
-                    ),
-                  ),
-                  // Bottom milestone: Valley House 1
-                  const Positioned(
-                    bottom: 6,
-                    child: Text('🏡', style: TextStyle(fontSize: 10)),
-                  ),
+                ),
+              ),
+              // Bottom milestone: Valley House 1
+              const Positioned(
+                bottom: 6,
+                child: Text('🏡', style: TextStyle(fontSize: 10)),
+              ),
 
-                  // Draggable Glowing Thumb with Live Day Badge
-                  Positioned(
+              // Draggable Glowing Thumb with Live Day Badge (Rebuilt smoothly on scroll)
+              AnimatedBuilder(
+                animation: _scrollController,
+                builder: (context, _) {
+                  double fraction = 1.0;
+                  if (_scrollController.hasClients && _scrollController.position.maxScrollExtent > 0) {
+                    fraction = (_scrollController.offset / _scrollController.position.maxScrollExtent).clamp(0.0, 1.0);
+                  }
+                  // Inverted map: offset 0 is Day 90 (summit), offset max is Day 1 (valley)
+                  final approximateDay = ((1.0 - fraction) * 89 + 1).round().clamp(1, 90);
+
+                  return Positioned(
                     top: (fraction * (scrubberHeight - 34)).clamp(0.0, scrubberHeight - 34),
                     child: Container(
                       width: 28,
@@ -2779,12 +2841,12 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ],
                       ),
                     ),
-                  ),
-                ],
+                  );
+                },
               ),
-            ),
-          );
-        },
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -2870,14 +2932,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Row 1: Compact 90-Day Mission Badge + Stats + Actions (Scaled via FittedBox to eliminate right RenderFlex overflow)
-            SizedBox(
-              width: double.infinity,
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                alignment: Alignment.centerLeft,
-                child: Row(
-                  children: [
+            // Row 1: Compact 90-Day Mission Badge + Stats + Actions
+            Row(
+              children: [
                     if (canPop) ...[
                       IconButton(
                         icon: const Icon(Icons.arrow_back_ios_rounded,
@@ -3078,8 +3135,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ],
             ),
-          ),
-        ),
 
             const SizedBox(height: 6),
 
@@ -3490,6 +3545,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     return Positioned(
       left: x - (pillWidth / 2),
       top: y,
+      width: pillWidth,
       child: PopupMenuButton<LearnerLevel?>(
         tooltip: 'Your Syllabus',
         color: const Color(0xFF131722),
@@ -3682,6 +3738,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     return Positioned(
       left: x - (nodeSize / 2),
       top: y - (nodeSize / 2),
+      width: nodeSize,
+      height: nodeSize + 24,
       child: GestureDetector(
         onTap: () {
           HapticFeedback.lightImpact();
@@ -3777,7 +3835,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               // Verification badge
               Positioned(
                 bottom: 0,
-                child: Container(
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
                   decoration: BoxDecoration(
@@ -3797,6 +3858,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       fontSize: 8.5,
                       fontWeight: FontWeight.w900,
                     ),
+                  ),
                   ),
                 ),
               ),
@@ -4056,7 +4118,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               if (!isWaitingForMidnight)
                 Positioned(
                   top: nodeSize - 4,
-                  child: Container(
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: isCurrent
@@ -4105,6 +4170,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         );
                       },
                     ),
+                    ),
                   ),
                 ),
 
@@ -4112,7 +4178,10 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               if (isWaitingForMidnight)
                 Positioned(
                   top: nodeSize + 3,
-                  child: Container(
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
                       color: const Color(0xFF1E1B4B),
@@ -4141,6 +4210,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                         ),
                       ],
                     ),
+                    ),
                   ),
                 ),
 
@@ -4148,8 +4218,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               if (isCompleted)
                 Positioned(
                   top: -12,
+                  left: 0,
+                  right: 0,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: const [
                       Icon(Icons.star_rounded,
                           color: Color(0xFFFFD700), size: 14),
@@ -4165,30 +4238,34 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               if (isBossMilestone && !isCompleted)
                 Positioned(
                   top: -14,
-                  child: Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFFFD700),
-                      borderRadius: BorderRadius.circular(6),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.3),
-                          blurRadius: 4,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFD700),
+                        borderRadius: BorderRadius.circular(6),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.3),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        'CHEST',
+                        style: GoogleFonts.outfit(
+                          color: Colors.black,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 8.5,
                         ),
-                      ],
-                    ),
-                    child: Text(
-                      'CHEST',
-                      style: GoogleFonts.outfit(
-                        color: Colors.black,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 8.5,
                       ),
                     ),
                   ),
                 ),
             ],
+
           ),
         ),
       ),
@@ -5190,6 +5267,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             Positioned(
               left: isRightSide ? (-labelWidth - 10.0) : (nodeSize + 10.0),
               top: 0.0,
+              width: labelWidth,
               child: GestureDetector(
                 onTap: () {
                   HapticFeedback.mediumImpact();
@@ -5315,6 +5393,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             // Bottom "EVO" Badge
             Positioned(
               bottom: -7,
+              left: 0,
+              right: 0,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
                 decoration: BoxDecoration(
@@ -5581,6 +5661,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             Positioned(
               left: isRightSide ? (-labelWidth - 8.0) : (nodeSize + 8.0),
               top: 2.0,
+              width: labelWidth,
               child: GestureDetector(
                 onTap: () {
                   HapticFeedback.lightImpact();
@@ -5743,6 +5824,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             // Stepping Stone Number Badge
             Positioned(
               bottom: -7,
+              left: 0,
+              right: 0,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
                 decoration: BoxDecoration(
@@ -5803,10 +5886,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       }
     }
 
-    for (int k = 1; k <= 17; k++) {
+    final totalStepsCount = subSteps.length;
+    for (int k = 1; k <= totalStepsCount; k++) {
       final step = subSteps[k - 1];
-      final y = _getSubStepY(activeDay, k);
-      final x = _getSubStepX(activeDay, k, screenWidth);
+      final y = _getSubStepY(activeDay, k, totalSteps: totalStepsCount);
+      final x = _getSubStepX(activeDay, k, screenWidth, totalSteps: totalStepsCount);
       final isActiveCurrent = (step.stepIndex == currentActiveStepIndex);
 
       widgets.add(
@@ -5820,7 +5904,163 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       );
     }
 
+    // 🚗 Animated Vehicle Moving along the trail (User Audio Directive!)
+    // "Vandi neengi step 2-lekku povanam... Defence add cheythu kazhinjaal vandi animated aayi aa puthiya veetinte munnil poi nilkkum (House 2-nte munnil)."
+    widgets.add(
+      _buildAnimatedVehicle(
+        screenWidth: screenWidth,
+        activeDay: activeDay,
+        currentActiveStepIndex: currentActiveStepIndex,
+        totalStepsCount: totalStepsCount,
+        subSteps: subSteps,
+      ),
+    );
+
     return widgets;
+  }
+
+  /// 🚗 Animated Vehicle moving along the sub-step trail and parking at House 2 when complete
+  Widget _buildAnimatedVehicle({
+    required double screenWidth,
+    required int activeDay,
+    required int currentActiveStepIndex,
+    required int totalStepsCount,
+    required List<InPathSubStep> subSteps,
+  }) {
+    final bool allDone = currentActiveStepIndex == -1;
+    final double targetX;
+    final double targetY;
+
+    if (allDone) {
+      // Parked right in front of the next house (House 2 for Day 1)!
+      final nextDay = (activeDay + 1).clamp(1, _totalDays);
+      targetX = _getNodeX(nextDay, screenWidth);
+      targetY = _getNodeY(nextDay) + 48.0;
+    } else {
+      targetX = _getSubStepX(activeDay, currentActiveStepIndex, screenWidth, totalSteps: totalStepsCount);
+      targetY = _getSubStepY(activeDay, currentActiveStepIndex, totalSteps: totalStepsCount) - 34.0;
+    }
+
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 950),
+      curve: Curves.easeInOutCubic,
+      left: targetX - 26,
+      top: targetY - 12,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          if (allDone) {
+            final nextDay = (activeDay + 1).clamp(1, _totalDays);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  '🚗 Vehicle parked in front of House $nextDay! Tap House $nextDay to continue!',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                ),
+                backgroundColor: const Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          } else {
+            subSteps[currentActiveStepIndex - 1].onAction();
+          }
+        },
+        child: AnimatedBuilder(
+          animation: _bobController,
+          builder: (context, child) {
+            final bob = math.sin(_bobController.value * math.pi) * 3.5;
+            return Transform.translate(
+              offset: Offset(0, bob),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Status badge above the car
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: allDone ? const Color(0xFF10B981) : const Color(0xFFFFD700),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: (allDone ? const Color(0xFF10B981) : const Color(0xFFFFD700)).withValues(alpha: 0.4),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      allDone ? 'House 2 Reached! 🏡' : 'Car at Step $currentActiveStepIndex',
+                      style: GoogleFonts.outfit(
+                        color: Colors.black,
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+
+                  // Animated Vehicle Icon & Glow
+                  Container(
+                    width: 52,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: allDone
+                            ? [const Color(0xFF10B981), const Color(0xFF059669)]
+                            : [const Color(0xFFFF9800), const Color(0xFFE65100)],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 1.5,
+                      ),
+                    ),
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const Text(
+                          '🚗',
+                          style: TextStyle(fontSize: 22),
+                        ),
+                        // Headlight glow
+                        Positioned(
+                          right: 2,
+                          top: 12,
+                          child: Container(
+                            width: 5,
+                            height: 5,
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFFFEB3B),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Color(0xFFFFEB3B),
+                                  blurRadius: 6,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
   }
 
   /// The active character avatar standing on today's house node (or Rules node before start).

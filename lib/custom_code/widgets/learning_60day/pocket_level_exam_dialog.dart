@@ -10,6 +10,7 @@ import 'pocket_syllabus_repository.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'learning_service.dart';
 import 'pocket_mission_curriculum_registry.dart';
+import 'pocket_day1_tutor_curriculum.dart';
 import '../subscription_page.dart';
 
 /// 🎓 Model for an End-of-Level Exam Question
@@ -254,6 +255,19 @@ class _PocketLevelExamDialogState extends State<PocketLevelExamDialog>
 
   /// 🎯 Adaptive Question Generator based on Level & Syllabus Track
   List<LevelExamQuestion> _generateQuestionsForLevel(int level, LearnerLevel track) {
+    if (level == 1) {
+      final examQuestions = Day1Curriculum.getExam();
+      return examQuestions.map((eq) => LevelExamQuestion(
+        id: 'day1_exam_${eq.index}',
+        question: eq.questionEn,
+        options: eq.options,
+        correctIndex: eq.correctAnswer is int ? eq.correctAnswer as int : 0,
+        explanation: eq.explanationEn.isNotEmpty ? eq.explanationEn : eq.explanationMl,
+        hint: eq.questionMl,
+        category: 'House 1 Gatekeeper',
+      )).toList();
+    }
+
     if (level >= 1 && level <= 90) {
       switch (track) {
         case LearnerLevel.zero:

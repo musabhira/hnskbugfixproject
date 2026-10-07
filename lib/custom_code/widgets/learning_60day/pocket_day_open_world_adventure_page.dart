@@ -26,7 +26,8 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_pract
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_reading_library_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
-import 'package:pocket_mates_app/auth/supabase_auth/auth_util.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_tutor_curriculum.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_interactive_flow_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart'
     show CruisingBoat, CruisingBoatType, FlyingBird, JumpDustParticle;
 
@@ -100,8 +101,7 @@ class _PocketDayOpenWorldAdventurePageState
   late final VectorAvatarPainter _avatarPainter;
 
   bool get _isMasterAdmin {
-    final email = _supabase.auth.currentUser?.email ??
-        (currentUserEmail.isNotEmpty ? currentUserEmail : null);
+    final email = _supabase.auth.currentUser?.email;
     return AdminAuthService.isMasterAdminEmail(email);
   }
 
@@ -190,9 +190,13 @@ class _PocketDayOpenWorldAdventurePageState
     return math.atan2(y2 - y1, delta * 2);
   }
 
+  Day1Track _day1Track = Day1Track.zero;
+  int get _totalSteps => widget.day == 1 ? 8 : 17;
+
   /// Exact coordinate of milestone step on the mountain slope
-  static Offset getStepPosition(int stepIndex) {
-    final progress = (stepIndex - 1) / 16.0;
+  static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
+    final denominator = (totalSteps > 1) ? (totalSteps - 1).toDouble() : 1.0;
+    final progress = (stepIndex - 1) / denominator;
     const startX = 520.0;
     const endX = 3560.0;
     final x = startX + (endX - startX) * progress;
@@ -206,8 +210,21 @@ class _PocketDayOpenWorldAdventurePageState
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
 
+    if (widget.day == 1) {
+      final trackKey = 'pocket_day1_selected_track_${uid ?? "guest"}';
+      final savedTrackStr = prefs.getString(trackKey);
+      if (savedTrackStr != null) {
+        for (final t in Day1Track.values) {
+          if (t.name == savedTrackStr) {
+            _day1Track = t;
+            break;
+          }
+        }
+      }
+    }
+
     final Map<String, bool> flags = {};
-    for (int step = 1; step <= 17; step++) {
+    for (int step = 1; step <= _totalSteps; step++) {
       final key = 'pocket_day_${uid ?? "guest"}_${widget.day}_step_${step}_done';
       flags['step_$step'] = prefs.getBool(key) ?? false;
     }
@@ -216,7 +233,7 @@ class _PocketDayOpenWorldAdventurePageState
     // Ensure genuine step progression (Step 1 -> Step 2 -> Step 3...).
     // If an earlier step is incomplete, clean up any orphaned future step ticks!
     bool hadIncomplete = false;
-    for (int step = 1; step <= 17; step++) {
+    for (int step = 1; step <= _totalSteps; step++) {
       if (!hadIncomplete) {
         if (!(flags['step_$step'] ?? false)) {
           hadIncomplete = true;
@@ -244,7 +261,7 @@ class _PocketDayOpenWorldAdventurePageState
       // On page entry, position car directly at current active incomplete step!
       if (!preserveCarPosition && !_hasInitialPositioned) {
         _hasInitialPositioned = true;
-        final targetPos = getStepPosition(activeStep);
+        final targetPos = getStepPosition(activeStep, totalSteps: _totalSteps);
         final targetX = targetPos.dx - 48.0;
         _playerX = targetX;
         _prevPlayerX = targetX;
@@ -257,17 +274,17 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   int _findFirstIncompleteStep(Map<String, bool> flags) {
-    for (int s = 1; s <= 17; s++) {
+    for (int s = 1; s <= _totalSteps; s++) {
       if (!(flags['step_$s'] ?? false)) return s;
     }
-    return 17;
+    return _totalSteps;
   }
 
   int get _firstIncompleteStep => _findFirstIncompleteStep(_subStepFlags);
 
   void _driveToStep(int stepIndex, {bool openActivityOnArrival = false}) {
     if (!mounted) return;
-    final targetPos = getStepPosition(stepIndex);
+    final targetPos = getStepPosition(stepIndex, totalSteps: _totalSteps);
     // Park slightly in front of the milestone stone
     final targetX = targetPos.dx - 48.0;
 
@@ -344,7 +361,7 @@ class _PocketDayOpenWorldAdventurePageState
 
   Future<void> _onStepCompleted(int stepIndex) async {
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
-    int pointsAwarded = (stepIndex == 17) ? 120 : 30;
+    int pointsAwarded = (stepIndex == _totalSteps) ? 120 : 30;
 
     if (uid != null && uid.isNotEmpty) {
       final prefs = await SharedPreferences.getInstance();
@@ -356,7 +373,7 @@ class _PocketDayOpenWorldAdventurePageState
         await PocketFortressDefenseService.recordTrainingPoints(pointsAwarded, uid);
       }
 
-      if (stepIndex == 17) {
+      if (stepIndex == _totalSteps) {
         await prefs.setBool('pocket_day_${uid}_${widget.day}_completed', true);
         await prefs.setInt('learning_last_completed_day_$uid', widget.day);
         final now = DateTime.now();
@@ -378,9 +395,9 @@ class _PocketDayOpenWorldAdventurePageState
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  stepIndex == 17
+                  stepIndex == _totalSteps
                       ? '🎉 Day ${widget.day} Mastered! +$pointsAwarded PS 🪙 • House ${widget.day + 1} Summit Unlocked!'
-                      : 'Step $stepIndex / 17 Done! +$pointsAwarded PS 🪙 Driving to next step 🚀',
+                      : 'Step $stepIndex / $_totalSteps Done! +$pointsAwarded PS 🪙 Driving to next step 🚀',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -396,7 +413,7 @@ class _PocketDayOpenWorldAdventurePageState
       );
 
       // Auto-drive forward to next step from current location
-      if (stepIndex < 17) {
+      if (stepIndex < _totalSteps) {
         _driveToStep(stepIndex + 1, openActivityOnArrival: false);
       } else {
         widget.onCompleted?.call();
@@ -416,7 +433,7 @@ class _PocketDayOpenWorldAdventurePageState
     }
 
     int completedCount = 0;
-    for (int s = 1; s <= 17; s++) {
+    for (int s = 1; s <= _totalSteps; s++) {
       if (_subStepFlags['step_$s'] ?? false) completedCount++;
     }
 
@@ -457,10 +474,10 @@ class _PocketDayOpenWorldAdventurePageState
                   _buildStartHouse(widget.day),
 
                   // 🏡 SUMMIT: House 2 (Day ${day + 1} Estate on mountain summit)
-                  _buildSummitHouse(widget.day + 1, completedCount >= 17),
+                  _buildSummitHouse(widget.day + 1, completedCount >= _totalSteps),
 
-                  // 17 Stepping Ledges along the Rolling Mountain Highway
-                  for (int s = 1; s <= 17; s++) _buildMountainStepNode(s),
+                  // Stepping Ledges along the Rolling Mountain Highway
+                  for (int s = 1; s <= _totalSteps; s++) _buildMountainStepNode(s),
 
                   // 🏎️ Player's Sports Buggy Driving Along the Rolling Slope
                   _buildSportsBuggyWidget(),
@@ -473,7 +490,7 @@ class _PocketDayOpenWorldAdventurePageState
           _buildHUD(completedCount),
 
           // 3. Stage Complete Bottom Floating Bar
-          if (completedCount >= 17)
+          if (completedCount >= _totalSteps)
             Positioned(
               left: 16,
               right: 16,
@@ -592,7 +609,6 @@ class _PocketDayOpenWorldAdventurePageState
               ),
             ),
 
-            // Sports Buggy Canvas
             SizedBox(
               width: 88,
               height: 52,
@@ -617,126 +633,179 @@ class _PocketDayOpenWorldAdventurePageState
       child: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-          child: Row(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              // Back Button
-              GestureDetector(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                  width: 40,
-                  height: 40,
+              if (widget.day == 1)
+                Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(3),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white24, width: 1.0),
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.94),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: _day1Track.color, width: 1.2),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 17),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // Level Title & Progress Capsule
-              Expanded(
-                child: Container(
-                  height: 40,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.6),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.35),
-                        blurRadius: 8,
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      const Text('🏔️', style: TextStyle(fontSize: 15)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Day ${widget.day} Mountain Trail',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.22),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: const Color(0xFF10B981), width: 0.8),
-                        ),
-                        child: Text(
-                          '$completedCount / 17 Done',
-                          style: GoogleFonts.outfit(
-                            color: const Color(0xFF34D399),
-                            fontSize: 10.5,
-                            fontWeight: FontWeight.w800,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 8),
-
-              // 📍 Focus Button (Re-centers on vehicle / active step)
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  _focusOnActiveStep(animate: true);
-                },
-                child: Container(
-                  height: 40,
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.90),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.75),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.35),
+                        color: _day1Track.color.withValues(alpha: 0.25),
                         blurRadius: 8,
                       ),
                     ],
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('📍', style: TextStyle(fontSize: 13)),
-                      const SizedBox(width: 5),
-                      Text(
-                        'Focus',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFD700),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
+                    children: Day1Track.values.map((t) {
+                      final isSelected = t == _day1Track;
+                      return GestureDetector(
+                        onTap: () async {
+                          HapticFeedback.selectionClick();
+                          final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+                          final prefs = await SharedPreferences.getInstance();
+                          await prefs.setString('pocket_day1_selected_track_${uid ?? "guest"}', t.name);
+                          setState(() => _day1Track = t);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: isSelected ? t.color : Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            t.badge,
+                            style: GoogleFonts.outfit(
+                              color: isSelected ? Colors.white : Colors.white60,
+                              fontSize: 11,
+                              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                            ),
+                          ),
                         ),
-                      ),
-                    ],
+                      );
+                    }).toList(),
                   ),
                 ),
+              Row(
+                children: [
+                  // Back Button
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.white24, width: 1.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white, size: 17),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Level Title & Progress Capsule
+                  Expanded(
+                    child: Container(
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('🏔️', style: TextStyle(fontSize: 15)),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              widget.day == 1
+                                  ? 'DAY 1: ME + BASIC ENGLISH'
+                                  : 'Day ${widget.day} Mountain Trail',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981).withValues(alpha: 0.22),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF10B981), width: 0.8),
+                            ),
+                            child: Text(
+                              '$completedCount / $_totalSteps Done',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF34D399),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // 📍 Focus Button (Re-centers on vehicle / active step)
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _focusOnActiveStep(animate: true);
+                    },
+                    child: Container(
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.90),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.75),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('📍', style: TextStyle(fontSize: 13)),
+                          const SizedBox(width: 5),
+                          Text(
+                            'Focus',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFD700),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -852,7 +921,7 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   Widget _buildMountainStepNode(int stepIndex) {
-    final pos = getStepPosition(stepIndex);
+    final pos = getStepPosition(stepIndex, totalSteps: _totalSteps);
     final isDone = _subStepFlags['step_$stepIndex'] ?? false;
     final isPrevDone =
         stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false);
@@ -869,6 +938,7 @@ class _PocketDayOpenWorldAdventurePageState
       left: pos.dx - (containerWidth / 2),
       top: pos.dy - nodeSize - 20.0,
       width: containerWidth,
+      height: 120.0,
       child: Stack(
         clipBehavior: Clip.none,
         alignment: Alignment.topCenter,
@@ -995,9 +1065,9 @@ class _PocketDayOpenWorldAdventurePageState
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Floating Step Title Pill (Safely constrained to prevent RenderFlex overflow)
+                // Floating Step Title Pill (Safely bounded width)
                 Container(
-                  constraints: const BoxConstraints(maxWidth: 136),
+                  width: 130,
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   margin: const EdgeInsets.only(bottom: 4),
                   decoration: BoxDecoration(
@@ -1017,11 +1087,10 @@ class _PocketDayOpenWorldAdventurePageState
                     ],
                   ),
                   child: Row(
-                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(stepInfo.icon, style: const TextStyle(fontSize: 11)),
                       const SizedBox(width: 4),
-                      Flexible(
+                      Expanded(
                         child: Text(
                           'Step $stepIndex: ${stepInfo.title}',
                           maxLines: 1,
@@ -1118,6 +1187,13 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   _StepInfo _getStepDetails(int s) {
+    if (widget.day == 1) {
+      final steps = Day1Curriculum.getSteps(_day1Track);
+      if (s >= 1 && s <= steps.length) {
+        final st = steps[s - 1];
+        return _StepInfo(st.titleEn, st.icon, _day1Track.color);
+      }
+    }
     switch (s) {
       case 1:
         return const _StepInfo('AI Interactive Tutor', '🎙️', Color(0xFF00F0FF));
@@ -1160,6 +1236,22 @@ class _PocketDayOpenWorldAdventurePageState
 
   Future<void> _launchStepActivity(int s) async {
     final day = widget.day;
+    if (day == 1) {
+      await PocketDay1InteractiveFlowPage.show(
+        context,
+        initialStep: s,
+        initialTrack: _day1Track,
+        userId: widget.userId ?? _supabase.auth.currentUser?.id,
+        onStepFinished: (finishedStep) {
+          _onStepCompleted(finishedStep);
+        },
+        onCompleted: () {
+          _onStepCompleted(8);
+        },
+      );
+      await _loadState(preserveCarPosition: true);
+      return;
+    }
     switch (s) {
       case 1:
         await PocketInteractiveTeacherGameModal.show(
