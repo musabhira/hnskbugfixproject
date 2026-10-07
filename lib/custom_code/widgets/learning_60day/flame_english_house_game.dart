@@ -4524,98 +4524,22 @@ class _FlameEnglishHouseWidgetState extends State<FlameEnglishHouseWidget> {
   String _getEstateStageTitle(int d) => getEstateStageTitle(d);
 
   static String getEstateStageTitle(int d) {
-    switch (d) {
-      case 1: return '🛖 Cozy Storybook Cottage';
-      case 2: return '🛖 Shingle Porch Awning';
-      case 3: return '🛖 English Garden Flowerbeds';
-      case 4: return '🛖 Red Brick Hearth & Chimney';
-      case 5: return '🛖 Cobblestone Garden Walkway';
-      case 6: return '🛖 Picket Fence & Garden Gate';
-      case 7: return '🏡 Cottage Wing & Attic Dormer';
-      case 8: return '🏠 3-Story Storybook Townhouse';
-      case 9: return '🏠 Cantilevered Ground Wing';
-      case 10: return '🏠 Cantilevered Upper Bay Room';
-      case 11: return '🏠 Side Wing & Wooden Staircase';
-      case 12: return '🏠 Turret Dormer & Portal Window';
-      case 13: return '🏠 French Mansard Double Dormers';
-      case 14: return '🏠 Cascading Rose Flower Boxes';
-      case 15: return '🏠 Grand Entrance Arched Pediment';
-      case 16: return '🏡 2-Story Chateau Central Hall';
-      case 17: return '🏡 West Wing Bedchamber Suite';
-      case 18: return '🏡 East Wing Library & Study';
-      case 19: return '🏡 Dual French Mansard Slate Roofs';
-      case 20: return '🏡 Symmetrical Arched Dormers';
-      case 21: return '🏡 Fluted Veranda Columns & Lamps';
-      case 22: return '🏡 Garden Tea Gazebo Pavilion';
-      case 23: return '🏡 Courtyard Cascading Stone Fountain';
-      case 24: return '🏡 Cobblestone Garden Walkway';
-      case 25: return '🏡 Classical Colonnaded Porch';
-      case 26: return '🏡 Rooftop Golden Eagle Weathervane';
-      case 27: return '🏡 Grand Perimeter Carriage Gateway';
-      case 28: return '🏛️ Grand Victorian Manor & Slate Mansard';
-      case 29: return '🏛️ Classical 4-Pillar Entrance Portico';
-      case 30: return '🏛️ Central Chateau Clock Spire Tower';
-      case 31: return '🏛️ Wrought-Iron Rooftop Cresting';
-      case 32: return '🏛️ Quad Arched Mansard Dormers';
-      case 33: return '🏛️ First-Floor Terrace Stone Balustrade';
-      case 34: return '🏛️ Terraced Grand Marble Steps & Runner';
-      case 35: return '🏛️ Twin Cascading Courtyard Fountains';
-      case 36: return '🏛️ Left Glasshouse Conservatory Winter Garden';
-      case 37: return '🏛️ Right Wing Stone Balustraded Terrace';
-      case 38: return '🏛️ Twin Sculpted Guardian Lions';
-      case 39: return '🏛️ Formal Geometric Parterre Topiary Gardens';
-      case 40: return '🏛️ Covered Porte-Cochère Carriage Portico';
-      case 41: return '🏛️ Stately Perimeter Stone Pillars & Lamps';
-      case 42: return '🏛️ Circular Estate Driveway & Medallion';
-      case 43: return '🏛️ Rooftop Bronze Classical Statues';
-      case 44: return '🏛️ Flanking Estate Stone Guard Lodges';
-      case 45: return '🏛️ Royal Spear Boundary Gate';
-      case 46: return '🏰 Fortress Heavy Stone Ramparts';
-      case 47: return '🏰 Machicolated Stone Battlements';
-      case 48: return '🏰 West Bastion Flanking Stone Tower';
-      case 49: return '🏰 West Bastion Arrow Loop Embrasures';
-      case 50: return '🏰 West Tower Crenellated Crown';
-      case 51: return '🏰 West Tower Conical Slate Turret';
-      case 52: return '🏰 Reinforced Portcullis Iron Gate';
-      case 53: return '🏰 Western Connecting Aerial Arcade';
-      case 54: return '🏰 East Bastion Flanking Stone Tower';
-      case 55: return '🏰 East Bastion Arrow Loop Embrasures';
-      case 56: return '🏰 East Tower Crenellated Crown';
-      case 57: return '🏰 East Tower Conical Slate Turret';
-      case 58: return '🏰 Eastern Connecting Aerial Arcade';
-      case 59: return '🏰 Rampart Bronze Heavy Cannons';
-      case 60: return '🏰 Sovereign Spear Rampart Gates';
-      case 61: return '🏰 Massive Donjon Great Keep';
-      case 62: return '🏰 Keep Lancet Stained Glass Windows';
-      case 63: return '🏰 Keep Machicolated Parapet Corbels';
-      case 64: return '🏰 West Rear Octagonal Spire Tower';
-      case 65: return '🏰 East Rear Octagonal Spire Tower';
-      case 66: return '🏰 Aerial Defensive Battle-Bridge';
-      case 67: return '🏰 Citadel Bronze Signal Belfry';
-      case 68: return '🏰 Flanking Flying Stone Buttresses';
-      case 69: return '🏰 Fortress Ballista Emplacements';
-      case 70: return '🏰 Citadel Royal Standard Mast';
-      case 71: return '🏰 Castle Moat & Heavy Drawbridge';
-      case 72: return '🏰 Western Outer Barbican Watchtower';
-      case 73: return '🏰 Eastern Outer Barbican Watchtower';
-      case 74: return '🏰 Citadel War Horns & Heraldic Standards';
-      case 75: return '🏰 High Citadel 3rd Story Royal Gallery';
-      case 76: return '🏰 Twin Cantilevered Corner Bartizans';
-      case 77: return '🏰 Machicolated Parapet & Gilded Cresting';
-      case 78: return '🏰 Soaring Octagonal Chateau Clock Spire';
-      case 79: return '🏰 Upper Rampart Heavy Bronze Cannons';
-      case 80: return '🏰 Sprawling Perimeter Stone Curtain Walls';
-      case 81: return '🏰 Western Outer Gatehouse Fortified Tower';
-      case 82: return '🏰 Eastern Outer Gatehouse Fortified Tower';
-      case 83: return '🏰 Grand Triumphal Barbican Gate Arch';
-      case 84: return '🏰 High Aerial Stone Viaduct Skybridges';
-      case 85: return '🏰 Royal Imperial War Standards & Pennants';
-      case 86: return '🏰 Extended Perimeter Deep Water Moat';
-      case 87: return '🏰 Quad Cascading Royal Courtyard Fountains';
-      case 88: return '🏰 Quad Sculpted Golden Guardian Lions';
-      case 89: return '🏰 Citadel Night Sconces, Torches & Braziers';
-      case 90: return '🏛️ Monumental Rajput Imperial Palace Apex';
-      default: return '🏰 Monumental Estate';
+    if (d <= 7) {
+      return 'House $d • Cozy Cottage';
+    } else if (d <= 15) {
+      return 'House $d • Storybook Townhouse';
+    } else if (d <= 27) {
+      return 'House $d • Garden Chateau';
+    } else if (d <= 45) {
+      return 'House $d • Victorian Manor';
+    } else if (d <= 60) {
+      return 'House $d • Stone Fortress';
+    } else if (d <= 75) {
+      return 'House $d • Grand Citadel';
+    } else if (d <= 89) {
+      return 'House $d • Imperial Citadel';
+    } else {
+      return 'House $d • Imperial Sky Palace';
     }
   }
 

@@ -177,6 +177,15 @@ class _PocketDay1InteractiveFlowPageState
       await _tts.setLanguage('en-US');
       await _tts.setSpeechRate(0.48);
       await _tts.setVolume(1.0);
+      _tts.setCompletionHandler(() {
+        if (mounted) setState(() => _isSpeaking = false);
+      });
+      _tts.setCancelHandler(() {
+        if (mounted) setState(() => _isSpeaking = false);
+      });
+      _tts.setErrorHandler((_) {
+        if (mounted) setState(() => _isSpeaking = false);
+      });
     } catch (_) {}
 
     try {
@@ -223,12 +232,24 @@ class _PocketDay1InteractiveFlowPageState
     }
   }
 
+  String? _lastSpokenText;
+  DateTime? _lastSpokenTime;
+
   Future<void> _speak(String text) async {
+    final now = DateTime.now();
+    // Anti-looping debounce: ignore identical speech requests within 1.5 seconds
+    if (_lastSpokenText == text &&
+        _lastSpokenTime != null &&
+        now.difference(_lastSpokenTime!).inMilliseconds < 1500) {
+      return;
+    }
+    _lastSpokenText = text;
+    _lastSpokenTime = now;
+
     try {
       await _tts.stop();
-      setState(() => _isSpeaking = true);
+      if (mounted) setState(() => _isSpeaking = true);
       await _tts.speak(text);
-      if (mounted) setState(() => _isSpeaking = false);
     } catch (_) {
       if (mounted) setState(() => _isSpeaking = false);
     }

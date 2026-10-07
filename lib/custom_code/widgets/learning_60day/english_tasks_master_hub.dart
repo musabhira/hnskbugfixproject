@@ -52,6 +52,7 @@ import 'career_adventure/cyber_vocab_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'pocket_day1_tutor_curriculum.dart';
 import 'pocket_day1_interactive_flow_page.dart';
+import 'pocket_home_visit_modal.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -336,6 +337,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     if (_isMasterAdmin) return false; // 🔐 Master Admin bypasses all midnight locks
     if (_isSubscribed) return false; // VIP Subscribers bypass the 24-hour midnight wait lock!
     if (day <= 1) return false;
+    if (_isDayCompleted(day)) return false; // Completed days never wait for midnight!
     if (!_isDayCompleted(day - 1)) return false;
     final lastCompDate = _completedDates[day - 1] ?? _lastCompletedDateStr;
     if (lastCompDate == null || lastCompDate.isEmpty) return false;
@@ -4178,8 +4180,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               if (isWaitingForMidnight)
                 Positioned(
                   top: nodeSize + 3,
-                  left: 0,
-                  right: 0,
+                  left: -35,
+                  right: -35,
                   child: Center(
                     child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -4551,6 +4553,59 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     ),
                   ),
                 ),
+
+              // 7. 🏰 Home Visit Button (Visual house tour + Home Owners + Attack arena)
+              Positioned(
+                bottom: 4,
+                right: 6,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    PocketHomeVisitModal.show(
+                      context,
+                      day: day,
+                      userCurrentDay: currentDay,
+                      currentUserId: widget.userId ?? _supabase.auth.currentUser?.id,
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
+                      ),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.5),
+                        width: 0.8,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF2563EB).withValues(alpha: 0.4),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🏰', style: TextStyle(fontSize: 8)),
+                        const SizedBox(width: 3),
+                        Text(
+                          'HOME VISIT',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 7.5,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -6070,14 +6125,26 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     double x;
     double y;
 
+    // Strict Waiting-Pacing Guard (User Audio Directive):
+    // When Day 1 is finished and waiting for midnight, the avatar MUST sit at Day 2 (the waiting house), NOT jump ahead!
+    int effectiveAvatarDay = currentDay;
+    if (!atRuleNode && !_isMasterAdmin) {
+      for (int d = 1; d <= _totalDays; d++) {
+        if (!_isDayCompleted(d)) {
+          effectiveAvatarDay = d;
+          break;
+        }
+      }
+    }
+
     if (atRuleNode) {
       x = (screenWidth / 2) + 54;
       y = _ruleNodeY + 12;
     } else {
-      x = _getNodeX(currentDay, screenWidth);
-      y = _getNodeY(currentDay);
+      x = _getNodeX(effectiveAvatarDay, screenWidth);
+      y = _getNodeY(effectiveAvatarDay);
     }
-    final avatarConfig = _getAvatarForDay(atRuleNode ? 1 : currentDay);
+    final avatarConfig = _getAvatarForDay(atRuleNode ? 1 : effectiveAvatarDay);
 
     return Positioned(
       left: x - 54,
@@ -6097,22 +6164,22 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   if (atRuleNode) {
                     PocketWorldGameRulesModal.show(
                       context,
-                      currentDay: currentDay,
+                      currentDay: effectiveAvatarDay,
                       onPledgeAccepted: () {
                         setState(() => _hasAcceptedRules = true);
                         _loadData();
                       },
                     );
                   } else {
-                    final isWaitingForMidnight = _isDayWaitingForMidnight(currentDay);
-                    final isUnlocked = _isDayUnlocked(currentDay, currentDay);
-                    final isCompleted = _isDayCompleted(currentDay);
+                    final isWaitingForMidnight = _isDayWaitingForMidnight(effectiveAvatarDay);
+                    final isUnlocked = _isDayUnlocked(effectiveAvatarDay, effectiveAvatarDay);
+                    final isCompleted = _isDayCompleted(effectiveAvatarDay);
                     if (_isMasterAdmin || isCompleted || isUnlocked) {
-                      _startActiveSubStep(currentDay);
+                      _startActiveSubStep(effectiveAvatarDay);
                     } else if (isWaitingForMidnight) {
-                      _showMidnightLockedToast(currentDay);
+                      _showMidnightLockedToast(effectiveAvatarDay);
                     } else {
-                      _showLevelLockedToast(currentDay);
+                      _showLevelLockedToast(effectiveAvatarDay);
                     }
                   }
                 },
