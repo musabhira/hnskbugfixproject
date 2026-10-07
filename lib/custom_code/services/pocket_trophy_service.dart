@@ -871,6 +871,39 @@ class PocketTrophyService {
     return result;
   }
 
+  /// Get user IDs of pending pacts initiated by this user (Sent requests)
+  static Future<Set<String>> getAllPendingSentPactUserIds(String userId) async {
+    final result = <String>{};
+    if (userId.isEmpty) return result;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final keys = prefs.getKeys().where((k) => k.startsWith(kPrefsPactPrefix));
+      for (final k in keys) {
+        final val = prefs.getString(k);
+        if (val != null && val.contains(userId)) {
+          final decoded = Uri.splitQueryString(val);
+          final isAccepted = decoded['isAccepted'] == 'true';
+          final isForfeited = decoded['isForfeited'] == 'true';
+          final isCompleted = decoded['isCompleted'] == 'true';
+          if (!isAccepted && !isForfeited && !isCompleted) {
+            final initiatorId = decoded['initiatorId'] ?? decoded['user1Id'];
+            if (initiatorId == userId) {
+              final otherId = (decoded['user1Id'] == userId) ? decoded['user2Id'] : decoded['user1Id'];
+              if (otherId != null &&
+                  otherId.isNotEmpty &&
+                  otherId != userId &&
+                  !PocketRobotService.isRobotId(otherId) &&
+                  !PocketPresidentService.isPresidentId(otherId)) {
+                result.add(otherId);
+              }
+            }
+          }
+        }
+      }
+    } catch (_) {}
+    return result;
+  }
+
   /// Get all other user IDs who have an active or pending pact with this user
   static Future<Set<String>> getAllActiveOrPendingPactUserIds(
       String userId) async {

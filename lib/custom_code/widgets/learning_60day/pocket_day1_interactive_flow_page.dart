@@ -99,7 +99,6 @@ class _PocketDay1InteractiveFlowPageState
 
   late Day1Track _currentTrack;
   late int _activeStep; // 1 to 10
-  int _xpEarned = 0;
   final Map<int, bool> _completedSteps = {};
 
   // Native language
@@ -128,22 +127,17 @@ class _PocketDay1InteractiveFlowPageState
   final List<String> _assembledWords = [];
 
   // Step 5 Reading Room State
-  int _readingSentenceIndex = 0;
   final Map<int, int> _readingQuizAnswers = {};
 
   // Step 6 Spoken Lab State
   int _spokenChallengeIndex = 0;
-  String _lastRecognizedWords = '';
-  bool _spokenSuccess = false;
 
   // Step 10 Defense & Combat State
   final Set<int> _armedGates = {};
   int _botHp = 100;
-  bool _botDefeated = false;
 
   // Audio toggle & auto speech on entry
   bool _autoSpeechEnabled = true;
-  bool _isPlayingStory = false;
 
   @override
   void initState() {
@@ -323,7 +317,6 @@ class _PocketDay1InteractiveFlowPageState
     await prefs.setBool(key, true);
 
     const xp = 30;
-    _xpEarned += xp;
     if (uid != null && uid.isNotEmpty) {
       await PocketFortressDefenseService.recordTrainingPoints(xp, uid);
     }
@@ -988,8 +981,9 @@ class _PocketDay1InteractiveFlowPageState
       case 8:
         return _buildStep8PocketTalk(step);
       case 9:
+        return _buildStep9HouseDefense(step);
       case 10:
-        return _buildStep10HouseDefense(step);
+        return _buildStep10GateExam(step);
       default:
         return const SizedBox.shrink();
     }
@@ -2327,16 +2321,11 @@ class _PocketDay1InteractiveFlowPageState
             _speak(phrase);
             _startListening(
               onResult: (words) {
-                setState(() {
-                  _lastRecognizedWords = words;
-                  _spokenSuccess = true;
-                });
                 _speak('Great pronunciation!');
                 Timer(const Duration(milliseconds: 1400), () {
                   if (_spokenChallengeIndex < challenges.length - 1) {
                     setState(() {
                       _spokenChallengeIndex++;
-                      _spokenSuccess = false;
                     });
                   } else {
                     _markStepCompleted(6);
@@ -2657,7 +2646,7 @@ class _PocketDay1InteractiveFlowPageState
   // -------------------------------------------------------------
   // STEP 9/10: HOUSE DEFENSE SHIELD & CITADEL COMBAT
   // -------------------------------------------------------------
-  Widget _buildStep10HouseDefense(Day1StepModel step) {
+  Widget _buildStep9HouseDefense(Day1StepModel step) {
     final traps = (step.data['defenseTraps'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     final combat = step.data['combatTest'] as Map<String, dynamic>? ?? {};
 
@@ -2771,7 +2760,6 @@ class _PocketDay1InteractiveFlowPageState
                       if (optStr == combat['correct']) {
                         setState(() {
                           _botHp = 0;
-                          _botDefeated = true;
                         });
                         _speak('Critical attack! Citadel Bot Defeated!');
                       } else {
@@ -2850,19 +2838,124 @@ class _PocketDay1InteractiveFlowPageState
           width: double.infinity,
           child: ElevatedButton.icon(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700),
-              foregroundColor: Colors.black,
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(vertical: 14),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            onPressed: () {
+              HapticFeedback.heavyImpact();
+              _markStepCompleted(9);
+              setState(() => _activeStep = 10);
+            },
+            icon: const Icon(Icons.shield_rounded),
+            label: Text('COMPLETE STEP 9: DEFENSE ARMED (+30 XP) ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13.5)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // -------------------------------------------------------------
+  // STEP 10: HOUSE 1 FINAL GATE EXAM & UNLOCK HOUSE 2
+  // -------------------------------------------------------------
+  Widget _buildStep10GateExam(Day1StepModel step) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: double.infinity,
+          margin: const EdgeInsets.only(bottom: 16),
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFFB45309), Color(0xFF78350F)],
+            ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xFFFFD700), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                blurRadius: 18,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              const Text('🎓', style: TextStyle(fontSize: 48)),
+              const SizedBox(height: 10),
+              Text(
+                'HOUSE 1 FINAL GATE EXAM',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFFFFD700),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                'ഹൗസ് 1 പൂർത്തിയാക്കി ഹൗസ് 2 (Day 2) അൺലോക്ക് ചെയ്യുന്നതിനായി 8 ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('⭐', style: TextStyle(fontSize: 16)),
+                    const SizedBox(width: 8),
+                    Text(
+                      'PASS MARK: 60% (5/8 Correct)',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(
+          width: double.infinity,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+              elevation: 6,
             ),
             onPressed: () async {
               final passed = await PocketLevelExamDialog.show(context, level: 1);
               if (passed == true) {
+                _markStepCompleted(10);
                 await _onDay1FullyCompleted();
               }
             },
-            icon: const Icon(Icons.school_rounded),
-            label: Text('TAKE HOUSE 1 GATE EXAM (8 Qs) 🎓 ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14)),
+            icon: const Icon(Icons.school_rounded, color: Colors.black, size: 24),
+            label: Text(
+              'TAKE HOUSE 1 GATE EXAM (8 Qs) 🎓 ➔',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
+                letterSpacing: 0.6,
+              ),
+            ),
           ),
         ),
       ],

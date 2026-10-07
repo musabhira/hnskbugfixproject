@@ -216,9 +216,9 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
 
     // Update Falling Word Positions
     final size = MediaQuery.of(context).size;
-    final catchZoneY = size.height - 150.0;
+    final catchZoneY = size.height * 0.75;
     final characterScreenX = _characterNormalizedX * size.width;
-    final catchRadius = 60.0;
+    final catchRadius = 65.0;
 
     for (int i = _fallingItems.length - 1; i >= 0; i--) {
       final item = _fallingItems[i];
@@ -229,15 +229,15 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
       final distY = (item.y - catchZoneY).abs();
       final distX = (itemScreenX - characterScreenX).abs();
 
-      if (distY < 45.0 && distX < catchRadius && !item.isCaught) {
+      if (distY < 48.0 && distX < catchRadius && !item.isCaught) {
         item.isCaught = true;
         _fallingItems.removeAt(i);
         _handleWordCaught(item);
         break;
       }
 
-      // If fallen past bottom of screen without catch
-      if (item.y > size.height - 40.0) {
+      // If fallen past pathway without catch
+      if (item.y > size.height * 0.84) {
         _fallingItems.removeAt(i);
       }
     }
@@ -270,7 +270,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
     for (int i = 0; i < waveItems.length; i++) {
       final laneX = 0.08 + (i * laneStep) + (_random.nextDouble() * 0.04);
       final speedJitter = (_random.nextDouble() * 20.0) - 10.0;
-      final startY = -40.0 - (_random.nextDouble() * 60.0);
+      final startY = 135.0 + (_random.nextDouble() * 25.0);
 
       _fallingItems.add(
         FallingWordItem(
@@ -478,7 +478,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
     );
   }
 
-  // --- 🎈 FALLING WORD BUBBLE ---
+  // --- 🎈 FALLING WORD BUBBLE (Supports direct Tap-to-Catch & Drag Catch!) ---
   Widget _buildFallingWordBubble(FallingWordItem item) {
     final size = MediaQuery.of(context).size;
     final posX = item.x * size.width - 65.0;
@@ -487,52 +487,61 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
     return Positioned(
       left: posX,
       top: item.y,
-      child: Container(
-        width: 130,
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: isTarget
-                ? const [Color(0xFFFFFBEB), Color(0xFFFEF3C7)]
-                : const [Color(0xFFFFFFFF), Color(0xFFF1F5F9)],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-          borderRadius: BorderRadius.circular(22),
-          border: Border.all(
-            color: isTarget ? const Color(0xFFF59E0B) : const Color(0xFFCBD5E1),
-            width: 2.2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: (isTarget ? const Color(0xFFF59E0B) : Colors.black)
-                  .withValues(alpha: 0.22),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+      child: GestureDetector(
+        onTap: () {
+          if (!item.isCaught) {
+            item.isCaught = true;
+            _fallingItems.remove(item);
+            _handleWordCaught(item);
+          }
+        },
+        child: Container(
+          width: 130,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: isTarget
+                  ? const [Color(0xFFFFFBEB), Color(0xFFFEF3C7)]
+                  : const [Color(0xFFFFFFFF), Color(0xFFF1F5F9)],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
             ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              item.item.emoji,
-              style: const TextStyle(fontSize: 26),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isTarget ? const Color(0xFFFFD700) : const Color(0xFF94A3B8),
+              width: isTarget ? 3.0 : 2.0,
             ),
-            const SizedBox(height: 2),
-            Text(
-              item.item.word.toUpperCase(),
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF0F172A),
-                fontSize: 15,
-                fontWeight: FontWeight.w900,
-                letterSpacing: 0.8,
+            boxShadow: [
+              BoxShadow(
+                color: (isTarget ? const Color(0xFFFFD700) : Colors.black)
+                    .withValues(alpha: isTarget ? 0.45 : 0.22),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
               ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                item.item.emoji,
+                style: const TextStyle(fontSize: 26),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                item.item.word.toUpperCase(),
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF0F172A),
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.8,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -542,7 +551,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
   Widget _buildCharacterWidget() {
     final size = MediaQuery.of(context).size;
     final posX = _characterNormalizedX * size.width - 45.0;
-    final posY = size.height - 170.0;
+    final posY = size.height * 0.72;
 
     return Positioned(
       left: posX,
@@ -1605,9 +1614,9 @@ class _ParkEnvironmentPainter extends CustomPainter {
     _drawTree(canvas, size.width * 0.88, size.height * 0.70, 42);
 
     // 6. Walking Path & Foreground Grass
-    final groundPaint = Paint()..color = const Color(0xFF22C55E);
+    final groundPaint = Paint()..color = const Color(0xFF16A34A);
     canvas.drawRect(
-      Rect.fromLTWH(0, size.height - 100, size.width, 100),
+      Rect.fromLTWH(0, size.height * 0.74, size.width, size.height * 0.26),
       groundPaint,
     );
 
@@ -1615,7 +1624,7 @@ class _ParkEnvironmentPainter extends CustomPainter {
     final pathPaint = Paint()..color = const Color(0xFFE2E8F0);
     canvas.drawRRect(
       RRect.fromRectAndRadius(
-        Rect.fromLTWH(0, size.height - 80, size.width, 42),
+        Rect.fromLTWH(0, size.height * 0.78, size.width, 50),
         const Radius.circular(8),
       ),
       pathPaint,
@@ -1625,7 +1634,7 @@ class _ParkEnvironmentPainter extends CustomPainter {
     final flowerPaint = Paint()..color = const Color(0xFFF43F5E);
     for (int i = 0; i < 7; i++) {
       final fx = (size.width * 0.12) + (i * size.width * 0.13);
-      final fy = size.height - 90.0 + (i % 2 == 0 ? 3 : -3);
+      final fy = size.height * 0.76 + (i % 2 == 0 ? 3 : -3);
       canvas.drawCircle(Offset(fx, fy), 4, flowerPaint);
       canvas.drawCircle(Offset(fx, fy), 1.5, Paint()..color = Colors.yellow);
     }

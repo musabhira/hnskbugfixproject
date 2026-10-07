@@ -100,6 +100,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Set<String> _pocketTalkPeerIds = {};
   Set<String> _pocketTalkActivePeerIds = {};
   Set<String> _pocketTalkPendingPeerIds = {};
+  Set<String> _pocketTalkPendingSentPeerIds = {};
   int _pocketTalkSubTabIndex = 0; // 0: Received (First/Main), 1: Sent, 2: Active / Accepted (4-Day Pacts)
   bool _isCongestedSearch = false; // Toggle for Congested / Compact View
   int _searchPeopleOffset = 0;
@@ -117,11 +118,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           await PocketTrophyService.getAllActiveAcceptedPactUserIds(uid);
       final pendingIds =
           await PocketTrophyService.getAllPendingPactUserIds(uid);
+      final sentPendingIds =
+          await PocketTrophyService.getAllPendingSentPactUserIds(uid);
       final allIds = {...activeIds, ...pendingIds};
       if (mounted) {
         safeSetState(() {
           _pocketTalkActivePeerIds = activeIds;
           _pocketTalkPendingPeerIds = pendingIds;
+          _pocketTalkPendingSentPeerIds = sentPendingIds;
           _pocketTalkPeerIds = allIds;
         });
       }
@@ -130,9 +134,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
         await PocketTalkEngine.autoRefillPocketTalkPacts(uid);
         final updatedPending =
             await PocketTrophyService.getAllPendingPactUserIds(uid);
+        final updatedSentPending =
+            await PocketTrophyService.getAllPendingSentPactUserIds(uid);
         if (mounted) {
           safeSetState(() {
             _pocketTalkPendingPeerIds = updatedPending;
+            _pocketTalkPendingSentPeerIds = updatedSentPending;
             _pocketTalkPeerIds = {
               ..._pocketTalkActivePeerIds,
               ...updatedPending
@@ -4182,10 +4189,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         final isActive = _pocketTalkActivePeerIds.contains(c.id);
                         if (_pocketTalkSubTabIndex == 0) {
                           // 📥 Received (First / Priority): Incoming requests sent by others
-                          return !isActive && c.lastSenderId != myUid;
+                          return !isActive && (c.lastSenderId != myUid && !_pocketTalkPendingSentPeerIds.contains(c.id));
                         } else if (_pocketTalkSubTabIndex == 1) {
                           // 📤 Sent: Outgoing requests initiated by current user
-                          return !isActive && c.lastSenderId == myUid;
+                          return !isActive && (c.lastSenderId == myUid || _pocketTalkPendingSentPeerIds.contains(c.id));
                         } else {
                           // 🤝 Active / Accepted: Agreed 4-Day Spoken Pacts
                           return isActive;
@@ -4200,6 +4207,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           final ctxType = req['context_type']?.toString() ?? '';
                           final msg = req['message']?.toString() ?? '';
                           final isPtReq = ctxType == 'pocket_talk' ||
+                              _pocketTalkPendingSentPeerIds.contains(recId) ||
                               _pocketTalkPendingPeerIds.contains(recId) ||
                               msg.contains('Spoken English Pact') ||
                               msg.contains('Pocket Talk');

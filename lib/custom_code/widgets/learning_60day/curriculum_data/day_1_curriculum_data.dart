@@ -696,6 +696,27 @@ class Day1CurriculumJsonData {
         }
       ]
     }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_10_gate_exam",
+      "title": {
+        "en": "House 1 Final Gate Exam & Unlock House 2",
+        "ml": "ഹൗസ് 1 ഫൈനൽ എക്സാം & ഹൗസ് 2 അൺലോക്ക് 🎓🏆",
+        "hi": "हाउस 1 फाइनल गेट परीक्षा और हाउस 2 अनलॉक",
+        "ta": "ஹவுஸ் 1 இறுதித் தேர்வு & ஹவுஸ் 2 திறத்தல்"
+      },
+      "icon": "🎓",
+      "gameType": "gate_exam",
+      "description": {
+        "en": "Pass the 8-question exam to master House 1, unlock House 2, and start your journey on Day 2!",
+        "ml": "ഹൗസ് 1 പൂർത്തിയാക്കി ഹൗസ് 2 അൺലോക്ക് ചെയ്യുന്നതിനായി 8 ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക!",
+        "hi": "हाउस 1 पूरा करें और हाउस 2 अनलॉक करने के लिए परीक्षा पास करें!",
+        "ta": "ஹவுஸ் 1 முடித்து ஹவுஸ் 2 ஐ திறக்க 8 கேள்விகளுக்கு பதிலளிக்கவும்!"
+      },
+      "passPercentage": 60,
+      "totalQuestions": 8
+    }
   ],
   "houseGateExam": {
     "title": {

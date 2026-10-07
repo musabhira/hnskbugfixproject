@@ -404,10 +404,7 @@ class _MeadowRunnerGamePageState extends State<MeadowRunnerGamePage>
       );
     }
 
-    return SizedBox(
-      height: 480,
-      child: content,
-    );
+    return content;
   }
 
   Widget _buildHud(String prompt, int totalRounds) {
@@ -563,19 +560,19 @@ class _MeadowRunnerGamePageState extends State<MeadowRunnerGamePage>
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: isTarget
-                          ? [const Color(0xFFFEF08A), const Color(0xFFF59E0B)]
-                          : [Colors.white, const Color(0xFFE2E8F0)],
+                          ? const [Color(0xFFFFD700), Color(0xFFF59E0B)]
+                          : const [Color(0xFF0F172A), Color(0xFF1E293B)],
                     ),
                     border: Border.all(
-                      color: isTarget ? const Color(0xFFFFD700) : const Color(0xFF94A3B8),
-                      width: 3.2,
+                      color: isTarget ? const Color(0xFFFEF08A) : const Color(0xFF38BDF8),
+                      width: 3.4,
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: (isTarget ? const Color(0xFFF59E0B) : Colors.black)
-                            .withValues(alpha: 0.35),
-                        blurRadius: 12,
-                        offset: const Offset(0, 5),
+                        color: (isTarget ? const Color(0xFFFFD700) : const Color(0xFF38BDF8))
+                            .withValues(alpha: 0.45),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
@@ -583,8 +580,8 @@ class _MeadowRunnerGamePageState extends State<MeadowRunnerGamePage>
                     child: Text(
                       opt,
                       style: GoogleFonts.outfit(
-                        color: const Color(0xFF0F172A),
-                        fontSize: 28,
+                        color: isTarget ? const Color(0xFF0F172A) : Colors.white,
+                        fontSize: 32,
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -708,10 +705,10 @@ class _MeadowLandscapePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // 1. Sky Gradient (Bright azure day sky)
+    // 1. Sky Gradient (Deep rich azure blue)
     final skyPaint = Paint()
       ..shader = const LinearGradient(
-        colors: [Color(0xFF38BDF8), Color(0xFF7DD3FC), Color(0xFFBAE6FD)],
+        colors: [Color(0xFF0369A1), Color(0xFF0284C7), Color(0xFF0EA5E9)],
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
       ).createShader(Rect.fromLTWH(0, 0, size.width, size.height));
@@ -731,8 +728,8 @@ class _MeadowLandscapePainter extends CustomPainter {
     _drawCloud(canvas, (size.width * 0.15 + cloudOffset) % (size.width + 120) - 60, 50, 24);
     _drawCloud(canvas, (size.width * 0.60 + cloudOffset * 0.8) % (size.width + 120) - 60, 85, 20);
 
-    // 4. Distant Rolling Green Hills
-    final farHillPaint = Paint()..color = const Color(0xFF86EFAC);
+    // 4. Distant Rolling Green Hills (Deep forest green)
+    final farHillPaint = Paint()..color = const Color(0xFF15803D);
     final farHillPath = Path()
       ..moveTo(0, size.height * 0.46)
       ..quadraticBezierTo(size.width * 0.25, size.height * 0.40, size.width * 0.55, size.height * 0.47)
@@ -742,8 +739,8 @@ class _MeadowLandscapePainter extends CustomPainter {
       ..close();
     canvas.drawPath(farHillPath, farHillPaint);
 
-    // 5. Near Rolling Meadows (Vibrant green grass)
-    final nearHillPaint = Paint()..color = const Color(0xFF4ADE80);
+    // 5. Near Rolling Meadows (Lush vibrant grass)
+    final nearHillPaint = Paint()..color = const Color(0xFF16A34A);
     final nearHillPath = Path()
       ..moveTo(0, size.height * 0.54)
       ..quadraticBezierTo(size.width * 0.35, size.height * 0.50, size.width * 0.70, size.height * 0.56)
@@ -754,12 +751,12 @@ class _MeadowLandscapePainter extends CustomPainter {
     canvas.drawPath(nearHillPath, nearHillPaint);
 
     // 6. Foreground Runner Meadow & Stone Pathway
-    final groundPaint = Paint()..color = const Color(0xFF22C55E);
+    final groundPaint = Paint()..color = const Color(0xFF14532D);
     canvas.drawRect(Rect.fromLTWH(0, size.height * 0.62, size.width, size.height * 0.38), groundPaint);
 
     // 3 Running Track Lanes (Perspective lines)
     final laneLinePaint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.45)
+      ..color = Colors.white.withValues(alpha: 0.55)
       ..strokeWidth = 2.0
       ..style = PaintingStyle.stroke;
 

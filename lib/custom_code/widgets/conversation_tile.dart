@@ -784,27 +784,19 @@ class _ConversationTileState extends State<ConversationTile> {
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 14, vertical: 4.5),
         decoration: BoxDecoration(
-          color: isPactActive
-              ? (isDark
-                  ? const Color(0xFF1E170A).withValues(alpha: 0.95)
-                  : const Color(0xFFFFFBEA).withValues(alpha: 0.95))
-              : (isDark
-                  ? const Color(0xFF131B26).withValues(alpha: 0.75)
-                  : Colors.white.withValues(alpha: 0.9)),
+          color: isDark
+              ? const Color(0xFF131B26).withValues(alpha: 0.75)
+              : Colors.white.withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isPactActive
-                ? const Color(0xFFFFB300)
-                : borderColor,
-            width: isPactActive ? 1.5 : 1.0,
+            color: borderColor,
+            width: 1.0,
           ),
           boxShadow: [
             BoxShadow(
-              color: isPactActive
-                  ? const Color(0xFFFFB300).withValues(alpha: isDark ? 0.22 : 0.12)
-                  : Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
-              blurRadius: isPactActive ? 10 : 6,
-              spreadRadius: isPactActive ? 1 : 0,
+              color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+              blurRadius: 6,
+              spreadRadius: 0,
               offset: const Offset(0, 1.5),
             ),
           ],
@@ -897,7 +889,16 @@ class _ConversationTileState extends State<ConversationTile> {
                             HapticFeedback.mediumImpact();
                           }
                         },
-                        child: _buildAvatar(isDark),
+                        child: Container(
+                          padding: const EdgeInsets.all(2.0),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: (_cachedPact != null && !_cachedPact!.isForfeited) || _isPendingSent
+                                ? Border.all(color: const Color(0xFFFFD700), width: 2.2)
+                                : null,
+                          ),
+                          child: _buildAvatar(isDark),
+                        ),
                       ),
                       if (widget.conversation.isOnline &&
                           !widget.conversation.isGroup)

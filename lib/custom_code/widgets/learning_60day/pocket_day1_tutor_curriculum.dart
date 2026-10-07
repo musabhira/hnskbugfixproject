@@ -178,6 +178,8 @@ class Day1StepModel {
         return const Color(0xFF6366F1); // Indigo (Community Chat)
       case 9:
         return const Color(0xFFE11D48); // Crimson Rose (House Defense)
+      case 10:
+        return const Color(0xFFF59E0B); // Golden Amber (Gate Exam)
       default:
         return const Color(0xFF3B82F6);
     }
