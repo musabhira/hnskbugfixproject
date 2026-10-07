@@ -126,6 +126,10 @@ class _PocketDay1InteractiveFlowPageState
   int _botHp = 100;
   bool _botDefeated = false;
 
+  // Audio toggle & auto speech on entry
+  bool _autoSpeechEnabled = true;
+  bool _isPlayingStory = false;
+
   @override
   void initState() {
     super.initState();
@@ -140,6 +144,23 @@ class _PocketDay1InteractiveFlowPageState
     _speech = stt.SpeechToText();
     _initAudioAndSpeech();
     _loadState();
+    _triggerAutoSpeechForStep(_activeStep);
+  }
+
+  void _triggerAutoSpeechForStep(int step) {
+    if (!_autoSpeechEnabled) return;
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (!mounted || !_autoSpeechEnabled) return;
+      if (step == 1) {
+        _speak('Letters and Phonics. A for Apple, B for Ball, C for Cat, D for Dog, E for Egg, F for Fish.');
+      } else if (step == 2) {
+        _speak('Vocabulary Words. Apple, Book, Water, Cat, Dog, Door, Tea, Food, Money, Friend.');
+      } else if (step == 3) {
+        _speak('Game 1: Letter Hunt Run. Tap the matching letters as fast as you can!');
+      } else if (step == 4) {
+        _speak('Game 2: Match and Sentence Builder. Build the sentence correctly!');
+      }
+    });
   }
 
   @override
@@ -534,7 +555,52 @@ class _PocketDay1InteractiveFlowPageState
               ),
             ),
           ),
-          const SizedBox(width: 6),
+          // 🔊 Audio Mute / Unmute Toggle Button
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() {
+                _autoSpeechEnabled = !_autoSpeechEnabled;
+                if (!_autoSpeechEnabled) {
+                  _tts.stop();
+                  _isSpeaking = false;
+                } else {
+                  _triggerAutoSpeechForStep(_activeStep);
+                }
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+              decoration: BoxDecoration(
+                color: _autoSpeechEnabled
+                    ? const Color(0xFF10B981).withValues(alpha: 0.22)
+                    : Colors.white.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: _autoSpeechEnabled ? const Color(0xFF10B981) : Colors.white24,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _autoSpeechEnabled ? Icons.volume_up_rounded : Icons.volume_off_rounded,
+                    color: _autoSpeechEnabled ? const Color(0xFF10B981) : Colors.white60,
+                    size: 13,
+                  ),
+                  const SizedBox(width: 3),
+                  Text(
+                    _autoSpeechEnabled ? 'AUDIO' : 'OFF',
+                    style: GoogleFonts.outfit(
+                      color: _autoSpeechEnabled ? const Color(0xFF10B981) : Colors.white60,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 5),
           // Pre-check button
           GestureDetector(
             onTap: () async {
@@ -676,10 +742,10 @@ class _PocketDay1InteractiveFlowPageState
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(t.titleEn, style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                              Text(t.titleMl, style: GoogleFonts.inter(color: Colors.white70, fontSize: 11)),
+                              Text(t.displayNameEn, style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                              Text(t.displayNameMl, style: GoogleFonts.inter(color: Colors.white70, fontSize: 11)),
                               const SizedBox(height: 2),
-                              Text(t.descriptionEn, style: GoogleFonts.inter(color: Colors.white38, fontSize: 10)),
+                              Text(t.goalEn, style: GoogleFonts.inter(color: Colors.white38, fontSize: 10)),
                             ],
                           ),
                         ),
@@ -727,6 +793,7 @@ class _PocketDay1InteractiveFlowPageState
             onTap: () {
               HapticFeedback.selectionClick();
               setState(() => _activeStep = stepNum);
+              _triggerAutoSpeechForStep(stepNum);
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
