@@ -2679,16 +2679,15 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
       {required String bucketName, required FileType fileType}) async {
     try {
       final result = await FilePicker.pickFiles(type: fileType);
-      if (result == null ||
-          result.files.isEmpty ||
-          result.files.single.path == null) {
+      if (result.isEmpty || result.first.path == null) {
         return null;
       }
 
-      final path = result.files.single.path!;
+      final pickedFile = result.first;
+      final path = pickedFile.path!;
       final file = File(path);
       final name =
-          '${DateTime.now().millisecondsSinceEpoch}_${result.files.single.name.replaceAll(RegExp(r'[^a-zA-Z0-9.]'), '_')}';
+          '${DateTime.now().millisecondsSinceEpoch}_${pickedFile.name.replaceAll(RegExp(r'[^a-zA-Z0-9.]'), '_')}';
 
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(

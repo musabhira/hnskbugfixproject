@@ -27,9 +27,7 @@ class PocketLanguageService {
       if (savedLang == null && currentUserId != null) {
         savedLang = prefs.getString('pm_native_language_$currentUserId');
       }
-      if (savedLang == null) {
-        savedLang = prefs.getString(kPrefMissionLang);
-      }
+      savedLang ??= prefs.getString(kPrefMissionLang);
 
       if (savedLang != null && savedLang.isNotEmpty) {
         activeLanguageNotifier.value = _normalizeLanguage(savedLang);
@@ -330,7 +328,7 @@ class PocketLanguageService {
     }
   }
 
-  /// English Levels with native descriptions
+  /// English Levels with native descriptions (3 Clean Master Tracks: Zero, Middle, Higher)
   static List<Map<String, String>> getEnglishLevels(String langName) {
     final l = _normalizeLanguage(langName).toLowerCase();
 
@@ -339,33 +337,18 @@ class PocketLanguageService {
         return [
           {
             'title': 'Level 0: Zero Foundation (ABC नहीं जानते)',
-            'subtitle': 'बिल्कुल शुरुआत - ध्वनि और आवाज़ से सीखें',
+            'subtitle': 'बिल्कुल शुरुआत - बुनियादी अक्षर और आवाज़ से सीखें',
             'emoji': '🌱',
           },
           {
-            'title': 'Level 1: Beginner (रोजमर्रा के शब्द)',
-            'subtitle': 'कुछ शब्द जानते हैं, पर वाक्य नहीं बोल पाते',
-            'emoji': '💬',
-          },
-          {
-            'title': 'Level 2: Elementary (बुनियादी ज्ञान, झिझक)',
-            'subtitle': 'साधारण वाक्य आते हैं, पर बोलने में हिचकिचाहट है',
-            'emoji': '🧭',
-          },
-          {
-            'title': 'Level 3: Middle (सरल बातचीत)',
-            'subtitle': 'बात कर सकते हैं, पर प्रवाह और आत्मविश्वास चाहिए',
+            'title': 'Level 1: Core Middle (साधारण बातचीत / मिडिल)',
+            'subtitle': 'बुनियादी शब्द जानते हैं, आत्मविश्वास से वाक्य बनाना और बोलना सीखें',
             'emoji': '🗣️',
           },
           {
-            'title': 'Level 4: Advanced (कार्यक्षेत्र और करियर)',
-            'subtitle': 'नौकरी के इंटरव्यू और नेतृत्व के लिए पेशेवर अंग्रेज़ी',
-            'emoji': '💼',
-          },
-          {
-            'title': 'Level 5: Expert (उत्कृष्ट प्रवाह और भाषण)',
-            'subtitle': 'सार्वजनिक भाषण और अंतरराष्ट्रीय स्तर पर धाराप्रवाह',
-            'emoji': '👑',
+            'title': 'Level 2: Higher Fluency (प्रवाह और करियर / उच्च)',
+            'subtitle': 'इंटरव्यू, ऑफिस और प्राकृतिक प्रवाह के साथ धाराप्रवाह अंग्रेज़ी',
+            'emoji': '🚀',
           },
         ];
 
@@ -373,67 +356,37 @@ class PocketLanguageService {
         return [
           {
             'title': 'Level 0: Zero Foundation (ABC தெரியாது)',
-            'subtitle': 'முற்றிலும் புதிது - ஒலி மற்றும் உச்சரிப்பில் பழகுங்கள்',
+            'subtitle': 'முற்றிலும் புதிது - அடிப்படை எழுத்துக்கள் மற்றும் ஒலிகள்',
             'emoji': '🌱',
           },
           {
-            'title': 'Level 1: Beginner (அன்றாட வார்த்தைகள்)',
-            'subtitle': 'சில வார்த்தைகள் தெரியும், வாக்கியமாகப் பேச முடிவதில்லை',
-            'emoji': '💬',
-          },
-          {
-            'title': 'Level 2: Elementary (அடிப்படை அறிவு, தயக்கம்)',
-            'subtitle': 'எளிய வாக்கியங்கள் தெரியும், தயக்கமின்றிப் பேசப் பயிற்சி',
-            'emoji': '🧭',
-          },
-          {
-            'title': 'Level 3: Middle (எளிய உரையாடல்கள்)',
-            'subtitle': 'உரையாட முடியும், சரளமான ஆங்கிலமும் நம்பிக்கையும் தேவை',
+            'title': 'Level 1: Core Middle (எளிய உரையாடல்கள் / மிடில்)',
+            'subtitle': 'வார்த்தைகள் தெரியும், வாக்கியங்கள் அமைத்து சரளமாகப் பேசப் பழகுங்கள்',
             'emoji': '🗣️',
           },
           {
-            'title': 'Level 4: Advanced (பணியிடம் மற்றும் தொழில்)',
-            'subtitle': 'வேலை நேர்காணல் மற்றும் நிர்வாகத்திற்கான உயர்தர ஆங்கிலம்',
-            'emoji': '💼',
-          },
-          {
-            'title': 'Level 5: Expert (முழுமையான சரளம் மற்றும் பேச்சு)',
-            'subtitle': 'மேடைப் பேச்சு மற்றும் உலகளாவிய ஆளுமைக்கான ஆங்கிலம்',
-            'emoji': '👑',
+            'title': 'Level 2: Higher Fluency (முழு சரளம் & தொழில்முறை)',
+            'subtitle': 'வேலை நேர்காணல் மற்றும் நம்பிக்கையான சரளமான ஆங்கிலம்',
+            'emoji': '🚀',
           },
         ];
 
       case 'malayalam':
         return [
           {
-            'title': 'Level 0: Zero Foundation (ABC അറിയില്ല)',
-            'subtitle': 'പൂർണ്ണമായും തുടക്കം - ശബ്ദങ്ങളും ഉച്ചാരണവും കേട്ട് പഠിക്കാം',
+            'title': 'Level 0: Zero Foundation (ABC അറിയില്ല / തുടക്കം)',
+            'subtitle': 'പൂർണ്ണമായും തുടക്കം - അക്ഷരങ്ങളും ശബ്ദങ്ങളും ഉച്ചാരണവും കേട്ട് പഠിക്കാം',
             'emoji': '🌱',
           },
           {
-            'title': 'Level 1: Beginner (നിത്യോപയോഗ വാക്കുകൾ)',
-            'subtitle': 'ചില വാക്കുകൾ അറിയാം, എന്നാൽ വാക്യങ്ങൾ സംസാരിക്കാൻ അറിയില്ല',
-            'emoji': '💬',
-          },
-          {
-            'title': 'Level 2: Elementary (ഏകദേശ ജ്ഞാനം, മടിയുള്ളവർ)',
-            'subtitle': 'ലളിതമായ വാക്യങ്ങൾ അറിയാം, മടിയും സംശയവും മാറണം',
-            'emoji': '🧭',
-          },
-          {
-            'title': 'Level 3: Middle (ലളിതമായ സംഭാഷണം / മിഡിൽ)',
-            'subtitle': 'സംസാരിക്കാൻ കഴിയും, ഒഴുക്കും ആത്മവിശ്വാസവും വേണം',
+            'title': 'Level 1: Core Middle (സാധാരണ ഇംഗ്ലീഷ് & സംഭാഷണം / മിഡിൽ)',
+            'subtitle': 'വാക്കുകൾ അറിയാം, വാക്യങ്ങൾ നിർമ്മിക്കാനും സംസാരിക്കാനും പഠിക്കാം',
             'emoji': '🗣️',
           },
           {
-            'title': 'Level 4: Advanced (ജോലിയും കരിയറും)',
-            'subtitle': 'ജോലി ഇന്റർവ്യൂവിനും ലീഡർഷിപ്പിനും ആവശ്യമായ ഇംഗ്ലീഷ്',
-            'emoji': '💼',
-          },
-          {
-            'title': 'Level 5: Expert (പൂർണ്ണ പ്രാവീണ്യവും വാക്ചാതുര്യവും)',
-            'subtitle': 'പൊതു പ്രസംഗങ്ങളും അന്താരാഷ്ട്ര നിലവാരമുള്ള ഇംഗ്ലീഷും',
-            'emoji': '👑',
+            'title': 'Level 2: Higher Fluency (കോൺഫിഡൻസും ഫ്ലുവെൻസിയും / ഡിഗ്രി & കരിയർ)',
+            'subtitle': 'ഇന്റർവ്യൂ, ഓഫീസ്, പൊതു ഇടങ്ങളിൽ ഒഴുക്കോടെ സംസാരിക്കാനുള്ള ഇംഗ്ലീഷ്',
+            'emoji': '🚀',
           },
         ];
 
@@ -441,33 +394,18 @@ class PocketLanguageService {
         return [
           {
             'title': 'Level 0: Zero Foundation (Starting from scratch)',
-            'subtitle': 'Absolute zero - learn from sounds & voice',
+            'subtitle': 'Absolute zero - learn from letters, sounds & voice',
             'emoji': '🌱',
           },
           {
-            'title': 'Level 1: Beginner (Basic everyday words)',
-            'subtitle': 'Know some words, but cannot speak sentences',
-            'emoji': '💬',
-          },
-          {
-            'title': 'Level 2: Elementary (Basic phrases & hesitation)',
-            'subtitle': 'Know basic phrases, has hesitation & needs speech habits',
-            'emoji': '🧭',
-          },
-          {
-            'title': 'Level 3: Middle (Simple conversations)',
-            'subtitle': 'Can converse, want fluency & zero hesitation',
+            'title': 'Level 1: Core Middle (Everyday Sentences & Conversation)',
+            'subtitle': 'Know some words, learn to build sentences and speak freely',
             'emoji': '🗣️',
           },
           {
-            'title': 'Level 4: Advanced (Workplace & Career)',
-            'subtitle': 'Fluent speaker targeting job interviews & leadership',
-            'emoji': '💼',
-          },
-          {
-            'title': 'Level 5: Expert (Peak Fluency & Oratory)',
-            'subtitle': 'Master eloquence, public speaking & international wit',
-            'emoji': '👑',
+            'title': 'Level 2: Higher Fluency (Confidence, Interviews & Career)',
+            'subtitle': 'Natural fluency, professional expressions & confidence',
+            'emoji': '🚀',
           },
         ];
     }

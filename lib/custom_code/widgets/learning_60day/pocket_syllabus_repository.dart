@@ -487,31 +487,34 @@ class PocketSyllabusRepository {
     await prefs.setString('pm_english_level', getTrack(level).nameEn);
   }
 
+  /// The 3 Definitive Master Tracks (Zero, Middle, Higher)
+  static List<SyllabusTrack> get threeMasterTracks => [
+    tracks[LearnerLevel.zero]!,
+    tracks[LearnerLevel.middle]!,
+    tracks[LearnerLevel.expert]!,
+  ];
+
   /// Heuristic to determine level from diagnostic answers
   static LearnerLevel resolveLevelFromText(String levelString) {
     final lower = levelString.toLowerCase();
-    if (lower.contains('expert') ||
-        lower.contains('peak') ||
-        lower.contains('oratory') ||
-        lower.contains('leadership')) {
-      return LearnerLevel.expert;
-    } else if (lower.contains('advanced') ||
+    if (lower.contains('zero') ||
+        lower.contains('level 0') ||
+        lower.contains('ശൂന്യ') ||
+        lower.contains('തുടക്കം') ||
+        lower.contains('abc അറിയില്ല') ||
+        lower.contains('abc नहीं')) {
+      return LearnerLevel.zero;
+    } else if (lower.contains('higher') ||
+        lower.contains('level 2') ||
+        lower.contains('ഹൈ') ||
+        lower.contains('fluency') ||
+        lower.contains('ഡിഗ്രി') ||
         lower.contains('career') ||
-        lower.contains('job')) {
-      return LearnerLevel.advanced;
-    } else if (lower.contains('middle') ||
-        lower.contains('intermediate') ||
-        lower.contains('മിഡിൽ')) {
-      return LearnerLevel.middle;
-    } else if (lower.contains('elementary') ||
-        lower.contains('ഏകദേശം') ||
-        lower.contains('habit')) {
-      return LearnerLevel.elementary;
-    } else if (lower.contains('common words') ||
-        lower.contains('beginner') ||
-        lower.contains('വാക്കുകൾ')) {
-      return LearnerLevel.beginner;
+        lower.contains('expert') ||
+        lower.contains('advanced')) {
+      return LearnerLevel.expert;
     }
-    return LearnerLevel.zero;
+    // Default to Middle Track
+    return LearnerLevel.middle;
   }
 }

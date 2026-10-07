@@ -190,7 +190,7 @@ class _PocketDayOpenWorldAdventurePageState
     return math.atan2(y2 - y1, delta * 2);
   }
 
-  Day1Track _day1Track = Day1Track.zero;
+  Day1Track _day1Track = Day1Track.middle;
   int get _totalSteps => widget.day == 1 ? 8 : 17;
 
   /// Exact coordinate of milestone step on the mountain slope
@@ -220,6 +220,8 @@ class _PocketDayOpenWorldAdventurePageState
             break;
           }
         }
+      } else {
+        _day1Track = Day1Track.middle;
       }
     }
 

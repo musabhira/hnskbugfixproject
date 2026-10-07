@@ -329,15 +329,37 @@ class Day1Curriculum {
   // -------------------------------------------------------------
   static List<Day1StepModel> getSteps([Day1Track? track]) {
     final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
+    final currentTrack = track ?? Day1Track.middle;
+
     return rawSteps.map((s) {
       final map = s as Map<String, dynamic>;
       final stepNum = map['stepNumber'] as int? ?? 1;
-      final titleEn = Day1CurriculumJsonData.getLocalizedString(map['title'], lang: 'en');
-      final titleMl = Day1CurriculumJsonData.getLocalizedString(map['title'], lang: 'ml');
-      final descEn = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'en');
-      final descMl = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'ml');
-      final icon = map['icon']?.toString() ?? '📚';
-      final gameType = map['gameType']?.toString() ?? 'generic';
+      var titleEn = Day1CurriculumJsonData.getLocalizedString(map['title'], lang: 'en');
+      var titleMl = Day1CurriculumJsonData.getLocalizedString(map['title'], lang: 'ml');
+      var descEn = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'en');
+      var descMl = Day1CurriculumJsonData.getLocalizedString(map['description'], lang: 'ml');
+      var icon = map['icon']?.toString() ?? '📚';
+      var gameType = map['gameType']?.toString() ?? 'generic';
+
+      // 🛡️ User Audio Directive: Zero Foundation learners (like Father) MUST NOT be forced
+      // to make real stranger phone calls or PocketTalk requests on Day 1!
+      if (currentTrack == Day1Track.zero) {
+        if (stepNum == 7) {
+          titleEn = 'Tutor Robot Voice Practice';
+          titleMl = 'ട്യൂട്ടർ റോബോട്ടിനൊപ്പമുള്ള സംസാരം 🤖';
+          descEn = 'Practice repeating simple words with your private AI Robot without any fear or embarrassment!';
+          descMl = 'ലളിതമായ വാക്കുകൾ റോബോട്ടിനൊപ്പം പറഞ്ഞു ശീലിക്കുക. ആരും കേൾക്കില്ല, പേടിയില്ലാതെ സംസാരിക്കാം!';
+          icon = '🤖';
+          gameType = 'spoken_robot';
+        } else if (stepNum == 8) {
+          titleEn = 'Phonics & Object Memory Match';
+          titleMl = 'അക്ഷര-വസ്തു മാച്ചിംഗ് ഗെയിം 🧩';
+          descEn = 'Match letters A-F with their correct picture objects to build strong recognition.';
+          descMl = 'പഠിച്ച അക്ഷരങ്ങളും ചിത്രങ്ങളും കൂട്ടിയോജിപ്പിച്ച് മെമ്മറി ഉറപ്പിക്കുക.';
+          icon = '🧩';
+          gameType = 'memory_match';
+        }
+      }
 
       return Day1StepModel(
         stepNumber: stepNum,

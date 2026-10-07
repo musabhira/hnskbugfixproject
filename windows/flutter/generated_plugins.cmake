@@ -6,6 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   app_links
   audioplayers_windows
   emoji_picker_flutter
+  ffmpeg_kit_flutter_new_video
   file_selector_windows
   firebase_core
   flutter_timezone
@@ -13,7 +14,6 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_webrtc
   gal
   geolocator_windows
-  passkeys_windows
   permission_handler_windows
   record_windows
   share_plus

@@ -129,7 +129,7 @@ class _PocketDay1InteractiveFlowPageState
   @override
   void initState() {
     super.initState();
-    _currentTrack = widget.initialTrack ?? Day1Track.zero;
+    _currentTrack = widget.initialTrack ?? Day1Track.middle;
     _activeStep = widget.initialStep.clamp(1, 10);
 
     _pulseController = AnimationController(
@@ -175,6 +175,18 @@ class _PocketDay1InteractiveFlowPageState
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
 
+    final trackKey = 'pocket_day1_selected_track_${uid ?? "guest"}';
+    final savedTrackStr = prefs.getString(trackKey);
+    Day1Track resolved = widget.initialTrack ?? Day1Track.middle;
+    if (savedTrackStr != null && widget.initialTrack == null) {
+      for (final t in Day1Track.values) {
+        if (t.name == savedTrackStr) {
+          resolved = t;
+          break;
+        }
+      }
+    }
+
     final Map<int, bool> completed = {};
     for (int s = 1; s <= 10; s++) {
       final key = 'pocket_day_${uid ?? "guest"}_1_step_${s}_done';
@@ -184,6 +196,7 @@ class _PocketDay1InteractiveFlowPageState
     if (mounted) {
       setState(() {
         _nativeLanguage = lang;
+        _currentTrack = resolved;
         _completedSteps.addAll(completed);
       });
     }
@@ -420,7 +433,7 @@ class _PocketDay1InteractiveFlowPageState
 
   @override
   Widget build(BuildContext context) {
-    final steps = Day1Curriculum.getSteps();
+    final steps = Day1Curriculum.getSteps(_currentTrack);
     final activeStepData = steps[(_activeStep - 1).clamp(0, steps.length - 1)];
 
     return Scaffold(
@@ -552,7 +565,134 @@ class _PocketDay1InteractiveFlowPageState
               ),
             ),
           ),
+          const SizedBox(width: 6),
+          // 🚀 3-Track Master Switcher (Zero, Middle, Higher)
+          GestureDetector(
+            onTap: () async {
+              final selected = await showModalBottomSheet<Day1Track>(
+                context: context,
+                backgroundColor: const Color(0xFF0F172A),
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (ctx) => _buildTrackSelectionModal(),
+              );
+              if (selected != null && selected != _currentTrack) {
+                HapticFeedback.selectionClick();
+                final uid = widget.userId ?? _supabase.auth.currentUser?.id;
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('pocket_day1_selected_track_${uid ?? "guest"}', selected.name);
+                setState(() {
+                  _currentTrack = selected;
+                  _activeStep = 1;
+                });
+              }
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              decoration: BoxDecoration(
+                color: _currentTrack.color.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: _currentTrack.color, width: 1.2),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    _currentTrack.badge,
+                    style: GoogleFonts.outfit(
+                      color: _currentTrack.color,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  Icon(Icons.arrow_drop_down_rounded, color: _currentTrack.color, size: 16),
+                ],
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTrackSelectionModal() {
+    return SafeArea(
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Text('🎯', style: TextStyle(fontSize: 20)),
+                const SizedBox(width: 8),
+                Text(
+                  'Select Your Track (ലെവൽ മാറ്റുക)',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'നിങ്ങളുടെ അറിവിനനുസരിച്ച് സിലബസും വെല്ലുവിളികളും മാറും:',
+              style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
+            ),
+            const SizedBox(height: 16),
+            ...Day1Track.values.map((t) {
+              final isSelected = t == _currentTrack;
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: InkWell(
+                  onTap: () => Navigator.pop(context, t),
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isSelected ? t.color.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: isSelected ? t.color : Colors.white12, width: isSelected ? 2 : 1),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: t.color.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            t == Day1Track.zero ? '🌱' : (t == Day1Track.middle ? '🗣️' : '🚀'),
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(t.titleEn, style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                              Text(t.titleMl, style: GoogleFonts.inter(color: Colors.white70, fontSize: 11)),
+                              const SizedBox(height: 2),
+                              Text(t.descriptionEn, style: GoogleFonts.inter(color: Colors.white38, fontSize: 10)),
+                            ],
+                          ),
+                        ),
+                        if (isSelected)
+                          Icon(Icons.check_circle_rounded, color: t.color, size: 22),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ],
+        ),
       ),
     );
   }
@@ -1400,9 +1540,80 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   // -------------------------------------------------------------
-  // STEP 7: RANDOM CALL PARTNER
+  // STEP 7: RANDOM CALL PARTNER OR ROBOT PRACTICE
   // -------------------------------------------------------------
   Widget _buildStep7RandomCall(Day1StepModel step) {
+    if (_currentTrack == Day1Track.zero) {
+      return Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF10B981)),
+            ),
+            child: Column(
+              children: [
+                const Text('🤖', style: TextStyle(fontSize: 44)),
+                const SizedBox(height: 12),
+                Text(
+                  'Tutor Robot Voice Practice',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'ലളിതമായ വാക്കുകൾ റോബോട്ടിനൊപ്പം സ്വകാര്യമായി പറഞ്ഞു ശീലിക്കുക. ആരും കേൾക്കില്ല, പേടിയില്ലാതെ സംസാരിക്കാം!',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
+                  children: ['Apple 🍎', 'Water 💧', 'Ball ⚽', 'Book 📖'].map((w) {
+                    return ActionChip(
+                      backgroundColor: const Color(0xFF0F172A),
+                      side: const BorderSide(color: Color(0xFF10B981)),
+                      label: Text(w, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                      onPressed: () => _speak(w.split(' ').first),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () {
+                    _speak('Great job! You spoke wonderful English with the robot!');
+                    _markStepCompleted(7);
+                  },
+                  icon: const Icon(Icons.check_circle_rounded),
+                  label: Text('COMPLETE ROBOT PRACTICE ✓', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                ),
+                const SizedBox(height: 10),
+                TextButton.icon(
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const AnonymousEnglishChatPage()),
+                    );
+                  },
+                  icon: const Icon(Icons.phone_in_talk_rounded, size: 16, color: Colors.white54),
+                  label: Text('Try Real Partner Call (Optional)', style: GoogleFonts.inter(color: Colors.white54, fontSize: 12)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       children: [
         Container(
@@ -1452,9 +1663,72 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   // -------------------------------------------------------------
-  // STEP 8: POCKET TALK MATE PACT REQUEST
+  // STEP 8: POCKET TALK OR PHONICS MEMORY MATCH
   // -------------------------------------------------------------
   Widget _buildStep8PocketTalk(Day1StepModel step) {
+    if (_currentTrack == Day1Track.zero) {
+      return Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFFF59E0B)),
+            ),
+            child: Column(
+              children: [
+                const Text('🧩', style: TextStyle(fontSize: 44)),
+                const SizedBox(height: 12),
+                Text(
+                  'Phonics & Word Memory Match',
+                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'അക്ഷരങ്ങളും ശബ്ദങ്ങളും തിരിച്ചറിഞ്ഞ് മെമ്മറി ഉറപ്പിക്കുക. ടാപ്പ് ചെയ്ത് ഉച്ചാരണം കേൾക്കൂ!',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    _buildPhonicsMatchTile('A', '🍎 Apple', () => _speak('A for Apple')),
+                    _buildPhonicsMatchTile('B', '⚽ Ball', () => _speak('B for Ball')),
+                    _buildPhonicsMatchTile('C', '🐱 Cat', () => _speak('C for Cat')),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF59E0B),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () {
+                    _speak('Excellent! Memory match complete!');
+                    _markStepCompleted(8);
+                  },
+                  icon: const Icon(Icons.check_circle_rounded),
+                  label: Text('COMPLETE MEMORY MATCH ✓', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                ),
+                const SizedBox(height: 10),
+                TextButton.icon(
+                  onPressed: () async {
+                    await PocketTalkCardSwiperDialog.show(context);
+                  },
+                  icon: const Icon(Icons.swipe_rounded, size: 16, color: Colors.white54),
+                  label: Text('Browse PocketTalk Mates (Optional)', style: GoogleFonts.inter(color: Colors.white54, fontSize: 12)),
+                ),
+              ],
+            ),
+          ),
+        ],
+      );
+    }
+
     return Column(
       children: [
         Container(
@@ -1497,6 +1771,28 @@ class _PocketDay1InteractiveFlowPageState
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildPhonicsMatchTile(String letter, String word, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: const Color(0xFF0F172A),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFF59E0B)),
+        ),
+        child: Column(
+          children: [
+            Text(letter, style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 20, fontWeight: FontWeight.w900)),
+            const SizedBox(height: 4),
+            Text(word, style: GoogleFonts.inter(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+          ],
+        ),
+      ),
     );
   }
 
