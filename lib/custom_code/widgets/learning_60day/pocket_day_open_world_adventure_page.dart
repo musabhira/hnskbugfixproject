@@ -19,7 +19,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_time_
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_code_english_decoder_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_alphabet_phonics_game_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_mission_curriculum_registry.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/career_adventure/cyber_vocab_game_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/pocket_day_arcade_game_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_level_exam_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_defense_trap_modal.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_practice_speaking_card.dart';
@@ -1220,7 +1220,7 @@ class _PocketDayOpenWorldAdventurePageState
       case 11:
         return const _StepInfo('AI Speech Lab', '🗣️', Color(0xFF38BDF8));
       case 12:
-        return const _StepInfo('Cyber Vocab Quest', '🎮', Color(0xFFE11D48));
+        return const _StepInfo('2D Arcade Games', '🎮', Color(0xFF10B981));
       case 13:
         return const _StepInfo('Story Reading', '📖', Color(0xFF60A5FA));
       case 14:
@@ -1531,11 +1531,11 @@ class _PocketDayOpenWorldAdventurePageState
         break;
 
       case 12:
-        final res = await Navigator.push<bool>(
+        await PocketDayArcadeGameModal.show(
           context,
-          MaterialPageRoute(builder: (_) => const CyberVocabGamePage()),
+          day: day,
+          onGameFinished: () => _onStepCompleted(12),
         );
-        if (res == true) _onStepCompleted(12);
         break;
 
       case 13:
