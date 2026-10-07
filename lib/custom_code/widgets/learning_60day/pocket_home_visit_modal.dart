@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/flame_english_house_game.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/english_tasks_master_hub.dart'
+    show HouseMasterPainter;
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
 
@@ -123,25 +125,23 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
           .gte('learning_day', widget.day)
           .limit(25);
 
-      if (res is List) {
-        for (final row in res) {
-          final uId = row['user_id']?.toString() ?? '';
-          if (uId.isEmpty) continue;
-          final dName = row['display_name']?.toString() ?? 'Adventurer';
-          final pUrl = row['photo_url']?.toString();
-          final lDay = (row['learning_day'] as num?)?.toInt() ?? widget.day;
-          final lPts = (row['learning_points'] as num?)?.toInt() ?? 0;
-          owners.add(
-            HomeOwnerEntry(
-              id: uId,
-              name: dName,
-              avatarUrl: pUrl,
-              day: lDay,
-              score: lPts,
-              isRobot: false,
-            ),
-          );
-        }
+      for (final row in res) {
+        final uId = row['user_id']?.toString() ?? '';
+        if (uId.isEmpty) continue;
+        final dName = row['display_name']?.toString() ?? 'Adventurer';
+        final pUrl = row['photo_url']?.toString();
+        final lDay = (row['learning_day'] as num?)?.toInt() ?? widget.day;
+        final lPts = (row['learning_points'] as num?)?.toInt() ?? 0;
+        owners.add(
+          HomeOwnerEntry(
+            id: uId,
+            name: dName,
+            avatarUrl: pUrl,
+            day: lDay,
+            score: lPts,
+            isRobot: false,
+          ),
+        );
       }
     } catch (_) {}
 
