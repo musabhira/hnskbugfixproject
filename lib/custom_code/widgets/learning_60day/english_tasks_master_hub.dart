@@ -2556,6 +2556,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                                 if (_isDayInViewport(day, minY, maxY))
                                   _buildRoadmapHouse(day, screenWidth, targetActiveDay),
 
+                              // 🏰 Dedicated Home Visit Button (Spaced cleanly before the house)
+                              for (int day = 1; day <= _totalDays; day++)
+                                if (_isDayInViewport(day, minY, maxY))
+                                  _buildRoadmapHomeVisit(day, screenWidth, targetActiveDay),
+
                               // 🏰 Fortress Exam Gates & Stone Walls between Houses (User Audio Directive!)
                               for (int day = 1; day < _totalDays; day++)
                                 if (_isDayInViewport(day, minY, maxY))
@@ -4295,8 +4300,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     // Center the house on nodeX, but keep safely within screen margins
     final double houseLeft = (nodeX - (houseWidth / 2.0)).clamp(8.0, screenWidth - houseWidth - 8.0);
-    // Align house so its doorstep sits right behind/under the level stepping stone (nodeY)
-    final double houseTop = nodeY - houseHeight + 24.0;
+    // Align house with clean vertical spacing above the level stepping stone and home visit button
+    final double houseTop = nodeY - houseHeight - 36.0;
 
     final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(day);
     final palette = HousePalette.presets[(day - 1) % HousePalette.presets.length];
@@ -4554,56 +4559,125 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                 ),
 
-              // 7. 🏰 Home Visit Button (Visual house tour + Home Owners + Attack arena)
-              Positioned(
-                bottom: 4,
-                right: 6,
-                child: GestureDetector(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    PocketHomeVisitModal.show(
-                      context,
-                      day: day,
-                      userCurrentDay: currentDay,
-                      currentUserId: widget.userId ?? _supabase.auth.currentUser?.id,
-                    );
-                  },
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)],
-                      ),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        width: 0.8,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF2563EB).withValues(alpha: 0.4),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('🏰', style: TextStyle(fontSize: 8)),
-                        const SizedBox(width: 3),
-                        Text(
-                          'HOME VISIT',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 7.5,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 0.4,
+              // 7. Green Bouncing Down-Arrow Badge on House 2 when Day 1 is completed
+              // User Audio Directive: "വണ്ടി അങ്ങനെ പോയിട്ട് നമ്മുടെ രണ്ടാമത്തെ വീട്ടിൽ പോയി നിൽക്കുക... നിൽക്കുന്ന സമയത്ത് അവിടെ ആ വീടിന്റെ മേലെ ടാപ്പ് ചെയ്യാൻ പച്ച കളറിൽ ടാപ്പ് ചെയ്യാനുള്ള സാധനം കാണിക്കുക, ഡൗൺ ആരോ. വീട്ടിൽ ടാപ്പ് ചെയ്തു കഴിഞ്ഞാൽ എൻ്റർ ഡേ 2 ലേക്ക് പോകും."
+              if (day == 2 && _isDayCompleted(1) && !isCompleted)
+                Positioned(
+                  top: -24,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: AnimatedBuilder(
+                      animation: _bobController,
+                      builder: (context, _) {
+                        final bounceY = math.sin(_bobController.value * math.pi) * 5.0;
+                        return Transform.translate(
+                          offset: Offset(0, -bounceY),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              gradient: const LinearGradient(
+                                colors: [Color(0xFF10B981), Color(0xFF059669)],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.white, width: 1.5),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: const Color(0xFF10B981).withValues(alpha: 0.65),
+                                  blurRadius: 12,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Text('👇', style: TextStyle(fontSize: 13)),
+                                const SizedBox(width: 4),
+                                Text(
+                                  'TAP TO ENTER DAY 2 ➔',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.w900,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
+                ),
+
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 🏰 Standalone Home Visit Button between the Level Stone and the House (User Audio Directive!)
+  /// "veedinu mele stack cheyyanda. Sthalam edutho. Veedu und, veedinte veedil ethunnathinu munne home visit-nte oru button koduthaalo venamenkil?
+  /// Athinte munnilaanu nammude Day 1 ezhuthiya round kaandath. Athu kazhinju home visit-nte oru saadhanam kaanum, athu kazhinju veedu kaanum, athu kazhinju gate kandittu aduthethilekku pokum."
+  Widget _buildRoadmapHomeVisit(int day, double screenWidth, int currentDay) {
+    if (day >= _totalDays) return const SizedBox.shrink();
+    final nodeX = _getNodeX(day, screenWidth);
+    final nodeY = _getNodeY(day);
+
+    final double btnWidth = 110.0;
+    final double btnLeft = (nodeX - (btnWidth / 2.0)).clamp(12.0, screenWidth - btnWidth - 12.0);
+    // Placed cleanly between the level circle node (nodeY) and the house (houseTop: nodeY - houseHeight - 36)
+    final double btnTop = nodeY - 48.0;
+
+    return Positioned(
+      left: btnLeft,
+      top: btnTop,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          final uid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
+          PocketCitadelAttackPage.openForUser(
+            context,
+            userId: uid,
+            attackerDay: day,
+            isDefenseMode: true,
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+            ),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: const Color(0xFF38BDF8).withValues(alpha: 0.85),
+              width: 1.2,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🏰', style: TextStyle(fontSize: 10)),
+              const SizedBox(width: 4),
+              Text(
+                'HOME VISIT',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF38BDF8),
+                  fontSize: 9.5,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.5,
                 ),
               ),
             ],
@@ -4625,13 +4699,14 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final isCompleted = _isDayCompleted(day);
     final isCurrent = (day == currentDay);
 
+    final int requiredTasks = (day == 1) ? 10 : 16;
     int completedTasks = 0;
     if (isCurrent) {
-      for (int s = 1; s <= 16; s++) {
+      for (int s = 1; s <= requiredTasks; s++) {
         if (_subStepFlags['step_$s'] == true) completedTasks++;
       }
     }
-    final bool areHouseTasksDone = _isMasterAdmin || isCompleted || (isCurrent && (_subStepFlags['step_16'] == true || completedTasks >= 16));
+    final bool areHouseTasksDone = _isMasterAdmin || isCompleted || (isCurrent && (_subStepFlags['step_$requiredTasks'] == true || completedTasks >= requiredTasks));
     final bool isExamReady = !isCompleted && isCurrent && areHouseTasksDone;
 
     // Exact midpoint along the mountain trail between house day and house day + 1
@@ -4710,7 +4785,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Complete all House $day tasks first to unlock Gate $day Exam! ($completedTasks/16 done)',
+                        'Complete all House $day tasks first to unlock Gate $day Exam! ($completedTasks/$requiredTasks done)',
                         style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),

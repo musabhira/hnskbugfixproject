@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -371,7 +372,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '⚡ You already have 4 active Pocket Talk pacts! Complete Day 4 before initiating another.',
+                    '⚡ You already have 4 active Poketalk pacts! Complete Day 4 before initiating another.',
                     style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
                   ),
                 ),
@@ -409,9 +410,30 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
       senderName: myName,
       receiverName: candidate.name,
       receiverAvatarUrl: candidate.avatarUrl,
-      message: 'Challenged you to a 4-Day Spoken English Pact ⚡ (15 mins/day). Check your Pocket Talk tab!',
+      message: 'Challenged you to a 4-Day Spoken English Pact ⚡ (15 mins/day). Check your Poketalk tab!',
       contextType: 'pocket_talk',
     );
+
+    // Save to SharedPreferences sent cache so it appears instantly under Sent tab
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final sentKey = 'poket_talk_sent_candidates_$myId';
+      final currentSentJson = prefs.getStringList(sentKey) ?? [];
+      final candidateMap = {
+        'id': candidate.userId,
+        'user_id': candidate.userId,
+        'receiver_id': candidate.userId,
+        'receiver_name': candidate.name,
+        'receiver_avatar': candidate.avatarUrl,
+        'context_type': 'pocket_talk',
+        'message': '⚡ 4-Day Spoken English Pact Request (Pending)',
+        'created_at': DateTime.now().toIso8601String(),
+        'status': 'pending',
+      };
+      currentSentJson.removeWhere((item) => item.contains(candidate.userId));
+      currentSentJson.insert(0, jsonEncode(candidateMap));
+      await prefs.setStringList(sentKey, currentSentJson);
+    } catch (_) {}
 
     // Ensure conversation exists so it appears instantly under Sent tab
     try {
@@ -451,7 +473,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
               const SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  '4-Day Spoken Pact Request sent to ${candidate.name}! They will see it in their Pocket Talk ⚡ tab.',
+                  '4-Day Spoken Pact Request sent to ${candidate.name}! They will see it in their Poketalk ⚡ tab.',
                   style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white),
                 ),
               ),
@@ -630,7 +652,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Pocket Talk Cards',
+                  'Poketalk Cards',
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -1221,7 +1243,7 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
                                   label: FittedBox(
                                     fit: BoxFit.scaleDown,
                                     child: Text(
-                                      candidate.isRequestSent ? 'SENT ✓' : 'POCKET TALK',
+                                      candidate.isRequestSent ? 'SENT ✓' : 'POKET TALK',
                                       style: GoogleFonts.outfit(
                                         color: Colors.black,
                                         fontWeight: FontWeight.w900,

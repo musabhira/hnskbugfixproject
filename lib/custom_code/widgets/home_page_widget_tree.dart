@@ -101,6 +101,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Set<String> _pocketTalkActivePeerIds = {};
   Set<String> _pocketTalkPendingPeerIds = {};
   Set<String> _pocketTalkPendingSentPeerIds = {};
+  List<Map<String, dynamic>> _poketTalkLocalSent = [];
   int _pocketTalkSubTabIndex = 0; // 0: Received (First/Main), 1: Sent, 2: Active / Accepted (4-Day Pacts)
   bool _isCongestedSearch = false; // Toggle for Congested / Compact View
   int _searchPeopleOffset = 0;
@@ -120,13 +121,29 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           await PocketTrophyService.getAllPendingPactUserIds(uid);
       final sentPendingIds =
           await PocketTrophyService.getAllPendingSentPactUserIds(uid);
-      final allIds = {...activeIds, ...pendingIds};
+      final allIds = {...activeIds, ...pendingIds, ...sentPendingIds};
+
+      // Also read locally cached sent pact requests
+      List<Map<String, dynamic>> localSent = [];
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        final rawSent = prefs.getStringList('poket_talk_sent_candidates_$uid') ?? [];
+        localSent = rawSent.map((s) {
+          try {
+            return Map<String, dynamic>.from(jsonDecode(s));
+          } catch (_) {
+            return <String, dynamic>{};
+          }
+        }).where((m) => m.isNotEmpty).toList();
+      } catch (_) {}
+
       if (mounted) {
         safeSetState(() {
           _pocketTalkActivePeerIds = activeIds;
           _pocketTalkPendingPeerIds = pendingIds;
           _pocketTalkPendingSentPeerIds = sentPendingIds;
           _pocketTalkPeerIds = allIds;
+          _poketTalkLocalSent = localSent;
         });
       }
       // Guarantee each user has up to 3 active 4-day speaking pairs!
@@ -142,7 +159,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             _pocketTalkPendingSentPeerIds = updatedSentPending;
             _pocketTalkPeerIds = {
               ..._pocketTalkActivePeerIds,
-              ...updatedPending
+              ...updatedPending,
+              ...updatedSentPending,
             };
           });
         }
@@ -4201,7 +4219,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         }
                       }).toList();
 
-                      // If in Sent tab, ensure all sent Pocket Talk requests from _sentRequests are present
+                      // If in Sent tab, ensure all sent Poketalk requests from _sentRequests and _poketTalkLocalSent are present
                       if (_pocketTalkSubTabIndex == 1) {
                         final existingIds = activeFiltered.map((c) => c.id).toSet();
                         for (final req in _sentRequests) {
@@ -4212,7 +4230,8 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                               _pocketTalkPendingSentPeerIds.contains(recId) ||
                               _pocketTalkPendingPeerIds.contains(recId) ||
                               msg.contains('Spoken English Pact') ||
-                              msg.contains('Pocket Talk');
+                              msg.contains('Pocket Talk') ||
+                              msg.contains('Poketalk');
                           if (recId.isNotEmpty && isPtReq && !existingIds.contains(recId)) {
                             existingIds.add(recId);
                             final sentAt = req['created_at'] != null
@@ -4221,8 +4240,33 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                             activeFiltered.add(
                               ChatConversation(
                                 id: recId,
-                                name: req['receiver_name']?.toString() ?? 'Pocket Talk Partner',
+                                name: req['receiver_name']?.toString() ?? 'Poketalk Partner',
                                 imageUrl: req['receiver_profile_image']?.toString() ?? req['receiver_avatar']?.toString(),
+                                lastMessage: '⚡ Challenged to a 4-Day Spoken English Pact (Pending)',
+                                lastMessageTime: sentAt,
+                                unreadCount: 0,
+                                otherUnreadCount: 0,
+                                isGroup: false,
+                                lastSenderId: myUid,
+                                isOnline: false,
+                              ),
+                            );
+                          }
+                        }
+
+                        // Also include any locally cached Poketalk pact requests
+                        for (final localReq in _poketTalkLocalSent) {
+                          final recId = localReq['user_id']?.toString() ?? localReq['receiver_id']?.toString() ?? '';
+                          if (recId.isNotEmpty && !existingIds.contains(recId)) {
+                            existingIds.add(recId);
+                            final sentAt = localReq['created_at'] != null
+                                ? DateTime.tryParse(localReq['created_at'].toString()) ?? DateTime.now()
+                                : DateTime.now();
+                            activeFiltered.add(
+                              ChatConversation(
+                                id: recId,
+                                name: localReq['receiver_name']?.toString() ?? 'Poketalk Partner',
+                                imageUrl: localReq['receiver_avatar']?.toString(),
                                 lastMessage: '⚡ Challenged to a 4-Day Spoken English Pact (Pending)',
                                 lastMessageTime: sentAt,
                                 unreadCount: 0,

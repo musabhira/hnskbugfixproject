@@ -580,10 +580,10 @@ class Day1CurriculumJsonData {
       "stepNumber": 8,
       "id": "step_8_pocket_talk",
       "title": {
-        "en": "PocketTalk & Community Chat",
-        "ml": "പോക്കറ്റ് ടോക്ക് & കമ്മ്യൂണിറ്റി ചാറ്റ് ⚡💬",
-        "hi": "पॉकेटटॉक और कम्युनिटी चैट",
-        "ta": "பாக்கெட்டாக் & சமூக அரட்டை"
+        "en": "PocketTalk: Spoken Partner Match",
+        "ml": "പോക്കറ്റ് ടോക്ക്: സ്പോക്കൺ പാർട്ണർ മാച്ച് ⚡",
+        "hi": "पॉकेटटॉक: पार्टनर मैच",
+        "ta": "பாக்கெட்டாக்: பார்ட்னர் மேட்ச்"
       },
       "icon": "⚡",
       "gameType": "pocket_talk_action",
@@ -606,7 +606,34 @@ class Day1CurriculumJsonData {
     },
     {
       "stepNumber": 9,
-      "id": "step_9_house_defense",
+      "id": "step_9_group_chat",
+      "title": {
+        "en": "English Hub Level Group Chat",
+        "ml": "ഇംഗ്ലീഷ് ഹബ്ബ് ഗ്രൂപ്പ് ചാറ്റ് 💬",
+        "hi": "इंग्लिश हब ग्रुप चैट",
+        "ta": "இங்கிலீஷ் Hub குழு அரட்டை"
+      },
+      "icon": "💬",
+      "gameType": "group_chat_action",
+      "description": {
+        "en": "Join your level group in the English Hub! Chat with peers and practice today's words.",
+        "ml": "നിങ്ങളുടെ ലെവൽ ഇംഗ്ലീഷ് ഹബ്ബ് ഗ്രൂപ്പിൽ പ്രവേശിക്കുക! കൂട്ടുകാരുമായി ഇംഗ്ലീഷിൽ സംസാരിക്കുക.",
+        "hi": "अपने स्तर के इंग्लिश हब ग्रुप में शामिल हों और बातचीत करें!",
+        "ta": "உங்கள் நிலை இங்கிலீஷ் ஹப் குழுவில் இணைந்து பேசுங்கள்!"
+      },
+      "action": {
+        "targetRoute": "english_learning_group_chat",
+        "promptText": {
+          "en": "Enter your level's English Hub group chat!",
+          "ml": "നിങ്ങളുടെ ലെവൽ ഗ്രൂപ്പ് ചാറ്റിലേക്ക് പ്രവേശിക്കുക!",
+          "hi": "अपने लेवल ग्रुप चैट में प्रवेश करें!",
+          "ta": "உங்கள் நிலை குழு அரட்டையில் நுழையுங்கள்!"
+        }
+      }
+    },
+    {
+      "stepNumber": 10,
+      "id": "step_10_house_defense",
       "title": {
         "en": "House Defense Shield & Citadel Combat",
         "ml": "ഹൗസ് ഡിഫൻസ് ഷീൽഡ് & അറ്റാക്ക് കോംബാറ്റ് 🛡️",
@@ -695,27 +722,6 @@ class Day1CurriculumJsonData {
           "explanation": {"ml": "Good morning."}
         }
       ]
-    }
-    },
-    {
-      "stepNumber": 10,
-      "id": "step_10_gate_exam",
-      "title": {
-        "en": "House 1 Final Gate Exam & Unlock House 2",
-        "ml": "ഹൗസ് 1 ഫൈനൽ എക്സാം & ഹൗസ് 2 അൺലോക്ക് 🎓🏆",
-        "hi": "हाउस 1 फाइनल गेट परीक्षा और हाउस 2 अनलॉक",
-        "ta": "ஹவுஸ் 1 இறுதித் தேர்வு & ஹவுஸ் 2 திறத்தல்"
-      },
-      "icon": "🎓",
-      "gameType": "gate_exam",
-      "description": {
-        "en": "Pass the 8-question exam to master House 1, unlock House 2, and start your journey on Day 2!",
-        "ml": "ഹൗസ് 1 പൂർത്തിയാക്കി ഹൗസ് 2 അൺലോക്ക് ചെയ്യുന്നതിനായി 8 ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക!",
-        "hi": "हाउस 1 पूरा करें और हाउस 2 अनलॉक करने के लिए परीक्षा पास करें!",
-        "ta": "ஹவுஸ் 1 முடித்து ஹவுஸ் 2 ஐ திறக்க 8 கேள்விகளுக்கு பதிலளிக்கவும்!"
-      },
-      "passPercentage": 60,
-      "totalQuestions": 8
     }
   ],
   "houseGateExam": {

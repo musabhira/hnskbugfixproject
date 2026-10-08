@@ -9,7 +9,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
-import 'package:pocket_mates_app/custom_code/widgets/community_chat_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/chat/english_learning_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_match/anonymous_english_chat_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
 import 'pocket_day1_tutor_curriculum.dart';
@@ -19,7 +19,6 @@ import 'curriculum_data/day1_az_and_300vocab_data.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_language_selection_dialog.dart';
 import 'pocket_day1_diagnostic_sheet.dart';
-import 'pocket_level_exam_dialog.dart';
 import 'pocket_citadel_attack_page.dart';
 import 'games/meadow_runner_game_page.dart';
 import 'games/word_catcher_game_page.dart';
@@ -131,10 +130,6 @@ class _PocketDay1InteractiveFlowPageState
 
   // Step 6 Spoken Lab State
   int _spokenChallengeIndex = 0;
-
-  // Step 10 Defense & Combat State
-  final Set<int> _armedGates = {};
-  int _botHp = 100;
 
   // Audio toggle & auto speech on entry
   bool _autoSpeechEnabled = true;
@@ -418,74 +413,68 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   void _showDay1VictoryDialog() {
-    final summary = Day1Curriculum.getCompletionSummary();
-    final bullets = (summary['learnedBullets'] as List<String>?) ?? [];
-    final isMl = _nativeLanguage.toLowerCase().contains('malay');
-
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) => Dialog(
         backgroundColor: Colors.transparent,
         child: Container(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
             ),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(color: const Color(0xFFFFD700), width: 2),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.5),
+                blurRadius: 20,
+              ),
+            ],
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text('🏆', style: TextStyle(fontSize: 48)),
-              const SizedBox(height: 12),
+              const Text('🏆', style: TextStyle(fontSize: 38)),
+              const SizedBox(height: 8),
               Text(
-                'HOUSE 1 MASTERED!',
+                'DAY 1 COMPLETED! 🌟',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFFFFD700),
-                  fontSize: 22,
+                  fontSize: 18,
                   fontWeight: FontWeight.w900,
                 ),
               ),
-              const SizedBox(height: 12),
-              ...bullets.take(4).map(
-                (b) => Padding(
-                  padding: const EdgeInsets.only(bottom: 4),
-                  child: Row(
-                    children: [
-                      const Text('✓ ', style: TextStyle(color: Color(0xFF10B981))),
-                      Expanded(
-                        child: Text(b, style: GoogleFonts.inter(color: Colors.white70, fontSize: 12)),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 6),
               Text(
-                isMl ? summary['messageMl'] : summary['messageEn'],
+                'House 1 Fortified & All Steps Mastered',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.inter(color: const Color(0xFF67E8F9), fontSize: 12.5),
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
               SizedBox(
                 width: double.infinity,
+                height: 44,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFFFD700),
                     foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
                     Navigator.pop(context);
                   },
-                  child: Text('PROCEED TO HOUSE 2 ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                  child: Text(
+                    'ENTER DAY 2 ➔',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -494,6 +483,7 @@ class _PocketDay1InteractiveFlowPageState
       ),
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -981,9 +971,9 @@ class _PocketDay1InteractiveFlowPageState
       case 8:
         return _buildStep8PocketTalk(step);
       case 9:
-        return _buildStep9HouseDefense(step);
+        return _buildStep9GroupChat(step);
       case 10:
-        return _buildStep10GateExam(step);
+        return _buildStep10HouseDefense(step);
       default:
         return const SizedBox.shrink();
     }
@@ -2484,10 +2474,68 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   // -------------------------------------------------------------
-  // STEP 8: POCKET TALK OR PHONICS MEMORY MATCH
+  // STEP 8: POKETALK OR PHONICS MEMORY MATCH
   // -------------------------------------------------------------
   Widget _buildStep8PocketTalk(Day1StepModel step) {
-    if (_currentTrack == Day1Track.zero) {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFFF59E0B)),
+          ),
+          child: Column(
+            children: [
+              const Text('⚡', style: TextStyle(fontSize: 40)),
+              const SizedBox(height: 12),
+              Text(
+                'Poketalk: 4-Day Spoken Pact',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                _nativeLanguage == 'Malayalam'
+                    ? 'കാർഡുകൾ സ്വൈപ്പ് ചെയ്ത് നിങ്ങളുടെ സ്പോക്കൺ ഇംഗ്ലീഷ് പാർട്ണറെ കണ്ടെത്തുക! 4-ദിവസത്തെ സംസാര പാക്ട് റിക്വസ്റ്റ് അയക്കുക.'
+                    : 'Swipe through learner cards and send a 4-Day Spoken English Pact request to find your dedicated practice buddy!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF59E0B),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () async {
+                    HapticFeedback.mediumImpact();
+                    await PocketTalkCardSwiperDialog.show(context);
+                    _markStepCompleted(8);
+                  },
+                  icon: const Icon(Icons.swipe_rounded, size: 18),
+                  label: Text('OPEN POKET TALK SWIPER ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // -------------------------------------------------------------
+  // STEP 9: ENGLISH HUB LEVEL GROUP CHAT OR AI TUTOR
+  // -------------------------------------------------------------
+  Widget _buildStep9GroupChat(Day1StepModel step) {
+    final isZero = _currentTrack == Day1Track.zero;
+    final isMl = _nativeLanguage.toLowerCase().contains('malay');
+
+    if (isZero) {
       return Column(
         children: [
           Container(
@@ -2495,53 +2543,42 @@ class _PocketDay1InteractiveFlowPageState
             decoration: BoxDecoration(
               color: const Color(0xFF1E293B),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFFF59E0B)),
+              border: Border.all(color: const Color(0xFF10B981)),
             ),
             child: Column(
               children: [
-                const Text('🧩', style: TextStyle(fontSize: 44)),
+                const Text('🤖', style: TextStyle(fontSize: 40)),
                 const SizedBox(height: 12),
                 Text(
-                  'Phonics & Word Memory Match',
+                  'AI Tutor Private Practice Lab',
                   style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'അക്ഷരങ്ങളും ശബ്ദങ്ങളും തിരിച്ചറിഞ്ഞ് മെമ്മറി ഉറപ്പിക്കുക. ടാപ്പ് ചെയ്ത് ഉച്ചാരണം കേൾക്കൂ!',
+                  isMl
+                      ? 'നിങ്ങളുടെ പേഴ്സണൽ AI റോബോട്ട് ട്യൂട്ടറുമായി വാക്കുകൾ പറഞ്ഞു നോക്കുക. പൂർണ്ണമായും പ്രൈവറ്റ് ആണ്!'
+                      : 'Practice speaking basic words with your private AI Robot Tutor in a safe, zero-pressure space.',
                   textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
                 ),
                 const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildPhonicsMatchTile('A', '🍎 Apple', () => _speak('A for Apple')),
-                    _buildPhonicsMatchTile('B', '⚽ Ball', () => _speak('B for Ball')),
-                    _buildPhonicsMatchTile('C', '🐱 Cat', () => _speak('C for Cat')),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFF59E0B),
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      _speak('Welcome to the private AI speaking lab! Great job practicing today.');
+                      _markStepCompleted(9);
+                    },
+                    icon: const Icon(Icons.record_voice_over_rounded, size: 18),
+                    label: Text('START PRIVATE PRACTICE ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13)),
                   ),
-                  onPressed: () {
-                    _speak('Excellent! Memory match complete!');
-                    _markStepCompleted(8);
-                  },
-                  icon: const Icon(Icons.check_circle_rounded),
-                  label: Text('COMPLETE MEMORY MATCH ✓', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
-                ),
-                const SizedBox(height: 10),
-                TextButton.icon(
-                  onPressed: () async {
-                    await PocketTalkCardSwiperDialog.show(context);
-                  },
-                  icon: const Icon(Icons.swipe_rounded, size: 16, color: Colors.white54),
-                  label: Text('Browse PocketTalk Mates (Optional)', style: GoogleFonts.inter(color: Colors.white54, fontSize: 12)),
                 ),
               ],
             ),
@@ -2557,62 +2594,52 @@ class _PocketDay1InteractiveFlowPageState
           decoration: BoxDecoration(
             color: const Color(0xFF1E293B),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFFF59E0B)),
+            border: Border.all(color: const Color(0xFF6366F1)),
           ),
           child: Column(
             children: [
-              const Text('⚡', style: TextStyle(fontSize: 40)),
+              const Text('💬', style: TextStyle(fontSize: 40)),
               const SizedBox(height: 12),
               Text(
-                'PocketTalk: 4-Day Spoken Pact',
+                'English Hub Level Group Chat',
                 style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 6),
               Text(
-                'Swipe through learner cards and send a 4-Day Spoken English Pact request to find your dedicated practice buddy!',
+                isMl
+                    ? 'ഇംഗ്ലീഷ് ഹബ്ബ് ഗ്രൂപ്പിൽ പ്രവേശിക്കുക! നിങ്ങളുടെ ലെവൽ ഗ്രൂപ്പിലുള്ള കൂട്ടുകാരുമായി ഇന്നത്തെ വാക്കുകൾ ചാറ്റ് ചെയ്തു പരിശീലിക്കുക.'
+                    : 'Enter your dedicated English Hub Group Chat! Connect with learners at your level and send messages to build muscle memory.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.inter(color: Colors.white70, fontSize: 12.5),
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF59E0B),
-                        foregroundColor: Colors.black,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      onPressed: () async {
-                        await PocketTalkCardSwiperDialog.show(context);
-                        _markStepCompleted(8);
-                      },
-                      icon: const Icon(Icons.swipe_rounded, size: 16),
-                      label: Text('POCKETTALK ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 11.5)),
-                    ),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6366F1),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  onPressed: () async {
+                    HapticFeedback.mediumImpact();
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Scaffold(
+                          backgroundColor: const Color(0xFF0F172A),
+                          body: EnglishLearningGroupChatWidget(
+                            onCancel: () => Navigator.pop(context),
+                          ),
+                        ),
                       ),
-                      onPressed: () async {
-                        await Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const CommunityChatPage()),
-                        );
-                        _markStepCompleted(8);
-                      },
-                      icon: const Icon(Icons.forum_rounded, size: 16),
-                      label: Text('GROUP CHAT ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 11.5)),
-                    ),
-                  ),
-                ],
+                    );
+                    _markStepCompleted(9);
+                  },
+                  icon: const Icon(Icons.forum_rounded, size: 18),
+                  label: Text('ENTER ENGLISH HUB GROUP ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13)),
+                ),
               ),
             ],
           ),
@@ -2621,344 +2648,106 @@ class _PocketDay1InteractiveFlowPageState
     );
   }
 
-  Widget _buildPhonicsMatchTile(String letter, String word, VoidCallback onTap) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-        decoration: BoxDecoration(
-          color: const Color(0xFF0F172A),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFF59E0B)),
+  // -------------------------------------------------------------
+  // STEP 10: FORTIFY HOUSE 1 CITADEL DEFENSE SYSTEM
+  // -------------------------------------------------------------
+  Widget _buildStep10HouseDefense(Day1StepModel step) {
+    final isMl = _nativeLanguage.toLowerCase().contains('malay');
+
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF7C3AED), Color(0xFF4338CA)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: const Color(0xFFFFD700), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF7C3AED).withValues(alpha: 0.45),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: Column(
           children: [
-            Text(letter, style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 20, fontWeight: FontWeight.w900)),
-            const SizedBox(height: 4),
-            Text(word, style: GoogleFonts.inter(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+            const Text('🛡️', style: TextStyle(fontSize: 48)),
+            const SizedBox(height: 12),
+            Text(
+              'FORTIFY HOUSE 1 DEFENSE SYSTEM',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD700),
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 0.5,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.28),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Text(
+                isMl
+                    ? 'നിങ്ങളുടെ വീടിന് ഡിഫെൻസ് സിസ്റ്റം വെക്കണം, അല്ലെങ്കിൽ എതിരാളികൾ വന്ന് നിങ്ങളുടെ വീട് തകർക്കും!'
+                    : 'You must set up a defense system for your house, or rivals will raid and destroy your house!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: Colors.white,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  height: 1.4,
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFD700),
+                  foregroundColor: Colors.black,
+                  elevation: 6,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: () async {
+                  HapticFeedback.heavyImpact();
+                  final myId = widget.userId ?? _supabase.auth.currentUser?.id;
+                  if (myId != null && myId.isNotEmpty) {
+                    await PocketCitadelAttackPage.openForUser(
+                      context,
+                      userId: myId,
+                      attackerDay: 1,
+                      isDefenseMode: true,
+                    );
+                    _markStepCompleted(10);
+                  }
+                },
+                icon: const Icon(Icons.shield_rounded, color: Colors.black, size: 22),
+                label: Text(
+                  'ENTER DEFENSE SYSTEM ➔',
+                  style: GoogleFonts.outfit(
+                    color: Colors.black,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ),
           ],
         ),
       ),
-    );
-  }
-
-  // -------------------------------------------------------------
-  // STEP 9/10: HOUSE DEFENSE SHIELD & CITADEL COMBAT
-  // -------------------------------------------------------------
-  Widget _buildStep9HouseDefense(Day1StepModel step) {
-    final traps = (step.data['defenseTraps'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    final combat = step.data['combatTest'] as Map<String, dynamic>? ?? {};
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // 🏰 DIRECT CITADEL DEFENSE LAUNCHER (User Audio Directive!)
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 16),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFF7C3AED), Color(0xFF4338CA)],
-            ),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF7C3AED).withValues(alpha: 0.45),
-                blurRadius: 16,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                const Text('🛡️', style: TextStyle(fontSize: 34)),
-                const SizedBox(height: 8),
-                Text(
-                  'FORTIFY HOUSE 1 CITADEL DEFENSE',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'വീടിന് ഡിഫൻസ് ട്രാപ്പുകൾ നൽകി പ്രൊഫൈൽ ഷീൽഡ് സെറ്റ് ചെയ്യുക!',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
-                ),
-                const SizedBox(height: 12),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD700),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(vertical: 13),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                    ),
-                    onPressed: () async {
-                      final myId = widget.userId ?? _supabase.auth.currentUser?.id;
-                      if (myId != null && myId.isNotEmpty) {
-                        await PocketCitadelAttackPage.openForUser(
-                          context,
-                          userId: myId,
-                          attackerDay: 1,
-                          isDefenseMode: true,
-                        );
-                        _markStepCompleted(9);
-                      }
-                    },
-                    icon: const Icon(Icons.shield_rounded, color: Colors.black),
-                    label: Text(
-                      'ENTER DEFENSE SYSTEM NOW ➔',
-                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-
-        // Combat Test
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(18),
-            border: Border.all(color: Colors.redAccent),
-          ),
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('⚔️ Combat Test: Iron Citadel Bot', style: GoogleFonts.outfit(color: Colors.redAccent, fontWeight: FontWeight.bold, fontSize: 14)),
-                  Text('HP: $_botHp / 100', style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                ],
-              ),
-              const SizedBox(height: 6),
-              LinearProgressIndicator(value: _botHp / 100.0, backgroundColor: Colors.white12, valueColor: const AlwaysStoppedAnimation(Colors.redAccent)),
-              const SizedBox(height: 12),
-              Text(
-                Day1CurriculumJsonData.getLocalizedString(combat['challenge'], lang: _nativeLanguage),
-                style: GoogleFonts.outfit(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 10),
-              Wrap(
-                spacing: 8,
-                children: ((combat['options'] as List?) ?? []).map((opt) {
-                  final optStr = opt.toString();
-                  return ElevatedButton(
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF0F172A)),
-                    onPressed: () {
-                      if (optStr == combat['correct']) {
-                        setState(() {
-                          _botHp = 0;
-                        });
-                        _speak('Critical attack! Citadel Bot Defeated!');
-                      } else {
-                        _speak('Deflected! Try again.');
-                      }
-                    },
-                    child: Text(optStr),
-                  );
-                }).toList(),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-
-        Text('🛡️ Equip 5 Defense Traps:', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-        const SizedBox(height: 10),
-
-        // 5 Defense Traps
-        ...traps.asMap().entries.map((entry) {
-          final idx = entry.key;
-          final trap = entry.value;
-          final q = Day1CurriculumJsonData.getLocalizedString(trap['question'], lang: _nativeLanguage);
-          final opts = (trap['options'] as List?)?.map((e) => e.toString()).toList() ?? [];
-          final correctIdx = trap['correctIndex'] as int? ?? 0;
-          final isArmed = _armedGates.contains(idx);
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: isArmed ? const Color(0xFF10B981) : Colors.white12),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('GATE ${idx + 1}', style: GoogleFonts.outfit(color: isArmed ? const Color(0xFF10B981) : const Color(0xFFFFD700), fontWeight: FontWeight.bold, fontSize: 12)),
-                    if (isArmed) const Text('ARMED ✓', style: TextStyle(color: Color(0xFF10B981), fontWeight: FontWeight.bold, fontSize: 11)),
-                  ],
-                ),
-                Text(q, style: GoogleFonts.outfit(color: Colors.white, fontSize: 13.5)),
-                const SizedBox(height: 6),
-                Wrap(
-                  spacing: 6,
-                  children: opts.asMap().entries.map((oEntry) {
-                    final oIdx = oEntry.key;
-                    final oText = oEntry.value;
-                    return ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isArmed && oIdx == correctIdx ? const Color(0xFF10B981) : const Color(0xFF0F172A),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                      ),
-                      onPressed: () {
-                        if (oIdx == correctIdx) {
-                          setState(() => _armedGates.add(idx));
-                          _speak('Trap Armed!');
-                        }
-                      },
-                      child: Text(oText, style: const TextStyle(fontSize: 12)),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          );
-        }),
-
-        const SizedBox(height: 16),
-        // Big Exam Button
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(vertical: 14),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            ),
-            onPressed: () {
-              HapticFeedback.heavyImpact();
-              _markStepCompleted(9);
-              setState(() => _activeStep = 10);
-            },
-            icon: const Icon(Icons.shield_rounded),
-            label: Text('COMPLETE STEP 9: DEFENSE ARMED (+30 XP) ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13.5)),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // -------------------------------------------------------------
-  // STEP 10: HOUSE 1 FINAL GATE EXAM & UNLOCK HOUSE 2
-  // -------------------------------------------------------------
-  Widget _buildStep10GateExam(Day1StepModel step) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          width: double.infinity,
-          margin: const EdgeInsets.only(bottom: 16),
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Color(0xFFB45309), Color(0xFF78350F)],
-            ),
-            borderRadius: BorderRadius.circular(22),
-            border: Border.all(color: const Color(0xFFFFD700), width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
-                blurRadius: 18,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              const Text('🎓', style: TextStyle(fontSize: 48)),
-              const SizedBox(height: 10),
-              Text(
-                'HOUSE 1 FINAL GATE EXAM',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFD700),
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.8,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'ഹൗസ് 1 പൂർത്തിയാക്കി ഹൗസ് 2 (Day 2) അൺലോക്ക് ചെയ്യുന്നതിനായി 8 ചോദ്യങ്ങൾക്ക് ഉത്തരം നൽകുക!',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text('⭐', style: TextStyle(fontSize: 16)),
-                    const SizedBox(width: 8),
-                    Text(
-                      'PASS MARK: 60% (5/8 Correct)',
-                      style: GoogleFonts.outfit(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          width: double.infinity,
-          child: ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700),
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-              elevation: 6,
-            ),
-            onPressed: () async {
-              final passed = await PocketLevelExamDialog.show(context, level: 1);
-              if (passed == true) {
-                _markStepCompleted(10);
-                await _onDay1FullyCompleted();
-              }
-            },
-            icon: const Icon(Icons.school_rounded, color: Colors.black, size: 24),
-            label: Text(
-              'TAKE HOUSE 1 GATE EXAM (8 Qs) 🎓 ➔',
-              style: GoogleFonts.outfit(
-                fontWeight: FontWeight.w900,
-                fontSize: 15,
-                letterSpacing: 0.6,
-              ),
-            ),
-          ),
-        ),
-      ],
     );
   }
 
