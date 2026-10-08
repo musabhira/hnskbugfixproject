@@ -65,6 +65,7 @@ class PocketVibesUploadManager {
     required io.File videoFile,
     required Duration videoDuration,
     required String userId,
+    String? profileId,
     required String? caption,
     required String? overlayText,
     required String selectedFilterName,
@@ -92,7 +93,22 @@ class PocketVibesUploadManager {
 
     unawaited(() async {
       try {
+        String? effectiveProfileId = profileId;
+        if (effectiveProfileId == null || effectiveProfileId.isEmpty) {
+          try {
+            final prof = await supabase
+                .from('profile')
+                .select('id')
+                .eq('user_id', userId)
+                .maybeSingle();
+            if (prof != null && prof['id'] != null) {
+              effectiveProfileId = prof['id'].toString();
+            }
+          } catch (_) {}
+        }
+
         final List<String> uploadedIds = [];
+        final uploadBaseTime = DateTime.now();
 
         for (int i = 0; i < segments; i++) {
           final startSec = i * 10;
@@ -167,7 +183,7 @@ class PocketVibesUploadManager {
             'stickers': placedStickers,
           };
 
-          final insertRes = await supabase.from('statuses').insert({
+          final statusRow = <String, dynamic>{
             'user_id': userId,
             'media_url': mediaUrl,
             'media_type': 'video',
@@ -178,9 +194,22 @@ class PocketVibesUploadManager {
             'like_count': 0,
             'is_private': statusPrivacy != 'public',
             'status_privacy': statusPrivacy,
+            'is_active': true,
+            'expires_at': uploadBaseTime.add(const Duration(hours: 24)).toIso8601String(),
+            'created_at': uploadBaseTime.add(Duration(milliseconds: i * 200)).toIso8601String(),
             'excluded_user_ids': excludedUserIds.toList(),
             'included_user_ids': includedUserIds.toList(),
-          }).select().single();
+          };
+
+          if (effectiveProfileId != null) {
+            statusRow['profile_id'] = effectiveProfileId;
+          }
+
+          final insertRes = await supabase
+              .from('statuses')
+              .insert(statusRow)
+              .select()
+              .single();
 
           if (insertRes['id'] != null) {
             uploadedIds.add(insertRes['id'].toString());

@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:just_audio/just_audio.dart';
 import '../../services/pocket_game_audio_service.dart';
 import '../../services/pocket_mate_service.dart';
 import '../../services/pocket_trophy_service.dart';
@@ -20,8 +19,34 @@ import '../learning_60day/pocket_world_street_page.dart';
 import 'pocket_feed_vibe_share_sheet.dart';
 import 'pocket_reels_game_engine.dart';
 
-/// Item type for the Reels Feed: either a Homestead or an Interactive English Mini-Game
-enum ReelItemType { home, game }
+/// Item type for the Reels Feed: Homestead, Interactive Mini-Game, or Public Vibe (Audio Directive)
+enum ReelItemType { home, game, vibe }
+
+class ReelVibeCard {
+  final String id;
+  final String userId;
+  final String authorName;
+  final String? authorAvatarUrl;
+  final String mediaUrl;
+  final String mediaType;
+  final String? caption;
+  final int duration;
+  final int day;
+  final bool isRobot;
+
+  const ReelVibeCard({
+    required this.id,
+    required this.userId,
+    required this.authorName,
+    this.authorAvatarUrl,
+    required this.mediaUrl,
+    required this.mediaType,
+    this.caption,
+    this.duration = 10,
+    this.day = 1,
+    this.isRobot = false,
+  });
+}
 
 /// 🎵 Ambient BGM Track for Homes - Powered by PocketGameAudioService
 class HomeMusicTracks {
@@ -36,14 +61,22 @@ class ReelFeedItem {
   final ReelItemType type;
   final PocketNeighbor? neighbor;
   final ReelGameCard? gameCard;
+  final ReelVibeCard? vibeCard;
 
   const ReelFeedItem.home(this.neighbor)
       : type = ReelItemType.home,
-        gameCard = null;
+        gameCard = null,
+        vibeCard = null;
 
   const ReelFeedItem.game(this.gameCard)
       : type = ReelItemType.game,
-        neighbor = null;
+        neighbor = null,
+        vibeCard = null;
+
+  const ReelFeedItem.vibe(this.vibeCard)
+      : type = ReelItemType.vibe,
+        neighbor = null,
+        gameCard = null;
 }
 
 /// 🏰 PocketHomesReelsFeedWidget
@@ -342,8 +375,79 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       }
     }
 
+    final List<ReelVibeCard> publicVibes = [];
+    try {
+      final nowIso = DateTime.now().toIso8601String();
+      final vibesRes = await _supabase
+          .from('statuses')
+          .select('id, user_id, media_url, media_type, caption, duration, is_private, status_privacy, profile:profile_id(id, name, display_name, profile_image_url, learning_day)')
+          .eq('is_active', true)
+          .gt('expires_at', nowIso)
+          .order('created_at', ascending: false)
+          .limit(20);
+
+      for (final v in vibesRes) {
+        final rawMeta = v['metadata'];
+        final isPriv = (v['is_private'] == true) || (rawMeta is Map && rawMeta['is_private'] == true);
+        final privType = v['status_privacy']?.toString() ?? (rawMeta is Map ? rawMeta['status_privacy']?.toString() : null);
+        if (isPriv || (privType != null && privType != 'public')) continue;
+
+        final mediaUrl = v['media_url']?.toString() ?? '';
+        if (mediaUrl.isEmpty) continue;
+
+        final profile = v['profile'];
+        final authorName = (profile is Map ? (profile['name'] ?? profile['display_name']) : null)?.toString() ?? 'Vibe Creator';
+        final authorAvatar = (profile is Map ? profile['profile_image_url'] : null)?.toString();
+        final day = (profile is Map ? (profile['learning_day'] as num?)?.toInt() : null) ?? 1;
+
+        publicVibes.add(
+          ReelVibeCard(
+            id: v['id']?.toString() ?? UniqueKey().toString(),
+            userId: v['user_id']?.toString() ?? '',
+            authorName: authorName,
+            authorAvatarUrl: authorAvatar,
+            mediaUrl: mediaUrl,
+            mediaType: v['media_type']?.toString() ?? 'video',
+            caption: v['caption']?.toString(),
+            duration: (v['duration'] as num?)?.toInt() ?? 10,
+            day: day,
+            isRobot: false,
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Error fetching public vibes for Homes feed: $e');
+    }
+
+    if (publicVibes.length < 5) {
+      final robotVibes = [
+        ReelVibeCard(
+          id: 'robot_vibe_1',
+          userId: 'robo_maya',
+          authorName: 'Maya 🤖 (Habit Coach)',
+          mediaUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+          mediaType: 'image',
+          caption: 'Consistency is power! 15 minutes of daily practice unlocks fluency. ✨',
+          day: 14,
+          isRobot: true,
+        ),
+        ReelVibeCard(
+          id: 'robot_vibe_2',
+          userId: 'robo_alex',
+          authorName: 'Alex 🤖 (Grammar Master)',
+          mediaUrl: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80',
+          mediaType: 'image',
+          caption: 'Mastering tenses today! Challenge your Citadel in the arena. 🏰⚡',
+          day: 28,
+          isRobot: true,
+        ),
+      ];
+      publicVibes.addAll(robotVibes);
+    }
+
     final List<ReelFeedItem> combinedFeed = [];
     int gameIdx = 0;
+    int vibeIdx = 0;
 
     // If deep linking to a specific game, insert it right at top
     if (widget.initialGameId != null) {
@@ -360,6 +464,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       if ((i + 1) % 2 == 0 && gameIdx < games.length) {
         combinedFeed.add(ReelFeedItem.game(games[gameIdx]));
         gameIdx++;
+      } else if ((i + 1) % 3 == 0 && vibeIdx < publicVibes.length) {
+        combinedFeed.add(ReelFeedItem.vibe(publicVibes[vibeIdx]));
+        vibeIdx++;
       }
     }
 
@@ -771,8 +878,8 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               if (item.type == ReelItemType.home && item.neighbor != null) {
                 _recordHomeViewed(item.neighbor!.id);
                 _playHomeMusic(item.neighbor!.id);
-              } else if (item.type == ReelItemType.game) {
-                // Pause background music during games for focus
+              } else if (item.type == ReelItemType.game || item.type == ReelItemType.vibe) {
+                // Pause background music during games or vibes for clear audio focus
                 _pauseBgm();
               }
 
@@ -783,8 +890,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
             },
             itemBuilder: (context, index) {
               final item = _feedItems[index];
-              if (item.type == ReelItemType.game) {
+              if (item.type == ReelItemType.game && item.gameCard != null) {
                 return _buildInteractiveGameSlide(item.gameCard!, index);
+              } else if (item.type == ReelItemType.vibe && item.vibeCard != null) {
+                return _buildVibeReelSlide(item.vibeCard!, index);
               }
               return _buildHouseReelSlide(item.neighbor!, index);
             },
@@ -1529,6 +1638,216 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                   color: Colors.white70,
                   fontSize: 9.5,
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// ✨ Public Vibe Reel Slide (User Audio Directive: "ഡേ വൺ എന്ന് എഴുതിയ അവിടെ വൈബ്സ് എന്ന് എഴുതിയാൽ മതി")
+  Widget _buildVibeReelSlide(ReelVibeCard vibe, int index) {
+    return Stack(
+      children: [
+        // 1. Full Screen Media Content
+        Positioned.fill(
+          child: Container(
+            color: Colors.black,
+            child: vibe.mediaUrl.isNotEmpty
+                ? Image.network(
+                    vibe.mediaUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0284C7)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.play_circle_fill_rounded, size: 72, color: Colors.white38),
+                      ),
+                    ),
+                  )
+                : Container(color: const Color(0xFF0F172A)),
+          ),
+        ),
+
+        // 2. Cinematic Vignette & Bottom Scrim
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.45),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.25),
+                  Colors.black.withValues(alpha: 0.88),
+                ],
+                stops: const [0.0, 0.25, 0.65, 1.0],
+              ),
+            ),
+          ),
+        ),
+
+        // 3. Creator Info & Badge at Bottom Left
+        Positioned(
+          left: 16,
+          right: 80,
+          bottom: MediaQuery.of(context).padding.bottom + 20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Badge & Author Row
+              Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFFFFFC00), width: 1.5),
+                    ),
+                    child: ClipOval(
+                      child: vibe.authorAvatarUrl != null && vibe.authorAvatarUrl!.startsWith('http')
+                          ? Image.network(
+                              vibe.authorAvatarUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white70),
+                            )
+                          : const Icon(Icons.person, color: Colors.white70),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                vibe.authorName,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            if (vibe.isRobot) ...[
+                              const SizedBox(width: 5),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: Colors.blueGrey.withValues(alpha: 0.4),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text('BOT', style: TextStyle(color: Colors.white70, fontSize: 8.5, fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        // ✨ Vibes Badge (Audio Directive: "ഡേ വൺ എന്ന് എഴുതിയ അവിടെ വൈബ്സ് എന്ന് എഴുതിയാൽ മതി")
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.16),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(
+                              color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
+                              width: 0.9,
+                            ),
+                          ),
+                          child: Text(
+                            '✨ Vibes',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              if (vibe.caption != null && vibe.caption!.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  vibe.caption!,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
+          ),
+        ),
+
+        // 4. Right Side Floating Action Buttons (Like & Share)
+        Positioned(
+          right: 14,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('❤️ Liked Vibe!'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Color(0xFF1E293B),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.6),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 22),
+                ),
+              ),
+              const SizedBox(height: 14),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketFeedVibeShareSheet.show(
+                    context,
+                    customText: '✨ ${vibe.authorName}\'s Vibe\n${vibe.caption ?? ''}\n${vibe.mediaUrl}',
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.6),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
                 ),
               ),
             ],

@@ -438,30 +438,46 @@ class _PocketTalkCardSwiperDialogState extends State<PocketTalkCardSwiperDialog>
     // Ensure conversation exists so it appears instantly under Sent tab
     try {
       final nowIso = DateTime.now().toIso8601String();
+      const pactAnnouncement =
+          '⚡ PocketTalk Request Sent 🤝 Waiting for acceptance (4-Day Spoken Pact • 15 mins/day)';
       final existing = await _supabase
           .from('conversations')
           .select('id')
           .or('and(user1_id.eq.$myId,user2_id.eq.${candidate.userId}),and(user1_id.eq.${candidate.userId},user2_id.eq.$myId)')
           .maybeSingle();
+      dynamic convId = existing != null ? existing['id'] : null;
       if (existing == null) {
-        await _supabase.from('conversations').insert({
+        final inserted = await _supabase.from('conversations').insert({
           'user1_id': myId,
           'user2_id': candidate.userId,
-          'last_message': '⚡ Challenged to a 4-Day Spoken English Pact (15m/day)',
+          'last_message': pactAnnouncement,
           'last_message_time': nowIso,
           'last_sender_id': myId,
           'unread_count': 0,
           'updated_at': nowIso,
           'is_group': false,
-        });
+        }).select('id').maybeSingle();
+        if (inserted != null) convId = inserted['id'];
       } else {
         await _supabase.from('conversations').update({
-          'last_message': '⚡ Challenged to a 4-Day Spoken English Pact (15m/day)',
+          'last_message': pactAnnouncement,
           'last_message_time': nowIso,
           'last_sender_id': myId,
           'updated_at': nowIso,
         }).eq('id', existing['id']);
       }
+
+      // Insert announcement row into messages table
+      try {
+        await _supabase.from('messages').insert({
+          if (convId != null) 'conversation_id': convId,
+          'sender_id': myId,
+          'receiver_id': candidate.userId,
+          'content': pactAnnouncement,
+          'message_text': pactAnnouncement,
+          'message_type': 'text',
+        });
+      } catch (_) {}
     } catch (_) {}
 
     if (mounted) {

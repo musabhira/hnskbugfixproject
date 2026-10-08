@@ -4277,19 +4277,18 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                         }
                         final isPendingPact = _pocketTalkPendingPeerIds
                                 .contains(c.id) ||
+                            _pocketTalkPendingSentPeerIds.contains(c.id) ||
                             (c.lastMessage?.contains('Pocket Talk') == true &&
                                 !_pocketTalkActivePeerIds.contains(c.id)) ||
                             (c.lastMessage?.contains('PocketTalk') == true &&
+                                !_pocketTalkActivePeerIds.contains(c.id)) ||
+                            (c.lastMessage?.contains('Spoken English Pact') == true &&
                                 !_pocketTalkActivePeerIds.contains(c.id));
                         if (isPendingPact &&
                             !_pocketTalkActivePeerIds.contains(c.id)) {
-                          final myUid = _currentUserId ??
-                              supabase.auth.currentUser?.id ??
-                              '';
-                          final isMe = c.lastSenderId == myUid;
-                          if (!isMe) {
-                            return false; // Keep incoming unaccepted requests exclusively in 'Pocket Talk' tab!
-                          }
+                          // Isolate pending unaccepted PocketTalk requests:
+                          // Keep them strictly in Requests / Poket Talk tabs until accepted!
+                          return false;
                         }
                         return true;
                       }).toList();

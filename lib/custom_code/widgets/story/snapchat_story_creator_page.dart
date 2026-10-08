@@ -1328,6 +1328,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
           videoFile: io.File(_selectedFile!.path),
           videoDuration: _videoDuration,
           userId: widget.userId,
+          profileId: widget.profileId,
           caption: baseCaption,
           overlayText: _overlayText.isNotEmpty ? _overlayText : null,
           selectedFilterName: _filters[_selectedFilterIndex]['name'] ?? 'Normal',

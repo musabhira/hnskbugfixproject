@@ -65,6 +65,8 @@ class PocketHomeVisitModal extends StatefulWidget {
 class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
     with SingleTickerProviderStateMixin {
   final TextEditingController _searchController = TextEditingController();
+  final DraggableScrollableController _sheetController = DraggableScrollableController();
+  late AnimationController _ambientController;
   List<HomeOwnerEntry> _allOwners = [];
   List<HomeOwnerEntry> _filteredOwners = [];
   bool _isLoading = true;
@@ -73,12 +75,18 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
   @override
   void initState() {
     super.initState();
+    _ambientController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat(reverse: true);
     _searchController.addListener(_onSearchChanged);
     _loadOwners();
   }
 
   @override
   void dispose() {
+    _ambientController.dispose();
+    _sheetController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -101,9 +109,13 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
   Future<void> _loadOwners() async {
     final List<HomeOwnerEntry> owners = [];
 
-    // 1. Fetch robots stationed at or near this level
+    // 1. Fetch robots stationed at this EXACT level (Strict Peer Filtering: Audio Directive)
     final allRobots = PocketRobotService.getAllRobots();
-    final stationRobots = allRobots.where((r) => r.level >= widget.day).take(15);
+    final stationRobots = allRobots.where((r) => r.level == widget.day).toList();
+    if (stationRobots.isEmpty) {
+      final robot = PocketRobotService.getRobotByLevel(widget.day);
+      stationRobots.add(robot);
+    }
     for (final r in stationRobots) {
       owners.add(
         HomeOwnerEntry(
@@ -117,22 +129,22 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
       );
     }
 
-    // 2. Query real learners who have reached this level from Supabase
+    // 2. Query real learners who are at this EXACT level from Supabase
     try {
       final supa = Supabase.instance.client;
       final res = await supa
           .from('profile')
-          .select('user_id, display_name, photo_url, learning_day, learning_points')
-          .gte('learning_day', widget.day)
+          .select('user_id, display_name, name, photo_url, profile_image_url, learning_day, learning_points, pocket_score')
+          .eq('learning_day', widget.day)
           .limit(25);
 
       for (final row in res) {
         final uId = row['user_id']?.toString() ?? '';
         if (uId.isEmpty) continue;
-        final dName = row['display_name']?.toString() ?? 'Adventurer';
-        final pUrl = row['photo_url']?.toString();
+        final dName = row['display_name']?.toString() ?? row['name']?.toString() ?? 'Adventurer';
+        final pUrl = (row['photo_url'] ?? row['profile_image_url'])?.toString();
         final lDay = (row['learning_day'] as num?)?.toInt() ?? widget.day;
-        final lPts = (row['learning_points'] as num?)?.toInt() ?? 0;
+        final lPts = (row['learning_points'] ?? row['pocket_score'] as num?)?.toInt() ?? (widget.day * 150);
         owners.add(
           HomeOwnerEntry(
             id: uId,
@@ -173,116 +185,39 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
     );
   }
 
-  List<Widget> _buildClouds() {
-    return [
-      Positioned(
-        top: 85,
-        left: 20,
-        child: _buildCloudPill(width: 90, height: 28, opacity: 0.65),
-      ),
-      Positioned(
-        top: 130,
-        right: 40,
-        child: _buildCloudPill(width: 120, height: 34, opacity: 0.55),
-      ),
-      Positioned(
-        top: 190,
-        left: 80,
-        child: _buildCloudPill(width: 75, height: 24, opacity: 0.45),
-      ),
-    ];
-  }
-
-  Widget _buildCloudPill({required double width, required double height, required double opacity}) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: opacity),
-        borderRadius: BorderRadius.circular(height / 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.white.withValues(alpha: 0.3),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
     final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(widget.day);
     final palette =
         HousePalette.presets[(widget.day - 1) % HousePalette.presets.length];
+    final currentHour = DateTime.now().hour;
+    final isNight = currentHour >= 18 || currentHour < 6;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A),
+      backgroundColor: isNight ? const Color(0xFF031024) : const Color(0xFF0284C7),
       body: Stack(
         children: [
-          // 1. Living World Atmosphere: Sky Gradient
+          // 1. Full Citadel Living Atmosphere (Animated Sky, Ambient Shimmer, Scenic Landscape)
           Positioned.fill(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFF0284C7), // Azure sky
-                    Color(0xFF38BDF8),
-                    Color(0xFFBAE6FD),
-                    Color(0xFF86EFAC), // Soft green horizon
-                  ],
-                  stops: [0.0, 0.40, 0.68, 1.0],
-                ),
-              ),
-            ),
-          ),
-
-          // 2. Glowing Sun in the Sky
-          Positioned(
-            top: 55,
-            right: 40,
-            child: Container(
-              width: 76,
-              height: 76,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: const RadialGradient(
-                  colors: [
-                    Color(0xFFFEF08A),
-                    Color(0xFFFBBF24),
-                    Colors.transparent,
-                  ],
-                  stops: [0.35, 0.72, 1.0],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFFBBF24).withValues(alpha: 0.45),
-                    blurRadius: 36,
-                    spreadRadius: 12,
+            child: AnimatedBuilder(
+              animation: _ambientController,
+              builder: (context, _) {
+                return CustomPaint(
+                  painter: CitadelScenicLandscapePainter(
+                    isDamaged: false,
+                    groundBaseY: MediaQuery.of(context).size.height * 0.65,
+                    isNight: isNight,
+                    isDay90: widget.day >= 90,
+                    ambientProg: _ambientController.value,
+                    isPresident: widget.day >= 90,
                   ),
-                ],
-              ),
+                );
+              },
             ),
           ),
 
-          // 3. Floating Clouds
-          ..._buildClouds(),
-
-          // 4. Rolling Green Hills & Ground Courtyard
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: 380,
-            child: CustomPaint(
-              painter: _HillsAndGroundPainter(),
-            ),
-          ),
-
-          // 5. Interactive Zoomable & Pannable House Architecture Canvas
+          // 2. Interactive Zoomable & Pannable House Architecture Canvas
           Positioned.fill(
             bottom: 140, // Space above collapsed bottom drawer
             child: InteractiveViewer(
@@ -293,13 +228,25 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CustomPaint(
-                      size: const Size(320, 230),
-                      painter: HouseMasterPainter(
-                        day: widget.day,
-                        palette: palette,
-                        isPresident: (widget.day >= 90),
-                        lightsOn: true,
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        if (_sheetController.isAttached) {
+                          _sheetController.animateTo(
+                            0.75,
+                            duration: const Duration(milliseconds: 320),
+                            curve: Curves.easeOutCubic,
+                          );
+                        }
+                      },
+                      child: CustomPaint(
+                        size: const Size(320, 230),
+                        painter: HouseMasterPainter(
+                          day: widget.day,
+                          palette: palette,
+                          isPresident: (widget.day >= 90),
+                          lightsOn: true,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 14),
@@ -457,6 +404,7 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
 
           // 7. Draggable Sliding Drawer: Citadel Owners & Guardians
           DraggableScrollableSheet(
+            controller: _sheetController,
             initialChildSize: 0.28,
             minChildSize: 0.22,
             maxChildSize: 0.88,
@@ -478,21 +426,47 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                 child: Column(
                   children: [
                     // Drag Handle
-                    Center(
-                      child: Container(
-                        margin: const EdgeInsets.only(top: 10, bottom: 8),
-                        width: 44,
-                        height: 4.5,
-                        decoration: BoxDecoration(
-                          color: Colors.white24,
-                          borderRadius: BorderRadius.circular(3),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        if (_sheetController.isAttached) {
+                          final target = _sheetController.size < 0.5 ? 0.75 : 0.28;
+                          _sheetController.animateTo(
+                            target,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                          );
+                        }
+                      },
+                      child: Center(
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 10, bottom: 8),
+                          width: 44,
+                          height: 4.5,
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
                         ),
                       ),
                     ),
 
-                    // Sheet Header
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
+                    // Sheet Header (Tap to expand/collapse)
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        if (_sheetController.isAttached) {
+                          final target = _sheetController.size < 0.5 ? 0.75 : 0.28;
+                          _sheetController.animateTo(
+                            target,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeOutCubic,
+                          );
+                        }
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 4),
                       child: Row(
                         children: [
                           Container(
@@ -554,6 +528,7 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                         ],
                       ),
                     ),
+                  ),
 
                     const Divider(color: Colors.white12, height: 16),
 
@@ -754,48 +729,3 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
   }
 }
 
-/// 🌄 Custom Painter for Living World Hills and Ground Cobblestone
-class _HillsAndGroundPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final w = size.width;
-    final h = size.height;
-
-    // Distant dark green hill
-    final hillPaint1 = Paint()..color = const Color(0xFF15803D);
-    final path1 = Path()
-      ..moveTo(0, h * 0.45)
-      ..quadraticBezierTo(w * 0.35, h * 0.25, w * 0.7, h * 0.42)
-      ..quadraticBezierTo(w * 0.88, h * 0.50, w, h * 0.46)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(path1, hillPaint1);
-
-    // Foreground lush green hill
-    final hillPaint2 = Paint()..color = const Color(0xFF16A34A);
-    final path2 = Path()
-      ..moveTo(0, h * 0.55)
-      ..quadraticBezierTo(w * 0.25, h * 0.48, w * 0.55, h * 0.58)
-      ..quadraticBezierTo(w * 0.82, h * 0.65, w, h * 0.52)
-      ..lineTo(w, h)
-      ..lineTo(0, h)
-      ..close();
-    canvas.drawPath(path2, hillPaint2);
-
-    // Ground Courtyard Platform (Warm stone cobblestone)
-    final groundPaint = Paint()..color = const Color(0xFF334155);
-    final groundRect = Rect.fromLTWH(0, h * 0.72, w, h * 0.28);
-    canvas.drawRect(groundRect, groundPaint);
-
-    // Decorative ground grass edge line
-    final linePaint = Paint()
-      ..color = const Color(0xFF22C55E)
-      ..strokeWidth = 3
-      ..style = PaintingStyle.stroke;
-    canvas.drawLine(Offset(0, h * 0.72), Offset(w, h * 0.72), linePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}

@@ -893,8 +893,13 @@ class _ConversationTileState extends State<ConversationTile> {
                           padding: const EdgeInsets.all(2.0),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            border: (_cachedPact != null && !_cachedPact!.isForfeited) || _isPendingSent
-                                ? Border.all(color: const Color(0xFFFFD700), width: 2.2)
+                            border: (_cachedPact != null &&
+                                    _cachedPact!.isAccepted &&
+                                    !_cachedPact!.isForfeited)
+                                ? Border.all(
+                                    color: const Color(0xFF10B981),
+                                    width: 2.2,
+                                  )
                                 : null,
                           ),
                           child: _buildAvatar(isDark),

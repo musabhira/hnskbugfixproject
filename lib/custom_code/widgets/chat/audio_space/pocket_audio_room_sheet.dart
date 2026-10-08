@@ -78,7 +78,12 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
           _isPlayingVoice = state.playing &&
               state.processingState != ProcessingState.completed;
           if (state.processingState == ProcessingState.completed) {
+            final finishedMsgId = _currentlyPlayingMsgId;
             _currentlyPlayingMsgId = null;
+            if (finishedMsgId != null) {
+              // Ephemeral audio note: auto-delete after playback
+              _engine.deleteChatMessage(finishedMsgId);
+            }
           }
         });
       }
@@ -454,11 +459,9 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
     );
   }
 
-  /// ☕ 4-Seat Round Coffee Table Visualization
+  /// ☕ Compact 1-Row 4-Seat Chit-Chat Bar (~68dp)
   Widget _buildCoffeeTableSection(AudioSpaceModel space) {
-    // Participants mapped into max 4 table seats
     final allParticipants = _engine.participants;
-    // Host is always Seat 1
     AudioParticipant? seat1Host;
     final otherSeats = <AudioParticipant>[];
 
@@ -470,7 +473,6 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
       }
     }
 
-    // Fallback if host presence hasn't synced yet
     seat1Host ??= AudioParticipant(
       userId: space.hostUserId,
       name: space.hostName,
@@ -483,92 +485,84 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
     final seat3 = otherSeats.length > 1 ? otherSeats[1] : null;
     final seat4 = otherSeats.length > 2 ? otherSeats[2] : null;
 
+    final occupiedCount = 1 +
+        (seat2 != null ? 1 : 0) +
+        (seat3 != null ? 1 : 0) +
+        (seat4 != null ? 1 : 0);
+
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: const BoxDecoration(
         color: Color(0xFF0D1424),
+        border: Border(bottom: BorderSide(color: Color(0xFF1E293B), width: 1)),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          // Top Row: Seat 1 (Host)
-          Center(
-            child: _buildSeatTile(seat1Host, seatNumber: 1, isHostSeat: true),
-          ),
-
-          const SizedBox(height: 6),
-
-          // Middle Row: Seat 2 (Left) --- Central Table Topic Hub --- Seat 3 (Right)
+          // Compact Topic & English Talk Pill Row
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Seat 2
-              _buildSeatTile(seat2, seatNumber: 2),
-
-              // Central Coffee Table Hub
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10),
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF1E293B), Color(0xFF131D33)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.4),
-                        blurRadius: 10,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('☕', style: TextStyle(fontSize: 20)),
-                      const SizedBox(height: 2),
-                      Text(
-                        space.topic,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 11.5,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Ephemeral Table • Voice & Text',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFFFFFC00),
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFFC00).withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.3),
+                    width: 0.8,
                   ),
                 ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('🇬🇧', style: TextStyle(fontSize: 11)),
+                    const SizedBox(width: 4),
+                    Text(
+                      'English Talk Only',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFFFFFC00),
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-
-              // Seat 3
-              _buildSeatTile(seat3, seatNumber: 3),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  space.topic.isNotEmpty ? space.topic : 'Daily Chit-Chat',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white70,
+                    fontSize: 11,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '$occupiedCount/4 Seated',
+                style: GoogleFonts.outfit(
+                  color: const Color(0xFF10B981),
+                  fontSize: 10.5,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
             ],
           ),
+          const SizedBox(height: 8),
 
-          const SizedBox(height: 6),
-
-          // Bottom Row: Seat 4
-          Center(
-            child: _buildSeatTile(seat4, seatNumber: 4),
+          // 1-Row 4-Seat Bar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildSeatTile(seat1Host, seatNumber: 1, isHostSeat: true),
+              _buildSeatTile(seat2, seatNumber: 2),
+              _buildSeatTile(seat3, seatNumber: 3),
+              _buildSeatTile(seat4, seatNumber: 4),
+            ],
           ),
         ],
       ),
@@ -584,10 +578,9 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
     final isMe = isOccupied && participant.userId == _engine.myUserId;
 
     if (!isOccupied) {
-      // Empty Seat Slot (Tap to Join / Sit)
+      // Empty Seat Slot (Tap to Sit)
       return GestureDetector(
         onTap: () {
-          // If listener, take empty seat
           if (!_engine.isSpeaker) {
             _engine.toggleHandRaise();
             ScaffoldMessenger.of(context).showSnackBar(
@@ -600,40 +593,40 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
         },
         child: Container(
           width: 72,
-          padding: const EdgeInsets.symmetric(vertical: 6),
+          padding: const EdgeInsets.symmetric(vertical: 2),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                width: 46,
-                height: 46,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: const Color(0xFF131D33),
                   border: Border.all(
                     color: const Color(0xFF334155),
-                    style: BorderStyle.solid,
-                    width: 1.5,
+                    width: 1.2,
                   ),
                 ),
                 child: const Center(
-                  child: Text('🪑', style: TextStyle(fontSize: 18)),
+                  child: Icon(Icons.add_rounded, size: 18, color: Color(0xFF10B981)),
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 3),
               Text(
                 'Seat $seatNumber',
                 style: GoogleFonts.outfit(
                   color: Colors.white38,
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: FontWeight.w500,
                 ),
+                maxLines: 1,
               ),
               Text(
                 'Open',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFF10B981),
-                  fontSize: 10,
+                  fontSize: 9.5,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -647,33 +640,34 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
     return GestureDetector(
       onTap: () => _showParticipantProfile(context, participant),
       child: Container(
-        width: 76,
-        padding: const EdgeInsets.symmetric(vertical: 4),
+        width: 72,
+        padding: const EdgeInsets.symmetric(vertical: 2),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Stack(
+              clipBehavior: Clip.none,
               alignment: Alignment.center,
               children: [
                 // Avatar border
                 Container(
-                  width: 50,
-                  height: 50,
+                  width: 38,
+                  height: 38,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
                       color: isHostSeat
                           ? const Color(0xFFFFFC00)
                           : (isMe ? const Color(0xFF38BDF8) : const Color(0xFF10B981)),
-                      width: 2,
+                      width: 1.8,
                     ),
                     boxShadow: [
                       BoxShadow(
                         color: (isHostSeat
                                 ? const Color(0xFFFFFC00)
                                 : const Color(0xFF10B981))
-                            .withValues(alpha: 0.3),
-                        blurRadius: 8,
+                            .withValues(alpha: 0.25),
+                        blurRadius: 6,
                       ),
                     ],
                   ),
@@ -693,32 +687,32 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
                 // Host Crown or Me badge
                 if (isHostSeat)
                   Positioned(
-                    top: -2,
-                    right: -2,
+                    top: -4,
+                    right: -4,
                     child: Container(
-                      padding: const EdgeInsets.all(2),
+                      padding: const EdgeInsets.all(1.5),
                       decoration: const BoxDecoration(
                         color: Color(0xFF1E293B),
                         shape: BoxShape.circle,
                       ),
-                      child: const Text('👑', style: TextStyle(fontSize: 12)),
+                      child: const Text('👑', style: TextStyle(fontSize: 10)),
                     ),
                   )
                 else if (isMe)
                   Positioned(
-                    bottom: -2,
-                    right: -2,
+                    bottom: -3,
+                    right: -3,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                      padding: const EdgeInsets.symmetric(horizontal: 3, vertical: 0.5),
                       decoration: BoxDecoration(
                         color: const Color(0xFF38BDF8),
-                        borderRadius: BorderRadius.circular(6),
+                        borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         'YOU',
                         style: GoogleFonts.outfit(
                           color: Colors.black,
-                          fontSize: 8,
+                          fontSize: 7,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -726,12 +720,12 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
                   ),
               ],
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               participant.name,
               style: GoogleFonts.outfit(
                 color: Colors.white,
-                fontSize: 11.5,
+                fontSize: 10.5,
                 fontWeight: FontWeight.w600,
               ),
               maxLines: 1,
@@ -739,11 +733,11 @@ class _PocketAudioRoomSheetState extends State<PocketAudioRoomSheet> {
               textAlign: TextAlign.center,
             ),
             Text(
-              isHostSeat ? 'Host' : 'Mate',
+              isHostSeat ? 'ADMIN 👑' : 'Mate',
               style: GoogleFonts.outfit(
                 color: isHostSeat ? const Color(0xFFFFFC00) : Colors.white54,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
+                fontSize: 9,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
