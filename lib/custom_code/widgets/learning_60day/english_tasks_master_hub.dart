@@ -1124,9 +1124,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// Returns the sequential sub-steps along the climbing mountain trail (User Audio Directive!)
   List<InPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
     final bool admin = _isMasterAdmin;
-    if (day >= 1 && day <= 5) {
+    if (day >= 1 && day <= 15) {
       final track = Day1Track.fromLearnerLevel(level);
-      return Day1Curriculum.getSteps(track).map((step) {
+      return Day1Curriculum.getSteps(track, day).map((step) {
         final flagKey = 'step_${step.stepNumber}';
         final isComp = _subStepFlags[flagKey] ?? false;
         final isUnlocked = admin ||
@@ -1142,7 +1142,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           isUnlocked: isUnlocked,
           onAction: () async {
             int targetStepNumber = step.stepNumber;
-            if (step.stepNumber == 1 && !isComp) {
+            if (day == 1 && step.stepNumber == 1 && !isComp) {
               final prefs = await SharedPreferences.getInstance();
               final uid = widget.userId ?? 'guest';
               final diagDone = prefs.getBool('pm_day1_diagnostic_done_$uid') ?? false;

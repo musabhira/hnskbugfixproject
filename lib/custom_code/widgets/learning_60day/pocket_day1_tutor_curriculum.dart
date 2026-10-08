@@ -4,6 +4,7 @@ import 'pocket_90day_vocab_curriculum.dart';
 import 'daily_vocab_item.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'curriculum_data/day_1_curriculum_data.dart';
+import 'curriculum_data/pocket_day_curriculum_service.dart';
 
 /// 🎯 3 Clear Syllabus Tracks for Day 1
 /// User Directive:
@@ -328,9 +329,147 @@ class Day1Curriculum {
   // -------------------------------------------------------------
   // 1. STEPS (100% JSON-Driven from Day1CurriculumJsonData)
   // -------------------------------------------------------------
-  static List<Day1StepModel> getSteps([Day1Track? track]) {
-    final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
+  static List<Day1StepModel> getSteps([Day1Track? track, int day = 1]) {
     final currentTrack = track ?? Day1Track.middle;
+
+    if (day > 1) {
+      final cachedDay = PocketDayCurriculumService.getCachedDay(day);
+      if (cachedDay != null && cachedDay['steps'] != null) {
+        final rawSteps = cachedDay['steps'] as List<dynamic>? ?? [];
+        return rawSteps.map((s) {
+          final map = Map<String, dynamic>.from(s as Map<String, dynamic>);
+          final stepNum = map['stepNumber'] as int? ?? 1;
+          var titleEn = PocketDayCurriculumService.getLocalizedText(map['title'], lang: 'en');
+          var titleMl = PocketDayCurriculumService.getLocalizedText(map['title'], lang: 'ml');
+          var descEn = PocketDayCurriculumService.getLocalizedText(map['description'], lang: 'en');
+          var descMl = PocketDayCurriculumService.getLocalizedText(map['description'], lang: 'ml');
+          var icon = map['icon']?.toString() ?? '📚';
+          var gameType = map['gameType']?.toString() ?? 'generic';
+
+          // Step 3 Meadow runner hunt synthesis
+          if (stepNum == 3 && (map['rounds'] == null || (map['rounds'] as List).isEmpty)) {
+            final targetObjects = (map['targetObjects'] as List?)?.map((e) => e.toString()).toList() ?? [];
+            final nounsList = (cachedDay['vocabulary']?['nouns'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            final nounMeaningMap = {
+              for (final n in nounsList)
+                n['word']?.toString().toLowerCase(): PocketDayCurriculumService.getLocalizedText(n['meaning'], lang: 'ml'),
+            };
+            final synthesizedRounds = <Map<String, dynamic>>[];
+            for (int i = 0; i < targetObjects.length; i++) {
+              final obj = targetObjects[i];
+              final meaning = nounMeaningMap[obj.toLowerCase()] ?? obj;
+              synthesizedRounds.add({
+                'targetLetter': obj.isNotEmpty ? obj[0].toUpperCase() : 'A',
+                'targetWord': obj,
+                'meaning': meaning,
+                'prompt': 'Catch "$obj" ($meaning)',
+                'options': [
+                  obj,
+                  if (i + 1 < targetObjects.length) targetObjects[i + 1] else 'Book',
+                  'Water',
+                  'House',
+                ]..shuffle(),
+                'correct': obj,
+              });
+            }
+            map['rounds'] = synthesizedRounds;
+          }
+
+          // Step 4 Word catcher & sentence builder synthesis
+          if (stepNum == 4 && (map['rounds'] == null || (map['rounds'] as List).isEmpty)) {
+            final challengePatterns = (map['challengePatterns'] as List?)?.map((e) => e.toString()).toList() ?? [];
+            final verbsList = (cachedDay['vocabulary']?['verbs'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            final synthesizedRounds = <Map<String, dynamic>>[];
+            for (final v in verbsList.take(2)) {
+              final v1 = v['v1']?.toString() ?? '';
+              final meaning = PocketDayCurriculumService.getLocalizedText(v['meaning'], lang: 'ml');
+              synthesizedRounds.add({
+                'type': 'match',
+                'prompt': 'Find the meaning of "$v1":',
+                'options': [meaning, 'പോവുക', 'വരുക', 'ഓടുക']..shuffle(),
+                'correct': meaning,
+              });
+            }
+            for (final pat in challengePatterns) {
+              final clean = pat.replaceAll('.', '').trim();
+              final words = clean.split(' ').where((w) => w.isNotEmpty).toList();
+              synthesizedRounds.add({
+                'type': 'sentence',
+                'prompt': 'Build the sentence: "$clean."',
+                'scrambled': (List<String>.from(words)..shuffle()),
+                'expected': words.join(' '),
+              });
+            }
+            map['rounds'] = synthesizedRounds;
+          }
+
+          // Step 5 Reading room synthesis
+          if (stepNum == 5) {
+            final sentences = (map['sentences'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+            map['passage'] = {
+              'bookTitle': cachedDay['course']?['topic'] ?? {'en': 'Daily Reading', 'ml': 'ദിവസേന വായന'},
+              'sentences': sentences.map((e) => {'en': e['text'] ?? '', 'ml': e['meaningMl'] ?? ''}).toList(),
+              'comprehensionQuestions': [
+                if (sentences.isNotEmpty) {
+                  'question': {'en': 'What did we practice today?', 'ml': 'ഇന്ന് നമ്മൾ എന്താണ് പരിശീലിച്ചത്?'},
+                  'options': [sentences.first['text']?.toString() ?? '', 'Fly away', 'Sleep now'],
+                  'correctIndex': 0,
+                  'explanation': {'en': 'Today focus sentence.', 'ml': 'ഇന്നത്തെ പാഠം.'},
+                }
+              ],
+            };
+          }
+
+          // Step 6 Spoken lab challenges synthesis
+          if (stepNum == 6 && (map['challenges'] == null || (map['challenges'] as List).isEmpty)) {
+            final vt = map['voiceTasks'] as Map<String, dynamic>? ?? {};
+            final trackKey = currentTrack == Day1Track.zero ? 'zero' : (currentTrack == Day1Track.higher ? 'higher' : 'middle');
+            final task = (vt[trackKey] ?? vt['middle'] ?? vt.values.firstOrNull) as Map<String, dynamic>? ?? {};
+            final sentence = task['targetSentence']?.toString() ?? task['prompt']?.toString() ?? 'Daily Practice';
+            final prompt = task['prompt']?.toString() ?? sentence;
+            map['challenges'] = [
+              {
+                'phrase': sentence,
+                'phonetic': '/$sentence/',
+                'meaning': {'en': sentence, 'ml': prompt},
+              }
+            ];
+          }
+
+          // Zero track safe options
+          if (currentTrack == Day1Track.zero) {
+            if (stepNum == 7) {
+              titleEn = 'Tutor Robot Voice Practice';
+              titleMl = 'ട്യൂട്ടർ റോബോട്ടിനൊപ്പമുള്ള സംസാരം 🤖';
+              descEn = 'Practice repeating simple words with your private AI Robot without any fear or embarrassment!';
+              descMl = 'ലളിതമായ വാക്കുകൾ റോബോട്ടിനൊപ്പം പറഞ്ഞു ശീലിക്കുക. ആരും കേൾക്കില്ല, പേടിയില്ലാതെ സംസാരിക്കാം!';
+              icon = '🤖';
+              gameType = 'spoken_robot';
+            } else if (stepNum == 8) {
+              titleEn = 'Phonics & Object Memory Match';
+              titleMl = 'അക്ഷര-വസ്തു മാച്ചിംഗ് ഗെയിം 🧩';
+              descEn = 'Match letters with their correct picture objects to build strong recognition.';
+              descMl = 'പഠിച്ച അക്ഷരങ്ങളും ചിത്രങ്ങളും കൂട്ടിയോജിപ്പിച്ച് മെമ്മറി ഉറപ്പിക്കുക.';
+              icon = '🧩';
+              gameType = 'memory_match';
+            }
+          }
+
+          return Day1StepModel(
+            stepNumber: stepNum,
+            titleEn: titleEn,
+            titleMl: titleMl,
+            icon: icon,
+            type: gameType,
+            descriptionEn: descEn,
+            descriptionMl: descMl,
+            data: map,
+          );
+        }).toList();
+      }
+    }
+
+    final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
 
     return rawSteps.map((s) {
       final map = s as Map<String, dynamic>;
@@ -378,7 +517,38 @@ class Day1Curriculum {
   // -------------------------------------------------------------
   // 2. READING PASSAGE (From Step 5 in JSON)
   // -------------------------------------------------------------
-  static Day1ReadingPassage getReadingPassage([Day1Track? track]) {
+  static Day1ReadingPassage getReadingPassage([Day1Track? track, int day = 1]) {
+    if (day > 1) {
+      final cachedDay = PocketDayCurriculumService.getCachedDay(day);
+      if (cachedDay != null) {
+        final rawSteps = cachedDay['steps'] as List<dynamic>? ?? [];
+        final step5 = rawSteps.firstWhere(
+          (s) => s['id'] == 'step_5_reading_room' || s['stepNumber'] == 5,
+          orElse: () => <String, dynamic>{},
+        ) as Map<String, dynamic>;
+        final rawSentences = step5['sentences'] as List<dynamic>? ?? [];
+        final sentencesEn = rawSentences.map((e) => e is Map ? (e['text']?.toString() ?? '') : e.toString()).toList();
+        final sentencesMl = rawSentences.map((e) => e is Map ? (e['meaningMl']?.toString() ?? '') : '').toList();
+        final topic = cachedDay['course']?['topic'];
+        final bookTitleEn = PocketDayCurriculumService.getLocalizedText(topic, lang: 'en', fallback: 'Day $day Reading');
+        final bookTitleMl = PocketDayCurriculumService.getLocalizedText(topic, lang: 'ml', fallback: 'ഡേ $day വായന');
+        return Day1ReadingPassage(
+          titleEn: bookTitleEn,
+          titleMl: bookTitleMl,
+          contentEn: sentencesEn.join(' '),
+          contentMl: sentencesMl.join(' '),
+          sentencesEn: sentencesEn,
+          sentencesMl: sentencesMl,
+          questionEn: 'Which sentence matches today\'s lesson?',
+          questionMl: 'ഇന്നത്തെ പാഠവുമായി ചേരുന്ന വാചകം ഏതാണ്?',
+          options: sentencesEn.isNotEmpty ? sentencesEn : ['Option A', 'Option B', 'Option C'],
+          correctOptionIndex: 0,
+          explanationEn: 'Practiced in today\'s core lesson.',
+          explanationMl: 'ഇന്നത്തെ പാഠത്തിൽ പഠിച്ചത്.',
+        );
+      }
+    }
+
     final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
     final step5 = rawSteps.firstWhere(
       (s) => s['id'] == 'step_5_reading_book' || s['stepNumber'] == 5,
@@ -419,7 +589,37 @@ class Day1Curriculum {
   // -------------------------------------------------------------
   // 3. DEFENSE QUESTIONS (From Step 10 defenseTraps in JSON)
   // -------------------------------------------------------------
-  static List<Day1DefenseQuestion> getDefenseQuestions([Day1Track? track]) {
+  static List<Day1DefenseQuestion> getDefenseQuestions([Day1Track? track, int day = 1]) {
+    if (day > 1) {
+      final cachedDay = PocketDayCurriculumService.getCachedDay(day);
+      if (cachedDay != null) {
+        final rawSteps = cachedDay['steps'] as List<dynamic>? ?? [];
+        final step7 = rawSteps.firstWhere(
+          (s) => s['id'] == 'step_7_house_defense' || s['gameType'] == 'house_defense_trap_builder' || s['stepNumber'] == 7,
+          orElse: () => <String, dynamic>{},
+        ) as Map<String, dynamic>;
+        final traps = step7['traps'] as List<dynamic>? ?? [];
+        if (traps.isNotEmpty) {
+          return traps.map((t) {
+            final map = t as Map<String, dynamic>;
+            final q = map['question']?.toString() ?? '';
+            final options = (map['options'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+            final ans = map['answer']?.toString() ?? '';
+            final correctIdx = options.indexOf(ans);
+            final exp = map['explanation']?.toString() ?? '';
+            return Day1DefenseQuestion(
+              questionEn: q,
+              questionMl: q,
+              options: options,
+              correctIndex: correctIdx >= 0 ? correctIdx : 0,
+              explanationEn: exp,
+              explanationMl: exp,
+            );
+          }).toList();
+        }
+      }
+    }
+
     final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
     final step10 = rawSteps.firstWhere(
       (s) => s['id'] == 'step_9_house_defense' || s['id'] == 'step_10_house_defense' || s['gameType'] == 'house_defense' || s['stepNumber'] == 9 || s['stepNumber'] == 10,
@@ -448,7 +648,52 @@ class Day1Curriculum {
   // -------------------------------------------------------------
   // 4. VOCABULARY (50+ words from Step 2 in JSON)
   // -------------------------------------------------------------
-  static List<Day1VocabWord> getVocabulary([Day1Track? track]) {
+  static List<Day1VocabWord> getVocabulary([Day1Track? track, int day = 1]) {
+    if (day > 1) {
+      final cachedDay = PocketDayCurriculumService.getCachedDay(day);
+      if (cachedDay != null && cachedDay.containsKey('vocabulary')) {
+        final vocab = cachedDay['vocabulary'] as Map<String, dynamic>? ?? {};
+        final verbs = vocab['verbs'] as List<dynamic>? ?? [];
+        final nouns = vocab['nouns'] as List<dynamic>? ?? [];
+        final list = <Day1VocabWord>[];
+        for (final v in verbs) {
+          if (v is Map<String, dynamic>) {
+            final word = v['v1']?.toString() ?? '';
+            final meaning = v['meaning'] as Map<String, dynamic>? ?? {};
+            list.add(Day1VocabWord(
+              word: word,
+              phonetic: 'V1: ${v['v1']} • V2: ${v['v2']} • V3: ${v['v3']}',
+              emoji: '⚡',
+              meaningEn: word,
+              meaningMl: meaning['ml']?.toString() ?? '',
+              meaningHi: meaning['hi']?.toString() ?? '',
+              meaningTa: meaning['ta']?.toString() ?? '',
+              exampleEn: v['example']?.toString() ?? '',
+              exampleMl: v['exampleMl']?.toString() ?? '',
+            ));
+          }
+        }
+        for (final n in nouns) {
+          if (n is Map<String, dynamic>) {
+            final word = n['word']?.toString() ?? '';
+            final meaning = n['meaning'] as Map<String, dynamic>? ?? {};
+            list.add(Day1VocabWord(
+              word: word,
+              phonetic: 'Noun',
+              emoji: '🏷️',
+              meaningEn: word,
+              meaningMl: meaning['ml']?.toString() ?? '',
+              meaningHi: meaning['hi']?.toString() ?? '',
+              meaningTa: meaning['ta']?.toString() ?? '',
+              exampleEn: n['example']?.toString() ?? '',
+              exampleMl: '',
+            ));
+          }
+        }
+        if (list.isNotEmpty) return list;
+      }
+    }
+
     final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
     final step2 = rawSteps.firstWhere(
       (s) => s['id'] == 'step_2_vocab_50' || s['stepNumber'] == 2,
@@ -486,7 +731,39 @@ class Day1Curriculum {
   // -------------------------------------------------------------
   // 5. HOUSE 1 GATE EXAM (8 questions from JSON)
   // -------------------------------------------------------------
-  static List<Day1ExamQuestion> getExam([Day1Track? track]) {
+  static List<Day1ExamQuestion> getExam([Day1Track? track, int day = 1]) {
+    if (day > 1) {
+      final cachedDay = PocketDayCurriculumService.getCachedDay(day);
+      if (cachedDay != null) {
+        final rawSteps = cachedDay['steps'] as List<dynamic>? ?? [];
+        final step10 = rawSteps.firstWhere(
+          (s) => s['id'] == 'step_daily_exam' || s['gameType'] == 'daily_exam' || s['stepNumber'] == 10,
+          orElse: () => <String, dynamic>{},
+        ) as Map<String, dynamic>;
+        final examQs = step10['examQuestions'] as List<dynamic>? ?? [];
+        if (examQs.isNotEmpty) {
+          return examQs.asMap().entries.map((entry) {
+            final idx = entry.key + 1;
+            final map = entry.value as Map<String, dynamic>;
+            final q = map['q']?.toString() ?? '';
+            final options = (map['options'] as List<dynamic>? ?? []).map((e) => e.toString()).toList();
+            final ans = map['answer']?.toString() ?? '';
+            final correctIdx = options.indexOf(ans);
+            return Day1ExamQuestion(
+              index: idx,
+              questionEn: q,
+              questionMl: q,
+              type: 'choice',
+              options: options,
+              correctAnswer: correctIdx >= 0 ? correctIdx : 0,
+              explanationEn: 'Correct answer: $ans',
+              explanationMl: 'ശരിയായ ഉത്തരം: $ans',
+            );
+          }).toList();
+        }
+      }
+    }
+
     final examMap = Day1CurriculumJsonData.rawMap['houseGateExam'] as Map<String, dynamic>? ?? {};
     final questions = examMap['questions'] as List<dynamic>? ?? [];
     return questions.map((q) {
@@ -514,7 +791,22 @@ class Day1Curriculum {
   // -------------------------------------------------------------
   // 6. ATTACK CHALLENGES (Citadel Combat + Traps from JSON)
   // -------------------------------------------------------------
-  static List<Day1AttackChallenge> getAttackChallenges([Day1Track? track]) {
+  static List<Day1AttackChallenge> getAttackChallenges([Day1Track? track, int day = 1]) {
+    if (day > 1) {
+      final traps = getDefenseQuestions(track, day);
+      if (traps.isNotEmpty) {
+        return traps.map((t) => Day1AttackChallenge(
+          promptEn: t.questionEn,
+          promptMl: t.questionMl,
+          type: 'choice',
+          options: t.options,
+          correctAnswer: t.options.isNotEmpty && t.correctIndex < t.options.length ? t.options[t.correctIndex] : '',
+          explanationEn: t.explanationEn,
+          explanationMl: t.explanationMl,
+        )).toList();
+      }
+    }
+
     final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
     final step10 = rawSteps.firstWhere(
       (s) => s['id'] == 'step_9_house_defense' || s['id'] == 'step_10_house_defense' || s['gameType'] == 'house_defense' || s['stepNumber'] == 9 || s['stepNumber'] == 10,
@@ -555,7 +847,26 @@ class Day1Curriculum {
   // -------------------------------------------------------------
   // 7. COMPLETION SUMMARY (Day 1 Achievement feel)
   // -------------------------------------------------------------
-  static Map<String, dynamic> getCompletionSummary([Day1Track? track]) {
+  static Map<String, dynamic> getCompletionSummary([Day1Track? track, int day = 1]) {
+    if (day > 1) {
+      final cachedDay = PocketDayCurriculumService.getCachedDay(day);
+      final topic = cachedDay != null ? PocketDayCurriculumService.getLocalizedText(cachedDay['course']?['topic'], lang: 'en') : 'Daily Lesson';
+      return {
+        'title': '🎉 YOU COMPLETED DAY $day!',
+        'badge': '🏆 DAY $day MASTERED',
+        'points': '+250 XP',
+        'learnedBullets': [
+          'Grammar Rule & Spoken Formula: $topic',
+          'Vocabulary Verbs & Core Nouns (Step 2)',
+          '2D Meadow Runner Hunt & Sentence Constructor',
+          'Daily Reading Room & Audio Mic Practice',
+          'Spoken Speech Lab Fluency Analyzer',
+          'Community Chat & Partner Practice',
+          'Citadel Defense Traps & House Protection',
+          'Day $day Gate Exam Passed!',
+        ],
+      };
+    }
     return {
       'title': '🎉 YOU COMPLETED DAY 1!',
       'badge': '🏆 HOUSE 1 MASTERED',

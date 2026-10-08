@@ -493,7 +493,7 @@ class _PocketDay1InteractiveFlowPageState
 
   @override
   Widget build(BuildContext context) {
-    final steps = Day1Curriculum.getSteps(_currentTrack);
+    final steps = Day1Curriculum.getSteps(_currentTrack, widget.day);
     final activeStepData = steps[(_activeStep - 1).clamp(0, steps.length - 1)];
 
     return Scaffold(
@@ -533,6 +533,14 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   Widget _buildTopBar() {
+    final cached = PocketDayCurriculumService.getCachedDay(widget.day);
+    final topicEn = cached != null
+        ? PocketDayCurriculumService.getLocalizedText(cached['course']?['topic'], lang: 'en')
+        : 'BASIC ENGLISH';
+    final topicMl = cached != null
+        ? PocketDayCurriculumService.getLocalizedText(cached['course']?['topic'], lang: 'ml')
+        : 'അടിസ്ഥാന ഇംഗ്ലീഷ്';
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: const BoxDecoration(
@@ -555,7 +563,7 @@ class _PocketDay1InteractiveFlowPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'DAY ${widget.day} • BASIC ENGLISH',
+                  'DAY ${widget.day} • ${topicEn.toUpperCase()}',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontSize: 13,
@@ -566,8 +574,8 @@ class _PocketDay1InteractiveFlowPageState
                 ),
                 Text(
                   _nativeLanguage == 'Malayalam'
-                      ? 'അടിസ്ഥാന ഇംഗ്ലീഷ്'
-                      : 'Basic English',
+                      ? topicMl
+                      : topicEn,
                   style: GoogleFonts.inter(color: Colors.white60, fontSize: 10.5),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -961,7 +969,7 @@ class _PocketDay1InteractiveFlowPageState
   Widget _buildActiveStepContent(Day1StepModel step) {
     switch (_activeStep) {
       case 1:
-        return _buildStep1Alphabet(step);
+        return widget.day > 1 ? _buildStep1ConceptRoom(step) : _buildStep1Alphabet(step);
       case 2:
         return _buildStep2VocabBank(step);
       case 3:
@@ -983,6 +991,188 @@ class _PocketDay1InteractiveFlowPageState
       default:
         return const SizedBox.shrink();
     }
+  }
+
+  // -------------------------------------------------------------
+  // STEP 1 (DAY > 1): CONCEPT ROOM (Grammar & Spoken Formula)
+  // -------------------------------------------------------------
+  Widget _buildStep1ConceptRoom(Day1StepModel step) {
+    final cached = PocketDayCurriculumService.getCachedDay(widget.day);
+    final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
+    final formula = grammar['formula']?.toString() ?? step.titleEn;
+    final expEn = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'en', fallback: step.descriptionEn);
+    final expMl = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'ml', fallback: step.descriptionMl);
+    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'en');
+    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'ml');
+    final topicEn = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'en');
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildSkipOptionBanner(
+          text: 'Already master today\'s concept?',
+          subtext: 'You can proceed directly to Vocabulary & 2D Arcade Games!',
+          onSkip: () => _markStepCompleted(1),
+        ),
+        const SizedBox(height: 12),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Row(
+            children: [
+              VectorAvatarWidget(config: VectorAvatarConfig.defaultConfig, size: 38),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('CyberCat Tutor 🐱',
+                        style: GoogleFonts.outfit(
+                            color: const Color(0xFFFFD700),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12.5)),
+                    Text(
+                      'Day ${widget.day} Concept Room: $topicEn',
+                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
+                onPressed: () => _speak('$topicEn. $formula. $goldenTipEn'),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: const Color(0xFF38BDF8), width: 1.5),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                blurRadius: 18,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFF38BDF8)),
+                    ),
+                    child: Text('RULE & FORMULA',
+                        style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.w900)),
+                  ),
+                  const Spacer(),
+                  const Text('🏛️', style: TextStyle(fontSize: 22)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                formula,
+                style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 20, fontWeight: FontWeight.w900),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                expMl,
+                style: GoogleFonts.inter(color: Colors.white, fontSize: 14, height: 1.5, fontWeight: FontWeight.w600),
+              ),
+              if (expEn.isNotEmpty && expEn != expMl) ...[
+                const SizedBox(height: 8),
+                Text(
+                  expEn,
+                  style: GoogleFonts.inter(color: Colors.white60, fontSize: 12, height: 1.4),
+                ),
+              ],
+              if (goldenTipMl.isNotEmpty || goldenTipEn.isNotEmpty) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('💡', style: TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              goldenTipMl.isNotEmpty ? goldenTipMl : goldenTipEn,
+                              style: GoogleFonts.inter(color: const Color(0xFFFFE066), fontSize: 12.5, fontWeight: FontWeight.bold),
+                            ),
+                            if (goldenTipEn.isNotEmpty && goldenTipMl.isNotEmpty)
+                              Text(
+                                goldenTipEn,
+                                style: GoogleFonts.inter(color: Colors.white70, fontSize: 11),
+                              ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 18),
+                        onPressed: () => _speak(goldenTipEn.isNotEmpty ? goldenTipEn : formula),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF10B981),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              elevation: 4,
+            ),
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              _speak('Awesome! Concept learned. Let us move to Vocabulary.');
+              _markStepCompleted(1);
+            },
+            icon: const Icon(Icons.check_circle_rounded, size: 20),
+            label: Text(
+              'CONCEPT MASTERED • NEXT STEP ➔',
+              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+            ),
+          ),
+        ),
+      ],
+    );
   }
 
   // -------------------------------------------------------------
@@ -1414,11 +1604,58 @@ class _PocketDay1InteractiveFlowPageState
     );
   }
 
+  List<Map<String, dynamic>> _getVocabWords() {
+    if (widget.day > 1) {
+      final cached = PocketDayCurriculumService.getCachedDay(widget.day);
+      if (cached != null && cached.containsKey('vocabulary')) {
+        final vocab = cached['vocabulary'] as Map<String, dynamic>? ?? {};
+        final verbs = vocab['verbs'] as List<dynamic>? ?? [];
+        final nouns = vocab['nouns'] as List<dynamic>? ?? [];
+        final list = <Map<String, dynamic>>[];
+        for (final v in verbs) {
+          if (v is Map<String, dynamic>) {
+            final word = v['v1']?.toString() ?? '';
+            final meaning = PocketDayCurriculumService.getLocalizedText(v['meaning'], lang: _nativeLanguage);
+            final forms = 'V1: ${v['v1']} • V2: ${v['v2']} • V3: ${v['v3']}';
+            list.add({
+              'word': word,
+              'phonetic': forms,
+              'emoji': '⚡',
+              'category': 'Verbs',
+              'meaning': meaning,
+              'exampleEn': v['example']?.toString() ?? '',
+              'exampleMl': v['exampleMl']?.toString() ?? '',
+            });
+          }
+        }
+        for (final n in nouns) {
+          if (n is Map<String, dynamic>) {
+            final word = n['word']?.toString() ?? '';
+            final meaning = PocketDayCurriculumService.getLocalizedText(n['meaning'], lang: _nativeLanguage);
+            list.add({
+              'word': word,
+              'phonetic': 'Noun',
+              'emoji': '🏷️',
+              'category': 'Nouns',
+              'meaning': meaning,
+              'exampleEn': n['example']?.toString() ?? '',
+              'exampleMl': '',
+            });
+          }
+        }
+        if (list.isNotEmpty) {
+          return [...list, ...Day1VocabBankData.words300];
+        }
+      }
+    }
+    return Day1VocabBankData.words300;
+  }
+
   // -------------------------------------------------------------
   // STEP 2: 300+ VOCABULARY WORDS (Interactive Card & Browse Mode)
   // -------------------------------------------------------------
   Widget _buildStep2VocabBank(Day1StepModel step) {
-    final allWords = Day1VocabBankData.words300;
+    final allWords = _getVocabWords();
     final filtered = allWords.where((w) {
       final matchesCat = _selectedVocabCategory == 'All' ||
           (w['category']?.toString().toLowerCase() == _selectedVocabCategory.toLowerCase());
@@ -2111,69 +2348,121 @@ class _PocketDay1InteractiveFlowPageState
   // -------------------------------------------------------------
   Widget _buildStep5ReadingRoom(Day1StepModel step) {
     // 📖 Rich Illustrated Story Data
-    final storyTitleEn = 'The Little Fox & The Golden Star';
-    final storyTitleMl = 'സൗഹൃദ കുറുക്കനും സുവർണ്ണ നക്ഷത്രവും';
+    final String storyTitleEn;
+    final String storyTitleMl;
+    final List<Map<String, dynamic>> paragraphs;
+    final List<Map<String, dynamic>> comprehensionQuestions;
 
-    final paragraphs = [
-      {
-        'en': 'Once upon a time, in a peaceful green meadow, lived a small, friendly fox named Oliver. Every night, the bright silver moon illuminated the sleepy valley. Oliver loved watching the peaceful night sky while resting near the ancient oak tree.',
-        'ml': 'ഒരിക്കൽ, ശാന്തമായ ഒരു പച്ചപ്പുൽമേട്ടിൽ ഒലിവർ എന്ന കൊച്ചു കുറുക്കൻ താമസിച്ചിരുന്നു. എല്ലാ രാത്രിയിലും വെള്ളിച്ചന്ദ്രൻ താഴ്വരയെ പ്രകാശിപ്പിച്ചു. പുരാതനമായ ഓക്ക് മരത്തിനടുത്ത് ഇരുന്ന് രാത്രിയിലെ ആകാശം കാണാൻ ഒലിവറിന് വളരെ ഇഷ്ടമായിരുന്നു.',
-        'focus': ['Fox', 'Meadow', 'Moon', 'Night'],
-      },
-      {
-        'en': 'One warm evening, Oliver walked toward the crystal river to drink fresh, cold water. While drinking, he noticed a magical golden glow dancing between the green leaves of the oak tree. It was not a red apple, and it was not a lamp—it was a twinkling golden star that had fallen softly from the sky!',
-        'ml': 'ഒരു ദിവസം വൈകുന്നേരം, ഒലിവർ തെളിഞ്ഞ നദിയിലേക്ക് തണുത്ത വെള്ളം കുടിക്കാൻ നടന്നു. വെള്ളം കുടിക്കുന്നതിനിടയിൽ, ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ ഒരു മാന്ത്രിക സുവർണ്ണ വെളിച്ചം അവൻ കണ്ടു. അതൊരു ചുവന്ന ആപ്പിളോ വിളക്കോ അല്ലായിരുന്നു—ആകാശത്തുനിന്ന് പതിയെ താഴേക്ക് വീണ മിന്നുന്ന ഒരു സുവർണ്ണ നക്ഷത്രമായിരുന്നു അത്!',
-        'focus': ['Water', 'Apple', 'Star', 'Tree'],
-      },
-      {
-        'en': "Oliver gently climbed the strong tree branch. 'Hello, little star! Are you hurt?' Oliver asked with a kind smile. The star chimed softly: 'I slipped from the clouds. Can you help me find my way back home?' Oliver smiled warmly: 'Do not worry, my new friend! Together, we will climb to the mountain top where the gentle breeze can lift you back to the sky.'",
-        'ml': "ഒലിവർ പതുക്കെ മരത്തിന്റെ കൊമ്പിലേക്ക് കയറി. 'ഹലോ, കൊച്ചു നക്ഷത്രമേ! നിനക്ക് വല്ലതും പറ്റിയോ?' ഒലിവർ സ്നേഹത്തോടെ ചോദിച്ചു. നക്ഷത്രം മണിനാദം പോലെ പറഞ്ഞു: 'ഞാൻ മേഘങ്ങളിൽ നിന്ന് വീണുപോയി. എനിക്ക് തിരികെ വീട്ടിലെത്താൻ സഹായിക്കാമോ?' ഒലിവർ പുഞ്ചിരിച്ചു: 'പേടിക്കണ്ട എന്റെ പുതിയ കൂട്ടുകാരാ! കാറ്റ് നിന്നെ ആകാശത്തേക്ക് ഉയർത്തുന്ന മലമുകളിലേക്ക് നമുക്ക് ഒരുമിച്ച് പോകാം.'",
-        'focus': ['Smile', 'Friend', 'Mountain', 'Sky'],
-      },
-      {
-        'en': 'With brave and steady steps, Oliver carried the little star to the windy peak. A soft night breeze embraced them, and the golden star floated gracefully back into the deep blue sky, shining brighter than ever before. Oliver walked back to his warm bed feeling immensely proud and happy, knowing that kindness always lights up the darkest night.',
-        'ml': 'ധീരമായ ചുവടുകളോടെ ഒലിവർ കൊച്ചു നക്ഷത്രത്തെ മലമുകളിലെത്തിച്ചു. രാത്രിയിലെ ഇളംകാറ്റ് അവരെ തഴുകി, സുവർണ്ണ നക്ഷത്രം നീലാകാശത്തേക്ക് ഭംഗിയായി ഉയർന്നുപൊങ്ങി. ഒലിവർ തന്റെ കിടക്കയിലേക്ക് മടങ്ങിയെത്തി, കാരുണ്യവും സൗഹൃദവുമാണ് ഏറ്റവും വലിയ വെളിച്ചമെന്ന് മനസ്സിലാക്കി അവൻ സമാധാനമായി ഉറങ്ങി.',
-        'focus': ['Bed', 'Happy', 'Kindness', 'Blue'],
-      },
-    ];
+    if (widget.day > 1) {
+      final cached = PocketDayCurriculumService.getCachedDay(widget.day);
+      final topic = cached?['course']?['topic'];
+      storyTitleEn = PocketDayCurriculumService.getLocalizedText(topic, lang: 'en', fallback: step.titleEn);
+      storyTitleMl = PocketDayCurriculumService.getLocalizedText(topic, lang: 'ml', fallback: step.titleMl);
 
-    final comprehensionQuestions = [
-      {
-        'id': 1,
-        'question': {
-          'en': 'Who is the main hero in the story?',
-          'ml': 'കഥയിലെ പ്രധാന കഥാപാത്രം ആരാണ്?',
+      final sentences = (step.data['sentences'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+      paragraphs = sentences.map((s) {
+        final en = s['text']?.toString() ?? '';
+        final ml = s['meaningMl']?.toString() ?? '';
+        final words = en.split(' ').where((w) => w.length > 3).take(3).toList();
+        return {
+          'en': en,
+          'ml': ml,
+          'focus': words.isNotEmpty ? words : ['Daily', 'Spoken'],
+        };
+      }).toList();
+
+      comprehensionQuestions = [
+        {
+          'id': 1,
+          'question': {
+            'en': 'What did we read and practice in this lesson?',
+            'ml': 'ഈ പാഠത്തിൽ നമ്മൾ എന്ത് വിഷയമാണ് വായിച്ചു പരിശീലിച്ചത്?',
+          },
+          'options': [storyTitleEn, 'Flying in space', 'Cooking alone'],
+          'correctIndex': 0,
+          'explanation': 'Focused on today\'s lesson topic.',
         },
-        'options': ['Oliver the friendly fox 🦊', 'A sleeping giant 🧌', 'A fierce tiger 🐅', 'A noisy crow 🐦‍⬛'],
-        'correctIndex': 0,
-        'explanation': 'Oliver is the kind, friendly fox living in the meadow.',
-      },
-      {
-        'id': 2,
-        'question': {
-          'en': 'What was shining between the leaves of the oak tree?',
-          'ml': 'ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ തിളങ്ങി നിന്നത് എന്തായിരുന്നു?',
+        if (sentences.isNotEmpty)
+          {
+            'id': 2,
+            'question': {
+              'en': 'Which sentence was read aloud in today\'s passage?',
+              'ml': 'ഇന്നത്തെ പാഠത്തിൽ ഉറക്കെ വായിച്ച വാചകം ഏതാണ്?',
+            },
+            'options': [
+              sentences.first['text']?.toString() ?? '',
+              'I forgot my homework',
+              'The bus left early',
+            ],
+            'correctIndex': 0,
+            'explanation': 'Matches the core spoken sentence practiced.',
+          },
+      ];
+    } else {
+      storyTitleEn = 'The Little Fox & The Golden Star';
+      storyTitleMl = 'സൗഹൃദ കുറുക്കനും സുവർണ്ണ നക്ഷത്രവും';
+
+      paragraphs = [
+        {
+          'en': 'Once upon a time, in a peaceful green meadow, lived a small, friendly fox named Oliver. Every night, the bright silver moon illuminated the sleepy valley. Oliver loved watching the peaceful night sky while resting near the ancient oak tree.',
+          'ml': 'ഒരിക്കൽ, ശാന്തമായ ഒരു പച്ചപ്പുൽമേട്ടിൽ ഒലിവർ എന്ന കൊച്ചു കുറുക്കൻ താമസിച്ചിരുന്നു. എല്ലാ രാത്രിയിലും വെള്ളിച്ചന്ദ്രൻ താഴ്വരയെ പ്രകാശിപ്പിച്ചു. പുരാതനമായ ഓക്ക് മരത്തിനടുത്ത് ഇരുന്ന് രാത്രിയിലെ ആകാശം കാണാൻ ഒലിവറിന് വളരെ ഇഷ്ടമായിരുന്നു.',
+          'focus': ['Fox', 'Meadow', 'Moon', 'Night'],
         },
-        'options': ['A red apple 🍎', 'A twinkling golden star ⭐', 'A gold pocket watch ⏰', 'A street lamp 💡'],
-        'correctIndex': 1,
-        'explanation': 'A twinkling golden star that had fallen softly from the sky.',
-      },
-      {
-        'id': 3,
-        'question': {
-          'en': 'How did Oliver help the little star return home?',
-          'ml': 'നക്ഷത്രത്തെ തിരികെ വീട്ടിലെത്താൻ ഒലിവർ എങ്ങനെ സഹായിച്ചു?',
+        {
+          'en': 'One warm evening, Oliver walked toward the crystal river to drink fresh, cold water. While drinking, he noticed a magical golden glow dancing between the green leaves of the oak tree. It was not a red apple, and it was not a lamp—it was a twinkling golden star that had fallen softly from the sky!',
+          'ml': 'ഒരു ദിവസം വൈകുന്നേരം, ഒലിവർ തെളിഞ്ഞ നദിയിലേക്ക് തണുത്ത വെള്ളം കുടിക്കാൻ നടന്നു. വെള്ളം കുടിക്കുന്നതിനിടയിൽ, ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ ഒരു മാന്ത്രിക സുവർണ്ണ വെളിച്ചം അവൻ കണ്ടു. അതൊരു ചുവന്ന ആപ്പിളോ വിളക്കോ അല്ലായിരുന്നു—ആകാശത്തുനിന്ന് പതിയെ താഴേക്ക് വീണ മിന്നുന്ന ഒരു സുവർണ്ണ നക്ഷത്രമായിരുന്നു അത്!',
+          'focus': ['Water', 'Apple', 'Star', 'Tree'],
         },
-        'options': [
-          'Threw it with a slingshot 🎯',
-          'Put it in a cardboard box 📦',
-          'Guided it to the mountain top for the breeze to lift it 🏔️',
-          'Left it in the river water 💧',
-        ],
-        'correctIndex': 2,
-        'explanation': 'Oliver guided the star up the mountain peak where the breeze lifted it back to the sky.',
-      },
-    ];
+        {
+          'en': "Oliver gently climbed the strong tree branch. 'Hello, little star! Are you hurt?' Oliver asked with a kind smile. The star chimed softly: 'I slipped from the clouds. Can you help me find my way back home?' Oliver smiled warmly: 'Do not worry, my new friend! Together, we will climb to the mountain top where the gentle breeze can lift you back to the sky.'",
+          'ml': "ഒലിവർ പതുക്കെ മരത്തിന്റെ കൊമ്പിലേക്ക് കയറി. 'ഹലോ, കൊച്ചു നക്ഷത്രമേ! നിനക്ക് വല്ലതും പറ്റിയോ?' ഒലിവർ സ്നേഹത്തോടെ ചോദിച്ചു. നക്ഷത്രം മണിനാദം പോലെ പറഞ്ഞു: 'ഞാൻ മേഘങ്ങളിൽ നിന്ന് വീണുപോയി. എനിക്ക് തിരികെ വീട്ടിലെത്താൻ സഹായിക്കാമോ?' ഒലിവർ പുഞ്ചിരിച്ചു: 'പേടിക്കണ്ട എന്റെ പുതിയ കൂട്ടുകാരാ! കാറ്റ് നിന്നെ ആകാശത്തേക്ക് ഉയർത്തുന്ന മലമുകളിലേക്ക് നമുക്ക് ഒരുമിച്ച് പോകാം.'",
+          'focus': ['Smile', 'Friend', 'Mountain', 'Sky'],
+        },
+        {
+          'en': 'With brave and steady steps, Oliver carried the little star to the windy peak. A soft night breeze embraced them, and the golden star floated gracefully back into the deep blue sky, shining brighter than ever before. Oliver walked back to his warm bed feeling immensely proud and happy, knowing that kindness always lights up the darkest night.',
+          'ml': 'ധീരമായ ചുവടുകളോടെ ഒലിവർ കൊച്ചു നക്ഷത്രത്തെ മലമുകളിലെത്തിച്ചു. രാത്രിയിലെ ഇളംകാറ്റ് അവരെ തഴുകി, സുവർണ്ണ നക്ഷത്രം നീലാകാശത്തേക്ക് ഭംഗിയായി ഉയർന്നുപൊങ്ങി. ഒലിവർ തന്റെ കിടക്കയിലേക്ക് മടങ്ങിയെത്തി, കാരുണ്യവും സൗഹൃദവുമാണ് ഏറ്റവും വലിയ വെളിച്ചമെന്ന് മനസ്സിലാക്കി അവൻ സമാധാനമായി ഉറങ്ങി.',
+          'focus': ['Bed', 'Happy', 'Kindness', 'Blue'],
+        },
+      ];
+
+      comprehensionQuestions = [
+        {
+          'id': 1,
+          'question': {
+            'en': 'Who is the main hero in the story?',
+            'ml': 'കഥയിലെ പ്രധാന കഥാപാത്രം ആരാണ്?',
+          },
+          'options': ['Oliver the friendly fox 🦊', 'A sleeping giant 🧌', 'A fierce tiger 🐅', 'A noisy crow 🐦‍⬛'],
+          'correctIndex': 0,
+          'explanation': 'Oliver is the kind, friendly fox living in the meadow.',
+        },
+        {
+          'id': 2,
+          'question': {
+            'en': 'What was shining between the leaves of the oak tree?',
+            'ml': 'ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ തിളങ്ങി നിന്നത് എന്തായിരുന്നു?',
+          },
+          'options': ['A red apple 🍎', 'A twinkling golden star ⭐', 'A gold pocket watch ⏰', 'A street lamp 💡'],
+          'correctIndex': 1,
+          'explanation': 'A twinkling golden star that had fallen softly from the sky.',
+        },
+        {
+          'id': 3,
+          'question': {
+            'en': 'How did Oliver help the little star return home?',
+            'ml': 'നക്ഷത്രത്തെ തിരികെ വീട്ടിലെത്താൻ ഒലിവർ എങ്ങനെ സഹായിച്ചു?',
+          },
+          'options': [
+            'Threw it with a slingshot 🎯',
+            'Put it in a cardboard box 📦',
+            'Guided it to the mountain top for the breeze to lift it 🏔️',
+            'Left it in the river water 💧',
+          ],
+          'correctIndex': 2,
+          'explanation': 'Oliver guided the star up the mountain peak where the breeze lifted it back to the sky.',
+        },
+      ];
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -3183,7 +3472,7 @@ class _PocketDay1InteractiveFlowPageState
             const Text('🛡️', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 12),
             Text(
-              'FORTIFY HOUSE 1 DEFENSE SYSTEM',
+              'FORTIFY DAY ${widget.day} CITADEL DEFENSE',
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
                 color: const Color(0xFFFFD700),
@@ -3231,7 +3520,7 @@ class _PocketDay1InteractiveFlowPageState
                     await PocketCitadelAttackPage.openForUser(
                       context,
                       userId: myId,
-                      attackerDay: 1,
+                      attackerDay: widget.day,
                       isDefenseMode: true,
                     );
                     _markStepCompleted(10);

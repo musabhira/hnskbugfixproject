@@ -1218,8 +1218,8 @@ class _PocketDayOpenWorldAdventurePageState
         _runtimeStepColor(s),
       );
     }
-    if (widget.day == 1) {
-      final steps = Day1Curriculum.getSteps(_day1Track);
+    if (widget.day >= 1 && widget.day <= 15) {
+      final steps = Day1Curriculum.getSteps(_day1Track, widget.day);
       if (s >= 1 && s <= steps.length) {
         final st = steps[s - 1];
         return _StepInfo(st.titleEn, st.icon, _day1Track.color);
@@ -1283,7 +1283,7 @@ class _PocketDayOpenWorldAdventurePageState
 
   Future<void> _launchStepActivity(int s) async {
     final day = widget.day;
-    if (day >= 1 && day <= 5) {
+    if (day >= 1 && day <= 15) {
       await PocketDay1InteractiveFlowPage.show(
         context,
         day: day,
