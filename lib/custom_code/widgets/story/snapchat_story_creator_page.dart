@@ -8,17 +8,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image/image.dart' as img;
-import 'package:video_compress/video_compress.dart';
 import 'package:video_player/video_player.dart';
-import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_snap_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_vibes_upload_manager.dart';
 
 class StoryStickerItem {
   final String id;
@@ -967,7 +964,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                   child: const Icon(Icons.videocam_rounded, color: Color(0xFFFF9800), size: 22),
                 ),
                 title: Text(
-                  'Video Vibe (10s Snapchat Slicing)',
+                  'Video Vibe (10s Auto-Slicing)',
                   style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
                 ),
                 subtitle: Text(
@@ -1318,193 +1315,49 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
 
     try {
       if (_selectedFile != null && _mediaType == 'video') {
-        final totalSec = math.min(60, _videoDuration.inSeconds > 0 ? _videoDuration.inSeconds : 10);
-        final segments = math.min(6, (totalSec / 10).ceil().clamp(1, 6));
-
         try {
           await _videoController?.pause();
         } catch (_) {}
-
-        final tempDir = await getTemporaryDirectory();
 
         final String? baseCaption = _captionController.text.trim().isNotEmpty
             ? _captionController.text.trim()
             : (_overlayText.isNotEmpty ? _overlayText : null);
 
-        for (int i = 0; i < segments; i++) {
-          final int segIndex = i + 1;
-          final int startSec = i * 10;
-          final int segDuration = math.min(10, totalSec - startSec);
-
-          setState(() {
-            _uploadProgress = (i + 0.15) / segments;
-            _uploadStatusText = segments > 1
-                ? 'Compressing Part $segIndex/$segments...'
-                : 'Compressing Video...';
-          });
-
-          Uint8List bytesToUpload;
-          final slicePath =
-              '${tempDir.path}/vibe_slice_${DateTime.now().millisecondsSinceEpoch}_$i.mp4';
-          bool slicedWithFfmpeg = false;
-
-          try {
-            final command = [
-              '-y',
-              '-ss',
-              '$startSec',
-              '-t',
-              '$segDuration',
-              '-i',
-              _selectedFile!.path,
-              '-c:v',
-              'libx264',
-              '-preset',
-              'ultrafast',
-              '-crf',
-              '28',
-              '-c:a',
-              'aac',
-              '-b:a',
-              '64k',
-              slicePath,
-            ];
-            final session = await FFmpegKit.executeWithArguments(command);
-            final rc = await session.getReturnCode();
-            if (ReturnCode.isSuccess(rc) && io.File(slicePath).existsSync()) {
-              slicedWithFfmpeg = true;
-            }
-          } catch (e) {
-            debugPrint('FFmpeg slice attempt error: $e');
-          }
-
-          if (slicedWithFfmpeg) {
-            try {
-              final comp = await VideoCompress.compressVideo(
-                slicePath,
-                quality: VideoQuality.MediumQuality,
-                deleteOrigin: false,
-                includeAudio: true,
-              );
-              if (comp != null && comp.file != null) {
-                bytesToUpload = await comp.file!.readAsBytes();
-              } else {
-                bytesToUpload = await io.File(slicePath).readAsBytes();
-              }
-            } catch (_) {
-              bytesToUpload = await io.File(slicePath).readAsBytes();
-            }
-          } else {
-            // Fallback: compress full video
-            final comp = await VideoCompress.compressVideo(
-              _selectedFile!.path,
-              quality: VideoQuality.MediumQuality,
-              deleteOrigin: false,
-              includeAudio: true,
-            );
-            if (comp != null && comp.file != null) {
-              bytesToUpload = await comp.file!.readAsBytes();
-            } else {
-              bytesToUpload = await _selectedFile!.readAsBytes();
-            }
-          }
-
-          setState(() {
-            _uploadProgress = (i + 0.65) / segments;
-            _uploadStatusText = segments > 1
-                ? 'Uploading Part $segIndex/$segments...'
-                : 'Uploading Vibe...';
-          });
-
-          final fileName =
-              'status_${widget.userId}_${DateTime.now().millisecondsSinceEpoch}_part$segIndex.mp4';
-
-          await supabase.storage.from('statuses').uploadBinary(
-                fileName,
-                bytesToUpload,
-                fileOptions:
-                    const FileOptions(contentType: 'video/mp4', upsert: true),
-              ).timeout(const Duration(seconds: 40));
-
-          final mediaUrl =
-              supabase.storage.from('statuses').getPublicUrl(fileName);
-
-          final segmentCaption = segments > 1
-              ? (baseCaption != null
-                  ? '$baseCaption (Part $segIndex/$segments)'
-                  : 'Part $segIndex/$segments')
-              : baseCaption;
-
-          final metadata = {
-            'overlay_text': _overlayText.isNotEmpty ? _overlayText : null,
-            'filter': _filters[_selectedFilterIndex]['name'],
-            'duration': segDuration,
-            'is_private': _statusPrivacy != 'public',
-            'status_privacy': _statusPrivacy,
-            'excluded_user_ids': _excludedUserIds.toList(),
-            'included_user_ids': _includedUserIds.toList(),
-            'segment_index': segIndex,
-            'total_segments': segments,
-            'segment_duration': segDuration,
-            'stickers': _placedStickers
-                .map((s) => {
-                      'text': s.text,
-                      'emoji': s.emoji,
-                      'is_avatar': s.isAvatarSticker,
-                      'exp': s.avatarExpression,
-                      'x': s.x,
-                      'y': s.y,
-                    })
-                .toList(),
-          };
-
-          final statusData = {
-            'user_id': widget.userId,
-            'profile_id': widget.profileId,
-            'media_type': 'video',
-            'media_url': mediaUrl,
-            'caption': segmentCaption,
-            'metadata': metadata,
-            'duration': segDuration,
-            'expires_at': DateTime.now()
-                .add(const Duration(hours: 12))
-                .toIso8601String(),
-            'mentioned_group_id': _selectedGroupId,
-            'mentioned_profile_id': _selectedProfileId,
-            'is_active': true,
-          };
-
-          await supabase
-              .from('statuses')
-              .insert(statusData)
-              .timeout(const Duration(seconds: 15));
-
-          try {
-            if (io.File(slicePath).existsSync()) {
-              await io.File(slicePath).delete();
-            }
-          } catch (_) {}
-        }
-
-        try {
-          await VideoCompress.deleteAllCache();
-        } catch (_) {}
+        // 🚀 Background upload: Non-blocking, instant pop, sequential accurate 10s slicing
+        PocketVibesUploadManager.instance.startVideoUpload(
+          videoFile: io.File(_selectedFile!.path),
+          videoDuration: _videoDuration,
+          userId: widget.userId,
+          caption: baseCaption,
+          overlayText: _overlayText.isNotEmpty ? _overlayText : null,
+          selectedFilterName: _filters[_selectedFilterIndex]['name'] ?? 'Normal',
+          statusPrivacy: _statusPrivacy,
+          excludedUserIds: _excludedUserIds,
+          includedUserIds: _includedUserIds,
+          placedStickers: _placedStickers
+              .map((s) => {
+                    'text': s.text,
+                    'emoji': s.emoji,
+                    'is_avatar': s.isAvatarSticker,
+                    'exp': s.avatarExpression,
+                    'x': s.x,
+                    'y': s.y,
+                  })
+              .toList(),
+        );
 
         PocketFortressDefenseService.recordActivityPoints('vibe_post');
-        setState(() => _uploadProgress = 1.0);
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
                 children: [
-                  const Icon(Icons.check_circle, color: Colors.black),
+                  const Icon(Icons.cloud_upload_rounded, color: Colors.black),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      segments > 1
-                          ? 'Posted $segments Vibe stories (10s each) to ${_getStatusPrivacyLabel()}! (+15 FDC)'
-                          : 'Posted Video Vibe to ${_getStatusPrivacyLabel()}! (+15 FDC)',
+                      'Vibes are uploading in the background...',
                       style: GoogleFonts.outfit(
                           color: Colors.black, fontWeight: FontWeight.bold),
                     ),
@@ -1513,6 +1366,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
               ),
               backgroundColor: const Color(0xFFFFFC00),
               behavior: SnackBarBehavior.floating,
+              duration: const Duration(seconds: 3),
             ),
           );
           widget.onStatusUploaded?.call();
@@ -2324,7 +2178,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                               color: Color(0xFFFFFC00), size: 14),
                           const SizedBox(width: 6),
                           Text(
-                            'Snapchat Slicing: ${_videoDuration.inSeconds}s Video • $_videoSegmentsCount ${_videoSegmentsCount > 1 ? "Vibes" : "Vibe"} (10s each)',
+                            'Video Slicing: ${_videoDuration.inSeconds}s Video • $_videoSegmentsCount ${_videoSegmentsCount > 1 ? "Vibes" : "Vibe"} (10s each)',
                             style: GoogleFonts.outfit(
                               color: const Color(0xFFFFFC00),
                               fontSize: 12,

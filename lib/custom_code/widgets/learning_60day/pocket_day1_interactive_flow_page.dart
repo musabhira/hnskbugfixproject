@@ -40,6 +40,7 @@ import 'games/word_catcher_models.dart';
 ///    - Step 10: House Defense Shield & Citadel Combat + House 1 Gate Exam
 /// 2. 100% JSON-Driven: All data comes directly from day_1_curriculum.json
 class PocketDay1InteractiveFlowPage extends StatefulWidget {
+  final int day;
   final int initialStep; // 1 to 10
   final Day1Track? initialTrack;
   final String? userId;
@@ -49,6 +50,7 @@ class PocketDay1InteractiveFlowPage extends StatefulWidget {
 
   const PocketDay1InteractiveFlowPage({
     super.key,
+    this.day = 1,
     this.initialStep = 1,
     this.initialTrack,
     this.userId,
@@ -59,6 +61,7 @@ class PocketDay1InteractiveFlowPage extends StatefulWidget {
 
   static Future<void> show(
     BuildContext context, {
+    int day = 1,
     int initialStep = 1,
     Day1Track? initialTrack,
     String? userId,
@@ -70,6 +73,7 @@ class PocketDay1InteractiveFlowPage extends StatefulWidget {
       context,
       MaterialPageRoute(
         builder: (_) => PocketDay1InteractiveFlowPage(
+          day: day,
           initialStep: initialStep,
           initialTrack: initialTrack,
           userId: userId,
@@ -158,7 +162,7 @@ class _PocketDay1InteractiveFlowPageState
   /// widgets resolve their curriculum data.
   Future<void> _loadRuntimeCurriculum() async {
     try {
-      await PocketDayCurriculumService.preloadDay(1);
+      await PocketDayCurriculumService.preloadDay(widget.day);
       if (mounted) setState(() {});
     } catch (_) {
       // The compatibility adapter retains its existing local fallback.
@@ -443,7 +447,7 @@ class _PocketDay1InteractiveFlowPageState
               const Text('🏆', style: TextStyle(fontSize: 38)),
               const SizedBox(height: 8),
               Text(
-                'DAY 1 COMPLETED! 🌟',
+                'DAY ${widget.day} COMPLETED! 🌟',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFFFFD700),
                   fontSize: 18,
@@ -551,7 +555,7 @@ class _PocketDay1InteractiveFlowPageState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'DAY 1 • BASIC ENGLISH',
+                  'DAY ${widget.day} • BASIC ENGLISH',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD700),
                     fontSize: 13,
@@ -3319,7 +3323,7 @@ class _PocketDay1InteractiveFlowPageState
               icon: Icon(isDone ? Icons.check_circle_rounded : Icons.star_rounded),
               label: Text(
                 isDone
-                    ? (_activeStep < totalSteps ? 'PROCEED ON MAP 🚗 ➔' : 'DAY 1 COMPLETED ✓')
+                    ? (_activeStep < totalSteps ? 'PROCEED ON MAP 🚗 ➔' : 'DAY ${widget.day} COMPLETED ✓')
                     : 'COMPLETE STEP $_activeStep (+30 XP)',
                 style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14),
               ),

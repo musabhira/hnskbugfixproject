@@ -1124,7 +1124,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// Returns the sequential sub-steps along the climbing mountain trail (User Audio Directive!)
   List<InPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
     final bool admin = _isMasterAdmin;
-    if (day == 1) {
+    if (day >= 1 && day <= 5) {
       final track = Day1Track.fromLearnerLevel(level);
       return Day1Curriculum.getSteps(track).map((step) {
         final flagKey = 'step_${step.stepNumber}';
@@ -1169,7 +1169,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 builder: (_) => PocketDay1InteractiveFlowPage(
                   initialTrack: track,
                   initialStep: targetStepNumber,
-                  onStepFinished: (s) => _onSubStepFinished(1, s),
+                  day: day,
+                  onStepFinished: (s) => _onSubStepFinished(day, s),
                   onCompleted: () => _completeTodayTasks(),
                 ),
               ),
@@ -2710,10 +2711,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// 🚀 Vertical Fast Scroll Scrubber Bar on right side
   /// User Audio Directive: "Scroll cheyyan vendittu side-il oru scrolling bar vekkuka. Mobile-il ullavarkkum speed-il mele scroll cheythu ariyaan vendittu."
   Widget _buildFastScrollScrubber(double screenWidth, double screenHeight) {
-    final topPadding = MediaQuery.of(context).padding.top;
-    final scrubberTop = topPadding + 65.0; // Moved upwards per User Audio directive!
-    final scrubberBottom = 90.0;
-    final scrubberHeight = (screenHeight - scrubberTop - scrubberBottom).clamp(160.0, 720.0);
+    // Audio Directive: Keep scrubber compact (~half size, centered) so it never stacks over Mission header
+    const double scrubberHeight = 220.0;
+    final double scrubberTop = (screenHeight - scrubberHeight) / 2.0;
 
     return Positioned(
       right: 5,

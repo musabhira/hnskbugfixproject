@@ -1283,9 +1283,10 @@ class _PocketDayOpenWorldAdventurePageState
 
   Future<void> _launchStepActivity(int s) async {
     final day = widget.day;
-    if (day == 1) {
+    if (day >= 1 && day <= 5) {
       await PocketDay1InteractiveFlowPage.show(
         context,
+        day: day,
         initialStep: s,
         initialTrack: _day1Track,
         userId: widget.userId ?? _supabase.auth.currentUser?.id,

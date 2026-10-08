@@ -10,6 +10,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/learning_mod
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:cached_network_image/cached_network_image.dart';
 
 /// Notifications & Mutual Pocket Mate Connection Requests Screen
 class NotificationsPage extends StatefulWidget {
@@ -97,9 +98,18 @@ class _NotificationsPageState extends State<NotificationsPage> {
           } else if (type.contains('mate_request')) {
             icon = '🤝';
             defaultTitle = 'Mate Request';
-          } else if (type.contains('vibe') || type.contains('status')) {
+          } else if (type.contains('vibe_reply')) {
             icon = '💬';
+            defaultTitle = 'Vibe Reply';
+          } else if (type.contains('vibe_like')) {
+            icon = '❤️';
+            defaultTitle = 'Vibe Liked';
+          } else if (type.contains('vibe') || type.contains('status')) {
+            icon = '✨';
             defaultTitle = 'Vibe Activity';
+          } else if (type.contains('thought') || type.contains('thread')) {
+            icon = '💭';
+            defaultTitle = 'Thought Activity';
           } else if (type.contains('fortress') || type.contains('raid') || type.contains('citadel') || type.contains('attack')) {
             icon = '⚔️';
             defaultTitle = 'Citadel Raid';
@@ -111,12 +121,29 @@ class _NotificationsPageState extends State<NotificationsPage> {
             defaultTitle = 'Streak & Level';
           }
 
+          final data = n['data'] is Map ? n['data'] as Map : null;
+          final thumbnail = data?['media_url']?.toString() ?? n['media_url']?.toString();
+
           alerts.add({
             'id': n['id']?.toString() ?? '',
             'icon': icon,
             'title': n['title'] ?? defaultTitle,
             'body': n['message'] ?? n['body'] ?? n['content'] ?? 'New notification received.',
             'time': n['created_at'] != null ? timeago.format(DateTime.tryParse(n['created_at'].toString()) ?? DateTime.now()) : 'Recently',
+            'thumbnail': thumbnail,
+          });
+        }
+
+        // Include robot classmate thought likes
+        final robotLikedThreads = prefs.getStringList('robot_liked_threads_$myId') ?? [];
+        if (robotLikedThreads.isNotEmpty) {
+          alerts.insert(0, {
+            'id': 'robot_thought_like',
+            'icon': '❤️',
+            'title': 'Thought Liked 🤖',
+            'body': 'Atlas and your robot classmates liked your shared thoughts!',
+            'time': 'Recently',
+            'thumbnail': null,
           });
         }
       } catch (e) {
@@ -543,6 +570,19 @@ class _NotificationsPageState extends State<NotificationsPage> {
                             ],
                           ),
                         ),
+                        if (alert['thumbnail'] != null && alert['thumbnail'].toString().isNotEmpty) ...[
+                          const SizedBox(width: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CachedNetworkImage(
+                              imageUrl: alert['thumbnail'],
+                              width: 44,
+                              height: 44,
+                              fit: BoxFit.cover,
+                              errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   );

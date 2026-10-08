@@ -2037,10 +2037,115 @@ class _MessageScreenState extends State<MessageScreen> {
         final isCallStarting =
             content.contains('📞') && content.contains('Call Started');
 
+        final metadata = message['metadata'] as Map<String, dynamic>?;
+        final isStatusReply = metadata?['reply_type'] == 'status_reply' || metadata?['replied_to_status_id'] != null;
+        final statusMediaUrl = metadata?['status_media_url'] as String?;
+        final statusMediaType = metadata?['status_media_type'] as String? ?? 'image';
+        final statusCaption = metadata?['status_caption'] as String?;
+
         return Column(
           crossAxisAlignment:
               isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
+            if (isStatusReply)
+              Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isMe
+                      ? Colors.black.withValues(alpha: 0.08)
+                      : Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border(
+                    left: BorderSide(
+                      color: isMe ? const Color(0xFFD97706) : const Color(0xFFFFFC00),
+                      width: 3.5,
+                    ),
+                  ),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (statusMediaUrl != null && statusMediaUrl.isNotEmpty) ...[
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: statusMediaType == 'video'
+                            ? Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  CachedNetworkImage(
+                                    imageUrl: statusMediaUrl,
+                                    width: 42,
+                                    height: 42,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (_, __, ___) => Container(
+                                      width: 42,
+                                      height: 42,
+                                      color: Colors.black26,
+                                      child: const Icon(Icons.videocam, size: 20, color: Colors.white70),
+                                    ),
+                                  ),
+                                  const Icon(Icons.play_circle_fill, size: 20, color: Colors.white),
+                                ],
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: statusMediaUrl,
+                                width: 42,
+                                height: 42,
+                                fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) => Container(
+                                  width: 42,
+                                  height: 42,
+                                  color: Colors.black26,
+                                  child: const Icon(Icons.image, size: 20, color: Colors.white70),
+                                ),
+                              ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    Flexible(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.auto_stories_rounded,
+                                size: 12,
+                                color: isMe ? const Color(0xFFB45309) : const Color(0xFFFFFC00),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Replying to Vibe Story',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: isMe ? const Color(0xFFB45309) : const Color(0xFFFFFC00),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (statusCaption != null && statusCaption.isNotEmpty) ...[
+                            const SizedBox(height: 2),
+                            Text(
+                              statusCaption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                color: isMe ? Colors.black54 : Colors.white60,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             if (hasGalleryLink) ...[
               _buildLinkPreview(content, isMe),
               if (displayText.isNotEmpty) const SizedBox(height: 8),

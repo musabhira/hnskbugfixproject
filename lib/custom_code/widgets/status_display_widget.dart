@@ -2700,6 +2700,28 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           'user_id': widget.currentUserId,
           'profile_id': widget.currentProfileId,
         });
+
+        // 🔔 Dispatch in-app notification for vibe like
+        try {
+          final statuses = widget.statusGroup['statuses'] as List;
+          final status = statuses[_currentIndex];
+          final ownerId = status['user_id']?.toString() ?? status['profile']?['user_id']?.toString();
+          if (ownerId != null && ownerId.isNotEmpty && ownerId != widget.currentUserId) {
+            final senderProfile = await supabase.from('profile').select('name').eq('user_id', widget.currentUserId).maybeSingle();
+            final senderName = senderProfile?['name'] ?? 'A mate';
+            await supabase.from('notifications').insert({
+              'user_id': ownerId,
+              'sender_id': widget.currentUserId,
+              'type': 'vibe_like',
+              'title': 'Vibe Liked ❤️',
+              'message': '$senderName liked your Vibe!',
+              'data': {
+                'status_id': statusId,
+                'media_url': status['media_url'],
+              },
+            });
+          }
+        } catch (_) {}
       }
 
       if (mounted) {
@@ -2841,6 +2863,27 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           'is_request': !areMates,
         }
       });
+
+      // 🔔 Dispatch in-app notification for vibe reply
+      try {
+        final senderProfile = await supabase.from('profile').select('name').eq('user_id', widget.currentUserId).maybeSingle();
+        final senderName = senderProfile?['name'] ?? 'A mate';
+        await supabase.from('notifications').insert({
+          'user_id': receiverUserId,
+          'sender_id': widget.currentUserId,
+          'type': 'vibe_reply',
+          'title': 'New Vibe Reply 💬',
+          'message': '$senderName replied to your Vibe: "$originalText"',
+          'data': {
+            'status_id': status['id'],
+            'media_url': status['media_url'],
+            'reply_text': originalText,
+            'sender_name': senderName,
+          },
+        });
+      } catch (notifErr) {
+        debugPrint('Error inserting vibe reply notification: $notifErr');
+      }
 
       if (areMates) {
         // Mates: update or create conversation record so it shows up in normal 1-on-1 chat

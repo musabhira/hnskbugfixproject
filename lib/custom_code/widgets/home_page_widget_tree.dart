@@ -46,6 +46,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart
 import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_vibes_upload_manager.dart';
 
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -1952,6 +1953,131 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildVibeUploadStatusTile(bool isDark) {
+    return ValueListenableBuilder<VibeUploadTask?>(
+      valueListenable: PocketVibesUploadManager.instance.activeTask,
+      builder: (context, task, _) {
+        if (task == null) return const SliverToBoxAdapter(child: SizedBox.shrink());
+
+        return SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 2, 14, 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF1E2129) : const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: task.isError
+                      ? Colors.redAccent.withValues(alpha: 0.5)
+                      : task.isCompleted
+                          ? Colors.greenAccent.withValues(alpha: 0.5)
+                          : const Color(0xFFFFB300).withValues(alpha: 0.4),
+                  width: 1.2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: CircularProgressIndicator(
+                          value: task.isCompleted ? 1.0 : (task.progress > 0 ? task.progress : null),
+                          strokeWidth: 3,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            task.isError
+                                ? Colors.redAccent
+                                : task.isCompleted
+                                    ? Colors.green
+                                    : const Color(0xFFFFB300),
+                          ),
+                          backgroundColor: isDark ? Colors.white12 : Colors.black12,
+                        ),
+                      ),
+                      if (task.thumbnailFile != null && task.thumbnailFile!.existsSync())
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.file(
+                            task.thumbnailFile!,
+                            width: 26,
+                            height: 26,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      else
+                        Icon(
+                          task.isCompleted
+                              ? Icons.check_circle_rounded
+                              : task.isError
+                                  ? Icons.error_outline_rounded
+                                  : Icons.cloud_upload_rounded,
+                          size: 18,
+                          color: task.isError
+                              ? Colors.redAccent
+                              : task.isCompleted
+                                  ? Colors.green
+                                  : const Color(0xFFFFB300),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          task.title,
+                          style: GoogleFonts.outfit(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          task.subtitle,
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white60 : Colors.black54,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (task.isCompleted)
+                    const Icon(Icons.check, color: Colors.green, size: 20)
+                  else if (task.isUploading)
+                    Text(
+                      '${(task.progress * 100).toInt()}%',
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFFFFB300),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -4120,8 +4246,10 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                 _buildRequestsSubTabToggle(isDark),
                 _buildPendingRequestsSliver(),
               ] else ...[
-                if (_chatCategoryFilterIndex == 0)
+                if (_chatCategoryFilterIndex == 0) ...[
                   _buildAllTabChatActionButtons(isDark),
+                  _buildVibeUploadStatusTile(isDark),
+                ],
                 if (_pendingRequests.isNotEmpty &&
                     _chatCategoryFilterIndex == 0)
                   _buildPendingRequestsBanner(isDark),

@@ -33,6 +33,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_trophy_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/settings_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:pocket_mates_app/custom_code/widgets/story/snapchat_story_creator_page.dart';
 
 class MainProfileWidget extends StatefulWidget {
   final String? userId;
@@ -1824,7 +1826,474 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         ),
       ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: isMe ? _buildProfileCenterAddButton() : null,
     );
+  }
+
+  // ➕ Center Floating Action Button (Audio Directive 3)
+  Widget _buildProfileCenterAddButton() {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFB300), Color(0xFFFFFC00)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFB300).withValues(alpha: 0.4),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(24),
+          onTap: () {
+            HapticFeedback.mediumImpact();
+            _showAddActionSheet();
+          },
+          child: const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.add_rounded, color: Colors.black, size: 22),
+                SizedBox(width: 6),
+                Text(
+                  'Add',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddActionSheet() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E2129) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, -4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+          child: SafeArea(
+            top: false,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Top drag handle
+                Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.black12,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Create & Share',
+                      style: GoogleFonts.outfit(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close_rounded, color: isDark ? Colors.white60 : Colors.black45, size: 22),
+                      onPressed: () => Navigator.pop(ctx),
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                _buildAddSheetOption(
+                  icon: Icons.auto_stories_rounded,
+                  iconColor: const Color(0xFFFFB300),
+                  title: 'Add Vibe',
+                  subtitle: '10s auto-slicing video or photo story',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SnapchatStoryCreatorPage(
+                          userId: userId,
+                          profileId: _profileData?['id']?.toString() ?? userId,
+                          onStatusUploaded: () => _loadInitialData(),
+                        ),
+                      ),
+                    );
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 10),
+                _buildAddSheetOption(
+                  icon: Icons.chat_bubble_outline_rounded,
+                  iconColor: const Color(0xFF38BDF8),
+                  title: 'Add Thought',
+                  subtitle: 'Post a quick quote, idea or note',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _showAddThoughtModal();
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 10),
+                _buildAddSheetOption(
+                  icon: Icons.storefront_rounded,
+                  iconColor: const Color(0xFFEC4899),
+                  title: 'Add Product',
+                  subtitle: 'Showcase an item or service in your showcase',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateGalleryWidget(
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.height,
+                        ),
+                      ),
+                    ).then((_) => _loadInitialData());
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 10),
+                _buildAddSheetOption(
+                  icon: Icons.photo_library_rounded,
+                  iconColor: const Color(0xFF10B981),
+                  title: 'Add Gallery',
+                  subtitle: 'Pick & upload photo to your profile gallery',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _pickAndUploadGalleryImage();
+                  },
+                  isDark: isDark,
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAddSheetOption({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+    required bool isDark,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () {
+          HapticFeedback.selectionClick();
+          onTap();
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF262A35) : const Color(0xFFF3F4F6),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: iconColor.withValues(alpha: 0.15),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, color: iconColor, size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.outfit(
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.outfit(
+                        fontSize: 12,
+                        color: isDark ? Colors.white60 : Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: isDark ? Colors.white30 : Colors.black26,
+                size: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddThoughtModal() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final controller = TextEditingController();
+    bool isSubmitting = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF1E2129) : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                padding: const EdgeInsets.all(20),
+                child: SafeArea(
+                  top: false,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            'Share a Thought 💭',
+                            style: GoogleFonts.outfit(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.close_rounded, color: isDark ? Colors.white60 : Colors.black45),
+                            onPressed: () => Navigator.pop(ctx),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: controller,
+                        maxLines: 4,
+                        maxLength: 300,
+                        autofocus: true,
+                        style: GoogleFonts.outfit(color: isDark ? Colors.white : Colors.black87, fontSize: 15),
+                        decoration: InputDecoration(
+                          hintText: "What's on your mind today? Write in English or Malayalam...",
+                          hintStyle: GoogleFonts.outfit(color: isDark ? Colors.white38 : Colors.black38),
+                          filled: true,
+                          fillColor: isDark ? const Color(0xFF262A35) : const Color(0xFFF9FAFB),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 46,
+                        child: ElevatedButton(
+                          onPressed: isSubmitting
+                              ? null
+                              : () async {
+                                  final text = controller.text.trim();
+                                  if (text.isEmpty) return;
+
+                                  setModalState(() => isSubmitting = true);
+                                  try {
+                                    await _supabase.from('threads').insert({
+                                      'user_id': userId,
+                                      'content': text,
+                                    });
+
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Thought posted successfully! ✨',
+                                            style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                                          ),
+                                          backgroundColor: const Color(0xFFFFFC00),
+                                          behavior: SnackBarBehavior.floating,
+                                        ),
+                                      );
+                                      Navigator.pop(ctx);
+                                      _loadInitialData();
+                                    }
+                                  } catch (e) {
+                                    setModalState(() => isSubmitting = false);
+                                    if (mounted) {
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text('Failed to post thought: $e')),
+                                      );
+                                    }
+                                  }
+                                },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFFFFFC00),
+                            foregroundColor: Colors.black,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          child: isSubmitting
+                              ? const SizedBox(
+                                  width: 22,
+                                  height: 22,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                                )
+                              : Text(
+                                  'Post Thought',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black,
+                                  ),
+                                ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _pickAndUploadGalleryImage() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
+      if (picked == null) return;
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  'Uploading image to gallery...',
+                  style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFFFFFC00),
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+
+      final bytes = await picked.readAsBytes();
+      final fileName = 'gallery_${userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await _supabase.storage.from('gallery').uploadBinary(
+        fileName,
+        bytes,
+        fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
+      );
+      final imageUrl = _supabase.storage.from('gallery').getPublicUrl(fileName);
+
+      await _supabase.from('gallery').insert({
+        'user_id': userId,
+        'image_url': imageUrl,
+        'title': 'My Gallery Photo',
+        'category': 'General',
+        'is_public': true,
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle_rounded, color: Colors.black),
+                const SizedBox(width: 8),
+                Text(
+                  'Added to gallery! ✨',
+                  style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            backgroundColor: const Color(0xFFFFFC00),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        _loadInitialData();
+      }
+    } catch (e) {
+      debugPrint('Error uploading to gallery: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to upload image: $e')),
+        );
+      }
+    }
   }
 
   // 🛡️ Minimal Defense Section (User directive: "ഡയറക്റ്റ് ഡിഫെൻസ്... ആഡ് ചെയ്തതുണ്ടെങ്കിൽ ലിസ്റ്റ് ആയിട്ട് കാണിക്കുക. 'Defense' എന്ന് പറഞ്ഞിട്ട് അതിൽ ടാപ്പ് ചെയ്താൽ ഡിഫെൻസ് ആഡ് ചെയ്തതുണ്ടാകും. മാക്സിമം മിനിമൽ ആക്കുക")
