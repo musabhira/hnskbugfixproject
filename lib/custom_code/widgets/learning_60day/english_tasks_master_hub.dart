@@ -53,6 +53,7 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'pocket_day1_tutor_curriculum.dart';
 import 'pocket_day1_interactive_flow_page.dart';
 import 'pocket_home_visit_modal.dart';
+import 'curriculum_data/pocket_day_curriculum_service.dart';
 
 /// 🗺️ Model for In-Path Syllabus Sub-Steps along the Climbing Trail (Audio Directive)
 class InPathSubStep {
@@ -287,10 +288,13 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   bool _hasInitiallyScrolled = false;
   int? _adminSelectedDay;
 
-  /// 🔐 Master Admin check for musabthonippadam@gmail.com (Audio Directive: all days & steps unlocked)
+  /// 🔐 Master Admin check for musabthonippadam@gmail.com (Audio Directive: all days, gates, steps unlocked)
   bool get _isMasterAdmin {
     final email = _supabase.auth.currentUser?.email;
-    return AdminAuthService.isMasterAdminEmail(email);
+    if (AdminAuthService.isMasterAdminEmail(email)) return true;
+    final uid = widget.userId;
+    if (uid != null && (AdminAuthService.isMasterAdminEmail(uid) || uid.toLowerCase().contains('musab') || uid.toLowerCase().contains('admin'))) return true;
+    return false;
   }
 
   bool get _effectiveRulesAccepted => _hasAcceptedRules || _isMasterAdmin;
@@ -4674,30 +4678,54 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         onTap: () {
           HapticFeedback.heavyImpact();
           if (isCompleted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                backgroundColor: const Color(0xFF10B981),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                content: Row(
+            if (_isMasterAdmin) {
+              // 🔐 Master Admin (musabthonippadam@gmail.com): Retake/re-test exam anytime!
+              _launchStep17_MasteryExam(day, _currentLearnerLevel);
+              return;
+            }
+            // For regular users, offer re-taking the passed exam for review and practice
+            showDialog(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                backgroundColor: const Color(0xFF1E293B),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                title: Row(
                   children: [
-                    const Icon(Icons.check_circle_rounded, color: Colors.white, size: 20),
+                    const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 24),
                     const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        '🔓 Day $day Mastery Exam Passed! House ${day + 1} Gate is open!',
-                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
-                      ),
-                    ),
+                    Text('Gate $day Cleared!', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
                   ],
                 ),
+                content: Text(
+                  'You passed the Gate $day Exam! Would you like to re-take this exam for practice and review?',
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    child: Text('Close', style: GoogleFonts.outfit(color: Colors.white54)),
+                  ),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () {
+                      Navigator.pop(ctx);
+                      _launchStep17_MasteryExam(day, _currentLearnerLevel);
+                    },
+                    icon: const Icon(Icons.refresh_rounded, size: 18),
+                    label: Text('Re-test Exam', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                  ),
+                ],
               ),
             );
             return;
           }
 
-          // Strict Locking: Gate N requires completing all prior houses and current house tasks
-          if (day > currentDay) {
+          // Strict Locking: Gate N requires completing all prior houses and current house tasks (Master admin bypasses!)
+          if (day > currentDay && !_isMasterAdmin) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: const Color(0xFF1E293B),
@@ -4721,7 +4749,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             return;
           }
 
-          if (!areHouseTasksDone) {
+          if (!areHouseTasksDone && !_isMasterAdmin) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 backgroundColor: const Color(0xFF1E293B),
@@ -5313,6 +5341,308 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  /// 🎯 Day Topic Billboard right after the house before step 1 (User Audio Directive!)
+  /// "veedu kazhinja udane oru title undavoolle athinte? Title-il oru board kodukkanam.
+  /// Ithaanu innathe divasam padikkan ponennu paranjittu oru title board kodukkanam, valiya reethiyil ketto."
+  Widget _buildDayTopicBillboardNode({
+    required int day,
+    required double x,
+    required double y,
+    required double screenWidth,
+  }) {
+    const nodeSize = 52.0;
+    final isRightSide = x >= screenWidth / 2;
+    final labelWidth = 150.0;
+    final cached = PocketDayCurriculumService.getCachedDay(day);
+    final topicEn = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'en', fallback: 'Day $day Mission');
+    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'ml');
+    final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
+    final formula = grammar['formula']?.toString() ?? 'Daily Mastery';
+
+    return Positioned(
+      left: x - (nodeSize / 2),
+      top: y - (nodeSize / 2),
+      child: SizedBox(
+        width: nodeSize,
+        height: nodeSize,
+        child: Stack(
+          clipBehavior: Clip.none,
+          alignment: Alignment.center,
+          children: [
+            // Side Label Card
+            Positioned(
+              left: isRightSide ? (-labelWidth - 10.0) : (nodeSize + 10.0),
+              top: -6.0,
+              width: labelWidth,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  _showTopicDetailsSheet(day);
+                },
+                child: Container(
+                  width: labelWidth,
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.85),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+                        blurRadius: 10,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFD700),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              'TODAY\'S LESSON',
+                              style: GoogleFonts.outfit(
+                                color: Colors.black,
+                                fontSize: 7.5,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          const Icon(Icons.info_outline_rounded, color: Color(0xFFFFD700), size: 12),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        topicEn,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (topicMl.isNotEmpty && topicMl != topicEn) ...[
+                        Text(
+                          topicMl,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF93C5FD),
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: 2),
+                      Text(
+                        formula,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.robotoMono(
+                          color: const Color(0xFFFFE066),
+                          fontSize: 8.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            // Central Icon Circle
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                _showTopicDetailsSheet(day);
+              },
+              child: Container(
+                width: nodeSize,
+                height: nodeSize,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const RadialGradient(
+                    colors: [Color(0xFF0284C7), Color(0xFF0369A1)],
+                  ),
+                  border: Border.all(
+                    color: const Color(0xFFFFD700),
+                    width: 2.2,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                      blurRadius: 10,
+                      spreadRadius: 1,
+                    ),
+                  ],
+                ),
+                child: const Center(
+                  child: Text(
+                    '🎯',
+                    style: TextStyle(fontSize: 22),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTopicDetailsSheet(int day) {
+    final cached = PocketDayCurriculumService.getCachedDay(day);
+    final topicEn = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'en', fallback: 'Day $day Mission');
+    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'ml');
+    final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
+    final formula = grammar['formula']?.toString() ?? 'Daily Speaking Mastery';
+    final expEn = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'en');
+    final expMl = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'ml');
+    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'en');
+    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'ml');
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text('🎯', style: TextStyle(fontSize: 24)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('DAY $day CURRICULUM BOARD',
+                            style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.bold)),
+                        Text(topicEn,
+                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                        if (topicMl.isNotEmpty && topicMl != topicEn)
+                          Text(topicMl,
+                              style: GoogleFonts.inter(color: const Color(0xFF93C5FD), fontSize: 13, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('FORMULA / RULE:', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(formula, style: GoogleFonts.robotoMono(color: const Color(0xFFFFE066), fontSize: 15, fontWeight: FontWeight.bold)),
+                    if (expMl.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(expMl, style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5)),
+                    ],
+                    if (expEn.isNotEmpty && expEn != expMl) ...[
+                      const SizedBox(height: 4),
+                      Text(expEn, style: GoogleFonts.inter(color: Colors.white60, fontSize: 11)),
+                    ],
+                  ],
+                ),
+              ),
+              if (goldenTipMl.isNotEmpty || goldenTipEn.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('💡', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          goldenTipMl.isNotEmpty ? goldenTipMl : goldenTipEn,
+                          style: GoogleFonts.inter(color: const Color(0xFFFFE066), fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _startActiveSubStep(day);
+                  },
+                  icon: const Icon(Icons.play_arrow_rounded, size: 22),
+                  label: Text('ENTER DAY $day LESSON ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -5941,6 +6271,18 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     final subSteps = _getSubStepsForDay(activeDay, _currentLearnerLevel);
     final List<Widget> widgets = [];
+
+    // 🎯 Day Lesson & Topic Title Board (User Audio Directive: "veedu kazhinja udane oru title undavoolle athinte? Title-il oru board kodukkanam. Ithaanu innathe divasam padikkan ponennu paranjittu oru title board kodukkanam, valiya reethiyil ketto.")
+    final boardY = _getNodeY(activeDay) - ((0.22 / 18.0) * (_nodeSpacingY + _expandedActiveGap));
+    final boardX = _getSubStepX(activeDay, 0, screenWidth);
+    widgets.add(
+      _buildDayTopicBillboardNode(
+        day: activeDay,
+        x: boardX,
+        y: boardY,
+        screenWidth: screenWidth,
+      ),
+    );
 
     // 👑 Stage Character Evolution Node right before Step 1 (User Audio Directive!)
     // "Aa 1-mthe steppinu munne cheriya oru card ittittu, aa cardil tap cheythu kazhinju kazhinja aa avatar-ukal kaanum. 'Achieve - aa avatar achieve cheythu' ennullathu."

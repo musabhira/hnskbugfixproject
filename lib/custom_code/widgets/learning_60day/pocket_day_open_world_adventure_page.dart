@@ -217,7 +217,7 @@ class _PocketDayOpenWorldAdventurePageState
   static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
     final denominator = (totalSteps > 1) ? (totalSteps - 1).toDouble() : 1.0;
     final progress = (stepIndex - 1) / denominator;
-    const startX = 520.0;
+    const startX = 640.0;
     const endX = 3560.0;
     final x = startX + (endX - startX) * progress;
     final y = getGroundY(x);
@@ -301,7 +301,7 @@ class _PocketDayOpenWorldAdventurePageState
     }
     return _totalSteps;
   }
-
+
 
   void _driveToStep(int stepIndex, {bool openActivityOnArrival = false}) {
     if (!mounted) return;
@@ -493,6 +493,9 @@ class _PocketDayOpenWorldAdventurePageState
 
                   // 🏡 START: House 1 (Day $day Estate on valley floor)
                   _buildStartHouse(widget.day),
+
+                  // 🎯 TODAY'S TOPIC / LESSON BILLBOARD (User Audio Directive: Right after house, big title board before Step 1!)
+                  _buildDayTopicBillboard(widget.day),
 
                   // 🏡 SUMMIT: House 2 (Day ${day + 1} Estate on mountain summit)
                   _buildSummitHouse(widget.day + 1, completedCount >= _totalSteps),
@@ -880,6 +883,327 @@ class _PocketDayOpenWorldAdventurePageState
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  /// 🎯 Large, High-Visibility Day Topic Billboard right after House 1 (User Audio Directive!)
+  /// "Veedu kazhinja udane oru title undavoolle athinte? Title-il oru board kodukkanam.
+  /// Ithaanu innathe divasam padikkan ponennu paranjittu oru title board kodukkanam, valiya reethiyil ketto."
+  Widget _buildDayTopicBillboard(int day) {
+    const boardWidth = 200.0;
+    const boardHeight = 138.0;
+    const boardX = 430.0;
+    final groundY = getGroundY(boardX + (boardWidth / 2));
+    final cached = PocketDayCurriculumService.getCachedDay(day);
+    final topicEn = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'en', fallback: 'Day $day Mission');
+    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'ml');
+    final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
+    final formula = grammar['formula']?.toString() ?? 'Daily Speaking Mastery';
+
+    return Positioned(
+      left: boardX,
+      top: groundY - boardHeight - 20.0,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          _showTopicBoardDialog(day, topicEn, topicMl, formula, grammar);
+        },
+        child: SizedBox(
+          width: boardWidth,
+          height: boardHeight + 20.0,
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              // Two sturdy stilts rooted into the hillside
+              Positioned(
+                left: 32,
+                bottom: 0,
+                top: boardHeight - 10,
+                child: Container(
+                  width: 8,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF78350F),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+              Positioned(
+                right: 32,
+                bottom: 0,
+                top: boardHeight - 10,
+                child: Container(
+                  width: 8,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF78350F),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                ),
+              ),
+              // Main High-Visibility Billboard
+              Container(
+                width: boardWidth,
+                height: boardHeight,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFFD700), width: 2.2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                      blurRadius: 16,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Header Badge
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFFFD700),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '🎯 TODAY\'S LESSON',
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ),
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0284C7),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            'DAY $day',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    // Topic Title EN
+                    Text(
+                      topicEn,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (topicMl.isNotEmpty && topicMl != topicEn) ...[
+                      Text(
+                        topicMl,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF93C5FD),
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                    const Spacer(),
+                    // Formula / Rule Box
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E1B4B),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.5)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Text('⚡', style: TextStyle(fontSize: 10)),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              formula,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.robotoMono(
+                                color: const Color(0xFFFFE066),
+                                fontSize: 9.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Tap for Details ℹ️',
+                            style: GoogleFonts.inter(color: Colors.white38, fontSize: 8.5)),
+                        const Text('👉 Step 1',
+                            style: TextStyle(color: Color(0xFF10B981), fontSize: 9, fontWeight: FontWeight.bold)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showTopicBoardDialog(int day, String topicEn, String topicMl, String formula, Map<String, dynamic> grammar) {
+    final expEn = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'en');
+    final expMl = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'ml');
+    final goldenTipEn = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'en');
+    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'ml');
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text('🎯', style: TextStyle(fontSize: 24)),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('DAY $day CURRICULUM BOARD',
+                            style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.bold)),
+                        Text(topicEn,
+                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 17, fontWeight: FontWeight.bold)),
+                        if (topicMl.isNotEmpty && topicMl != topicEn)
+                          Text(topicMl,
+                              style: GoogleFonts.inter(color: const Color(0xFF93C5FD), fontSize: 13, fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('FORMULA / RULE:', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(formula, style: GoogleFonts.robotoMono(color: const Color(0xFFFFE066), fontSize: 15, fontWeight: FontWeight.bold)),
+                    if (expMl.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Text(expMl, style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5)),
+                    ],
+                    if (expEn.isNotEmpty && expEn != expMl) ...[
+                      const SizedBox(height: 4),
+                      Text(expEn, style: GoogleFonts.inter(color: Colors.white60, fontSize: 11)),
+                    ],
+                  ],
+                ),
+              ),
+              if (goldenTipMl.isNotEmpty || goldenTipEn.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(14),
+                    border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('💡', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          goldenTipMl.isNotEmpty ? goldenTipMl : goldenTipEn,
+                          style: GoogleFonts.inter(color: const Color(0xFFFFE066), fontSize: 12, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _driveToStep(1);
+                  },
+                  icon: const Icon(Icons.play_arrow_rounded, size: 22),
+                  label: Text('START STEP 1 NOW ➔', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

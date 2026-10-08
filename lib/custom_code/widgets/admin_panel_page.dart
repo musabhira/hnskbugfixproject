@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:image_picker/image_picker.dart';
 import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/whatsapp_group_chat.dart';
 import 'package:pocket_mates_app/custom_code/widgets/chat/english_hub_level_group_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_mate_service.dart';
@@ -140,16 +142,31 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   final TextEditingController _presidentProtectionTargetController = TextEditingController();
   int _presidentProtectionHours = 24;
 
+  // 🎯 Targets & Homes Curriculum State (User Audio Directive!)
+  int _curriculumSelectedDay = 1;
+  final TextEditingController _curriculumJsonController = TextEditingController();
+  final TextEditingController _topicEnController = TextEditingController();
+  final TextEditingController _topicMlController = TextEditingController();
+  final TextEditingController _formulaController = TextEditingController();
+  final TextEditingController _goldenTipEnController = TextEditingController();
+  final TextEditingController _goldenTipMlController = TextEditingController();
+  bool _curriculumLoading = false;
+  bool _curriculumHasOverride = false;
+  String _curriculumStatusMsg = '';
+  int _curriculumEditorMode = 0; // 0 = JSON, 1 = Quick Form
+  String _curriculumFilterText = '';
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 13, vsync: this);
+    _tabController = TabController(length: 14, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showPasswordDialog();
       _loadRobotCycleData();
       _loadMonetizationData();
       _loadAdminMediaOverrides();
       _loadPresidentInquiries();
+      _loadCurriculumDayData(1);
     });
   }
 
@@ -679,6 +696,9 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             Tab(
                 icon: Icon(Icons.monetization_on_outlined),
                 text: 'Monetization'),
+            Tab(
+                icon: Icon(Icons.track_changes_rounded),
+                text: '🎯 Targets & Curricula'),
           ],
         ),
       ),
@@ -698,6 +718,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
           _buildMediaTasksTab(),
           _buildRobotsTab(),
           _buildMonetizationTab(),
+          _buildCurriculumTargetsTab(),
         ],
       ),
     );
@@ -9698,6 +9719,562 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // =============================================================
+  // 🎯 CURRICULUM TARGETS & HOMES LIVE JSON STUDIO (User Audio Directive!)
+  // =============================================================
+  Future<void> _loadCurriculumDayData(int day) async {
+    setState(() {
+      _curriculumSelectedDay = day;
+      _curriculumLoading = true;
+      _curriculumStatusMsg = '';
+    });
+
+    try {
+      final rawJson = await PocketDayCurriculumService.getDayRawJson(day);
+      final hasOverride = await PocketDayCurriculumService.hasDayOverride(day);
+      Map<String, dynamic> decoded = {};
+      try {
+        decoded = json.decode(rawJson) as Map<String, dynamic>;
+      } catch (_) {}
+
+      final topicEn = PocketDayCurriculumService.getLocalizedText(decoded['course']?['topic'], lang: 'en');
+      final topicMl = PocketDayCurriculumService.getLocalizedText(decoded['course']?['topic'], lang: 'ml');
+      final grammar = decoded['grammarRule'] as Map<String, dynamic>? ?? {};
+      final formula = grammar['formula']?.toString() ?? '';
+      final goldenTipEn = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'en');
+      final goldenTipMl = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'ml');
+
+      // Prettify JSON
+      String formattedJson = rawJson;
+      try {
+        const encoder = JsonEncoder.withIndent('  ');
+        formattedJson = encoder.convert(decoded);
+      } catch (_) {}
+
+      if (mounted) {
+        setState(() {
+          _curriculumJsonController.text = formattedJson;
+          _topicEnController.text = topicEn;
+          _topicMlController.text = topicMl;
+          _formulaController.text = formula;
+          _goldenTipEnController.text = goldenTipEn;
+          _goldenTipMlController.text = goldenTipMl;
+          _curriculumHasOverride = hasOverride;
+          _curriculumLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _curriculumLoading = false;
+          _curriculumStatusMsg = 'Error loading day $day: $e';
+        });
+      }
+    }
+  }
+
+  Future<void> _saveCurriculumOverride() async {
+    final text = _curriculumJsonController.text.trim();
+    if (text.isEmpty) return;
+
+    try {
+      final decoded = json.decode(text);
+      if (decoded is! Map<String, dynamic>) {
+        throw const FormatException('Curriculum root must be a JSON object.');
+      }
+
+      await PocketDayCurriculumService.saveDayOverride(_curriculumSelectedDay, text);
+
+      if (mounted) {
+        setState(() {
+          _curriculumHasOverride = true;
+          _curriculumStatusMsg = '✅ Day $_curriculumSelectedDay curriculum live override saved & active!';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('🎉 Day $_curriculumSelectedDay curriculum live override saved & active!'),
+            backgroundColor: const Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _curriculumStatusMsg = '❌ Invalid JSON: $e';
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ JSON syntax error: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _applyQuickFormToCurriculumJson() async {
+    try {
+      final currentText = _curriculumJsonController.text.trim();
+      Map<String, dynamic> data = {};
+      if (currentText.isNotEmpty) {
+        data = json.decode(currentText) as Map<String, dynamic>;
+      }
+
+      // Update topic
+      final course = Map<String, dynamic>.from(data['course'] as Map<String, dynamic>? ?? {});
+      final topicMap = Map<String, dynamic>.from(course['topic'] is Map ? course['topic'] : {});
+      topicMap['en'] = _topicEnController.text.trim();
+      topicMap['ml'] = _topicMlController.text.trim();
+      course['topic'] = topicMap;
+      data['course'] = course;
+
+      // Update grammar rule
+      final grammar = Map<String, dynamic>.from(data['grammarRule'] as Map<String, dynamic>? ?? {});
+      grammar['formula'] = _formulaController.text.trim();
+      final tipMap = Map<String, dynamic>.from(grammar['goldenTip'] is Map ? grammar['goldenTip'] : {});
+      tipMap['en'] = _goldenTipEnController.text.trim();
+      tipMap['ml'] = _goldenTipMlController.text.trim();
+      grammar['goldenTip'] = tipMap;
+      data['grammarRule'] = grammar;
+
+      const encoder = JsonEncoder.withIndent('  ');
+      final formatted = encoder.convert(data);
+      _curriculumJsonController.text = formatted;
+      await _saveCurriculumOverride();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to apply quick form: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _resetCurriculumOverride() async {
+    await PocketDayCurriculumService.resetDayToAsset(_curriculumSelectedDay);
+    await _loadCurriculumDayData(_curriculumSelectedDay);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('🔄 Reset Day $_curriculumSelectedDay to bundled asset JSON.'),
+          backgroundColor: const Color(0xFF0284C7),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
+  void _formatCurriculumJson() {
+    try {
+      final text = _curriculumJsonController.text.trim();
+      final decoded = json.decode(text);
+      const encoder = JsonEncoder.withIndent('  ');
+      _curriculumJsonController.text = encoder.convert(decoded);
+      setState(() => _curriculumStatusMsg = '✨ JSON beautified successfully!');
+    } catch (e) {
+      setState(() => _curriculumStatusMsg = '❌ Syntax error: $e');
+    }
+  }
+
+  Widget _buildCurriculumTargetsTab() {
+    return Container(
+      color: const Color(0xFF0F172A),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top Header Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text('🎯', style: TextStyle(fontSize: 26)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Curriculum & Targets Studio',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          'Inspect & live-edit Days 1–90 JSONs on the fly. Corrections apply immediately in-app without waiting for store releases!',
+                          style: GoogleFonts.inter(
+                            color: Colors.white70,
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Search / Filter Input
+            TextField(
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Filter by day number (e.g. 1, 2, 15)...',
+                hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+                prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFFFD700), size: 18),
+                filled: true,
+                fillColor: const Color(0xFF1E293B),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+              onChanged: (val) {
+                setState(() => _curriculumFilterText = val.trim());
+              },
+            ),
+            const SizedBox(height: 12),
+
+            // Horizontal Day Selector Chips
+            SizedBox(
+              height: 44,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: 90,
+                itemBuilder: (ctx, index) {
+                  final day = index + 1;
+                  if (_curriculumFilterText.isNotEmpty && !'$day'.contains(_curriculumFilterText)) {
+                    return const SizedBox.shrink();
+                  }
+                  final isSelected = day == _curriculumSelectedDay;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(
+                        'Day $day',
+                        style: GoogleFonts.outfit(
+                          color: isSelected ? Colors.black : Colors.white70,
+                          fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
+                          fontSize: 12,
+                        ),
+                      ),
+                      selected: isSelected,
+                      selectedColor: const Color(0xFFFFD700),
+                      backgroundColor: const Color(0xFF1E293B),
+                      side: BorderSide(
+                        color: isSelected ? const Color(0xFFFFD700) : Colors.white12,
+                      ),
+                      onSelected: (_) => _loadCurriculumDayData(day),
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // Current Day Status Card
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: _curriculumHasOverride ? const Color(0xFF10B981) : Colors.white12,
+                  width: _curriculumHasOverride ? 1.5 : 1.0,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    _curriculumHasOverride ? Icons.bolt_rounded : Icons.inventory_2_outlined,
+                    color: _curriculumHasOverride ? const Color(0xFF10B981) : Colors.white54,
+                    size: 22,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Editing Day $_curriculumSelectedDay • House $_curriculumSelectedDay',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          _curriculumHasOverride
+                              ? '🟢 Live In-App Override Active'
+                              : '⚪ Using Bundled App Asset',
+                          style: GoogleFonts.inter(
+                            color: _curriculumHasOverride ? const Color(0xFF10B981) : Colors.white54,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Editor mode switch
+                  SegmentedButton<int>(
+                    segments: const [
+                      ButtonSegment(value: 0, label: Text('JSON Code', style: TextStyle(fontSize: 10.5))),
+                      ButtonSegment(value: 1, label: Text('Quick Form', style: TextStyle(fontSize: 10.5))),
+                    ],
+                    selected: {_curriculumEditorMode},
+                    onSelectionChanged: (val) {
+                      setState(() => _curriculumEditorMode = val.first);
+                    },
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: const Color(0xFF0F172A),
+                      selectedBackgroundColor: const Color(0xFFFFD700),
+                      selectedForegroundColor: Colors.black,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_curriculumStatusMsg.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                _curriculumStatusMsg,
+                style: GoogleFonts.inter(
+                  color: _curriculumStatusMsg.startsWith('✅')
+                      ? const Color(0xFF10B981)
+                      : (_curriculumStatusMsg.startsWith('✨') ? const Color(0xFFFFD700) : Colors.redAccent),
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+            const SizedBox(height: 16),
+
+            if (_curriculumLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(40),
+                  child: CircularProgressIndicator(color: Color(0xFFFFD700)),
+                ),
+              )
+            else if (_curriculumEditorMode == 0) ...[
+              // JSON Code Editor View
+              Row(
+                children: [
+                  Text(
+                    'day_${_curriculumSelectedDay}_curriculum.json',
+                    style: GoogleFonts.robotoMono(color: const Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    tooltip: 'Beautify JSON',
+                    icon: const Icon(Icons.auto_fix_high_rounded, color: Color(0xFFFFD700), size: 18),
+                    onPressed: _formatCurriculumJson,
+                  ),
+                  IconButton(
+                    tooltip: 'Copy JSON',
+                    icon: const Icon(Icons.copy_rounded, color: Colors.white70, size: 18),
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: _curriculumJsonController.text));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('📋 JSON copied to clipboard!'), duration: Duration(seconds: 1)),
+                      );
+                    },
+                  ),
+                  if (_curriculumHasOverride)
+                    IconButton(
+                      tooltip: 'Reset to default asset',
+                      icon: const Icon(Icons.refresh_rounded, color: Colors.orangeAccent, size: 18),
+                      onPressed: _resetCurriculumOverride,
+                    ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Container(
+                decoration: BoxDecoration(
+                  color: const Color(0xFF020617),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: TextField(
+                  controller: _curriculumJsonController,
+                  maxLines: 22,
+                  style: GoogleFonts.robotoMono(
+                    color: const Color(0xFFE2E8F0),
+                    fontSize: 11.5,
+                    height: 1.45,
+                  ),
+                  decoration: const InputDecoration(
+                    contentPadding: EdgeInsets.all(14),
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFFFD700),
+                      side: const BorderSide(color: Color(0xFFFFD700)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: _formatCurriculumJson,
+                    icon: const Icon(Icons.check_circle_outline_rounded, size: 18),
+                    label: const Text('Format & Validate'),
+                  ),
+                  const Spacer(),
+                  ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF10B981),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      elevation: 4,
+                    ),
+                    onPressed: _saveCurriculumOverride,
+                    icon: const Icon(Icons.save_rounded, size: 20),
+                    label: Text(
+                      'SAVE & APPLY LIVE OVERRIDE',
+                      style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                    ),
+                  ),
+                ],
+              ),
+            ] else ...[
+              // Quick Form Editor View
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Topic Title (English)', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _topicEnController,
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Topic Title (Malayalam)', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _topicMlController,
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Grammar Formula / Rule', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _formulaController,
+                      style: GoogleFonts.robotoMono(color: const Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Golden Tip (English)', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _goldenTipEnController,
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text('Golden Tip (Malayalam)', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12)),
+                    const SizedBox(height: 6),
+                    TextField(
+                      controller: _goldenTipMlController,
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFF0F172A),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF10B981),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                        onPressed: _applyQuickFormToCurriculumJson,
+                        icon: const Icon(Icons.check_circle_rounded, size: 20),
+                        label: Text(
+                          'UPDATE JSON & SAVE LIVE OVERRIDE',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            const SizedBox(height: 30),
+          ],
+        ),
       ),
     );
   }

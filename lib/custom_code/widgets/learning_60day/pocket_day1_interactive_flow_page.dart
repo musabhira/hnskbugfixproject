@@ -174,11 +174,31 @@ class _PocketDay1InteractiveFlowPageState
     Future.delayed(const Duration(milliseconds: 600), () {
       if (!mounted || !_autoSpeechEnabled) return;
       if (step == 1) {
-        final currentLetter = Day1AlphabetData.lettersAtoZ[_letterIndex % Day1AlphabetData.lettersAtoZ.length];
-        _speak('${currentLetter['letter']} for ${currentLetter['word']}.');
+        if (widget.day == 1) {
+          final currentLetter = Day1AlphabetData.lettersAtoZ[_letterIndex % Day1AlphabetData.lettersAtoZ.length];
+          _speak('${currentLetter['letter']} for ${currentLetter['word']}.');
+        } else {
+          final cached = PocketDayCurriculumService.getCachedDay(widget.day);
+          final topic = cached != null ? PocketDayCurriculumService.getLocalizedText(cached['course']?['topic'], lang: 'en') : 'Daily Lesson';
+          final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
+          final formula = grammar['formula']?.toString() ?? '';
+          if (formula.isNotEmpty) {
+            _speak('Day ${widget.day}. $topic. Rule: $formula.');
+          } else {
+            _speak('Day ${widget.day}. $topic.');
+          }
+        }
       } else if (step == 2) {
-        final currentWord = Day1VocabBankData.words300[_vocabIndex % Day1VocabBankData.words300.length];
-        _speak('${currentWord['word']}.');
+        if (widget.day == 1) {
+          final currentWord = Day1VocabBankData.words300[_vocabIndex % Day1VocabBankData.words300.length];
+          _speak('${currentWord['word']}.');
+        } else {
+          final words = _getVocabWords();
+          if (words.isNotEmpty) {
+            final w = words[_vocabIndex % words.length];
+            _speak('${w['word'] ?? ''}.');
+          }
+        }
       } else if (step == 3) {
         _speak('Game 1: Letter Hunt Run.');
       } else if (step == 4) {
@@ -1009,6 +1029,8 @@ class _PocketDay1InteractiveFlowPageState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 🎯 High-Visibility Day Topic Board (User Audio Directive: "Title-il oru board kodukkanam, valiya reethiyil ketto")
+        _buildTodayTopicBillboard(cached, topicEn, formula),
         _buildSkipOptionBanner(
           text: 'Already master today\'s concept?',
           subtext: 'You can proceed directly to Vocabulary & 2D Arcade Games!',
@@ -1175,6 +1197,118 @@ class _PocketDay1InteractiveFlowPageState
     );
   }
 
+  /// 🎯 High-Visibility Day Topic Billboard (User Audio Directive!)
+  /// "Title-il oru board kodukkanam, valiya reethiyil ketto. Veedu kazhinja udane."
+  Widget _buildTodayTopicBillboard(Map<String, dynamic>? cached, String topicEn, String formula) {
+    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'ml');
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.25),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD700),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  '🎯 TODAY\'S LESSON BOARD / ഇന്നത്തെ പാഠം',
+                  style: GoogleFonts.outfit(
+                    color: Colors.black,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF0284C7),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  'DAY ${widget.day} • HOUSE ${widget.day}',
+                  style: GoogleFonts.outfit(
+                    color: Colors.white,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            topicEn,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          if (topicMl.isNotEmpty && topicMl != topicEn) ...[
+            const SizedBox(height: 2),
+            Text(
+              topicMl,
+              style: GoogleFonts.inter(
+                color: const Color(0xFF93C5FD),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E1B4B),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.5)),
+            ),
+            child: Row(
+              children: [
+                const Text('⚡ RULE: ', style: TextStyle(color: Color(0xFF818CF8), fontSize: 10, fontWeight: FontWeight.bold)),
+                Expanded(
+                  child: Text(
+                    formula,
+                    style: GoogleFonts.robotoMono(
+                      color: const Color(0xFFFFE066),
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // -------------------------------------------------------------
   // STEP 1: ALPHABET & PHONICS (With skippable banner)
   // -------------------------------------------------------------
@@ -1197,6 +1331,8 @@ class _PocketDay1InteractiveFlowPageState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // 🎯 High-Visibility Day 1 Lesson Board (User Audio Directive!)
+        _buildTodayTopicBillboard(null, 'English Alphabet & 44 Phonics Sounds', '26 Letters • 44 Sounds • 300 Everyday Words'),
         // Skip Banner
         _buildSkipOptionBanner(
           text: 'Already know ABCD (Alphabet)?',
