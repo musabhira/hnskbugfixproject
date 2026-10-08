@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../avatar/vector_avatar_config.dart';
 import 'pocket_syllabus_repository.dart';
 import 'pocket_90day_vocab_curriculum.dart';
 import 'daily_vocab_item.dart';
@@ -1426,7 +1425,7 @@ class PocketDay1TutorCurriculum {
     {'letter': 'S', 'badge': '🆂', 'word': 'Sun', 'emoji': '☀️', 'phonics': '/s/ sound'},
     {'letter': 'T', 'badge': '🆃', 'word': 'Tree', 'emoji': '🌳', 'phonics': '/t/ sound'},
     {'letter': 'U', 'badge': '🆄', 'word': 'Umbrella', 'emoji': '☂️', 'phonics': '/ʌ/ sound'},
-    {'letter': 'V', 'badge': '🅲', 'word': 'Van', 'emoji': '🚐', 'phonics': '/v/ sound'},
+    {'letter': 'V', 'badge': '🆅', 'word': 'Van', 'emoji': '🚐', 'phonics': '/v/ sound'},
     {'letter': 'W', 'badge': '🆆', 'word': 'Watch', 'emoji': '⌚', 'phonics': '/w/ sound'},
     {'letter': 'X', 'badge': '🆇', 'word': 'Xylophone', 'emoji': '🎼', 'phonics': '/z/ sound'},
     {'letter': 'Y', 'badge': '🆈', 'word': 'Yak', 'emoji': '🐂', 'phonics': '/j/ sound'},
@@ -1436,10 +1435,7 @@ class PocketDay1TutorCurriculum {
   static DayTutorLesson _generateDayLesson(LearnerLevel level, int day) {
     final vocabList = Pocket90DayVocabCurriculum.getVocabForDay(day);
     final track = PocketSyllabusRepository.getTrack(level);
-    final animals90 = VectorAvatarConfig.get90DayAnimals();
-    final animalIndex = (day - 1).clamp(0, animals90.length - 1);
-    final animalData = animals90[animalIndex];
-    final mentorName = animalData.rarityTier;
+    const mentorName = 'CyberCat';
     final masterDay = PocketMasterCurriculum90.getDay(day);
 
     switch (level) {
@@ -1480,14 +1476,14 @@ class PocketDay1TutorCurriculum {
 
         stages.add({
           'letter': l,
-          'badge': item['badge'] ?? '🅰️',
+          'badge': item['badge'] ?? '🔤',
           'word': w,
           'emoji': e,
           'phonics': p,
-          'introVoice': "Day $day with $mentorName! Look at Letter $l! $l is for $w $e! Say '$w'!",
+          'introVoice': "This is Letter $l. $l is for $w $e! What is $l for? Say '$w'!",
           'introVoiceMl': "ഇത് $l. $l ഫോർ $w $e! '$w' എന്ന് മൈക്കിൽ പറയൂ!",
-          'praiseVoice': "Splendid! You pronounced $w! Now pop the $e $w balloon in the sky!",
-          'praiseVoiceMl': "ആകാശത്തിലെ $e $w ബലൂണിൽ തൊട്ട് പൊട്ടിക്കുക!",
+          'praiseVoice': "Great job! You said $w! Now pop the $w $e balloon in the sky!",
+          'praiseVoiceMl': "ആകാശത്തിലെ $w $e ബലൂണിൽ തൊട്ട് പൊട്ടിക്കുക!",
           'color': i == 0
               ? const Color(0xFFEF4444)
               : (i == 1 ? const Color(0xFF0284C7) : const Color(0xFF10B981)),
@@ -1506,9 +1502,9 @@ class PocketDay1TutorCurriculum {
         final w = v.word;
         final ml = v.malayalamMeaning;
         final d = v.definition;
-        final o1 = vocabList[(i + 1) % vocabList.length].word;
-        final o2 = vocabList[(i + 2) % vocabList.length].word;
-        final o3 = vocabList[(i + 3) % vocabList.length].word;
+        final o1 = vocabList[(i + 1) % vocabList.length];
+        final o2 = vocabList[(i + 2) % vocabList.length];
+        final o3 = vocabList[(i + 3) % vocabList.length];
 
         stages.add({
           'letter': w.substring(0, 1).toUpperCase(),
@@ -1516,24 +1512,26 @@ class PocketDay1TutorCurriculum {
           'word': w,
           'emoji': '✨',
           'phonics': v.phonetic,
-          'introVoice': "Day $day Word ${i + 1}: '$w'! It means $d. Say '$w' with $mentorName!",
-          'introVoiceMl': "വാക്ക്: '$w' ($ml). '$w' എന്ന് ഉറക്കെ പറയൂ!",
+          'introVoice': "Word ${i + 1} is '$w'! $w means $d. Say '$w' with CyberCat!",
+          'introVoiceMl': "വാക്ക് ${i + 1}: '$w' ($ml). '$w' എന്ന് ഉറക്കെ പറയൂ!",
           'praiseVoice': "Excellent! You said $w! Now tap and pop the $w balloon!",
-          'praiseVoiceMl': "ബലൂണിൽ തൊട്ട് $w പൊട്ടിക്കുക!",
+          'praiseVoiceMl': "ആകാശത്തിലെ '$w' ബലൂണിൽ തൊട്ട് പൊട്ടിക്കുക!",
           'color': i == 0
               ? const Color(0xFFEF4444)
               : (i == 1 ? const Color(0xFF0284C7) : const Color(0xFF10B981)),
           'bubbles': [
-            {'id': 'w_$i', 'label': '✨ $w', 'isTarget': true},
-            {'id': 'o1_$i', 'label': '🔹 $o1', 'isTarget': false},
-            {'id': 'o2_$i', 'label': '🔸 $o2', 'isTarget': false},
-            {'id': 'o3_$i', 'label': '▫️ $o3', 'isTarget': false},
+            {'id': 'w_$i', 'label': '⭐ $w ✨', 'isTarget': true},
+            {'id': 'o1_$i', 'label': '🔹 ${o1.word}', 'isTarget': false},
+            {'id': 'o2_$i', 'label': '🔸 ${o2.word}', 'isTarget': false},
+            {'id': 'o3_$i', 'label': '▫️ ${o3.word}', 'isTarget': false},
           ],
         });
       }
     }
 
     final targetWord = stages.isNotEmpty ? stages[0]['word'] as String : 'English';
+    final targetLetter = stages.isNotEmpty ? stages[0]['letter'] as String : 'A';
+    final targetEmoji = stages.isNotEmpty ? stages[0]['emoji'] as String : '🍎';
 
     return DayTutorLesson(
       day: day,
@@ -1544,10 +1542,10 @@ class PocketDay1TutorCurriculum {
       primaryColor: const Color(0xFF10B981),
       secondaryColor: const Color(0xFF047857),
       icon: Icons.abc_rounded,
-      teacherGreetingEn: "Welcome to Day $day of Phonics Safari with $mentorName! Today: ${masterDay.grammarConcept}. Let's play and speak!",
-      teacherGreetingMl: "സ്വാഗതം! ഇന്ന് നമ്മൾ ഡേ $day കളികളിലൂടെ പഠിക്കുന്നു!",
-      turn0PromptEn: "Let's play Day $day! What is the word? Say: '$targetWord'!",
-      turn0PromptMl: "'$targetWord' എന്ന് മൈക്കിൽ പറയൂ:",
+      teacherGreetingEn: "This is Letter $targetLetter. $targetLetter for $targetWord! What is $targetLetter for?",
+      teacherGreetingMl: "ഇത് $targetLetter. $targetLetter ഫോർ $targetWord $targetEmoji! $targetLetter ഫോർ എന്താണ്?",
+      turn0PromptEn: "This is Letter $targetLetter. $targetLetter is for $targetWord! What is $targetLetter for? Tap the microphone and say: '$targetWord'!",
+      turn0PromptMl: "ഇത് $targetLetter. $targetLetter ഫോർ $targetWord $targetEmoji! മൈക്കിൽ '$targetWord' എന്ന് പറയൂ:",
       turn0HintEn: 'Say: "$targetWord"',
       turn0Suggestions: [targetWord, 'Day $day Champion'],
       turn0ExpectedKeywords: [targetWord.toLowerCase()],

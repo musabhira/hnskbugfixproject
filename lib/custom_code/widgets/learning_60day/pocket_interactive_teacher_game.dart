@@ -191,7 +191,11 @@ class _PocketInteractiveTeacherGamePageState
     await _initSpeechRecognizer();
     await _initTts();
     if (mounted) {
-      _speak(_currentLesson.teacherGreetingEn);
+      if (_safariStages.isNotEmpty) {
+        _speak(_safariStages[0]['introVoice'] as String);
+      } else {
+        _speak(_currentLesson.teacherGreetingEn);
+      }
     }
   }
 
@@ -377,7 +381,11 @@ class _PocketInteractiveTeacherGamePageState
       _safariXp = 0;
       _lastPoppedId = null;
     });
-    _speak(_currentLesson.teacherGreetingEn);
+    if (_safariStages.isNotEmpty) {
+      _speak(_safariStages[0]['introVoice'] as String);
+    } else {
+      _speak(_currentLesson.teacherGreetingEn);
+    }
   }
 
   void _advanceTurn(int next) {
@@ -757,10 +765,6 @@ class _PocketInteractiveTeacherGamePageState
     final lesson = _currentLesson;
     final speechText = _getTutorSpeechForTurn();
     final subText = _getMalayalamSubTextForTurn();
-
-    final animals90 = VectorAvatarConfig.get90DayAnimals();
-    final animalIndex = (widget.day - 1).clamp(0, animals90.length - 1);
-    final animalData = animals90[animalIndex];
     final evolutionAvatar = VectorAvatarConfig.getEvolutionAvatarForStage(widget.day);
 
     return Container(
@@ -833,7 +837,7 @@ class _PocketInteractiveTeacherGamePageState
                   children: [
                     Expanded(
                       child: Text(
-                        '${animalData.rarityTier} • AI Tutor 🎓',
+                        'CyberCat • Day ${widget.day} Tutor 🎓',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: GoogleFonts.outfit(
@@ -866,7 +870,7 @@ class _PocketInteractiveTeacherGamePageState
                           },
                         ),
                       ),
-                    const Spacer(),
+                    const SizedBox(width: 6),
                     GestureDetector(
                       onTap: () => _speak(speechText),
                       child: Container(
@@ -913,12 +917,19 @@ class _PocketInteractiveTeacherGamePageState
     );
   }
 
-  List<Map<String, dynamic>> get _safariStages => _currentLesson.safariStages;
+  List<Map<String, dynamic>> get _safariStages {
+    if (_currentLesson.safariStages.isNotEmpty) {
+      return _currentLesson.safariStages;
+    }
+    final fallbackLesson = PocketDay1TutorCurriculum.getLesson(LearnerLevel.zero, widget.day);
+    return fallbackLesson.safariStages;
+  }
 
   String _getTutorSpeechForTurn() {
-    if (_currentLevel == LearnerLevel.zero) {
-      if (_bubbleSafariStep >= 3) {
-        return "Hooray! 🏆 You learned and popped A for Apple, B for Ball, and C for Cat! +30 Pocket Score earned!";
+    if (_safariStages.isNotEmpty) {
+      if (_bubbleSafariStep >= _safariStages.length) {
+        final listStr = _safariStages.map((s) => "${s['letter']} for ${s['word']}").join(", ");
+        return "Hooray! 🏆 You learned and popped $listStr! +30 Pocket Score earned!";
       }
       final cur = _safariStages[_bubbleSafariStep];
       return _balloonReady
@@ -945,9 +956,10 @@ class _PocketInteractiveTeacherGamePageState
   }
 
   String _getMalayalamSubTextForTurn() {
-    if (_currentLevel == LearnerLevel.zero) {
-      if (_bubbleSafariStep >= 3) {
-        return "നിങ്ങൾ ആദ്യ അക്ഷരങ്ങളും ശബ്ദങ്ങളും CyberCat-നൊപ്പം സംസാരിച്ചു വിജയിച്ചു! +30 പോക്കറ്റ് സ്കോർ നേടി!";
+    if (_safariStages.isNotEmpty) {
+      if (_bubbleSafariStep >= _safariStages.length) {
+        final listMl = _safariStages.map((s) => "${s['letter']} ഫോർ ${s['word']}").join(", ");
+        return "നിങ്ങൾ $listMl സംസാരിച്ചു വിജയിച്ചു! +30 പോക്കറ്റ് സ്കോർ നേടി!";
       }
       final cur = _safariStages[_bubbleSafariStep];
       return _balloonReady
@@ -974,7 +986,7 @@ class _PocketInteractiveTeacherGamePageState
   }
 
   Widget _buildCurrentTurnCard() {
-    if (_currentLevel == LearnerLevel.zero) {
+    if (_safariStages.isNotEmpty) {
       return _buildLevelZeroCoachedGame();
     }
     switch (_turnIndex) {
@@ -996,7 +1008,8 @@ class _PocketInteractiveTeacherGamePageState
   }
 
   Widget _buildLevelZeroCoachedGame() {
-    if (_bubbleSafariStep >= 3) {
+    if (_bubbleSafariStep >= _safariStages.length) {
+      final letterDetails = _safariStages.map((s) => "${s['letter']} for ${s['word']}").join(", ");
       return Container(
         key: const ValueKey('level0_victory'),
         padding: const EdgeInsets.all(22),
@@ -1029,7 +1042,7 @@ class _PocketInteractiveTeacherGamePageState
             ),
             const SizedBox(height: 14),
             Text(
-              'PHONICS CHAMPION! 🌟',
+              'DAY ${widget.day} CHAMPION! 🌟',
               style: GoogleFonts.outfit(
                 color: const Color(0xFF0F172A),
                 fontSize: 22,
@@ -1038,7 +1051,7 @@ class _PocketInteractiveTeacherGamePageState
             ),
             const SizedBox(height: 6),
             Text(
-              'You spoke & popped Letters A, B, and C with CyberCat!',
+              'You spoke & popped $letterDetails with CyberCat!',
               textAlign: TextAlign.center,
               style: GoogleFonts.inter(
                 color: const Color(0xFF475569),
@@ -1047,15 +1060,15 @@ class _PocketInteractiveTeacherGamePageState
               ),
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildCompletedLetterChip('🅰️ Apple 🍎'),
-                const SizedBox(width: 8),
-                _buildCompletedLetterChip('🅱️ Ball ⚽'),
-                const SizedBox(width: 8),
-                _buildCompletedLetterChip('🅲 Cat 🐱'),
-              ],
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: _safariStages.map((s) {
+                return _buildCompletedLetterChip(
+                  "${s['badge'] ?? '🔤'} ${s['word']} ${s['emoji'] ?? ''}".trim(),
+                );
+              }).toList(),
             ),
             const SizedBox(height: 18),
             Container(
@@ -1131,7 +1144,7 @@ class _PocketInteractiveTeacherGamePageState
     return Column(
       key: ValueKey('zero_stage_$_bubbleSafariStep'),
       children: [
-        // 1. 🎮 OPEN-WORLD GAME HUD (Level 1 Safari, Hearts, XP)
+        // 1. 🎮 OPEN-WORLD GAME HUD (Day Safari, Hearts, XP)
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
@@ -1157,7 +1170,7 @@ class _PocketInteractiveTeacherGamePageState
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      '🌳 PHONICS SAFARI',
+                      '🌳 DAY ${widget.day} PHONICS',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFF0284C7),
                         fontSize: 10.5,
@@ -1170,14 +1183,14 @@ class _PocketInteractiveTeacherGamePageState
                   // Glowing Hearts
                   const Row(
                     children: [
-                      Text('❤️', style: TextStyle(fontSize: 14)),
+                      Text('❤️', style: TextStyle(fontSize: 13)),
                       SizedBox(width: 2),
-                      Text('❤️', style: TextStyle(fontSize: 14)),
+                      Text('❤️', style: TextStyle(fontSize: 13)),
                       SizedBox(width: 2),
-                      Text('❤️', style: TextStyle(fontSize: 14)),
+                      Text('❤️', style: TextStyle(fontSize: 13)),
                     ],
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 8),
                   // XP Counter
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -1188,8 +1201,8 @@ class _PocketInteractiveTeacherGamePageState
                     ),
                     child: Row(
                       children: [
-                        const Text('⭐', style: TextStyle(fontSize: 12)),
-                        const SizedBox(width: 4),
+                        const Text('⭐', style: TextStyle(fontSize: 11)),
+                        const SizedBox(width: 3),
                         Text(
                           '$_safariXp/30 XP',
                           style: GoogleFonts.outfit(
@@ -1206,12 +1219,13 @@ class _PocketInteractiveTeacherGamePageState
               const SizedBox(height: 8),
               // Progress Track Bar
               Row(
-                children: List.generate(3, (idx) {
+                children: List.generate(_safariStages.length, (idx) {
                   final isDone = idx < _bubbleSafariStep;
                   final isCurrent = idx == _bubbleSafariStep;
                   return Expanded(
                     child: Container(
-                      margin: EdgeInsets.only(right: idx == 2 ? 0 : 6),
+                      margin: EdgeInsets.only(
+                          right: idx == _safariStages.length - 1 ? 0 : 6),
                       height: 8,
                       decoration: BoxDecoration(
                         color: isDone
@@ -1402,6 +1416,8 @@ class _PocketInteractiveTeacherGamePageState
                 // Quick Tap Accessible Option Chips
                 Wrap(
                   spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.center,
                   children: [
                     ActionChip(
                       avatar: const Icon(Icons.volume_up_rounded, size: 14),
@@ -1452,12 +1468,15 @@ class _PocketInteractiveTeacherGamePageState
                       const Icon(Icons.check_circle_rounded,
                           color: Color(0xFF047857), size: 18),
                       const SizedBox(width: 8),
-                      Text(
-                        'Heard: "$word"! Now pop the balloon below! 🎈',
-                        style: GoogleFonts.outfit(
-                          color: const Color(0xFF047857),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+                      Flexible(
+                        child: Text(
+                          'Heard: "$word"! Now pop the balloon below! 🎈',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF047857),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                          ),
                         ),
                       ),
                     ],
@@ -1492,13 +1511,16 @@ class _PocketInteractiveTeacherGamePageState
                 children: [
                   const Text('🎈', style: TextStyle(fontSize: 18)),
                   const SizedBox(width: 6),
-                  Text(
-                    'FIND & POP: $word $emoji',
-                    style: GoogleFonts.outfit(
-                      color: const Color(0xFF0284C7),
-                      fontSize: 14,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 0.5,
+                  Flexible(
+                    child: Text(
+                      'FIND & POP: $word $emoji',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF0284C7),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ],
@@ -1537,49 +1559,60 @@ class _PocketInteractiveTeacherGamePageState
                                   _balloonReady = false;
                                   _lastPoppedId = null;
                                 });
-                                if (_bubbleSafariStep < 3) {
+                                if (_bubbleSafariStep < _safariStages.length) {
                                   _speak(_safariStages[_bubbleSafariStep]['introVoice'] as String);
                                 } else {
                                   _awardScore();
-                                  _speak("Outstanding job! You learned your first letters and sounds by playing with CyberCat! +30 Pocket Score awarded!");
+                                  _speak("Outstanding job! You learned your letters and sounds by playing with CyberCat! +30 Pocket Score awarded!");
                                 }
                               });
                             } else {
-                              _speak("Not that one. Find and pop the $emoji $word balloon!");
+                              _speak("Not that one. Find and pop the $word $emoji balloon!");
                             }
                           },
-                          child: Container(
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 240),
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 16, vertical: 14),
+                                horizontal: 16, vertical: 12),
                             decoration: BoxDecoration(
-                              shape: BoxShape.circle,
+                              borderRadius: BorderRadius.circular(22),
                               color: isPopped
                                   ? const Color(0xFF10B981)
-                                  : const Color(0xFFE0F2FE),
+                                  : const Color(0xFFF0F9FF),
                               border: Border.all(
                                 color: isPopped
                                     ? const Color(0xFFFFD700)
                                     : const Color(0xFF38BDF8),
-                                width: 2.5,
+                                width: 2.2,
                               ),
                               boxShadow: [
                                 BoxShadow(
                                   color: const Color(0xFF0284C7)
-                                      .withValues(alpha: 0.25),
+                                      .withValues(alpha: 0.20),
                                   blurRadius: 10,
                                   offset: const Offset(0, 4),
                                 ),
                               ],
                             ),
-                            child: Text(
-                              label,
-                              style: GoogleFonts.outfit(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: isPopped
-                                    ? Colors.white
-                                    : const Color(0xFF0F172A),
-                              ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  isPopped ? '💥' : '🎈',
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  label,
+                                  style: GoogleFonts.outfit(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: isPopped
+                                        ? Colors.white
+                                        : const Color(0xFF0F172A),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -1588,11 +1621,12 @@ class _PocketInteractiveTeacherGamePageState
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 12),
               Text(
                 _balloonReady
-                    ? 'Tap the $word $emoji bubble to pop it!'
+                    ? 'Tap the $word $emoji balloon to pop it! 🎈'
                     : 'Say "$word" or tap a chip first to unlock!',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.outfit(
                   color: _balloonReady
                       ? const Color(0xFF0284C7)
@@ -3110,16 +3144,48 @@ class _PocketInteractiveTeacherGamePageState
   }
 
   Widget _buildBottomControls() {
-    if (_currentLevel == LearnerLevel.zero) {
-      if (_bubbleSafariStep >= 3) {
+    if (_safariStages.isNotEmpty) {
+      if (_bubbleSafariStep >= _safariStages.length) {
         return const SizedBox(height: 10);
       }
       return Container(
         padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
         child: Row(
           children: [
+            if (_bubbleSafariStep > 0) ...[
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    setState(() {
+                      _bubbleSafariStep--;
+                      _balloonReady = false;
+                      _lastPoppedId = null;
+                    });
+                    _speak(_safariStages[_bubbleSafariStep]['introVoice'] as String);
+                  },
+                  icon: const Icon(Icons.arrow_back_rounded, size: 16),
+                  label: Text(
+                    'PREVIOUS',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF64748B),
+                    side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+            ],
             Expanded(
-              child: OutlinedButton.icon(
+              child: ElevatedButton.icon(
                 onPressed: () {
                   HapticFeedback.lightImpact();
                   setState(() {
@@ -3128,27 +3194,31 @@ class _PocketInteractiveTeacherGamePageState
                     _balloonReady = false;
                     _lastPoppedId = null;
                   });
-                  if (_bubbleSafariStep < 3) {
+                  if (_bubbleSafariStep < _safariStages.length) {
                     _speak(_safariStages[_bubbleSafariStep]['introVoice'] as String);
                   } else {
                     _awardScore();
-                    _speak("Outstanding job! You learned your first letters and sounds by playing with CyberCat! +30 Pocket Score awarded!");
+                    _speak("Outstanding job! You learned your letters and sounds by playing with CyberCat! +30 Pocket Score awarded!");
                   }
                 },
                 icon: const Icon(Icons.skip_next_rounded, size: 18),
                 label: Text(
-                  'Skip to Next Letter ➔',
+                  _bubbleSafariStep < _safariStages.length - 1
+                      ? 'SKIP TO NEXT ➔'
+                      : 'COMPLETE STEP 1 🏆',
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.bold,
                     fontSize: 12.5,
                   ),
                 ),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF0284C7),
-                  side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0284C7),
+                  foregroundColor: Colors.white,
+                  elevation: 2,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               ),
             ),
