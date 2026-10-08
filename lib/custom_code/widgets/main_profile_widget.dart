@@ -1441,7 +1441,20 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                     ),
                   ),
                 if (isMe) ...[
-                  // Switch Account icon hidden — feature planned for future release
+                  material.IconButton(
+                    icon: const Icon(material.Icons.fort_rounded, size: 22, color: Color(0xFFFFD700)),
+                    onPressed: () {
+                      final currentUid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
+                      final currentName = _profileData?['name'] ?? _profileData?['username'] ?? 'Learner';
+                      PocketCitadelAttackPage.openForUser(
+                        context,
+                        userId: currentUid,
+                        targetName: currentName,
+                        isDefenseMode: true,
+                      );
+                    },
+                    tooltip: 'My House & Citadel Profile 🏰',
+                  ),
                   material.IconButton(
                     icon: const Icon(material.Icons.settings_rounded, size: 22),
                     color: textColor,

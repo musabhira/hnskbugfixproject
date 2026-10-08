@@ -4075,32 +4075,71 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
                           ),
                           const SizedBox(width: 6),
                         ],
-                        ValueListenableBuilder<bool>(
-                          valueListenable: PocketGameAudioService.instance.isMutedNotifier,
-                          builder: (context, isMuted, _) {
-                            return GestureDetector(
-                              onTap: () {
-                                HapticFeedback.lightImpact();
-                                PocketGameAudioService.instance.toggleMute();
-                              },
-                              child: Container(
-                                width: 32,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withValues(alpha: 0.35),
-                                  shape: BoxShape.circle,
+                        // Only show background music mute button for Robot and President vibes
+                        Builder(
+                          builder: (context) {
+                            final statusAuthorId = (currentStatus['user_id'] ??
+                                currentStatus['profile_id'] ??
+                                (currentStatus['profile'] ?? profile)?['id'] ??
+                                widget.statusGroup['user_id'] ??
+                                '')
+                                .toString();
+                            final statusAuthorMeta = currentStatus['metadata'] is Map
+                                ? currentStatus['metadata'] as Map
+                                : null;
+                            final isRobotAuthor = currentStatus['is_robot'] == true ||
+                                (currentStatus['profile'] ?? profile)?['is_robot'] == true ||
+                                widget.statusGroup['is_robot'] == true ||
+                                (statusAuthorMeta?['is_robot'] == true) ||
+                                PocketRobotService.isRobotId(statusAuthorId);
+                            final isPresidentAuthor =
+                                PocketPresidentService.isPresidentId(statusAuthorId) ||
+                                (statusAuthorMeta?['is_president'] == true) ||
+                                widget.statusGroup['is_president'] == true ||
+                                (currentStatus['profile'] ?? profile)?['is_president'] == true;
+
+                            if (!isRobotAuthor && !isPresidentAuthor) {
+                              return const SizedBox.shrink();
+                            }
+
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                ValueListenableBuilder<bool>(
+                                  valueListenable:
+                                      PocketGameAudioService.instance.isMutedNotifier,
+                                  builder: (context, isMuted, _) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        HapticFeedback.lightImpact();
+                                        PocketGameAudioService.instance.toggleMute();
+                                      },
+                                      child: Container(
+                                        width: 32,
+                                        height: 32,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(alpha: 0.35),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        alignment: Alignment.center,
+                                        child: Icon(
+                                          isMuted
+                                              ? Icons.volume_off_rounded
+                                              : Icons.volume_up_rounded,
+                                          color: isMuted
+                                              ? Colors.white70
+                                              : const Color(0xFFFFFC00),
+                                          size: 18,
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 ),
-                                alignment: Alignment.center,
-                                child: Icon(
-                                  isMuted ? Icons.volume_off_rounded : Icons.volume_up_rounded,
-                                  color: isMuted ? Colors.white70 : const Color(0xFFFFFC00),
-                                  size: 18,
-                                ),
-                              ),
+                                const SizedBox(width: 6),
+                              ],
                             );
                           },
                         ),
-                        const SizedBox(width: 6),
                         GestureDetector(
                           onTap: () => _showStatusOptionsMenu(currentStatus, profile, isOwnStatus),
                           child: Container(

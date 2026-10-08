@@ -1,3 +1,4 @@
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
@@ -499,31 +500,46 @@ class PocketMateService {
           .from('notifications')
           .select('*')
           .eq('sender_id', myId)
-          .eq('type', 'mate_request')
+          .inFilter('type', ['mate_request', 'pocket_talk', 'poket_talk'])
           .order('created_at', ascending: false);
 
       for (final r in (response as List)) {
         final req = Map<String, dynamic>.from(r);
-        final receiverId = req['user_id']?.toString() ?? '';
+        final receiverId = req['user_id']?.toString() ?? req['receiver_id']?.toString() ?? '';
         if (receiverId.isNotEmpty) {
           seenReceiverIds.add(receiverId);
-          try {
-            final profileRes = await _supabase
-                .from('profile')
-                .select('name, display_name, profile_picture_url, avatar_url')
-                .eq('user_id', receiverId)
-                .maybeSingle();
-            if (profileRes != null) {
-              req['receiver_name'] = profileRes['display_name'] ??
-                  profileRes['name'] ??
-                  'Pocket Mate';
-              req['receiver_profile_image'] =
-                  profileRes['profile_picture_url'] ?? profileRes['avatar_url'];
-            } else {
+
+          if (PocketRobotService.isRobotId(receiverId)) {
+            final bot = PocketRobotService.getRobotById(receiverId);
+            req['receiver_name'] = bot?.name ?? 'Pocket Mate';
+            req['receiver_profile_image'] = bot?.avatarUrl;
+          } else {
+            try {
+              final resolvedName = ContactsNameService().getDisplayName(userId: receiverId, fallbackName: 'Learner');
+              final profileRes = await _supabase
+                  .from('profile')
+                  .select('name, display_name, profile_image_url, profile_picture_url, avatar_url')
+                  .or('user_id.eq.$receiverId,id.eq.$receiverId')
+                  .maybeSingle();
+
+              if (resolvedName.isNotEmpty && resolvedName != 'Learner') {
+                req['receiver_name'] = resolvedName;
+              } else if (profileRes != null) {
+                req['receiver_name'] = profileRes['display_name'] ??
+                    profileRes['name'] ??
+                    'Pocket Mate';
+              } else {
+                req['receiver_name'] = 'Pocket Mate';
+              }
+
+              if (profileRes != null) {
+                req['receiver_profile_image'] = profileRes['profile_image_url'] ??
+                    profileRes['profile_picture_url'] ??
+                    profileRes['avatar_url'];
+              }
+            } catch (_) {
               req['receiver_name'] = 'Pocket Mate';
             }
-          } catch (_) {
-            req['receiver_name'] = 'Pocket Mate';
           }
         }
         sentRequests.add(req);

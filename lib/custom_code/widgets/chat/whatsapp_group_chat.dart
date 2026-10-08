@@ -3697,23 +3697,22 @@ Draft: "$draft"''';
           primary: widget.showBackButton,
           backgroundColor: appBarColor,
           elevation: 0,
-          toolbarHeight: 52,
-          leadingWidth: widget.showBackButton ? 64 : 42,
-          titleSpacing: widget.showBackButton ? 0 : 6,
-          leading: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+          toolbarHeight: 56,
+          leadingWidth: widget.showBackButton ? 48 : 12,
+          titleSpacing: 0,
+          leading: widget.showBackButton
+              ? IconButton(
+                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                      color: Colors.white, size: 20),
+                  padding: const EdgeInsets.only(left: 6),
+                  constraints: const BoxConstraints(minWidth: 44, minHeight: 44),
+                  splashRadius: 22,
+                  onPressed: () => Navigator.pop(context),
+                  tooltip: 'Back',
+                )
+              : null,
+          title: Row(
             children: [
-              if (widget.showBackButton) ...[
-                InkWell(
-                  borderRadius: BorderRadius.circular(20),
-                  onTap: () => Navigator.pop(context),
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 2),
-                    child:
-                        Icon(Icons.arrow_back, color: Colors.white, size: 20),
-                  ),
-                ),
-              ],
               GestureDetector(
                 onTap: () {
                   if (widget.groupId.startsWith('p:')) {
@@ -3821,9 +3820,9 @@ Draft: "$draft"''';
                                 ))),
                 ),
               ),
-            ],
-          ),
-          title: InkWell(
+              const SizedBox(width: 10),
+              Expanded(
+                child: InkWell(
             onTap: _showGroupInfo,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -4026,7 +4025,10 @@ Draft: "$draft"''';
               ],
             ),
           ),
-          actions: [
+        ),
+      ],
+    ),
+    actions: [
             if (widget.groupId.startsWith('p:')) ...[
               InkWell(
                 onTap: () => _showMateFluencyStreakSheet(context),
@@ -6775,10 +6777,13 @@ Draft: "$draft"''';
       }
     }
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      decoration: BoxDecoration(
-        color: const Color(0xFF070B0D),
+    return SafeArea(
+      top: false,
+      bottom: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0xFF070B0D),
         border: Border(
             top: BorderSide(
                 color: Colors.white.withValues(alpha: 0.05), width: 1)),
@@ -7012,7 +7017,8 @@ Draft: "$draft"''';
           ),
         ],
       ),
-    );
+    ),
+  );
   }
 
   Widget _buildEmojiPicker() {

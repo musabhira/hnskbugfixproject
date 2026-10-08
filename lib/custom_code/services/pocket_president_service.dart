@@ -1,3 +1,5 @@
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -229,7 +231,8 @@ class PocketPresidentService {
     await prefs.setString(key, jsonEncode(updatedHistory));
 
     // 2. Fetch sender profile details to enrich report metadata
-    String userName = 'Citizen';
+    String userName = ContactsNameService().getDisplayName(userId: userId, fallbackName: 'Learner');
+    if (userName.isEmpty || userName == 'User' || userName == 'Citizen') userName = 'Learner';
     String? userAvatar;
     int learningDay = 1;
     try {
@@ -647,8 +650,45 @@ class PocketPresidentService {
       }
     } catch (_) {}
 
+    // Automatically append daily language-tailored English learning tips based on user's native language
+    final lang = PocketLanguageService.currentLanguage.toLowerCase();
+    String vocabTip;
+    if (lang.contains('hindi')) {
+      vocabTip = '🌟 President\'s Spoken English Tip 🏛️\n\nWord: "Persevere" (डटे रहना / लगातार प्रयास करना)\nMeaning: Keep going despite challenges.\nExample: "If you persevere with daily Poket Talk pacts, fluency comes naturally!" 👑';
+    } else if (lang.contains('tamil')) {
+      vocabTip = '🌟 President\'s Spoken English Tip 🏛️\n\nWord: "Persevere" (விடாமுயற்சி செய்)\nMeaning: Keep going despite challenges.\nExample: "If you persevere with daily Poket Talk pacts, fluency comes naturally!" 👑';
+    } else {
+      vocabTip = '🌟 President\'s Spoken English Tip 🏛️\n\nWord: "Persevere" (തുടർന്നുപ്രയത്നിക്കുക / വിട്ടുപിരിയാതിരിക്കുക)\nMeaning: Keep going despite challenges.\nExample: "If you persevere with daily Poket Talk pacts, fluency comes naturally!" 👑';
+    }
+
+    final dailyVibe = {
+      'id': 'pres_daily_vocab_vibe',
+      'user_id': presidentId,
+      'profile_id': presidentId,
+      'media_type': 'text',
+      'media_url': '',
+      'caption': vocabTip,
+      'duration': 10,
+      'created_at': DateTime.now().subtract(const Duration(minutes: 30)).toIso8601String(),
+      'expires_at': DateTime.now().add(const Duration(hours: 23)).toIso8601String(),
+      'is_active': true,
+      'views_count': 234,
+      'profile': {
+        'id': presidentId,
+        'name': presidentName,
+        'profile_image_url': presidentAvatarUrl,
+        'is_president': true,
+        'golden_tick': true,
+      },
+    };
+
+    if (!allVibes.any((v) => v['caption'] == vocabTip)) {
+      allVibes.insert(0, dailyVibe);
+    }
+
     if (allVibes.isEmpty) {
       return [
+        dailyVibe,
         {
           'id': 'pres_initial_vibe',
           'user_id': presidentId,
@@ -730,7 +770,7 @@ class PocketPresidentService {
       // Collect all reporter IDs to batch fetch real citizen profiles
       final List<String> reporterIds = [];
       for (var row in res) {
-        final rId = (row['reporter_id'] ?? '').toString();
+        final rId = (row['reporter_id'] ?? row['user_id'] ?? '').toString();
         if (rId.isNotEmpty) reporterIds.add(rId);
       }
 
@@ -773,7 +813,12 @@ class PocketPresidentService {
           if (en.isNotEmpty && en != 'Citizen') realName = en;
         }
         if (realName.isEmpty || realName == 'Citizen' || realName.startsWith('Citizen (')) {
-          realName = reporterId.length > 5 ? 'Citizen ${reporterId.substring(0, 5)}' : 'Citizen';
+          final contactName = ContactsNameService().getDisplayName(userId: reporterId, fallbackName: 'Learner');
+          if (contactName.isNotEmpty && contactName != 'User' && contactName != 'Citizen') {
+            realName = contactName;
+          } else {
+            realName = reporterId.length > 5 ? 'Learner ${reporterId.substring(0, 5)}' : 'Learner';
+          }
         }
 
         final avatarUrl = prof?['profile_image_url'] ?? extra['user_avatar'];
@@ -836,9 +881,10 @@ class PocketPresidentService {
       List<dynamic> list = raw != null && raw.isNotEmpty ? jsonDecode(raw) : [];
 
       final existingIndex = list.indexWhere((i) => i['user_id'] == userId);
-      final finalName = (userName != null && userName.isNotEmpty && userName != 'Citizen')
+      final resolvedContact = ContactsNameService().getDisplayName(userId: userId, fallbackName: 'Learner');
+      final finalName = (userName != null && userName.isNotEmpty && userName != 'Citizen' && userName != 'User')
           ? userName
-          : (userId.length > 5 ? 'Citizen ${userId.substring(0, 5)}' : 'Citizen');
+          : (resolvedContact.isNotEmpty && resolvedContact != 'User' ? resolvedContact : (userId.length > 5 ? 'Learner ${userId.substring(0, 5)}' : 'Learner'));
       final inquiryData = {
         'user_id': userId,
         'user_name': finalName,

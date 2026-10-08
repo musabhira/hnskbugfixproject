@@ -1595,87 +1595,102 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                       ),
                     )
                 : Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF13151D), Color(0xFF090A0E)],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                      ),
+                    decoration: BoxDecoration(
+                      gradient: _overlayText.isNotEmpty
+                          ? LinearGradient(
+                              colors: [
+                                _selectedTextBg.withValues(alpha: 0.8),
+                                const Color(0xFF090A0E),
+                              ],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            )
+                          : const LinearGradient(
+                              colors: [Color(0xFF13151D), Color(0xFF090A0E)],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
                     ),
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          VectorAvatarWidget(config: _myAvatarConfig, size: 68, showAura: false),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Story Canvas',
-                            style: GoogleFonts.outfit(
-                              color: Colors.white,
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: -0.2,
+                    child: _overlayText.isNotEmpty
+                        ? GestureDetector(
+                            onTap: () => setState(() => _isAddingText = true),
+                            behavior: HitTestBehavior.opaque,
+                            child: const SizedBox.expand(),
+                          )
+                        : Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                VectorAvatarWidget(config: _myAvatarConfig, size: 68, showAura: false),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Story Canvas',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: -0.2,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Add text, stickers, or choose photo',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white38,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Wrap(
+                                  spacing: 10,
+                                  runSpacing: 10,
+                                  alignment: WrapAlignment.center,
+                                  children: [
+                                    OutlinedButton.icon(
+                                      onPressed: () => _pickMedia(ImageSource.camera),
+                                      icon: const Icon(Icons.camera_alt_outlined, size: 16, color: Colors.white),
+                                      label: Text(
+                                        'Camera',
+                                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      ),
+                                    ),
+                                    OutlinedButton.icon(
+                                      onPressed: () => _pickMedia(ImageSource.gallery),
+                                      icon: const Icon(Icons.photo_library_outlined, size: 16, color: Colors.white),
+                                      label: Text(
+                                        'Gallery',
+                                        style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      ),
+                                    ),
+                                    ElevatedButton.icon(
+                                      onPressed: () => setState(() => _isAddingText = true),
+                                      icon: const Icon(Icons.title_rounded, size: 16, color: Colors.black),
+                                      label: Text(
+                                        'Add Text',
+                                        style: GoogleFonts.outfit(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold),
+                                      ),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFFFFFC00),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                        elevation: 0,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Add text, stickers, or choose photo',
-                            style: GoogleFonts.inter(
-                              color: Colors.white38,
-                              fontSize: 12,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          Wrap(
-                            spacing: 10,
-                            runSpacing: 10,
-                            alignment: WrapAlignment.center,
-                            children: [
-                              OutlinedButton.icon(
-                                onPressed: () => _pickMedia(ImageSource.camera),
-                                icon: const Icon(Icons.camera_alt_outlined, size: 16, color: Colors.white),
-                                label: Text(
-                                  'Camera',
-                                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                ),
-                              ),
-                              OutlinedButton.icon(
-                                onPressed: () => _pickMedia(ImageSource.gallery),
-                                icon: const Icon(Icons.photo_library_outlined, size: 16, color: Colors.white),
-                                label: Text(
-                                  'Gallery',
-                                  style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                ),
-                              ),
-                              ElevatedButton.icon(
-                                onPressed: () => setState(() => _isAddingText = true),
-                                icon: const Icon(Icons.title_rounded, size: 16, color: Colors.black),
-                                label: Text(
-                                  'Add Text',
-                                  style: GoogleFonts.outfit(color: Colors.black, fontSize: 12, fontWeight: FontWeight.bold),
-                                ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFFFFC00),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                  elevation: 0,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
                   ),
             ),
           ),
@@ -1761,16 +1776,26 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
               left: 20,
               right: 20,
               child: Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: _selectedTextBg,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    _overlayText,
-                    style: _getTextStyle(),
-                    textAlign: TextAlign.center,
+                child: GestureDetector(
+                  onTap: () => setState(() => _isAddingText = true),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: _selectedTextBg,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.35),
+                          blurRadius: 12,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      _overlayText,
+                      style: _getTextStyle(),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ),
               ),

@@ -1,3 +1,5 @@
+import 'package:image_picker/image_picker.dart';
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -8293,7 +8295,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     final inq = filtered[index];
                     final isPending = inq['status'] == 'pending';
                     final type = inq['report_type'] ?? 'inquiry';
-                    final citizenName = inq['user_name'] ?? 'Citizen';
+                    final citizenName = (inq['user_name'] != null && inq['user_name'].toString().isNotEmpty && inq['user_name'] != 'Citizen') ? inq['user_name'] : ContactsNameService().getDisplayName(userId: inq['user_id']?.toString() ?? '', fallbackName: 'Learner');
                     final avatarUrl = inq['user_avatar'];
                     final day = inq['learning_day'] ?? 1;
                     final level = inq['english_level'];
@@ -8572,7 +8574,7 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
   /// Live Two-Way Chat Sheet with Citizen
   void _openPresidentChatModal(Map<String, dynamic> inquiry) {
     final targetId = inquiry['user_id']?.toString() ?? '';
-    final name = inquiry['user_name'] ?? 'Citizen';
+    final name = inquiry['user_name'] != null && inquiry['user_name'].toString().isNotEmpty && inquiry['user_name'] != 'Citizen' ? inquiry['user_name'] : (ContactsNameService().getDisplayName(userId: targetId, fallbackName: 'Learner').isNotEmpty ? ContactsNameService().getDisplayName(userId: targetId, fallbackName: 'Learner') : 'Learner');
     final avatar = inquiry['user_avatar'];
     final day = inquiry['learning_day'] ?? 1;
     final level = inquiry['english_level'];
@@ -9403,20 +9405,71 @@ class _AdminDashboardPageState extends State<AdminDashboardPage>
                     style: GoogleFonts.outfit(
                         color: Colors.white70, fontSize: 12)),
                 const SizedBox(height: 6),
-                TextField(
-                  controller: _presidentAnnouncementMediaUrlController,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
-                  decoration: InputDecoration(
-                    hintText: 'https://... image or campaign poster URL',
-                    hintStyle:
-                        const TextStyle(color: Colors.white38, fontSize: 12),
-                    filled: true,
-                    fillColor: const Color(0xFF1E293B),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide.none,
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _presidentAnnouncementMediaUrlController,
+                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        decoration: InputDecoration(
+                          hintText: 'Poster URL or tap Gallery button',
+                          hintStyle:
+                              const TextStyle(color: Colors.white38, fontSize: 12),
+                          filled: true,
+                          fillColor: const Color(0xFF1E293B),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 8),
+                    InkWell(
+                      onTap: () async {
+                        final picker = ImagePicker();
+                        final picked = await picker.pickImage(
+                          source: ImageSource.gallery,
+                          imageQuality: 85,
+                        );
+                        if (picked != null) {
+                          try {
+                            final bytes = await picked.readAsBytes();
+                            final fileName =
+                                'broadcast_${DateTime.now().millisecondsSinceEpoch}.jpg';
+                            await Supabase.instance.client.storage
+                                .from('announcements')
+                                .uploadBinary(fileName, bytes);
+                            final url = Supabase.instance.client.storage
+                                .from('announcements')
+                                .getPublicUrl(fileName);
+                            _presidentAnnouncementMediaUrlController.text = url;
+                          } catch (_) {
+                            _presidentAnnouncementMediaUrlController.text =
+                                picked.path;
+                          }
+                          if (mounted) setState(() {});
+                        }
+                      },
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 14, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700).withValues(alpha: 0.5),
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.add_photo_alternate_rounded,
+                          color: Color(0xFFFFD700),
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 14),
 

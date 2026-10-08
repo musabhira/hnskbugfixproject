@@ -1,3 +1,4 @@
+import 'package:pocket_mates_app/custom_code/services/pocket_robot_service.dart';
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -623,7 +624,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     final currentUserId = _supabase.auth.currentUser?.id;
     if (currentUserId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please log in to start a Pocket Talk Pact')),
+        const SnackBar(content: Text('Please log in to start a Poket Talk Pact')),
       );
       return;
     }
@@ -651,7 +652,7 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
                 child: Text(
                   pact != null
                       ? '⚡ 4-Day Spoken Pact invite sent to ${neighbor.name}!'
-                      : 'Pocket Talk invite sent to ${neighbor.name}!',
+                      : 'Poket Talk invite sent to ${neighbor.name}!',
                   style: GoogleFonts.outfit(
                     color: const Color(0xFFFFD600),
                     fontSize: 13,
@@ -1121,42 +1122,46 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               ),
               const SizedBox(height: 14),
 
-              // ⚡ Pocket Talk Pact Request Button (User Audio Directive: Send Pocket Talk request)
-              GestureDetector(
-                onTap: () => _onSendPocketTalkRequest(neighbor),
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.7),
-                    border: Border.all(
-                      color: const Color(0xFFFFD600).withValues(alpha: 0.6),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFD600).withValues(alpha: 0.25),
-                        blurRadius: 8,
-                        spreadRadius: -1,
+              // ⚡ Poket Talk Pact Request Button (User Audio Directive: strictly for human peers, hide on robots)
+              if (!neighbor.isPocketRobo &&
+                  !PocketRobotService.isRobotId(neighbor.id) &&
+                  !neighbor.id.startsWith('robot_')) ...[
+                GestureDetector(
+                  onTap: () => _onSendPocketTalkRequest(neighbor),
+                  child: Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withValues(alpha: 0.7),
+                      border: Border.all(
+                        color: const Color(0xFFFFD600).withValues(alpha: 0.6),
+                        width: 1.2,
                       ),
-                    ],
-                  ),
-                  child: const Center(
-                    child: Text('⚡', style: TextStyle(fontSize: 18)),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD600).withValues(alpha: 0.25),
+                          blurRadius: 8,
+                          spreadRadius: -1,
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text('⚡', style: TextStyle(fontSize: 18)),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                'Pocket Talk',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFFFFD600),
-                  fontSize: 9.0,
-                  fontWeight: FontWeight.bold,
+                const SizedBox(height: 3),
+                Text(
+                  'Poket Talk',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD600),
+                    fontSize: 9.0,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 14),
+                const SizedBox(height: 14),
+              ],
 
               // ✈️ Minimal Share Button (Instagram Reels style)
               GestureDetector(

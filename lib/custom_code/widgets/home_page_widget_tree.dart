@@ -1677,7 +1677,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             ),
             const SizedBox(width: 6),
             _buildCategoryChipItem(
-              title: 'Pocket Talk ⚡',
+              title: 'Poket Talk ⚡',
               index: 6,
               count: pocketTalkCount > 0 ? pocketTalkCount : null,
               icon: Icons.bolt_rounded,
@@ -1704,7 +1704,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             _buildCategoryChipItem(
               title: 'Requests',
               index: 3,
-              count: _pendingRequests.length,
+              count: (_pendingRequests.length + _sentRequests.length) > 0
+                  ? (_pendingRequests.length + _sentRequests.length)
+                  : null,
               icon: Icons.person_add_alt_1_rounded,
               highlightBadge: _pendingRequests.isNotEmpty,
               isDark: isDark,
@@ -1918,7 +1920,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                   ),
                   child: Center(
                     child: Text(
-                      'Pocket Talk',
+                      'Poket Talk',
                       style: GoogleFonts.outfit(
                         color: Colors.black,
                         fontWeight: FontWeight.bold,
@@ -2455,7 +2457,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Pocket Talk 4-Day Spoken Pacts',
+                        'Poket Talk 4-Day Spoken Pacts',
                         style: GoogleFonts.outfit(
                           color: isDark ? Colors.white : Colors.black87,
                           fontSize: 14.5,
@@ -3197,7 +3199,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                           ),
                           const SizedBox(width: 8),
                           _buildSearchFilterChip(
-                            label: 'Pocket Talk ⚡',
+                            label: 'Poket Talk ⚡',
                             icon: material.Icons.bolt_rounded,
                             isSelected: _searchPeopleFilterIndex == 3,
                             onTap: () async {
@@ -3626,7 +3628,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                       : (_searchPeopleFilterIndex == 2
                                           ? 'ROBOTS (${peopleResults.length})'
                                           : (_searchPeopleFilterIndex == 3
-                                              ? 'POCKET TALK (${peopleResults.length})'
+                                              ? 'POKET TALK (${peopleResults.length})'
                                               : 'PEOPLE (${peopleResults.length})')),
                                   style: GoogleFonts.outfit(
                                     fontSize: 12.5,

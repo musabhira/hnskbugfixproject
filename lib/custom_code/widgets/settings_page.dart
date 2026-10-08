@@ -1,3 +1,4 @@
+import 'package:pocket_mates_app/custom_code/services/contacts_name_service.dart';
 import 'dart:io';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
@@ -1231,7 +1232,7 @@ class _PresidentAndAdminSettingsSectionState
   void _showReplyModal(Map<String, dynamic> inquiry) {
     final replyController = TextEditingController();
     final targetUserId = inquiry['user_id']?.toString() ?? '';
-    final citizenName = inquiry['user_name']?.toString() ?? 'Citizen';
+    final citizenName = inquiry['user_name'] != null && inquiry['user_name'].toString().isNotEmpty && inquiry['user_name'] != 'Citizen' ? inquiry['user_name'].toString() : (ContactsNameService().getDisplayName(userId: targetUserId, fallbackName: 'Learner').isNotEmpty ? ContactsNameService().getDisplayName(userId: targetUserId, fallbackName: 'Learner') : 'Learner');
     bool isSending = false;
 
     showModalBottomSheet(
@@ -1617,7 +1618,7 @@ class _PresidentAndAdminSettingsSectionState
               separatorBuilder: (_, __) => const SizedBox(height: 8),
               itemBuilder: (context, index) {
                 final inq = _inquiries[index];
-                final name = inq['user_name'] ?? 'Citizen';
+                final name = (inq['user_name'] != null && inq['user_name'].toString().isNotEmpty && inq['user_name'] != 'Citizen') ? inq['user_name'] : ContactsNameService().getDisplayName(userId: inq['user_id']?.toString() ?? '', fallbackName: 'Learner');
                 final msg = inq['last_message'] ?? '';
                 final status = inq['status'] ?? 'pending';
                 final isPending = status == 'pending';

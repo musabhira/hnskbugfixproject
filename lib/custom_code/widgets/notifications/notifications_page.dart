@@ -77,32 +77,44 @@ class _NotificationsPageState extends State<NotificationsPage> {
         } catch (_) {}
       }
 
-      // Fetch activity notifications from database
+      // Fetch all activity and community notifications from database
       final List<Map<String, dynamic>> alerts = [];
       try {
         final notifsRes = await _supabase
             .from('notifications')
             .select('*')
             .eq('user_id', myId)
-            .neq('type', 'mate_request')
             .order('created_at', ascending: false)
-            .limit(25);
+            .limit(100);
 
         for (final n in (notifsRes as List)) {
-          final type = n['type']?.toString() ?? 'alert';
+          final type = n['type']?.toString().toLowerCase() ?? 'alert';
           String icon = '🔔';
-          if (type.contains('vibe') || type.contains('status')) {
+          String defaultTitle = 'Notification';
+          if (type.contains('mate_accepted')) {
+            icon = '✨';
+            defaultTitle = 'Mate Connected';
+          } else if (type.contains('mate_request')) {
+            icon = '🤝';
+            defaultTitle = 'Mate Request';
+          } else if (type.contains('vibe') || type.contains('status')) {
             icon = '💬';
-          } else if (type.contains('fortress') || type.contains('raid') || type.contains('attack')) {
+            defaultTitle = 'Vibe Activity';
+          } else if (type.contains('fortress') || type.contains('raid') || type.contains('citadel') || type.contains('attack')) {
             icon = '⚔️';
+            defaultTitle = 'Citadel Raid';
+          } else if (type.contains('pact') || type.contains('talk')) {
+            icon = '⚡';
+            defaultTitle = 'Poket Talk';
           } else if (type.contains('score') || type.contains('streak') || type.contains('level')) {
             icon = '🔥';
+            defaultTitle = 'Streak & Level';
           }
 
           alerts.add({
             'id': n['id']?.toString() ?? '',
             'icon': icon,
-            'title': n['title'] ?? (type == 'vibe_reply' ? 'Vibe Reply' : 'Notification'),
+            'title': n['title'] ?? defaultTitle,
             'body': n['message'] ?? n['body'] ?? n['content'] ?? 'New notification received.',
             'time': n['created_at'] != null ? timeago.format(DateTime.tryParse(n['created_at'].toString()) ?? DateTime.now()) : 'Recently',
           });
@@ -110,6 +122,25 @@ class _NotificationsPageState extends State<NotificationsPage> {
       } catch (e) {
         debugPrint('Error fetching DB notifications: $e');
       }
+
+      // Fetch official Presidential Announcements / decrees
+      try {
+        final annRes = await _supabase
+            .from('announcements')
+            .select('*')
+            .order('created_at', ascending: false)
+            .limit(25);
+
+        for (final a in (annRes as List)) {
+          alerts.add({
+            'id': a['id']?.toString() ?? '',
+            'icon': '🏛️',
+            'title': a['title'] ?? '🏛️ Presidential Decree',
+            'body': a['content'] ?? a['message'] ?? 'Official update from The President.',
+            'time': a['created_at'] != null ? timeago.format(DateTime.tryParse(a['created_at'].toString()) ?? DateTime.now()) : 'Recently',
+          });
+        }
+      } catch (_) {}
 
       if (alerts.isEmpty) {
         // Fallback default activity alerts if database has no records
