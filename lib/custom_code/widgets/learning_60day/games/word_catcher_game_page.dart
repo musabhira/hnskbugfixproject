@@ -114,6 +114,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
   // Audio / Mute
   bool _isMuted = false;
   String _activeLanguage = 'Malayalam';
+  Size _screenSize = const Size(390, 844);
 
   @override
   void initState() {
@@ -127,6 +128,12 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
     )..addListener(_gameLoop);
 
     _ticker.repeat();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _screenSize = MediaQuery.sizeOf(context);
   }
 
   Future<void> _initTts() async {
@@ -154,13 +161,14 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
   }
 
   WordCatcherItem get _currentTargetWord {
+    final words = widget.levelData.targetWords.isNotEmpty
+        ? widget.levelData.targetWords
+        : kWordCatcherLevel1Data.targetWords;
     if (_screenState == GameScreenState.finalChallenge) {
-      final index = (_currentWordIndex + _finalChallengeStreak) %
-          widget.levelData.targetWords.length;
-      return widget.levelData.targetWords[index];
+      final index = (_currentWordIndex + _finalChallengeStreak) % words.length;
+      return words[index];
     }
-    return widget.levelData.targetWords[
-        _currentWordIndex.clamp(0, widget.levelData.targetWords.length - 1)];
+    return words[_currentWordIndex.clamp(0, words.length - 1)];
   }
 
   // --- 🔄 GAME LOOP & PHYSICS ---
@@ -214,8 +222,8 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
       _lastSpawnTime = _gameTime;
     }
 
-    // Update Falling Word Positions
-    final size = MediaQuery.of(context).size;
+    // Update Falling Word Positions using cached screen dimensions (zero context dependency in ticker!)
+    final size = _screenSize;
     final catchZoneY = size.height * 0.75;
     final characterScreenX = _characterNormalizedX * size.width;
     final catchRadius = 65.0;
@@ -236,7 +244,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
         break;
       }
 
-      // If fallen past pathway without catch
+    // If fallen past pathway without catch
       if (item.y > size.height * 0.84) {
         _fallingItems.removeAt(i);
       }
@@ -266,7 +274,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
     waveItems.shuffle(_random);
 
     // Lane spacing
-    final laneStep = 0.84 / numChoices;
+    final laneStep = 0.84 / math.max(1, numChoices);
     for (int i = 0; i < waveItems.length; i++) {
       final laneX = 0.08 + (i * laneStep) + (_random.nextDouble() * 0.04);
       final speedJitter = (_random.nextDouble() * 20.0) - 10.0;
@@ -287,7 +295,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
 
   // --- 🎯 CATCH HANDLER ---
   void _handleWordCaught(FallingWordItem caught) {
-    final size = MediaQuery.of(context).size;
+    final size = _screenSize;
     final charX = _characterNormalizedX * size.width;
     final charY = size.height - 150.0;
 
@@ -353,30 +361,33 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
           _screenState = GameScreenState.tryAgain;
         });
       } else {
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Text('⚠️', style: TextStyle(fontSize: 18)),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Oops! You caught "${caught.item.word}". Target is "${_currentTargetWord.word}".',
-                    style: GoogleFonts.outfit(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w600,
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).clearSnackBars();
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Text('⚠️', style: TextStyle(fontSize: 18)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Oops! You caught "${caught.item.word}". Target is "${_currentTargetWord.word}".',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
+              backgroundColor: const Color(0xFFDC2626),
+              duration: const Duration(seconds: 2),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
-            backgroundColor: const Color(0xFFDC2626),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        );
+          );
+        });
         _fallingItems.clear();
         _lastSpawnTime = _gameTime + 0.8;
       }
@@ -387,7 +398,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
     _screenState = GameScreenState.levelComplete;
     HapticFeedback.heavyImpact();
     _speakText('Congratulations! Level one complete! You learned ten new English words!');
-    final size = MediaQuery.of(context).size;
+    final size = _screenSize;
     for (int i = 0; i < 40; i++) {
       _spawnSparkles(
         size.width * 0.5 + (_random.nextDouble() * 200 - 100),
@@ -418,6 +429,7 @@ class _WordCatcherGamePageState extends State<WordCatcherGamePage>
   // --- 🎨 BUILD METHOD ---
   @override
   Widget build(BuildContext context) {
+    _screenSize = MediaQuery.sizeOf(context);
     return Scaffold(
       backgroundColor: const Color(0xFF87CEEB), // Sky blue
       body: Stack(

@@ -29,11 +29,11 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_tutor_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_interactive_flow_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_citadel_attack_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/community_chat_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/english_match/anonymous_english_chat_page.dart';
-import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/games/meadow_runner_game_page.dart';
+
+
+
+
+
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_open_world_game_page.dart'
     show CruisingBoat, CruisingBoatType, FlyingBird, JumpDustParticle;
 
@@ -301,8 +301,7 @@ class _PocketDayOpenWorldAdventurePageState
     }
     return _totalSteps;
   }
-
-  int get _firstIncompleteStep => _findFirstIncompleteStep(_subStepFlags);
+
 
   void _driveToStep(int stepIndex, {bool openActivityOnArrival = false}) {
     if (!mounted) return;
@@ -949,10 +948,10 @@ class _PocketDayOpenWorldAdventurePageState
         stepIndex == 1 || (_subStepFlags['step_${stepIndex - 1}'] ?? false);
     // Strict sequential unlocking:
     // A step is ONLY unlocked if the immediate previous step is done.
-    final isUnlocked = isPrevDone;
+    final isUnlocked = _isMasterAdmin || isPrevDone;
     final isCurrent = isUnlocked && !isDone;
     const nodeSize = 54.0;
-    const containerWidth = 140.0;
+    const containerWidth = 200.0;
 
     final stepInfo = _getStepDetails(stepIndex);
 
@@ -1089,7 +1088,7 @@ class _PocketDayOpenWorldAdventurePageState
               children: [
                 // Floating Step Title Pill (Safely bounded width)
                 Container(
-                  width: 130,
+                  width: 190,
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                   margin: const EdgeInsets.only(bottom: 4),
                   decoration: BoxDecoration(
@@ -1115,8 +1114,8 @@ class _PocketDayOpenWorldAdventurePageState
                       Expanded(
                         child: Text(
                           'Step $stepIndex: ${stepInfo.title}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
                           style: GoogleFonts.outfit(
                             color: isCurrent
                                 ? const Color(0xFFFFFC00)

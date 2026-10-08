@@ -127,6 +127,8 @@ class _PocketDay1InteractiveFlowPageState
 
   // Step 5 Reading Room State
   final Map<int, int> _readingQuizAnswers = {};
+  double _storyFontSize = 14.5;
+  bool _isStoryNarrating = false;
 
   // Step 6 Spoken Lab State
   int _spokenChallengeIndex = 0;
@@ -2100,158 +2102,656 @@ class _PocketDay1InteractiveFlowPageState
   // -------------------------------------------------------------
   // STEP 5: READING ROOM (Story & Audio & Quiz)
   // -------------------------------------------------------------
+  // -------------------------------------------------------------
+  // STEP 5: READING ROOM (Illustrated Storybook with Art, Audio & Quiz)
+  // -------------------------------------------------------------
   Widget _buildStep5ReadingRoom(Day1StepModel step) {
-    final passage = step.data['passage'] as Map<String, dynamic>? ?? {};
-    final title = Day1CurriculumJsonData.getLocalizedString(passage['bookTitle'], lang: _nativeLanguage);
-    final sentences = (passage['sentences'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    final questions = (passage['comprehensionQuestions'] as List?)?.cast<Map<String, dynamic>>() ?? [];
+    // 📖 Rich Illustrated Story Data
+    final storyTitleEn = 'The Little Fox & The Golden Star';
+    final storyTitleMl = 'സൗഹൃദ കുറുക്കനും സുവർണ്ണ നക്ഷത്രവും';
+
+    final paragraphs = [
+      {
+        'en': 'Once upon a time, in a peaceful green meadow, lived a small, friendly fox named Oliver. Every night, the bright silver moon illuminated the sleepy valley. Oliver loved watching the peaceful night sky while resting near the ancient oak tree.',
+        'ml': 'ഒരിക്കൽ, ശാന്തമായ ഒരു പച്ചപ്പുൽമേട്ടിൽ ഒലിവർ എന്ന കൊച്ചു കുറുക്കൻ താമസിച്ചിരുന്നു. എല്ലാ രാത്രിയിലും വെള്ളിച്ചന്ദ്രൻ താഴ്വരയെ പ്രകാശിപ്പിച്ചു. പുരാതനമായ ഓക്ക് മരത്തിനടുത്ത് ഇരുന്ന് രാത്രിയിലെ ആകാശം കാണാൻ ഒലിവറിന് വളരെ ഇഷ്ടമായിരുന്നു.',
+        'focus': ['Fox', 'Meadow', 'Moon', 'Night'],
+      },
+      {
+        'en': 'One warm evening, Oliver walked toward the crystal river to drink fresh, cold water. While drinking, he noticed a magical golden glow dancing between the green leaves of the oak tree. It was not a red apple, and it was not a lamp—it was a twinkling golden star that had fallen softly from the sky!',
+        'ml': 'ഒരു ദിവസം വൈകുന്നേരം, ഒലിവർ തെളിഞ്ഞ നദിയിലേക്ക് തണുത്ത വെള്ളം കുടിക്കാൻ നടന്നു. വെള്ളം കുടിക്കുന്നതിനിടയിൽ, ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ ഒരു മാന്ത്രിക സുവർണ്ണ വെളിച്ചം അവൻ കണ്ടു. അതൊരു ചുവന്ന ആപ്പിളോ വിളക്കോ അല്ലായിരുന്നു—ആകാശത്തുനിന്ന് പതിയെ താഴേക്ക് വീണ മിന്നുന്ന ഒരു സുവർണ്ണ നക്ഷത്രമായിരുന്നു അത്!',
+        'focus': ['Water', 'Apple', 'Star', 'Tree'],
+      },
+      {
+        'en': "Oliver gently climbed the strong tree branch. 'Hello, little star! Are you hurt?' Oliver asked with a kind smile. The star chimed softly: 'I slipped from the clouds. Can you help me find my way back home?' Oliver smiled warmly: 'Do not worry, my new friend! Together, we will climb to the mountain top where the gentle breeze can lift you back to the sky.'",
+        'ml': "ഒലിവർ പതുക്കെ മരത്തിന്റെ കൊമ്പിലേക്ക് കയറി. 'ഹലോ, കൊച്ചു നക്ഷത്രമേ! നിനക്ക് വല്ലതും പറ്റിയോ?' ഒലിവർ സ്നേഹത്തോടെ ചോദിച്ചു. നക്ഷത്രം മണിനാദം പോലെ പറഞ്ഞു: 'ഞാൻ മേഘങ്ങളിൽ നിന്ന് വീണുപോയി. എനിക്ക് തിരികെ വീട്ടിലെത്താൻ സഹായിക്കാമോ?' ഒലിവർ പുഞ്ചിരിച്ചു: 'പേടിക്കണ്ട എന്റെ പുതിയ കൂട്ടുകാരാ! കാറ്റ് നിന്നെ ആകാശത്തേക്ക് ഉയർത്തുന്ന മലമുകളിലേക്ക് നമുക്ക് ഒരുമിച്ച് പോകാം.'",
+        'focus': ['Smile', 'Friend', 'Mountain', 'Sky'],
+      },
+      {
+        'en': 'With brave and steady steps, Oliver carried the little star to the windy peak. A soft night breeze embraced them, and the golden star floated gracefully back into the deep blue sky, shining brighter than ever before. Oliver walked back to his warm bed feeling immensely proud and happy, knowing that kindness always lights up the darkest night.',
+        'ml': 'ധീരമായ ചുവടുകളോടെ ഒലിവർ കൊച്ചു നക്ഷത്രത്തെ മലമുകളിലെത്തിച്ചു. രാത്രിയിലെ ഇളംകാറ്റ് അവരെ തഴുകി, സുവർണ്ണ നക്ഷത്രം നീലാകാശത്തേക്ക് ഭംഗിയായി ഉയർന്നുപൊങ്ങി. ഒലിവർ തന്റെ കിടക്കയിലേക്ക് മടങ്ങിയെത്തി, കാരുണ്യവും സൗഹൃദവുമാണ് ഏറ്റവും വലിയ വെളിച്ചമെന്ന് മനസ്സിലാക്കി അവൻ സമാധാനമായി ഉറങ്ങി.',
+        'focus': ['Bed', 'Happy', 'Kindness', 'Blue'],
+      },
+    ];
+
+    final comprehensionQuestions = [
+      {
+        'id': 1,
+        'question': {
+          'en': 'Who is the main hero in the story?',
+          'ml': 'കഥയിലെ പ്രധാന കഥാപാത്രം ആരാണ്?',
+        },
+        'options': ['Oliver the friendly fox 🦊', 'A sleeping giant 🧌', 'A fierce tiger 🐅', 'A noisy crow 🐦‍⬛'],
+        'correctIndex': 0,
+        'explanation': 'Oliver is the kind, friendly fox living in the meadow.',
+      },
+      {
+        'id': 2,
+        'question': {
+          'en': 'What was shining between the leaves of the oak tree?',
+          'ml': 'ഓക്ക് മരത്തിന്റെ ഇലകൾക്കിടയിൽ തിളങ്ങി നിന്നത് എന്തായിരുന്നു?',
+        },
+        'options': ['A red apple 🍎', 'A twinkling golden star ⭐', 'A gold pocket watch ⏰', 'A street lamp 💡'],
+        'correctIndex': 1,
+        'explanation': 'A twinkling golden star that had fallen softly from the sky.',
+      },
+      {
+        'id': 3,
+        'question': {
+          'en': 'How did Oliver help the little star return home?',
+          'ml': 'നക്ഷത്രത്തെ തിരികെ വീട്ടിലെത്താൻ ഒലിവർ എങ്ങനെ സഹായിച്ചു?',
+        },
+        'options': [
+          'Threw it with a slingshot 🎯',
+          'Put it in a cardboard box 📦',
+          'Guided it to the mountain top for the breeze to lift it 🏔️',
+          'Left it in the river water 💧',
+        ],
+        'correctIndex': 2,
+        'explanation': 'Oliver guided the star up the mountain peak where the breeze lifted it back to the sky.',
+      },
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Book Banner
+        // 🎨 1. Illustrated Book Header & Landscape Art Banner
         Container(
-          padding: const EdgeInsets.all(16),
+          width: double.infinity,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF06B6D4), Color(0xFF0E7490)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0B192C)],
             ),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.65), width: 1.8),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.22),
+                blurRadius: 22,
+                offset: const Offset(0, 6),
+              ),
+            ],
           ),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('📖', style: TextStyle(fontSize: 32)),
-              const SizedBox(width: 12),
-              Expanded(
+              // Beautiful Custom Painted Night Sky & Starlit Oak Tree Scene
+              ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(22)),
+                child: Container(
+                  height: 155,
+                  width: double.infinity,
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [Color(0xFF0A1128), Color(0xFF1C2541), Color(0xFF283655)],
+                    ),
+                  ),
+                  child: Stack(
+                    children: [
+                      // Twinkling Stars
+                      Positioned(top: 20, left: 40, child: _buildStarDot(size: 6, opacity: 0.8)),
+                      Positioned(top: 45, left: 110, child: _buildStarDot(size: 4, opacity: 0.6)),
+                      Positioned(top: 25, right: 70, child: _buildStarDot(size: 5, opacity: 0.7)),
+                      Positioned(top: 70, right: 140, child: _buildStarDot(size: 4, opacity: 0.5)),
+                      Positioned(top: 85, left: 60, child: _buildStarDot(size: 5, opacity: 0.75)),
+
+                      // Glowing Moon
+                      Positioned(
+                        top: 18,
+                        right: 28,
+                        child: Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: const RadialGradient(
+                              colors: [Color(0xFFFFFBEB), Color(0xFFFEF08A), Colors.transparent],
+                              stops: [0.35, 0.7, 1.0],
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFEF08A).withValues(alpha: 0.5),
+                                blurRadius: 20,
+                                spreadRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: const Center(
+                            child: Text('🌙', style: TextStyle(fontSize: 22)),
+                          ),
+                        ),
+                      ),
+
+                      // Ancient Oak Tree Art
+                      Positioned(
+                        left: 20,
+                        bottom: 0,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            const Text('🌳', style: TextStyle(fontSize: 74)),
+                            Transform.translate(
+                              offset: const Offset(-20, -38),
+                              child: Container(
+                                padding: const EdgeInsets.all(4),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+                                      blurRadius: 18,
+                                      spreadRadius: 4,
+                                    ),
+                                  ],
+                                ),
+                                child: const Text('⭐', style: TextStyle(fontSize: 28)),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      // Little Fox Looking Up
+                      Positioned(
+                        right: 80,
+                        bottom: 12,
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withValues(alpha: 0.35),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Text('🦊', style: TextStyle(fontSize: 42)),
+                        ),
+                      ),
+
+                      // Floating Golden Banner Tag
+                      Positioned(
+                        top: 14,
+                        left: 14,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF0F172A).withValues(alpha: 0.88),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFFFFD700), width: 1.2),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('📖', style: TextStyle(fontSize: 12)),
+                              const SizedBox(width: 5),
+                              Text(
+                                'STORYBOOK • CHAPTER 1',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 0.8,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Title, Subtitle & Interactive Audio Narration Bar
+              Padding(
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Storybook Reading', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
-                    Text(title, style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text(
+                      storyTitleEn,
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      _nativeLanguage == 'Malayalam' ? storyTitleMl : 'A magical story of friendship and kindness',
+                      style: GoogleFonts.inter(
+                        color: const Color(0xFFFFD700),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+
+                    // Audio Controls & Font Size Toolbar
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0F172A),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Row(
+                        children: [
+                          // Narration Play / Stop Button
+                          ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _isStoryNarrating ? const Color(0xFFEF4444) : const Color(0xFF10B981),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              elevation: 2,
+                            ),
+                            icon: Icon(_isStoryNarrating ? Icons.stop_rounded : Icons.volume_up_rounded, size: 18),
+                            label: Text(
+                              _isStoryNarrating ? 'STOP' : 'READ ALOUD 🎙️',
+                              style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 11),
+                            ),
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              if (_isStoryNarrating) {
+                                _tts.stop();
+                                setState(() => _isStoryNarrating = false);
+                              } else {
+                                setState(() => _isStoryNarrating = true);
+                                final fullStoryText = paragraphs.map((p) => p['en'] as String).join(' \n\n');
+                                _tts.stop();
+                                _tts.speak(fullStoryText).then((_) {
+                                  if (mounted) setState(() => _isStoryNarrating = false);
+                                });
+                              }
+                            },
+                          ),
+
+                          const Spacer(),
+
+                          // Font Sizing Controls (A- / A+)
+                          Text(
+                            'Font:',
+                            style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                          ),
+                          const SizedBox(width: 4),
+                          InkWell(
+                            onTap: () {
+                              if (_storyFontSize > 12) setState(() => _storyFontSize -= 1.5);
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: Colors.white10,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text('A-', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          InkWell(
+                            onTap: () {
+                              if (_storyFontSize < 20) setState(() => _storyFontSize += 1.5);
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: Colors.white10,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Text('A+', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.volume_up_rounded, color: Colors.white, size: 26),
-                onPressed: () {
-                  final allText = sentences.map((s) => s['en']).join(' ');
-                  _speak(allText);
-                },
               ),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 18),
 
-        // Sentences with audio
-        ...sentences.asMap().entries.map((entry) {
-          final idx = entry.key;
-          final s = entry.value;
-          final en = s['en']?.toString() ?? '';
-          final ml = Day1CurriculumJsonData.getLocalizedString(s, lang: _nativeLanguage);
+        // 📜 2. Scrollable Story Parchment Book Reader Frame
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: Colors.white12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.35),
+                blurRadius: 18,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('✦ ═══ ', style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
+                  Text(
+                    'READ THE STORY',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFFFFD700),
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 1.5,
+                    ),
+                  ),
+                  const Text(' ═══ ✦', style: TextStyle(color: Color(0xFFFFD700), fontSize: 12)),
+                ],
+              ),
+              const SizedBox(height: 14),
 
-          return Container(
-            margin: const EdgeInsets.only(bottom: 10),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 12,
-                  backgroundColor: const Color(0xFF06B6D4),
-                  child: Text('${idx + 1}', style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
+              // Paragraphs List
+              ...paragraphs.asMap().entries.map((entry) {
+                final idx = entry.key;
+                final p = entry.value;
+                final en = p['en'] as String;
+                final ml = p['ml'] as String;
+                final focusWords = (p['focus'] as List<String>?) ?? [];
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 16),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.7),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white10),
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(en, style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-                      Text(ml, style: GoogleFonts.inter(color: Colors.white60, fontSize: 11.5)),
+                      // Paragraph Header with TTS play button
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Text(
+                              'Part ${idx + 1}',
+                              style: GoogleFonts.outfit(
+                                color: const Color(0xFF38BDF8),
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
+                          IconButton(
+                            icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
+                            onPressed: () {
+                              HapticFeedback.selectionClick();
+                              _tts.stop();
+                              _tts.speak(en);
+                            },
+                            visualDensity: VisualDensity.compact,
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                            tooltip: 'Listen to Part ${idx + 1}',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+
+                      // English Story Text
+                      Text(
+                        en,
+                        style: GoogleFonts.literata(
+                          color: const Color(0xFFF8FAFC),
+                          fontSize: _storyFontSize,
+                          height: 1.65,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Native Meaning in Malayalam
+                      Text(
+                        ml,
+                        style: GoogleFonts.inter(
+                          color: Colors.white60,
+                          fontSize: 12,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+
+                      // Core Focus Vocabulary Chips
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: focusWords.map((word) {
+                          return InkWell(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              _tts.stop();
+                              _tts.speak(word);
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.4)),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    word,
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 3),
+                                  const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 11),
+                                ],
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     ],
                   ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFFD700), size: 20),
-                  onPressed: () => _speak(en),
-                ),
-              ],
-            ),
-          );
-        }),
+                );
+              }),
+            ],
+          ),
+        ),
+        const SizedBox(height: 22),
 
-        const SizedBox(height: 16),
-        Text('Comprehension Check:', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-        const SizedBox(height: 10),
-
-        // Quiz Questions
-        ...questions.map((q) {
-          final qId = q['id'] as int? ?? 1;
-          final qText = Day1CurriculumJsonData.getLocalizedString(q['question'], lang: _nativeLanguage);
-          final opts = (q['options'] as List?)?.map((e) => e.toString()).toList() ?? [];
-          final correctIdx = q['correctIndex'] as int? ?? 0;
-          final selected = _readingQuizAnswers[qId];
-
-          return Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E293B),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(qText, style: GoogleFonts.outfit(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 8),
-                ...opts.asMap().entries.map((optEntry) {
-                  final optIdx = optEntry.key;
-                  final optText = optEntry.value;
-                  final isAnswered = selected != null;
-                  final isSelected = selected == optIdx;
-                  final isCorrect = optIdx == correctIdx;
-
-                  Color btnBg = const Color(0xFF0F172A);
-                  if (isAnswered) {
-                    if (isCorrect) btnBg = const Color(0xFF10B981);
-                    if (isSelected && !isCorrect) btnBg = Colors.redAccent;
-                  }
-
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 6),
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: btnBg,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-                      ),
-                      onPressed: () {
-                        setState(() {
-                          _readingQuizAnswers[qId] = optIdx;
-                        });
-                        if (isCorrect) {
-                          _speak('Correct!');
-                          if (_readingQuizAnswers.length >= questions.length) {
-                            _markStepCompleted(5);
-                          }
-                        } else {
-                          _speak('Incorrect! Try again.');
-                        }
-                      },
-                      child: Align(alignment: Alignment.centerLeft, child: Text(optText)),
+        // 🧠 3. Story Comprehension Quiz Check
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5), width: 1.5),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('🎯', style: TextStyle(fontSize: 22)),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Story Comprehension Check',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
                     ),
-                  );
-                }),
-              ],
-            ),
-          );
-        }),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Answer 3 simple questions about Oliver the fox to complete Step 5:',
+                style: GoogleFonts.inter(color: Colors.white60, fontSize: 11.5),
+              ),
+              const SizedBox(height: 16),
+
+              // Quiz Cards
+              ...comprehensionQuestions.map((q) {
+                final qId = q['id'] as int;
+                final qEn = (q['question'] as Map)['en'] as String;
+                final qMl = (q['question'] as Map)['ml'] as String;
+                final opts = q['options'] as List<String>;
+                final correctIdx = q['correctIndex'] as int;
+                final selected = _readingQuizAnswers[qId];
+
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white12),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Q$qId: $qEn',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        qMl,
+                        style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                      ),
+                      const SizedBox(height: 10),
+
+                      ...opts.asMap().entries.map((optEntry) {
+                        final optIdx = optEntry.key;
+                        final optText = optEntry.value;
+                        final isAnswered = selected != null;
+                        final isSelected = selected == optIdx;
+                        final isCorrect = optIdx == correctIdx;
+
+                        Color btnBg = const Color(0xFF1E293B);
+                        Color borderCol = Colors.white12;
+                        if (isAnswered) {
+                          if (isCorrect) {
+                            btnBg = const Color(0xFF065F46);
+                            borderCol = const Color(0xFF10B981);
+                          } else if (isSelected) {
+                            btnBg = const Color(0xFF7F1D1D);
+                            borderCol = const Color(0xFFEF4444);
+                          }
+                        }
+
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: btnBg,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                                side: BorderSide(color: borderCol, width: 1.2),
+                              ),
+                              elevation: 1,
+                            ),
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              setState(() {
+                                _readingQuizAnswers[qId] = optIdx;
+                              });
+                              if (isCorrect) {
+                                _speak('Correct!');
+                                if (_readingQuizAnswers.length >= comprehensionQuestions.length &&
+                                    _readingQuizAnswers.values.every((v) => true)) {
+                                  _markStepCompleted(5);
+                                }
+                              } else {
+                                _speak('Try again!');
+                              }
+                            },
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                optText,
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
       ],
+    );
+  }
+
+  Widget _buildStarDot({required double size, required double opacity}) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white.withValues(alpha: opacity),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withValues(alpha: opacity),
+            blurRadius: 4,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
     );
   }
 

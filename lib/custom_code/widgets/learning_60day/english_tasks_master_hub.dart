@@ -4301,9 +4301,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     // Center the house on nodeX, but keep safely within screen margins
     final double houseLeft = (nodeX - (houseWidth / 2.0)).clamp(8.0, screenWidth - houseWidth - 8.0);
     // Align house with clean vertical spacing above the level stepping stone and home visit button
-    final double houseTop = nodeY - houseHeight - 36.0;
+    final double houseTop = nodeY - houseHeight - 88.0;
 
-    final estateTitle = FlameEnglishHouseWidget.getEstateStageTitle(day);
     final palette = HousePalette.presets[(day - 1) % HousePalette.presets.length];
     final avatarConfig = _getAvatarForDay(day);
 
@@ -4386,59 +4385,6 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 ),
               ),
 
-              // 3. Estate Title & Stage Pill at the Top of the House
-              Positioned(
-                top: 2,
-                left: 6,
-                right: 36, // space for avatar guardian chip
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2.5),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.88),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: isCurrent
-                          ? const Color(0xFFFFFC00)
-                          : (isCompleted
-                              ? const Color(0xFFFF7043)
-                              : (isUnlocked ? Colors.white24 : Colors.white10)),
-                      width: isCurrent || isCompleted ? 1.2 : 0.8,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        isCompleted
-                            ? '🔥'
-                            : (isCurrent
-                                ? '📍'
-                                : (isWaitingForMidnight
-                                    ? '⏳'
-                                    : (isUnlocked ? '🏡' : '🔒'))),
-                        style: const TextStyle(fontSize: 10),
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          estateTitle,
-                          style: GoogleFonts.outfit(
-                            color: isCurrent
-                                ? const Color(0xFFFFFC00)
-                                : (isCompleted
-                                    ? const Color(0xFFFFB74D)
-                                    : (isUnlocked ? Colors.white : Colors.white60)),
-                            fontSize: 9.0,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
 
               // 4. Resident Avatar Guardian Chip (Click to open collectible card)
               Positioned(
@@ -4630,8 +4576,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
 
     final double btnWidth = 110.0;
     final double btnLeft = (nodeX - (btnWidth / 2.0)).clamp(12.0, screenWidth - btnWidth - 12.0);
-    // Placed cleanly between the level circle node (nodeY) and the house (houseTop: nodeY - houseHeight - 36)
-    final double btnTop = nodeY - 48.0;
+    // Placed cleanly between the level circle node (nodeY - 32) and the house (houseTop: nodeY - houseHeight - 88)
+    final double btnTop = nodeY - 70.0;
 
     return Positioned(
       left: btnLeft,
@@ -4640,11 +4586,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         onTap: () {
           HapticFeedback.selectionClick();
           final uid = widget.userId ?? _supabase.auth.currentUser?.id ?? '';
-          PocketCitadelAttackPage.openForUser(
+          PocketHomeVisitModal.show(
             context,
-            userId: uid,
-            attackerDay: day,
-            isDefenseMode: true,
+            day: day,
+            userCurrentDay: currentDay,
+            currentUserId: uid,
           );
         },
         child: Container(

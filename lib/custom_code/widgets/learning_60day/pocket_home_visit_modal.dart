@@ -513,7 +513,7 @@ class _PocketHomeVisitModalState extends State<PocketHomeVisitModal>
                                   children: [
                                     Flexible(
                                       child: Text(
-                                        'DAY ${widget.day} CITADEL RESIDENTS',
+                                        'Owners of Homes',
                                         style: GoogleFonts.outfit(
                                           color: Colors.white,
                                           fontSize: 14,
