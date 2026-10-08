@@ -551,7 +551,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   void _scrollToRule({bool animate = false}) {
-    if (!_scrollController.hasClients) return;
+    if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
     final targetY = _ruleNodeY - 280.0;
     final clampedY = targetY.clamp(
       0.0,
@@ -569,7 +569,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   }
 
   void _scrollToDay(int day, {bool animate = false}) {
-    if (!_scrollController.hasClients) return;
+    if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
     final targetY = _getNodeY(day) - 280.0;
     final clampedY = targetY.clamp(
       0.0,
@@ -2723,23 +2723,23 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onVerticalDragUpdate: (details) {
-          if (!_scrollController.hasClients) return;
+          if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
           final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
           final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
           final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_scrollController.hasClients) {
+            if (_scrollController.hasClients && _scrollController.position.hasContentDimensions) {
               _scrollController.jumpTo(targetOffset);
             }
           });
         },
         onTapDown: (details) {
-          if (!_scrollController.hasClients) return;
+          if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
           final localY = details.localPosition.dy.clamp(0.0, scrubberHeight);
           final newFraction = (localY / scrubberHeight).clamp(0.0, 1.0);
           final targetOffset = newFraction * _scrollController.position.maxScrollExtent;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_scrollController.hasClients) {
+            if (_scrollController.hasClients && _scrollController.position.hasContentDimensions) {
               _scrollController.animateTo(
                 targetOffset,
                 duration: const Duration(milliseconds: 320),
@@ -2807,7 +2807,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 animation: _scrollController,
                 builder: (context, _) {
                   double fraction = 1.0;
-                  if (_scrollController.hasClients && _scrollController.position.maxScrollExtent > 0) {
+                  if (_scrollController.hasClients &&
+                      _scrollController.position.hasContentDimensions &&
+                      _scrollController.position.maxScrollExtent > 0) {
                     fraction = (_scrollController.offset / _scrollController.position.maxScrollExtent).clamp(0.0, 1.0);
                   }
                   // Inverted map: offset 0 is Day 90 (summit), offset max is Day 1 (valley)
