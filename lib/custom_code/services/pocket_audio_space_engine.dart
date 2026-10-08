@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' as io;
 import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
@@ -158,14 +159,18 @@ class AudioSpaceModel {
 }
 
 /// 💬 SpaceChatMessage
-/// Ephemeral in-room live chat message. Auto-expires in 30 minutes.
+/// Ephemeral in-room live chat message. Auto-expires in 30 minutes, or when read.
 class SpaceChatMessage {
   final String id;
   final String senderId;
   final String senderName;
   final String? senderAvatar;
   final String text;
+  final String? voiceUrl;
+  final int? voiceDuration;
+  final String? storagePath;
   final DateTime sentAt;
+  final Set<String> readBy;
 
   SpaceChatMessage({
     required this.id,
@@ -173,11 +178,17 @@ class SpaceChatMessage {
     required this.senderName,
     this.senderAvatar,
     required this.text,
+    this.voiceUrl,
+    this.voiceDuration,
+    this.storagePath,
     required this.sentAt,
-  });
+    Set<String>? readBy,
+  }) : readBy = readBy ?? {};
 
   bool get isExpired =>
       DateTime.now().difference(sentAt).inMinutes >= 30;
+
+  bool get isVoice => voiceUrl != null && voiceUrl!.isNotEmpty;
 
   Map<String, dynamic> toMap() => {
     'id': id,
@@ -185,7 +196,11 @@ class SpaceChatMessage {
     'sender_name': senderName,
     'sender_avatar': senderAvatar,
     'text': text,
+    'voice_url': voiceUrl,
+    'voice_duration': voiceDuration,
+    'storage_path': storagePath,
     'sent_at': sentAt.toIso8601String(),
+    'read_by': readBy.toList(),
   };
 
   factory SpaceChatMessage.fromMap(Map<String, dynamic> map) => SpaceChatMessage(
@@ -194,7 +209,11 @@ class SpaceChatMessage {
     senderName: map['sender_name']?.toString() ?? 'Mate',
     senderAvatar: map['sender_avatar']?.toString(),
     text: map['text']?.toString() ?? '',
+    voiceUrl: map['voice_url']?.toString(),
+    voiceDuration: (map['voice_duration'] as num?)?.toInt(),
+    storagePath: map['storage_path']?.toString(),
     sentAt: DateTime.tryParse(map['sent_at']?.toString() ?? '') ?? DateTime.now(),
+    readBy: (map['read_by'] as List?)?.map((e) => e.toString()).toSet() ?? {},
   );
 }
 
@@ -256,8 +275,10 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
   String _myUserName = 'English Mate';
   String? _myAvatarUrl;
 
-  // Ephemeral in-room live chat (Auto-expires in 30 minutes, 100% ephemeral in-memory)
+  // Ephemeral in-room live chat & voice notes (Auto-expires in 30 minutes, 100% ephemeral in-memory)
   final List<SpaceChatMessage> _chatMessages = [];
+  final List<String> _ephemeralStorageFiles = [];
+
   List<SpaceChatMessage> get chatMessages {
     _pruneExpiredMessages();
     return List.unmodifiable(_chatMessages);
@@ -288,6 +309,90 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
       event: 'chat_message',
       payload: msg.toMap(),
     );
+  }
+
+  Future<void> sendVoiceMessage(String localPath, int duration) async {
+    if (_myUserId == null || _roomChannel == null) return;
+    try {
+      final file = io.File(localPath);
+      if (!await file.exists()) return;
+
+      final spaceId = _currentSpace?.id ?? 'table';
+      final fileName = '${DateTime.now().millisecondsSinceEpoch}_${_myUserId!.substring(0, math.min(6, _myUserId!.length))}.m4a';
+      final storagePath = 'audio_spaces/$spaceId/$fileName';
+
+      await _supabase.storage.from('ephemeral_media').upload(
+            storagePath,
+            file,
+            fileOptions: const FileOptions(cacheControl: '60', upsert: true),
+          );
+
+      final publicUrl = _supabase.storage.from('ephemeral_media').getPublicUrl(storagePath);
+      _ephemeralStorageFiles.add(storagePath);
+
+      final msg = SpaceChatMessage(
+        id: 'voice_${DateTime.now().millisecondsSinceEpoch}_${_myUserId!.substring(0, math.min(6, _myUserId!.length))}',
+        senderId: _myUserId!,
+        senderName: _myUserName,
+        senderAvatar: _myAvatarUrl,
+        text: '🎤 Voice note ($duration s)',
+        voiceUrl: publicUrl,
+        voiceDuration: duration,
+        storagePath: storagePath,
+        sentAt: DateTime.now(),
+      );
+
+      _chatMessages.add(msg);
+      _pruneExpiredMessages();
+      notifyListeners();
+
+      _roomChannel?.sendBroadcastMessage(
+        event: 'chat_message',
+        payload: msg.toMap(),
+      );
+    } catch (e) {
+      debugPrint('PocketAudioSpaceEngine: Error sending voice note: $e');
+    }
+  }
+
+  Future<void> deleteChatMessage(String messageId) async {
+    final index = _chatMessages.indexWhere((m) => m.id == messageId);
+    if (index == -1) return;
+
+    final msg = _chatMessages[index];
+    if (msg.storagePath != null && msg.storagePath!.isNotEmpty) {
+      try {
+        await _supabase.storage.from('ephemeral_media').remove([msg.storagePath!]);
+        _ephemeralStorageFiles.remove(msg.storagePath!);
+      } catch (e) {
+        debugPrint('PocketAudioSpaceEngine: Error removing voice file: $e');
+      }
+    }
+
+    _chatMessages.removeAt(index);
+    notifyListeners();
+
+    _roomChannel?.sendBroadcastMessage(
+      event: 'delete_message',
+      payload: {'message_id': messageId},
+    );
+  }
+
+  void markMessageRead(String messageId) {
+    if (_myUserId == null) return;
+    final index = _chatMessages.indexWhere((m) => m.id == messageId);
+    if (index == -1) return;
+
+    final msg = _chatMessages[index];
+    if (!msg.readBy.contains(_myUserId)) {
+      msg.readBy.add(_myUserId!);
+      notifyListeners();
+
+      _roomChannel?.sendBroadcastMessage(
+        event: 'message_read',
+        payload: {'message_id': messageId, 'reader_id': _myUserId},
+      );
+    }
   }
 
   final Map<String, dynamic> _iceConfig = {
@@ -345,7 +450,7 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     required String topic,
     String category = 'General',
     String levelTag = 'All Levels',
-    int speakerLimit = 6,
+    int speakerLimit = 4,
   }) async {
     await initUser();
     if (_myUserId == null) return null;
@@ -456,6 +561,34 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
               }
             } catch (e) {
               debugPrint('PocketAudioSpaceEngine: Error handling chat message: $e');
+            }
+          })
+          // Live In-Room Chat delete broadcast
+          .onBroadcast(event: 'delete_message', callback: (payload) {
+            try {
+              final msgId = payload['message_id']?.toString();
+              if (msgId != null) {
+                _chatMessages.removeWhere((m) => m.id == msgId);
+                notifyListeners();
+              }
+            } catch (e) {
+              debugPrint('PocketAudioSpaceEngine: Error handling delete message: $e');
+            }
+          })
+          // Live In-Room Chat read receipt broadcast
+          .onBroadcast(event: 'message_read', callback: (payload) {
+            try {
+              final msgId = payload['message_id']?.toString();
+              final readerId = payload['reader_id']?.toString();
+              if (msgId != null && readerId != null) {
+                final idx = _chatMessages.indexWhere((m) => m.id == msgId);
+                if (idx != -1) {
+                  _chatMessages[idx].readBy.add(readerId);
+                  notifyListeners();
+                }
+              }
+            } catch (e) {
+              debugPrint('PocketAudioSpaceEngine: Error handling message read: $e');
             }
           })
           // Presence sync
@@ -993,6 +1126,18 @@ class PocketAudioSpaceEngine extends ChangeNotifier {
     _currentSpace = null;
     _participants.clear();
     _chatMessages.clear();
+
+    // Wipe ephemeral audio files from Supabase Storage
+    if (_ephemeralStorageFiles.isNotEmpty) {
+      try {
+        final toDelete = List<String>.from(_ephemeralStorageFiles);
+        _ephemeralStorageFiles.clear();
+        await _supabase.storage.from('ephemeral_media').remove(toDelete);
+      } catch (e) {
+        debugPrint('PocketAudioSpaceEngine: Error purging ephemeral storage: $e');
+      }
+    }
+
     _myRole = AudioRole.listener;
     _isMicMuted = false;
     _handRaised = false;

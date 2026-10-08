@@ -1,7 +1,7 @@
+import 'dart:math' as math;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_audio_space_engine.dart';
 import 'pocket_audio_room_sheet.dart';
@@ -28,6 +28,9 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
   final SupabaseClient _supabase = Supabase.instance.client;
   final PocketAudioSpaceEngine _engine = PocketAudioSpaceEngine.instance;
 
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   String _selectedCategory = 'All';
   final List<String> _categories = [
     'All',
@@ -39,10 +42,17 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
   ];
 
   @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final content = Column(
       children: [
         if (widget.showHeader) _buildTopBar(),
+        _buildSearchBar(),
         _buildCategoryFilters(),
         Expanded(
           child: _buildSpacesStreamList(),
@@ -58,14 +68,57 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
         backgroundColor: const Color(0xFFFFFC00),
         foregroundColor: Colors.black,
         elevation: 6,
-        icon: const Text('🎙️', style: TextStyle(fontSize: 20)),
+        icon: const Text('☕', style: TextStyle(fontSize: 20)),
         label: Text(
-          'Host a Space',
+          'Host Table (Max 4)',
           style: GoogleFonts.outfit(
             fontWeight: FontWeight.w800,
             fontSize: 15,
             letterSpacing: 0.3,
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFF131B2E),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: _searchQuery.isNotEmpty
+              ? const Color(0xFFFFFC00).withValues(alpha: 0.6)
+              : const Color(0xFF1E293B),
+          width: 1.2,
+        ),
+      ),
+      child: TextField(
+        controller: _searchController,
+        style: GoogleFonts.outfit(color: Colors.white, fontSize: 14),
+        onChanged: (val) {
+          setState(() {
+            _searchQuery = val.trim();
+          });
+        },
+        decoration: InputDecoration(
+          hintText: 'Search tables, topics, hosts...',
+          hintStyle: GoogleFonts.outfit(color: Colors.white38, fontSize: 13),
+          prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFFFFFC00), size: 20),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.close_rounded, color: Colors.white54, size: 18),
+                  onPressed: () {
+                    _searchController.clear();
+                    setState(() {
+                      _searchQuery = '';
+                    });
+                  },
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         ),
       ),
     );
@@ -212,11 +265,25 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
         }
 
         final rawList = snapshot.data ?? [];
+        final query = _searchQuery.trim().toLowerCase();
         final filteredList = rawList.where((room) {
-          if (_selectedCategory == 'All') return true;
-          final roomCategory = room['category']?.toString() ?? '';
-          return _selectedCategory.contains(roomCategory) ||
-              roomCategory.contains(_selectedCategory.split(' ').first);
+          if (_selectedCategory != 'All') {
+            final roomCategory = room['category']?.toString() ?? '';
+            final matchesCat = _selectedCategory.contains(roomCategory) ||
+                roomCategory.contains(_selectedCategory.split(' ').first);
+            if (!matchesCat) return false;
+          }
+          if (query.isNotEmpty) {
+            final title = (room['title']?.toString() ?? '').toLowerCase();
+            final topic = (room['topic']?.toString() ?? '').toLowerCase();
+            final host = (room['host_name']?.toString() ?? '').toLowerCase();
+            final category = (room['category']?.toString() ?? '').toLowerCase();
+            return title.contains(query) ||
+                topic.contains(query) ||
+                host.contains(query) ||
+                category.contains(query);
+          }
+          return true;
         }).toList();
 
         if (filteredList.isEmpty) {
@@ -238,6 +305,8 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
 
   Widget _buildSpaceCard(AudioSpaceModel space) {
     final isHostMe = space.hostUserId == _engine.myUserId;
+    final occupiedSeats = math.min(space.participantCount, 4);
+    final isFull = occupiedSeats >= 4;
 
     return Container(
       decoration: BoxDecoration(
@@ -268,7 +337,7 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
               final myId = Supabase.instance.client.auth.currentUser?.id;
               final role = (space.hostUserId == myId)
                   ? AudioRole.host
-                  : (space.participantCount < space.speakerLimit
+                  : (space.participantCount < 4
                       ? AudioRole.speaker
                       : AudioRole.listener);
               await _engine.joinSpace(space, initialRole: role);
@@ -282,7 +351,7 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Top row: Level Tag + Category
+                // Top row: Level Tag + Category + 4-Seat Status
                 Row(
                   children: [
                     Container(
@@ -305,33 +374,38 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      space.category,
+                      '☕ 4-Seat Table',
                       style: GoogleFonts.outfit(
-                        color: Colors.white54,
+                        color: Colors.white70,
                         fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     const Spacer(),
 
-                    // Live pulse dot
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF10B981),
-                        shape: BoxShape.circle,
-                      ),
-                    ).animate(onPlay: (c) => c.repeat(reverse: true))
-                        .scale(begin: const Offset(0.8, 0.8), end: const Offset(1.3, 1.3)),
-                    const SizedBox(width: 6),
-                    Text(
-                      'TALKING NOW',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF10B981),
-                        fontSize: 10,
-                        fontWeight: FontWeight.w800,
-                      ),
+                    // 4-Seat Status Dots
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ...List.generate(4, (i) => Container(
+                          margin: const EdgeInsets.only(right: 3),
+                          width: 7,
+                          height: 7,
+                          decoration: BoxDecoration(
+                            color: i < occupiedSeats ? const Color(0xFF10B981) : Colors.white24,
+                            shape: BoxShape.circle,
+                          ),
+                        )),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$occupiedSeats/4',
+                          style: GoogleFonts.outfit(
+                            color: isFull ? Colors.orangeAccent : const Color(0xFF10B981),
+                            fontSize: 11,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -361,7 +435,7 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
                 ),
                 const SizedBox(height: 14),
 
-                // Host info & Listeners Counter
+                // Host info & Seats Action
                 Row(
                   children: [
                     // Host Avatar
@@ -409,10 +483,10 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('🎧', style: TextStyle(fontSize: 13)),
+                          const Text('☕', style: TextStyle(fontSize: 13)),
                           const SizedBox(width: 6),
                           Text(
-                            'Join Stage',
+                            isFull ? 'Table Full' : 'Take Seat ($occupiedSeats/4)',
                             style: GoogleFonts.outfit(
                               color: const Color(0xFFFFFC00),
                               fontWeight: FontWeight.bold,
@@ -554,7 +628,7 @@ class _PocketAudioSpacesLobbyPageState extends State<PocketAudioSpacesLobbyPage>
               ),
               const SizedBox(height: 16),
               Text(
-                '🎙️ Host an English Audio Space',
+                '☕ Host 4-Seat English Chit-Chat Table',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontSize: 18,

@@ -848,7 +848,7 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                   Expanded(
                     child: _buildStoryOptionCard(
                       icon: Icons.photo_library_rounded,
-                      label: 'Gallery',
+                      label: 'Gallery Photo',
                       sublabel: 'From library',
                       color: const Color(0xFFEC4899),
                       iconColor: Colors.white,
@@ -866,15 +866,15 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 children: [
                   Expanded(
                     child: _buildStoryOptionCard(
-                      icon: Icons.text_fields_rounded,
-                      label: 'Text Story',
-                      sublabel: 'Color status',
-                      color: const Color(0xFF38BDF8),
-                      iconColor: Colors.white,
-                      bgGradient: const [Color(0xFF0F2236), Color(0xFF0B1420)],
+                      icon: Icons.videocam_rounded,
+                      label: 'Video Story',
+                      sublabel: '10s Slicing • 60s max',
+                      color: const Color(0xFFFF9800),
+                      iconColor: Colors.black,
+                      bgGradient: const [Color(0xFF331D08), Color(0xFF1E1004)],
                       onTap: () {
                         Navigator.pop(ctx);
-                        _navigateToStatusUpload(initialType: 'thought');
+                        _pickVideoForStory();
                       },
                     ),
                   ),
@@ -887,6 +887,25 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                       color: const Color(0xFF10B981),
                       iconColor: Colors.white,
                       bgGradient: const [Color(0xFF0C271E), Color(0xFF071813)],
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _navigateToStatusUpload(initialType: 'thought');
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildStoryOptionCard(
+                      icon: Icons.text_fields_rounded,
+                      label: 'Text Story',
+                      sublabel: 'Color status & quote',
+                      color: const Color(0xFF38BDF8),
+                      iconColor: Colors.white,
+                      bgGradient: const [Color(0xFF0F2236), Color(0xFF0B1420)],
                       onTap: () {
                         Navigator.pop(ctx);
                         _navigateToStatusUpload(initialType: 'thought');
@@ -1036,6 +1055,49 @@ class _StatusDisplayWidgetState extends State<StatusDisplayWidget>
                 widget.onStatusUploaded?.call();
               },
             ),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _pickVideoForStory() async {
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? video = await picker.pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(minutes: 1),
+      );
+
+      if (video != null && mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SnapchatStoryCreatorPage(
+              userId: widget.currentUserId,
+              profileId: widget.currentProfileId,
+              initialFile: video,
+              initialMediaType: 'video',
+              onStatusUploaded: () {
+                _loadStatusesOptimized();
+                widget.onStatusUploaded?.call();
+              },
+            ),
+          ),
+        ).then((res) {
+          if (res == true && mounted) {
+            _loadStatusesOptimized();
+            widget.onStatusUploaded?.call();
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking video for story: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error selecting video: $e'),
+            backgroundColor: Colors.redAccent,
           ),
         );
       }

@@ -1,3 +1,4 @@
+import 'dart:io' as io;
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,11 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:image/image.dart' as img;
+import 'package:video_compress/video_compress.dart';
+import 'package:video_player/video_player.dart';
+import 'package:ffmpeg_kit_flutter_new_video/ffmpeg_kit.dart';
+import 'package:ffmpeg_kit_flutter_new_video/return_code.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_config.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/vector_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
@@ -71,6 +77,11 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
   XFile? _selectedFile;
   Uint8List? _imageBytes;
   String _mediaType = 'image';
+  VideoPlayerController? _videoController;
+  Duration _videoDuration = Duration.zero;
+  int _videoSegmentsCount = 1;
+  bool _isVideoPlaying = true;
+  String _uploadStatusText = '';
 
   // Privacy: Public Story vs Pocket Mates Only (Private)
   bool _isPrivateStory = true;
@@ -205,9 +216,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
 
   // Mentions
   String? _selectedGroupId;
-  String? _selectedGroupName;
   String? _selectedProfileId;
-  String? _selectedProfileName;
 
   // User's own Avatar
   VectorAvatarConfig _myAvatarConfig = const VectorAvatarConfig();
@@ -228,7 +237,11 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
     if (widget.initialFile != null) {
       _selectedFile = widget.initialFile;
       _mediaType = widget.initialMediaType ?? 'image';
-      _loadFileBytes();
+      if (_mediaType == 'video') {
+        _initVideoPlayer(_selectedFile!);
+      } else {
+        _loadFileBytes();
+      }
     }
     // Canvas opens instantly with ZERO lag. User can pick image, record video, or use stickers on canvas.
 
@@ -821,6 +834,158 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
     );
   }
 
+  Future<void> _initVideoPlayer(XFile file) async {
+    try {
+      if (_videoController != null) {
+        await _videoController!.dispose();
+        _videoController = null;
+      }
+      if (kIsWeb) {
+        _videoController = VideoPlayerController.networkUrl(Uri.parse(file.path));
+      } else {
+        _videoController = VideoPlayerController.file(io.File(file.path));
+      }
+      await _videoController!.initialize();
+      final rawDuration = _videoController!.value.duration;
+      int totalSec = rawDuration.inSeconds;
+      if (totalSec > 60) {
+        totalSec = 60;
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.content_cut_rounded, color: Colors.black),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Video capped at 60s max. Auto-sliced into 6 Vibes (10s each).',
+                      style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFFFFFC00),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+      if (totalSec <= 0) totalSec = 10;
+      _videoDuration = Duration(seconds: totalSec);
+      _videoSegmentsCount = math.min(6, (totalSec / 10).ceil());
+      if (_videoSegmentsCount <= 0) _videoSegmentsCount = 1;
+      await _videoController!.setLooping(true);
+      await _videoController!.play();
+      _isVideoPlaying = true;
+      if (mounted) setState(() {});
+    } catch (e) {
+      debugPrint('Error initializing story video player: $e');
+    }
+  }
+
+  Future<void> _pickVideo(ImageSource source) async {
+    try {
+      final XFile? picked = await _picker.pickVideo(
+        source: source,
+        maxDuration: const Duration(minutes: 1),
+      );
+      if (picked != null) {
+        setState(() {
+          _selectedFile = picked;
+          _mediaType = 'video';
+          _imageBytes = null;
+        });
+        await _initVideoPlayer(picked);
+      }
+    } catch (e) {
+      debugPrint('Error picking video: $e');
+    }
+  }
+
+  Future<void> _showMediaChoiceSheet(ImageSource source) async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF161922),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Text(
+                'Choose Media Type',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 14),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.photo_rounded, color: Color(0xFFFFFC00), size: 22),
+                ),
+                title: Text(
+                  'Photo Vibe',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  'Add stickers, text & filters',
+                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickMedia(source);
+                },
+              ),
+              const Divider(color: Colors.white10),
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFF9800).withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.videocam_rounded, color: Color(0xFFFF9800), size: 22),
+                ),
+                title: Text(
+                  'Video Vibe (10s Snapchat Slicing)',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w600),
+                ),
+                subtitle: Text(
+                  'Up to 60s • Auto-splits into 10s compressed clips',
+                  style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                ),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _pickVideo(source);
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _loadFileBytes() async {
     if (_selectedFile == null) return;
     try {
@@ -842,6 +1007,10 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         imageQuality: 95,
       );
       if (picked != null) {
+        if (_videoController != null) {
+          await _videoController!.dispose();
+          _videoController = null;
+        }
         setState(() {
           _selectedFile = picked;
           _mediaType = 'image';
@@ -855,6 +1024,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
 
   @override
   void dispose() {
+    _videoController?.dispose();
     _textOverlayController.dispose();
     _captionController.dispose();
     _transformController.dispose();
@@ -1147,10 +1317,215 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
     });
 
     try {
+      if (_selectedFile != null && _mediaType == 'video') {
+        final totalSec = math.min(60, _videoDuration.inSeconds > 0 ? _videoDuration.inSeconds : 10);
+        final segments = math.min(6, (totalSec / 10).ceil().clamp(1, 6));
+
+        try {
+          await _videoController?.pause();
+        } catch (_) {}
+
+        final tempDir = await getTemporaryDirectory();
+
+        final String? baseCaption = _captionController.text.trim().isNotEmpty
+            ? _captionController.text.trim()
+            : (_overlayText.isNotEmpty ? _overlayText : null);
+
+        for (int i = 0; i < segments; i++) {
+          final int segIndex = i + 1;
+          final int startSec = i * 10;
+          final int segDuration = math.min(10, totalSec - startSec);
+
+          setState(() {
+            _uploadProgress = (i + 0.15) / segments;
+            _uploadStatusText = segments > 1
+                ? 'Compressing Part $segIndex/$segments...'
+                : 'Compressing Video...';
+          });
+
+          Uint8List bytesToUpload;
+          final slicePath =
+              '${tempDir.path}/vibe_slice_${DateTime.now().millisecondsSinceEpoch}_$i.mp4';
+          bool slicedWithFfmpeg = false;
+
+          try {
+            final command = [
+              '-y',
+              '-ss',
+              '$startSec',
+              '-t',
+              '$segDuration',
+              '-i',
+              _selectedFile!.path,
+              '-c:v',
+              'libx264',
+              '-preset',
+              'ultrafast',
+              '-crf',
+              '28',
+              '-c:a',
+              'aac',
+              '-b:a',
+              '64k',
+              slicePath,
+            ];
+            final session = await FFmpegKit.executeWithArguments(command);
+            final rc = await session.getReturnCode();
+            if (ReturnCode.isSuccess(rc) && io.File(slicePath).existsSync()) {
+              slicedWithFfmpeg = true;
+            }
+          } catch (e) {
+            debugPrint('FFmpeg slice attempt error: $e');
+          }
+
+          if (slicedWithFfmpeg) {
+            try {
+              final comp = await VideoCompress.compressVideo(
+                slicePath,
+                quality: VideoQuality.MediumQuality,
+                deleteOrigin: false,
+                includeAudio: true,
+              );
+              if (comp != null && comp.file != null) {
+                bytesToUpload = await comp.file!.readAsBytes();
+              } else {
+                bytesToUpload = await io.File(slicePath).readAsBytes();
+              }
+            } catch (_) {
+              bytesToUpload = await io.File(slicePath).readAsBytes();
+            }
+          } else {
+            // Fallback: compress full video
+            final comp = await VideoCompress.compressVideo(
+              _selectedFile!.path,
+              quality: VideoQuality.MediumQuality,
+              deleteOrigin: false,
+              includeAudio: true,
+            );
+            if (comp != null && comp.file != null) {
+              bytesToUpload = await comp.file!.readAsBytes();
+            } else {
+              bytesToUpload = await _selectedFile!.readAsBytes();
+            }
+          }
+
+          setState(() {
+            _uploadProgress = (i + 0.65) / segments;
+            _uploadStatusText = segments > 1
+                ? 'Uploading Part $segIndex/$segments...'
+                : 'Uploading Vibe...';
+          });
+
+          final fileName =
+              'status_${widget.userId}_${DateTime.now().millisecondsSinceEpoch}_part$segIndex.mp4';
+
+          await supabase.storage.from('statuses').uploadBinary(
+                fileName,
+                bytesToUpload,
+                fileOptions:
+                    const FileOptions(contentType: 'video/mp4', upsert: true),
+              ).timeout(const Duration(seconds: 40));
+
+          final mediaUrl =
+              supabase.storage.from('statuses').getPublicUrl(fileName);
+
+          final segmentCaption = segments > 1
+              ? (baseCaption != null
+                  ? '$baseCaption (Part $segIndex/$segments)'
+                  : 'Part $segIndex/$segments')
+              : baseCaption;
+
+          final metadata = {
+            'overlay_text': _overlayText.isNotEmpty ? _overlayText : null,
+            'filter': _filters[_selectedFilterIndex]['name'],
+            'duration': segDuration,
+            'is_private': _statusPrivacy != 'public',
+            'status_privacy': _statusPrivacy,
+            'excluded_user_ids': _excludedUserIds.toList(),
+            'included_user_ids': _includedUserIds.toList(),
+            'segment_index': segIndex,
+            'total_segments': segments,
+            'segment_duration': segDuration,
+            'stickers': _placedStickers
+                .map((s) => {
+                      'text': s.text,
+                      'emoji': s.emoji,
+                      'is_avatar': s.isAvatarSticker,
+                      'exp': s.avatarExpression,
+                      'x': s.x,
+                      'y': s.y,
+                    })
+                .toList(),
+          };
+
+          final statusData = {
+            'user_id': widget.userId,
+            'profile_id': widget.profileId,
+            'media_type': 'video',
+            'media_url': mediaUrl,
+            'caption': segmentCaption,
+            'metadata': metadata,
+            'duration': segDuration,
+            'expires_at': DateTime.now()
+                .add(const Duration(hours: 12))
+                .toIso8601String(),
+            'mentioned_group_id': _selectedGroupId,
+            'mentioned_profile_id': _selectedProfileId,
+            'is_active': true,
+          };
+
+          await supabase
+              .from('statuses')
+              .insert(statusData)
+              .timeout(const Duration(seconds: 15));
+
+          try {
+            if (io.File(slicePath).existsSync()) {
+              await io.File(slicePath).delete();
+            }
+          } catch (_) {}
+        }
+
+        try {
+          await VideoCompress.deleteAllCache();
+        } catch (_) {}
+
+        PocketFortressDefenseService.recordActivityPoints('vibe_post');
+        setState(() => _uploadProgress = 1.0);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: Colors.black),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      segments > 1
+                          ? 'Posted $segments Vibe stories (10s each) to ${_getStatusPrivacyLabel()}! (+15 FDC)'
+                          : 'Posted Video Vibe to ${_getStatusPrivacyLabel()}! (+15 FDC)',
+                      style: GoogleFonts.outfit(
+                          color: Colors.black, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFFFFFC00),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+          widget.onStatusUploaded?.call();
+          Navigator.pop(context, true);
+        }
+        return;
+      }
+
+      // ─── Image or Text Upload ───────────────────────────
       String mediaUrl = '';
       if (_selectedFile != null) {
         final bytes = _imageBytes ?? await _selectedFile!.readAsBytes();
-        
+
         Uint8List bytesToUpload = bytes;
         // Fast compression only if image is huge (> 1.5MB) to avoid UI freezing
         if (bytes.lengthInBytes > 1500 * 1024) {
@@ -1158,7 +1533,8 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
             img.Image? originalImage = img.decodeImage(bytes);
             if (originalImage != null) {
               final resized = img.copyResize(originalImage, width: 1080);
-              bytesToUpload = Uint8List.fromList(img.encodeJpg(resized, quality: 80));
+              bytesToUpload =
+                  Uint8List.fromList(img.encodeJpg(resized, quality: 80));
             }
           } catch (e) {
             debugPrint('Compression skipped/fallback: $e');
@@ -1167,21 +1543,23 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
 
         setState(() => _uploadProgress = 0.5);
 
-        final fileName = 'status_${widget.userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final fileName =
+            'status_${widget.userId}_${DateTime.now().millisecondsSinceEpoch}.jpg';
         try {
           await supabase.storage.from('statuses').uploadBinary(
                 fileName,
                 bytesToUpload,
-                fileOptions: const FileOptions(contentType: 'image/jpeg', upsert: true),
+                fileOptions:
+                    const FileOptions(contentType: 'image/jpeg', upsert: true),
               ).timeout(const Duration(seconds: 15));
 
           mediaUrl = supabase.storage.from('statuses').getPublicUrl(fileName);
           try {
-            await DefaultCacheManager().putFile(mediaUrl, bytesToUpload, fileExtension: 'jpg');
+            await DefaultCacheManager()
+                .putFile(mediaUrl, bytesToUpload, fileExtension: 'jpg');
           } catch (_) {}
         } catch (storageErr) {
           debugPrint('Storage upload error: $storageErr');
-          // If storage fails, fallback to base64 or continue
         }
         setState(() => _uploadProgress = 0.8);
       }
@@ -1215,17 +1593,23 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
         'user_id': widget.userId,
         'profile_id': widget.profileId,
         'media_type': _selectedFile != null ? _mediaType : 'text',
-        'media_url': mediaUrl.isNotEmpty ? mediaUrl : (widget.sharedContent ?? ''),
+        'media_url': mediaUrl.isNotEmpty
+            ? mediaUrl
+            : (widget.sharedContent ?? ''),
         'caption': finalCaption,
         'metadata': metadata,
         'duration': _storyDuration,
-        'expires_at': DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
+        'expires_at':
+            DateTime.now().add(const Duration(hours: 12)).toIso8601String(),
         'mentioned_group_id': _selectedGroupId,
         'mentioned_profile_id': _selectedProfileId,
         'is_active': true,
       };
 
-      await supabase.from('statuses').insert(statusData).timeout(const Duration(seconds: 10));
+      await supabase
+          .from('statuses')
+          .insert(statusData)
+          .timeout(const Duration(seconds: 10));
 
       // Record activity points for Fortress Defense Credits
       PocketFortressDefenseService.recordActivityPoints('vibe_post');
@@ -1242,7 +1626,8 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                 Expanded(
                   child: Text(
                     'Shared to ${_getStatusPrivacyLabel()}! (+15 FDC)',
-                    style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold),
+                    style: GoogleFonts.outfit(
+                        color: Colors.black, fontWeight: FontWeight.bold),
                   ),
                 ),
               ],
@@ -1572,28 +1957,76 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                   HapticFeedback.lightImpact();
                 }
               },
-              child: _imageBytes != null
+              child: _mediaType == 'video' &&
+                      _videoController != null &&
+                      _videoController!.value.isInitialized
                   ? ColorFiltered(
                       colorFilter: colorMatrix != null
                           ? ColorFilter.matrix(colorMatrix)
-                          : const ColorFilter.mode(Colors.transparent, BlendMode.dst),
-                      child: InteractiveViewer(
-                        transformationController: _transformController,
-                        minScale: 0.5,
-                        maxScale: 4.0,
-                        panEnabled: true,
-                        scaleEnabled: true,
-                        boundaryMargin: const EdgeInsets.all(150),
-                        child: Center(
-                          child: Image.memory(
-                            _imageBytes!,
-                            fit: BoxFit.contain,
-                            width: double.infinity,
-                            height: double.infinity,
-                          ),
+                          : const ColorFilter.mode(
+                              Colors.transparent, BlendMode.dst),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            if (_videoController!.value.isPlaying) {
+                              _videoController!.pause();
+                              _isVideoPlaying = false;
+                            } else {
+                              _videoController!.play();
+                              _isVideoPlaying = true;
+                            }
+                          });
+                        },
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            Center(
+                              child: AspectRatio(
+                                aspectRatio:
+                                    _videoController!.value.aspectRatio,
+                                child: VideoPlayer(_videoController!),
+                              ),
+                            ),
+                            if (!_isVideoPlaying)
+                              Container(
+                                padding: const EdgeInsets.all(16),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.5),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.play_arrow_rounded,
+                                  color: Colors.white,
+                                  size: 48,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
                     )
+                  : _imageBytes != null
+                      ? ColorFiltered(
+                          colorFilter: colorMatrix != null
+                              ? ColorFilter.matrix(colorMatrix)
+                              : const ColorFilter.mode(
+                                  Colors.transparent, BlendMode.dst),
+                          child: InteractiveViewer(
+                            transformationController: _transformController,
+                            minScale: 0.5,
+                            maxScale: 4.0,
+                            panEnabled: true,
+                            scaleEnabled: true,
+                            boundaryMargin: const EdgeInsets.all(150),
+                            child: Center(
+                              child: Image.memory(
+                                _imageBytes!,
+                                fit: BoxFit.contain,
+                                width: double.infinity,
+                                height: double.infinity,
+                              ),
+                            ),
+                          ),
+                        )
                 : Container(
                     decoration: BoxDecoration(
                       gradient: _overlayText.isNotEmpty
@@ -1634,7 +2067,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Add text, stickers, or choose photo',
+                                  'Add photo, video, text or stickers',
                                   style: GoogleFonts.inter(
                                     color: Colors.white38,
                                     fontSize: 12,
@@ -1647,7 +2080,7 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                   alignment: WrapAlignment.center,
                                   children: [
                                     OutlinedButton.icon(
-                                      onPressed: () => _pickMedia(ImageSource.camera),
+                                      onPressed: () => _showMediaChoiceSheet(ImageSource.camera),
                                       icon: const Icon(Icons.camera_alt_outlined, size: 16, color: Colors.white),
                                       label: Text(
                                         'Camera',
@@ -1663,11 +2096,24 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                       onPressed: () => _pickMedia(ImageSource.gallery),
                                       icon: const Icon(Icons.photo_library_outlined, size: 16, color: Colors.white),
                                       label: Text(
-                                        'Gallery',
+                                        'Photo',
                                         style: GoogleFonts.outfit(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600),
                                       ),
                                       style: OutlinedButton.styleFrom(
                                         side: BorderSide(color: Colors.white.withValues(alpha: 0.15)),
+                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                      ),
+                                    ),
+                                    OutlinedButton.icon(
+                                      onPressed: () => _pickVideo(ImageSource.gallery),
+                                      icon: const Icon(Icons.videocam_rounded, size: 16, color: Color(0xFFFF9800)),
+                                      label: Text(
+                                        'Video (10s Slicing)',
+                                        style: GoogleFonts.outfit(color: const Color(0xFFFF9800), fontSize: 12, fontWeight: FontWeight.w600),
+                                      ),
+                                      style: OutlinedButton.styleFrom(
+                                        side: BorderSide(color: const Color(0xFFFF9800).withValues(alpha: 0.35)),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                                       ),
@@ -1835,6 +2281,87 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                           letterSpacing: 0.5,
                         ),
                       ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          // 4b. Snapchat Slicing HUD Badge when video is loaded
+          if (_mediaType == 'video' &&
+              _videoController != null &&
+              _videoController!.value.isInitialized)
+            Positioned(
+              top: 58,
+              left: 16,
+              right: 16,
+              child: Center(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF131722).withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.5),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      )
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.cut_rounded,
+                              color: Color(0xFFFFFC00), size: 14),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Snapchat Slicing: ${_videoDuration.inSeconds}s Video • $_videoSegmentsCount ${_videoSegmentsCount > 1 ? "Vibes" : "Vibe"} (10s each)',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_videoSegmentsCount > 1) ...[
+                        const SizedBox(height: 5),
+                        Wrap(
+                          spacing: 4,
+                          runSpacing: 3,
+                          alignment: WrapAlignment.center,
+                          children: List.generate(_videoSegmentsCount, (i) {
+                            final start = i * 10;
+                            final end =
+                                math.min(_videoDuration.inSeconds, (i + 1) * 10);
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'Part ${i + 1} ($start-${end}s)',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            );
+                          }),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -2168,8 +2695,13 @@ class _SnapchatStoryCreatorPageState extends State<SnapchatStoryCreatorPage> {
                                       ),
                                       const SizedBox(width: 8),
                                       Text(
-                                        'Posting...',
-                                        style: GoogleFonts.outfit(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 13),
+                                        _uploadStatusText.isNotEmpty
+                                            ? _uploadStatusText
+                                            : 'Posting...',
+                                        style: GoogleFonts.outfit(
+                                            color: Colors.black,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12.5),
                                       ),
                                     ],
                                   )
