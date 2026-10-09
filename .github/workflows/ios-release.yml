@@ -29,7 +29,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          # Removed flutter-version to avoid 'latest' mismatch error
 
       - name: Disable Swift Package Manager (Use CocoaPods)
         run: flutter config --no-enable-swift-package-manager
@@ -63,8 +62,8 @@ jobs:
         run: |
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
           echo "$BUILD_PROVISION_PROFILE_BASE64" | tr -d '\n ' | base64 --decode -o $PP_PATH
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles/
+          mkdir -p ~/Library/MobileDevice/"Provisioning Profiles"
+          cp $PP_PATH ~/Library/MobileDevice/"Provisioning Profiles"/
 
       - name: Clean Build Environment
         run: flutter clean
@@ -84,43 +83,29 @@ jobs:
         run: |
           sudo xcodebuild -runFirstLaunch
           sudo xcodebuild -downloadPlatform iOS
-          
+
       - name: Build and Sign IPA
         run: |
           defaults write com.apple.dt.Xcode IDEPackageEnablePrebuilts NO
-          
-          # Get version and build number from pubspec.yaml
-          VERSION_NAME=$(grep 'version:' pubspec.yaml | sed 's/version: //; s/+.*//' | xargs)
-          BUILD_NUMBER=$(grep 'version:' pubspec.yaml | sed 's/.*+//' | xargs)
-          
+
+          # Extract version and build number cleanly without CRLF or whitespace
+          VERSION_NAME=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/version: //' | sed 's/+.*//' | tr -d '\r\n ')
+          BUILD_NUMBER=$(grep '^version:' pubspec.yaml | head -n 1 | sed 's/.*+//' | tr -d '\r\n ')
+
           echo "Building version $VERSION_NAME+$BUILD_NUMBER"
-          
-          flutter build ios --release \
-            --build-name=$VERSION_NAME \
-            --build-number=$BUILD_NUMBER \
-            --no-codesign
-          
+
+          flutter build ios --release --build-name="$VERSION_NAME" --build-number="$BUILD_NUMBER" --no-codesign
+
           # Re-unlock keychain and set as default for the archive phase
           security unlock-keychain -p "${{ secrets.KEYCHAIN_PASSWORD }}" $RUNNER_TEMP/app-signing.keychain-db
           security default-keychain -s $RUNNER_TEMP/app-signing.keychain-db
-          
-          # Use xcodebuild directly for archive with explicit signing and destination
-          xcodebuild -workspace ios/Runner.xcworkspace \
-            -scheme Runner \
-            -configuration Release \
-            -archivePath build/ios/Runner.xcarchive \
-            -sdk iphoneos \
-            -destination 'generic/platform=iOS' \
-            SWIFT_ENABLE_EXPLICIT_MODULES=NO \
-            CLANG_ENABLE_EXPLICIT_MODULES=NO \
-            archive
-          
+
+          # Archive directly with xcodebuild
+          xcodebuild -workspace ios/Runner.xcworkspace -scheme Runner -configuration Release -archivePath build/ios/Runner.xcarchive -sdk iphoneos -destination 'generic/platform=iOS' SWIFT_ENABLE_EXPLICIT_MODULES=NO CLANG_ENABLE_EXPLICIT_MODULES=NO archive
+
           # Export the archive
-          xcodebuild -exportArchive \
-            -archivePath build/ios/Runner.xcarchive \
-            -exportPath build/ios/ipa \
-            -exportOptionsPlist ios/ExportOptions.plist
-          
+          xcodebuild -exportArchive -archivePath build/ios/Runner.xcarchive -exportPath build/ios/ipa -exportOptionsPlist ios/ExportOptions.plist
+
       - name: Check for IPA
         run: |
           if ! ls build/ios/ipa/*.ipa 1> /dev/null 2>&1; then
