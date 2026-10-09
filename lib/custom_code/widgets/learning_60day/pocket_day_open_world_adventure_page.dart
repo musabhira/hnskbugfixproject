@@ -28,6 +28,7 @@ import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortr
 import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_tutor_curriculum.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_day1_interactive_flow_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_syllabus_repository.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/curriculum_data/pocket_day_curriculum_service.dart';
 
 
@@ -211,7 +212,7 @@ class _PocketDayOpenWorldAdventurePageState
   }
 
   Day1Track _day1Track = Day1Track.middle;
-  int get _totalSteps => _runtimeSteps?.length ?? (widget.day == 1 ? 10 : 17);
+  int get _totalSteps => _runtimeSteps?.length ?? 10;
 
   /// Exact coordinate of milestone step on the mountain slope
   static Offset getStepPosition(int stepIndex, {int totalSteps = 17}) {
@@ -230,20 +231,8 @@ class _PocketDayOpenWorldAdventurePageState
     final uid = widget.userId ?? _supabase.auth.currentUser?.id;
     final prefs = await SharedPreferences.getInstance();
 
-    if (widget.day == 1) {
-      final trackKey = 'pocket_day1_selected_track_${uid ?? "guest"}';
-      final savedTrackStr = prefs.getString(trackKey);
-      if (savedTrackStr != null) {
-        for (final t in Day1Track.values) {
-          if (t.name == savedTrackStr) {
-            _day1Track = t;
-            break;
-          }
-        }
-      } else {
-        _day1Track = Day1Track.middle;
-      }
-    }
+    final currentLvl = await PocketSyllabusRepository.getSavedLevel();
+    _day1Track = Day1Track.fromLearnerLevel(currentLvl);
 
     final Map<String, bool> flags = {};
     for (int step = 1; step <= _totalSteps; step++) {
@@ -1542,7 +1531,7 @@ class _PocketDayOpenWorldAdventurePageState
         _runtimeStepColor(s),
       );
     }
-    if (widget.day >= 1 && widget.day <= 15) {
+    if (widget.day >= 1 && widget.day <= 90) {
       final steps = Day1Curriculum.getSteps(_day1Track, widget.day);
       if (s >= 1 && s <= steps.length) {
         final st = steps[s - 1];
@@ -1607,7 +1596,7 @@ class _PocketDayOpenWorldAdventurePageState
 
   Future<void> _launchStepActivity(int s) async {
     final day = widget.day;
-    if (day >= 1 && day <= 15) {
+    if (day >= 1 && day <= 90) {
       await PocketDay1InteractiveFlowPage.show(
         context,
         day: day,

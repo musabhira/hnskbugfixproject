@@ -137,6 +137,13 @@ class _PocketDay1InteractiveFlowPageState
   // Step 6 Spoken Lab State
   int _spokenChallengeIndex = 0;
 
+  // Step 8 Zero Foundation Phonics & Memory Match State
+  List<Map<String, dynamic>> _memoryCards = [];
+  int? _memoryFlippedFirst;
+  int? _memoryFlippedSecond;
+  final Set<int> _memoryMatchedIndices = {};
+  bool _memoryMatchInitialized = false;
+
   // Audio toggle & auto speech on entry
   bool _autoSpeechEnabled = true;
 
@@ -689,149 +696,27 @@ class _PocketDay1InteractiveFlowPageState
             ),
           ),
           const SizedBox(width: 4),
-          // More Menu (Track Switcher / Level Check) - compact 3 dots icon!
-          PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert_rounded, color: Colors.white70, size: 20),
-            color: const Color(0xFF1E293B),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            onSelected: (val) async {
-              if (val == 'level_check') {
-                final res = await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
-                if (res != null) {
-                  final skip1 = res['skipStep1'] ?? false;
-                  final skip2 = res['skipStep2'] ?? false;
-                  if (skip1 && skip2) {
-                    setState(() => _activeStep = 3);
-                  } else if (skip1) {
-                    setState(() => _activeStep = 2);
-                  }
-                }
-              } else if (val == 'switch_track') {
-                final selected = await showModalBottomSheet<Day1Track>(
-                  context: context,
-                  backgroundColor: const Color(0xFF0F172A),
-                  shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                  ),
-                  builder: (ctx) => _buildTrackSelectionModal(),
-                );
-                if (selected != null && selected != _currentTrack) {
-                  HapticFeedback.selectionClick();
-                  final uid = widget.userId ?? _supabase.auth.currentUser?.id;
-                  final prefs = await SharedPreferences.getInstance();
-                  await prefs.setString('pocket_day1_selected_track_${uid ?? "guest"}', selected.name);
-                  setState(() {
-                    _currentTrack = selected;
-                    _activeStep = 1;
-                  });
+          // Level Check Diagnostic Button (Track switching is managed from "Your Syllabus" on Target page)
+          IconButton(
+            icon: const Icon(Icons.tune_rounded, color: Colors.white70, size: 20),
+            tooltip: 'Level Check',
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            onPressed: () async {
+              final res = await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
+              if (res != null) {
+                final skip1 = res['skipStep1'] ?? false;
+                final skip2 = res['skipStep2'] ?? false;
+                if (skip1 && skip2) {
+                  setState(() => _activeStep = 3);
+                } else if (skip1) {
+                  setState(() => _activeStep = 2);
                 }
               }
             },
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                value: 'switch_track',
-                child: Row(
-                  children: [
-                    Text(_currentTrack.badge, style: GoogleFonts.outfit(color: _currentTrack.color, fontWeight: FontWeight.bold, fontSize: 12)),
-                    const Spacer(),
-                    const Icon(Icons.swap_horiz_rounded, size: 16, color: Colors.white70),
-                  ],
-                ),
-              ),
-              PopupMenuItem(
-                value: 'level_check',
-                child: Row(
-                  children: [
-                    const Text('🎯 Level Check', style: TextStyle(color: Color(0xFF7DD3FC), fontSize: 12, fontWeight: FontWeight.bold)),
-                    const Spacer(),
-                    const Icon(Icons.chevron_right_rounded, size: 16, color: Colors.white70),
-                  ],
-                ),
-              ),
-            ],
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildTrackSelectionModal() {
-    return SafeArea(
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                const Text('🎯', style: TextStyle(fontSize: 20)),
-                const SizedBox(width: 8),
-                Text(
-                  'Select Your Track (ലെവൽ മാറ്റുക)',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'നിങ്ങളുടെ അറിവിനനുസരിച്ച് സിലബസും വെല്ലുവിളികളും മാറും:',
-              style: GoogleFonts.inter(color: Colors.white60, fontSize: 12),
-            ),
-            const SizedBox(height: 16),
-            ...Day1Track.values.map((t) {
-              final isSelected = t == _currentTrack;
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: InkWell(
-                  onTap: () => Navigator.pop(context, t),
-                  borderRadius: BorderRadius.circular(14),
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? t.color.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.05),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: isSelected ? t.color : Colors.white12, width: isSelected ? 2 : 1),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: t.color.withValues(alpha: 0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            t == Day1Track.zero ? '🌱' : (t == Day1Track.middle ? '🗣️' : '🚀'),
-                            style: const TextStyle(fontSize: 18),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(t.displayNameEn, style: GoogleFonts.outfit(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                              Text(t.displayNameMl, style: GoogleFonts.inter(color: Colors.white70, fontSize: 11)),
-                              const SizedBox(height: 2),
-                              Text(t.goalEn, style: GoogleFonts.inter(color: Colors.white38, fontSize: 10)),
-                            ],
-                          ),
-                        ),
-                        if (isSelected)
-                          Icon(Icons.check_circle_rounded, color: t.color, size: 22),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ],
-        ),
       ),
     );
   }
@@ -3283,7 +3168,8 @@ class _PocketDay1InteractiveFlowPageState
   // STEP 7: RANDOM CALL PARTNER OR ROBOT PRACTICE
   // -------------------------------------------------------------
   Widget _buildStep7RandomCall(Day1StepModel step) {
-    if (_currentTrack == Day1Track.zero) {
+    // 🛡️ User Audio Directive: Days 1-10 for Zero track MUST NOT be exposed to stranger calls!
+    if (_currentTrack == Day1Track.zero && widget.day <= 10) {
       return Column(
         children: [
           Container(
@@ -3321,12 +3207,12 @@ class _PocketDay1InteractiveFlowPageState
                     );
                   }).toList(),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 18),
                 ElevatedButton.icon(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF10B981),
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                   ),
                   onPressed: () {
@@ -3335,17 +3221,6 @@ class _PocketDay1InteractiveFlowPageState
                   },
                   icon: const Icon(Icons.check_circle_rounded),
                   label: Text('COMPLETE ROBOT PRACTICE ✓', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
-                ),
-                const SizedBox(height: 10),
-                TextButton.icon(
-                  onPressed: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const AnonymousEnglishChatPage()),
-                    );
-                  },
-                  icon: const Icon(Icons.phone_in_talk_rounded, size: 16, color: Colors.white54),
-                  label: Text('Try Real Partner Call (Optional)', style: GoogleFonts.inter(color: Colors.white54, fontSize: 12)),
                 ),
               ],
             ),
@@ -3406,6 +3281,11 @@ class _PocketDay1InteractiveFlowPageState
   // STEP 8: POKETALK OR PHONICS MEMORY MATCH
   // -------------------------------------------------------------
   Widget _buildStep8PocketTalk(Day1StepModel step) {
+    // 🛡️ User Audio Directive: Days 1-10 for Zero track MUST NOT show PocketTalk swiper!
+    if (_currentTrack == Day1Track.zero && widget.day <= 10) {
+      return _buildStep8ZeroMemoryMatch(step);
+    }
+
     return Column(
       children: [
         Container(
@@ -3457,11 +3337,176 @@ class _PocketDay1InteractiveFlowPageState
     );
   }
 
+  void _initZeroMemoryMatch() {
+    if (_memoryMatchInitialized) return;
+    _memoryMatchInitialized = true;
+    final base = [
+      {'id': 1, 'text': 'Apple 🍎', 'sound': 'Apple'},
+      {'id': 2, 'text': 'Water 💧', 'sound': 'Water'},
+      {'id': 3, 'text': 'Book 📖', 'sound': 'Book'},
+      {'id': 4, 'text': 'House 🏡', 'sound': 'House'},
+    ];
+    final deck = <Map<String, dynamic>>[];
+    for (int i = 0; i < base.length; i++) {
+      deck.add({'id': base[i]['id'], 'label': base[i]['text'], 'sound': base[i]['sound']});
+      deck.add({'id': base[i]['id'], 'label': base[i]['text'], 'sound': base[i]['sound']});
+    }
+    deck.shuffle();
+    _memoryCards = deck;
+    _memoryMatchedIndices.clear();
+    _memoryFlippedFirst = null;
+    _memoryFlippedSecond = null;
+  }
+
+  Widget _buildStep8ZeroMemoryMatch(Day1StepModel step) {
+    _initZeroMemoryMatch();
+    final allMatched = _memoryCards.isNotEmpty && _memoryMatchedIndices.length == _memoryCards.length;
+
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: const Color(0xFF10B981)),
+          ),
+          child: Column(
+            children: [
+              const Text('🧩', style: TextStyle(fontSize: 40)),
+              const SizedBox(height: 8),
+              Text(
+                'Phonics & Word Memory Match',
+                style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                _nativeLanguage == 'Malayalam'
+                    ? 'കാർഡുകൾ തിരിച്ചു കാണിച്ച് ഒരേ വാക്കുകൾ ജോടിയാക്കുക! ഭയമില്ലാതെ സുരക്ഷിതമായി പരിശീലിക്കാം.'
+                    : 'Tap cards to find matching pairs and hear pronunciations in a friendly, private game!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 4,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 0.9,
+                ),
+                itemCount: _memoryCards.length,
+                itemBuilder: (context, index) {
+                  final card = _memoryCards[index];
+                  final isMatched = _memoryMatchedIndices.contains(index);
+                  final isFlipped = isMatched || _memoryFlippedFirst == index || _memoryFlippedSecond == index;
+
+                  return GestureDetector(
+                    onTap: () {
+                      if (isMatched || _memoryFlippedFirst == index || _memoryFlippedSecond != null) return;
+                      HapticFeedback.selectionClick();
+                      _speak(card['sound'].toString());
+                      setState(() {
+                        if (_memoryFlippedFirst == null) {
+                          _memoryFlippedFirst = index;
+                        } else {
+                          _memoryFlippedSecond = index;
+                          final firstCard = _memoryCards[_memoryFlippedFirst!];
+                          if (firstCard['id'] == card['id']) {
+                            _memoryMatchedIndices.add(_memoryFlippedFirst!);
+                            _memoryMatchedIndices.add(index);
+                            _memoryFlippedFirst = null;
+                            _memoryFlippedSecond = null;
+                            if (_memoryMatchedIndices.length == _memoryCards.length) {
+                              _speak('Awesome! All pairs matched!');
+                            }
+                          } else {
+                            Future.delayed(const Duration(milliseconds: 750), () {
+                              if (mounted) {
+                                setState(() {
+                                  _memoryFlippedFirst = null;
+                                  _memoryFlippedSecond = null;
+                                });
+                              }
+                            });
+                          }
+                        }
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: isMatched
+                            ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                            : (isFlipped ? const Color(0xFF0284C7) : const Color(0xFF0F172A)),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isMatched
+                              ? const Color(0xFF10B981)
+                              : (isFlipped ? const Color(0xFFFFD700) : Colors.white24),
+                          width: isMatched || isFlipped ? 2 : 1,
+                        ),
+                      ),
+                      alignment: Alignment.center,
+                      padding: const EdgeInsets.all(4),
+                      child: Text(
+                        isFlipped ? card['label'].toString() : '❓',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: isFlipped ? 13 : 20,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 18),
+              if (allMatched)
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                  ),
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    _markStepCompleted(8);
+                  },
+                  icon: const Icon(Icons.check_circle_rounded),
+                  label: Text('COMPLETE STEP 8 ✓', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+                )
+              else
+                OutlinedButton.icon(
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: Colors.white24),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _memoryMatchInitialized = false;
+                      _initZeroMemoryMatch();
+                    });
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Reset Cards ↺'),
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   // -------------------------------------------------------------
   // STEP 9: ENGLISH HUB LEVEL GROUP CHAT OR AI TUTOR
   // -------------------------------------------------------------
   Widget _buildStep9GroupChat(Day1StepModel step) {
-    final isZero = _currentTrack == Day1Track.zero;
+    // 🛡️ User Audio Directive: Days 1-10 for Zero track MUST NOT show stranger group chat!
+    final isZero = _currentTrack == Day1Track.zero && widget.day <= 10;
     final isMl = _nativeLanguage.toLowerCase().contains('malay');
 
     if (isZero) {

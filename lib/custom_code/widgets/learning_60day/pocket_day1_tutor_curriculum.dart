@@ -436,8 +436,8 @@ class Day1Curriculum {
             ];
           }
 
-          // Zero track safe options
-          if (currentTrack == Day1Track.zero) {
+          // Zero track safe options (User Audio Directive: Up to Day 10, Zero learners get safe non-social steps)
+          if (currentTrack == Day1Track.zero && day <= 10) {
             if (stepNum == 7) {
               titleEn = 'Tutor Robot Voice Practice';
               titleMl = 'ട്യൂട്ടർ റോബോട്ടിനൊപ്പമുള്ള സംസാരം 🤖';
@@ -452,6 +452,13 @@ class Day1Curriculum {
               descMl = 'പഠിച്ച അക്ഷരങ്ങളും ചിത്രങ്ങളും കൂട്ടിയോജിപ്പിച്ച് മെമ്മറി ഉറപ്പിക്കുക.';
               icon = '🧩';
               gameType = 'memory_match';
+            } else if (stepNum == 9) {
+              titleEn = 'AI Tutor Private Audio Lab';
+              titleMl = 'സ്വകാര്യ ഓഡിയോ ലാബ് 🎧';
+              descEn = 'Listen to native pronunciation and practice speaking safely in private.';
+              descMl = 'സ്വകാര്യമായി കേട്ടു പഠിച്ച് പേടിയില്ലാതെ സംസാരിക്കുക.';
+              icon = '🎧';
+              gameType = 'audio_listening_lab';
             }
           }
 
@@ -482,7 +489,7 @@ class Day1Curriculum {
       var gameType = map['gameType']?.toString() ?? 'generic';
 
       // 🛡️ User Audio Directive: Zero Foundation learners (like Father) MUST NOT be forced
-      // to make real stranger phone calls or PocketTalk requests on Day 1!
+      // to make real stranger phone calls, PocketTalk requests, or group chats on Days 1-10!
       if (currentTrack == Day1Track.zero) {
         if (stepNum == 7) {
           titleEn = 'Tutor Robot Voice Practice';
@@ -498,6 +505,13 @@ class Day1Curriculum {
           descMl = 'പഠിച്ച അക്ഷരങ്ങളും ചിത്രങ്ങളും കൂട്ടിയോജിപ്പിച്ച് മെമ്മറി ഉറപ്പിക്കുക.';
           icon = '🧩';
           gameType = 'memory_match';
+        } else if (stepNum == 9) {
+          titleEn = 'AI Tutor Private Audio Lab';
+          titleMl = 'സ്വകാര്യ ഓഡിയോ ലാബ് 🎧';
+          descEn = 'Listen to native pronunciation and practice speaking safely in private.';
+          descMl = 'സ്വകാര്യമായി കേട്ടു പഠിച്ച് പേടിയില്ലാതെ സംസാരിക്കുക.';
+          icon = '🎧';
+          gameType = 'audio_listening_lab';
         }
       }
 

@@ -1128,7 +1128,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
   /// Returns the sequential sub-steps along the climbing mountain trail (User Audio Directive!)
   List<InPathSubStep> _getSubStepsForDay(int day, LearnerLevel level) {
     final bool admin = _isMasterAdmin;
-    if (day >= 1 && day <= 15) {
+    if (day >= 1 && day <= 90) {
       final track = Day1Track.fromLearnerLevel(level);
       return Day1Curriculum.getSteps(track, day).map((step) {
         final flagKey = 'step_${step.stepNumber}';
@@ -3626,20 +3626,52 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
           }
         },
         itemBuilder: (context) {
-          return LearnerLevel.values.map((lvl) {
-            final t = PocketSyllabusRepository.getTrack(lvl);
-            final isSelected = lvl == _currentLearnerLevel;
+          final options = [
+            (
+              level: LearnerLevel.zero,
+              title: 'Zero Level (ABC & Phonics)',
+              sub: 'ശൂന്യത്തിൽ നിന്നുള്ള അടിത്തറ • Voice & Phonics',
+              badge: '🌱 ZERO LEVEL',
+              color: const Color(0xFF10B981),
+              icon: Icons.record_voice_over_rounded,
+            ),
+            (
+              level: LearnerLevel.middle,
+              title: 'Middle Level (Conversational English)',
+              sub: 'നിത്യജീവിത സംഭാഷണങ്ങൾ • Daily Speech',
+              badge: '💬 MIDDLE LEVEL',
+              color: const Color(0xFF38BDF8),
+              icon: Icons.chat_bubble_outline_rounded,
+            ),
+            (
+              level: LearnerLevel.advanced,
+              title: 'Higher Level (Fluent Communication)',
+              sub: 'സ്വാഭാവിക സംഭാഷണം • Natural Fluency',
+              badge: '💎 HIGHER LEVEL',
+              color: const Color(0xFFA855F7),
+              icon: Icons.auto_awesome_rounded,
+            ),
+          ];
+
+          return options.map((opt) {
+            final isSelected = opt.level == _currentLearnerLevel ||
+                (opt.level == LearnerLevel.middle &&
+                    (_currentLearnerLevel == LearnerLevel.beginner ||
+                        _currentLearnerLevel == LearnerLevel.elementary)) ||
+                (opt.level == LearnerLevel.advanced &&
+                    _currentLearnerLevel == LearnerLevel.expert);
+
             return PopupMenuItem<LearnerLevel?>(
-              value: lvl,
+              value: opt.level,
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(5),
+                    padding: const EdgeInsets.all(6),
                     decoration: BoxDecoration(
-                      color: t.primaryColor.withValues(alpha: 0.18),
+                      color: opt.color.withValues(alpha: 0.18),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(t.icon, color: t.primaryColor, size: 16),
+                    child: Icon(opt.icon, color: opt.color, size: 16),
                   ),
                   const SizedBox(width: 10),
                   Expanded(
@@ -3648,7 +3680,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(
-                          t.nameEn,
+                          opt.title,
                           style: GoogleFonts.outfit(
                             color: isSelected ? const Color(0xFFFFFC00) : Colors.white,
                             fontWeight: isSelected ? FontWeight.w900 : FontWeight.w600,
@@ -3656,7 +3688,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                           ),
                         ),
                         Text(
-                          t.badgeText,
+                          opt.sub,
                           style: GoogleFonts.inter(
                             color: Colors.white54,
                             fontSize: 9.5,
@@ -3717,11 +3749,27 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                 const SizedBox(width: 2),
                 const Icon(Icons.arrow_drop_down_rounded, color: Color(0xFFFFD700), size: 16),
               ] else ...[
-                Icon(track.icon, color: track.primaryColor, size: 12),
+                Icon(
+                  _currentLearnerLevel == LearnerLevel.zero
+                      ? Icons.record_voice_over_rounded
+                      : (_currentLearnerLevel == LearnerLevel.advanced || _currentLearnerLevel == LearnerLevel.expert
+                          ? Icons.auto_awesome_rounded
+                          : Icons.chat_bubble_outline_rounded),
+                  color: _currentLearnerLevel == LearnerLevel.zero
+                      ? const Color(0xFF10B981)
+                      : (_currentLearnerLevel == LearnerLevel.advanced || _currentLearnerLevel == LearnerLevel.expert
+                          ? const Color(0xFFA855F7)
+                          : const Color(0xFF38BDF8)),
+                  size: 12,
+                ),
                 const SizedBox(width: 4),
                 Flexible(
                   child: Text(
-                    'SYLLABUS: ${track.nameEn.replaceAll(' Track', '').toUpperCase()}',
+                    _currentLearnerLevel == LearnerLevel.zero
+                        ? 'SYLLABUS: ZERO LEVEL'
+                        : (_currentLearnerLevel == LearnerLevel.advanced || _currentLearnerLevel == LearnerLevel.expert
+                            ? 'SYLLABUS: HIGHER LEVEL'
+                            : 'SYLLABUS: MIDDLE LEVEL'),
                     style: GoogleFonts.outfit(
                       color: Colors.white,
                       fontWeight: FontWeight.w800,
