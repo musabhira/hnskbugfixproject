@@ -2784,87 +2784,65 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
       HapticFeedback.lightImpact();
 
       final authorName = profile?['name'] ?? 'User';
+      final vibeReplySummary = 'Replied to Vibe: "$originalText"';
+      final nowIso = DateTime.now().toIso8601String();
 
-      // 1. Robot reply simulation
-      if (PocketRobotService.isRobotId(receiverUserId)) {
-        await PocketRobotService.handleUserStatusReply(
-          userId: widget.currentUserId,
-          robotId: receiverUserId,
-          userReply: originalText,
-          statusId: status['id']?.toString() ?? '',
-        );
-
-        final prefs = await SharedPreferences.getInstance();
-        final isMate = (prefs.getStringList('pocket_mates_${widget.currentUserId}') ?? []).contains(receiverUserId);
-
-        if (mounted) {
-          if (_isPaused) _togglePause();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  Icon(isMate ? Icons.send_rounded : Icons.person_add_rounded, color: Colors.black, size: 16),
-                  const SizedBox(width: 8),
-                  Text(isMate ? 'Replied to $authorName! 🤖' : 'Sent request to $authorName! 🤝',
-                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                ],
-              ),
-              backgroundColor: const Color(0xFFFFFC00),
-              duration: const Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-        return;
-      }
-
-      // 2. President reply
-      if (PocketPresidentService.isPresidentId(receiverUserId)) {
-        await PocketPresidentService.sendUserMessageToPresident(
-          userId: widget.currentUserId,
-          messageText: 'Replied to Vibe: "$originalText"',
-          messageType: 'text',
-        );
-        if (mounted) {
-          if (_isPaused) _togglePause();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.send_rounded, color: Colors.black, size: 16),
-                  const SizedBox(width: 8),
-                  Text('Dispatched to The President 🏛️',
-                      style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                ],
-              ),
-              backgroundColor: const Color(0xFFFFD700),
-              duration: const Duration(seconds: 2),
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-        return;
-      }
-
-      // 3. Real user: check if mates
       final areMates = await PocketMateService.isMate(widget.currentUserId, receiverUserId);
 
-      await supabase.from('messages').insert({
-        'sender_id': widget.currentUserId,
-        'receiver_id': receiverUserId,
-        'message_text': originalText,
-        'message_type': 'text',
-        'metadata': {
-          'replied_to_status_id': status['id'],
-          'status_media_url': status['media_url'],
-          'status_media_type': status['media_type'],
-          'reply_type': 'status_reply',
-          'status_caption': status['caption'],
-          'is_request': !areMates,
-        }
-      });
+      // 1. Always record the message in Supabase messages table
+      try {
+        await supabase.from('messages').insert({
+          'sender_id': widget.currentUserId,
+          'receiver_id': receiverUserId,
+          'message_text': vibeReplySummary,
+          'message_type': 'text',
+          'metadata': {
+            'replied_to_status_id': status['id'],
+            'status_media_url': status['media_url'],
+            'status_media_type': status['media_type'],
+            'reply_type': 'status_reply',
+            'status_caption': status['caption'],
+            'user_reply': originalText,
+            'is_request': !areMates,
+          }
+        });
+      } catch (msgErr) {
+        debugPrint('Error inserting vibe reply message: $msgErr');
+      }
 
-      // 🔔 Dispatch in-app notification for vibe reply
+      // 2. Always update or create the conversation record so it appears in Chat List for both users (WhatsApp-style)
+      try {
+        final existingConv = await supabase
+            .from('conversations')
+            .select('id, unread_count')
+            .or('and(user1_id.eq.${widget.currentUserId},user2_id.eq.$receiverUserId),and(user1_id.eq.$receiverUserId,user2_id.eq.${widget.currentUserId})')
+            .maybeSingle();
+
+        if (existingConv != null) {
+          await supabase.from('conversations').update({
+            'last_message': vibeReplySummary,
+            'last_message_time': nowIso,
+            'last_sender_id': widget.currentUserId,
+            'unread_count': (existingConv['unread_count'] ?? 0) + 1,
+            'updated_at': nowIso,
+          }).eq('id', existingConv['id']);
+        } else {
+          await supabase.from('conversations').insert({
+            'user1_id': widget.currentUserId,
+            'user2_id': receiverUserId,
+            'last_message': vibeReplySummary,
+            'last_message_time': nowIso,
+            'last_sender_id': widget.currentUserId,
+            'unread_count': 1,
+            'updated_at': nowIso,
+            'is_group': false,
+          });
+        }
+      } catch (convErr) {
+        debugPrint('Error updating conversation for vibe reply: $convErr');
+      }
+
+      // 3. Dispatch in-app notification for vibe reply
       try {
         final senderProfile = await supabase.from('profile').select('name').eq('user_id', widget.currentUserId).maybeSingle();
         final senderName = senderProfile?['name'] ?? 'A mate';
@@ -2885,46 +2863,27 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
         debugPrint('Error inserting vibe reply notification: $notifErr');
       }
 
-      if (areMates) {
-        // Mates: update or create conversation record so it shows up in normal 1-on-1 chat
-        try {
-          final existingConv = await supabase
-              .from('conversations')
-              .select('id, unread_count')
-              .or('and(user1_id.eq.${widget.currentUserId},user2_id.eq.$receiverUserId),and(user1_id.eq.$receiverUserId,user2_id.eq.${widget.currentUserId})')
-              .maybeSingle();
-
-          final nowIso = DateTime.now().toIso8601String();
-          if (existingConv != null) {
-            await supabase.from('conversations').update({
-              'last_message': originalText,
-              'last_message_time': nowIso,
-              'last_sender_id': widget.currentUserId,
-              'unread_count': (existingConv['unread_count'] ?? 0) + 1,
-              'updated_at': nowIso,
-            }).eq('id', existingConv['id']);
-          } else {
-            await supabase.from('conversations').insert({
-              'user1_id': widget.currentUserId,
-              'user2_id': receiverUserId,
-              'last_message': originalText,
-              'last_message_time': nowIso,
-              'last_sender_id': widget.currentUserId,
-              'unread_count': 1,
-              'updated_at': nowIso,
-              'is_group': false,
-            });
-          }
-        } catch (convErr) {
-          debugPrint('Error updating conversation for vibe reply: $convErr');
-        }
-      } else {
-        // Non-Mates: send mate request so it safely routes into Requests tab
+      // 4. Target-specific handlers
+      if (PocketRobotService.isRobotId(receiverUserId)) {
+        await PocketRobotService.handleUserStatusReply(
+          userId: widget.currentUserId,
+          robotId: receiverUserId,
+          userReply: originalText,
+          statusId: status['id']?.toString() ?? '',
+        );
+      } else if (PocketPresidentService.isPresidentId(receiverUserId)) {
+        await PocketPresidentService.sendUserMessageToPresident(
+          userId: widget.currentUserId,
+          messageText: vibeReplySummary,
+          messageType: 'text',
+        );
+      } else if (!areMates) {
+        // Non-Mates: also send mate request
         await PocketMateService.sendMateRequest(
           senderId: widget.currentUserId,
           receiverId: receiverUserId,
           contextType: 'vibe_reply',
-          message: 'Replied to your Vibe: "$originalText"',
+          message: vibeReplySummary,
         );
         setState(() => _isMateRequestSent = true);
       }
@@ -3454,7 +3413,11 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
   void _openAuthorCitadel(Map<String, dynamic>? authorProfile) {
     final statuses = widget.statusGroup['statuses'] as List;
     final curStatus = _currentIndex < statuses.length ? statuses[_currentIndex] : null;
-    final authorUserId = curStatus?['user_id']?.toString() ??
+    final rawMeta = curStatus?['metadata'];
+    final meta = rawMeta is Map ? rawMeta : null;
+    final authorUserId = meta?['house_id']?.toString() ??
+        meta?['target_user_id']?.toString() ??
+        curStatus?['user_id']?.toString() ??
         authorProfile?['user_id']?.toString() ??
         authorProfile?['id']?.toString() ??
         '';

@@ -565,7 +565,7 @@ class _PocketDay1InteractiveFlowPageState
         ? PocketDayCurriculumService.getLocalizedText(cached['course']?['topic'], lang: 'en')
         : 'BASIC ENGLISH';
     final topicMl = cached != null
-        ? PocketDayCurriculumService.getLocalizedText(cached['course']?['topic'], lang: 'ml')
+        ? PocketDayCurriculumService.getLocalizedText(cached['course']?['topic'], lang: _nativeLanguage)
         : 'അടിസ്ഥാന ഇംഗ്ലീഷ്';
 
     return Container(
@@ -906,9 +906,9 @@ class _PocketDay1InteractiveFlowPageState
     final grammar = cached?['grammarRule'] as Map<String, dynamic>? ?? {};
     final formula = grammar['formula']?.toString() ?? step.titleEn;
     final expEn = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'en', fallback: step.descriptionEn);
-    final expMl = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'ml', fallback: step.descriptionMl);
+    final expMl = PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: _nativeLanguage, fallback: step.descriptionMl);
     final goldenTipEn = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'en');
-    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: 'ml');
+    final goldenTipMl = PocketDayCurriculumService.getLocalizedText(grammar['goldenTip'], lang: _nativeLanguage);
     final topicEn = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'en');
 
     return Column(
@@ -1085,7 +1085,7 @@ class _PocketDay1InteractiveFlowPageState
   /// 🎯 High-Visibility Day Topic Billboard (User Audio Directive!)
   /// "Title-il oru board kodukkanam, valiya reethiyil ketto. Veedu kazhinja udane."
   Widget _buildTodayTopicBillboard(Map<String, dynamic>? cached, String topicEn, String formula) {
-    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: 'ml');
+    final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: _nativeLanguage);
     return Container(
       width: double.infinity,
       margin: const EdgeInsets.only(bottom: 14),
@@ -2378,7 +2378,7 @@ class _PocketDay1InteractiveFlowPageState
       final cached = PocketDayCurriculumService.getCachedDay(widget.day);
       final topic = cached?['course']?['topic'];
       storyTitleEn = PocketDayCurriculumService.getLocalizedText(topic, lang: 'en', fallback: step.titleEn);
-      storyTitleMl = PocketDayCurriculumService.getLocalizedText(topic, lang: 'ml', fallback: step.titleMl);
+      storyTitleMl = PocketDayCurriculumService.getLocalizedText(topic, lang: _nativeLanguage, fallback: step.titleMl);
 
       final sentences = (step.data['sentences'] as List?)?.cast<Map<String, dynamic>>() ?? [];
       paragraphs = sentences.map((s) {
@@ -3081,52 +3081,292 @@ class _PocketDay1InteractiveFlowPageState
     final phonetic = c['phonetic']?.toString() ?? '';
     final meaning = Day1CurriculumJsonData.getLocalizedString(c['meaning'], lang: _nativeLanguage);
 
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-          decoration: BoxDecoration(
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF8B5CF6)),
-          ),
-          child: Text(
-            '🎙️ CHALLENGE ${_spokenChallengeIndex + 1} OF ${challenges.length}',
-            style: GoogleFonts.outfit(color: const Color(0xFF8B5CF6), fontWeight: FontWeight.bold, fontSize: 12),
-          ),
-        ),
-        const SizedBox(height: 18),
+    final tag = c['tag']?.toString() ?? '🎙️ Spoken English Drill';
+    final avatarPrompt = c['avatarPrompt']?.toString() ?? "Tutor Maya: 'Listen carefully, then speak your reply!'";
+    final avatarPromptMl = c['avatarPromptMl']?.toString() ?? '';
 
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E293B),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.4)),
-          ),
-          child: Column(
-            children: [
-              Text(
-                phrase,
-                textAlign: TextAlign.center,
-                style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 24, fontWeight: FontWeight.w900),
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Top Drill Progress & Tag
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF8B5CF6)),
+                  ),
+                  child: Text(
+                    '🎙️ DRILL ${_spokenChallengeIndex + 1} OF ${challenges.length}',
+                    style: GoogleFonts.outfit(color: const Color(0xFF8B5CF6), fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.4)),
+                    ),
+                    child: Text(
+                      tag,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.inter(color: const Color(0xFF34D399), fontWeight: FontWeight.w600, fontSize: 11),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // 🤖 1. AI Avatar Speech Dialogue Card (Avatar speaks first)
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF38BDF8).withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
               ),
-              const SizedBox(height: 6),
-              Text(phonetic, style: GoogleFonts.inter(color: Colors.white70, fontSize: 13)),
-              Text(meaning, style: GoogleFonts.inter(color: Colors.white60, fontSize: 12)),
-            ],
-          ),
-        ),
-        const SizedBox(height: 24),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Avatar with speaking wave badge
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _speak(avatarPrompt);
+                    },
+                    child: Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(2.5),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: const Color(0xFF38BDF8), width: 1.8),
+                          ),
+                          child: const ClipOval(
+                            child: VectorAvatarWidget(
+                              config: VectorAvatarConfig.defaultConfig,
+                              size: 44,
+                              showAura: false,
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(3),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF10B981),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.volume_up_rounded, size: 10, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 14),
 
-        // Mic Button
-        GestureDetector(
-          onTap: () {
-            _speak(phrase);
-            _startListening(
-              onResult: (words) {
-                _speak('Great pronunciation!');
-                Timer(const Duration(milliseconds: 1400), () {
+                  // Avatar Speech Bubble
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'AI TUTOR DIALOGUE',
+                              style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 10.5, fontWeight: FontWeight.w800, letterSpacing: 0.8),
+                            ),
+                            const Spacer(),
+                            InkWell(
+                              onTap: () => _speak(avatarPrompt),
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(Icons.play_arrow_rounded, color: Color(0xFF38BDF8), size: 14),
+                                    const SizedBox(width: 3),
+                                    Text('Listen', style: GoogleFonts.inter(color: const Color(0xFF38BDF8), fontSize: 11, fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          avatarPrompt,
+                          style: GoogleFonts.outfit(color: Colors.white, fontSize: 14.5, fontWeight: FontWeight.w600, height: 1.3),
+                        ),
+                        if (avatarPromptMl.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            avatarPromptMl,
+                            style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 11.5),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // 🎙️ 2. Learner Reply Card (Your turn to speak)
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF8B5CF6).withValues(alpha: 0.5)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.35),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3.5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF8B5CF6).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'YOUR TURN TO REPLY 🗣️',
+                      style: GoogleFonts.outfit(color: const Color(0xFFA78BFA), fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.7),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    phrase,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.w900, height: 1.3),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    phonetic,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 13, fontStyle: FontStyle.italic),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    meaning,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12.5),
+                  ),
+                  const SizedBox(height: 14),
+
+                  // 🔊 Listen Native Pronunciation Button
+                  InkWell(
+                    onTap: () => _speak(phrase),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.volume_up_rounded, color: Color(0xFF38BDF8), size: 16),
+                          const SizedBox(width: 6),
+                          Text('Listen Your Line', style: GoogleFonts.inter(color: const Color(0xFF38BDF8), fontSize: 12, fontWeight: FontWeight.w600)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 22),
+
+            // 🎙️ Mic Button for Speaking
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  _startListening(
+                    onResult: (words) {
+                      _speak('Great job! Wonderful pronunciation!');
+                      Timer(const Duration(milliseconds: 1400), () {
+                        if (_spokenChallengeIndex < challenges.length - 1) {
+                          setState(() {
+                            _spokenChallengeIndex++;
+                          });
+                        } else {
+                          _markStepCompleted(6);
+                        }
+                      });
+                    },
+                  );
+                },
+                child: Container(
+                  width: 78,
+                  height: 78,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: _isListening ? Colors.redAccent : const Color(0xFF8B5CF6),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF8B5CF6).withValues(alpha: 0.45),
+                        blurRadius: 20,
+                        spreadRadius: 4,
+                      ),
+                    ],
+                  ),
+                  child: Icon(_isListening ? Icons.mic : Icons.mic_none_rounded, color: Colors.white, size: 38),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Center(
+              child: Text(
+                _isListening ? '🎙️ Listening... Speak your reply now!' : 'Tap mic and speak your reply aloud',
+                style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Skip / Next Button
+            Center(
+              child: TextButton(
+                onPressed: () {
                   if (_spokenChallengeIndex < challenges.length - 1) {
                     setState(() {
                       _spokenChallengeIndex++;
@@ -3134,33 +3374,16 @@ class _PocketDay1InteractiveFlowPageState
                   } else {
                     _markStepCompleted(6);
                   }
-                });
-              },
-            );
-          },
-          child: Container(
-            width: 76,
-            height: 76,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: _isListening ? Colors.redAccent : const Color(0xFF8B5CF6),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF8B5CF6).withValues(alpha: 0.4),
-                  blurRadius: 16,
-                  spreadRadius: 4,
+                },
+                child: Text(
+                  _spokenChallengeIndex < challenges.length - 1 ? 'Next Dialogue Drill ➡️' : 'Complete Speaking Workout ✅',
+                  style: GoogleFonts.inter(color: Colors.white38, fontSize: 12),
                 ),
-              ],
+              ),
             ),
-            child: Icon(_isListening ? Icons.mic : Icons.mic_none_rounded, color: Colors.white, size: 36),
-          ),
+          ],
         ),
-        const SizedBox(height: 12),
-        Text(
-          _isListening ? 'Listening... Speak phrase!' : 'Tap mic and speak aloud',
-          style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13),
-        ),
-      ],
+      ),
     );
   }
 

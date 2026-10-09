@@ -326,15 +326,351 @@ class Day1AttackChallenge {
 /// - 100% of data (steps, vocab, games, reading, combat, and exam) lives in JSON.
 /// - Day 2 can be passed as a matching JSON.
 class Day1Curriculum {
+  /// 🎙️ Synthesizes a rich, multi-sentence Spoken English Workout (4–6 challenges)
+  /// User Audio Directive:
+  /// - High priority across all 90 days / levels
+  /// - Distinct rich content for Zero, Middle, and Higher levels
+  /// - Students & Job-Seeker practical situations, interview Q&As, and everyday speaking drills
+  static List<Map<String, dynamic>> synthesizeSpokenWorkoutChallenges({
+    required Day1Track track,
+    required int day,
+    required Map<String, dynamic> dayData,
+    Map<String, dynamic>? existingStepData,
+  }) {
+    // 1. Check if existingStepData already has multiple challenges defined for the active track
+    final currentTrackKey = track == Day1Track.zero ? 'zero' : (track == Day1Track.higher ? 'higher' : 'middle');
+    final existingTrack = existingStepData?['appliedTrack']?.toString();
+    if (existingTrack == currentTrackKey) {
+      final existingChallenges = (existingStepData?['challenges'] as List?)?.cast<Map<String, dynamic>>();
+      if (existingChallenges != null && existingChallenges.length >= 5) {
+        return existingChallenges;
+      }
+    }
+
+    final voiceTasks = (existingStepData?['voiceTasks'] as Map<String, dynamic>?) ??
+        (dayData['steps'] as List?)?.firstWhere(
+          (s) => s['id'] == 'step_6_spoken_lab' || s['stepNumber'] == 6,
+          orElse: () => const <String, dynamic>{},
+        )?['voiceTasks'] as Map<String, dynamic>? ??
+        const {};
+
+    final trackKey = currentTrackKey;
+    final primaryTask = (voiceTasks[trackKey] ?? voiceTasks['middle'] ?? voiceTasks.values.firstOrNull) as Map<String, dynamic>? ?? const {};
+    final primarySentence = primaryTask['targetSentence']?.toString() ?? primaryTask['prompt']?.toString() ?? 'I practice spoken English daily.';
+    final primaryPrompt = primaryTask['prompt']?.toString() ?? primarySentence;
+
+    final challengePatterns = (dayData['steps'] as List?)
+        ?.firstWhere((s) => s['id'] == 'step_4_game_builder' || s['stepNumber'] == 4, orElse: () => const <String, dynamic>{})?['challengePatterns'] as List? ??
+        [];
+
+    final readingSentences = (dayData['steps'] as List?)
+        ?.firstWhere((s) => s['id'] == 'step_5_reading_room' || s['stepNumber'] == 5, orElse: () => const <String, dynamic>{})?['sentences'] as List? ??
+        [];
+
+    final result = <Map<String, dynamic>>[];
+    final dIdx = (day - 1).abs() % 15;
+
+    // 🎯 Challenge 1: Core Daily Focus Target
+    result.add({
+      'avatarPrompt': "Tutor Maya: 'Listen carefully, then speak today\\'s core focus phrase!'",
+      'avatarPromptMl': 'ട്യൂട്ടർ മായ: ഇന്നത്തെ പ്രധാന വാചകം എന്നോടൊപ്പം ഉറക്കെ പറയൂ!',
+      'phrase': primarySentence,
+      'phonetic': '/$primarySentence/',
+      'meaning': {'en': primarySentence, 'ml': primaryPrompt},
+      'tag': '🎯 Daily Core Target',
+      'tagMl': 'പ്രധാന വാചകം',
+    });
+
+    // 🎯 Challenge 2: Track-Specific Conversational / Situational Drill (15 Progressive Scenarios)
+    if (track == Day1Track.zero) {
+      const zeroConversations = [
+        {'avatar': 'Friendly Neighbor', 'prompt': 'Good morning! How are you doing today?', 'ml': 'സുപ്രഭാതം! എങ്ങനെയുണ്ട് ഇന്ന്?', 'phrase': 'Good morning, I am doing fine.', 'meaning': 'സുപ്രഭാതം, എനിക്ക് സുഖമാണ്.', 'tag': '🌱 Basic Greeting'},
+        {'avatar': 'Campus Help Desk', 'prompt': 'May I assist you with finding your class?', 'ml': 'ക്ലാസ്സ് കണ്ടെത്താൻ സഹായിക്കണോ?', 'phrase': 'Yes, where is the main library?', 'meaning': 'അതെ, പ്രധാന ലൈബ്രറി എവിടെയാണ്?', 'tag': '🏫 Campus Direction'},
+        {'avatar': 'Bus Conductor', 'prompt': 'Which ticket do you need today?', 'ml': 'എങ്ങോട്ടുള്ള ടിക്കറ്റ് വേണം?', 'phrase': 'One ticket to Central Station, please.', 'meaning': 'സെൻട്രൽ സ്റ്റേഷനിലേക്ക് ഒരു ടിക്കറ്റ് തരൂ.', 'tag': '🚌 Public Transit'},
+        {'avatar': 'Office Receptionist', 'prompt': 'Hello! Who are you here to meet?', 'ml': 'ഹലോ, ആരെ കാണാനാണ് വന്നത്?', 'phrase': 'I have an appointment with Mr. Roy.', 'meaning': 'എനിക്ക് മിസ്റ്റർ റോയിയുമായി അപ്പോയിന്റ്മെന്റുണ്ട്.', 'tag': '🏢 Office Visitor'},
+        {'avatar': 'Cafe Barista', 'prompt': 'What would you like to order today?', 'ml': 'എന്താണ് ഓർഡർ ചെയ്യാൻ ആഗ്രഹിക്കുന്നത്?', 'phrase': 'A hot cup of tea, please.', 'meaning': 'ഒരു ചൂടുള്ള ചായ തരൂ.', 'tag': '☕ Ordering Drink'},
+        {'avatar': 'Classmate Rahul', 'prompt': 'Do you have a spare pen with you?', 'ml': 'കയ്യിൽ ഒരു അധിക പേന ഉണ്ടോ?', 'phrase': 'Yes, you can take this pen.', 'meaning': 'അതെ, ഈ പേന എടുത്തോളൂ.', 'tag': '🤝 Helping a Peer'},
+        {'avatar': 'Shopkeeper', 'prompt': 'Are you looking for anything specific?', 'ml': 'എന്തെങ്കിലും നോക്കുന്നുണ്ടോ?', 'phrase': 'How much does this book cost?', 'meaning': 'ഈ പുസ്തകത്തിന് എത്ര രൂപയാണ്?', 'tag': '🛍️ Shopping Query'},
+        {'avatar': 'HR Assistant', 'prompt': 'Welcome! Did you bring your resume?', 'ml': 'സ്വാഗതം! റെസ്യൂമെ കൊണ്ടുവന്നോ?', 'phrase': 'Yes, here is my updated resume.', 'meaning': 'അതെ, ഇതാണ് എന്റെ റെസ്യൂമെ.', 'tag': '📄 Job Document'},
+        {'avatar': 'Trainer Maya', 'prompt': 'Can you tell me about your hobby?', 'ml': 'നിങ്ങളുടെ ഹോബിയെ കുറിച്ച് പറയാമോ?', 'phrase': 'I like reading and learning English.', 'meaning': 'എനിക്ക് വായനയും ഇംഗ്ലീഷ് പഠനവും ഇഷ്ടമാണ്.', 'tag': '🌟 Simple Self-Intro'},
+        {'avatar': 'Friend Priya', 'prompt': 'Will you come with us for lunch?', 'ml': 'ഉച്ചഭക്ഷണത്തിന് ഞങ്ങളോടൊപ്പം വരുന്നോ?', 'phrase': 'Yes, I will join you now.', 'meaning': 'അതെ, ഞാനും ഇപ്പോൾ വരാം.', 'tag': '🍽️ Lunch Invitation'},
+        {'avatar': 'Doctor Clinic', 'prompt': 'What seems to be the problem today?', 'ml': 'എന്താണ് ബുദ്ധിമുട്ട്?', 'phrase': 'I have a mild fever since yesterday.', 'meaning': 'എനിക്ക് ഇന്നലെ മുതൽ ചെറിയ പനിയുണ്ട്.', 'tag': '🩺 Clinic Visit'},
+        {'avatar': 'Interviewer Assistant', 'prompt': 'Please wait here until your name is called.', 'ml': 'പേര് വിളിക്കുന്നത് വരെ ഇവിടെ ഇരിക്കൂ.', 'phrase': 'Sure, thank you for guiding me.', 'meaning': 'ശരി, എന്നെ സഹായിച്ചതിന് നന്ദി.', 'tag': '🎯 Interview Waiting'},
+        {'avatar': 'Team Lead', 'prompt': 'Did you understand today\'s task?', 'ml': 'ഇന്നത്തെ ജോലി മനസ്സിലായോ?', 'phrase': 'Yes, I understand what to do.', 'meaning': 'അതെ, എന്താണ് ചെയ്യേണ്ടതെന്ന് മനസ്സിലായി.', 'tag': '💼 Work Clarity'},
+        {'avatar': 'Delivery Agent', 'prompt': 'Is this address correct for your parcel?', 'ml': 'ഈ വിലാസം ശരിയാണോ?', 'phrase': 'Yes, that is my correct house address.', 'meaning': 'അതെ, അത് എന്റെ ശരിയായ വീട്ടുപേരാണ്.', 'tag': '📦 Delivery Confirm'},
+        {'avatar': 'Teacher Maya', 'prompt': 'You are making steady progress every single day!', 'ml': 'ദിവസവും നിങ്ങൾ മികച്ച പുരോഗതി നേടുന്നുണ്ട്!', 'phrase': 'Thank you, I will keep practicing.', 'meaning': 'നന്ദി, ഞാൻ തുടർന്നും പരിശീലിക്കും.', 'tag': '🔥 Daily Growth'},
+      ];
+      final item = zeroConversations[dIdx];
+      result.add({
+        'avatarPrompt': "${item['avatar']}: '${item['prompt']}'",
+        'avatarPromptMl': item['ml'] ?? '',
+        'phrase': item['phrase'] ?? '',
+        'phonetic': '/${item['phrase']}/',
+        'meaning': {'en': item['phrase'] ?? '', 'ml': item['meaning'] ?? ''},
+        'tag': item['tag'] ?? '🌱 Basic Conversation',
+        'tagMl': 'സംഭാഷണ പരിശീലനം',
+      });
+    } else if (track == Day1Track.middle) {
+      const middleConversations = [
+        {'avatar': 'Classroom Professor', 'prompt': 'Did anyone have a doubt regarding today\'s lecture?', 'ml': 'ക്ലാസിൽ ആർക്കെങ്കിലും സംശയമുണ്ടോ?', 'phrase': 'Could you please explain that concept once more?', 'meaning': 'ഇതൊന്ന് കൂടി വിശദീകരിക്കാമോ?', 'tag': '🎓 Student Campus Drill'},
+        {'avatar': 'Campus Placement Head', 'prompt': 'How would you introduce yourself in one concise sentence?', 'ml': 'സ്വയം എങ്ങനെ ഒറ്റ വാചകത്തിൽ പരിചയപ്പെടുത്തും?', 'phrase': 'I am a dedicated graduate eager to build my professional career.', 'meaning': 'ഞാൻ കരിയർ വളർത്തിയെടുക്കാൻ ആഗ്രഹിക്കുന്ന സമർപ്പിതനായ ബിരുദധാരിയാണ്.', 'tag': '🎯 Fresher Self-Pitch'},
+        {'avatar': 'Project Guide', 'prompt': 'What is the current status of your final-year module?', 'ml': 'പ്രൊജക്റ്റിന്റെ ഇപ്പോഴത്തെ അവസ്ഥ എന്താണ്?', 'phrase': 'We have finalized the core architecture and are testing edge cases.', 'meaning': 'ഞങ്ങൾ കോർ ആർക്കിടെക്ചർ പൂർത്തിയാക്കി ടെസ്റ്റിംഗ് നടത്തുകയാണ്.', 'tag': '💻 College Project Update'},
+        {'avatar': 'HR Manager', 'prompt': 'Why did you choose our company for this role?', 'ml': 'എന്തുകൊണ്ട് ഞങ്ങളുടെ കമ്പനി തിരഞ്ഞെടുത്തു?', 'phrase': 'Your company\'s innovation culture aligns perfectly with my career goals.', 'meaning': 'നിങ്ങളുടെ കമ്പനിയുടെ നൂതന സംസ്കാരം എന്റെ ലക്ഷ്യങ്ങളുമായി പൊരുത്തപ്പെടുന്നു.', 'tag': '💼 HR Round Response'},
+        {'avatar': 'GD Moderator', 'prompt': 'The floor is open for candidates to present their arguments.', 'ml': 'അഭിപ്രായങ്ങൾ പറയാൻ സമയം തുറന്നിരിക്കുന്നു.', 'phrase': 'I would like to add an important perspective to this discussion.', 'meaning': 'ഈ ചർച്ചയിലേക്ക് ഒരു പ്രധാന വീക്ഷണം കൂടി ഞാൻ ചേർക്കാൻ ആഗ്രഹിക്കുന്നു.', 'tag': '🗣️ Group Discussion Entry'},
+        {'avatar': 'Team Member Ananya', 'prompt': 'Can we schedule a quick call to divide the project tasks?', 'ml': 'പങ്കുവെക്കാൻ ഒരു കോൾ വിളിക്കാമോ?', 'phrase': 'Certainly, let us connect around three in the afternoon.', 'meaning': 'തീർച്ചയായും, ഉച്ചകഴിഞ്ഞ് 3 മണിക്ക് നമുക്ക് കണക്റ്റ് ചെയ്യാം.', 'tag': '📞 Scheduling Collab'},
+        {'avatar': 'Department Head', 'prompt': 'Are you comfortable working in rotating shifts or teams?', 'ml': 'ഷിഫ്റ്റുകളിൽ ജോലി ചെയ്യാൻ തയ്യാറാണോ?', 'phrase': 'Yes, I am fully flexible and adapt quickly to team schedules.', 'meaning': 'അതെ, ഞാൻ പൂർണ്ണമായും ഫ്ലെക്സിബിൾ ആണ്, ടീമുമായി പെട്ടെന്ന് പൊരുത്തപ്പെടും.', 'tag': '🏢 Flexibility Q&A'},
+        {'avatar': 'Seminar Host', 'prompt': 'Would you like to summarize the key takeaway of your paper?', 'ml': 'പ്രബന്ധത്തിന്റെ പ്രധാന രത്നച്ചുരുക്കം പറയാമോ?', 'phrase': 'In summary, early preparation directly amplifies student confidence.', 'meaning': 'ചുരുക്കത്തിൽ, നേരത്തെയുള്ള തയ്യാറെടുപ്പ് ആത്മവിശ്വാസം ഇരട്ടിയാക്കുന്നു.', 'tag': '🎤 Seminar Summary'},
+        {'avatar': 'Tech Lead', 'prompt': 'How do you handle unexpected bugs right before submission?', 'ml': 'സമർപ്പണത്തിന് തൊട്ടുമുൻപ് വരുന്ന പ്രശ്നങ്ങൾ എങ്ങനെ പരിഹരിക്കും?', 'phrase': 'I stay calm, isolate the root cause, and apply systematic fixes.', 'meaning': 'ഞാൻ പ്രശ്നത്തിന്റെ യഥാർത്ഥ കാരണം കണ്ടെത്തി ശാന്തമായി പരിഹരിക്കുന്നു.', 'tag': '⚡ Problem Solving Q&A'},
+        {'avatar': 'Client Liaison', 'prompt': 'Could you brief us on the client feedback from yesterday?', 'ml': 'ഇന്നലത്തെ ക്ലയന്റ് പ്രതികരണം എങ്ങനെയായിരുന്നു?', 'phrase': 'The client appreciated our speed and requested one minor adjustment.', 'meaning': 'ക്ലയന്റ് നമ്മുടെ വേഗതയെ അഭിനന്ദിക്കുകയും ചെറിയ മാറ്റം ആവശ്യപ്പെടുകയും ചെയ്തു.', 'tag': '📊 Client Follow-up'},
+        {'avatar': 'Interviewer John', 'prompt': 'What would you say is your greatest professional strength?', 'ml': 'നിങ്ങളുടെ ഏറ്റവും വലിയ പ്രൊഫഷണൽ ശക്തി എന്താണ്?', 'phrase': 'My biggest strength is my quick learning ability and consistency.', 'meaning': 'എന്റെ ഏറ്റവും വലിയ ശക്തി വേഗത്തിൽ കാര്യങ്ങൾ പഠിക്കാനുള്ള കഴിവും സ്ഥിരതയുമാണ്.', 'tag': '🌟 Strength Analysis'},
+        {'avatar': 'Peer Collaborator', 'prompt': 'I have a different view on this design proposal.', 'ml': 'എനിക്ക് ഈ പ്രൊപ്പോസലിൽ മറ്റൊരു അഭിപ്രായമുണ്ട്.', 'phrase': 'I appreciate your input, let us compare both alternatives objectively.', 'meaning': 'നിങ്ങളുടെ അഭിപ്രായത്തെ ഞാൻ മാനിക്കുന്നു, രണ്ട് വഴികളും താരതമ്യം ചെയ്യാം.', 'tag': '🤝 Constructive Debate'},
+        {'avatar': 'Recruiter Pooja', 'prompt': 'What are your salary and joining expectations?', 'ml': 'പ്രതീക്ഷിക്കുന്ന ശമ്പളവും ജോയിനിംഗ് തീയതിയും?', 'phrase': 'I am open to industry-standard compensation for this position.', 'meaning': 'ഈ തസ്തികയ്ക്ക് അനുയോജ്യമായ നിലവാരമുള്ള ശമ്പളം ഞാൻ പ്രതീക്ഷിക്കുന്നു.', 'tag': '💼 Offer Discussion'},
+        {'avatar': 'Placement Officer', 'prompt': 'Remember to maintain solid posture and eye contact today.', 'ml': 'ശരിയായ പോസ്റ്ററും ഐ-കോണ്ടാക്റ്റും ഉറപ്പാക്കൂ.', 'phrase': 'Thank you for the guidance, I will give my absolute best.', 'meaning': 'നിർദ്ദേശങ്ങൾക്ക് നന്ദി, ഞാൻ എന്റെ ഏറ്റവും മികച്ച പ്രകടനം കാഴ്ചവെക്കും.', 'tag': '🎯 Placement Motivation'},
+        {'avatar': 'Maya Tutor', 'prompt': 'You have developed remarkable fluency and natural cadence!', 'ml': 'നിങ്ങൾക്ക് അത്ഭുതകരമായ ഫ്ലുവെൻസി കൈവന്നിരിക്കുന്നു!', 'phrase': 'Consistent daily practice has truly transformed my spoken English.', 'meaning': 'ദിവസേനയുള്ള ചിട്ടയായ പരിശീലനം എന്റെ ഇംഗ്ലീഷ് സംസാരത്തെ മാറ്റിമറിച്ചു.', 'tag': '🏆 Fluency Transformation'},
+      ];
+      final item = middleConversations[dIdx];
+      result.add({
+        'avatarPrompt': "${item['avatar']}: '${item['prompt']}'",
+        'avatarPromptMl': item['ml'] ?? '',
+        'phrase': item['phrase'] ?? '',
+        'phonetic': '/${item['phrase']}/',
+        'meaning': {'en': item['phrase'] ?? '', 'ml': item['meaning'] ?? ''},
+        'tag': item['tag'] ?? '🎓 Campus & Career Drill',
+        'tagMl': 'ക്ലാസ്റൂം & ഇന്റർവ്യൂ',
+      });
+    } else {
+      const higherConversations = [
+        {'avatar': 'Managing Director', 'prompt': 'How will your team safeguard our strategic milestones this quarter?', 'ml': 'ഈ ക്വാർട്ടറിലെ ലക്ഷ്യങ്ങൾ ടീം എങ്ങനെ കൈവരിക്കും?', 'phrase': 'In my perspective, this strategy will drive immediate measurable results.', 'meaning': 'എന്റെ കാഴ്ചപ്പാടിൽ, ഈ രീതി അളക്കാവുന്ന മികച്ച ഫലം ഉടനടി തരും.', 'tag': '💼 Executive Strategy Pitch'},
+        {'avatar': 'Executive Panel Chair', 'prompt': 'Walk us through a high-stakes crisis you navigated in the past.', 'ml': 'മുൻപ് നേരിട്ട ഒരു വലിയ പ്രതിസന്ധിയെക്കുറിച്ച് പറയൂ.', 'phrase': 'When faced with an unexpected outage, I prioritized critical customer flows first.', 'meaning': 'പ്രതിസന്ധി ഘട്ടത്തിൽ ഏറ്റവും നിർണ്ണായകമായ സേവനങ്ങൾക്കാണ് ഞാൻ മുൻഗണന നൽകിയത് (STAR).', 'tag': '🎯 STAR Method: Crisis Resolution'},
+        {'avatar': 'Global Stakeholder', 'prompt': 'What is your justification for increasing capital expenditure here?', 'ml': 'ഈ ചെലവ് വർദ്ധിപ്പിക്കുന്നതിനുള്ള ന്യായീകരണം എന്താണ്?', 'phrase': 'The projected return on investment substantially outweighs short-term overhead.', 'meaning': 'പ്രതീക്ഷിക്കുന്ന ലാഭവിഹിതം ഹ്രസ്വകാല ചെലവുകളേക്കാൾ വളരെ കൂടുതലാണ്.', 'tag': '📈 ROI & Business Case'},
+        {'avatar': 'Cross-Functional Lead', 'prompt': 'Our engineering and product timelines appear to be misaligned.', 'ml': 'ടൈംലൈനുകൾ തമ്മിൽ വ്യത്യാസങ്ങൾ കാണുന്നുണ്ട്.', 'phrase': 'Let us align on shared deliverables to preserve our release trajectory.', 'meaning': 'റിലീസ് സമയം കൃത്യമാക്കാൻ നമുക്ക് ഒരുമിച്ച് മുൻഗണനകൾ നിശ്ചയിക്കാം.', 'tag': '🤝 Cross-Functional Synergy'},
+        {'avatar': 'Talent Director', 'prompt': 'Why are you the ideal executive to lead this global initiative?', 'ml': 'ഈ പദ്ധതി നയിക്കാൻ നിങ്ങളാണ് ഏറ്റവും അനുയോജ്യൻ എന്ന് എന്തുകൊണ്ട് കരുതുന്നു?', 'phrase': 'I have a proven track record of solving complex problems efficiently.', 'meaning': 'സങ്കീർണ്ണമായ പ്രശ്നങ്ങൾ കാര്യക്ഷമമായി പരിഹരിച്ച ശക്തമായ മുൻപരിചയം എനിക്കുണ്ട്.', 'tag': '🏆 Executive Candidate Pitch'},
+        {'avatar': 'Venture Partner', 'prompt': 'How scalable is your operational model over the next eighteen months?', 'ml': 'അടുത്ത 18 മാസത്തേക്ക് ബിസിനസ്സ് സ്കെയിൽ ചെയ്യാൻ സാധിക്കുമോ?', 'phrase': 'Our modular framework is designed to scale horizontally with zero downtime.', 'meaning': 'തടസ്സങ്ങളില്ലാതെ ബിസിനസ്സ് വ്യാപിപ്പിക്കാൻ പാകത്തിലാണ് നമ്മുടെ സിസ്റ്റം രൂപകൽപ്പന ചെയ്തിരിക്കുന്നത്.', 'tag': '🚀 Scalability & Architecture'},
+        {'avatar': 'Client Executive', 'prompt': 'We are considering alternate vendors due to contract pricing concerns.', 'ml': 'വില കാരണം ഞങ്ങൾ മറ്റ് വെണ്ടർമാരെ ആലോചിക്കുന്നു.', 'phrase': 'Our value proposition delivers unmatched reliability and dedicated technical support.', 'meaning': 'നമ്മുടെ സേവനം നൽകുന്ന വിശ്വസനീയതയും സപ്പോർട്ടും മറ്റൊരു വെണ്ടർക്കും നൽകാനാവില്ല.', 'tag': '🤝 Client Retention Pitch'},
+        {'avatar': 'Chief Operating Officer', 'prompt': 'How do you foster psychological safety across distributed teams?', 'ml': 'വിവിധ ടീമുകളിൽ സുരക്ഷിതമായ അന്തരീക്ഷം എങ്ങനെ ഉറപ്പാക്കുന്നു?', 'phrase': 'I encourage open critique while ensuring full accountability for outcomes.', 'meaning': 'തുറന്ന ചർച്ചകളെ പ്രോത്സാഹിപ്പിക്കുമ്പോൾ തന്നെ ഉത്തരവാദിത്തം ഉറപ്പാക്കാൻ ഞാൻ ശ്രദ്ധിക്കുന്നു.', 'tag': '👑 Leadership Philosophy'},
+        {'avatar': 'Senior Vice President', 'prompt': 'What trade-offs did you make to deliver ahead of the quarter end?', 'ml': 'സമയത്തിന് മുൻപ് ഡെലിവറി ചെയ്യാൻ എന്ത് വിട്ടുവീഴ്ചകൾ ചെയ്തു?', 'phrase': 'We scoped down secondary enhancements without compromising system integrity.', 'meaning': 'പ്രധാന സുരക്ഷ വിട്ടുവീഴ്ച ചെയ്യാതെ ചെറിയ ഫീച്ചറുകൾ അടുത്ത ഘട്ടത്തിലേക്ക് മാറ്റി.', 'tag': '⚖️ Strategic Trade-offs'},
+        {'avatar': 'Negotiation Counterpart', 'prompt': 'We cannot concede on these service-level agreement benchmarks.', 'ml': 'ഈ നിബന്ധനകളിൽ വിട്ടുവീഴ്ച ചെയ്യാൻ കഴിയില്ല.', 'phrase': 'We can agree to these metrics provided escalation protocols are streamlined.', 'meaning': 'സഹകരണ വ്യവസ്ഥകൾ സുതാര്യമാക്കിയാൽ ഈ നിബന്ധനകൾ ഞങ്ങൾ അംഗീകരിക്കാം.', 'tag': '🤝 High-Stakes Negotiation'},
+        {'avatar': 'Board Member', 'prompt': 'What is the biggest operational risk confronting our enterprise?', 'ml': 'സ്ഥാപനം നേരിടുന്ന ഏറ്റവും വലിയ റിസ്ക് എന്താണ്?', 'phrase': 'Technological obsolescence and cybersecurity latency require proactive mitigation.', 'meaning': 'സാങ്കേതിക മാറ്റങ്ങളും സൈബർ സുരക്ഷാ വെല്ലുവിളികളും മുൻകൂട്ടി തടയേണ്ടതുണ്ട്.', 'tag': '🛡️ Enterprise Risk Assessment'},
+        {'avatar': 'Hiring Committee', 'prompt': 'Describe a scenario where you convinced skeptical leadership.', 'ml': 'നേതൃത്വത്തെ തെളിവുകൾ നിരത്തി ബോധ്യപ്പെടുത്തിയ അനുഭവം പറയൂ.', 'phrase': 'I leveraged empirical performance data to build unanimous stakeholder consensus.', 'meaning': 'കൃത്യമായ തെളിവുകളും ഡാറ്റയും നിരത്തിയാണ് ഞാൻ മാനേജ്‌മെന്റിനെ ബോധ്യപ്പെടുത്തിയത്.', 'tag': '📊 Influence with Data'},
+        {'avatar': 'Product Architect', 'prompt': 'Should we proceed with the refactor or push user-facing features?', 'ml': 'റിഫാക്ടറിംഗ് ചെയ്യണോ പുതിയ ഫീച്ചറുകൾ നൽകണോ?', 'phrase': 'Stabilizing technical debt now accelerates our long-term delivery velocity.', 'meaning': 'ഇപ്പോൾ ടെക്നിക്കൽ പ്രശ്നങ്ങൾ പരിഹരിക്കുന്നത് ഭാവിയിലെ വളർച്ചയെ ത്വരിതപ്പെടുത്തും.', 'tag': '⚡ Technical Vision'},
+        {'avatar': 'Keynote Moderator', 'prompt': 'What message would you leave with young leaders aspiring for impact?', 'ml': 'യുവ നേതാക്കൾക്ക് നൽകാനുള്ള സന്ദേശം എന്താണ്?', 'phrase': 'Clarity of thought and authentic communication are the cornerstones of influence.', 'meaning': 'ചിന്തയിലെ വ്യക്തതയും ആത്മാർത്ഥമായ ആശയവിനിമയവുമാണ് സ്വാധീനത്തിന്റെ അടിസ്ഥാനം.', 'tag': '🎤 Keynote Address'},
+        {'avatar': 'Grandmaster Mentor', 'prompt': 'You possess sovereign executive presence and command over English!', 'ml': 'നിങ്ങൾക്ക് അതിശക്തമായ എക്സിക്യൂട്ടീവ് പ്രസൻസും ഭാഷാ പ്രാവീണ്യവുമുണ്ട്!', 'phrase': 'I communicate with precision, authority, and empathy across all global stages.', 'meaning': 'ഏത് ആഗോള വേദിയിലും കൃത്യതയോടും അധികാരത്തോടും സഹാനുഭൂതിയോടും ഞാൻ സംസാരിക്കുന്നു.', 'tag': '👑 Sovereign Leadership'},
+      ];
+      final item = higherConversations[dIdx];
+      result.add({
+        'avatarPrompt': "${item['avatar']}: '${item['prompt']}'",
+        'avatarPromptMl': item['ml'] ?? '',
+        'phrase': item['phrase'] ?? '',
+        'phonetic': '/${item['phrase']}/',
+        'meaning': {'en': item['phrase'] ?? '', 'ml': item['meaning'] ?? ''},
+        'tag': item['tag'] ?? '💼 Executive Corporate Pitch',
+        'tagMl': 'എക്സിക്യൂട്ടീവ് പ്രസന്റേഷൻ',
+      });
+    }
+
+    // 🎯 Challenge 3: Fast Reflex Sentence Constructor Pattern (Step 4 Pattern)
+    if (challengePatterns.isNotEmpty) {
+      final pat = challengePatterns.first.toString().replaceAll('"', '').trim();
+      result.add({
+        'avatarPrompt': "Study Partner Alex: 'Can you say this assembled phrase with zero hesitation?'",
+        'avatarPromptMl': 'സ്റ്റഡി പാർട്ണർ അലക്സ്: തടസ്സമില്ലാതെ ഈ വാചകം വേഗത്തിൽ പറയൂ:',
+        'phrase': pat,
+        'phonetic': '/$pat/',
+        'meaning': {'en': pat, 'ml': 'വേഗത്തിൽ പറഞ്ഞു ശീലിക്കുക.'},
+        'tag': '⚡ Sentence Reflex Drill',
+        'tagMl': 'വാചക നിർമ്മാണം',
+      });
+    } else if (readingSentences.isNotEmpty) {
+      final r1 = readingSentences.first;
+      final text = (r1 is Map ? r1['text']?.toString() : r1.toString()) ?? primarySentence;
+      final ml = (r1 is Map ? r1['meaningMl']?.toString() : '') ?? '';
+      result.add({
+        'avatarPrompt': "Tutor Maya: 'Shadow read this sentence after me with natural cadence!'",
+        'avatarPromptMl': 'ട്യൂട്ടർ മായ: എന്റെ ഒപ്പം അതേ താളത്തിൽ വായിക്കൂ:',
+        'phrase': text,
+        'phonetic': '/$text/',
+        'meaning': {'en': text, 'ml': ml.isNotEmpty ? ml : text},
+        'tag': '📖 Fluency Shadowing',
+        'tagMl': 'ഫ്ലുവെൻസി ഷാഡോയിംഗ്',
+      });
+    } else {
+      final reflexFallback = track == Day1Track.zero
+          ? 'I can speak simple English words.'
+          : (track == Day1Track.middle
+              ? 'I can express my thoughts clearly and fluently.'
+              : 'I articulate complex strategies with authority and clarity.');
+      final reflexMl = track == Day1Track.zero
+          ? 'എനിക്ക് ലളിതമായ ഇംഗ്ലീഷ് വാക്കുകൾ പറയാൻ സാധിക്കും.'
+          : (track == Day1Track.middle
+              ? 'എന്റെ ചിന്തകൾ വ്യക്തമായി പ്രകടിപ്പിക്കാൻ എനിക്ക് സാധിക്കും.'
+              : 'സങ്കീർണ്ണമായ ആശയങ്ങൾ ആത്മവിശ്വാസത്തോടെ ഞാൻ വ്യക്തമാക്കുന്നു.');
+      result.add({
+        'avatarPrompt': "Study Partner Alex: 'Fast tongue reflex! Speak this line with zero hesitation:'",
+        'avatarPromptMl': 'സ്റ്റഡി പാർട്ണർ അലക്സ്: തടസ്സമില്ലാതെ ഈ വാചകം വേഗത്തിൽ പറയൂ:',
+        'phrase': reflexFallback,
+        'phonetic': '/$reflexFallback/',
+        'meaning': {'en': reflexFallback, 'ml': reflexMl},
+        'tag': '⚡ Tongue Reflex Drill',
+        'tagMl': 'സംസാര വേഗത',
+      });
+    }
+
+    // 🎯 Challenge 4: Career / Job Interview Practical Placement Drill (15 Progressive Scenarios)
+    if (track == Day1Track.zero) {
+      const zeroInterviewDrills = [
+        {'avatar': 'HR Assistant', 'prompt': 'Can you tell me your name and qualification?', 'ml': 'നിങ്ങളുടെ പേരും യോഗ്യതയും പറയാമോ?', 'phrase': 'My name is Rahul and I am a graduate.', 'meaning': 'എന്റെ പേര് രാഹുൽ, ഞാൻ ഒരു ഗ്രാജ്വേറ്റ് ആണ്.', 'tag': '📄 Simple Interview Intro'},
+        {'avatar': 'Store Manager', 'prompt': 'What hours are you available to work?', 'ml': 'ഏതൊക്കെ സമയങ്ങളിൽ ജോലി ചെയ്യാൻ സാധിക്കും?', 'phrase': 'I am available to work full time.', 'meaning': 'എനിക്ക് ഫുൾ ടൈം ജോലി ചെയ്യാൻ സാധിക്കും.', 'tag': '⏰ Availability Drill'},
+        {'avatar': 'Team Supervisor', 'prompt': 'Can you operate a computer and send emails?', 'ml': 'കമ്പ്യൂട്ടറും ഇമെയിലും ഉപയോഗിക്കാൻ അറിയാമോ?', 'phrase': 'Yes, I know how to use a computer.', 'meaning': 'അതെ, എനിക്ക് കമ്പ്യൂട്ടർ ഉപയോഗിക്കാൻ അറിയാം.', 'tag': '💻 Basic Computer Skill'},
+        {'avatar': 'Office Admin', 'prompt': 'When can you join our organization?', 'ml': 'എപ്പോൾ ജോലിയിൽ പ്രവേശിക്കാം?', 'phrase': 'I can join starting tomorrow.', 'meaning': 'എനിക്ക് നാളെ മുതൽ ജോലിയിൽ പ്രവേശിക്കാം.', 'tag': '🗓️ Joining Date'},
+        {'avatar': 'Senior Colleague', 'prompt': 'Do you need help with this form?', 'ml': 'ഫോം പൂരിപ്പിക്കാൻ സഹായം വേണോ?', 'phrase': 'Yes, please show me how to fill this.', 'meaning': 'അതെ, ഇത് എങ്ങനെ പൂരിപ്പിക്കണമെന്ന് കാണിച്ചുതരൂ.', 'tag': '📝 Form Filling'},
+        {'avatar': 'Trainer Maya', 'prompt': 'Tell me one thing you like about this job.', 'ml': 'ഈ ജോലിയിൽ ഏറ്റവും ഇഷ്ടപ്പെട്ട കാര്യം എന്താണ്?', 'phrase': 'I want to learn new skills here.', 'meaning': 'എനിക്ക് ഇവിടെ പുതിയ കാര്യങ്ങൾ പഠിക്കണം.', 'tag': '🌟 Learning Motivation'},
+        {'avatar': 'Front Desk Officer', 'prompt': 'Please sign your name in the visitor book.', 'ml': 'വിസിറ്റർ ബുക്കിൽ പേര് ഒപ്പിടൂ.', 'phrase': 'Sure, where should I sign?', 'meaning': 'തീർച്ചയായും, എവിടെയാണ് ഒപ്പിടേണ്ടത്?', 'tag': '✍️ Workplace Signature'},
+        {'avatar': 'Team Leader', 'prompt': 'Can you work with our other team members?', 'ml': 'മറ്റ് അംഗങ്ങളോടൊപ്പം ഒത്തുപ്രവർത്തിക്കാമോ?', 'phrase': 'Yes, I enjoy working in a team.', 'meaning': 'അതെ, എനിക്ക് ടീമായി പ്രവർത്തിക്കാൻ ഇഷ്ടമാണ്.', 'tag': '🤝 Team Player Basic'},
+        {'avatar': 'Manager Anil', 'prompt': 'How will you travel to the office daily?', 'ml': 'ഓഫീസിലേക്ക് എങ്ങനെയാണ് യാത്ര ചെയ്യുന്നത്?', 'phrase': 'I will come by bus every day.', 'meaning': 'ഞാൻ ദിവസവും ബസ്സിൽ വരും.', 'tag': '🚌 Commute Answer'},
+        {'avatar': 'Customer Service Lead', 'prompt': 'How do you greet an incoming customer?', 'ml': 'വരുന്ന കസ്റ്റമറെ എങ്ങനെ അഭിവാദ്യം ചെയ്യും?', 'phrase': 'Good morning, how can I help you today?', 'meaning': 'സുപ്രഭാതം, ഇന്ന് ഞാൻ എങ്ങനെ സഹായിക്കണം?', 'tag': '🤝 Customer Greeting'},
+        {'avatar': 'Interview Panel', 'prompt': 'Why do you want this entry-level job?', 'ml': 'എന്തുകൊണ്ട് ഈ ജോലി ആഗ്രഹിക്കുന്നു?', 'phrase': 'I want to work hard and support my family.', 'meaning': 'കഠിനാധ്വാനം ചെയ്ത് കുടുംബത്തെ സഹായിക്കാൻ ഞാൻ ആഗ്രഹിക്കുന്നു.', 'tag': '💼 Work Intent'},
+        {'avatar': 'Office Manager', 'prompt': 'Do you have any questions for us today?', 'ml': 'ഞങ്ങളോട് എന്തെങ്കിലും ചോദിക്കാനുണ്ടോ?', 'phrase': 'What are the daily working hours?', 'meaning': 'ദിവസേനയുള്ള ജോലി സമയം എത്രയാണ്?', 'tag': '❓ Asking Work Hours'},
+        {'avatar': 'HR Coordinator', 'prompt': 'We will email you your confirmation letter.', 'ml': 'സ്ഥിരീകരണ കത്ത് ഇമെയിലിൽ അയക്കാം.', 'phrase': 'Thank you, I will check my email.', 'meaning': 'നന്ദി, ഞാൻ എന്റെ ഇമെയിൽ പരിശോധിക്കാം.', 'tag': '📧 Email Acknowledgment'},
+        {'avatar': 'Mentor Deepa', 'prompt': 'Are you ready for your practical training?', 'ml': 'പ്രാക്ടിക്കൽ ട്രെയിനിംഗിന് തയ്യാറാണോ?', 'phrase': 'Yes, I am excited and ready to learn.', 'meaning': 'അതെ, ഞാൻ പഠിക്കാൻ തയ്യാറാണ്.', 'tag': '🔥 Training Readiness'},
+        {'avatar': 'Director Roy', 'prompt': 'Welcome aboard to our company team!', 'ml': 'ഞങ്ങളുടെ കമ്പനി ടീമിലേക്ക് സ്വാഗതം!', 'phrase': 'Thank you very much for this wonderful opportunity.', 'meaning': 'ഈ മികച്ച അവസരത്തിന് വളരെ നന്ദി.', 'tag': '🎉 Welcome Onboarding'},
+      ];
+      final item = zeroInterviewDrills[dIdx];
+      result.add({
+        'avatarPrompt': "${item['avatar']}: '${item['prompt']}'",
+        'avatarPromptMl': item['ml'] ?? '',
+        'phrase': item['phrase'] ?? '',
+        'phonetic': '/${item['phrase']}/',
+        'meaning': {'en': item['phrase'] ?? '', 'ml': item['meaning'] ?? ''},
+        'tag': item['tag'] ?? '💼 Entry Job Drill',
+        'tagMl': 'തൊഴിൽ സംഭാഷണം',
+      });
+    } else if (track == Day1Track.middle) {
+      const middleInterviewDrills = [
+        {'avatar': 'Campus Placement Head', 'prompt': 'Walk me through your educational background.', 'ml': 'വിദ്യാഭ്യാസ പശ്ചാത്തലം വിശദീകരിക്കാമോ?', 'phrase': 'I recently graduated with a degree in science and technology.', 'meaning': 'ഞാൻ അടുത്തിടെ സയൻസ് & ടെക്നോളജിയിൽ ബിരുദം പൂർത്തിയാക്കി.', 'tag': '🎓 Degree & Education'},
+        {'avatar': 'Technical Recruiter', 'prompt': 'What technical or practical tools are you proficient in?', 'ml': 'ഏതൊക്കെ സാങ്കേതിക വിദ്യകളിലാണ് പ്രാവീണ്യമുള്ളത്?', 'phrase': 'I am proficient in problem solving and core programming tools.', 'meaning': 'പ്രശ്നപരിഹാരത്തിലും അടിസ്ഥാന പ്രോഗ്രാമിംഗിലും എനിക്ക് നല്ല പ്രാവീണ്യമുണ്ട്.', 'tag': '💻 Technical Competency'},
+        {'avatar': 'HR Panelist', 'prompt': 'How do you prioritize your time during semester exams?', 'ml': 'പരീക്ഷാ സമയത്ത് സമയം എങ്ങനെ ക്രമീകരിക്കുന്നു?', 'phrase': 'I prepare structured study schedules and stick to deadlines.', 'meaning': 'ഞാൻ കൃത്യമായ ടൈംടേബിൾ തയ്യാറാക്കി സമയപരിധി പാലിക്കുന്നു.', 'tag': '⏰ Time Management'},
+        {'avatar': 'Group Discussion Lead', 'prompt': 'Do you agree that practical experience beats rote learning?', 'ml': 'പ്രായോഗിക പരിചയമാണോ കാണാപാഠം പഠിക്കുന്നതിനേക്കാൾ നല്ലത്?', 'phrase': 'Hands-on experience provides practical insights that textbooks cannot teach.', 'meaning': 'പ്രായോഗിക പരിചയം പുസ്തകങ്ങൾക്ക് നൽകാൻ കഴിയാത്ത ഉൾക്കാഴ്ച നൽകുന്നു.', 'tag': '🗣️ GD Persuasion'},
+        {'avatar': 'Internship Manager', 'prompt': 'What was your primary responsibility during your internship?', 'ml': 'ഇന്റേൺഷിപ്പ് കാലയളവിലെ പ്രധാന ചുമതല എന്തായിരുന്നു?', 'phrase': 'I collaborated with the senior team to streamline data entry.', 'meaning': 'ഡാറ്റ ശേഖരണം കാര്യക്ഷമമാക്കാൻ ഞാൻ സീനിയർ ടീമിനൊപ്പം പ്രവർത്തിച്ചു.', 'tag': '💼 Internship Role'},
+        {'avatar': 'College Dean', 'prompt': 'How do you handle constructive criticism on your project?', 'ml': 'പ്രൊജക്റ്റിലെ വിമർശനങ്ങളെ എങ്ങനെ സ്വീകരിക്കുന്നു?', 'phrase': 'I treat constructive feedback as a stepping stone to excellence.', 'meaning': 'വിമർശനങ്ങളെ കൂടുതൽ മികച്ചതാകാനുള്ള അവസരമായി ഞാൻ കാണുന്നു.', 'tag': '📈 Growth Mindset'},
+        {'avatar': 'Hiring Manager Vikram', 'prompt': 'Where do you see yourself in the next three years?', 'ml': 'അടുത്ത മൂന്ന് വർഷത്തിൽ താങ്കളെ എവിടെ കാണുന്നു?', 'phrase': 'I aim to grow into a dependable domain specialist in this field.', 'meaning': 'അടുത്ത മൂന്ന് വർഷത്തിനുള്ളിൽ ഈ മേഖലയിലെ വിദഗ്ദ്ധനാകാൻ ഞാൻ ലക്ഷ്യമിടുന്നു.', 'tag': '🎯 Career Vision'},
+        {'avatar': 'Tech Interviewer', 'prompt': 'Can you explain the main challenge in your capstone project?', 'ml': 'പ്രൊജക്റ്റിലെ പ്രധാന വെല്ലുവിളി എന്തായിരുന്നു?', 'phrase': 'Our primary hurdle was data latency, which we resolved by caching.', 'meaning': 'പ്രധാന വെല്ലുവിളി ഡാറ്റാ വേഗതയായിരുന്നു, അത് കാഷിംഗ് വഴി ഞങ്ങൾ പരിഹരിച്ചു.', 'tag': '🛠️ Project Deep-Dive'},
+        {'avatar': 'HR Lead Meera', 'prompt': 'Are you willing to relocate to a different metropolitan branch?', 'ml': 'മറ്റൊരു നഗരത്തിലേക്ക് മാറാൻ തയ്യാറാണോ?', 'phrase': 'Yes, I am enthusiastic about exploring new cities and cultures.', 'meaning': 'അതെ, പുതിയ നഗരങ്ങളിലേക്ക് മാറാൻ എനിക്ക് പൂർണ്ണ സന്തോഷമേയുള്ളൂ.', 'tag': '🌍 Relocation Flexibility'},
+        {'avatar': 'Client Project Lead', 'prompt': 'How do you communicate complex ideas to non-technical users?', 'ml': 'സാങ്കേതിക കാര്യങ്ങൾ സാധാരണക്കാരോട് എങ്ങനെ പറയും?', 'phrase': 'I break down technical terms into relatable real-world analogies.', 'meaning': 'സാങ്കേതിക പദങ്ങളെ ലളിതമായ ഉദാഹരണങ്ങളിലൂടെ ഞാൻ വിശദീകരിക്കുന്നു.', 'tag': '💡 Clear Articulation'},
+        {'avatar': 'Placement Trainer', 'prompt': 'What distinguishes you from other shortlisted candidates?', 'ml': 'മറ്റുള്ളവരിൽ നിന്ന് താങ്കളെ വ്യത്യസ്തനാക്കുന്നത് എന്താണ്?', 'phrase': 'My blend of strong discipline and quick adaptability sets me apart.', 'meaning': 'എന്റെ അച്ചടക്കവും പെട്ടെന്ന് പഠിക്കാനുള്ള കഴിവും എന്നെ വ്യത്യസ്തനാക്കുന്നു.', 'tag': '🌟 Candidate Differentiation'},
+        {'avatar': 'Seminar Chairperson', 'prompt': 'Any concluding remarks for our campus delegation?', 'ml': 'സെമിനാറിന് ഉപസംഹാരമായി എന്താണ് പറയാനുള്ളത്?', 'phrase': 'Consistent effort and clear communication unlock unlimited doors.', 'meaning': 'നിരന്തരമായ പരിശ്രമവും നല്ല സംഭാഷണവും അനന്തമായ അവസരങ്ങൾ തുറന്നുതരുന്നു.', 'tag': '🎤 Campus Concluding Words'},
+        {'avatar': 'HR Business Partner', 'prompt': 'How do you maintain high energy across intense work days?', 'ml': 'ജോലിഭാരമുള്ള ദിവസങ്ങളിൽ ഊർജ്ജം എങ്ങനെ നിലനിർത്തുന്നു?', 'phrase': 'I stay motivated by focusing on milestone accomplishments.', 'meaning': 'ഓരോ ഘട്ടങ്ങളും വിജയകരമായി പൂർത്തിയാക്കി ഞാൻ ആവേശം നിലനിർത്തുന്നു.', 'tag': '⚡ Motivation & Stamina'},
+        {'avatar': 'Team Lead Karthik', 'prompt': 'How will you collaborate with teammates from different states?', 'ml': 'മറ്റ് സംസ്ഥാനങ്ങളിലുള്ള ടീമംഗങ്ങളുമായി എങ്ങനെ ഒത്തുപ്രവർത്തിക്കും?', 'phrase': 'English enables seamless teamwork and bridge-building across diverse groups.', 'meaning': 'വിവിധ സംസ്കാരങ്ങളിലുള്ള സഹപ്രവർത്തകരുമായി ഒത്തുപ്രവർത്തിക്കാൻ ഇംഗ്ലീഷ് സഹായിക്കുന്നു.', 'tag': '🤝 Cross-Culture Collaboration'},
+        {'avatar': 'Senior Interviewer', 'prompt': 'Congratulations, your communication skills are thoroughly impressive!', 'ml': 'അഭിനന്ദനങ്ങൾ, നിങ്ങളുടെ ആശയവിനിമയ മികവ് മികച്ചതാണ്!', 'phrase': 'Thank you, I am thrilled to contribute my best to the team.', 'meaning': 'വളരെ നന്ദി, ടീമിന് എന്റെ ഏറ്റവും മികച്ച സംഭാവന നൽകാൻ ഞാൻ ആവേശഭരിതനാണ്.', 'tag': '🏆 Interview Success'},
+      ];
+      final item = middleInterviewDrills[dIdx];
+      result.add({
+        'avatarPrompt': "${item['avatar']}: '${item['prompt']}'",
+        'avatarPromptMl': item['ml'] ?? '',
+        'phrase': item['phrase'] ?? '',
+        'phonetic': '/${item['phrase']}/',
+        'meaning': {'en': item['phrase'] ?? '', 'ml': item['meaning'] ?? ''},
+        'tag': item['tag'] ?? '🎯 Campus Placement Q&A',
+        'tagMl': 'ക്യാമ്പസ് ഇന്റർവ്യൂ',
+      });
+    } else {
+      const higherInterviewDrills = [
+        {'avatar': 'Executive Hiring Panel', 'prompt': 'Describe a Situation where you turned around an underperforming initiative (STAR - S).', 'ml': 'പ്രതീക്ഷിച്ച ഫലം കിട്ടാത്ത പ്രൊജക്റ്റ് വിജയകരമാക്കിയ സാഹചര്യം വിവരിക്കൂ (STAR).', 'phrase': 'When project velocity dropped by thirty percent, I audited our delivery pipeline.', 'meaning': 'പ്രൊജക്റ്റ് വേഗത 30% കുറഞ്ഞപ്പോൾ, ഞാൻ ഡെലിവറി പ്രക്രിയ നേരിട്ട് പരിശോധിച്ചു (STAR - S).', 'tag': '🎯 STAR Method: Situation'},
+        {'avatar': 'Chief Technology Officer', 'prompt': 'What Task did you undertake to restore stakeholder confidence? (STAR - T)', 'ml': 'വിശ്വാസം വീണ്ടെടുക്കാൻ എന്തായിരുന്നു നിങ്ങളുടെ പ്രധാന ചുമതല?', 'phrase': 'My core objective was re-establishing transparent milestone reporting.', 'meaning': 'സുതാര്യമായ റിപ്പോർട്ടിംഗ് പുനഃസ്ഥാപിക്കുക എന്നതായിരുന്നു എന്റെ പ്രധാന ചുമതല (STAR - T).', 'tag': '🎯 STAR Method: Task'},
+        {'avatar': 'Board Chairman', 'prompt': 'What decisive Action did you execute under that pressure? (STAR - A)', 'ml': 'ആ സമ്മർദ്ദത്തിൽ എന്ത് ശക്തമായ നടപടിയാണ് എടുത്തത്?', 'phrase': 'I reallocated high-priority engineering pods and streamlined daily standups.', 'meaning': 'ഞാൻ പ്രധാന എഞ്ചിനീയറിംഗ് ടീമുകളെ പുനഃക്രമീകരിക്കുകയും മീറ്റിംഗുകൾ കാര്യക്ഷമമാക്കുകയും ചെയ്തു (STAR - A).', 'tag': '🎯 STAR Method: Action'},
+        {'avatar': 'Senior Partner', 'prompt': 'What was the quantifiable Result of that strategic intervention? (STAR - R)', 'ml': 'ആ തന്ത്രത്തിന്റെ അളക്കാവുന്ന ഫലം എന്തായിരുന്നു?', 'phrase': 'We delivered two weeks ahead of schedule and expanded client retention by forty percent.', 'meaning': 'രണ്ടാഴ്ച മുൻപേ ഡെലിവറി പൂർത്തിയാക്കുകയും ക്ലയന്റ് നിലനിർത്തൽ 40% വർദ്ധിപ്പിക്കുകയും ചെയ്തു (STAR - R).', 'tag': '🎯 STAR Method: Result'},
+        {'avatar': 'Chief Executive Officer', 'prompt': 'How do you articulate our market differentiation to enterprise clients?', 'ml': 'വലിയ ക്ലയന്റുകളോട് നമ്മുടെ പ്രത്യേകത എങ്ങനെ ബോധ്യപ്പെടുത്തും?', 'phrase': 'We combine enterprise-grade security with unparalleled user agility.', 'meaning': 'ഏറ്റവും മികച്ച സുരക്ഷയും ഉപയോക്തൃ സൗകര്യവും ഞങ്ങൾ ഒരുമിച്ച് നൽകുന്നു.', 'tag': '💼 Enterprise Value Pitch'},
+        {'avatar': 'Strategy Director', 'prompt': 'How do you handle disagreement with executive board members?', 'ml': 'ബോർഡ് അംഗങ്ങളുമായി അഭിപ്രായവ്യത്യാസം ഉണ്ടായാൽ എങ്ങനെ നേരിടും?', 'phrase': 'I ground my counterproposals in rigorous competitive benchmarks.', 'meaning': 'കൃത്യമായ വിപണി വിശകലനങ്ങളും തെളിവുകളും അടിസ്ഥാനമാക്കിയാണ് ഞാൻ സംസാരിക്കുന്നത്.', 'tag': '📊 Boardroom Influence'},
+        {'avatar': 'Global VP of HR', 'prompt': 'What is your operational approach to talent retention during mergers?', 'ml': 'കമ്പനി ലയന സമയത്ത് ജീവനക്കാരെ നിലനിർത്താൻ എന്ത് സമീപനമാണ് സ്വീകരിക്കുന്നത്?', 'phrase': 'Transparent communication and career path clarity mitigate attrition risks.', 'meaning': 'സുതാര്യമായ സംഭാഷണവും വ്യക്തമായ കരിയർ വഴികളും കൊഴിഞ്ഞുപോക്ക് തടയുന്നു.', 'tag': '👥 Leadership Retention'},
+        {'avatar': 'Procurement Head', 'prompt': 'The counterparty demands a twenty-percent discount on the multi-year SLA.', 'ml': 'ക്ലയന്റ് 20% ഡിസ്കൗണ്ട് ആവശ്യപ്പെടുന്നു.', 'phrase': 'We can tier the pricing based on committed volume thresholds instead.', 'meaning': 'വില കുറയ്ക്കുന്നതിന് പകരം വോളിയം അനുസരിച്ചുള്ള നിരക്ക് നിശ്ചയിക്കാം.', 'tag': '🤝 Contract Negotiation'},
+        {'avatar': 'Chief Risk Officer', 'prompt': 'How do you manage regulatory compliance without stifling innovation?', 'ml': 'നൂതന ആശയങ്ങളെ തടയാതെ നിയമപരമായ സുരക്ഷ എങ്ങനെ ഉറപ്പാക്കാം?', 'phrase': 'We bake compliance checkpoints directly into our automated continuous delivery pipeline.', 'meaning': 'നിയമപരമായ മാനദണ്ഡങ്ങൾ ഓട്ടോമേറ്റഡ് സിസ്റ്റത്തിൽ തന്നെ ഉൾപ്പെടുത്തിയിരിക്കുന്നു.', 'tag': '🛡️ Regulatory Compliance'},
+        {'avatar': 'Venture Capitalist', 'prompt': 'Why should our syndicate lead your Series B funding round?', 'ml': 'ഞങ്ങളുടെ ഫണ്ട് എന്തിന് നിങ്ങളുടെ കമ്പനിയിൽ നിക്ഷേപിക്കണം?', 'phrase': 'Our capital efficiency and month-on-month compounding growth speak for themselves.', 'meaning': 'നമ്മുടെ മികച്ച മൂലധനക്ഷമതയും തുടർച്ചയായ വളർച്ചയും ബിസിനസ്സിന്റെ കരുത്ത് തെളിയിക്കുന്നു.', 'tag': '🚀 Investor Pitch'},
+        {'avatar': 'Keynote Chair', 'prompt': 'How will artificial intelligence reshape human collaboration in the enterprise?', 'ml': 'AI മനുഷ്യന്റെ പ്രവർത്തനങ്ങളെ എങ്ങനെ മാറ്റിമറിക്കും?', 'phrase': 'AI amplifies human ingenuity by automating routine operational cognitive friction.', 'meaning': 'സാധാരണ ജോലികൾ ഓട്ടോമേറ്റ് ചെയ്ത് മനുഷ്യന്റെ ക്രിയാത്മകത വർദ്ധിപ്പിക്കാൻ AI സഹായിക്കുന്നു.', 'tag': '🧠 Thought Leadership'},
+        {'avatar': 'Head of Engineering', 'prompt': 'How do you mentor mid-level engineers into autonomous leaders?', 'ml': 'എഞ്ചിനീയർമാരെ സ്വതന്ത്ര ലീഡർമാരായി എങ്ങനെ വളർത്തിയെടുക്കുന്നു?', 'phrase': 'I assign high-visibility ownership while providing a psychological safety net.', 'meaning': 'സ്വതന്ത്രമായി കാര്യങ്ങൾ ചെയ്യാനുള്ള പൂർണ്ണ ചുമതലയും പിന്തുണയും ഞാൻ നൽകുന്നു.', 'tag': '🌱 Talent Mentorship'},
+        {'avatar': 'Crisis Management Lead', 'prompt': 'A major client experienced unexpected latency during holiday peak traffic.', 'ml': 'ക്ലയന്റിന് തടസ്സം നേരിട്ടപ്പോൾ എന്ത് നടപടി എടുത്തു?', 'phrase': 'I issued an immediate post-mortem, owned the error, and shipped permanent redundancy.', 'meaning': 'ഉടനടി അന്വേഷണം നടത്തി തെറ്റ് അംഗീകരിക്കുകയും സ്ഥിരമായ പരിഹാരം കാണുകയും ചെയ്തു.', 'tag': '⚡ Accountability & Crisis'},
+        {'avatar': 'Presidential Envoy', 'prompt': 'What core value governs every decision you make in executive leadership?', 'ml': 'നേതൃത്വത്തിൽ താങ്കളെ നയിക്കുന്ന അടിസ്ഥാന മൂല്യം എന്താണ്?', 'phrase': 'Radical integrity, uncompromising excellence, and deep empathy for end users.', 'meaning': 'സത്യസന്ധതയും വിട്ടുവീഴ്ചയില്ലാത്ത ഗുണമേന്മയും ഉപയോക്താക്കളോടുള്ള കരുതലും.', 'tag': '👑 Executive Character'},
+        {'avatar': 'Grandmaster Examiner', 'prompt': 'You have demonstrated the pinnacle of English articulation and mastery!', 'ml': 'ഇംഗ്ലീഷ് ഭാഷയിലെ ഏറ്റവും മികച്ച പ്രാവീണ്യമാണ് നിങ്ങൾ കാഴ്ചവെച്ചത്!', 'phrase': 'I command the English language as an effortless instrument of global impact.', 'meaning': 'ആഗോള തലത്തിൽ സ്വാധീനം ചെലുത്താനുള്ള ശക്തമായ മാധ്യമമായി ഇംഗ്ലീഷിനെ ഞാൻ ഉപയോഗിക്കുന്നു.', 'tag': '🏆 Sovereign Capstone'},
+      ];
+      final item = higherInterviewDrills[dIdx];
+      result.add({
+        'avatarPrompt': "${item['avatar']}: '${item['prompt']}'",
+        'avatarPromptMl': item['ml'] ?? '',
+        'phrase': item['phrase'] ?? '',
+        'phonetic': '/${item['phrase']}/',
+        'meaning': {'en': item['phrase'] ?? '', 'ml': item['meaning'] ?? ''},
+        'tag': item['tag'] ?? '🎯 Executive Behavioral Drill',
+        'tagMl': 'എക്സിക്യൂട്ടീവ് ഇന്റർവ്യൂ',
+      });
+    }
+
+    // 🎯 Challenge 5: Reading Passage Shadowing or Second Cadence Pattern
+    bool challenge5Added = false;
+    if (readingSentences.length > 1) {
+      final r2 = readingSentences[1];
+      final text = (r2 is Map ? r2['text']?.toString() : r2.toString()) ?? '';
+      final ml = (r2 is Map ? r2['meaningMl']?.toString() : '') ?? '';
+      if (text.isNotEmpty) {
+        result.add({
+          'avatarPrompt': "Cyber Cat Mascot: 'Final milestone! Speak this with absolute boldness!'",
+          'avatarPromptMl': 'സൈബർ ക്യാറ്റ്: അവസാനത്തെ പവർ വാചകം! ഉറക്കെ ധൈര്യത്തോടെ പറയൂ:',
+          'phrase': text,
+          'phonetic': '/$text/',
+          'meaning': {'en': text, 'ml': ml.isNotEmpty ? ml : text},
+          'tag': '🎙️ Aloud Reading Drill',
+          'tagMl': 'ഉറക്കെ വായിക്കൽ',
+        });
+        challenge5Added = true;
+      }
+    } else if (challengePatterns.length > 1) {
+      final pat2 = challengePatterns[1].toString().replaceAll('"', '').trim();
+      result.add({
+        'avatarPrompt': "Maya Tutor: 'Fast reflex challenge! Speak without translating in your head!'",
+        'avatarPromptMl': 'ട്യൂട്ടർ മായ: മലയാളത്തിൽ ചിന്തിക്കാതെ നേരിട്ട് ഇംഗ്ലീഷിൽ മറുപടി പറയൂ:',
+        'phrase': pat2,
+        'phonetic': '/$pat2/',
+        'meaning': {'en': pat2, 'ml': 'സ്വാഭാവികമായി സംസാരിക്കുക.'},
+        'tag': '⚡ Speed & Cadence Drill',
+        'tagMl': 'സംസാര വേഗത',
+      });
+      challenge5Added = true;
+    }
+
+    if (!challenge5Added) {
+      final cadenceFallback = track == Day1Track.zero
+          ? 'Practice makes my English better every day.'
+          : (track == Day1Track.middle
+              ? 'Confidence in spoken English unlocks limitless career opportunities.'
+              : 'Commanding professional communication elevates leadership presence.');
+      final cadenceMl = track == Day1Track.zero
+          ? 'സ്ഥിരമായ പരിശീലനം ദിവസവും എന്റെ ഇംഗ്ലീഷ് മെച്ചപ്പെടുത്തുന്നു.'
+          : (track == Day1Track.middle
+              ? 'ഇംഗ്ലീഷ് സംസാരിക്കാനുള്ള ആത്മവിശ്വാസം പുതിയ കരിയർ വഴികൾ തുറക്കുന്നു.'
+              : 'മികച്ച ആശയവിനിമയം നേതൃത്വപാടവം വർദ്ധിപ്പിക്കുന്നു.');
+      result.add({
+        'avatarPrompt': "Maya Tutor: 'Final milestone! Speak this out loud with complete confidence!'",
+        'avatarPromptMl': 'ട്യൂട്ടർ മായ: അവസാനത്തെ പവർ വാചകം! ഉറക്കെ ധൈര്യത്തോടെ പറയൂ:',
+        'phrase': cadenceFallback,
+        'phonetic': '/$cadenceFallback/',
+        'meaning': {'en': cadenceFallback, 'ml': cadenceMl},
+        'tag': '🎙️ Aloud Power Drill',
+        'tagMl': 'ആത്മവിശ്വാസ വാചകം',
+      });
+    }
+
+    if (existingStepData != null) {
+      existingStepData['appliedTrack'] = currentTrackKey;
+    }
+
+    return result;
+  }
+
   // -------------------------------------------------------------
   // 1. STEPS (100% JSON-Driven from Day1CurriculumJsonData)
   // -------------------------------------------------------------
   static List<Day1StepModel> getSteps([Day1Track? track, int day = 1]) {
     final currentTrack = track ?? Day1Track.middle;
 
-    if (day > 1) {
-      final cachedDay = PocketDayCurriculumService.getCachedDay(day);
-      if (cachedDay != null && cachedDay['steps'] != null) {
+    final cachedDay = PocketDayCurriculumService.getCachedDay(day) ?? (day == 1 ? Day1CurriculumJsonData.rawMap : null);
+    if (cachedDay != null && cachedDay['steps'] != null) {
         final rawSteps = cachedDay['steps'] as List<dynamic>? ?? [];
         return rawSteps.map((s) {
           final map = Map<String, dynamic>.from(s as Map<String, dynamic>);
@@ -420,20 +756,21 @@ class Day1Curriculum {
             };
           }
 
-          // Step 6 Spoken lab challenges synthesis
-          if (stepNum == 6 && (map['challenges'] == null || (map['challenges'] as List).isEmpty)) {
-            final vt = map['voiceTasks'] as Map<String, dynamic>? ?? {};
-            final trackKey = currentTrack == Day1Track.zero ? 'zero' : (currentTrack == Day1Track.higher ? 'higher' : 'middle');
-            final task = (vt[trackKey] ?? vt['middle'] ?? vt.values.firstOrNull) as Map<String, dynamic>? ?? {};
-            final sentence = task['targetSentence']?.toString() ?? task['prompt']?.toString() ?? 'Daily Practice';
-            final prompt = task['prompt']?.toString() ?? sentence;
-            map['challenges'] = [
-              {
-                'phrase': sentence,
-                'phonetic': '/$sentence/',
-                'meaning': {'en': sentence, 'ml': prompt},
-              }
-            ];
+          // Step 6 Spoken English Vocal Gym synthesis (User Audio Directive: High priority, rich multi-sentence challenges for Zero, Middle, Higher across all 90 days)
+          if (stepNum == 6) {
+            titleEn = '🎙️ Spoken English Vocal Gym';
+            titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് വോക്കൽ ജിം';
+            descEn = 'Speak out loud into the microphone across practical conversational, student & job interview drills!';
+            descMl = 'മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് ഇന്റർവ്യൂ, സംഭാഷണ ചോദ്യങ്ങൾ പ്രാക്ടീസ് ചെയ്യുക!';
+            icon = '🎙️';
+            gameType = 'speech_analyzer';
+
+            map['challenges'] = synthesizeSpokenWorkoutChallenges(
+              track: currentTrack,
+              day: day,
+              dayData: cachedDay,
+              existingStepData: map,
+            );
           }
 
           // Zero track safe options (User Audio Directive: Up to Day 10, Zero learners get safe non-social steps)
@@ -474,7 +811,6 @@ class Day1Curriculum {
           );
         }).toList();
       }
-    }
 
     final rawSteps = Day1CurriculumJsonData.rawMap['steps'] as List<dynamic>? ?? [];
 
@@ -513,6 +849,23 @@ class Day1Curriculum {
           icon = '🎧';
           gameType = 'audio_listening_lab';
         }
+      }
+
+      // Step 6 Spoken English Vocal Gym synthesis (User Audio Directive: High priority, rich multi-sentence challenges for Zero, Middle, Higher)
+      if (stepNum == 6) {
+        titleEn = '🎙️ Spoken English Vocal Gym';
+        titleMl = '🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് വോക്കൽ ജിം';
+        descEn = 'Speak out loud into the microphone across practical conversational, student & job interview drills!';
+        descMl = 'മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് ഇന്റർവ്യൂ, സംഭാഷണ ചോദ്യങ്ങൾ പ്രാക്ടീസ് ചെയ്യുക!';
+        icon = '🎙️';
+        gameType = 'speech_analyzer';
+
+        map['challenges'] = synthesizeSpokenWorkoutChallenges(
+          track: currentTrack,
+          day: 1,
+          dayData: Day1CurriculumJsonData.rawMap,
+          existingStepData: map,
+        );
       }
 
       return Day1StepModel(

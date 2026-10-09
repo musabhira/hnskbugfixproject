@@ -250,8 +250,8 @@
       "stepNumber": 6,
       "id": "step_6_spoken_lab",
       "title": {
-        "en": "Spoken Speech Lab",
-        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+        "en": "🎙️ Spoken English Vocal Gym",
+        "ml": "🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് വോക്കൽ ജിം"
       },
       "icon": "🎙️",
       "gameType": "speech_analyzer",
@@ -272,9 +272,56 @@
           "targetSentence": "I speak English boldly."
         }
       },
+      "challenges": [
+        {
+          "phrase": "I completed the 90-day journey!",
+          "phonetic": "/aɪ kəmˈpliːtɪd ðə ˈnaɪnti deɪ ˈdʒɜːni/",
+          "meaning": {
+            "en": "I completed the 90-day journey!",
+            "ml": "ഞാൻ 90 ദിവസത്തെ യാത്ര വിജയകരമായി പൂർത്തിയാക്കി!"
+          },
+          "tag": "🏆 Graduation Milestone"
+        },
+        {
+          "phrase": "I have achieved spoken English confidence.",
+          "phonetic": "/aɪ hæv əˈtʃiːvd ˈspəʊkən ˈɪŋɡlɪʃ ˈkɒnfɪdəns/",
+          "meaning": {
+            "en": "I have achieved spoken English confidence.",
+            "ml": "ഞാൻ ഇംഗ്ലീഷ് സംസാരിക്കാനുള്ള പൂർണ്ണ ആത്മവിശ്വാസം നേടി."
+          },
+          "tag": "🔥 Lifetime Fluency"
+        },
+        {
+          "phrase": "I speak English boldly in every job interview and meeting.",
+          "phonetic": "/aɪ spiːk ˈɪŋɡlɪʃ ˈbəʊldli ɪn ˈevri dʒɒb ˈɪntəvjuː ænd ˈmiːtɪŋ/",
+          "meaning": {
+            "en": "I speak English boldly in every job interview and meeting.",
+            "ml": "എല്ലാ ഇന്റർവ്യൂവിലും മീറ്റിംഗിലും ഞാൻ ധൈര്യത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കുന്നു."
+          },
+          "tag": "💼 Corporate & Career Mastery"
+        },
+        {
+          "phrase": "I express my ideas naturally without translating from Malayalam.",
+          "phonetic": "/aɪ ɪkˈspres maɪ aɪˈdɪəz ˈnætʃrəli wɪˈðaʊt trænsˈleɪtɪŋ/",
+          "meaning": {
+            "en": "I express my ideas naturally without translating from Malayalam.",
+            "ml": "മനസ്സിൽ തർജ്ജമ ചെയ്യാതെ ഞാൻ ചിന്തകൾ നേരിട്ട് ഇംഗ്ലീഷിൽ സംസാരിക്കുന്നു."
+          },
+          "tag": "⚡ Native Speech Cadence"
+        },
+        {
+          "phrase": "We succeeded together as fluent English speakers.",
+          "phonetic": "/wiː səkˈsiːdɪd təˈɡeðər æz ˈfluːənt ˈɪŋɡlɪʃ ˈspiːkəz/",
+          "meaning": {
+            "en": "We succeeded together as fluent English speakers.",
+            "ml": "ഫ്ലുവെന്റായി സംസാരിക്കുന്നവരായി നമ്മൾ ഒരുമിച്ച് വിജയിച്ചു."
+          },
+          "tag": "🌟 Grand Citadel Champion"
+        }
+      ],
       "description": {
-        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
-        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+        "en": "Speak clearly into the microphone across practical conversational & interview drills.",
+        "ml": "മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് ഇന്റർവ്യൂ, സംഭാഷണ ചോദ്യങ്ങൾ പരിശീലിക്കുക."
       }
     },
     {

@@ -147,6 +147,39 @@ class TargetMilestoneItem {
 
 final List<TargetMilestoneItem> kTargetMilestones = [
   const TargetMilestoneItem(
+    stageNumber: -3,
+    title: 'Profile',
+    rangeText: 'Step -3',
+    targetDay: -3,
+    houseStage: 'Identity & Voice',
+    houseEmoji: '👤',
+    rewardSummary: 'Learner Profile & Avatar Calibration',
+    defenseSummary: 'Voice & Account Setup',
+    themeColor: Color(0xFF818CF8),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: -2,
+    title: 'Routine',
+    rangeText: 'Step -2',
+    targetDay: -2,
+    houseStage: 'Daily Schedule',
+    houseEmoji: '⏱️',
+    rewardSummary: '15-Min Habit Commitment',
+    defenseSummary: 'Study Anchor & Streak Shield',
+    themeColor: Color(0xFFF472B6),
+  ),
+  const TargetMilestoneItem(
+    stageNumber: -1,
+    title: 'Diagnostic',
+    rangeText: 'Step -1',
+    targetDay: -1,
+    houseStage: 'Fluency Level Check',
+    houseEmoji: '📋',
+    rewardSummary: 'Speech Diagnostic Placement',
+    defenseSummary: 'Pronunciation & Track Calibration',
+    themeColor: Color(0xFFA78BFA),
+  ),
+  const TargetMilestoneItem(
     stageNumber: 0,
     title: 'Rules',
     rangeText: 'Charter',
@@ -434,6 +467,8 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     } catch (_) {}
 
     final rulesAccepted = (prog.currentDay > 1) ||
+        (prefs.getBool('pm_onboarding_completed') ?? false) ||
+        (prefs.getBool('pm_onboarding_completed_$uid') ?? false) ||
         (prefs.getBool('pocket_world_rules_accepted_${uid}_v1') ??
          prefs.getBool('pocket_world_rules_accepted_v1') ?? false);
 
@@ -3159,7 +3194,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     );
   }
 
-  /// 🎯 Minimal Horizontal Level Milestones Strip (Audio Requirement!)
+  /// 🎯 Minimal Horizontal Level Milestones Strip (Audio Requirement: Foundation Steps -3, -2, -1, 0, 1..)
   Widget _buildMilestonesStrip(UserLearningProgress prog) {
     return SizedBox(
       height: 28,
@@ -3170,25 +3205,43 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
         separatorBuilder: (_, __) => const SizedBox(width: 6),
         itemBuilder: (context, index) {
           final item = kTargetMilestones[index];
+          final isNegativeFoundation = item.stageNumber < 0;
           final isRule = item.stageNumber == 0;
-          final isUnlocked =
-              isRule ? _hasAcceptedRules : prog.currentDay >= item.targetDay;
-          final isCurrentTarget = isRule
-              ? !_hasAcceptedRules
-              : (prog.currentDay <= item.targetDay &&
-                  (index <= 1 ||
-                      prog.currentDay >
-                          kTargetMilestones[index - 1].targetDay));
+
+          final bool isUnlocked;
+          final bool isCurrentTarget;
+
+          if (isNegativeFoundation) {
+            isUnlocked = _effectiveRulesAccepted || prog.currentDay >= 1;
+            isCurrentTarget = false;
+          } else if (isRule) {
+            isUnlocked = _effectiveRulesAccepted;
+            isCurrentTarget = !_effectiveRulesAccepted;
+          } else {
+            isUnlocked = prog.currentDay >= item.targetDay;
+            isCurrentTarget = _effectiveRulesAccepted &&
+                prog.currentDay <= item.targetDay &&
+                (index <= 4 ||
+                    prog.currentDay > kTargetMilestones[index - 1].targetDay);
+          }
 
           return GestureDetector(
-            onTap: () {
+            onTap: () async {
               HapticFeedback.selectionClick();
-              if (item.stageNumber == 0) {
+              if (item.stageNumber == -3) {
+                _showProfileSetupModal(prog);
+              } else if (item.stageNumber == -2) {
+                _showDailyRoutineModal(prog);
+              } else if (item.stageNumber == -1) {
+                await PocketDay1DiagnosticSheet.show(context, userId: widget.userId);
+                if (mounted) setState(() {});
+              } else if (item.stageNumber == 0) {
                 PocketWorldGameRulesModal.show(
                   context,
                   currentDay: prog.currentDay,
                   onPledgeAccepted: () {
                     setState(() => _hasAcceptedRules = true);
+                    _loadData();
                   },
                 );
               } else if (item.stageNumber == 6 || item.stageNumber == 7) {
@@ -3227,7 +3280,7 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   Text(item.houseEmoji, style: const TextStyle(fontSize: 12)),
                   const SizedBox(width: 4),
                   Text(
-                    isRule
+                    (isRule || isNegativeFoundation)
                         ? item.title
                         : '${item.title} (PS ${PocketScoreLevelEngine.getRequiredScoreForLevel(item.targetDay)}${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay) > 0 ? " & 🏆${PocketScoreLevelEngine.getRequiredTrophiesForLevel(item.targetDay)} Trophy" : ""})',
                     style: GoogleFonts.outfit(
@@ -3242,9 +3295,11 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
                   ),
                   const SizedBox(width: 3),
                   Text(
-                    isRule
-                        ? (_hasAcceptedRules ? '✓' : '📜')
-                        : (isUnlocked ? '✓' : (isCurrentTarget ? '🔥' : '🔒')),
+                    isNegativeFoundation
+                        ? (isUnlocked ? '✓' : '⚡')
+                        : isRule
+                            ? (_effectiveRulesAccepted ? '✓' : '📜')
+                            : (isUnlocked ? '✓' : (isCurrentTarget ? '🔥' : '🔒')),
                     style: const TextStyle(fontSize: 8.5),
                   ),
                 ],
@@ -3252,6 +3307,241 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             ),
           );
         },
+      ),
+    );
+  }
+
+  /// 👤 Milestone Step -3: Profile Setup Modal
+  void _showProfileSetupModal(UserLearningProgress prog) {
+    final track = PocketSyllabusRepository.getTrack(_currentLearnerLevel);
+    final avatar = _getAvatarForDay(prog.currentDay);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF131722),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF818CF8), width: 2),
+                    ),
+                    child: ClipOval(
+                      child: VectorAvatarWidget(config: avatar, size: 48),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Step -3: Profile & Avatar Setup',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF818CF8),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                        ),
+                        Text(
+                          'Active Track: ${track.nameEn} • Level ${prog.currentDay}',
+                          style: const TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'AI Tutor Voice & Accent Calibrated',
+                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 16),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Syllabus Track Synced (${track.nameEn})',
+                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF818CF8),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.done_rounded, color: Colors.white),
+                  label: Text('Profile Ready ✓', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// ⏱️ Milestone Step -2: Daily Routine Setup Modal
+  void _showDailyRoutineModal(UserLearningProgress prog) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF131722),
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 36,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  const Text('⏱️', style: TextStyle(fontSize: 26)),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Step -2: Daily Routine & Habit Anchor',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFF472B6),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                        ),
+                        const Text(
+                          '15-Minute Daily Habit Commitment',
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.alarm_on_rounded, color: Color(0xFFF472B6), size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Daily Study Window: 15–20 Minutes',
+                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        const Icon(Icons.local_fire_department_rounded, color: Colors.amber, size: 18),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Streak Shield Active • Daily Habit Loop Engaged',
+                            style: GoogleFonts.outfit(color: Colors.white, fontSize: 13),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF472B6),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.done_rounded, color: Colors.white),
+                  label: Text('Routine Committed ✓', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -3937,9 +4227,9 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
     final x = _getNodeX(day, screenWidth);
     final y = _getNodeY(day);
     // User audio requirement: Before Get Started rules are accepted, Day 1 must stay LOCKED!
-    final isLockedByRules = (day == 1 && !_hasAcceptedRules);
+    final isLockedByRules = (day == 1 && !_effectiveRulesAccepted);
     final isWaitingForMidnight = _isDayWaitingForMidnight(day);
-    final isCompleted = _isDayCompleted(day) && _hasAcceptedRules && !isWaitingForMidnight;
+    final isCompleted = _isDayCompleted(day) && _effectiveRulesAccepted && !isWaitingForMidnight;
     final isUnlocked = _isDayUnlocked(day, currentDay) && !isLockedByRules && !isWaitingForMidnight;
     final isCurrent = (day == currentDay) && isUnlocked && !isCompleted;
     final isBossMilestone = day == 7 ||
@@ -4025,22 +4315,33 @@ class _EnglishTasksMasterHubPageState extends State<EnglishTasksMasterHubPage>
             clipBehavior: Clip.none,
             alignment: Alignment.center,
             children: [
-              // Current Day Glowing Pulse Wave
+              // Current Day Glowing Pulse Wave / Active Beacon (Green for Day 1!)
               if (isCurrent)
                 Positioned.fill(
                   child: AnimatedBuilder(
                     animation: _bobController,
                     builder: (context, child) {
-                      final scale = 1.0 + (_bobController.value * 0.25);
+                      final scale = 1.0 + (_bobController.value * 0.28);
+                      final beaconColor = day == 1
+                          ? const Color(0xFF10B981) // Green active beacon for Day 1
+                          : const Color(0xFFFFFC00);
                       return Transform.scale(
                         scale: scale,
                         child: Container(
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: beaconColor.withValues(
+                                    alpha: 0.45 - (_bobController.value * 0.25)),
+                                blurRadius: 14 + (_bobController.value * 8),
+                                spreadRadius: 3 + (_bobController.value * 4),
+                              ),
+                            ],
                             border: Border.all(
-                              color: const Color(0xFFFFFC00)
-                                  .withValues(alpha: 0.7 - (_bobController.value * 0.4)),
-                              width: 3.5,
+                              color: beaconColor.withValues(
+                                  alpha: 0.8 - (_bobController.value * 0.4)),
+                              width: day == 1 ? 4.0 : 3.5,
                             ),
                           ),
                         ),

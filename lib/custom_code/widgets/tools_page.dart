@@ -4016,155 +4016,235 @@ class _TaskManagerScreenState extends State<ToolsPage> {
             offset: const Offset(0, 3),
           ),
         ],
-      ),
-      child: Row(
-        children: [
-          // Time column
-          Container(
-            width: 80,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                Text(
-                  startStr,
-                  style: GoogleFonts.outfit(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Container(
-                  width: 2,
-                  height: 20,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFC00),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  endStr,
-                  style: GoogleFonts.outfit(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white54,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 1,
-            height: 80,
-            color: const Color(0xFF1E2333),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      ),      child: Material(
+        color: Colors.transparent,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Top Section: Time badge + AI badge
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          item.title,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white,
-                            decoration: item.isCompleted
-                                ? TextDecoration.lineThrough
-                                : null,
-                          ),
-                        ),
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.4),
+                        width: 0.8,
                       ),
-                      if (item.source == ScheduleSource.aiGenerated)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFF6B9D),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Row(
-                            children: [
-                              Icon(Icons.auto_awesome,
-                                  color: Colors.white, size: 10),
-                              SizedBox(width: 2),
-                              Text(
-                                'AI',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                    ],
-                  ),
-                  if (item.description != null &&
-                      item.description!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      item.description!,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF9E9E9E),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.access_time_rounded,
+                          size: 12,
+                          color: Color(0xFFFFFC00),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$startStr – $endStr',
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (item.source == ScheduleSource.aiGenerated)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFF6B9D).withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                            color: const Color(0xFFFF6B9D), width: 0.8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.auto_awesome,
+                              color: Color(0xFFFF6B9D), size: 10),
+                          const SizedBox(width: 3),
+                          Text(
+                            'AI GENERATED',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFF6B9D),
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
-          ),
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: () => _toggleScheduleItem(item.id),
-                  child: Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: item.isCompleted
-                          ? const Color(0xFF4CAF50)
-                          : Colors.transparent,
-                      border: Border.all(
-                        color: item.isCompleted
-                            ? const Color(0xFF4CAF50)
-                            : const Color(0xFF757575),
-                        width: 2,
+
+            // Content Section: Full width Title and Description (NO truncation!)
+            InkWell(
+              onTap: () => _editScheduleItem(item),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        decoration: item.isCompleted
+                            ? TextDecoration.lineThrough
+                            : null,
                       ),
                     ),
-                    child: item.isCompleted
-                        ? const Icon(Icons.check, color: Colors.white, size: 14)
-                        : null,
-                  ),
+                    if (item.description != null &&
+                        item.description!.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        item.description!,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFF94A3B8),
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () => _editScheduleItem(item),
-                  child: const Icon(Icons.edit,
-                      color: Color(0xFF757575), size: 18),
-                ),
-                const SizedBox(height: 8),
-                GestureDetector(
-                  onTap: () => _deleteScheduleItem(item.id),
-                  child: const Icon(Icons.delete,
-                      color: Color(0xFF757575), size: 18),
-                ),
-              ],
+              ),
             ),
-          ),
-        ],
+
+            const SizedBox(height: 6),
+            // Subtle Divider
+            Container(
+              height: 1,
+              color: const Color(0xFF1E2333),
+            ),
+
+            // Footer Action Row: Edit, Delete, Mark Done
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Row(
+                children: [
+                  // ✏️ Edit Action
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => _editScheduleItem(item),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.edit_outlined,
+                              color: Color(0xFF38BDF8), size: 15),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Edit',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 4),
+
+                  // 🗑️ Delete Action
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => _deleteScheduleItem(item.id),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.delete_outline_rounded,
+                              color: Color(0xFFEF4444), size: 15),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Delete',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFFEF4444),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // ✅ Complete Checkbox Action
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () => _toggleScheduleItem(item.id),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 18,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: item.isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : Colors.transparent,
+                              border: Border.all(
+                                color: item.isCompleted
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFF64748B),
+                                width: 1.6,
+                              ),
+                            ),
+                            child: item.isCompleted
+                                ? const Icon(Icons.check,
+                                    color: Colors.white, size: 12)
+                                : null,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            item.isCompleted ? 'Done' : 'Mark Done',
+                            style: GoogleFonts.inter(
+                              color: item.isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF94A3B8),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

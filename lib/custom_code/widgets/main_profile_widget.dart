@@ -1938,39 +1938,6 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
                 const SizedBox(height: 14),
                 _buildAddSheetOption(
-                  icon: Icons.auto_stories_rounded,
-                  iconColor: const Color(0xFFFFB300),
-                  title: 'Add Vibe',
-                  subtitle: '10s auto-slicing video or photo story',
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => SnapchatStoryCreatorPage(
-                          userId: userId,
-                          profileId: _profileData?['id']?.toString() ?? userId,
-                          onStatusUploaded: () => _loadInitialData(),
-                        ),
-                      ),
-                    );
-                  },
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 10),
-                _buildAddSheetOption(
-                  icon: Icons.chat_bubble_outline_rounded,
-                  iconColor: const Color(0xFF38BDF8),
-                  title: 'Add Thought',
-                  subtitle: 'Post a quick quote, idea or note',
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _showAddThoughtModal();
-                  },
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 10),
-                _buildAddSheetOption(
                   icon: Icons.storefront_rounded,
                   iconColor: const Color(0xFFEC4899),
                   title: 'Add Product',
@@ -1991,13 +1958,34 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
                 ),
                 const SizedBox(height: 10),
                 _buildAddSheetOption(
-                  icon: Icons.photo_library_rounded,
-                  iconColor: const Color(0xFF10B981),
-                  title: 'Add Gallery',
-                  subtitle: 'Pick & upload photo to your profile gallery',
+                  icon: Icons.chat_bubble_outline_rounded,
+                  iconColor: const Color(0xFF38BDF8),
+                  title: 'Add Thought',
+                  subtitle: 'Post a quick quote, idea or note',
                   onTap: () {
                     Navigator.pop(ctx);
-                    _pickAndUploadGalleryImage();
+                    _showAddThoughtModal();
+                  },
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 10),
+                _buildAddSheetOption(
+                  icon: Icons.auto_awesome_rounded,
+                  iconColor: const Color(0xFFFFB300),
+                  title: 'Add Vibes',
+                  subtitle: '10s auto-slicing video or photo story',
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => SnapchatStoryCreatorPage(
+                          userId: userId,
+                          profileId: _profileData?['id']?.toString() ?? userId,
+                          onStatusUploaded: () => _loadInitialData(),
+                        ),
+                      ),
+                    );
                   },
                   isDark: isDark,
                 ),

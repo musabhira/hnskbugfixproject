@@ -28,7 +28,14 @@ class PocketPresidentService {
   static const String _kPresidentVibesKey = 'president_vibes_store';
   static const String _kPresidentAnnouncementsKey = 'president_announcements_store';
 
-  static bool isPresidentId(String id) => id == presidentId;
+  static bool isPresidentId(String id) {
+    final lower = id.toLowerCase().trim();
+    return lower == presidentId ||
+        lower == 'pocket_president' ||
+        lower == 'president' ||
+        lower == 'president_of_pocket_world' ||
+        lower == 'pres_official';
+  }
 
   /// Fetch full chat history for a specific user with The President
   static Future<List<Map<String, dynamic>>> getPresidentChatHistory(String userId) async {
@@ -845,6 +852,84 @@ class PocketPresidentService {
       }
     } catch (e) {
       debugPrint('Error fetching President inquiries/reports from Supabase: $e');
+    }
+
+    // 1.5 Fetch direct citizen chat messages sent to The President from Supabase messages table
+    try {
+      final supabase = SupaFlow.client;
+      final directMsgs = await supabase
+          .from('messages')
+          .select('id, sender_id, receiver_id, message_text, created_at, metadata')
+          .or('receiver_id.eq.pocket_president,receiver_id.eq.president,receiver_id.eq.president_of_pocket_world')
+          .order('created_at', ascending: false)
+          .limit(100);
+
+      final Map<String, Map<String, dynamic>> latestDirectMsgBySender = {};
+      for (var m in directMsgs) {
+        final sId = m['sender_id']?.toString() ?? '';
+        if (sId.isNotEmpty && !latestDirectMsgBySender.containsKey(sId)) {
+          latestDirectMsgBySender[sId] = m;
+        }
+      }
+
+      if (latestDirectMsgBySender.isNotEmpty) {
+        final missingUserIds = latestDirectMsgBySender.keys.toList();
+        Map<String, Map<String, dynamic>> directProfMap = {};
+        try {
+          final profs = await supabase
+              .from('profile')
+              .select('id, user_id, name, first_name, username, profile_image_url, learning_day, english_level')
+              .inFilter('user_id', missingUserIds);
+          for (var p in profs) {
+            if (p['user_id'] != null) directProfMap[p['user_id'].toString()] = p;
+            if (p['id'] != null) directProfMap[p['id'].toString()] = p;
+          }
+        } catch (_) {}
+
+        latestDirectMsgBySender.forEach((sId, msgRow) {
+          final existingIdx = inquiries.indexWhere((q) => q['user_id'] == sId);
+          final prof = directProfMap[sId];
+          final sName = (prof?['name'] ?? prof?['username'] ?? prof?['first_name'] ?? '').toString().trim();
+          final displayName = sName.isNotEmpty && sName != 'Citizen' && sName != 'User'
+              ? sName
+              : ContactsNameService().getDisplayName(userId: sId, fallbackName: 'Learner');
+          final avatarUrl = prof?['profile_image_url'];
+          final day = prof?['learning_day'] ?? 1;
+          final text = msgRow['message_text']?.toString() ?? '';
+
+          if (existingIdx != -1) {
+            inquiries[existingIdx]['last_message'] = text;
+            inquiries[existingIdx]['created_at'] = msgRow['created_at'];
+          } else {
+            inquiries.add({
+              'id': msgRow['id']?.toString(),
+              'user_id': sId,
+              'user_name': displayName,
+              'user_avatar': avatarUrl,
+              'learning_day': day,
+              'english_level': prof?['english_level'],
+              'last_message': text,
+              'report_type': 'citizen_direct_message',
+              'status': 'pending',
+              'created_at': msgRow['created_at'],
+              'is_general_report': false,
+              'messages': [
+                {
+                  'id': msgRow['id']?.toString(),
+                  'sender_id': sId,
+                  'sender_name': displayName,
+                  'sender_avatar': avatarUrl,
+                  'is_president': false,
+                  'text': text,
+                  'created_at': msgRow['created_at'],
+                }
+              ],
+            });
+          }
+        });
+      }
+    } catch (directMsgErr) {
+      debugPrint('Error fetching direct citizen messages for President Desk: $directMsgErr');
     }
 
     // 2. Fetch local inquiries from SharedPreferences as fallback/merge

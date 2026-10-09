@@ -16,36 +16,67 @@ import '../avatar/vector_avatar_widget.dart';
 import '../learning_60day/flame_english_house_game.dart';
 import '../learning_60day/pocket_citadel_attack_page.dart';
 import '../learning_60day/pocket_world_street_page.dart';
+import '../../services/pocket_president_service.dart';
 import 'pocket_feed_vibe_share_sheet.dart';
 import 'pocket_reels_game_engine.dart';
 
 /// Item type for the Reels Feed: Homestead, Interactive Mini-Game, or Public Vibe (Audio Directive)
 enum ReelItemType { home, game, vibe }
 
+class ReelVibeItem {
+  final String id;
+  final String mediaUrl;
+  final String mediaType;
+  final String? caption;
+  final int duration;
+
+  const ReelVibeItem({
+    required this.id,
+    required this.mediaUrl,
+    required this.mediaType,
+    this.caption,
+    this.duration = 10,
+  });
+}
+
 class ReelVibeCard {
   final String id;
   final String userId;
   final String authorName;
   final String? authorAvatarUrl;
-  final String mediaUrl;
-  final String mediaType;
-  final String? caption;
-  final int duration;
+  final List<ReelVibeItem> stories;
   final int day;
   final bool isRobot;
 
-  const ReelVibeCard({
+  ReelVibeCard({
     required this.id,
     required this.userId,
     required this.authorName,
     this.authorAvatarUrl,
-    required this.mediaUrl,
-    required this.mediaType,
-    this.caption,
-    this.duration = 10,
+    List<ReelVibeItem>? stories,
+    String? mediaUrl,
+    String? mediaType,
+    String? caption,
+    int duration = 10,
     this.day = 1,
     this.isRobot = false,
-  });
+  }) : stories = (stories != null && stories.isNotEmpty)
+            ? stories
+            : [
+                if (mediaUrl != null && mediaUrl.isNotEmpty)
+                  ReelVibeItem(
+                    id: id,
+                    mediaUrl: mediaUrl,
+                    mediaType: mediaType ?? 'video',
+                    caption: caption,
+                    duration: duration,
+                  )
+              ];
+
+  String get mediaUrl => stories.isNotEmpty ? stories.first.mediaUrl : '';
+  String get mediaType => stories.isNotEmpty ? stories.first.mediaType : 'video';
+  String? get caption => stories.isNotEmpty ? stories.first.caption : null;
+  int get duration => stories.isNotEmpty ? stories.first.duration : 10;
 }
 
 /// 🎵 Ambient BGM Track for Homes - Powered by PocketGameAudioService
@@ -368,10 +399,46 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
       combinedNeighbors.removeWhere((n) => n.id == widget.initialNeighbor!.id);
       combinedNeighbors.insert(0, widget.initialNeighbor!);
     } else if (widget.initialHouseId != null) {
-      final matchIdx = combinedNeighbors.indexWhere((n) => n.id == widget.initialHouseId);
-      if (matchIdx > 0) {
+      final targetId = widget.initialHouseId!;
+      final matchIdx = combinedNeighbors.indexWhere((n) => n.id == targetId);
+      if (matchIdx >= 0) {
         final match = combinedNeighbors.removeAt(matchIdx);
         combinedNeighbors.insert(0, match);
+      } else {
+        // Deep linked house not in pool: explicitly construct the intended home at index 0
+        PocketNeighbor targetNeighbor;
+        if (PocketPresidentService.isPresidentId(targetId) || targetId == 'pocket_president') {
+          targetNeighbor = PocketNeighbor.createPresident();
+        } else if (PocketRobotService.isRobotId(targetId)) {
+          final bot = PocketRobotService.getRobotById(targetId) ?? PocketRobotService.getRobotByLevel(1);
+          final dynLvl = PocketRobotService.getDynamicLevel(bot);
+          targetNeighbor = PocketNeighbor(
+            id: bot.id,
+            name: bot.name,
+            day: dynLvl,
+            streak: dynLvl,
+            rank: bot.cefrRank,
+            paletteId: bot.housePalette,
+            isMe: false,
+            hasActiveShield: true,
+            statusMessage: bot.bio,
+            isPocketRobo: true,
+            hp: 100,
+            maxHp: 100,
+          );
+        } else {
+          targetNeighbor = PocketNeighbor(
+            id: targetId,
+            name: 'Citizen Citadel',
+            day: widget.userLevel,
+            streak: 1,
+            rank: 'Citadel Resident',
+            paletteId: 'slate',
+            isMe: false,
+            statusMessage: 'Welcome to my Citadel Home!',
+          );
+        }
+        combinedNeighbors.insert(0, targetNeighbor);
       }
     }
 
@@ -384,8 +451,10 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           .eq('is_active', true)
           .gt('expires_at', nowIso)
           .order('created_at', ascending: false)
-          .limit(20);
+          .limit(30);
 
+      // Group vibes by creator so multi-story taps work smoothly (User Audio Directive)
+      final Map<String, List<Map<String, dynamic>>> groupedVibes = {};
       for (final v in vibesRes) {
         final rawMeta = v['metadata'];
         final isPriv = (v['is_private'] == true) || (rawMeta is Map && rawMeta['is_private'] == true);
@@ -395,26 +464,40 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
         final mediaUrl = v['media_url']?.toString() ?? '';
         if (mediaUrl.isEmpty) continue;
 
-        final profile = v['profile'];
+        final uId = v['user_id']?.toString() ?? '';
+        if (uId.isEmpty) continue;
+        groupedVibes.putIfAbsent(uId, () => []).add(v);
+      }
+
+      groupedVibes.forEach((uId, vList) {
+        final first = vList.first;
+        final profile = first['profile'];
         final authorName = (profile is Map ? (profile['name'] ?? profile['display_name']) : null)?.toString() ?? 'Vibe Creator';
         final authorAvatar = (profile is Map ? profile['profile_image_url'] : null)?.toString();
         final day = (profile is Map ? (profile['learning_day'] as num?)?.toInt() : null) ?? 1;
 
+        final stories = vList.map((item) {
+          return ReelVibeItem(
+            id: item['id']?.toString() ?? UniqueKey().toString(),
+            mediaUrl: item['media_url']?.toString() ?? '',
+            mediaType: item['media_type']?.toString() ?? 'video',
+            caption: item['caption']?.toString(),
+            duration: (item['duration'] as num?)?.toInt() ?? 10,
+          );
+        }).toList();
+
         publicVibes.add(
           ReelVibeCard(
-            id: v['id']?.toString() ?? UniqueKey().toString(),
-            userId: v['user_id']?.toString() ?? '',
+            id: first['id']?.toString() ?? UniqueKey().toString(),
+            userId: uId,
             authorName: authorName,
             authorAvatarUrl: authorAvatar,
-            mediaUrl: mediaUrl,
-            mediaType: v['media_type']?.toString() ?? 'video',
-            caption: v['caption']?.toString(),
-            duration: (v['duration'] as num?)?.toInt() ?? 10,
+            stories: stories,
             day: day,
             isRobot: false,
           ),
         );
-      }
+      });
     } catch (e) {
       debugPrint('Error fetching public vibes for Homes feed: $e');
     }
@@ -425,9 +508,22 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           id: 'robot_vibe_1',
           userId: 'robo_maya',
           authorName: 'Maya 🤖 (Habit Coach)',
-          mediaUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
-          mediaType: 'image',
-          caption: 'Consistency is power! 15 minutes of daily practice unlocks fluency. ✨',
+          stories: const [
+            ReelVibeItem(
+              id: 'maya_s1',
+              mediaUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&q=80',
+              mediaType: 'image',
+              caption: 'Consistency is power! 15 minutes of daily practice unlocks fluency. ✨',
+              duration: 10,
+            ),
+            ReelVibeItem(
+              id: 'maya_s2',
+              mediaUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&q=80',
+              mediaType: 'image',
+              caption: 'Quick tip: Speak out loud every sentence you construct today! 🗣️🔥',
+              duration: 10,
+            ),
+          ],
           day: 14,
           isRobot: true,
         ),
@@ -435,9 +531,22 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           id: 'robot_vibe_2',
           userId: 'robo_alex',
           authorName: 'Alex 🤖 (Grammar Master)',
-          mediaUrl: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80',
-          mediaType: 'image',
-          caption: 'Mastering tenses today! Challenge your Citadel in the arena. 🏰⚡',
+          stories: const [
+            ReelVibeItem(
+              id: 'alex_s1',
+              mediaUrl: 'https://images.unsplash.com/photo-1546776310-eef45dd6d63c?w=800&q=80',
+              mediaType: 'image',
+              caption: 'Mastering tenses today! Challenge your Citadel in the arena. 🏰⚡',
+              duration: 10,
+            ),
+            ReelVibeItem(
+              id: 'alex_s2',
+              mediaUrl: 'https://images.unsplash.com/photo-1517842645767-c639042777db?w=800&q=80',
+              mediaType: 'image',
+              caption: 'Spot the difference: "I have eaten" vs "I ate". Practice now! 💡',
+              duration: 10,
+            ),
+          ],
           day: 28,
           isRobot: true,
         ),
@@ -1647,217 +1756,20 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     );
   }
 
-  /// ✨ Public Vibe Reel Slide (User Audio Directive: "ഡേ വൺ എന്ന് എഴുതിയ അവിടെ വൈബ്സ് എന്ന് എഴുതിയാൽ മതി")
+  /// ✨ Public Vibe Reel Slide (User Audio Directive: multi-story tap left/right + Home Visit button)
   Widget _buildVibeReelSlide(ReelVibeCard vibe, int index) {
-    return Stack(
-      children: [
-        // 1. Full Screen Media Content
-        Positioned.fill(
-          child: Container(
-            color: Colors.black,
-            child: vibe.mediaUrl.isNotEmpty
-                ? Image.network(
-                    vibe.mediaUrl,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Container(
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0284C7)],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.play_circle_fill_rounded, size: 72, color: Colors.white38),
-                      ),
-                    ),
-                  )
-                : Container(color: const Color(0xFF0F172A)),
-          ),
-        ),
-
-        // 2. Cinematic Vignette & Bottom Scrim
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.45),
-                  Colors.transparent,
-                  Colors.black.withValues(alpha: 0.25),
-                  Colors.black.withValues(alpha: 0.88),
-                ],
-                stops: const [0.0, 0.25, 0.65, 1.0],
-              ),
-            ),
-          ),
-        ),
-
-        // 3. Creator Info & Badge at Bottom Left
-        Positioned(
-          left: 16,
-          right: 80,
-          bottom: MediaQuery.of(context).padding.bottom + 20,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Badge & Author Row
-              Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: const Color(0xFFFFFC00), width: 1.5),
-                    ),
-                    child: ClipOval(
-                      child: vibe.authorAvatarUrl != null && vibe.authorAvatarUrl!.startsWith('http')
-                          ? Image.network(
-                              vibe.authorAvatarUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white70),
-                            )
-                          : const Icon(Icons.person, color: Colors.white70),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Flexible(
-                              child: Text(
-                                vibe.authorName,
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            if (vibe.isRobot) ...[
-                              const SizedBox(width: 5),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: Colors.blueGrey.withValues(alpha: 0.4),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Text('BOT', style: TextStyle(color: Colors.white70, fontSize: 8.5, fontWeight: FontWeight.bold)),
-                              ),
-                            ],
-                          ],
-                        ),
-                        const SizedBox(height: 3),
-                        // ✨ Vibes Badge (Audio Directive: "ഡേ വൺ എന്ന് എഴുതിയ അവിടെ വൈബ്സ് എന്ന് എഴുതിയാൽ മതി")
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFFFFC00).withValues(alpha: 0.16),
-                            borderRadius: BorderRadius.circular(6),
-                            border: Border.all(
-                              color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
-                              width: 0.9,
-                            ),
-                          ),
-                          child: Text(
-                            '✨ Vibes',
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFFC00),
-                              fontSize: 10.5,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-
-              if (vibe.caption != null && vibe.caption!.isNotEmpty) ...[
-                const SizedBox(height: 10),
-                Text(
-                  vibe.caption!,
-                  style: GoogleFonts.inter(
-                    color: Colors.white,
-                    fontSize: 12.5,
-                    fontWeight: FontWeight.w500,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ],
-          ),
-        ),
-
-        // 4. Right Side Floating Action Buttons (Like & Share)
-        Positioned(
-          right: 14,
-          bottom: MediaQuery.of(context).padding.bottom + 24,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('❤️ Liked Vibe!'),
-                      behavior: SnackBarBehavior.floating,
-                      backgroundColor: Color(0xFF1E293B),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.6),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 22),
-                ),
-              ),
-              const SizedBox(height: 14),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  PocketFeedVibeShareSheet.show(
-                    context,
-                    customText: '✨ ${vibe.authorName}\'s Vibe\n${vibe.caption ?? ''}\n${vibe.mediaUrl}',
-                  );
-                },
-                child: Container(
-                  width: 44,
-                  height: 44,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.black.withValues(alpha: 0.6),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+    return _PocketReelVibeSlideView(
+      vibe: vibe,
+      onNextReel: () {
+        if (_verticalPageController.hasClients) {
+          _verticalPageController.nextPage(
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      },
     );
   }
-
-
 
   Widget _buildGameContentForType(ReelGameCard card) {
     switch (card.gameType) {
@@ -2431,6 +2343,383 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           ),
         ],
       ),
+    );
+  }
+}
+
+class _PocketReelVibeSlideView extends StatefulWidget {
+  final ReelVibeCard vibe;
+  final VoidCallback onNextReel;
+
+  const _PocketReelVibeSlideView({
+    required this.vibe,
+    required this.onNextReel,
+  });
+
+  @override
+  State<_PocketReelVibeSlideView> createState() => _PocketReelVibeSlideViewState();
+}
+
+class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
+  int _currentStoryIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final vibe = widget.vibe;
+    final stories = vibe.stories;
+    final activeIndex = _currentStoryIndex.clamp(0, stories.isEmpty ? 0 : stories.length - 1);
+    final currentItem = stories.isNotEmpty ? stories[activeIndex] : null;
+    final mediaUrl = currentItem?.mediaUrl ?? vibe.mediaUrl;
+    final caption = currentItem?.caption ?? vibe.caption;
+
+    return Stack(
+      children: [
+        // 1. Full Screen Media Content
+        Positioned.fill(
+          child: Container(
+            color: Colors.black,
+            child: mediaUrl.isNotEmpty
+                ? Image.network(
+                    mediaUrl,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF0284C7)],
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.play_circle_fill_rounded, size: 72, color: Colors.white38),
+                      ),
+                    ),
+                  )
+                : Container(color: const Color(0xFF0F172A)),
+          ),
+        ),
+
+        // 2. Cinematic Vignette & Bottom Scrim
+        Positioned.fill(
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.black.withValues(alpha: 0.55),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.25),
+                  Colors.black.withValues(alpha: 0.90),
+                ],
+                stops: const [0.0, 0.22, 0.65, 1.0],
+              ),
+            ),
+          ),
+        ),
+
+        // 3. Multi-Vibe Tap Navigation Overlay (User Audio Directive: tap right -> next, tap left -> prev)
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTapUp: (details) {
+              final screenWidth = MediaQuery.of(context).size.width;
+              final tapX = details.localPosition.dx;
+              if (tapX < screenWidth * 0.35) {
+                // Left tap -> previous story
+                if (_currentStoryIndex > 0) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _currentStoryIndex--);
+                }
+              } else if (tapX > screenWidth * 0.65) {
+                // Right tap -> next story
+                if (_currentStoryIndex < stories.length - 1) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _currentStoryIndex++);
+                } else {
+                  // Reached end of this creator's vibes -> smoothly move to next reel
+                  HapticFeedback.lightImpact();
+                  widget.onNextReel();
+                }
+              }
+            },
+          ),
+        ),
+
+        // 4. Segmented Story Progress Indicators at Top
+        if (stories.length > 1)
+          Positioned(
+            top: MediaQuery.of(context).padding.top + 12,
+            left: 16,
+            right: 60,
+            child: Row(
+              children: List.generate(stories.length, (sIdx) {
+                final isPassedOrCurrent = sIdx <= activeIndex;
+                return Expanded(
+                  child: Container(
+                    height: 3,
+                    margin: const EdgeInsets.symmetric(horizontal: 2),
+                    decoration: BoxDecoration(
+                      color: isPassedOrCurrent ? const Color(0xFFFFFC00) : Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                      boxShadow: isPassedOrCurrent
+                          ? [
+                              BoxShadow(
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                                blurRadius: 4,
+                              ),
+                            ]
+                          : null,
+                    ),
+                  ),
+                );
+              }),
+            ),
+          ),
+
+        // 5. Creator Info & Badge at Bottom Left (Tappable to Visit Citadel)
+        Positioned(
+          left: 16,
+          right: 84,
+          bottom: MediaQuery.of(context).padding.bottom + 20,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketCitadelAttackPage.openForUser(
+                    context,
+                    userId: vibe.userId,
+                    targetName: vibe.authorName,
+                  );
+                },
+                child: Row(
+                  children: [
+                    Container(
+                      width: 40,
+                      height: 40,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: const Color(0xFFFFFC00), width: 1.8),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: vibe.authorAvatarUrl != null && vibe.authorAvatarUrl!.startsWith('http')
+                            ? Image.network(
+                                vibe.authorAvatarUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (_, __, ___) => const Icon(Icons.person, color: Colors.white70),
+                              )
+                            : const Icon(Icons.person, color: Colors.white70),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Flexible(
+                                child: Text(
+                                  vibe.authorName,
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (vibe.isRobot) ...[
+                                const SizedBox(width: 5),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blueGrey.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text('BOT', style: TextStyle(color: Colors.white, fontSize: 8.5, fontWeight: FontWeight.bold)),
+                                ),
+                              ],
+                            ],
+                          ),
+                          const SizedBox(height: 3),
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2.5),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFFC00).withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                                    width: 0.9,
+                                  ),
+                                ),
+                                child: Text(
+                                  '✨ Vibes',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFFC00),
+                                    fontSize: 10.5,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                              if (stories.length > 1) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white12,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Text(
+                                    '${activeIndex + 1}/${stories.length}',
+                                    style: const TextStyle(color: Colors.white70, fontSize: 10, fontWeight: FontWeight.w600),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              if (caption != null && caption.isNotEmpty) ...[
+                const SizedBox(height: 10),
+                Text(
+                  caption,
+                  style: GoogleFonts.inter(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ],
+          ),
+        ),
+
+        // 6. Right Side Action Rail (Home Visit, Like, Share)
+        Positioned(
+          right: 14,
+          bottom: MediaQuery.of(context).padding.bottom + 24,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // 🏰 Home Visit Action Button (User Audio Directive: Must visit author's house / citadel)
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketCitadelAttackPage.openForUser(
+                    context,
+                    userId: vibe.userId,
+                    targetName: vibe.authorName,
+                  );
+                },
+                child: Column(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFFFFC00).withValues(alpha: 0.45),
+                            blurRadius: 10,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Icon(Icons.castle_rounded, color: Colors.black, size: 22),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Home Visit',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // ❤️ Like Button
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('❤️ Liked Vibe!'),
+                      behavior: SnackBarBehavior.floating,
+                      backgroundColor: Color(0xFF1E293B),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.6),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.favorite_rounded, color: Color(0xFFEF4444), size: 22),
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // ↗️ Share Button
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketFeedVibeShareSheet.show(
+                    context,
+                    customText: '✨ ${vibe.authorName}\'s Vibe\n${caption ?? ''}\n$mediaUrl',
+                  );
+                },
+                child: Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.black.withValues(alpha: 0.6),
+                    border: Border.all(color: Colors.white24),
+                  ),
+                  child: const Icon(Icons.share_rounded, color: Colors.white, size: 20),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -278,12 +278,38 @@ class ChatMessages extends _$ChatMessages {
             // Check if already exists to avoid duplicates
             if (currentMessages.any((m) => m.id == fullMessage.id)) return;
 
-            final List<ChatMessage> updatedMessages = [
-              fullMessage,
-              ...currentMessages
-            ];
-            state = AsyncData(updatedMessages);
-            _saveToCache(updatedMessages);
+            final List<ChatMessage> updatedMessages = [];
+            bool replacedOptimistic = false;
+
+            // If we sent this message, replace matching optimistic placeholder if present
+            for (final m in currentMessages) {
+              if (!replacedOptimistic &&
+                  (m.isOptimistic == true || m.id.startsWith('temp_')) &&
+                  m.senderId == fullMessage.senderId &&
+                  m.messageText == fullMessage.messageText) {
+                updatedMessages.add(fullMessage);
+                replacedOptimistic = true;
+                _optimisticMessages.removeWhere((opt) => opt.id == m.id);
+              } else {
+                updatedMessages.add(m);
+              }
+            }
+
+            if (!replacedOptimistic) {
+              updatedMessages.insert(0, fullMessage);
+            }
+
+            // Strict deduplication by message id
+            final seenIds = <String>{};
+            final uniqueMessages = <ChatMessage>[];
+            for (final msg in updatedMessages) {
+              if (seenIds.add(msg.id)) {
+                uniqueMessages.add(msg);
+              }
+            }
+
+            state = AsyncData(uniqueMessages);
+            _saveToCache(uniqueMessages);
 
             // Mark as read if we are the receiver
             if (fullMessage.senderId != uid) {
@@ -296,15 +322,25 @@ class ChatMessages extends _$ChatMessages {
       final newData = payload.newRecord as Map<String, dynamic>;
       final updatedId = newData['id']?.toString();
       final isRead = newData['is_read'] == true;
+      final newText = newData['message_text']?.toString();
+      final isEdited = newData['is_edited'] == true;
 
       if (updatedId != null) {
         state.whenData((messages) {
           bool hasChanges = false;
           final updated = messages.map((m) {
-            if (m.id == updatedId && m.isRead != isRead) {
-              hasChanges = true;
-              // Preserve existing properties, only update isRead
-              return ChatMessage.fromJson({...m.toJson(), 'is_read': isRead});
+            if (m.id == updatedId) {
+              final effectiveText = newText ?? m.messageText;
+              final effectiveEdited = isEdited || m.isEdited;
+              if (m.isRead != isRead || m.messageText != effectiveText || m.isEdited != effectiveEdited) {
+                hasChanges = true;
+                return ChatMessage.fromJson({
+                  ...m.toJson(),
+                  'is_read': isRead,
+                  'message_text': effectiveText,
+                  'is_edited': effectiveEdited,
+                });
+              }
             }
             return m;
           }).toList();
@@ -335,23 +371,15 @@ class ChatMessages extends _$ChatMessages {
       final oldData = payload.oldRecord as Map<String, dynamic>;
       final deletedId = oldData['id']?.toString();
 
-      // Only delete from UI & Hive if this was an explicit user retraction ("unsend/delete for everyone")
-      // Preserving local Hive persistence for ephemeral cloud-purged 1-to-1 personal messages
-      final bool isExplicitRetract = oldData['is_retracted'] == true ||
-          oldData['metadata']?['user_retracted'] == true ||
-          oldData['event'] == 'retract';
-
-      if (!isPersonal || isExplicitRetract) {
-        if (deletedId != null) {
-          state.whenData((messages) {
-            final updatedMessages =
-                messages.where((m) => m.id != deletedId).toList();
-            if (updatedMessages.length < messages.length) {
-              state = AsyncData(updatedMessages);
-              _saveToCache(updatedMessages);
-            }
-          });
-        }
+      if (deletedId != null) {
+        state.whenData((messages) {
+          final updatedMessages =
+              messages.where((m) => m.id != deletedId).toList();
+          if (updatedMessages.length < messages.length) {
+            state = AsyncData(updatedMessages);
+            _saveToCache(updatedMessages);
+          }
+        });
       }
     }
   }
@@ -961,14 +989,27 @@ class ChatMessages extends _$ChatMessages {
         final optIndex =
             updatedList.indexWhere((m) => m.id == optimisticMessage.id);
 
-        if (optIndex != -1) {
+        final alreadyHasFull = updatedList.any((m) => m.id == fullMessage.id);
+        if (alreadyHasFull) {
+          // Real-time already inserted fullMessage; safely remove the temporary optimistic item
+          updatedList.removeWhere((m) => m.id == optimisticMessage.id);
+        } else if (optIndex != -1) {
           updatedList[optIndex] = fullMessage;
-        } else if (!updatedList.any((m) => m.id == fullMessage.id)) {
+        } else {
           updatedList.insert(0, fullMessage);
         }
 
-        state = AsyncData(updatedList);
-        _saveToCache(updatedList);
+        // Strict deduplication by message id
+        final seenIds = <String>{};
+        final uniqueList = <ChatMessage>[];
+        for (final msg in updatedList) {
+          if (seenIds.add(msg.id)) {
+            uniqueList.add(msg);
+          }
+        }
+
+        state = AsyncData(uniqueList);
+        _saveToCache(uniqueList);
       });
 
       // Update relevant metadata for the chat list

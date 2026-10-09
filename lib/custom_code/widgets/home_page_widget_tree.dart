@@ -579,6 +579,16 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
       final cachedProfile = prefs.getString('cached_profile_$userId');
       final cachedStats = prefs.getString('cached_stats_$userId');
 
+      final initialTab = prefs.getInt('initial_home_tab_$userId') ??
+          prefs.getInt('initial_home_tab_global');
+      if (initialTab != null) {
+        safeSetState(() {
+          _currentIndex = initialTab;
+        });
+        await prefs.remove('initial_home_tab_$userId');
+        await prefs.remove('initial_home_tab_global');
+      }
+
       if (cachedProfile != null) {
         final profileMap = jsonDecode(cachedProfile);
         safeSetState(() {

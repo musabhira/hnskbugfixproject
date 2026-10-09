@@ -250,8 +250,8 @@
       "stepNumber": 6,
       "id": "step_6_spoken_lab",
       "title": {
-        "en": "Spoken Speech Lab",
-        "ml": "സ്പോക്കൺ സ്പീച്ച് ലാബ്"
+        "en": "🎙️ Spoken English Vocal Gym",
+        "ml": "🎙️ സ്പോക്കൺ ഇംഗ്ലീഷ് വോക്കൽ ജിം"
       },
       "icon": "🎙️",
       "gameType": "speech_analyzer",
@@ -272,9 +272,56 @@
           "targetSentence": "I have a pen."
         }
       },
+      "challenges": [
+        {
+          "phrase": "I am happy.",
+          "phonetic": "/aɪ æm ˈhæpi/",
+          "meaning": {
+            "en": "I am happy.",
+            "ml": "എനിക്ക് സന്തോഷമുണ്ട്."
+          },
+          "tag": "🌱 Basic Habit Drill"
+        },
+        {
+          "phrase": "Call my name.",
+          "phonetic": "/kɔːl maɪ neɪm/",
+          "meaning": {
+            "en": "Call my name.",
+            "ml": "എന്റെ പേര് വിളിക്കൂ."
+          },
+          "tag": "🎓 Student Campus Drill"
+        },
+        {
+          "phrase": "I speak English boldly.",
+          "phonetic": "/aɪ spiːk ˈɪŋɡlɪʃ ˈbəʊldli/",
+          "meaning": {
+            "en": "I speak English boldly.",
+            "ml": "ഞാൻ ധൈര്യത്തോടെ ഇംഗ്ലീഷ് സംസാരിക്കുന്നു."
+          },
+          "tag": "🔥 Confidence Booster"
+        },
+        {
+          "phrase": "Could you please help me with this?",
+          "phonetic": "/kʊd juː pliːz help miː wɪð ðɪs/",
+          "meaning": {
+            "en": "Could you please help me with this?",
+            "ml": "ഇതൊന്ന് സഹായിക്കാമോ?"
+          },
+          "tag": "🤝 Polite Conversation"
+        },
+        {
+          "phrase": "I practice spoken English every day to build career fluency.",
+          "phonetic": "/aɪ ˈpræktɪs ˈspəʊkən ˈɪŋɡlɪʃ ˈevri deɪ/",
+          "meaning": {
+            "en": "I practice spoken English every day to build career fluency.",
+            "ml": "ജോലിയിലെ ഫ്ലുവെൻസിക്കായി ഞാൻ ദിവസവും ഇംഗ്ലീഷ് സംസാരിച്ചു പരിശീലിക്കുന്നു."
+          },
+          "tag": "💼 Job Interview Mastery"
+        }
+      ],
       "description": {
-        "en": "Speak clearly into the microphone to test your pronunciation & speed.",
-        "ml": "മൈക്കിലൂടെ സംസാരിച്ച് ഉച്ചാരണവും ഫ്ലുവെൻസിയും മെച്ചപ്പെടുത്തുക."
+        "en": "Speak clearly into the microphone across practical conversational & interview drills.",
+        "ml": "മൈക്കിലൂടെ ഉറക്കെ സംസാരിച്ച് ഇന്റർവ്യൂ, സംഭാഷണ ചോദ്യങ്ങൾ പരിശീലിക്കുക."
       }
     },
     {

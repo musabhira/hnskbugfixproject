@@ -124,13 +124,14 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   FlutterTts? _flutterTts;
   bool _isAvatarSpeaking = false;
   String _generatedPassword = '';
+  bool _useCustomPassword = false;
 
   // Onboarding Selections
   String _selectedNativeLanguage = 'Hindi';
   final String _selectedTargetLanguage = 'English';
   String _selectedReferralSource = 'Instagram / Reels';
   String _selectedEnglishLevel = 'Level 1: Beginner';
-  String _selectedLearningGoal = 'Daily Fluency & Speaking';
+  String _selectedLearningGoal = 'Daily Fluency & Real Conversations';
   int _selectedDailyGoalMins = 30;
   String _selectedPlan = 'free'; // 'free' or 'super'
   String _selectedPath = 'scratch'; // 'scratch' or 'placement'
@@ -192,22 +193,37 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   final List<Map<String, dynamic>> _learningGoals = [
     {
       'title': 'Daily Fluency & Real Conversations',
+      'subtitle': 'Speak naturally with native confidence in daily life',
       'icon': Icons.chat_bubble_outline_rounded,
     },
     {
       'title': 'Job Interviews & Workplace English',
+      'subtitle': 'Ace interviews, business calls, emails & presentations',
       'icon': Icons.work_outline_rounded,
     },
     {
-      'title': 'Travel & Meeting Global Friends',
-      'icon': Icons.flight_takeoff_rounded,
-    },
-    {
-      'title': 'Exam Prep (IELTS, TOEFL, OET)',
+      'title': 'Study Abroad & Exams (IELTS, TOEFL, OET)',
+      'subtitle': 'High-band academic speaking, writing & visa readiness',
       'icon': Icons.school_outlined,
     },
     {
-      'title': 'Daily Habit & Confidence',
+      'title': 'Travel, Relocation & Global Friends',
+      'subtitle': 'Navigate airports, hotels, dining & make international mates',
+      'icon': Icons.flight_takeoff_rounded,
+    },
+    {
+      'title': 'Public Speaking & Debate',
+      'subtitle': 'Overcome stage fear, command respect & express thoughts clearly',
+      'icon': Icons.record_voice_over_rounded,
+    },
+    {
+      'title': 'Business, Sales & Entrepreneurship',
+      'subtitle': 'Client pitches, international deals & commercial negotiation',
+      'icon': Icons.trending_up_rounded,
+    },
+    {
+      'title': 'Daily Habit & Personal Confidence',
+      'subtitle': 'Never miss a day, build speaking stamina & feel proud',
       'icon': Icons.psychology_outlined,
     },
   ];
@@ -868,17 +884,11 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     }
   }
 
-  // 🔑 Secure Random Password Generation for Onboarding
+  // 🔑 Simple & Memorable Password Generation for Onboarding (Audio Directive: pocket + 3 digits, e.g. pocket782)
   String _createRandomSecurePassword() {
     final rand = math.Random();
-    const letters = 'abcdefghjkmnpqrstuvwxyz';
-    const uppers = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-    const symbols = '!@#*';
     final num = 100 + rand.nextInt(900);
-    final l1 = letters[rand.nextInt(letters.length)];
-    final u1 = uppers[rand.nextInt(uppers.length)];
-    final s1 = symbols[rand.nextInt(symbols.length)];
-    return 'Pocket$num$s1$u1$l1';
+    return 'pocket$num';
   }
 
   void _generateNewPassword() {
@@ -2286,6 +2296,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           final isSelected = _selectedLearningGoal == goal['title'];
           return _buildOptionCard(
             title: goal['title'] as String,
+            subtitle: goal['subtitle'] as String?,
             leadingIcon: goal['icon'] as IconData,
             isSelected: isSelected,
             onTap: () {
@@ -3049,101 +3060,97 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Top Action Row
+          // Top Action Row - Responsive & Minimal
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'YOUR FULL-DAY ROUTINE',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF94A3B8),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.8,
+              Expanded(
+                child: Text(
+                  'ROUTINE SCHEDULE',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF94A3B8),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.8,
+                  ),
                 ),
               ),
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // + Add Slot button
-                  InkWell(
+              // + Add Slot button
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  _showEditRoutineItemModal(context, null, -1);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(
+                    color:
+                        const Color(0xFF10B981).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      _showEditRoutineItemModal(context, null, -1);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 4),
-                      decoration: BoxDecoration(
-                        color:
-                            const Color(0xFF10B981).withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.add_rounded,
-                              color: Color(0xFF10B981), size: 14),
-                          const SizedBox(width: 3),
-                          Text(
-                            'Add Slot',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF10B981),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
+                    border: Border.all(
+                      color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                      width: 1,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  // Shuffle Preset button
-                  InkWell(
-                    borderRadius: BorderRadius.circular(16),
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      setState(() {
-                        _routineVariationIndex++;
-                        _generateOnboardingRoutine();
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 9, vertical: 4),
-                      decoration: BoxDecoration(
-                        color:
-                            const Color(0xFF38BDF8).withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
-                          width: 1,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.add_rounded,
+                          color: Color(0xFF10B981), size: 14),
+                      const SizedBox(width: 3),
+                      Text(
+                        'Add Slot',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF10B981),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.shuffle_rounded,
-                              color: Color(0xFF38BDF8), size: 13),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Shuffle',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF38BDF8),
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              // Shuffle Preset button
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  setState(() {
+                    _routineVariationIndex++;
+                    _generateOnboardingRoutine();
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 9, vertical: 5),
+                  decoration: BoxDecoration(
+                    color:
+                        const Color(0xFF38BDF8).withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
+                      width: 1,
                     ),
                   ),
-                ],
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.shuffle_rounded,
+                          color: Color(0xFF38BDF8), size: 13),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Shuffle',
+                        style: GoogleFonts.inter(
+                          color: const Color(0xFF38BDF8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),
@@ -3688,7 +3695,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     final isStudy = item.isStudySlot;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: isStudy ? const Color(0xFF0F231C) : const Color(0xFF131722),
         borderRadius: BorderRadius.circular(16),
@@ -3712,201 +3719,248 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
       ),
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16),
-          onTap: () => _showEditRoutineItemModal(context, item, index),
-          child: Row(
-            children: [
-              // Time Column with vertical accent line
-              Container(
-                width: 78,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 12),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      startStr,
-                      style: GoogleFonts.outfit(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Top Section: Time badge + Study / Type badge
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: (isStudy ? const Color(0xFF10B981) : item.color)
+                          .withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: (isStudy ? const Color(0xFF10B981) : item.color)
+                            .withValues(alpha: 0.4),
+                        width: 0.8,
                       ),
                     ),
-                    const SizedBox(height: 3),
-                    Container(
-                      width: 2,
-                      height: 16,
-                      decoration: BoxDecoration(
-                        color: isStudy
-                            ? const Color(0xFF10B981)
-                            : item.color,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      endStr,
-                      style: GoogleFonts.outfit(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white54,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                width: 1,
-                height: 64,
-                color: const Color(0xFF1E2333),
-              ),
-
-              // Title & Description
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              item.title,
-                              style: GoogleFonts.inter(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.white,
-                                decoration: item.isCompleted
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (isStudy) ...[
-                            const SizedBox(width: 4),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF10B981)
-                                    .withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(6),
-                                border: Border.all(
-                                    color: const Color(0xFF10B981), width: 0.8),
-                              ),
-                              child: Text(
-                                'STUDY SLOT',
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFF10B981),
-                                  fontSize: 9,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                      if (item.description != null &&
-                          item.description!.isNotEmpty) ...[
-                        const SizedBox(height: 3),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 12,
+                          color:
+                              isStudy ? const Color(0xFF10B981) : item.color,
+                        ),
+                        const SizedBox(width: 4),
                         Text(
-                          item.description!,
-                          style: GoogleFonts.inter(
-                            fontSize: 11.5,
-                            color: const Color(0xFF94A3B8),
-                            height: 1.25,
+                          '$startStr – $endStr',
+                          style: GoogleFonts.outfit(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                    ],
+                    ),
                   ),
-                ),
-              ),
-
-              // Action Controls: Edit, Alarm Bell, Checkmark
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // ✏️ Edit Button
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 30, minHeight: 30),
-                      icon: const Icon(
-                        Icons.edit_outlined,
-                        color: Color(0xFF38BDF8),
-                        size: 18,
+                  if (isStudy)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 7, vertical: 2.5),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981)
+                            .withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                            color: const Color(0xFF10B981), width: 0.8),
                       ),
-                      tooltip: 'Edit routine item',
-                      onPressed: () =>
-                          _showEditRoutineItemModal(context, item, index),
-                    ),
-
-                    // 🔔 Alarm Toggle
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints:
-                          const BoxConstraints(minWidth: 30, minHeight: 30),
-                      icon: Icon(
-                        item.hasAlarm
-                            ? Icons.notifications_active_rounded
-                            : Icons.notifications_none_rounded,
-                        color: item.hasAlarm
-                            ? const Color(0xFFFACC15)
-                            : const Color(0xFF52525B),
-                        size: 19,
-                      ),
-                      tooltip: item.hasAlarm ? 'Alarm Active' : 'Enable Alarm',
-                      onPressed: () {
-                        HapticFeedback.selectionClick();
-                        setState(() {
-                          item.hasAlarm = !item.hasAlarm;
-                        });
-                      },
-                    ),
-
-                    // ✅ Checkmark Circle
-                    InkWell(
-                      onTap: () {
-                        HapticFeedback.selectionClick();
-                        setState(() {
-                          item.isCompleted = !item.isCompleted;
-                        });
-                      },
-                      child: Container(
-                        width: 22,
-                        height: 22,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: item.isCompleted
-                              ? const Color(0xFF10B981)
-                              : Colors.transparent,
-                          border: Border.all(
-                            color: item.isCompleted
-                                ? const Color(0xFF10B981)
-                                : const Color(0xFF52525B),
-                            width: 1.8,
-                          ),
+                      child: Text(
+                        'STUDY SLOT',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF10B981),
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.4,
                         ),
-                        child: item.isCompleted
-                            ? const Icon(Icons.check,
-                                color: Colors.white, size: 13)
+                      ),
+                    ),
+                ],
+              ),
+            ),
+
+            // Content Section: Full width Title and Description (NO truncation!)
+            InkWell(
+              onTap: () => _showEditRoutineItemModal(context, item, index),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.title,
+                      style: GoogleFonts.inter(
+                        fontSize: 14.5,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        decoration: item.isCompleted
+                            ? TextDecoration.lineThrough
                             : null,
                       ),
                     ),
+                    if (item.description != null &&
+                        item.description!.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        item.description!,
+                        style: GoogleFonts.inter(
+                          fontSize: 12,
+                          color: const Color(0xFF94A3B8),
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+
+            const SizedBox(height: 6),
+            // Subtle Divider
+            Container(
+              height: 1,
+              color: const Color(0xFF1E2333),
+            ),
+
+            // Footer Action Row: Edit, Alarm, Done
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              child: Row(
+                children: [
+                  // ✏️ Edit Action
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () =>
+                        _showEditRoutineItemModal(context, item, index),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.edit_outlined,
+                              color: Color(0xFF38BDF8), size: 15),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Edit',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // 🔔 Alarm Toggle Action
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() {
+                        item.hasAlarm = !item.hasAlarm;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            item.hasAlarm
+                                ? Icons.notifications_active_rounded
+                                : Icons.notifications_none_rounded,
+                            color: item.hasAlarm
+                                ? const Color(0xFFFACC15)
+                                : const Color(0xFF64748B),
+                            size: 15,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.hasAlarm ? 'Alarm On' : 'Alarm Off',
+                            style: GoogleFonts.inter(
+                              color: item.hasAlarm
+                                  ? const Color(0xFFFACC15)
+                                  : const Color(0xFF64748B),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 4),
+
+                  // ✅ Complete Checkbox Action
+                  InkWell(
+                    borderRadius: BorderRadius.circular(8),
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      setState(() {
+                        item.isCompleted = !item.isCompleted;
+                      });
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 18,
+                            height: 18,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: item.isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : Colors.transparent,
+                              border: Border.all(
+                                color: item.isCompleted
+                                    ? const Color(0xFF10B981)
+                                    : const Color(0xFF64748B),
+                                width: 1.6,
+                              ),
+                            ),
+                            child: item.isCompleted
+                                ? const Icon(Icons.check,
+                                    color: Colors.white, size: 12)
+                                : null,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            item.isCompleted ? 'Done' : 'Mark Done',
+                            style: GoogleFonts.inter(
+                              color: item.isCompleted
+                                  ? const Color(0xFF10B981)
+                                  : const Color(0xFF94A3B8),
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -4087,47 +4141,56 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
         children: [
           _buildPromiseCard(
             emoji: '🎓',
-            title: 'Official PoketMates Certificate',
+            title: 'Official CEFR-Aligned Certificate',
             desc:
-                'Earn a verified Certificate of English Spoken Fluency upon graduation.',
+                'Earn an official, verified Certificate of English Spoken Fluency upon Day 90 graduation.',
             badge: 'CERTIFIED',
             badgeColor: const Color(0xFFFACC15),
           ),
           const SizedBox(height: 8),
           _buildPromiseCard(
-            emoji: '⚔️',
-            title: 'Pocket Citadel Battles & Defense',
+            emoji: '🏰',
+            title: 'Level 1 to 90 Citadel Evolution',
             desc:
-                'Gamified learning: attack, defend, and master vocabulary through tactical battles.',
+                'Watch your personal virtual house evolve from a cottage into a grand Presidential Citadel.',
+            badge: 'EVOLUTION',
+            badgeColor: const Color(0xFFA855F7),
+          ),
+          const SizedBox(height: 8),
+          _buildPromiseCard(
+            emoji: '🤖',
+            title: '24/7 AI Mentors (Maya & Alex)',
+            desc:
+                'Get instant conversational roleplay, speech correction & pronunciation coaching anytime.',
+            badge: 'AI COACH',
+            badgeColor: const Color(0xFF06B6D4),
+          ),
+          const SizedBox(height: 8),
+          _buildPromiseCard(
+            emoji: '⚔️',
+            title: 'Fortress Defense & Citadel Battles',
+            desc:
+                'Defend your house against raiders and master vocabulary through tactical daily games.',
             badge: 'GAMIFIED',
             badgeColor: const Color(0xFFEF4444),
           ),
           const SizedBox(height: 8),
           _buildPromiseCard(
-            emoji: '👥',
-            title: 'Lifelong Friends & Live Lounges',
+            emoji: '☕',
+            title: 'Live Voice Lounges & Coffee Tables',
             desc:
-                'Connect with conversation buddies in real-time coffee tables & voice chat rooms.',
+                'Practice spoken English with peer learners in friendly 1-on-1 audio rooms & coffee tables.',
             badge: 'COMMUNITY',
             badgeColor: const Color(0xFF38BDF8),
           ),
           const SizedBox(height: 8),
           _buildPromiseCard(
             emoji: '🗣️',
-            title: 'Confident Conversational Fluency',
+            title: 'Confident Accent & Speaking Stamina',
             desc:
-                'Overcome speaking fear and master 500+ everyday practical idioms & phrases.',
+                'Conquer fear, master 1,500+ everyday idioms, and speak fluent English without hesitation.',
             badge: 'FLUENCY',
             badgeColor: const Color(0xFF10B981),
-          ),
-          const SizedBox(height: 8),
-          _buildPromiseCard(
-            emoji: '👑',
-            title: 'Crowns, Ranks & Citadel Growth',
-            desc:
-                'Collect crowns, level up your avatar, and upgrade your house to a Grand Citadel.',
-            badge: 'REWARDS',
-            badgeColor: const Color(0xFFA855F7),
           ),
         ],
       ),
@@ -4598,8 +4661,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                             ),
                             const SizedBox(height: 12),
 
-                            // Password Field
-                            if (!_isSignUpMode) ...[
+                            // Password Field (Login & Signup)
+                            if (!_isSignUpMode || _useCustomPassword) ...[
                               TextFormField(
                                 controller: _passwordController,
                                 focusNode: _passwordFocusNode,
@@ -4609,7 +4672,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                 style: GoogleFonts.inter(
                                     color: Colors.white, fontSize: 14),
                                 decoration: _inputDecoration(
-                                  hint: 'Password (min 6 characters)',
+                                  hint: _isSignUpMode
+                                      ? 'Create custom password (min 6 chars)'
+                                      : 'Password (min 6 characters)',
                                   icon: Icons.lock_outline_rounded,
                                   suffixIcon: IconButton(
                                     icon: Icon(
@@ -4628,6 +4693,31 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                         ? 'Password must be 6+ chars'
                                         : null,
                               ),
+                              if (_isSignUpMode) ...[
+                                const SizedBox(height: 6),
+                                Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: TextButton.icon(
+                                    onPressed: () {
+                                      HapticFeedback.selectionClick();
+                                      setState(() {
+                                        _useCustomPassword = false;
+                                        _passwordController.text = _generatedPassword;
+                                      });
+                                    },
+                                    icon: const Icon(Icons.auto_awesome_rounded,
+                                        size: 14, color: Color(0xFF10B981)),
+                                    label: Text(
+                                      'Use auto-generated ($_generatedPassword)',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: const Color(0xFF10B981),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ] else ...[
                               _buildGeneratedPasswordCard(),
                             ],
@@ -5321,6 +5411,44 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               color: const Color(0xFFA1A1AA),
               fontSize: 11.5,
               height: 1.3,
+            ),
+          ),
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              setState(() {
+                _useCustomPassword = true;
+                _passwordController.clear();
+              });
+            },
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.12),
+                  width: 0.8,
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.edit_rounded,
+                      size: 13, color: Color(0xFF38BDF8)),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Prefer your own password? Set custom ✏️',
+                    style: GoogleFonts.inter(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF38BDF8),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ],
