@@ -1613,7 +1613,7 @@ class _ConversationTileState extends State<ConversationTile> {
     return material.IconButton(
       icon: const Icon(
         Icons.favorite_rounded,
-        color: Color(0xFFFF2E93),
+        color: Color(0xFFFFD600), // Yellow love icon per user directive
         size: 21,
       ),
       padding: EdgeInsets.zero,
@@ -1662,29 +1662,32 @@ class _ConversationTileState extends State<ConversationTile> {
         !_cachedPact!.isAccepted &&
         _cachedPact!.initiatorId == widget.currentUserId;
     if (isPendingByMe) {
-      return material.IconButton(
-        icon: const Icon(
-          material.Icons.hourglass_top_rounded,
-          color: Color(0xFFFFD600),
-          size: 19,
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFD600).withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFFFD600).withValues(alpha: 0.6)),
         ),
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(minWidth: 30, minHeight: 30),
-        onPressed: () {
-          HapticFeedback.selectionClick();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: const Color(0xFF0F172A),
-              behavior: SnackBarBehavior.floating,
-              content: Text(
-                'Pocket Talk request pending • Waiting for mate to accept 🤝',
-                style: GoogleFonts.outfit(color: Colors.white70),
-              ),
-              duration: const Duration(seconds: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              material.Icons.hourglass_top_rounded,
+              color: Color(0xFFFFD600),
+              size: 13,
             ),
-          );
-        },
-        tooltip: 'Pocket Talk Pending ⏳',
+            const SizedBox(width: 4),
+            Text(
+              'Request Sent',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD600),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       );
     }
 

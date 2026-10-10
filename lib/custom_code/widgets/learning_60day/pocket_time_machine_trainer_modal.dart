@@ -5,6 +5,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'pocket_pronunciation_evaluator.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_fortress_defense_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// ⏳ Model for Past, Present & Future Verb Trio
 class TimeMachineVerbItem {
@@ -31,6 +32,48 @@ class TimeMachineVerbItem {
     required this.didQuestion,
     required this.commonTrapMl,
   });
+
+  String getLocalizedMeaning([String? lang]) {
+    final targetLang = (lang ?? PocketLanguageService.currentLanguage).toLowerCase();
+    if (targetLang.contains('hind') || targetLang == 'hi') {
+      const hiMap = {
+        'go': 'जाना', 'see': 'देखना', 'do': 'करना', 'eat': 'खाना',
+        'buy': 'खरीदना', 'tell': 'बताना', 'take': 'लेना', 'speak': 'बोलना',
+        'meet': 'मिलना', 'make': 'बनाना', 'come': 'आना', 'write': 'लिखना',
+        'call': 'कॉल', 'send': 'भेजना', 'give': 'देना', 'know': 'जानना',
+        'think': 'सोचना', 'start': 'शुरू करना', 'ask': 'पूछना', 'read': 'पढ़ना'
+      };
+      return hiMap[baseVerb.toLowerCase()] ?? meaningMl;
+    } else if (targetLang.contains('tamil') || targetLang == 'ta') {
+      const taMap = {
+        'go': 'போக', 'see': 'பார்க்க', 'do': 'செய்ய', 'eat': 'சாப்பிட',
+        'buy': 'வாங்க', 'tell': 'சொல்ல', 'take': 'எடுக்க', 'speak': 'பேச',
+        'meet': 'சந்திக்க', 'make': 'உருவாக்க', 'come': 'வர', 'write': 'எழுத',
+        'call': 'அழைக்க', 'send': 'அனுப்ப', 'give': 'கொடுக்க', 'know': 'தெரிய',
+        'think': 'யோசிக்க', 'start': 'தொடங்க', 'ask': 'கேட்க', 'read': 'படிக்க'
+      };
+      return taMap[baseVerb.toLowerCase()] ?? meaningMl;
+    } else if (targetLang.contains('telug') || targetLang == 'te') {
+      const teMap = {
+        'go': 'వెళ్ళు', 'see': 'చూడు', 'do': 'చేయి', 'eat': 'తిను',
+        'buy': 'కొను', 'tell': 'చెప్పు', 'take': 'తీసుకో', 'speak': 'మాట్లాడు',
+        'meet': 'కలువు', 'make': 'తయారుచేయి', 'come': 'రా', 'write': 'రాయి',
+        'call': 'పిలువు', 'send': 'పంపు', 'give': 'ఇవ్వు', 'know': 'తెలుసుకో',
+        'think': 'ఆలోచించు', 'start': 'ప్రారంభించు', 'ask': 'అడుగు', 'read': 'చదువు'
+      };
+      return teMap[baseVerb.toLowerCase()] ?? meaningMl;
+    } else if (targetLang.contains('kannad') || targetLang == 'kn') {
+      const knMap = {
+        'go': 'ಹೋಗು', 'see': 'ನೋಡು', 'do': 'ಮಾಡು', 'eat': 'ತಿನ್ನು',
+        'buy': 'ಕೊಳ್ಳು', 'tell': 'ಹೇಳು', 'take': 'ತೆಗೆದುಕೊ', 'speak': 'ಮಾತನಾಡು',
+        'meet': 'ಭೇಟಿಯಾಗು', 'make': 'ಮಾಡು', 'come': 'ಬಾ', 'write': 'ಬರೆ',
+        'call': 'ಕರೆ', 'send': 'ಕಳುಹಿಸು', 'give': 'ಕೊಡು', 'know': 'ತಿಳಿ',
+        'think': 'ಯೋಚಿಸು', 'start': 'ಪ್ರಾರಂಭಿಸು', 'ask': 'ಕೇಳು', 'read': 'ಓದು'
+      };
+      return knMap[baseVerb.toLowerCase()] ?? meaningMl;
+    }
+    return meaningMl;
+  }
 }
 
 /// 📚 The 20 Essential Daily Action Verbs for Spoken Fluency
@@ -511,7 +554,7 @@ class _PocketTimeMachineTrainerModalState extends State<PocketTimeMachineTrainer
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: ChoiceChip(
-                    label: Text('${v.baseVerb} (${v.meaningMl})'),
+                    label: Text('${v.baseVerb} (${v.getLocalizedMeaning()})'),
                     selected: isCur,
                     onSelected: (_) => setState(() {
                       _activeVerbIndex = i;

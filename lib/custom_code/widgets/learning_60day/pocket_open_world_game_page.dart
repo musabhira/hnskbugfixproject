@@ -18,6 +18,7 @@ import 'pocket_daily_mission_page.dart';
 import 'pocket_fortress_defense_service.dart';
 import 'pocket_world_street_page.dart';
 import 'pocket_world_vocabulary_bank.dart';
+import '../../services/pocket_language_service.dart';
 
 /// 🌍 Pocket Open World: Hill Climb Racing Style 2D Rolling-Hills Adventure
 ///
@@ -60,7 +61,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
   double _currentZoom = 0.82;
 
   // Multilingual Vocabulary Language Filter (Malayalam, Tamil, Hindi, Telugu, English)
-  String _selectedLanguage = 'malayalam';
+  String _selectedLanguage = PocketLanguageService.languageCode;
   OpenWorldVocabItem? _activeVocabCard;
   Timer? _vocabCardTimer;
 
@@ -79,6 +80,7 @@ class _PocketOpenWorldGamePageState extends State<PocketOpenWorldGamePage> {
   @override
   void initState() {
     super.initState();
+    _selectedLanguage = PocketLanguageService.languageCode;
     _initTts();
     _initGame();
     _loadNeighbors();

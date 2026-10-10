@@ -19,6 +19,7 @@ import '../learning_60day/pocket_world_street_page.dart';
 import '../../services/pocket_president_service.dart';
 import 'pocket_feed_vibe_share_sheet.dart';
 import 'pocket_reels_game_engine.dart';
+import 'audio_space/pocket_audio_room_sheet.dart';
 
 /// Item type for the Reels Feed: Homestead, Interactive Mini-Game, or Public Vibe (Audio Directive)
 enum ReelItemType { home, game, vibe }
@@ -158,6 +159,9 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   // Audio player for house ambient background music delegated to PocketGameAudioService
   String? _currentlyPlayingHouseId;
 
+  // Active open Live English Space (User Audio Directive: < 4 seats filled -> show Join Now!)
+  Map<String, dynamic>? _activeOpenSpace;
+
   // Games state
   final Map<String, int?> _selectedAnswers = {}; // gameId -> selected option index
   final Map<String, List<String>> _sentenceBuilderUserOrder = {}; // gameId -> selected words in order
@@ -254,6 +258,25 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     await PocketReelsGameEngine.init();
     await _loadUserLanguage();
     await _loadViewedHistoryAndFeed();
+    await _checkOpenLiveSpaces();
+  }
+
+  Future<void> _checkOpenLiveSpaces() async {
+    try {
+      final res = await _supabase
+          .from('live_audio_spaces')
+          .select()
+          .eq('is_active', true)
+          .lt('participant_count', 4)
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+      if (mounted && res != null) {
+        setState(() {
+          _activeOpenSpace = Map<String, dynamic>.from(res);
+        });
+      }
+    } catch (_) {}
   }
 
   Future<void> _loadUserLanguage() async {
@@ -1097,6 +1120,116 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               },
             ),
           ),
+
+          // ☕ Floating Open Live English Space card (User Audio Directive: < 4 seats filled -> show Join Now!)
+          if (_activeOpenSpace != null)
+            Positioned(
+              left: 16,
+              right: 16,
+              bottom: MediaQuery.of(context).padding.bottom + 16,
+              child: GestureDetector(
+                onTap: () {
+                  HapticFeedback.mediumImpact();
+                  PocketAudioRoomSheet.show(context);
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0F172A).withValues(alpha: 0.92),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: const Color(0xFFFFFC00).withValues(alpha: 0.7),
+                      width: 1.2,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
+                        blurRadius: 12,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(7),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
+                        ),
+                        child: const Icon(
+                          Icons.record_voice_over_rounded,
+                          color: Color(0xFFFFFC00),
+                          size: 18,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Text(
+                                  'Live English Space',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
+                                  decoration: BoxDecoration(
+                                    color: Colors.redAccent,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: const Text(
+                                    'LIVE',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '☕ ${_activeOpenSpace!['participant_count'] ?? 1}/4 Seats • Open Practice',
+                              style: GoogleFonts.inter(
+                                color: Colors.white70,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'Join Now',
+                          style: GoogleFonts.outfit(
+                            color: Colors.black,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -1768,6 +1901,21 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
           );
         }
       },
+      onPrevReel: () {
+        if (_verticalPageController.hasClients && index > 0) {
+          _verticalPageController.previousPage(
+            duration: const Duration(milliseconds: 320),
+            curve: Curves.easeOutCubic,
+          );
+        }
+      },
+      onClose: () {
+        if (Navigator.canPop(context)) {
+          Navigator.pop(context);
+        } else if (widget.onBackToChat != null) {
+          widget.onBackToChat!();
+        }
+      },
     );
   }
 
@@ -2350,10 +2498,14 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
 class _PocketReelVibeSlideView extends StatefulWidget {
   final ReelVibeCard vibe;
   final VoidCallback onNextReel;
+  final VoidCallback? onPrevReel;
+  final VoidCallback? onClose;
 
   const _PocketReelVibeSlideView({
     required this.vibe,
     required this.onNextReel,
+    this.onPrevReel,
+    this.onClose,
   });
 
   @override
@@ -2418,7 +2570,7 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
           ),
         ),
 
-        // 3. Multi-Vibe Tap Navigation Overlay (User Audio Directive: tap right -> next, tap left -> prev)
+        // 3. Multi-Vibe Tap & Swipe Navigation Overlay (User Audio Directive: tap left/right, swipe left/right)
         Positioned.fill(
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
@@ -2426,10 +2578,17 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
               final screenWidth = MediaQuery.of(context).size.width;
               final tapX = details.localPosition.dx;
               if (tapX < screenWidth * 0.35) {
-                // Left tap -> previous story
+                // Left tap -> previous story or previous reel
                 if (_currentStoryIndex > 0) {
                   HapticFeedback.selectionClick();
                   setState(() => _currentStoryIndex--);
+                } else {
+                  HapticFeedback.lightImpact();
+                  if (widget.onPrevReel != null) {
+                    widget.onPrevReel!();
+                  } else if (widget.onClose != null) {
+                    widget.onClose!();
+                  }
                 }
               } else if (tapX > screenWidth * 0.65) {
                 // Right tap -> next story
@@ -2437,8 +2596,28 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
                   HapticFeedback.selectionClick();
                   setState(() => _currentStoryIndex++);
                 } else {
-                  // Reached end of this creator's vibes -> smoothly move to next reel
+                  // Reached end of this creator's vibes -> move to next reel
                   HapticFeedback.lightImpact();
+                  widget.onNextReel();
+                }
+              }
+            },
+            onHorizontalDragEnd: (details) {
+              final velocity = details.primaryVelocity ?? 0;
+              if (velocity > 250) {
+                // Swipe right -> previous story/reel
+                if (_currentStoryIndex > 0) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _currentStoryIndex--);
+                } else if (widget.onPrevReel != null) {
+                  widget.onPrevReel!();
+                }
+              } else if (velocity < -250) {
+                // Swipe left -> next story/reel
+                if (_currentStoryIndex < stories.length - 1) {
+                  HapticFeedback.selectionClick();
+                  setState(() => _currentStoryIndex++);
+                } else {
                   widget.onNextReel();
                 }
               }
@@ -2446,26 +2625,28 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
           ),
         ),
 
-        // 4. Segmented Story Progress Indicators at Top
+        // 4. Ultra-Minimal Story Progress Indicators at Top (User Audio Directive: minimal modern design)
         if (stories.length > 1)
           Positioned(
             top: MediaQuery.of(context).padding.top + 12,
-            left: 16,
-            right: 60,
+            left: 54,
+            right: 54,
             child: Row(
               children: List.generate(stories.length, (sIdx) {
                 final isPassedOrCurrent = sIdx <= activeIndex;
                 return Expanded(
                   child: Container(
-                    height: 3,
+                    height: 2.2,
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     decoration: BoxDecoration(
-                      color: isPassedOrCurrent ? const Color(0xFFFFFC00) : Colors.white24,
-                      borderRadius: BorderRadius.circular(2),
+                      color: isPassedOrCurrent
+                          ? const Color(0xFFFFFC00)
+                          : Colors.white.withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(1.5),
                       boxShadow: isPassedOrCurrent
                           ? [
                               BoxShadow(
-                                color: const Color(0xFFFFFC00).withValues(alpha: 0.5),
+                                color: const Color(0xFFFFFC00).withValues(alpha: 0.6),
                                 blurRadius: 4,
                               ),
                             ]
@@ -2476,6 +2657,38 @@ class _PocketReelVibeSlideViewState extends State<_PocketReelVibeSlideView> {
               }),
             ),
           ),
+
+        // 🔙 Back / Exit Button (Top Left - User Audio Directive: Always provide back option in vibes)
+        Positioned(
+          top: MediaQuery.of(context).padding.top + 6,
+          left: 12,
+          child: GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              if (widget.onClose != null) {
+                widget.onClose!();
+              } else if (Navigator.canPop(context)) {
+                Navigator.pop(context);
+              }
+            },
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withValues(alpha: 0.55),
+                border: Border.all(color: Colors.white24, width: 0.8),
+              ),
+              child: const Center(
+                child: Icon(
+                  Icons.arrow_back_ios_new_rounded,
+                  color: Colors.white,
+                  size: 16,
+                ),
+              ),
+            ),
+          ),
+        ),
 
         // 5. Creator Info & Badge at Bottom Left (Tappable to Visit Citadel)
         Positioned(

@@ -14,9 +14,25 @@ class SlangPairItem {
   });
 
   String getVernacular(String language) {
-    return vernacularTranslations[language] ??
-        vernacularTranslations['Malayalam'] ??
-        vernacularTranslations['English'] ??
+    final langNorm = language.trim().toLowerCase();
+    for (final entry in vernacularTranslations.entries) {
+      final key = entry.key.toLowerCase();
+      if (key == langNorm ||
+          (langNorm.contains('hind') && key.contains('hind')) ||
+          (langNorm.contains('tamil') && key.contains('tamil')) ||
+          (langNorm.contains('telug') && key.contains('telug')) ||
+          (langNorm.contains('kannad') && key.contains('kannad')) ||
+          (langNorm.contains('malay') && key.contains('malay')) ||
+          (langNorm == 'hi' && key.contains('hind')) ||
+          (langNorm == 'ta' && key.contains('tamil')) ||
+          (langNorm == 'te' && key.contains('telug')) ||
+          (langNorm == 'kn' && key.contains('kannad')) ||
+          (langNorm == 'ml' && key.contains('malay'))) {
+        return entry.value;
+      }
+    }
+    return vernacularTranslations['English'] ??
+        vernacularTranslations.values.firstOrNull ??
         '';
   }
 }

@@ -929,10 +929,15 @@ class _MainProfileWidgetState extends State<MainProfileWidget>
         baseFollowers = (userResponse['followers'] as num).toInt();
       }
 
+      // Also include accepted robot mates from local storage
+      final prefs = await SharedPreferences.getInstance();
+      final localMates = prefs.getStringList('pocket_mates_$userId') ?? [];
+      final robotMatesCount = localMates.where((id) => PocketRobotService.isRobotId(id)).length;
+
       return {
-        'followers': followerIds.length + baseFollowers,
-        'following': followingIds.length,
-        'friends': mutualFriends.length,
+        'followers': followerIds.length + baseFollowers + robotMatesCount,
+        'following': followingIds.length + robotMatesCount,
+        'friends': mutualFriends.length + robotMatesCount,
       };
     } catch (e) {
       debugPrint('Error fetching follow counts: $e');

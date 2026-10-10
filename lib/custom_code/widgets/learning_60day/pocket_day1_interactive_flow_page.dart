@@ -1083,113 +1083,125 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   /// 🎯 High-Visibility Day Topic Billboard (User Audio Directive!)
-  /// "Title-il oru board kodukkanam, valiya reethiyil ketto. Veedu kazhinja udane."
+  /// "Title-il oru board kodukkanam, valiya reethiyil ketto. Spaced out and tappable for deep theory."
   Widget _buildTodayTopicBillboard(Map<String, dynamic>? cached, String topicEn, String formula) {
     final topicMl = PocketDayCurriculumService.getLocalizedText(cached?['course']?['topic'], lang: _nativeLanguage);
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.only(bottom: 14),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFFD700), width: 1.8),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFFFD700).withValues(alpha: 0.25),
-            blurRadius: 14,
-            offset: const Offset(0, 4),
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        PocketDayDetailOverviewPage.show(context, widget.day);
+      },
+      child: Container(
+        width: double.infinity,
+        margin: const EdgeInsets.only(bottom: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF131D33)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  '🎯 TODAY\'S LESSON BOARD / ഇന്നത്തെ പാഠം',
-                  style: GoogleFonts.outfit(
-                    color: Colors.black,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF0284C7),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Text(
-                  'DAY ${widget.day} • HOUSE ${widget.day}',
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Text(
-            topicEn,
-            style: GoogleFonts.outfit(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          if (topicMl.isNotEmpty && topicMl != topicEn) ...[
-            const SizedBox(height: 2),
-            Text(
-              topicMl,
-              style: GoogleFonts.inter(
-                color: const Color(0xFF93C5FD),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: const Color(0xFFFFD700), width: 2.0),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.28),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
             ),
           ],
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1E1B4B),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.5)),
-            ),
-            child: Row(
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                const Text('⚡ RULE: ', style: TextStyle(color: Color(0xFF818CF8), fontSize: 10, fontWeight: FontWeight.bold)),
-                Expanded(
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFD700),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                   child: Text(
-                    formula,
-                    style: GoogleFonts.robotoMono(
-                      color: const Color(0xFFFFE066),
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
+                    '🎯 TODAY\'S LESSON BOARD • DAY ${widget.day}',
+                    style: GoogleFonts.outfit(
+                      color: Colors.black,
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 0.5,
                     ),
+                  ),
+                ),
+                const Spacer(),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0284C7),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'THEORY ➔',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 12),
+            Text(
+              topicEn,
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                height: 1.25,
+              ),
+            ),
+            if (topicMl.isNotEmpty && topicMl != topicEn) ...[
+              const SizedBox(height: 4),
+              Text(
+                topicMl,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF93C5FD),
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E1B4B),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF818CF8).withValues(alpha: 0.6)),
+              ),
+              child: Row(
+                children: [
+                  const Text('⚡ RULE: ', style: TextStyle(color: Color(0xFF818CF8), fontSize: 11, fontWeight: FontWeight.bold)),
+                  Expanded(
+                    child: Text(
+                      formula,
+                      style: GoogleFonts.firaCode(
+                        color: const Color(0xFFFFE066),
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -3,12 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'pocket_master_curriculum_90.dart';
 import 'curriculum_data/pocket_day_curriculum_service.dart';
 
 /// 🧠 Learner Proficiency Level
 enum PocketLearnerLevel {
-  beginner, // 🟢 Beginner (Slow audio, Malayalam support, step-by-step SVO)
+  beginner, // 🟢 Beginner (Slow audio, native language support, step-by-step SVO)
   intermediate, // 🟡 Intermediate (Normal audio, workplace context, idioms)
   expert, // 🔴 Expert (Fast speech challenge, rhetoric, zero filler tolerance)
 }
@@ -64,6 +65,7 @@ class _PocketDayDetailOverviewPageState
     final data = await PocketDayCurriculumService.loadDayCurriculum(widget.day);
     if (data == null || !mounted) return;
 
+    final langCode = PocketLanguageService.languageCode;
     final course = data['course'] as Map<String, dynamic>? ?? const {};
     final grammar = data['grammarRule'] as Map<String, dynamic>? ?? const {};
     final vocabulary = data['vocabulary'] as Map<String, dynamic>? ?? const {};
@@ -85,7 +87,7 @@ class _PocketDayDetailOverviewPageState
         phonetic: '',
         partOfSpeech: 'verb',
         meaningEn: '',
-        meaningMl: PocketDayCurriculumService.getLocalizedText(verb['meaning'], lang: 'ml'),
+        meaningMl: PocketDayCurriculumService.getLocalizedText(verb['meaning'], lang: langCode),
         exampleEn: verb['example']?.toString() ?? '',
         exampleMl: verb['exampleMl']?.toString() ?? '',
       ));
@@ -97,7 +99,7 @@ class _PocketDayDetailOverviewPageState
         phonetic: '',
         partOfSpeech: 'noun',
         meaningEn: '',
-        meaningMl: PocketDayCurriculumService.getLocalizedText(noun['meaning'], lang: 'ml'),
+        meaningMl: PocketDayCurriculumService.getLocalizedText(noun['meaning'], lang: langCode),
         exampleEn: noun['example']?.toString() ?? '',
       ));
     }
@@ -118,7 +120,7 @@ class _PocketDayDetailOverviewPageState
         grammarConcept: grammar['formula']?.toString() ?? '',
         theoryConcept: grammar['formula']?.toString() ?? '',
         theoryExplanationEn: PocketDayCurriculumService.getLocalizedText(grammar['explanation']),
-        theoryExplanationMl: PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: 'ml'),
+        theoryExplanationMl: PocketDayCurriculumService.getLocalizedText(grammar['explanation'], lang: langCode),
         vocabulary: items,
         sentenceEvolution: (builderStep['challengePatterns'] as List<dynamic>? ?? const [])
             .map((pattern) => pattern.toString())
@@ -586,127 +588,612 @@ class _PocketDayDetailOverviewPageState
     final steps = [
       {
         'num': '1',
-        'name': 'Theory & Rules',
-        'desc': 'Master the concept & avoid common native mistakes',
-        'icon': '📖'
+        'name': 'Today Lesson • Day ${widget.day} Step 1: Core Linguistic Theory',
+        'short': 'Core Theory & Linguistic Rules',
+        'desc': 'Deep-dive into grammar mechanics, formula breakdown & common native mistakes.',
+        'icon': '📖',
+        'badge': 'THEORY & FORMULA',
+        'color': '0xFFA855F7',
       },
       {
         'num': '2',
-        'name': 'Vocabulary Bank',
-        'desc': 'Listen to phonetics & learn target words',
-        'icon': '📚'
+        'name': 'Today Lesson • Day ${widget.day} Step 2: Vocabulary & Phonetics Bank',
+        'short': 'Vocabulary & Phonetics Bank',
+        'desc': 'Targeted high-frequency vocabulary, native pronunciation audio & phonetic drills.',
+        'icon': '📚',
+        'badge': 'PHONETICS & WORDS',
+        'color': '0xFF38BDF8',
       },
       {
         'num': '3',
-        'name': 'Fluency Gym',
-        'desc': 'Vocal agility, tongue twisters & word stress',
-        'icon': '🏋️'
+        'name': 'Today Lesson • Day ${widget.day} Step 3: Fluency Gym & Tongue Reflexes',
+        'short': 'Fluency Gym & Vocal Reflex Arena',
+        'desc': 'Speed tongue-twisters, syllable stress & acoustic muscle memory drills.',
+        'icon': '🏋️',
+        'badge': 'VOCAL AGILITY',
+        'color': '0xFF10B981',
       },
       {
         'num': '4',
-        'name': 'Interactive Quests',
-        'desc': 'Sentence building & grammar simulator',
-        'icon': '🎮'
+        'name': 'Today Lesson • Day ${widget.day} Step 4: Interactive Grammar Simulator',
+        'short': 'Sentence Builder Simulator',
+        'desc': 'Real-time sentence reconstruction, drag-and-drop syntax & game arenas.',
+        'icon': '🎮',
+        'badge': 'INTERACTIVE QUEST',
+        'color': '0xFFF59E0B',
       },
       {
         'num': '5',
-        'name': 'Peer Speaking',
-        'desc': 'Live voice practice with your study partner',
-        'icon': '💬'
+        'name': 'Today Lesson • Day ${widget.day} Step 5: Peer Spoken English Immersion',
+        'short': 'Peer Speaking & Live Audio Hub',
+        'desc': 'Unscripted live speaking practice with matched study partner / AI robot mate.',
+        'icon': '💬',
+        'badge': 'SPEAKING MISSION',
+        'color': '0xFFEC4899',
       },
     ];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF131D33),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF131D33), Color(0xFF0B132B)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: const Color(0xFF38BDF8).withValues(alpha: 0.4),
+          width: 1.4,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF38BDF8).withValues(alpha: 0.12),
+            blurRadius: 22,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text('🗺️', style: TextStyle(fontSize: 18)),
-              const SizedBox(width: 8),
-              Text(
-                'STEP-BY-STEP LEARNING ROADMAP',
-                style: GoogleFonts.outfit(
-                  color: const Color(0xFF38BDF8),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0.6,
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.5)),
+                ),
+                child: const Text('🎯', style: TextStyle(fontSize: 18)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'TODAY\'S LESSON BOARD • DAY ${widget.day}',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF38BDF8),
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.8,
+                      ),
+                    ),
+                    Text(
+                      'Tap any step for deep futuristic theory & guidelines',
+                      style: GoogleFonts.inter(
+                        color: Colors.white60,
+                        fontSize: 11,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                ),
+                child: Text(
+                  '5 STEPS',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
           ...steps.map((st) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 10),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: 28,
-                    height: 28,
+            final col = Color(int.parse(st['color']!));
+            return Container(
+              margin: const EdgeInsets.only(bottom: 14),
+              child: Material(
+                color: Colors.transparent,
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(16),
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    _showFuturisticStepTheoryBottomSheet(context, int.parse(st['num']!), st);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
+                      color: const Color(0xFF1E293B).withValues(alpha: 0.6),
+                      borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: const Color(0xFF38BDF8).withValues(alpha: 0.5),
+                        color: col.withValues(alpha: 0.35),
+                        width: 1.2,
                       ),
                     ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      st['num']!,
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFF38BDF8),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Text(st['icon']!,
-                                style: const TextStyle(fontSize: 14)),
-                            const SizedBox(width: 6),
-                            Text(
-                              st['name']!,
-                              style: GoogleFonts.inter(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.w700,
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: col.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: col, width: 1.6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: col.withValues(alpha: 0.3),
+                                blurRadius: 8,
                               ),
+                            ],
+                          ),
+                          alignment: Alignment.center,
+                          child: Text(
+                            st['num']!,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
                             ),
-                          ],
+                          ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          st['desc']!,
-                          style: GoogleFonts.inter(
-                            color: Colors.white60,
-                            fontSize: 11.5,
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(st['icon']!, style: const TextStyle(fontSize: 16)),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      st['name']!,
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                st['desc']!,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white70,
+                                  fontSize: 11.5,
+                                  height: 1.35,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                    decoration: BoxDecoration(
+                                      color: col.withValues(alpha: 0.2),
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      st['badge']!,
+                                      style: GoogleFonts.firaCode(
+                                        color: col,
+                                        fontSize: 9.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    'TAP TO VIEW THEORY ➔',
+                                    style: GoogleFonts.outfit(
+                                      color: col,
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ],
                     ),
                   ),
-                ],
+                ),
               ),
             );
           }),
         ],
       ),
+    );
+  }
+
+  /// 🚀 Deep Futuristic Theoretical Bottom Sheet for Step Exploration across all 90 days
+  void _showFuturisticStepTheoryBottomSheet(
+    BuildContext context,
+    int stepNum,
+    Map<String, String> stepInfo,
+  ) {
+    final col = Color(int.parse(stepInfo['color']!));
+    final langName = PocketLanguageService.currentLanguage;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          height: MediaQuery.of(ctx).size.height * 0.82,
+          decoration: BoxDecoration(
+            color: const Color(0xFF0A0F1D),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(
+              color: col.withValues(alpha: 0.5),
+              width: 1.8,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: col.withValues(alpha: 0.25),
+                blurRadius: 32,
+                offset: const Offset(0, -10),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              // Handle
+              Container(
+                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                width: 44,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+
+              // Sheet Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: col.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: col.withValues(alpha: 0.6)),
+                      ),
+                      child: Text(stepInfo['icon']!, style: const TextStyle(fontSize: 22)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'DAY ${widget.day} • STEP $stepNum DEEP THEORY',
+                            style: GoogleFonts.firaCode(
+                              color: col,
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.8,
+                            ),
+                          ),
+                          Text(
+                            stepInfo['short']!,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 17,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+
+              const Divider(color: Colors.white12, height: 1),
+
+              // Content Body
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Holographic Focus Banner
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [col.withValues(alpha: 0.15), const Color(0xFF1E293B)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: col.withValues(alpha: 0.4)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              '🧠 LINGUISTIC NEURAL ARCHITECTURE',
+                              style: GoogleFonts.firaCode(
+                                color: col,
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              _dayData.title,
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Target Concept: ${_dayData.focusArea}',
+                              style: GoogleFonts.inter(
+                                color: const Color(0xFF38BDF8),
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Theory Rule & Formula Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF131D33),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                const Text('⚡', style: TextStyle(fontSize: 16)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'MASTER FORMULA / SPEAKING BLUEPRINT',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFFFD700),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+                              ),
+                              child: Text(
+                                _dayData.grammarConcept.isNotEmpty
+                                    ? _dayData.grammarConcept
+                                    : 'Subject + Verb (Form) + Context [S-V-O]',
+                                style: GoogleFonts.firaCode(
+                                  color: const Color(0xFFFFE066),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // In-Depth Theoretical Explanation
+                      Text(
+                        'THEORETICAL EXPLANATION & PEDAGOGY',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF151C2C),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(color: Colors.white10),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _dayData.theoryExplanationEn,
+                              style: GoogleFonts.inter(
+                                color: Colors.white,
+                                fontSize: 13.5,
+                                height: 1.45,
+                              ),
+                            ),
+                            if (_dayData.theoryExplanationMl.isNotEmpty) ...[
+                              const SizedBox(height: 12),
+                              const Divider(color: Colors.white10),
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  Text(
+                                    '🌐 Guide in $langName:',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF93C5FD),
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                _dayData.theoryExplanationMl,
+                                style: GoogleFonts.inter(
+                                  color: const Color(0xFFBAE6FD),
+                                  fontSize: 13,
+                                  height: 1.45,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 18),
+
+                      // Real-Life Speaking Drill
+                      if (_dayData.speakingDrill.isNotEmpty) ...[
+                        Text(
+                          'DAILY ORAL REFLEX DRILL',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white70,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF064E3B).withValues(alpha: 0.35),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.5)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.record_voice_over_rounded, color: Color(0xFF10B981), size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Say it out loud with confidence:',
+                                      style: GoogleFonts.inter(
+                                        color: const Color(0xFF6EE7B7),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.volume_up_rounded, color: Color(0xFF10B981), size: 20),
+                                    onPressed: () => _speak(_dayData.speakingDrill),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                '"${_dayData.speakingDrill}"',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 22),
+                      ],
+
+                      // Bottom CTA
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            Navigator.pop(ctx);
+                            if (widget.onStartMissions != null) {
+                              widget.onStartMissions!();
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: col,
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            elevation: 4,
+                          ),
+                          child: Text(
+                            'PRACTICE STEP $stepNum IN TODAY\'S MISSIONS ➔',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
+                              letterSpacing: 0.6,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 

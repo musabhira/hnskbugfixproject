@@ -76,9 +76,6 @@ class _CommunityChatPageState extends State<CommunityChatPage>
       _currentUserProfileId = profileResponse['id'];
       _currentUserName = profileResponse['name'];
       _loadData();
-
-      // ⚡ Auto-dispatch smart pre-paired PocketTalk Spoken Pacts (Active peers + Cross-gender priority)
-      PocketTalkEngine.dispatchAutoPocketTalkRequests(currentUserId: _currentUserId);
     } catch (e) {
       debugPrint('Error getting user profile: $e');
       if (mounted) {

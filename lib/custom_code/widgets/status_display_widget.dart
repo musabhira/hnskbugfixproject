@@ -2870,12 +2870,23 @@ class _StatusViewerScreenState extends State<StatusViewerScreen>
           robotId: receiverUserId,
           userReply: originalText,
           statusId: status['id']?.toString() ?? '',
+          statusMediaUrl: status['media_url']?.toString(),
+          statusMediaType: status['media_type']?.toString(),
+          statusCaption: status['caption']?.toString(),
         );
       } else if (PocketPresidentService.isPresidentId(receiverUserId)) {
         await PocketPresidentService.sendUserMessageToPresident(
           userId: widget.currentUserId,
           messageText: vibeReplySummary,
           messageType: 'text',
+          metadata: {
+            'reply_type': 'status_reply',
+            'replied_to_status_id': status['id'],
+            'status_media_url': status['media_url'],
+            'status_media_type': status['media_type'],
+            'status_caption': status['caption'],
+            'user_reply': originalText,
+          },
         );
       } else if (!areMates) {
         // Non-Mates: also send mate request

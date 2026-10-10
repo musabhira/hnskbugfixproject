@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 /// 📜 Model for Comprehensive Game Rules with Native Translations
 class PocketWorldRuleItem {
@@ -365,7 +366,7 @@ class PocketWorldGameRulesPage extends StatefulWidget {
 typedef PocketWorldGameRulesModal = PocketWorldGameRulesPage;
 
 class _PocketWorldGameRulesPageState extends State<PocketWorldGameRulesPage> {
-  String _selectedLanguage = 'malayalam';
+  String _selectedLanguage = PocketLanguageService.languageCode;
   bool _hasAcceptedPledge = false;
   bool _isSavingPledge = false;
   final Set<String> _checkedRuleIds = {};
@@ -375,6 +376,7 @@ class _PocketWorldGameRulesPageState extends State<PocketWorldGameRulesPage> {
   @override
   void initState() {
     super.initState();
+    _selectedLanguage = PocketLanguageService.languageCode;
     _loadPledgeStatus();
   }
 

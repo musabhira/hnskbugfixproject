@@ -1653,6 +1653,329 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
     );
   }
 
+  /// 🌟 Friendship & Connection Emotional Dashboard (User Audio Directive: Right-swipe or tap opens connection dashboard)
+  void _showFriendshipDashboardSheet(BuildContext context) {
+    HapticFeedback.mediumImpact();
+    final messages = ref.read(chatMessagesProvider(widget.groupId)).value ?? [];
+    final otherUserId = widget.groupId.startsWith('p:')
+        ? widget.groupId.substring(2)
+        : widget.groupId;
+    final mateName = widget.groupName;
+
+    // 1. Calculate stats from local messages
+    final myMsgs = messages.where((m) => m.senderId == _currentUserId).length;
+    final mateMsgs = messages.where((m) => m.senderId != _currentUserId).length;
+    final totalMsgs = myMsgs + mateMsgs;
+
+    int wordsSpoken = 0;
+    for (final m in messages) {
+      if (m.messageText != null && m.messageText!.isNotEmpty) {
+        wordsSpoken += m.messageText!.split(RegExp(r'\s+')).where((w) => w.isNotEmpty).length;
+      }
+    }
+
+    // 2. Dynamic Connection / Friendship Score (0 - 100)
+    int score = 25;
+    score += (totalMsgs * 3).clamp(0, 35);
+    score += (wordsSpoken > 50 ? 20 : (wordsSpoken * 0.4).toInt());
+    if (myMsgs > 0 && mateMsgs > 0) score += 12; // Mutual exchange bonus
+    score += (_mateStreakDays * 2).clamp(0, 15);
+    score = score.clamp(15, 100);
+
+    // Save to local storage without touching database
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setInt('friendship_score_${_currentUserId}_$otherUserId', score);
+    });
+
+    final String tierTitle;
+    final Color tierColor;
+    final IconData tierIcon;
+    if (score >= 85) {
+      tierTitle = 'Soul Mates ⚡';
+      tierColor = const Color(0xFFFFD600);
+      tierIcon = Icons.bolt_rounded;
+    } else if (score >= 60) {
+      tierTitle = 'Close Mates 🔥';
+      tierColor = const Color(0xFFFF8A00);
+      tierIcon = Icons.local_fire_department_rounded;
+    } else if (score >= 35) {
+      tierTitle = 'Growing Bond 🌱';
+      tierColor = const Color(0xFF10B981);
+      tierIcon = Icons.eco_rounded;
+    } else {
+      tierTitle = 'Sparking Friendship ✨';
+      tierColor = const Color(0xFF38BDF8);
+      tierIcon = Icons.auto_awesome_rounded;
+    }
+
+    final myRatio = totalMsgs > 0 ? ((myMsgs / totalMsgs) * 100).round() : 50;
+    final mateRatio = 100 - myRatio;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
+          decoration: BoxDecoration(
+            color: const Color(0xFF0F172A),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            border: Border.all(color: tierColor.withValues(alpha: 0.35), width: 1.2),
+            boxShadow: [
+              BoxShadow(
+                color: tierColor.withValues(alpha: 0.18),
+                blurRadius: 24,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 42,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(tierIcon, color: tierColor, size: 22),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Friendship & Connection Dashboard',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Emotional bond & English practice with $mateName',
+                style: GoogleFonts.inter(
+                  color: Colors.white60,
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Animated Circular Score Gauge
+              Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 120,
+                    height: 120,
+                    child: CircularProgressIndicator(
+                      value: score / 100.0,
+                      strokeWidth: 8,
+                      backgroundColor: Colors.white10,
+                      valueColor: AlwaysStoppedAnimation<Color>(tierColor),
+                    ),
+                  ),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$score%',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        tierTitle,
+                        style: GoogleFonts.outfit(
+                          color: tierColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 22),
+
+              // Message Balance Bar (You vs Mate)
+              Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Message Exchange Ratio',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '$totalMsgs total messages',
+                          style: GoogleFonts.inter(
+                            color: Colors.white60,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: myRatio.clamp(5, 95),
+                            child: Container(
+                              height: 10,
+                              color: const Color(0xFF10B981),
+                            ),
+                          ),
+                          Expanded(
+                            flex: mateRatio.clamp(5, 95),
+                            child: Container(
+                              height: 10,
+                              color: const Color(0xFFFFD600),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFF10B981), shape: BoxShape.circle)),
+                            const SizedBox(width: 5),
+                            Text('You: $myMsgs ($myRatio%)', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11)),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFFFD600), shape: BoxShape.circle)),
+                            const SizedBox(width: 5),
+                            Text('$mateName: $mateMsgs ($mateRatio%)', style: GoogleFonts.inter(color: Colors.white70, fontSize: 11)),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // Two Info Cards: Words Spoken & 4-Day Spoken Pact
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.record_voice_over_rounded, color: Color(0xFF38BDF8), size: 18),
+                          const SizedBox(height: 6),
+                          Text(
+                            '$wordsSpoken Words',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            'Spoken in English',
+                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.handshake_rounded, color: Color(0xFFFFD600), size: 18),
+                          const SizedBox(height: 6),
+                          Text(
+                            _activePocketTalkPact?.isAccepted == true ? 'Day ${_mateStreakDays}/4' : 'Active Pact',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          Text(
+                            _activePocketTalkPact?.isAccepted == true ? '4-Day Spoken Pact' : 'Daily Practice',
+                            style: GoogleFonts.inter(color: Colors.white60, fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 18),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFFC00),
+                    foregroundColor: Colors.black,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(vertical: 13),
+                  ),
+                  child: Text(
+                    'Close Dashboard',
+                    style: GoogleFonts.outfit(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   static const List<Map<String, String>> _icebreakerTopics = [
     {
       'cat': '🧠 Deep & Fun',
@@ -4068,6 +4391,11 @@ Draft: "$draft"''';
                   ),
                 ),
               ),
+              IconButton(
+                icon: const Icon(Icons.bolt_rounded, color: Color(0xFFFFD600), size: 21),
+                tooltip: 'Friendship Dashboard ⚡',
+                onPressed: () => _showFriendshipDashboardSheet(context),
+              ),
             ],
             if (!PocketPresidentService.isPresidentId(
                 widget.groupId.startsWith('p:')
@@ -4186,6 +4514,15 @@ Draft: "$draft"''';
         ),
         body: GestureDetector(
           onTap: () => FocusScope.of(context).unfocus(),
+          onHorizontalDragEnd: (details) {
+            final velocity = details.primaryVelocity ?? 0;
+            if (velocity > 260) {
+              // Right swipe across chat opens Friendship & Connection Dashboard
+              if (widget.groupId.startsWith('p:')) {
+                _showFriendshipDashboardSheet(context);
+              }
+            }
+          },
           behavior: HitTestBehavior.translucent,
           child: Container(
             decoration: const BoxDecoration(
@@ -7617,20 +7954,26 @@ Draft: "$draft"''';
     // Check if it's a message reply or a status reply
     final reply = message.replyToMessage ?? message.metadata?['reply_to'];
     final metadata = message.metadata;
-    final isStatusReply = metadata?['reply_type'] == 'status_reply';
+    final isStatusReply = metadata?['reply_type'] == 'status_reply' ||
+        metadata?['replied_to_status_id'] != null ||
+        message.messageText?.startsWith('Replied to Vibe:') == true;
 
     if (isStatusReply) {
-      final statusMediaUrl = metadata?['status_media_url'];
-      final statusMediaType = metadata?['status_media_type'];
+      final statusMediaUrl = metadata?['status_media_url']?.toString() ??
+          metadata?['media_url']?.toString();
+      final statusMediaType = metadata?['status_media_type']?.toString();
+      final statusCaption = metadata?['status_caption']?.toString() ??
+          metadata?['caption']?.toString() ??
+          'Vibe Story';
 
       return Container(
         margin: const EdgeInsets.fromLTRB(4, 4, 4, 8),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           color: isMe
-              ? Colors.black.withValues(alpha: 0.2)
-              : Colors.white.withValues(alpha: 0.06),
-          borderRadius: BorderRadius.circular(8),
+              ? Colors.black.withValues(alpha: 0.25)
+              : Colors.white.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(10),
           border: Border(
             left: BorderSide(
               color: isMe ? const Color(0xFF25D366) : const Color(0xFFFFD200),
@@ -7640,42 +7983,58 @@ Draft: "$draft"''';
         ),
         child: IntrinsicHeight(
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Replied to Vibe',
-                      style: TextStyle(
-                        color: isMe
-                            ? const Color(0xFF25D366)
-                            : const Color(0xFFFFD200),
-                        fontSize: 11.5,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.auto_awesome_rounded,
+                          size: 13,
+                          color: isMe
+                              ? const Color(0xFF25D366)
+                              : const Color(0xFFFFD200),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Replied to Vibe',
+                          style: TextStyle(
+                            color: isMe
+                                ? const Color(0xFF25D366)
+                                : const Color(0xFFFFD200),
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 3),
                     Text(
-                      'Vibe Reaction',
+                      statusCaption,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.85),
+                        color: Colors.white.withValues(alpha: 0.9),
                         fontSize: 11,
+                        fontWeight: FontWeight.w500,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
               ),
-              if (statusMediaUrl != null)
+              if (statusMediaUrl != null && statusMediaUrl.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(left: 8),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(6),
                     child: statusMediaType == 'text'
                         ? Container(
-                            width: 34,
-                            height: 34,
+                            width: 44,
+                            height: 44,
                             decoration: const BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [Color(0xFFCC2B5E), Color(0xFF753A88)],
@@ -7683,13 +8042,25 @@ Draft: "$draft"''';
                             ),
                             alignment: Alignment.center,
                             child: const Icon(Icons.text_fields,
-                                color: Colors.white, size: 14),
+                                color: Colors.white, size: 16),
                           )
                         : CachedNetworkImage(
                             imageUrl: statusMediaUrl,
-                            width: 34,
-                            height: 34,
+                            width: 44,
+                            height: 44,
                             fit: BoxFit.cover,
+                            placeholder: (_, __) => Container(
+                              width: 44,
+                              height: 44,
+                              color: Colors.white10,
+                            ),
+                            errorWidget: (_, __, ___) => Container(
+                              width: 44,
+                              height: 44,
+                              color: Colors.white12,
+                              child: const Icon(Icons.broken_image,
+                                  size: 16, color: Colors.white38),
+                            ),
                           ),
                   ),
                 ),

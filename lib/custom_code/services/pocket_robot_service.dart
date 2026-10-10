@@ -3202,6 +3202,9 @@ class PocketRobotService {
     required String robotId,
     required String userReply,
     required String statusId,
+    String? statusMediaUrl,
+    String? statusMediaType,
+    String? statusCaption,
   }) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -3218,9 +3221,20 @@ class PocketRobotService {
         'id': 'user_${DateTime.now().millisecondsSinceEpoch}',
         'sender_id': userId,
         'receiver_id': robotId,
+        'message_text': userReply,
         'content': userReply,
+        'message_type': 'text',
+        'created_at': DateTime.now().toIso8601String(),
         'timestamp': DateTime.now().toIso8601String(),
         'context': 'vibe_reply',
+        'metadata': {
+          'reply_type': 'status_reply',
+          'replied_to_status_id': statusId,
+          'status_media_url': statusMediaUrl,
+          'status_media_type': statusMediaType ?? 'image',
+          'status_caption': statusCaption,
+          'user_reply': userReply,
+        },
       });
       existingChat.add(userMsg);
       await prefs.setStringList(chatKey, existingChat);

@@ -102,6 +102,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   Set<String> _pocketTalkActivePeerIds = {};
   Set<String> _pocketTalkPendingPeerIds = {};
   Set<String> _pocketTalkPendingSentPeerIds = {};
+  Set<String> _localMateIds = {};
   List<Map<String, dynamic>> _poketTalkLocalSent = [];
   int _pocketTalkSubTabIndex = 0; // 0: Received (First/Main), 1: Sent, 2: Active / Accepted (4-Day Pacts)
   bool _isCongestedSearch = false; // Toggle for Congested / Compact View
@@ -136,6 +137,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
             return <String, dynamic>{};
           }
         }).where((m) => m.isNotEmpty).toList();
+        final localMates = prefs.getStringList('pocket_mates_$uid') ?? [];
+        if (mounted) {
+          safeSetState(() {
+            _localMateIds = localMates.toSet();
+          });
+        }
       } catch (_) {}
 
       if (mounted) {
@@ -1329,6 +1336,79 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   ),
               ),
             ),
+            // 🔴 Instagram-Style Floating Notification Pill / Tooltip (User Audio Directive)
+            if (_pendingRequests.isNotEmpty)
+              Positioned(
+                bottom: 84,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      Navigator.push(
+                        context,
+                        material.MaterialPageRoute(
+                          builder: (context) => const NotificationsPage(),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFE11D48), Color(0xFFBE123C)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(22),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFE11D48).withValues(alpha: 0.45),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 16),
+                          const SizedBox(width: 6),
+                          Text(
+                            '${_pendingRequests.length} new Mate ${_pendingRequests.length > 1 ? "requests" : "request"}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            width: 4,
+                            height: 4,
+                            decoration: const BoxDecoration(
+                              color: Colors.white70,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'View',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFFFFFC00),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 2),
+                          const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFFC00), size: 10),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
@@ -4280,10 +4360,14 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                       // Under 'All': hide pending/unaccepted auto-dispatched Pocket Talk invites.
                       // Once accepted, they appear in 'All'!
                       activeFiltered = activeFiltered.where((c) {
-                        if (PocketRobotService.isRobotId(c.id) ||
-                            PocketPresidentService.isPresidentId(c.id) ||
+                        if (PocketPresidentService.isPresidentId(c.id) ||
                             c.isGroup) {
                           return true;
+                        }
+                        if (PocketRobotService.isRobotId(c.id)) {
+                          // Robots only appear under 'All' once accepted as Mates or in active pacts!
+                          return _localMateIds.contains(c.id) ||
+                              _pocketTalkActivePeerIds.contains(c.id);
                         }
                         final isPendingPact = _pocketTalkPendingPeerIds
                                 .contains(c.id) ||

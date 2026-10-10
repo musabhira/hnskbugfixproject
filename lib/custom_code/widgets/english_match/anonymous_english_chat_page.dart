@@ -1218,49 +1218,53 @@ class _AnonymousEnglishChatPageState extends State<AnonymousEnglishChatPage>
           ),
         ),
 
-        // Bottom Message Input
-        Container(
-          padding: const EdgeInsets.fromLTRB(14, 8, 14, 16),
-          decoration: const BoxDecoration(
-            color: Color(0xFF0F111A),
-            border: Border(top: BorderSide(color: Colors.white10)),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1B1E30),
-                    borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: Colors.white12),
-                  ),
-                  child: TextField(
-                    controller: _msgController,
-                    style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
-                    textCapitalization: TextCapitalization.sentences,
-                    decoration: InputDecoration(
-                      hintText: 'Type message to stranger...',
-                      hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 13),
-                      border: InputBorder.none,
+        // Bottom Message Input with SafeArea to prevent overlapping Android navigation buttons
+        SafeArea(
+          top: false,
+          bottom: true,
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(14, 8, 14, 12),
+            decoration: const BoxDecoration(
+              color: Color(0xFF0F111A),
+              border: Border(top: BorderSide(color: Colors.white10)),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1B1E30),
+                      borderRadius: BorderRadius.circular(24),
+                      border: Border.all(color: Colors.white12),
                     ),
-                    onSubmitted: (_) => _sendMessage(),
+                    child: TextField(
+                      controller: _msgController,
+                      style: GoogleFonts.inter(color: Colors.white, fontSize: 14),
+                      textCapitalization: TextCapitalization.sentences,
+                      decoration: InputDecoration(
+                        hintText: 'Type message to stranger...',
+                        hintStyle: GoogleFonts.inter(color: Colors.white38, fontSize: 13),
+                        border: InputBorder.none,
+                      ),
+                      onSubmitted: (_) => _sendMessage(),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              GestureDetector(
-                onTap: _sendMessage,
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFFFC00),
-                    shape: BoxShape.circle,
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: _sendMessage,
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFFFC00),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.send_rounded, color: Colors.black, size: 18),
                   ),
-                  child: const Icon(Icons.send_rounded, color: Colors.black, size: 18),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],
