@@ -11,8 +11,8 @@
     },
     "version": "day-54-v1",
     "topic": {
-      "en": "Banking & Money Transactions",
-      "ml": "ബാങ്കും പണമിടപാടുകളും",
+      "en": "Passive Voice – Advanced Structures",
+      "ml": "പാസ്സീവ് വോയ്സ് – വിപുല ഘടനകൾ",
       "hi": "Banking & Money Transactions",
       "ta": "Banking & Money Transactions"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 104
   },
   "grammarRule": {
-    "formula": "Deposit, Withdraw, Transfer, UPI & Balance",
+    "formula": "Passive Voice – Advanced Structures",
     "explanation": {
       "ml": "ബാങ്കും പണമിടപാടുകളും എന്ന വിഷയത്തിൽ Deposit, Withdraw, Transfer, UPI & Balance എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Deposit, Withdraw, Transfer, UPI & Balance correctly in spoken English."

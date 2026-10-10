@@ -11,8 +11,8 @@
     },
     "version": "day-18-v1",
     "topic": {
-      "en": "Polite Requests: Can you / Could you?",
-      "ml": "വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ",
+      "en": "Subject-Verb Agreement – Basic Rules",
+      "ml": "സബ്ജക്റ്റ്-വെർബ് കോൺകോർഡ് – അടിസ്ഥാന നിയമങ്ങൾ",
       "hi": "Polite Requests: Can you / Could you?",
       "ta": "Polite Requests: Can you / Could you?"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 68
   },
   "grammarRule": {
-    "formula": "Could you please + V1 (Polite Requests)",
+    "formula": "Subject-Verb Agreement – Basic Rules",
     "explanation": {
       "ml": "വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ Could you please + V1 (Polite Requests) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Could you please + V1 (Polite Requests) correctly in spoken English."

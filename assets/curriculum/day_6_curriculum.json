@@ -11,8 +11,8 @@
     },
     "version": "day-6-v1",
     "topic": {
-      "en": "My House & Rooms",
-      "ml": "വീടും മുറികളും",
+      "en": "Determiners and Quantifiers",
+      "ml": "ഡിറ്റർമിനറുകളും ക്വാണ്ടിഫയറുകളും",
       "hi": "My House & Rooms",
       "ta": "My House & Rooms"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 56
   },
   "grammarRule": {
-    "formula": "Prepositions with Rooms (In the kitchen, bedroom)",
+    "formula": "Determiners and Quantifiers",
     "explanation": {
       "ml": "വീടും മുറികളും എന്ന വിഷയത്തിൽ Prepositions with Rooms (In the kitchen, bedroom) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Prepositions with Rooms (In the kitchen, bedroom) correctly in spoken English."

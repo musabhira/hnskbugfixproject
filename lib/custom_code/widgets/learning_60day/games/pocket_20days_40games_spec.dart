@@ -1,3 +1,4 @@
+import 'english_realm/english_realm_localization_service.dart';
 /// 🎮 40 GAME SPECIFICATIONS FOR DAYS 1 TO 20 (2 GAMES PER DAY)
 ///
 /// Designed for Pocket Mates 90-Day Gamified English System.
@@ -81,6 +82,11 @@ class DayGameSpec {
     required this.descriptionMl,
     required this.controlMechanism,
   });
+
+  /// Dynamically resolves game description for the active native language
+  String getLocalizedDescription([String? lang]) {
+    return EnglishRealmLocalizationService.translateGameDescription(descriptionEn, descriptionMl, lang);
+  }
 }
 
 class Pocket20Days40GamesRegistry {

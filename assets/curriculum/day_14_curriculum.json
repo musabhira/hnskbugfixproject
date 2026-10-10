@@ -11,8 +11,8 @@
     },
     "version": "day-14-v1",
     "topic": {
-      "en": "Negatives with Don't & Doesn't",
-      "ml": "നെഗറ്റീവ് ശീലങ്ങൾ (Don't / Doesn't)",
+      "en": "Subject, Predicate, Object, Complement and Adverbial",
+      "ml": "സെന്റൻസ് ഘടകങ്ങൾ – സബ്ജക്റ്റ്, പ്രെഡിക്കേറ്റ്, ഒബ്ജക്റ്റ്",
       "hi": "Negatives with Don't & Doesn't",
       "ta": "Negatives with Don't & Doesn't"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 64
   },
   "grammarRule": {
-    "formula": "Don't / Doesn't + V1 (Never add 's' after doesn't)",
+    "formula": "Subject, Predicate, Object, Complement and Adverbial",
     "explanation": {
       "ml": "നെഗറ്റീവ് ശീലങ്ങൾ (Don't / Doesn't) എന്ന വിഷയത്തിൽ Don't / Doesn't + V1 (Never add 's' after doesn't) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Don't / Doesn't + V1 (Never add 's' after doesn't) correctly in spoken English."

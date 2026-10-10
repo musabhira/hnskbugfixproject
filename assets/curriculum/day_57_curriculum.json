@@ -11,8 +11,8 @@
     },
     "version": "day-57-v1",
     "topic": {
-      "en": "Doctor Consultation: Explaining Symptoms",
-      "ml": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ",
+      "en": "Direct and Indirect Speech – Questions and Commands",
+      "ml": "ചോദ്യങ്ങളും നിർദ്ദേശങ്ങളും പരോക്ഷ രൂപത്തിൽ",
       "hi": "Doctor Consultation: Explaining Symptoms",
       "ta": "Doctor Consultation: Explaining Symptoms"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 107
   },
   "grammarRule": {
-    "formula": "I have been having this pain since yesterday",
+    "formula": "Direct and Indirect Speech – Questions and Commands",
     "explanation": {
       "ml": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ എന്ന വിഷയത്തിൽ I have been having this pain since yesterday എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use I have been having this pain since yesterday correctly in spoken English."

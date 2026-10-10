@@ -11,8 +11,8 @@
     },
     "version": "day-11-v1",
     "topic": {
-      "en": "Morning Productivity",
-      "ml": "രാവിലത്തെ ശീലങ്ങൾ",
+      "en": "Conjunctions and Interjections",
+      "ml": "കൺജങ്ഷനുകളും ഇന്റർജക്ഷനുകളും",
       "hi": "Morning Productivity",
       "ta": "Morning Productivity"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 61
   },
   "grammarRule": {
-    "formula": "Subject-Verb Agreement (I go vs He goes)",
+    "formula": "Conjunctions and Interjections",
     "explanation": {
       "ml": "രാവിലത്തെ ശീലങ്ങൾ എന്ന വിഷയത്തിൽ Subject-Verb Agreement (I go vs He goes) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Subject-Verb Agreement (I go vs He goes) correctly in spoken English."

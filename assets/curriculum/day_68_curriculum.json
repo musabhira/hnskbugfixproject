@@ -11,8 +11,8 @@
     },
     "version": "day-68-v1",
     "topic": {
-      "en": "Contrast Connectors: Although, However, But",
-      "ml": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However)",
+      "en": "Noun Clauses",
+      "ml": "നൗൺ ക്ലോസുകൾ",
       "hi": "Contrast Connectors: Although, However, But",
       "ta": "Contrast Connectors: Although, However, But"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 118
   },
   "grammarRule": {
-    "formula": "Although + Clause (Although it rained, we enjoyed)",
+    "formula": "Noun Clauses",
     "explanation": {
       "ml": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However) എന്ന വിഷയത്തിൽ Although + Clause (Although it rained, we enjoyed) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Although + Clause (Although it rained, we enjoyed) correctly in spoken English."

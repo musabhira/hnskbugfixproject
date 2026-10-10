@@ -11,8 +11,8 @@
     },
     "version": "day-32-v1",
     "topic": {
-      "en": "Past Actions: Simple Past V2",
-      "ml": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2)",
+      "en": "Tense Consistency and Sequence of Tenses",
+      "ml": "ടെൻസ് സ്ഥിരതയും ക്രമവും",
       "hi": "Past Actions: Simple Past V2",
       "ta": "Past Actions: Simple Past V2"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 82
   },
   "grammarRule": {
-    "formula": "Subject + V2 past verb (I visited, I bought)",
+    "formula": "Tense Consistency and Sequence of Tenses",
     "explanation": {
       "ml": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2) എന്ന വിഷയത്തിൽ Subject + V2 past verb (I visited, I bought) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Subject + V2 past verb (I visited, I bought) correctly in spoken English."

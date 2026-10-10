@@ -11,8 +11,8 @@
     },
     "version": "day-59-v1",
     "topic": {
-      "en": "Social Small Talk with Strangers",
-      "ml": "അപരിചിതരുമായുള്ള സൗഹൃദ സംഭാഷണം",
+      "en": "Zero and First Conditionals",
+      "ml": "സീറോ & ഫസ്റ്റ് കണ്ടീഷണലുകൾ",
       "hi": "Social Small Talk with Strangers",
       "ta": "Social Small Talk with Strangers"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 109
   },
   "grammarRule": {
-    "formula": "Weather, Commute, Compliments & Safe Topics",
+    "formula": "Zero and First Conditionals",
     "explanation": {
       "ml": "അപരിചിതരുമായുള്ള സൗഹൃദ സംഭാഷണം എന്ന വിഷയത്തിൽ Weather, Commute, Compliments & Safe Topics എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Weather, Commute, Compliments & Safe Topics correctly in spoken English."

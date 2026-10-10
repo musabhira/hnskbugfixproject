@@ -11,8 +11,8 @@
     },
     "version": "day-50-v1",
     "topic": {
-      "en": "Compulsion & Rules: Must vs Have to",
-      "ml": "നിർബന്ധങ്ങൾ: Must vs Have to",
+      "en": "Verb Patterns",
+      "ml": "വെർബ് പാറ്റേണുകൾ",
       "hi": "Compulsion & Rules: Must vs Have to",
       "ta": "Compulsion & Rules: Must vs Have to"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 100
   },
   "grammarRule": {
-    "formula": "Must (Personal/Strict) vs Have to (External rule)",
+    "formula": "Verb Patterns",
     "explanation": {
       "ml": "നിർബന്ധങ്ങൾ: Must vs Have to എന്ന വിഷയത്തിൽ Must (Personal/Strict) vs Have to (External rule) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Must (Personal/Strict) vs Have to (External rule) correctly in spoken English."

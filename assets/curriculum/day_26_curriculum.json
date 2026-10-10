@@ -11,8 +11,8 @@
     },
     "version": "day-26-v1",
     "topic": {
-      "en": "Giving Simple Directions",
-      "ml": "വഴികൾ പറഞ്ഞു കൊടുക്കൽ",
+      "en": "Past Continuous Tense",
+      "ml": "പാസ്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
       "hi": "Giving Simple Directions",
       "ta": "Giving Simple Directions"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 76
   },
   "grammarRule": {
-    "formula": "Imperative Commands: Turn left, Go straight",
+    "formula": "Past Continuous Tense",
     "explanation": {
       "ml": "വഴികൾ പറഞ്ഞു കൊടുക്കൽ എന്ന വിഷയത്തിൽ Imperative Commands: Turn left, Go straight എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Imperative Commands: Turn left, Go straight correctly in spoken English."

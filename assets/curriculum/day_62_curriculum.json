@@ -11,8 +11,8 @@
     },
     "version": "day-62-v1",
     "topic": {
-      "en": "Life Experiences: Have you ever...?",
-      "ml": "ജീവിതാനുഭവങ്ങൾ: Have you ever...?",
+      "en": "Mixed Conditionals",
+      "ml": "മിക്സഡ് കണ്ടീഷണലുകൾ",
       "hi": "Life Experiences: Have you ever...?",
       "ta": "Life Experiences: Have you ever...?"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 112
   },
   "grammarRule": {
-    "formula": "Have you ever + V3? / I have never + V3",
+    "formula": "Mixed Conditionals",
     "explanation": {
       "ml": "ജീവിതാനുഭവങ്ങൾ: Have you ever...? എന്ന വിഷയത്തിൽ Have you ever + V3? / I have never + V3 എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Have you ever + V3? / I have never + V3 correctly in spoken English."

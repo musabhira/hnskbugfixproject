@@ -11,8 +11,8 @@
     },
     "version": "day-45-v1",
     "topic": {
-      "en": "Hotel Stay & Check-in",
-      "ml": "ഹോട്ടൽ ബുക്കിംഗും താമസവും",
+      "en": "Gerunds – Formation and Functions",
+      "ml": "ജെറണ്ടുകൾ – രൂപീകരണവും ധർമ്മങ്ങളും",
       "hi": "Hotel Stay & Check-in",
       "ta": "Hotel Stay & Check-in"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 95
   },
   "grammarRule": {
-    "formula": "I have a reservation under the name...",
+    "formula": "Gerunds – Formation and Functions",
     "explanation": {
       "ml": "ഹോട്ടൽ ബുക്കിംഗും താമസവും എന്ന വിഷയത്തിൽ I have a reservation under the name... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use I have a reservation under the name... correctly in spoken English."

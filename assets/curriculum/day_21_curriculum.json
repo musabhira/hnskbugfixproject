@@ -11,8 +11,8 @@
     },
     "version": "day-21-v1",
     "topic": {
-      "en": "Asking Questions: What & Where",
-      "ml": "What & Where ചോദ്യങ്ങൾ",
+      "en": "Present Simple Tense",
+      "ml": "സിമ്പിൾ പ്രസന്റ് ടെൻസ്",
       "hi": "Asking Questions: What & Where",
       "ta": "Asking Questions: What & Where"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 71
   },
   "grammarRule": {
-    "formula": "What is...? / Where is...?",
+    "formula": "Present Simple Tense",
     "explanation": {
       "ml": "What & Where ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ What is...? / Where is...? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use What is...? / Where is...? correctly in spoken English."

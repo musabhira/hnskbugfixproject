@@ -11,8 +11,8 @@
     },
     "version": "day-77-v1",
     "topic": {
-      "en": "Daily Standups & Meeting Updates",
-      "ml": "ഓഫീസ് മീറ്റിംഗുകളും അപ്‌ഡേറ്റുകളും",
+      "en": "Common Confusing Words in English",
+      "ml": "ആശയക്കുഴപ്പമുണ്ടാക്കുന്ന ഇംഗ്ലീഷ് വാക്കുകൾ",
       "hi": "Daily Standups & Meeting Updates",
       "ta": "Daily Standups & Meeting Updates"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 127
   },
   "grammarRule": {
-    "formula": "Yesterday I completed..., Today I am working on..., No blockers.",
+    "formula": "Common Confusing Words in English",
     "explanation": {
       "ml": "ഓഫീസ് മീറ്റിംഗുകളും അപ്‌ഡേറ്റുകളും എന്ന വിഷയത്തിൽ Yesterday I completed..., Today I am working on..., No blockers. എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Yesterday I completed..., Today I am working on..., No blockers. correctly in spoken English."

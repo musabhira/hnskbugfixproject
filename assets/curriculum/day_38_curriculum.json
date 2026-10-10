@@ -11,8 +11,8 @@
     },
     "version": "day-38-v1",
     "topic": {
-      "en": "Past Narrative & Incident Storytelling",
-      "ml": "കഥ പറയൽ: First, Then, Suddenly",
+      "en": "Question Tags",
+      "ml": "ക്വസ്റ്റ്യൻ ടാഗുകൾ",
       "hi": "Past Narrative & Incident Storytelling",
       "ta": "Past Narrative & Incident Storytelling"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 88
   },
   "grammarRule": {
-    "formula": "Past narrative: First, then, suddenly",
+    "formula": "Question Tags",
     "explanation": {
       "ml": "കഥ പറയൽ: First, Then, Suddenly എന്ന വിഷയത്തിൽ undefined എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use undefined correctly in spoken English."

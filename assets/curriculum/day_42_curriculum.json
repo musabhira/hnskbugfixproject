@@ -11,8 +11,8 @@
     },
     "version": "day-42-v1",
     "topic": {
-      "en": "At a Restaurant: Ordering & Bill",
-      "ml": "ഹോട്ടലിൽ ഓർഡർ ചെയ്യലും ബില്ലും",
+      "en": "Modal Verbs of Obligation and Necessity – Must, Have to, Should, Ought to",
+      "ml": "കടമയും നിർബന്ധവും – Must, Have to, Should",
       "hi": "At a Restaurant: Ordering & Bill",
       "ta": "At a Restaurant: Ordering & Bill"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 92
   },
   "grammarRule": {
-    "formula": "Can I have...? / Could we get the bill?",
+    "formula": "Modal Verbs of Obligation and Necessity – Must, Have to, Should, Ought to",
     "explanation": {
       "ml": "ഹോട്ടലിൽ ഓർഡർ ചെയ്യലും ബില്ലും എന്ന വിഷയത്തിൽ Can I have...? / Could we get the bill? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Can I have...? / Could we get the bill? correctly in spoken English."

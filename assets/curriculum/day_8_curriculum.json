@@ -11,8 +11,8 @@
     },
     "version": "day-8-v1",
     "topic": {
-      "en": "Numbers, Counting & Plurals",
-      "ml": "സംഖ്യകളും എണ്ണലും",
+      "en": "Degrees of Comparison – Positive, Comparative and Superlative",
+      "ml": "ഡിഗ്രീസ് ഓഫ് കമ്പാരിസൺ – താരതമ്യങ്ങൾ",
       "hi": "Numbers, Counting & Plurals",
       "ta": "Numbers, Counting & Plurals"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 58
   },
   "grammarRule": {
-    "formula": "Singular vs Plural Nouns (-s / -es)",
+    "formula": "Degrees of Comparison – Positive, Comparative and Superlative",
     "explanation": {
       "ml": "സംഖ്യകളും എണ്ണലും എന്ന വിഷയത്തിൽ Singular vs Plural Nouns (-s / -es) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Singular vs Plural Nouns (-s / -es) correctly in spoken English."

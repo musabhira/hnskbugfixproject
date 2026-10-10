@@ -11,8 +11,8 @@
     },
     "version": "day-16-v1",
     "topic": {
-      "en": "Spatial Prepositions: In, On, Under, Behind",
-      "ml": "വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ",
+      "en": "Sentence Types Based on Function",
+      "ml": "ധർമ്മമനുസരിച്ചുള്ള വാക്യ തരങ്ങൾ",
       "hi": "Spatial Prepositions: In, On, Under, Behind",
       "ta": "Spatial Prepositions: In, On, Under, Behind"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 66
   },
   "grammarRule": {
-    "formula": "Under, Behind, In front of, Next to",
+    "formula": "Sentence Types Based on Function",
     "explanation": {
       "ml": "വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ എന്ന വിഷയത്തിൽ Under, Behind, In front of, Next to എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Under, Behind, In front of, Next to correctly in spoken English."

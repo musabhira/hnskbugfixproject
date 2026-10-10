@@ -11,8 +11,8 @@
     },
     "version": "day-35-v1",
     "topic": {
-      "en": "Yesterday's Full Story",
-      "ml": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം",
+      "en": "Negative Sentences and Contractions",
+      "ml": "നിഷേധ വാക്യങ്ങളും ചുരുക്കെഴുത്തുകളും",
       "hi": "Yesterday's Full Story",
       "ta": "Yesterday's Full Story"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 85
   },
   "grammarRule": {
-    "formula": "Time Sequencers: In the morning, Then, Later",
+    "formula": "Negative Sentences and Contractions",
     "explanation": {
       "ml": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം എന്ന വിഷയത്തിൽ Time Sequencers: In the morning, Then, Later എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Time Sequencers: In the morning, Then, Later correctly in spoken English."

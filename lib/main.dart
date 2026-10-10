@@ -18,6 +18,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'services/push_notification_service.dart';
 import 'custom_code/services/pocket_robot_service.dart';
 import 'custom_code/services/in_app_notification_service.dart';
+import 'custom_code/services/pocket_kids_service.dart';
 
 void main() {
   runZonedGuarded(() async {
@@ -72,6 +73,11 @@ void main() {
       } catch (e) {
         debugPrint('Main: PocketRobotService initialization error: $e');
       }
+
+      // 5. Initialize Pocket Kids account mode
+      try {
+        await PocketKidsService.initialize();
+      } catch (_) {}
 
       // Shorebird code push disabled per user requirement to prevent native startup crashes
       // await ShorebirdService().initialize();

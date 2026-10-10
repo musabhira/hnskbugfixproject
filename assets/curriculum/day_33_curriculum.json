@@ -11,8 +11,8 @@
     },
     "version": "day-33-v1",
     "topic": {
-      "en": "Asking in the Past: Did you...?",
-      "ml": "കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കൽ",
+      "en": "Stative Verbs vs Dynamic Verbs",
+      "ml": "സ്റ്റേറ്റീവ് വെർബുകളും ഡൈനാമിക് വെർബുകളും",
       "hi": "Asking in the Past: Did you...?",
       "ta": "Asking in the Past: Did you...?"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 83
   },
   "grammarRule": {
-    "formula": "Did + Subject + V1 base verb (Did you go?)",
+    "formula": "Stative Verbs vs Dynamic Verbs",
     "explanation": {
       "ml": "കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കൽ എന്ന വിഷയത്തിൽ Did + Subject + V1 base verb (Did you go?) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Did + Subject + V1 base verb (Did you go?) correctly in spoken English."

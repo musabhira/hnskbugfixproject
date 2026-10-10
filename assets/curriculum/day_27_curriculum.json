@@ -11,8 +11,8 @@
     },
     "version": "day-27-v1",
     "topic": {
-      "en": "Health, Body & Minor Ailments",
-      "ml": "ആരോഗ്യവും അസുഖങ്ങളും",
+      "en": "Past Perfect Tense",
+      "ml": "പാസ്റ്റ് പെർഫെക്റ്റ് ടെൻസ്",
       "hi": "Health, Body & Minor Ailments",
       "ta": "Health, Body & Minor Ailments"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 77
   },
   "grammarRule": {
-    "formula": "I have a headache / stomach ache / fever",
+    "formula": "Past Perfect Tense",
     "explanation": {
       "ml": "ആരോഗ്യവും അസുഖങ്ങളും എന്ന വിഷയത്തിൽ I have a headache / stomach ache / fever എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use I have a headache / stomach ache / fever correctly in spoken English."

@@ -11,8 +11,8 @@
     },
     "version": "day-47-v1",
     "topic": {
-      "en": "Polite Invitations: Would you like to...?",
-      "ml": "വിനയത്തോടെ ക്ഷണിക്കൽ",
+      "en": "Gerunds vs Infinitives",
+      "ml": "ജെറണ്ടുകളും ഇൻഫിനിറ്റീവുകളും തമ്മിലുള്ള വ്യത്യാസം",
       "hi": "Polite Invitations: Would you like to...?",
       "ta": "Polite Invitations: Would you like to...?"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 97
   },
   "grammarRule": {
-    "formula": "Would you like + to V1 / noun (Would you like tea?)",
+    "formula": "Gerunds vs Infinitives",
     "explanation": {
       "ml": "വിനയത്തോടെ ക്ഷണിക്കൽ എന്ന വിഷയത്തിൽ Would you like + to V1 / noun (Would you like tea?) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Would you like + to V1 / noun (Would you like tea?) correctly in spoken English."

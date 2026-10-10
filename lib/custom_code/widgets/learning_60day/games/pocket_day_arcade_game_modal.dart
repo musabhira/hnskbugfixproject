@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'english_realm/english_realm_localization_service.dart';
 import 'pocket_20days_40games_spec.dart';
 import '../pocket_90day_vocab_curriculum.dart';
 import 'meadow_runner_game_page.dart';
 import 'word_catcher_game_page.dart';
 import 'word_catcher_models.dart';
 import 'town_quest_dialogue_game_page.dart';
+import 'english_realm/english_realm_manifest.dart';
+import 'english_realm/english_realm_page.dart';
+import 'english_realm/english_realm_game_session_page.dart';
 
 /// 🎮 2D Open-World Daily Arcade Game Modal
 ///
@@ -47,37 +52,63 @@ class PocketDayArcadeGameModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final realmGames = EnglishRealmManifest.getGamesForDay(day);
+
     final dayGames = Pocket20Days40GamesRegistry.allGames
         .where((g) => g.day == day)
         .toList();
 
-    final game1 = dayGames.isNotEmpty
-        ? dayGames[0]
-        : DayGameSpec(
+    final game1 = realmGames.isNotEmpty
+        ? DayGameSpec(
             day: day,
             gameIndex: 1,
-            title: 'Meadow Runner',
-            emoji: '🏃',
+            title: realmGames[0].title,
+            emoji: realmGames[0].icon,
             genre: GameGenre.runner,
-            englishTarget: 'Speed & Vocabulary Recognition',
-            descriptionEn: 'Sprint through lush green meadows collecting target words!',
-            descriptionMl: 'പച്ചപ്പുല്ല് നിറഞ്ഞ പുൽമേടിലൂടെ ഓടി വാക്കുകൾ ചാടിപ്പിടിക്കുക!',
-            controlMechanism: 'Swipe Left/Right to change lanes, Up to jump',
-          );
+            englishTarget: realmGames[0].subtitle,
+            descriptionEn: realmGames[0].descriptionEn,
+            descriptionMl: realmGames[0].descriptionMl,
+            controlMechanism: 'Interactive 2D game challenges with audio guidance',
+          )
+        : (dayGames.isNotEmpty
+            ? dayGames[0]
+            : DayGameSpec(
+                day: day,
+                gameIndex: 1,
+                title: 'Meadow Runner',
+                emoji: '🏃',
+                genre: GameGenre.runner,
+                englishTarget: 'Speed & Vocabulary Recognition',
+                descriptionEn: 'Sprint through lush green meadows collecting target words!',
+                descriptionMl: 'പച്ചപ്പുല്ല് നിറഞ്ഞ പുൽമേടിലൂടെ ഓടി വാക്കുകൾ ചാടിപ്പിടിക്കുക!',
+                controlMechanism: 'Swipe Left/Right to change lanes, Up to jump',
+              ));
 
-    final game2 = dayGames.length > 1
-        ? dayGames[1]
-        : DayGameSpec(
+    final game2 = realmGames.length > 1
+        ? DayGameSpec(
             day: day,
             gameIndex: 2,
-            title: 'Sky Word Catcher',
-            emoji: '🧺',
+            title: realmGames[1].title,
+            emoji: realmGames[1].icon,
             genre: GameGenre.fallingBlocks,
-            englishTarget: 'Letter & Sentence Catching',
-            descriptionEn: 'Catch falling letter blocks and words from sunny clouds!',
-            descriptionMl: 'മേഘങ്ങളിൽ നിന്ന് താഴേക്ക് വീഴുന്ന ശരിയായ വാക്കുകൾ ബാസ്കറ്റിൽ പിടിക്കുക!',
-            controlMechanism: 'Drag basket or tap falling bubbles before they hit ground',
-          );
+            englishTarget: realmGames[1].subtitle,
+            descriptionEn: realmGames[1].descriptionEn,
+            descriptionMl: realmGames[1].descriptionMl,
+            controlMechanism: 'Interactive 2D game challenges with audio guidance',
+          )
+        : (dayGames.length > 1
+            ? dayGames[1]
+            : DayGameSpec(
+                day: day,
+                gameIndex: 2,
+                title: 'Sky Word Catcher',
+                emoji: '🧺',
+                genre: GameGenre.fallingBlocks,
+                englishTarget: 'Letter & Sentence Catching',
+                descriptionEn: 'Catch falling letter blocks and words from sunny clouds!',
+                descriptionMl: 'മേഘങ്ങളിൽ നിന്ന് താഴേക്ക് വീഴുന്ന ശരിയായ വാക്കുകൾ ബാസ്കറ്റിൽ പിടിക്കുക!',
+                controlMechanism: 'Drag basket or tap falling bubbles before they hit ground',
+              ));
 
     return Container(
       decoration: const BoxDecoration(
@@ -137,7 +168,7 @@ class PocketDayArcadeGameModal extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'കളിച്ചു പഠിക്കാം (2 ഫുൾ-സ്ക്രീൻ ഗെയിമുകൾ)',
+                        EnglishRealmLocalizationService.t('play_to_learn_subtitle', PocketLanguageService.currentLanguage),
                         style: GoogleFonts.inter(
                           color: Colors.white70,
                           fontSize: 12,
@@ -159,6 +190,9 @@ class PocketDayArcadeGameModal extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    // 🌍 2D OPEN WORLD REALM PORTAL
+                    _buildOpenWorldBanner(context),
+
                     // GAME 1 CARD
                     _buildGameCard(
                       context,
@@ -202,6 +236,7 @@ class PocketDayArcadeGameModal extends StatelessWidget {
     required Color accentColor,
     required VoidCallback onPlay,
   }) {
+    final locDesc = spec.getLocalizedDescription(PocketLanguageService.currentLanguage);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -260,15 +295,17 @@ class PocketDayArcadeGameModal extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          Text(
-            spec.descriptionMl,
-            style: GoogleFonts.inter(
-              color: const Color(0xFFE2E8F0),
-              fontSize: 12,
-              height: 1.3,
+          if (locDesc.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              locDesc,
+              style: GoogleFonts.inter(
+                color: const Color(0xFFE2E8F0),
+                fontSize: 12,
+                height: 1.3,
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
@@ -292,17 +329,92 @@ class PocketDayArcadeGameModal extends StatelessWidget {
     );
   }
 
+  Widget _buildOpenWorldBanner(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 14),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0284C7), Color(0xFF10B981)],
+        ),
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF10B981).withValues(alpha: 0.35),
+            blurRadius: 14,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Navigator.pop(context);
+            EnglishRealmPage.launch(context, day: day);
+          },
+          borderRadius: BorderRadius.circular(18),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                const Text('🌍', style: TextStyle(fontSize: 28)),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'ENTER 2D OPEN-WORLD: ENGLISH REALM',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                      Text(
+                        'Explore 9 connected regions & play all 180 games in 2D Flame!',
+                        style: GoogleFonts.inter(
+                          color: Colors.white.withValues(alpha: 0.88),
+                          fontSize: 10.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white, size: 16),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   void _launchGame1(BuildContext context) {
     HapticFeedback.heavyImpact();
     Navigator.pop(context);
 
+    final realmGames = EnglishRealmManifest.getGamesForDay(day);
+    if (realmGames.isNotEmpty) {
+      EnglishRealmGameSessionPage.launch(
+        context,
+        spec: realmGames[0],
+        onCompleted: onGameFinished,
+      );
+      return;
+    }
+
+    final currentLang = PocketLanguageService.currentLanguage;
     final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
     final rounds = vocab.take(6).map((item) {
+      final meaning = item.getMeaning(currentLang);
       return {
         'targetLetter': item.word.isNotEmpty ? item.word[0].toUpperCase() : 'A',
         'targetWord': item.word,
-        'meaning': item.malayalamMeaning,
-        'prompt': 'Catch "${item.word}" (${item.malayalamMeaning})',
+        'meaning': meaning,
+        'prompt': 'Catch "${item.word}" ($meaning)',
         'options': [item.word, 'Book', 'Water', 'Tree'],
         'correct': item.word,
       };
@@ -315,7 +427,7 @@ class PocketDayArcadeGameModal extends StatelessWidget {
           rounds: rounds,
           initialRound: 0,
           isFullscreen: true,
-          nativeLanguage: 'Malayalam',
+          nativeLanguage: currentLang,
           onAllCompleted: onGameFinished,
         ),
       ),
@@ -325,6 +437,16 @@ class PocketDayArcadeGameModal extends StatelessWidget {
   void _launchGame2(BuildContext context) {
     HapticFeedback.heavyImpact();
     Navigator.pop(context);
+
+    final realmGames = EnglishRealmManifest.getGamesForDay(day);
+    if (realmGames.length > 1) {
+      EnglishRealmGameSessionPage.launch(
+        context,
+        spec: realmGames[1],
+        onCompleted: onGameFinished,
+      );
+      return;
+    }
 
     final vocab = Pocket90DayVocabCurriculum.getVocabForDay(day);
     final items = <WordCatcherItem>[];
@@ -365,7 +487,7 @@ class PocketDayArcadeGameModal extends StatelessWidget {
       MaterialPageRoute(
         builder: (_) => WordCatcherGamePage(
           levelData: levelData,
-          preferredLanguage: 'Malayalam',
+          preferredLanguage: PocketLanguageService.currentLanguage,
           onCompleted: (_) => onGameFinished?.call(),
         ),
       ),
@@ -438,7 +560,7 @@ class PocketDayArcadeGameModal extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'നഗരത്തിലൂടെ നടന്ന് ആളുകളുമായി യഥാർത്ഥ ഇംഗ്ലീഷിൽ സംസാരിക്കുക!',
+            EnglishRealmLocalizationService.t('town_quest_desc', PocketLanguageService.currentLanguage),
             style: GoogleFonts.inter(
               color: const Color(0xFFE2E8F0),
               fontSize: 12,
@@ -477,7 +599,7 @@ class PocketDayArcadeGameModal extends StatelessWidget {
       MaterialPageRoute(
         builder: (_) => TownQuestDialogueGamePage(
           day: day,
-          nativeLanguage: 'Malayalam',
+          nativeLanguage: PocketLanguageService.currentLanguage,
           onGameFinished: onGameFinished,
         ),
       ),

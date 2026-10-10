@@ -24,6 +24,10 @@ import 'games/meadow_runner_game_page.dart';
 import 'games/word_catcher_game_page.dart';
 import 'games/word_catcher_models.dart';
 import 'pocket_day_detail_overview_page.dart';
+import 'games/english_realm/english_realm_manifest.dart';
+import 'games/english_realm/english_realm_page.dart';
+import 'games/english_realm/english_realm_game_session_page.dart';
+import 'games/english_realm/english_realm_models.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
@@ -160,6 +164,7 @@ class _PocketDay1InteractiveFlowPageState
     )..repeat(reverse: true);
 
     _speech = stt.SpeechToText();
+    PocketLanguageService.activeLanguageNotifier.addListener(_onActiveLanguageChanged);
     _loadRuntimeCurriculum();
     _initAudioAndSpeech();
     _loadState();
@@ -174,6 +179,14 @@ class _PocketDay1InteractiveFlowPageState
       if (mounted) setState(() {});
     } catch (_) {
       // The compatibility adapter retains its existing local fallback.
+    }
+  }
+
+  void _onActiveLanguageChanged() {
+    if (mounted) {
+      setState(() {
+        _nativeLanguage = PocketLanguageService.currentLanguage;
+      });
     }
   }
 
@@ -220,6 +233,7 @@ class _PocketDay1InteractiveFlowPageState
     _pulseController.dispose();
     _tts.stop();
     _speech.stop();
+    PocketLanguageService.activeLanguageNotifier.removeListener(_onActiveLanguageChanged);
     super.dispose();
   }
 
@@ -2100,9 +2114,16 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   // -------------------------------------------------------------
-  // STEP 3: GAME 1 - 2D OPEN-WORLD MEADOW RUNNER (6 Rounds)
+  // STEP 3: GAME 1 - 2D OPEN-WORLD MEADOW RUNNER / REALM GAME 1
   // -------------------------------------------------------------
   Widget _buildStep3GameHunt(Day1StepModel step) {
+    if (widget.day > 1) {
+      final realmGames = EnglishRealmManifest.getGamesForDay(widget.day);
+      if (realmGames.isNotEmpty) {
+        return _buildRealmGameCardInFlow(realmGames[0], 3);
+      }
+    }
+
     final rounds = (step.data['rounds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     if (rounds.isEmpty) return const SizedBox.shrink();
 
@@ -2130,9 +2151,16 @@ class _PocketDay1InteractiveFlowPageState
   }
 
   // -------------------------------------------------------------
-  // STEP 4: GAME 2 - 2D WORD CATCHER & SENTENCE BUILDER (6 Rounds)
+  // STEP 4: GAME 2 - 2D WORD CATCHER / REALM GAME 2
   // -------------------------------------------------------------
   Widget _buildStep4GameMatchBuild(Day1StepModel step) {
+    if (widget.day > 1) {
+      final realmGames = EnglishRealmManifest.getGamesForDay(widget.day);
+      if (realmGames.length > 1) {
+        return _buildRealmGameCardInFlow(realmGames[1], 4);
+      }
+    }
+
     final rounds = (step.data['rounds'] as List?)?.cast<Map<String, dynamic>>() ?? [];
     if (rounds.isEmpty) return const SizedBox.shrink();
 
@@ -2371,6 +2399,311 @@ class _PocketDay1InteractiveFlowPageState
           ),
         ],
       ],
+    );
+  }
+
+  // -------------------------------------------------------------
+  // REALM GAME CARD IN FLOW (DAYS 2-90)
+  // -------------------------------------------------------------
+  Widget _buildRealmGameCardInFlow(RealmGameSpec game, int stepIndex) {
+    final isDone = _completedSteps[stepIndex] == true;
+    final archetypeLabel = game.archetype.name.replaceAllMapped(
+      RegExp(r'([A-Z])'),
+      (m) => ' ${m.group(0)}',
+    ).toUpperCase();
+    final locDesc = game.getLocalizedDescription(_nativeLanguage);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            game.accentColor.withValues(alpha: 0.18),
+            const Color(0xFF0F172A),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDone ? const Color(0xFF10B981) : game.accentColor.withValues(alpha: 0.6),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: (isDone ? const Color(0xFF10B981) : game.accentColor).withValues(alpha: 0.25),
+            blurRadius: 18,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row: Archetype badge & Rounds badge
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: game.accentColor.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: game.accentColor),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(game.icon, style: const TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(
+                      archetypeLabel,
+                      style: GoogleFonts.outfit(
+                        color: game.accentColor,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 11,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white24),
+                ),
+                child: Text(
+                  '${game.rounds.length} ROUNDS',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFFD700),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 11,
+                  ),
+                ),
+              ),
+              if (isDone) ...[
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.check_circle_rounded, color: Colors.white, size: 14),
+                      SizedBox(width: 4),
+                      Text(
+                        'CLEARED',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          // Game Title En & Subtitle
+          Text(
+            game.title,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 19,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            game.subtitle,
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 13,
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Objective / Instruction Box
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B).withValues(alpha: 0.7),
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.white12),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text('🎯 ', style: TextStyle(fontSize: 14)),
+                    Expanded(
+                      child: Text(
+                        game.descriptionEn,
+                        style: GoogleFonts.inter(
+                          color: Colors.white,
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (locDesc.isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('💡 ', style: TextStyle(fontSize: 14)),
+                      Expanded(
+                        child: Text(
+                          locDesc,
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 11.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+
+          // Reward indicators
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '+${game.xpReward} XP',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFA5B4FC),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  '+${game.coinReward} Coins',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFFFCD34D),
+                    fontSize: 11.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'Day ${game.day} • Game ${game.gameIndex}',
+                style: GoogleFonts.inter(
+                  color: Colors.white38,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+
+          // Primary Launch Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: isDone ? const Color(0xFF10B981) : game.accentColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                elevation: 4,
+              ),
+              icon: Icon(
+                isDone ? Icons.replay_rounded : Icons.play_arrow_rounded,
+                size: 24,
+              ),
+              label: Text(
+                isDone ? 'REPLAY CHALLENGE ↺' : 'PLAY FULLSCREEN GAME ➔',
+                style: GoogleFonts.outfit(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 0.6,
+                ),
+              ),
+              onPressed: () async {
+                HapticFeedback.heavyImpact();
+                await EnglishRealmGameSessionPage.launch(
+                  context,
+                  spec: game,
+                  onCompleted: () async {
+                    await _markStepCompleted(stepIndex);
+                    if (mounted) setState(() {});
+                  },
+                );
+                if (mounted) setState(() {});
+              },
+            ),
+          ),
+          const SizedBox(height: 10),
+
+          // Open-World Portal Button
+          SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFF38BDF8),
+                side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              icon: const Text('🌍', style: TextStyle(fontSize: 16)),
+              label: Text(
+                'EXPLORE IN 2D OPEN-WORLD REALM',
+                style: GoogleFonts.outfit(
+                  fontSize: 12.5,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              onPressed: () {
+                HapticFeedback.mediumImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => EnglishRealmPage(initialDay: game.day),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 

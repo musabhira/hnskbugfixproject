@@ -105,6 +105,7 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
   final _imagePicker = ImagePicker();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   // PocketScore Avatar Caches to ensure instant & accurate display
   static final Map<String, VectorAvatarConfig> _userAvatarConfigCache = {};
@@ -1973,6 +1974,729 @@ class _WhatsAppGroupChatState extends ConsumerState<WhatsAppGroupChat>
           ),
         );
       },
+    );
+  }
+
+  /// 🌟 Right-to-Left Swipe Friendship & Compatibility Dashboard Drawer
+  /// (User Audio Directive: Swiping right-to-left reveals full friendship, compatibility,
+  /// love score, spoken streak & mate analytics dashboard. Dragging halfway snaps back to chat.)
+  Widget _buildFriendshipDashboardDrawer(BuildContext context) {
+    final messages =
+        ref.watch(chatMessagesProvider(widget.groupId)).value ?? [];
+    final otherUserId = widget.groupId.startsWith('p:')
+        ? widget.groupId.substring(2)
+        : widget.groupId;
+    final mateName = ContactsNameService().getDisplayName(
+      userId: otherUserId,
+      fallbackName: widget.groupName,
+    );
+
+    // 1. Calculate stats from messages
+    final myMsgs = messages.where((m) => m.senderId == _currentUserId).length;
+    final mateMsgs =
+        messages.where((m) => m.senderId != _currentUserId).length;
+    final totalMsgs = myMsgs + mateMsgs;
+
+    int wordsSpoken = 0;
+    for (final m in messages) {
+      if (m.messageText != null && m.messageText!.isNotEmpty) {
+        wordsSpoken += m.messageText!
+            .split(RegExp(r'\s+'))
+            .where((w) => w.isNotEmpty)
+            .length;
+      }
+    }
+
+    // 2. Calculate dynamic Compatibility / Friendship Score (0 - 100)
+    int score = 32;
+    score += (totalMsgs * 3).clamp(0, 30);
+    score += (wordsSpoken > 50 ? 20 : (wordsSpoken * 0.4).toInt());
+    if (myMsgs > 0 && mateMsgs > 0) score += 12; // Mutual exchange bonus
+    score += (_mateStreakDays * 2).clamp(0, 15);
+    score = score.clamp(20, 100);
+
+    final String tierTitle;
+    final Color tierColor;
+    final IconData tierIcon;
+    final String tierSubtitle;
+    if (score >= 85) {
+      tierTitle = 'Soul Mates ⚡';
+      tierColor = const Color(0xFFFFD600);
+      tierIcon = Icons.bolt_rounded;
+      tierSubtitle = 'Deep mutual connection & regular English practice';
+    } else if (score >= 60) {
+      tierTitle = 'Close Companions 🔥';
+      tierColor = const Color(0xFFFF8A00);
+      tierIcon = Icons.local_fire_department_rounded;
+      tierSubtitle = 'High compatibility & active spoken conversation';
+    } else if (score >= 40) {
+      tierTitle = 'Growing Bond 🌱';
+      tierColor = const Color(0xFF10B981);
+      tierIcon = Icons.eco_rounded;
+      tierSubtitle = 'Consistent progress & daily conversation exchange';
+    } else {
+      tierTitle = 'Sparking Friendship ✨';
+      tierColor = const Color(0xFF38BDF8);
+      tierIcon = Icons.auto_awesome_rounded;
+      tierSubtitle =
+          'Start speaking and sharing daily moments to grow your bond';
+    }
+
+    final myRatio =
+        totalMsgs > 0 ? ((myMsgs / totalMsgs) * 100).round() : 50;
+    final mateRatio = 100 - myRatio;
+    final mateStage = _userPocketStageCache[otherUserId] ?? 1;
+
+    return Drawer(
+      width: MediaQuery.of(context).size.width * 0.88,
+      backgroundColor: const Color(0xFF090D16),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Header: Title & Close Action
+            Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: const BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.white10)),
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                        color: Colors.white70, size: 18),
+                    onPressed: () => Navigator.of(context).pop(),
+                    tooltip: 'Back to Chat',
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Friendship & Connection',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Compatibility & Mate Analytics',
+                          style: GoogleFonts.inter(
+                            color: Colors.white54,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: tierColor.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                      border:
+                          Border.all(color: tierColor.withValues(alpha: 0.4)),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(tierIcon, color: tierColor, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          '$score%',
+                          style: GoogleFonts.outfit(
+                            color: tierColor,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Scrollable Content
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.all(16),
+                children: [
+                  // 1. Dual Avatars Connection Card
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [
+                          Color(0xFF131B2E),
+                          Color(0xFF0F172A),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: tierColor.withValues(alpha: 0.3),
+                          width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: tierColor.withValues(alpha: 0.12),
+                          blurRadius: 16,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // My Avatar
+                            Column(
+                              children: [
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: const Color(0xFF10B981),
+                                        width: 2),
+                                  ),
+                                  child: ClipOval(
+                                    child: VectorAvatarWidget(
+                                      config: _getPersonalAvatarConfig(
+                                          _currentUserId),
+                                      size: 52,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'You',
+                                  style: GoogleFonts.outfit(
+                                    color: Colors.white70,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+
+                            // Glowing Connecting Line & Heart/Bolt
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 14),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Container(
+                                        width: 28,
+                                        height: 2,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              const Color(0xFF10B981),
+                                              tierColor,
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: tierColor
+                                              .withValues(alpha: 0.2),
+                                          shape: BoxShape.circle,
+                                          border: Border.all(
+                                              color: tierColor, width: 1.5),
+                                        ),
+                                        child: Icon(tierIcon,
+                                            color: tierColor, size: 16),
+                                      ),
+                                      Container(
+                                        width: 28,
+                                        height: 2,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              tierColor,
+                                              const Color(0xFFFFFC00),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    tierTitle,
+                                    style: GoogleFonts.outfit(
+                                      color: tierColor,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            // Mate Avatar
+                            Column(
+                              children: [
+                                Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                        color: const Color(0xFFFFFC00),
+                                        width: 2),
+                                  ),
+                                  child: ClipOval(
+                                    child: VectorAvatarWidget(
+                                      config: _getPersonalAvatarConfig(
+                                          otherUserId),
+                                      size: 52,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                ConstrainedBox(
+                                  constraints:
+                                      const BoxConstraints(maxWidth: 70),
+                                  child: Text(
+                                    mateName,
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          tierSubtitle,
+                          style: GoogleFonts.inter(
+                            color: Colors.white60,
+                            fontSize: 11.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // 2. Key Metrics Grid (2x2)
+                  Row(
+                    children: [
+                      // Spoken Practice Streak
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF131826),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Text('🔥',
+                                      style: TextStyle(fontSize: 18)),
+                                  const Spacer(),
+                                  Text(
+                                    '${_mateStreakDays}d',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFF8A00),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Practice Streak',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '$_mateStreakDays consecutive days',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white54,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      // Chat Depth / Words Spoken
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF131826),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(
+                                      Icons.record_voice_over_rounded,
+                                      color: Color(0xFF38BDF8),
+                                      size: 18),
+                                  const Spacer(),
+                                  Text(
+                                    '$wordsSpoken',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFF38BDF8),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Chat Depth',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                '$wordsSpoken words exchanged',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white54,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  Row(
+                    children: [
+                      // Level Alignment
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF131826),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.psychology_rounded,
+                                      color: Color(0xFFA855F7), size: 18),
+                                  const Spacer(),
+                                  Text(
+                                    'Stage $mateStage',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFA855F7),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'Fluency Match',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                'Stage $mateStage Spoken English',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white54,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      // 4-Day Spoken Pact
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF131826),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.white10),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  const Icon(Icons.handshake_rounded,
+                                      color: Color(0xFFFFD600), size: 18),
+                                  const Spacer(),
+                                  Text(
+                                    '${_mateStreakDays.clamp(1, 4)}/4',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD600),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                '4-Day Pact',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                'Mutual commitment active',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white54,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // 3. Message Exchange Ratio
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF131826),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Conversation Balance',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            Text(
+                              '$totalMsgs total messages',
+                              style: GoogleFonts.inter(
+                                color: Colors.white54,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                flex: myRatio.clamp(5, 95),
+                                child: Container(
+                                  height: 8,
+                                  color: const Color(0xFF10B981),
+                                ),
+                              ),
+                              Expanded(
+                                flex: mateRatio.clamp(5, 95),
+                                child: Container(
+                                  height: 8,
+                                  color: const Color(0xFFFFD600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF10B981),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'You: $myMsgs ($myRatio%)',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Container(
+                                  width: 7,
+                                  height: 7,
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFFFFD600),
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  '$mateName: $mateMsgs ($mateRatio%)',
+                                  style: GoogleFonts.inter(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // 4. Common Interests & Topics Alignment
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF131826),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '🎯 Matched Practice Topics',
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Wrap(
+                          spacing: 6,
+                          runSpacing: 6,
+                          children: [
+                            'Daily Routines',
+                            'Work & Career',
+                            'Travel Dreams',
+                            'English Slang',
+                            'Confidence Drills'
+                          ].map((topic) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10, vertical: 5),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.06),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                    color:
+                                        Colors.white.withValues(alpha: 0.1)),
+                              ),
+                              child: Text(
+                                topic,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // Return to chat button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.arrow_back_rounded,
+                          color: Colors.white70, size: 16),
+                      label: Text(
+                        'Return to Chat',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 13,
+                        ),
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white24),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14)),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -4015,6 +4739,11 @@ Draft: "$draft"''';
         primaryColor: accentColor,
       ),
       child: Scaffold(
+        key: _scaffoldKey,
+        endDrawerEnableOpenDragGesture: widget.groupId.startsWith('p:'),
+        endDrawer: widget.groupId.startsWith('p:')
+            ? _buildFriendshipDashboardDrawer(context)
+            : null,
         backgroundColor: backgroundColor,
         appBar: AppBar(
           primary: widget.showBackButton,
@@ -4352,51 +5081,6 @@ Draft: "$draft"''';
       ],
     ),
     actions: [
-            if (widget.groupId.startsWith('p:')) ...[
-              InkWell(
-                onTap: () => _showMateFluencyStreakSheet(context),
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  margin:
-                      const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFFFF8A00), Color(0xFFE52E71)],
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFF8A00).withValues(alpha: 0.35),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🔥', style: TextStyle(fontSize: 12)),
-                      const SizedBox(width: 3),
-                      Text(
-                        '${_mateStreakDays}d',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 11,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.bolt_rounded, color: Color(0xFFFFD600), size: 21),
-                tooltip: 'Friendship Dashboard ⚡',
-                onPressed: () => _showFriendshipDashboardSheet(context),
-              ),
-            ],
             if (!PocketPresidentService.isPresidentId(
                 widget.groupId.startsWith('p:')
                     ? widget.groupId.substring(2)
@@ -4516,10 +5200,10 @@ Draft: "$draft"''';
           onTap: () => FocusScope.of(context).unfocus(),
           onHorizontalDragEnd: (details) {
             final velocity = details.primaryVelocity ?? 0;
-            if (velocity > 260) {
-              // Right swipe across chat opens Friendship & Connection Dashboard
+            if (velocity < -250) {
+              // Right-to-Left swipe across chat opens Friendship & Connection Dashboard Drawer
               if (widget.groupId.startsWith('p:')) {
-                _showFriendshipDashboardSheet(context);
+                _scaffoldKey.currentState?.openEndDrawer();
               }
             }
           },

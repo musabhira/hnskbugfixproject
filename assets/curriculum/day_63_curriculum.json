@@ -11,8 +11,8 @@
     },
     "version": "day-63-v1",
     "topic": {
-      "en": "Just, Already & Yet",
-      "ml": "Just, Already, Yet പ്രയോഗങ്ങൾ",
+      "en": "Expressing Wishes, Regrets and Hypothetical Situations",
+      "ml": "ആഗ്രഹങ്ങളും ഖേദങ്ങളും പ്രകടിപ്പിക്കൽ",
       "hi": "Just, Already & Yet",
       "ta": "Just, Already & Yet"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 113
   },
   "grammarRule": {
-    "formula": "Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല)",
+    "formula": "Expressing Wishes, Regrets and Hypothetical Situations",
     "explanation": {
       "ml": "Just, Already, Yet പ്രയോഗങ്ങൾ എന്ന വിഷയത്തിൽ Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല) correctly in spoken English."

@@ -11,8 +11,8 @@
     },
     "version": "day-17-v1",
     "topic": {
-      "en": "Expressing Abilities: Can & Can't",
-      "ml": "കഴിവുകൾ (Can & Can't)",
+      "en": "Simple, Compound, Complex and Compound-Complex Sentences",
+      "ml": "ലളിത, സംയുക്ത, സങ്കീർണ്ണ വാക്യങ്ങൾ",
       "hi": "Expressing Abilities: Can & Can't",
       "ta": "Expressing Abilities: Can & Can't"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 67
   },
   "grammarRule": {
-    "formula": "Can / Cannot + V1 (I can speak English)",
+    "formula": "Simple, Compound, Complex and Compound-Complex Sentences",
     "explanation": {
       "ml": "കഴിവുകൾ (Can & Can't) എന്ന വിഷയത്തിൽ Can / Cannot + V1 (I can speak English) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Can / Cannot + V1 (I can speak English) correctly in spoken English."

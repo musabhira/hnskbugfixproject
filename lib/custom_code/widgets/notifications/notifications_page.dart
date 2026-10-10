@@ -169,31 +169,62 @@ class _NotificationsPageState extends State<NotificationsPage> {
         }
       } catch (_) {}
 
-      if (alerts.isEmpty) {
-        // Fallback default activity alerts if database has no records
-        alerts.addAll([
-          {
-            'id': 'alert_1',
-            'icon': '🎯',
-            'title': 'Daily English Practice Reminder',
-            'body': 'Complete your 90-minute English speaking & chat drill to protect your streak!',
-            'time': '1 hour ago',
-          },
-          {
-            'id': 'alert_2',
-            'icon': '🔥',
-            'title': 'Streak Milestone Active',
-            'body': 'You are currently on a learning streak! Keep practicing to unlock Day 15 Royalty Badge.',
-            'time': 'Yesterday',
-          },
-          {
-            'id': 'alert_3',
-            'icon': '🛡️',
-            'title': 'Inactivity Decay Shield',
-            'body': 'Your Pocket Score is safe today. Missing a day reduces 20 XP and resets active streaks.',
-            'time': '2 days ago',
-          },
-        ]);
+      // Ensure rich alerts are present for robot snaps, PocketTalk pacts, mate connections, and level achievements
+      final atlasRobot = PocketRobotService.getRobotById('robot_atlas');
+      final novaRobot = PocketRobotService.getRobotById('robot_nova');
+      final zaraRobot = PocketRobotService.getRobotById('robot_zara');
+
+      final defaultAlerts = [
+        {
+          'id': 'snap_atlas_moment',
+          'icon': '📸',
+          'badge': '📸',
+          'title': 'Atlas sent you a Snap Moment',
+          'body': '📸 "English study & coffee drill at the library! Check it out."',
+          'time': '12m ago',
+          'avatarUrl': atlasRobot?.avatarUrl,
+          'thumbnail': 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=400&q=80',
+        },
+        {
+          'id': 'pact_nova_invite',
+          'icon': '⚡',
+          'badge': '⚡',
+          'title': 'PocketTalk 4-Day Pact Active',
+          'body': 'Nova accepted your 4-Day Spoken English Pact! Day 1 speaking goal starts now.',
+          'time': '45m ago',
+          'avatarUrl': novaRobot?.avatarUrl,
+        },
+        {
+          'id': 'mate_zara_connected',
+          'icon': '🤝',
+          'badge': '✨',
+          'title': 'Pocket Mate Connected',
+          'body': 'You and Zara are now verified Pocket Mates! Start your daily audio drills.',
+          'time': '2h ago',
+          'avatarUrl': zaraRobot?.avatarUrl,
+        },
+        {
+          'id': 'level_milestone_unlocked',
+          'icon': '🏆',
+          'badge': '⭐',
+          'title': 'Level Milestone: Stage 3 Unlocked',
+          'body': 'Congratulations! You advanced to Intermediate Speaker Stage 3. Claim +120 XP reward.',
+          'time': 'Today',
+        },
+        {
+          'id': 'streak_consistency_alert',
+          'icon': '🔥',
+          'badge': '🔥',
+          'title': '7-Day Fluency Streak Active',
+          'body': 'Outstanding consistency! Practice today to protect your streak against inactivity decay.',
+          'time': 'Yesterday',
+        },
+      ];
+
+      for (final da in defaultAlerts) {
+        if (!alerts.any((a) => a['id'] == da['id'])) {
+          alerts.add(da);
+        }
       }
 
       if (mounted) {
@@ -538,7 +569,73 @@ class _NotificationsPageState extends State<NotificationsPage> {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(alert['icon'] ?? '🔔', style: const TextStyle(fontSize: 20)),
+                        // Avatar or Styled Badge Icon
+                        Stack(
+                          clipBehavior: Clip.none,
+                          children: [
+                            if (alert['avatarConfig'] is VectorAvatarConfig)
+                              ClipOval(
+                                child: VectorAvatarWidget(
+                                  config: alert['avatarConfig'] as VectorAvatarConfig,
+                                  size: 40,
+                                ),
+                              )
+                            else if (alert['avatarUrl'] != null &&
+                                alert['avatarUrl'].toString().isNotEmpty)
+                              ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: alert['avatarUrl'].toString(),
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                  placeholder: (_, __) => Container(
+                                    width: 40,
+                                    height: 40,
+                                    color: Colors.white10,
+                                    alignment: Alignment.center,
+                                    child: Text(alert['icon'] ?? '🔔',
+                                        style: const TextStyle(fontSize: 18)),
+                                  ),
+                                  errorWidget: (_, __, ___) => Container(
+                                    width: 40,
+                                    height: 40,
+                                    color: Colors.white10,
+                                    alignment: Alignment.center,
+                                    child: Text(alert['icon'] ?? '🔔',
+                                        style: const TextStyle(fontSize: 18)),
+                                  ),
+                                ),
+                              )
+                            else
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF1E293B), Color(0xFF0F172A)],
+                                  ),
+                                  shape: BoxShape.circle,
+                                  border: Border.all(color: Colors.white12),
+                                ),
+                                alignment: Alignment.center,
+                                child: Text(alert['icon'] ?? '🔔',
+                                    style: const TextStyle(fontSize: 20)),
+                              ),
+                            Positioned(
+                              right: -2,
+                              bottom: -2,
+                              child: Container(
+                                padding: const EdgeInsets.all(2),
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFF111420),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Text(alert['badge'] ?? alert['icon'] ?? '✨',
+                                    style: const TextStyle(fontSize: 11)),
+                              ),
+                            ),
+                          ],
+                        ),
                         const SizedBox(width: 12),
                         Expanded(
                           child: Column(
@@ -558,19 +655,24 @@ class _NotificationsPageState extends State<NotificationsPage> {
                                   ),
                                   Text(
                                     alert['time'] ?? '',
-                                    style: GoogleFonts.inter(color: Colors.white38, fontSize: 10),
+                                    style: GoogleFonts.inter(
+                                        color: Colors.white38, fontSize: 10),
                                   ),
                                 ],
                               ),
                               const SizedBox(height: 3),
                               Text(
                                 alert['body'] ?? '',
-                                style: GoogleFonts.inter(color: Colors.white70, fontSize: 11.5, height: 1.3),
+                                style: GoogleFonts.inter(
+                                    color: Colors.white70,
+                                    fontSize: 11.5,
+                                    height: 1.3),
                               ),
                             ],
                           ),
                         ),
-                        if (alert['thumbnail'] != null && alert['thumbnail'].toString().isNotEmpty) ...[
+                        if (alert['thumbnail'] != null &&
+                            alert['thumbnail'].toString().isNotEmpty) ...[
                           const SizedBox(width: 10),
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
@@ -579,7 +681,8 @@ class _NotificationsPageState extends State<NotificationsPage> {
                               width: 44,
                               height: 44,
                               fit: BoxFit.cover,
-                              errorWidget: (_, __, ___) => const SizedBox.shrink(),
+                              errorWidget: (_, __, ___) =>
+                                  const SizedBox.shrink(),
                             ),
                           ),
                         ],

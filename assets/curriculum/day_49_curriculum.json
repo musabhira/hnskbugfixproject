@@ -11,8 +11,8 @@
     },
     "version": "day-49-v1",
     "topic": {
-      "en": "Giving Advice: Should & Ought to",
-      "ml": "ഉപദേശങ്ങൾ നൽകൽ (Should)",
+      "en": "Transitive and Intransitive Verbs",
+      "ml": "ട്രാൻസിറ്റീവ്, ഇൻട്രാൻസിറ്റീവ് വെർബുകൾ",
       "hi": "Giving Advice: Should & Ought to",
       "ta": "Giving Advice: Should & Ought to"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 99
   },
   "grammarRule": {
-    "formula": "You should + V1 (You should sleep early)",
+    "formula": "Transitive and Intransitive Verbs",
     "explanation": {
       "ml": "ഉപദേശങ്ങൾ നൽകൽ (Should) എന്ന വിഷയത്തിൽ You should + V1 (You should sleep early) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use You should + V1 (You should sleep early) correctly in spoken English."

@@ -11,8 +11,8 @@
     },
     "version": "day-55-v1",
     "topic": {
-      "en": "Technology, Mobiles & Connectivity",
-      "ml": "മൊബൈൽ, വൈഫൈ, സാങ്കേതികവിദ്യ",
+      "en": "Causative Structures – Have, Get, Make, Let, Help",
+      "ml": "കോസറ്റീവ് സ്ട്രക്ചറുകൾ – Have, Get, Make",
       "hi": "Technology, Mobiles & Connectivity",
       "ta": "Technology, Mobiles & Connectivity"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 105
   },
   "grammarRule": {
-    "formula": "My battery is low / Network is weak / Restart",
+    "formula": "Causative Structures – Have, Get, Make, Let, Help",
     "explanation": {
       "ml": "മൊബൈൽ, വൈഫൈ, സാങ്കേതികവിദ്യ എന്ന വിഷയത്തിൽ My battery is low / Network is weak / Restart എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use My battery is low / Network is weak / Restart correctly in spoken English."

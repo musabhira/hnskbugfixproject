@@ -11,8 +11,8 @@
     },
     "version": "day-13-v1",
     "topic": {
-      "en": "Habits with Do vs Does",
-      "ml": "Do vs Does ശീലങ്ങൾ",
+      "en": "Verb Forms – V1, V2, V3, V4 and V5",
+      "ml": "വെർബ് ഫോമുകൾ – V1 മുതൽ V5 വരെ",
       "hi": "Habits with Do vs Does",
       "ta": "Habits with Do vs Does"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 63
   },
   "grammarRule": {
-    "formula": "Do with I/You/We/They | Does with He/She/It",
+    "formula": "Verb Forms – V1, V2, V3, V4 and V5",
     "explanation": {
       "ml": "Do vs Does ശീലങ്ങൾ എന്ന വിഷയത്തിൽ Do with I/You/We/They | Does with He/She/It എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Do with I/You/We/They | Does with He/She/It correctly in spoken English."

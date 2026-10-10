@@ -11,8 +11,8 @@
     },
     "version": "day-7-v1",
     "topic": {
-      "en": "Everyday Household Objects",
-      "ml": "നിത്യജീവിത സാധനങ്ങൾ",
+      "en": "Adjectives – Types, Order and Usage",
+      "ml": "വിശേഷണങ്ങൾ (Adjectives) – തരങ്ങളും ക്രമവും",
       "hi": "Everyday Household Objects",
       "ta": "Everyday Household Objects"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 57
   },
   "grammarRule": {
-    "formula": "Articles A & An (A table, An umbrella)",
+    "formula": "Adjectives – Types, Order and Usage",
     "explanation": {
       "ml": "നിത്യജീവിത സാധനങ്ങൾ എന്ന വിഷയത്തിൽ Articles A & An (A table, An umbrella) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Articles A & An (A table, An umbrella) correctly in spoken English."

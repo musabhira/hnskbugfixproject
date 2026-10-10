@@ -11,8 +11,8 @@
     },
     "version": "day-74-v1",
     "topic": {
-      "en": "Professional Telephone Etiquette",
-      "ml": "ഓഫീസ് ഫോൺ കോളുകൾ",
+      "en": "Ellipsis and Substitution",
+      "ml": "എലിപ്സിസും സബ്സ്റ്റിറ്റ്യൂഷനും",
       "hi": "Professional Telephone Etiquette",
       "ta": "Professional Telephone Etiquette"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 124
   },
   "grammarRule": {
-    "formula": "May I speak with...? / May I ask who is calling?",
+    "formula": "Ellipsis and Substitution",
     "explanation": {
       "ml": "ഓഫീസ് ഫോൺ കോളുകൾ എന്ന വിഷയത്തിൽ May I speak with...? / May I ask who is calling? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use May I speak with...? / May I ask who is calling? correctly in spoken English."

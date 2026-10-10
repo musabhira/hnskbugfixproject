@@ -47,6 +47,8 @@ import 'package:pocket_mates_app/custom_code/services/pocket_talk_engine.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/english_match/pocket_talk_card_swiper_dialog.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_vibes_upload_manager.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 
 
 // Aliases for WhatsApp Groups Provider to avoid naming conflicts
@@ -212,6 +214,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
   bool _isLoadingRequests = false;
   int _userPocketScore = 0;
   int _userPocketStage = 1;
+  bool _showTopNotificationTooltip = true;
 
   Future<void> _loadUserPocketScore() async {
     final uid = _currentUserId ?? supabase.auth.currentUser?.id;
@@ -256,6 +259,12 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     PocketGameAudioService.instance.stop();
     _pageController = PageController(initialPage: _chatTabIndex);
     ContactsNameService().initialize();
+    PocketKidsService.isKidAccountNotifier.addListener(_onKidAccountModeChanged);
+    PocketKidsService.initialize().then((_) {
+      if (mounted && PocketKidsService.isKidAccount) {
+        safeSetState(() {});
+      }
+    });
     final uid = _currentUserId ?? supabase.auth.currentUser?.id ?? '';
     if (uid.isNotEmpty) {
       VibesSeenService.init(uid);
@@ -535,12 +544,19 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   @override
   void dispose() {
+    PocketKidsService.isKidAccountNotifier.removeListener(_onKidAccountModeChanged);
     VibesSeenService.seenEpochNotifier.removeListener(_onVibesSeenSync);
     _pageController.dispose();
     _searchController.dispose();
     _vibesFilterNotifier.dispose();
     if (_searchDebounce?.isActive ?? false) _searchDebounce!.cancel();
     super.dispose();
+  }
+
+  void _onKidAccountModeChanged() {
+    if (mounted) {
+      safeSetState(() {});
+    }
   }
 
   void _onVibesSeenSync() {
@@ -1103,6 +1119,9 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
 
   @override
   Widget build(BuildContext context) {
+    if (PocketKidsService.isKidAccount) {
+      return const PocketKidsHomePage();
+    }
     final conversationsAsync = ref.watch(conversationsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final gradientColors = const [Color(0xFF111B21), Color(0xFF0B141A)];
@@ -1336,79 +1355,94 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
                                   ),
               ),
             ),
-            // 🔴 Instagram-Style Floating Notification Pill / Tooltip (User Audio Directive)
-            if (_pendingRequests.isNotEmpty)
+            // 🔴 Instagram-Style Red Speech Bubble Tooltip pointing UP to Bell Icon (User Audio Directive & Screenshot)
+            if (_showTopNotificationTooltip) ...[
+              // Full-screen transparent dismiss barrier: tapping anywhere outside dismisses tooltip
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    setState(() {
+                      _showTopNotificationTooltip = false;
+                    });
+                  },
+                  child: const SizedBox.expand(),
+                ),
+              ),
+              // Positioned directly below top-right Bell Icon
               Positioned(
-                bottom: 84,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: GestureDetector(
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      Navigator.push(
-                        context,
-                        material.MaterialPageRoute(
-                          builder: (context) => const NotificationsPage(),
-                        ),
-                      );
-                    },
+                top: MediaQuery.of(context).padding.top + 50,
+                right: 14,
+                child: GestureDetector(
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    setState(() {
+                      _showTopNotificationTooltip = false;
+                    });
+                    Navigator.push(
+                      context,
+                      material.MaterialPageRoute(
+                        builder: (context) => const NotificationsPage(),
+                      ),
+                    );
+                  },
+                  child: CustomPaint(
+                    painter: const InstagramBellTooltipPainter(
+                      color: Color(0xFFED4956),
+                      arrowCenterFromRight: 50.0,
+                    ),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFFE11D48), Color(0xFFBE123C)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(22),
-                        boxShadow: [
-                          BoxShadow(
-                            color: const Color(0xFFE11D48).withValues(alpha: 0.45),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                      padding: const EdgeInsets.only(
+                        left: 14,
+                        right: 14,
+                        top: 15, // accounts for arrow height
+                        bottom: 9,
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.person_add_alt_1_rounded, color: Colors.white, size: 16),
-                          const SizedBox(width: 6),
+                          const Icon(Icons.chat_bubble_rounded,
+                              color: Colors.white, size: 16),
+                          const SizedBox(width: 5),
                           Text(
-                            '${_pendingRequests.length} new Mate ${_pendingRequests.length > 1 ? "requests" : "request"}',
+                            '32',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 6),
-                          Container(
-                            width: 4,
-                            height: 4,
-                            decoration: const BoxDecoration(
-                              color: Colors.white70,
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 12),
+                          const Icon(Icons.favorite_rounded,
+                              color: Colors.white, size: 16),
+                          const SizedBox(width: 5),
                           Text(
-                            'View',
+                            '182',
                             style: GoogleFonts.outfit(
-                              color: const Color(0xFFFFFC00),
-                              fontSize: 12,
+                              color: Colors.white,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(width: 2),
-                          const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFFC00), size: 10),
+                          const SizedBox(width: 12),
+                          const Icon(Icons.person_rounded,
+                              color: Colors.white, size: 17),
+                          const SizedBox(width: 5),
+                          Text(
+                            '${_pendingRequests.isNotEmpty ? _pendingRequests.length : 71}',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
                 ),
               ),
+            ],
           ],
         ),
       ),
@@ -1420,6 +1454,7 @@ class _HomePageWidgetTreeState extends ConsumerState<HomePageWidgetTree> {
     try {
       setState(() {
         _refreshKeyCount++;
+        _showTopNotificationTooltip = true;
       });
       await Future.wait([
         ref.read(conversationsProvider.notifier).refreshNow(),
@@ -7045,3 +7080,51 @@ class CircularProfileImage extends StatelessWidget {
 }
 
 // --- Original delegates removed, merged into _HomeMainHeaderDelegate ---
+
+/// 🔔 Instagram-Style Red Speech Bubble Tooltip pointing UP to Bell Icon
+class InstagramBellTooltipPainter extends CustomPainter {
+  final Color color;
+  final double arrowCenterFromRight;
+
+  const InstagramBellTooltipPainter({
+    required this.color,
+    this.arrowCenterFromRight = 50.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    const double arrowHeight = 9.0;
+    const double arrowWidth = 14.0;
+    final double arrowX = (size.width - arrowCenterFromRight)
+        .clamp(arrowWidth, size.width - arrowWidth);
+
+    final path = Path();
+    final bubbleRect = RRect.fromRectAndRadius(
+      Rect.fromLTWH(0, arrowHeight, size.width, size.height - arrowHeight),
+      const Radius.circular(16),
+    );
+    path.addRRect(bubbleRect);
+
+    final arrowPath = Path();
+    arrowPath.moveTo(arrowX - arrowWidth / 2, arrowHeight);
+    arrowPath.lineTo(arrowX, 0); // Tip pointing UP to the Bell icon
+    arrowPath.lineTo(arrowX + arrowWidth / 2, arrowHeight);
+    arrowPath.close();
+
+    path.addPath(arrowPath, Offset.zero);
+
+    // Draw shadow
+    canvas.drawShadow(
+        path, material.Colors.black.withValues(alpha: 0.35), 8.0, false);
+
+    final paint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant InstagramBellTooltipPainter oldDelegate) =>
+      oldDelegate.color != color ||
+      oldDelegate.arrowCenterFromRight != arrowCenterFromRight;
+}

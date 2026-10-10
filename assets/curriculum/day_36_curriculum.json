@@ -11,8 +11,8 @@
     },
     "version": "day-36-v1",
     "topic": {
-      "en": "Childhood Habits: Used to",
-      "ml": "പഴയ ശീലങ്ങൾ (Used to)",
+      "en": "Yes/No Questions and Short Answers",
+      "ml": "Yes/No ചോദ്യങ്ങളും ചെറു ഉത്തരങ്ങളും",
       "hi": "Childhood Habits: Used to",
       "ta": "Childhood Habits: Used to"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 86
   },
   "grammarRule": {
-    "formula": "Used to + V1 (Things you did in the past but not now)",
+    "formula": "Yes/No Questions and Short Answers",
     "explanation": {
       "ml": "പഴയ ശീലങ്ങൾ (Used to) എന്ന വിഷയത്തിൽ Used to + V1 (Things you did in the past but not now) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Used to + V1 (Things you did in the past but not now) correctly in spoken English."

@@ -11,8 +11,8 @@
     },
     "version": "day-23-v1",
     "topic": {
-      "en": "Asking Questions: Who & Which",
-      "ml": "Who & Which ചോദ്യങ്ങൾ",
+      "en": "Present Perfect Tense",
+      "ml": "പ്രസന്റ് പെർഫെക്റ്റ് ടെൻസ്",
       "hi": "Asking Questions: Who & Which",
       "ta": "Asking Questions: Who & Which"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 73
   },
   "grammarRule": {
-    "formula": "Who is that? / Which one do you like?",
+    "formula": "Present Perfect Tense",
     "explanation": {
       "ml": "Who & Which ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ Who is that? / Which one do you like? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Who is that? / Which one do you like? correctly in spoken English."

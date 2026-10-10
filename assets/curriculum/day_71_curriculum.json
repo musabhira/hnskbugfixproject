@@ -11,8 +11,8 @@
     },
     "version": "day-71-v1",
     "topic": {
-      "en": "Modals of Probability: May, Might, Could",
-      "ml": "സാധ്യതകൾ: May, Might, Could",
+      "en": "Inversion for Emphasis",
+      "ml": "ഇൻവേർഷൻ – വാക്യങ്ങളിൽ ഊന്നൽ നൽകൽ",
       "hi": "Modals of Probability: May, Might, Could",
       "ta": "Modals of Probability: May, Might, Could"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 121
   },
   "grammarRule": {
-    "formula": "Expressing 50% vs 30% Probability",
+    "formula": "Inversion for Emphasis",
     "explanation": {
       "ml": "സാധ്യതകൾ: May, Might, Could എന്ന വിഷയത്തിൽ Expressing 50% vs 30% Probability എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Expressing 50% vs 30% Probability correctly in spoken English."

@@ -11,8 +11,8 @@
     },
     "version": "day-48-v1",
     "topic": {
-      "en": "Polite Requests: Could you please...",
-      "ml": "മാന്യമായ ആവശ്യപ്പെടലുകൾ",
+      "en": "Participles – Present, Past and Perfect Participles",
+      "ml": "പാർട്ടിസിപ്പിളുകൾ – Present, Past, Perfect",
       "hi": "Polite Requests: Could you please...",
       "ta": "Polite Requests: Could you please..."
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 98
   },
   "grammarRule": {
-    "formula": "Could you please + V1 / Would you mind + V-ing",
+    "formula": "Participles – Present, Past and Perfect Participles",
     "explanation": {
       "ml": "മാന്യമായ ആവശ്യപ്പെടലുകൾ എന്ന വിഷയത്തിൽ Could you please + V1 / Would you mind + V-ing എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Could you please + V1 / Would you mind + V-ing correctly in spoken English."

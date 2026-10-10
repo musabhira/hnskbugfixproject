@@ -33,16 +33,16 @@
       "day": 1,
       "house": 1,
       "topic": {
-        "en": "Me & Identity",
-        "ml": "ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും",
+        "en": "Basics of English Sentence Formation",
+        "ml": "ഇംഗ്ലീഷ് വാക്യ രൂപീകരണത്തിന്റെ അടിസ്ഥാനങ്ങൾ",
         "hi": "Me & Identity",
         "ta": "Me & Identity"
       },
-      "themeEn": "Me & Identity",
-      "themeMl": "ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും",
+      "themeEn": "Basics of English Sentence Formation",
+      "themeMl": "ഇംഗ്ലീഷ് വാക്യ രൂപീകരണത്തിന്റെ അടിസ്ഥാനങ്ങൾ",
       "grammarTarget": "Am/Is/Are & Phonics",
       "grammarRule": {
-        "formula": "Am/Is/Are & Phonics",
+        "formula": "Basics of English Sentence Formation",
         "explanation": {
           "ml": "ഞാനും അടിസ്ഥാന ഇംഗ്ലീഷും എന്ന വിഷയത്തിൽ Am/Is/Are & Phonics എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Am/Is/Are & Phonics correctly in spoken English."
@@ -230,16 +230,16 @@
       "day": 2,
       "house": 1,
       "topic": {
-        "en": "Where I Am From & Locations",
-        "ml": "നാടും സ്ഥലങ്ങളും",
+        "en": "Parts of Speech – Complete Overview",
+        "ml": "പാർട്സ് ഓഫ് സ്പീച്ച് – പൂർണ്ണ അവലോകനം",
         "hi": "Where I Am From & Locations",
         "ta": "Where I Am From & Locations"
       },
-      "themeEn": "Where I Am From & Locations",
-      "themeMl": "നാടും സ്ഥലങ്ങളും",
+      "themeEn": "Parts of Speech – Complete Overview",
+      "themeMl": "പാർട്സ് ഓഫ് സ്പീച്ച് – പൂർണ്ണ അവലോകനം",
       "grammarTarget": "From, In, At (Origins & Locations)",
       "grammarRule": {
-        "formula": "From, In, At (Origins & Locations)",
+        "formula": "Parts of Speech – Complete Overview",
         "explanation": {
           "ml": "നാടും സ്ഥലങ്ങളും എന്ന വിഷയത്തിൽ From, In, At (Origins & Locations) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use From, In, At (Origins & Locations) correctly in spoken English."
@@ -427,16 +427,16 @@
       "day": 3,
       "house": 1,
       "topic": {
-        "en": "My Family & Relationships",
-        "ml": "കുടുംബവും ബന്ധങ്ങളും",
+        "en": "Nouns – Types, Countable and Uncountable Nouns, Singular and Plural",
+        "ml": "നൗണുകൾ – നാമങ്ങളുടെ തരങ്ങൾ, ഏകവചനം, ബഹുവചനം",
         "hi": "My Family & Relationships",
         "ta": "My Family & Relationships"
       },
-      "themeEn": "My Family & Relationships",
-      "themeMl": "കുടുംബവും ബന്ധങ്ങളും",
+      "themeEn": "Nouns – Types, Countable and Uncountable Nouns, Singular and Plural",
+      "themeMl": "നൗണുകൾ – നാമങ്ങളുടെ തരങ്ങൾ, ഏകവചനം, ബഹുവചനം",
       "grammarTarget": "This is / These are + Pronouns (My, His, Her)",
       "grammarRule": {
-        "formula": "This is / These are + Pronouns (My, His, Her)",
+        "formula": "Nouns – Types, Countable and Uncountable Nouns, Singular and Plural",
         "explanation": {
           "ml": "കുടുംബവും ബന്ധങ്ങളും എന്ന വിഷയത്തിൽ This is / These are + Pronouns (My, His, Her) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use This is / These are + Pronouns (My, His, Her) correctly in spoken English."
@@ -624,16 +624,16 @@
       "day": 4,
       "house": 1,
       "topic": {
-        "en": "Daily Routines & Time",
-        "ml": "ദൈനംദിന ശീലങ്ങളും സമയവും",
+        "en": "Pronouns – Types, Cases and Usage",
+        "ml": "പ്രോനൗണുകൾ – സർവ്വനാമങ്ങളും ഉപയോഗങ്ങളും",
         "hi": "Daily Routines & Time",
         "ta": "Daily Routines & Time"
       },
-      "themeEn": "Daily Routines & Time",
-      "themeMl": "ദൈനംദിന ശീലങ്ങളും സമയവും",
+      "themeEn": "Pronouns – Types, Cases and Usage",
+      "themeMl": "പ്രോനൗണുകൾ – സർവ്വനാമങ്ങളും ഉപയോഗങ്ങളും",
       "grammarTarget": "Simple Present V1 (Routines without 'am')",
       "grammarRule": {
-        "formula": "Simple Present V1 (Routines without 'am')",
+        "formula": "Pronouns – Types, Cases and Usage",
         "explanation": {
           "ml": "ദൈനംദിന ശീലങ്ങളും സമയവും എന്ന വിഷയത്തിൽ Simple Present V1 (Routines without 'am') എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Simple Present V1 (Routines without 'am') correctly in spoken English."
@@ -821,16 +821,16 @@
       "day": 5,
       "house": 1,
       "topic": {
-        "en": "Demonstratives & Objects",
-        "ml": "അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ",
+        "en": "Articles – A, An, The and Zero Article",
+        "ml": "ആർട്ടിക്കിളുകൾ – A, An, The",
         "hi": "Demonstratives & Objects",
         "ta": "Demonstratives & Objects"
       },
-      "themeEn": "Demonstratives & Objects",
-      "themeMl": "അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ",
+      "themeEn": "Articles – A, An, The and Zero Article",
+      "themeMl": "ആർട്ടിക്കിളുകൾ – A, An, The",
       "grammarTarget": "This, That, These, Those",
       "grammarRule": {
-        "formula": "This, That, These, Those",
+        "formula": "Articles – A, An, The and Zero Article",
         "explanation": {
           "ml": "അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ എന്ന വിഷയത്തിൽ This, That, These, Those എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use This, That, These, Those correctly in spoken English."
@@ -1018,16 +1018,16 @@
       "day": 6,
       "house": 1,
       "topic": {
-        "en": "My House & Rooms",
-        "ml": "വീടും മുറികളും",
+        "en": "Determiners and Quantifiers",
+        "ml": "ഡിറ്റർമിനറുകളും ക്വാണ്ടിഫയറുകളും",
         "hi": "My House & Rooms",
         "ta": "My House & Rooms"
       },
-      "themeEn": "My House & Rooms",
-      "themeMl": "വീടും മുറികളും",
+      "themeEn": "Determiners and Quantifiers",
+      "themeMl": "ഡിറ്റർമിനറുകളും ക്വാണ്ടിഫയറുകളും",
       "grammarTarget": "Prepositions with Rooms (In the kitchen, bedroom)",
       "grammarRule": {
-        "formula": "Prepositions with Rooms (In the kitchen, bedroom)",
+        "formula": "Determiners and Quantifiers",
         "explanation": {
           "ml": "വീടും മുറികളും എന്ന വിഷയത്തിൽ Prepositions with Rooms (In the kitchen, bedroom) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Prepositions with Rooms (In the kitchen, bedroom) correctly in spoken English."
@@ -1215,16 +1215,16 @@
       "day": 7,
       "house": 1,
       "topic": {
-        "en": "Everyday Household Objects",
-        "ml": "നിത്യജീവിത സാധനങ്ങൾ",
+        "en": "Adjectives – Types, Order and Usage",
+        "ml": "വിശേഷണങ്ങൾ (Adjectives) – തരങ്ങളും ക്രമവും",
         "hi": "Everyday Household Objects",
         "ta": "Everyday Household Objects"
       },
-      "themeEn": "Everyday Household Objects",
-      "themeMl": "നിത്യജീവിത സാധനങ്ങൾ",
+      "themeEn": "Adjectives – Types, Order and Usage",
+      "themeMl": "വിശേഷണങ്ങൾ (Adjectives) – തരങ്ങളും ക്രമവും",
       "grammarTarget": "Articles A & An (A table, An umbrella)",
       "grammarRule": {
-        "formula": "Articles A & An (A table, An umbrella)",
+        "formula": "Adjectives – Types, Order and Usage",
         "explanation": {
           "ml": "നിത്യജീവിത സാധനങ്ങൾ എന്ന വിഷയത്തിൽ Articles A & An (A table, An umbrella) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Articles A & An (A table, An umbrella) correctly in spoken English."
@@ -1412,16 +1412,16 @@
       "day": 8,
       "house": 1,
       "topic": {
-        "en": "Numbers, Counting & Plurals",
-        "ml": "സംഖ്യകളും എണ്ണലും",
+        "en": "Degrees of Comparison – Positive, Comparative and Superlative",
+        "ml": "ഡിഗ്രീസ് ഓഫ് കമ്പാരിസൺ – താരതമ്യങ്ങൾ",
         "hi": "Numbers, Counting & Plurals",
         "ta": "Numbers, Counting & Plurals"
       },
-      "themeEn": "Numbers, Counting & Plurals",
-      "themeMl": "സംഖ്യകളും എണ്ണലും",
+      "themeEn": "Degrees of Comparison – Positive, Comparative and Superlative",
+      "themeMl": "ഡിഗ്രീസ് ഓഫ് കമ്പാരിസൺ – താരതമ്യങ്ങൾ",
       "grammarTarget": "Singular vs Plural Nouns (-s / -es)",
       "grammarRule": {
-        "formula": "Singular vs Plural Nouns (-s / -es)",
+        "formula": "Degrees of Comparison – Positive, Comparative and Superlative",
         "explanation": {
           "ml": "സംഖ്യകളും എണ്ണലും എന്ന വിഷയത്തിൽ Singular vs Plural Nouns (-s / -es) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Singular vs Plural Nouns (-s / -es) correctly in spoken English."
@@ -1609,16 +1609,16 @@
       "day": 9,
       "house": 1,
       "topic": {
-        "en": "Colors & Appearance",
-        "ml": "നിറങ്ങളും രൂപങ്ങളും",
+        "en": "Adverbs – Types, Position and Usage",
+        "ml": "ക്രിയാവിശേഷണങ്ങൾ (Adverbs) – സ്ഥാനവും ഉപയോഗവും",
         "hi": "Colors & Appearance",
         "ta": "Colors & Appearance"
       },
-      "themeEn": "Colors & Appearance",
-      "themeMl": "നിറങ്ങളും രൂപങ്ങളും",
+      "themeEn": "Adverbs – Types, Position and Usage",
+      "themeMl": "ക്രിയാവിശേഷണങ്ങൾ (Adverbs) – സ്ഥാനവും ഉപയോഗവും",
       "grammarTarget": "Adjectives before Nouns (Red car, Big house)",
       "grammarRule": {
-        "formula": "Adjectives before Nouns (Red car, Big house)",
+        "formula": "Adverbs – Types, Position and Usage",
         "explanation": {
           "ml": "നിറങ്ങളും രൂപങ്ങളും എന്ന വിഷയത്തിൽ Adjectives before Nouns (Red car, Big house) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Adjectives before Nouns (Red car, Big house) correctly in spoken English."
@@ -1806,16 +1806,16 @@
       "day": 10,
       "house": 1,
       "topic": {
-        "en": "Telling Time & Days",
-        "ml": "സമയവും ദിവസങ്ങളും",
+        "en": "Prepositions – Basic Rules and Usage",
+        "ml": "പ്രിപോസിഷനുകൾ – അടിസ്ഥാന നിയമങ്ങൾ",
         "hi": "Telling Time & Days",
         "ta": "Telling Time & Days"
       },
-      "themeEn": "Telling Time & Days",
-      "themeMl": "സമയവും ദിവസങ്ങളും",
+      "themeEn": "Prepositions – Basic Rules and Usage",
+      "themeMl": "പ്രിപോസിഷനുകൾ – അടിസ്ഥാന നിയമങ്ങൾ",
       "grammarTarget": "Prepositions of Time: At 5 PM, On Monday, In May",
       "grammarRule": {
-        "formula": "Prepositions of Time: At 5 PM, On Monday, In May",
+        "formula": "Prepositions – Basic Rules and Usage",
         "explanation": {
           "ml": "സമയവും ദിവസങ്ങളും എന്ന വിഷയത്തിൽ Prepositions of Time: At 5 PM, On Monday, In May എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Prepositions of Time: At 5 PM, On Monday, In May correctly in spoken English."
@@ -2003,16 +2003,16 @@
       "day": 11,
       "house": 1,
       "topic": {
-        "en": "Morning Productivity",
-        "ml": "രാവിലത്തെ ശീലങ്ങൾ",
+        "en": "Conjunctions and Interjections",
+        "ml": "കൺജങ്ഷനുകളും ഇന്റർജക്ഷനുകളും",
         "hi": "Morning Productivity",
         "ta": "Morning Productivity"
       },
-      "themeEn": "Morning Productivity",
-      "themeMl": "രാവിലത്തെ ശീലങ്ങൾ",
+      "themeEn": "Conjunctions and Interjections",
+      "themeMl": "കൺജങ്ഷനുകളും ഇന്റർജക്ഷനുകളും",
       "grammarTarget": "Subject-Verb Agreement (I go vs He goes)",
       "grammarRule": {
-        "formula": "Subject-Verb Agreement (I go vs He goes)",
+        "formula": "Conjunctions and Interjections",
         "explanation": {
           "ml": "രാവിലത്തെ ശീലങ്ങൾ എന്ന വിഷയത്തിൽ Subject-Verb Agreement (I go vs He goes) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Subject-Verb Agreement (I go vs He goes) correctly in spoken English."
@@ -2200,16 +2200,16 @@
       "day": 12,
       "house": 1,
       "topic": {
-        "en": "Evening Leisure & Family Time",
-        "ml": "വൈകുന്നേര ശീലങ്ങൾ",
+        "en": "Verbs – Main, Auxiliary, Linking, Action and Stative Verbs",
+        "ml": "ക്രിയകൾ (Verbs) – പ്രധാന ക്രിയകളും സഹായക ക്രിയകളും",
         "hi": "Evening Leisure & Family Time",
         "ta": "Evening Leisure & Family Time"
       },
-      "themeEn": "Evening Leisure & Family Time",
-      "themeMl": "വൈകുന്നേര ശീലങ്ങൾ",
+      "themeEn": "Verbs – Main, Auxiliary, Linking, Action and Stative Verbs",
+      "themeMl": "ക്രിയകൾ (Verbs) – പ്രധാന ക്രിയകളും സഹായക ക്രിയകളും",
       "grammarTarget": "Habitual Verbs in Daily Routine",
       "grammarRule": {
-        "formula": "Habitual Verbs in Daily Routine",
+        "formula": "Verbs – Main, Auxiliary, Linking, Action and Stative Verbs",
         "explanation": {
           "ml": "വൈകുന്നേര ശീലങ്ങൾ എന്ന വിഷയത്തിൽ Habitual Verbs in Daily Routine എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Habitual Verbs in Daily Routine correctly in spoken English."
@@ -2397,16 +2397,16 @@
       "day": 13,
       "house": 1,
       "topic": {
-        "en": "Habits with Do vs Does",
-        "ml": "Do vs Does ശീലങ്ങൾ",
+        "en": "Verb Forms – V1, V2, V3, V4 and V5",
+        "ml": "വെർബ് ഫോമുകൾ – V1 മുതൽ V5 വരെ",
         "hi": "Habits with Do vs Does",
         "ta": "Habits with Do vs Does"
       },
-      "themeEn": "Habits with Do vs Does",
-      "themeMl": "Do vs Does ശീലങ്ങൾ",
+      "themeEn": "Verb Forms – V1, V2, V3, V4 and V5",
+      "themeMl": "വെർബ് ഫോമുകൾ – V1 മുതൽ V5 വരെ",
       "grammarTarget": "Do with I/You/We/They | Does with He/She/It",
       "grammarRule": {
-        "formula": "Do with I/You/We/They | Does with He/She/It",
+        "formula": "Verb Forms – V1, V2, V3, V4 and V5",
         "explanation": {
           "ml": "Do vs Does ശീലങ്ങൾ എന്ന വിഷയത്തിൽ Do with I/You/We/They | Does with He/She/It എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Do with I/You/We/They | Does with He/She/It correctly in spoken English."
@@ -2594,16 +2594,16 @@
       "day": 14,
       "house": 1,
       "topic": {
-        "en": "Negatives with Don't & Doesn't",
-        "ml": "നെഗറ്റീവ് ശീലങ്ങൾ (Don't / Doesn't)",
+        "en": "Subject, Predicate, Object, Complement and Adverbial",
+        "ml": "സെന്റൻസ് ഘടകങ്ങൾ – സബ്ജക്റ്റ്, പ്രെഡിക്കേറ്റ്, ഒബ്ജക്റ്റ്",
         "hi": "Negatives with Don't & Doesn't",
         "ta": "Negatives with Don't & Doesn't"
       },
-      "themeEn": "Negatives with Don't & Doesn't",
-      "themeMl": "നെഗറ്റീവ് ശീലങ്ങൾ (Don't / Doesn't)",
+      "themeEn": "Subject, Predicate, Object, Complement and Adverbial",
+      "themeMl": "സെന്റൻസ് ഘടകങ്ങൾ – സബ്ജക്റ്റ്, പ്രെഡിക്കേറ്റ്, ഒബ്ജക്റ്റ്",
       "grammarTarget": "Don't / Doesn't + V1 (Never add 's' after doesn't)",
       "grammarRule": {
-        "formula": "Don't / Doesn't + V1 (Never add 's' after doesn't)",
+        "formula": "Subject, Predicate, Object, Complement and Adverbial",
         "explanation": {
           "ml": "നെഗറ്റീവ് ശീലങ്ങൾ (Don't / Doesn't) എന്ന വിഷയത്തിൽ Don't / Doesn't + V1 (Never add 's' after doesn't) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Don't / Doesn't + V1 (Never add 's' after doesn't) correctly in spoken English."
@@ -2791,16 +2791,16 @@
       "day": 15,
       "house": 1,
       "topic": {
-        "en": "Food, Drinks & Taste",
-        "ml": "ഭക്ഷണവും പാനീയങ്ങളും",
+        "en": "English Word Order and Sentence Patterns",
+        "ml": "വേഡ് ഓർഡറും വാക്യ മാതൃകകളും",
         "hi": "Food, Drinks & Taste",
         "ta": "Food, Drinks & Taste"
       },
-      "themeEn": "Food, Drinks & Taste",
-      "themeMl": "ഭക്ഷണവും പാനീയങ്ങളും",
+      "themeEn": "English Word Order and Sentence Patterns",
+      "themeMl": "വേഡ് ഓർഡറും വാക്യ മാതൃകകളും",
       "grammarTarget": "Expressing Taste & Likes (Spicy, Sweet, Bitter)",
       "grammarRule": {
-        "formula": "Expressing Taste & Likes (Spicy, Sweet, Bitter)",
+        "formula": "English Word Order and Sentence Patterns",
         "explanation": {
           "ml": "ഭക്ഷണവും പാനീയങ്ങളും എന്ന വിഷയത്തിൽ Expressing Taste & Likes (Spicy, Sweet, Bitter) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Expressing Taste & Likes (Spicy, Sweet, Bitter) correctly in spoken English."
@@ -2988,16 +2988,16 @@
       "day": 16,
       "house": 1,
       "topic": {
-        "en": "Spatial Prepositions: In, On, Under, Behind",
-        "ml": "വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ",
+        "en": "Sentence Types Based on Function",
+        "ml": "ധർമ്മമനുസരിച്ചുള്ള വാക്യ തരങ്ങൾ",
         "hi": "Spatial Prepositions: In, On, Under, Behind",
         "ta": "Spatial Prepositions: In, On, Under, Behind"
       },
-      "themeEn": "Spatial Prepositions: In, On, Under, Behind",
-      "themeMl": "വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ",
+      "themeEn": "Sentence Types Based on Function",
+      "themeMl": "ധർമ്മമനുസരിച്ചുള്ള വാക്യ തരങ്ങൾ",
       "grammarTarget": "Under, Behind, In front of, Next to",
       "grammarRule": {
-        "formula": "Under, Behind, In front of, Next to",
+        "formula": "Sentence Types Based on Function",
         "explanation": {
           "ml": "വസ്തുക്കളുടെ സ്ഥാനങ്ങൾ എന്ന വിഷയത്തിൽ Under, Behind, In front of, Next to എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Under, Behind, In front of, Next to correctly in spoken English."
@@ -3185,16 +3185,16 @@
       "day": 17,
       "house": 1,
       "topic": {
-        "en": "Expressing Abilities: Can & Can't",
-        "ml": "കഴിവുകൾ (Can & Can't)",
+        "en": "Simple, Compound, Complex and Compound-Complex Sentences",
+        "ml": "ലളിത, സംയുക്ത, സങ്കീർണ്ണ വാക്യങ്ങൾ",
         "hi": "Expressing Abilities: Can & Can't",
         "ta": "Expressing Abilities: Can & Can't"
       },
-      "themeEn": "Expressing Abilities: Can & Can't",
-      "themeMl": "കഴിവുകൾ (Can & Can't)",
+      "themeEn": "Simple, Compound, Complex and Compound-Complex Sentences",
+      "themeMl": "ലളിത, സംയുക്ത, സങ്കീർണ്ണ വാക്യങ്ങൾ",
       "grammarTarget": "Can / Cannot + V1 (I can speak English)",
       "grammarRule": {
-        "formula": "Can / Cannot + V1 (I can speak English)",
+        "formula": "Simple, Compound, Complex and Compound-Complex Sentences",
         "explanation": {
           "ml": "കഴിവുകൾ (Can & Can't) എന്ന വിഷയത്തിൽ Can / Cannot + V1 (I can speak English) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Can / Cannot + V1 (I can speak English) correctly in spoken English."
@@ -3382,16 +3382,16 @@
       "day": 18,
       "house": 1,
       "topic": {
-        "en": "Polite Requests: Can you / Could you?",
-        "ml": "വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ",
+        "en": "Subject-Verb Agreement – Basic Rules",
+        "ml": "സബ്ജക്റ്റ്-വെർബ് കോൺകോർഡ് – അടിസ്ഥാന നിയമങ്ങൾ",
         "hi": "Polite Requests: Can you / Could you?",
         "ta": "Polite Requests: Can you / Could you?"
       },
-      "themeEn": "Polite Requests: Can you / Could you?",
-      "themeMl": "വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ",
+      "themeEn": "Subject-Verb Agreement – Basic Rules",
+      "themeMl": "സബ്ജക്റ്റ്-വെർബ് കോൺകോർഡ് – അടിസ്ഥാന നിയമങ്ങൾ",
       "grammarTarget": "Could you please + V1 (Polite Requests)",
       "grammarRule": {
-        "formula": "Could you please + V1 (Polite Requests)",
+        "formula": "Subject-Verb Agreement – Basic Rules",
         "explanation": {
           "ml": "വിനയത്തോടെയുള്ള ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ Could you please + V1 (Polite Requests) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Could you please + V1 (Polite Requests) correctly in spoken English."
@@ -3579,16 +3579,16 @@
       "day": 19,
       "house": 1,
       "topic": {
-        "en": "Expressing Needs & Desires: Need vs Want",
-        "ml": "ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും",
+        "en": "Subject-Verb Agreement – Advanced Rules",
+        "ml": "സബ്ജക്റ്റ്-വെർബ് കോൺകോർഡ് – വിപുല നിയമങ്ങൾ",
         "hi": "Expressing Needs & Desires: Need vs Want",
         "ta": "Expressing Needs & Desires: Need vs Want"
       },
-      "themeEn": "Expressing Needs & Desires: Need vs Want",
-      "themeMl": "ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും",
+      "themeEn": "Subject-Verb Agreement – Advanced Rules",
+      "themeMl": "സബ്ജക്റ്റ്-വെർബ് കോൺകോർഡ് – വിപുല നിയമങ്ങൾ",
       "grammarTarget": "Need to + V1 vs Want to + V1",
       "grammarRule": {
-        "formula": "Need to + V1 vs Want to + V1",
+        "formula": "Subject-Verb Agreement – Advanced Rules",
         "explanation": {
           "ml": "ആവശ്യങ്ങളും ആഗ്രഹങ്ങളും എന്ന വിഷയത്തിൽ Need to + V1 vs Want to + V1 എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Need to + V1 vs Want to + V1 correctly in spoken English."
@@ -3776,16 +3776,16 @@
       "day": 20,
       "house": 1,
       "topic": {
-        "en": "Likes, Preferences & Hobbies",
-        "ml": "ഇഷ്ടങ്ങളും വിനോദങ്ങളും",
+        "en": "Tenses Overview – The 12 English Tenses System",
+        "ml": "12 ഇംഗ്ലീഷ് ടെൻസുകൾ – സമഗ്ര അവലോകനം",
         "hi": "Likes, Preferences & Hobbies",
         "ta": "Likes, Preferences & Hobbies"
       },
-      "themeEn": "Likes, Preferences & Hobbies",
-      "themeMl": "ഇഷ്ടങ്ങളും വിനോദങ്ങളും",
+      "themeEn": "Tenses Overview – The 12 English Tenses System",
+      "themeMl": "12 ഇംഗ്ലീഷ് ടെൻസുകൾ – സമഗ്ര അവലോകനം",
       "grammarTarget": "Prefer X to Y / Enjoy + V-ing",
       "grammarRule": {
-        "formula": "Prefer X to Y / Enjoy + V-ing",
+        "formula": "Tenses Overview – The 12 English Tenses System",
         "explanation": {
           "ml": "ഇഷ്ടങ്ങളും വിനോദങ്ങളും എന്ന വിഷയത്തിൽ Prefer X to Y / Enjoy + V-ing എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Prefer X to Y / Enjoy + V-ing correctly in spoken English."
@@ -3973,16 +3973,16 @@
       "day": 21,
       "house": 1,
       "topic": {
-        "en": "Asking Questions: What & Where",
-        "ml": "What & Where ചോദ്യങ്ങൾ",
+        "en": "Present Simple Tense",
+        "ml": "സിമ്പിൾ പ്രസന്റ് ടെൻസ്",
         "hi": "Asking Questions: What & Where",
         "ta": "Asking Questions: What & Where"
       },
-      "themeEn": "Asking Questions: What & Where",
-      "themeMl": "What & Where ചോദ്യങ്ങൾ",
+      "themeEn": "Present Simple Tense",
+      "themeMl": "സിമ്പിൾ പ്രസന്റ് ടെൻസ്",
       "grammarTarget": "What is...? / Where is...?",
       "grammarRule": {
-        "formula": "What is...? / Where is...?",
+        "formula": "Present Simple Tense",
         "explanation": {
           "ml": "What & Where ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ What is...? / Where is...? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use What is...? / Where is...? correctly in spoken English."
@@ -4170,16 +4170,16 @@
       "day": 22,
       "house": 1,
       "topic": {
-        "en": "Asking Questions: When & Why",
-        "ml": "When & Why ചോദ്യങ്ങൾ",
+        "en": "Present Continuous Tense",
+        "ml": "പ്രസന്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
         "hi": "Asking Questions: When & Why",
         "ta": "Asking Questions: When & Why"
       },
-      "themeEn": "Asking Questions: When & Why",
-      "themeMl": "When & Why ചോദ്യങ്ങൾ",
+      "themeEn": "Present Continuous Tense",
+      "themeMl": "പ്രസന്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
       "grammarTarget": "When do you...? / Why are you...?",
       "grammarRule": {
-        "formula": "When do you...? / Why are you...?",
+        "formula": "Present Continuous Tense",
         "explanation": {
           "ml": "When & Why ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ When do you...? / Why are you...? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use When do you...? / Why are you...? correctly in spoken English."
@@ -4367,16 +4367,16 @@
       "day": 23,
       "house": 1,
       "topic": {
-        "en": "Asking Questions: Who & Which",
-        "ml": "Who & Which ചോദ്യങ്ങൾ",
+        "en": "Present Perfect Tense",
+        "ml": "പ്രസന്റ് പെർഫെക്റ്റ് ടെൻസ്",
         "hi": "Asking Questions: Who & Which",
         "ta": "Asking Questions: Who & Which"
       },
-      "themeEn": "Asking Questions: Who & Which",
-      "themeMl": "Who & Which ചോദ്യങ്ങൾ",
+      "themeEn": "Present Perfect Tense",
+      "themeMl": "പ്രസന്റ് പെർഫെക്റ്റ് ടെൻസ്",
       "grammarTarget": "Who is that? / Which one do you like?",
       "grammarRule": {
-        "formula": "Who is that? / Which one do you like?",
+        "formula": "Present Perfect Tense",
         "explanation": {
           "ml": "Who & Which ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ Who is that? / Which one do you like? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Who is that? / Which one do you like? correctly in spoken English."
@@ -4564,16 +4564,16 @@
       "day": 24,
       "house": 1,
       "topic": {
-        "en": "Asking Questions: How & How Much",
-        "ml": "How & How Much ചോദ്യങ്ങൾ",
+        "en": "Present Perfect Continuous Tense",
+        "ml": "പ്രസന്റ് പെർഫെക്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
         "hi": "Asking Questions: How & How Much",
         "ta": "Asking Questions: How & How Much"
       },
-      "themeEn": "Asking Questions: How & How Much",
-      "themeMl": "How & How Much ചോദ്യങ്ങൾ",
+      "themeEn": "Present Perfect Continuous Tense",
+      "themeMl": "പ്രസന്റ് പെർഫെക്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
       "grammarTarget": "How are you? / How much does it cost?",
       "grammarRule": {
-        "formula": "How are you? / How much does it cost?",
+        "formula": "Present Perfect Continuous Tense",
         "explanation": {
           "ml": "How & How Much ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ How are you? / How much does it cost? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use How are you? / How much does it cost? correctly in spoken English."
@@ -4761,16 +4761,16 @@
       "day": 25,
       "house": 1,
       "topic": {
-        "en": "Buying Groceries & Market Talk",
-        "ml": "കടയും പച്ചക്കറി വാങ്ങലും",
+        "en": "Past Simple Tense",
+        "ml": "സിമ്പിൾ പാസ്റ്റ് ടെൻസ്",
         "hi": "Buying Groceries & Market Talk",
         "ta": "Buying Groceries & Market Talk"
       },
-      "themeEn": "Buying Groceries & Market Talk",
-      "themeMl": "കടയും പച്ചക്കറി വാങ്ങലും",
+      "themeEn": "Past Simple Tense",
+      "themeMl": "സിമ്പിൾ പാസ്റ്റ് ടെൻസ്",
       "grammarTarget": "Quantity Words: Kilo, Packet, Bottle, Dozen",
       "grammarRule": {
-        "formula": "Quantity Words: Kilo, Packet, Bottle, Dozen",
+        "formula": "Past Simple Tense",
         "explanation": {
           "ml": "കടയും പച്ചക്കറി വാങ്ങലും എന്ന വിഷയത്തിൽ Quantity Words: Kilo, Packet, Bottle, Dozen എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Quantity Words: Kilo, Packet, Bottle, Dozen correctly in spoken English."
@@ -4958,16 +4958,16 @@
       "day": 26,
       "house": 1,
       "topic": {
-        "en": "Giving Simple Directions",
-        "ml": "വഴികൾ പറഞ്ഞു കൊടുക്കൽ",
+        "en": "Past Continuous Tense",
+        "ml": "പാസ്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
         "hi": "Giving Simple Directions",
         "ta": "Giving Simple Directions"
       },
-      "themeEn": "Giving Simple Directions",
-      "themeMl": "വഴികൾ പറഞ്ഞു കൊടുക്കൽ",
+      "themeEn": "Past Continuous Tense",
+      "themeMl": "പാസ്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
       "grammarTarget": "Imperative Commands: Turn left, Go straight",
       "grammarRule": {
-        "formula": "Imperative Commands: Turn left, Go straight",
+        "formula": "Past Continuous Tense",
         "explanation": {
           "ml": "വഴികൾ പറഞ്ഞു കൊടുക്കൽ എന്ന വിഷയത്തിൽ Imperative Commands: Turn left, Go straight എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Imperative Commands: Turn left, Go straight correctly in spoken English."
@@ -5155,16 +5155,16 @@
       "day": 27,
       "house": 1,
       "topic": {
-        "en": "Health, Body & Minor Ailments",
-        "ml": "ആരോഗ്യവും അസുഖങ്ങളും",
+        "en": "Past Perfect Tense",
+        "ml": "പാസ്റ്റ് പെർഫെക്റ്റ് ടെൻസ്",
         "hi": "Health, Body & Minor Ailments",
         "ta": "Health, Body & Minor Ailments"
       },
-      "themeEn": "Health, Body & Minor Ailments",
-      "themeMl": "ആരോഗ്യവും അസുഖങ്ങളും",
+      "themeEn": "Past Perfect Tense",
+      "themeMl": "പാസ്റ്റ് പെർഫെക്റ്റ് ടെൻസ്",
       "grammarTarget": "I have a headache / stomach ache / fever",
       "grammarRule": {
-        "formula": "I have a headache / stomach ache / fever",
+        "formula": "Past Perfect Tense",
         "explanation": {
           "ml": "ആരോഗ്യവും അസുഖങ്ങളും എന്ന വിഷയത്തിൽ I have a headache / stomach ache / fever എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use I have a headache / stomach ache / fever correctly in spoken English."
@@ -5352,16 +5352,16 @@
       "day": 28,
       "house": 1,
       "topic": {
-        "en": "At the Pharmacy & Medicine",
-        "ml": "മരുന്നുകടയും കുറിപ്പടിയും",
+        "en": "Past Perfect Continuous Tense",
+        "ml": "പാസ്റ്റ് പെർഫെക്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
         "hi": "At the Pharmacy & Medicine",
         "ta": "At the Pharmacy & Medicine"
       },
-      "themeEn": "At the Pharmacy & Medicine",
-      "themeMl": "മരുന്നുകടയും കുറിപ്പടിയും",
+      "themeEn": "Past Perfect Continuous Tense",
+      "themeMl": "പാസ്റ്റ് പെർഫെക്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
       "grammarTarget": "Dosage instructions: Before/After food, Twice daily",
       "grammarRule": {
-        "formula": "Dosage instructions: Before/After food, Twice daily",
+        "formula": "Past Perfect Continuous Tense",
         "explanation": {
           "ml": "മരുന്നുകടയും കുറിപ്പടിയും എന്ന വിഷയത്തിൽ Dosage instructions: Before/After food, Twice daily എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Dosage instructions: Before/After food, Twice daily correctly in spoken English."
@@ -5549,16 +5549,16 @@
       "day": 29,
       "house": 1,
       "topic": {
-        "en": "Weather, Climate & Nature",
-        "ml": "കാലാവസ്ഥയും പ്രകൃതിയും",
+        "en": "Future Simple Tense and 'Going to'",
+        "ml": "സിമ്പിൾ ഫ്യൂച്ചർ ടെൻസും 'Going to' പ്രയോഗവും",
         "hi": "Weather, Climate & Nature",
         "ta": "Weather, Climate & Nature"
       },
-      "themeEn": "Weather, Climate & Nature",
-      "themeMl": "കാലാവസ്ഥയും പ്രകൃതിയും",
+      "themeEn": "Future Simple Tense and 'Going to'",
+      "themeMl": "സിമ്പിൾ ഫ്യൂച്ചർ ടെൻസും 'Going to' പ്രയോഗവും",
       "grammarTarget": "It is sunny / rainy / cloudy / humid",
       "grammarRule": {
-        "formula": "It is sunny / rainy / cloudy / humid",
+        "formula": "Future Simple Tense and 'Going to'",
         "explanation": {
           "ml": "കാലാവസ്ഥയും പ്രകൃതിയും എന്ന വിഷയത്തിൽ It is sunny / rainy / cloudy / humid എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use It is sunny / rainy / cloudy / humid correctly in spoken English."
@@ -5746,16 +5746,16 @@
       "day": 30,
       "house": 1,
       "topic": {
-        "en": "House 1 Grand Review & Gate Exam",
-        "ml": "ഹൗസ് 1 ഫൈനൽ റിവ്യൂ & എക്സാം",
+        "en": "Future Continuous and Future Perfect Tenses",
+        "ml": "ഫ്യൂച്ചർ കണ്ടിന്യൂവസും ഫ്യൂച്ചർ പെർഫെക്റ്റും",
         "hi": "House 1 Grand Review & Gate Exam",
         "ta": "House 1 Grand Review & Gate Exam"
       },
-      "themeEn": "House 1 Grand Review & Gate Exam",
-      "themeMl": "ഹൗസ് 1 ഫൈനൽ റിവ്യൂ & എക്സാം",
+      "themeEn": "Future Continuous and Future Perfect Tenses",
+      "themeMl": "ഫ്യൂച്ചർ കണ്ടിന്യൂവസും ഫ്യൂച്ചർ പെർഫെക്റ്റും",
       "grammarTarget": "Full Foundation Integration (Days 1–29)",
       "grammarRule": {
-        "formula": "Full Foundation Integration (Days 1–29)",
+        "formula": "Future Continuous and Future Perfect Tenses",
         "explanation": {
           "ml": "ഹൗസ് 1 ഫൈനൽ റിവ്യൂ & എക്സാം എന്ന വിഷയത്തിൽ Full Foundation Integration (Days 1–29) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Full Foundation Integration (Days 1–29) correctly in spoken English."
@@ -5943,16 +5943,16 @@
       "day": 31,
       "house": 2,
       "topic": {
-        "en": "Past State: Was vs Were",
-        "ml": "കഴിഞ്ഞ അവസ്ഥകൾ: Was vs Were",
+        "en": "Future Perfect Continuous Tense",
+        "ml": "ഫ്യൂച്ചർ പെർഫെക്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
         "hi": "Past State: Was vs Were",
         "ta": "Past State: Was vs Were"
       },
-      "themeEn": "Past State: Was vs Were",
-      "themeMl": "കഴിഞ്ഞ അവസ്ഥകൾ: Was vs Were",
+      "themeEn": "Future Perfect Continuous Tense",
+      "themeMl": "ഫ്യൂച്ചർ പെർഫെക്റ്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
       "grammarTarget": "Was (I/He/She/It) vs Were (You/We/They)",
       "grammarRule": {
-        "formula": "Was (I/He/She/It) vs Were (You/We/They)",
+        "formula": "Future Perfect Continuous Tense",
         "explanation": {
           "ml": "കഴിഞ്ഞ അവസ്ഥകൾ: Was vs Were എന്ന വിഷയത്തിൽ Was (I/He/She/It) vs Were (You/We/They) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Was (I/He/She/It) vs Were (You/We/They) correctly in spoken English."
@@ -6140,16 +6140,16 @@
       "day": 32,
       "house": 2,
       "topic": {
-        "en": "Past Actions: Simple Past V2",
-        "ml": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2)",
+        "en": "Tense Consistency and Sequence of Tenses",
+        "ml": "ടെൻസ് സ്ഥിരതയും ക്രമവും",
         "hi": "Past Actions: Simple Past V2",
         "ta": "Past Actions: Simple Past V2"
       },
-      "themeEn": "Past Actions: Simple Past V2",
-      "themeMl": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2)",
+      "themeEn": "Tense Consistency and Sequence of Tenses",
+      "themeMl": "ടെൻസ് സ്ഥിരതയും ക്രമവും",
       "grammarTarget": "Subject + V2 past verb (I visited, I bought)",
       "grammarRule": {
-        "formula": "Subject + V2 past verb (I visited, I bought)",
+        "formula": "Tense Consistency and Sequence of Tenses",
         "explanation": {
           "ml": "ഇന്നലെ ചെയ്ത കാര്യങ്ങൾ (V2) എന്ന വിഷയത്തിൽ Subject + V2 past verb (I visited, I bought) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Subject + V2 past verb (I visited, I bought) correctly in spoken English."
@@ -6337,16 +6337,16 @@
       "day": 33,
       "house": 2,
       "topic": {
-        "en": "Asking in the Past: Did you...?",
-        "ml": "കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കൽ",
+        "en": "Stative Verbs vs Dynamic Verbs",
+        "ml": "സ്റ്റേറ്റീവ് വെർബുകളും ഡൈനാമിക് വെർബുകളും",
         "hi": "Asking in the Past: Did you...?",
         "ta": "Asking in the Past: Did you...?"
       },
-      "themeEn": "Asking in the Past: Did you...?",
-      "themeMl": "കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കൽ",
+      "themeEn": "Stative Verbs vs Dynamic Verbs",
+      "themeMl": "സ്റ്റേറ്റീവ് വെർബുകളും ഡൈനാമിക് വെർബുകളും",
       "grammarTarget": "Did + Subject + V1 base verb (Did you go?)",
       "grammarRule": {
-        "formula": "Did + Subject + V1 base verb (Did you go?)",
+        "formula": "Stative Verbs vs Dynamic Verbs",
         "explanation": {
           "ml": "കഴിഞ്ഞ കാര്യങ്ങൾ ചോദിക്കൽ എന്ന വിഷയത്തിൽ Did + Subject + V1 base verb (Did you go?) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Did + Subject + V1 base verb (Did you go?) correctly in spoken English."
@@ -6534,16 +6534,16 @@
       "day": 34,
       "house": 2,
       "topic": {
-        "en": "Negative Past: Didn't + V1",
-        "ml": "ചെയ്യാതിരുന്ന കാര്യങ്ങൾ",
+        "en": "Auxiliary Verbs – Be, Do, Have",
+        "ml": "ഓക്സിലറി വെർബുകൾ – Be, Do, Have",
         "hi": "Negative Past: Didn't + V1",
         "ta": "Negative Past: Didn't + V1"
       },
-      "themeEn": "Negative Past: Didn't + V1",
-      "themeMl": "ചെയ്യാതിരുന്ന കാര്യങ്ങൾ",
+      "themeEn": "Auxiliary Verbs – Be, Do, Have",
+      "themeMl": "ഓക്സിലറി വെർബുകൾ – Be, Do, Have",
       "grammarTarget": "Didn't + V1 (Never use V2 after didn't!)",
       "grammarRule": {
-        "formula": "Didn't + V1 (Never use V2 after didn't!)",
+        "formula": "Auxiliary Verbs – Be, Do, Have",
         "explanation": {
           "ml": "ചെയ്യാതിരുന്ന കാര്യങ്ങൾ എന്ന വിഷയത്തിൽ Didn't + V1 (Never use V2 after didn't!) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Didn't + V1 (Never use V2 after didn't!) correctly in spoken English."
@@ -6731,16 +6731,16 @@
       "day": 35,
       "house": 2,
       "topic": {
-        "en": "Yesterday's Full Story",
-        "ml": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം",
+        "en": "Negative Sentences and Contractions",
+        "ml": "നിഷേധ വാക്യങ്ങളും ചുരുക്കെഴുത്തുകളും",
         "hi": "Yesterday's Full Story",
         "ta": "Yesterday's Full Story"
       },
-      "themeEn": "Yesterday's Full Story",
-      "themeMl": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം",
+      "themeEn": "Negative Sentences and Contractions",
+      "themeMl": "നിഷേധ വാക്യങ്ങളും ചുരുക്കെഴുത്തുകളും",
       "grammarTarget": "Time Sequencers: In the morning, Then, Later",
       "grammarRule": {
-        "formula": "Time Sequencers: In the morning, Then, Later",
+        "formula": "Negative Sentences and Contractions",
         "explanation": {
           "ml": "ഇന്നലത്തെ ദിവസത്തിന്റെ വിവരണം എന്ന വിഷയത്തിൽ Time Sequencers: In the morning, Then, Later എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Time Sequencers: In the morning, Then, Later correctly in spoken English."
@@ -6928,16 +6928,16 @@
       "day": 36,
       "house": 2,
       "topic": {
-        "en": "Childhood Habits: Used to",
-        "ml": "പഴയ ശീലങ്ങൾ (Used to)",
+        "en": "Yes/No Questions and Short Answers",
+        "ml": "Yes/No ചോദ്യങ്ങളും ചെറു ഉത്തരങ്ങളും",
         "hi": "Childhood Habits: Used to",
         "ta": "Childhood Habits: Used to"
       },
-      "themeEn": "Childhood Habits: Used to",
-      "themeMl": "പഴയ ശീലങ്ങൾ (Used to)",
+      "themeEn": "Yes/No Questions and Short Answers",
+      "themeMl": "Yes/No ചോദ്യങ്ങളും ചെറു ഉത്തരങ്ങളും",
       "grammarTarget": "Used to + V1 (Things you did in the past but not now)",
       "grammarRule": {
-        "formula": "Used to + V1 (Things you did in the past but not now)",
+        "formula": "Yes/No Questions and Short Answers",
         "explanation": {
           "ml": "പഴയ ശീലങ്ങൾ (Used to) എന്ന വിഷയത്തിൽ Used to + V1 (Things you did in the past but not now) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Used to + V1 (Things you did in the past but not now) correctly in spoken English."
@@ -7125,16 +7125,16 @@
       "day": 37,
       "house": 2,
       "topic": {
-        "en": "Past Continuous: Was/Were + ing",
-        "ml": "അപ്പോൾ ചെയ്തുകൊണ്ടിരുന്ന കാര്യങ്ങൾ",
+        "en": "WH-Questions – Formation and Usage",
+        "ml": "WH-ചോദ്യ രൂപീകരണവും പ്രയോഗവും",
         "hi": "Past Continuous: Was/Were + ing",
         "ta": "Past Continuous: Was/Were + ing"
       },
-      "themeEn": "Past Continuous: Was/Were + ing",
-      "themeMl": "അപ്പോൾ ചെയ്തുകൊണ്ടിരുന്ന കാര്യങ്ങൾ",
+      "themeEn": "WH-Questions – Formation and Usage",
+      "themeMl": "WH-ചോദ്യ രൂപീകരണവും പ്രയോഗവും",
       "grammarTarget": "Was/Were + Verb-ing (While I was sleeping)",
       "grammarRule": {
-        "formula": "Was/Were + Verb-ing (While I was sleeping)",
+        "formula": "WH-Questions – Formation and Usage",
         "explanation": {
           "ml": "അപ്പോൾ ചെയ്തുകൊണ്ടിരുന്ന കാര്യങ്ങൾ എന്ന വിഷയത്തിൽ Was/Were + Verb-ing (While I was sleeping) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Was/Were + Verb-ing (While I was sleeping) correctly in spoken English."
@@ -7322,16 +7322,16 @@
       "day": 38,
       "house": 2,
       "topic": {
-        "en": "Past Narrative & Incident Storytelling",
-        "ml": "കഥ പറയൽ: First, Then, Suddenly",
+        "en": "Question Tags",
+        "ml": "ക്വസ്റ്റ്യൻ ടാഗുകൾ",
         "hi": "Past Narrative & Incident Storytelling",
         "ta": "Past Narrative & Incident Storytelling"
       },
-      "themeEn": "Past Narrative & Incident Storytelling",
-      "themeMl": "കഥ പറയൽ: First, Then, Suddenly",
+      "themeEn": "Question Tags",
+      "themeMl": "ക്വസ്റ്റ്യൻ ടാഗുകൾ",
       "grammarTarget": "Past narrative: First, then, suddenly",
       "grammarRule": {
-        "formula": "Past narrative: First, then, suddenly",
+        "formula": "Question Tags",
         "explanation": {
           "ml": "കഥ പറയൽ: First, Then, Suddenly എന്ന വിഷയത്തിൽ undefined എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use undefined correctly in spoken English."
@@ -7519,16 +7519,16 @@
       "day": 39,
       "house": 2,
       "topic": {
-        "en": "Future Promises & Instant Decisions: Will",
-        "ml": "ഭാവി കാര്യങ്ങൾ: Will",
+        "en": "Indirect and Embedded Questions",
+        "ml": "ഇൻഡയറക്റ്റ് & എംബഡഡ് ചോദ്യങ്ങൾ",
         "hi": "Future Promises & Instant Decisions: Will",
         "ta": "Future Promises & Instant Decisions: Will"
       },
-      "themeEn": "Future Promises & Instant Decisions: Will",
-      "themeMl": "ഭാവി കാര്യങ്ങൾ: Will",
+      "themeEn": "Indirect and Embedded Questions",
+      "themeMl": "ഇൻഡയറക്റ്റ് & എംബഡഡ് ചോദ്യങ്ങൾ",
       "grammarTarget": "Subject + Will + V1 (I will help you)",
       "grammarRule": {
-        "formula": "Subject + Will + V1 (I will help you)",
+        "formula": "Indirect and Embedded Questions",
         "explanation": {
           "ml": "ഭാവി കാര്യങ്ങൾ: Will എന്ന വിഷയത്തിൽ Subject + Will + V1 (I will help you) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Subject + Will + V1 (I will help you) correctly in spoken English."
@@ -7716,16 +7716,16 @@
       "day": 40,
       "house": 2,
       "topic": {
-        "en": "Definite Future Plans: Going to",
-        "ml": "ഉറച്ച പ്ലാനുകൾ: Going to",
+        "en": "Imperative Sentences – Commands, Requests and Suggestions",
+        "ml": "നിർദ്ദേശങ്ങളും അഭ്യർത്ഥനകളും (Imperatives)",
         "hi": "Definite Future Plans: Going to",
         "ta": "Definite Future Plans: Going to"
       },
-      "themeEn": "Definite Future Plans: Going to",
-      "themeMl": "ഉറച്ച പ്ലാനുകൾ: Going to",
+      "themeEn": "Imperative Sentences – Commands, Requests and Suggestions",
+      "themeMl": "നിർദ്ദേശങ്ങളും അഭ്യർത്ഥനകളും (Imperatives)",
       "grammarTarget": "Am/Is/Are + Going to + V1 (I am going to buy a car)",
       "grammarRule": {
-        "formula": "Am/Is/Are + Going to + V1 (I am going to buy a car)",
+        "formula": "Imperative Sentences – Commands, Requests and Suggestions",
         "explanation": {
           "ml": "ഉറച്ച പ്ലാനുകൾ: Going to എന്ന വിഷയത്തിൽ Am/Is/Are + Going to + V1 (I am going to buy a car) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Am/Is/Are + Going to + V1 (I am going to buy a car) correctly in spoken English."
@@ -7913,16 +7913,16 @@
       "day": 41,
       "house": 2,
       "topic": {
-        "en": "Shopping for Clothes & Trial Room",
-        "ml": "വസ്ത്രങ്ങൾ വാങ്ങലും ട്രയലും",
+        "en": "Modal Verbs of Ability and Permission – Can, Could, May, Might",
+        "ml": "മോഡൽ വെർബുകൾ – Can, Could, May, Might",
         "hi": "Shopping for Clothes & Trial Room",
         "ta": "Shopping for Clothes & Trial Room"
       },
-      "themeEn": "Shopping for Clothes & Trial Room",
-      "themeMl": "വസ്ത്രങ്ങൾ വാങ്ങലും ട്രയലും",
+      "themeEn": "Modal Verbs of Ability and Permission – Can, Could, May, Might",
+      "themeMl": "മോഡൽ വെർബുകൾ – Can, Could, May, Might",
       "grammarTarget": "Size, Fit, Color & Trial Room Conversation",
       "grammarRule": {
-        "formula": "Size, Fit, Color & Trial Room Conversation",
+        "formula": "Modal Verbs of Ability and Permission – Can, Could, May, Might",
         "explanation": {
           "ml": "വസ്ത്രങ്ങൾ വാങ്ങലും ട്രയലും എന്ന വിഷയത്തിൽ Size, Fit, Color & Trial Room Conversation എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Size, Fit, Color & Trial Room Conversation correctly in spoken English."
@@ -8110,16 +8110,16 @@
       "day": 42,
       "house": 2,
       "topic": {
-        "en": "At a Restaurant: Ordering & Bill",
-        "ml": "ഹോട്ടലിൽ ഓർഡർ ചെയ്യലും ബില്ലും",
+        "en": "Modal Verbs of Obligation and Necessity – Must, Have to, Should, Ought to",
+        "ml": "കടമയും നിർബന്ധവും – Must, Have to, Should",
         "hi": "At a Restaurant: Ordering & Bill",
         "ta": "At a Restaurant: Ordering & Bill"
       },
-      "themeEn": "At a Restaurant: Ordering & Bill",
-      "themeMl": "ഹോട്ടലിൽ ഓർഡർ ചെയ്യലും ബില്ലും",
+      "themeEn": "Modal Verbs of Obligation and Necessity – Must, Have to, Should, Ought to",
+      "themeMl": "കടമയും നിർബന്ധവും – Must, Have to, Should",
       "grammarTarget": "Can I have...? / Could we get the bill?",
       "grammarRule": {
-        "formula": "Can I have...? / Could we get the bill?",
+        "formula": "Modal Verbs of Obligation and Necessity – Must, Have to, Should, Ought to",
         "explanation": {
           "ml": "ഹോട്ടലിൽ ഓർഡർ ചെയ്യലും ബില്ലും എന്ന വിഷയത്തിൽ Can I have...? / Could we get the bill? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Can I have...? / Could we get the bill? correctly in spoken English."
@@ -8307,16 +8307,16 @@
       "day": 43,
       "house": 2,
       "topic": {
-        "en": "Public Transport: Bus & Train Travel",
-        "ml": "ബസ്, ട്രെയിൻ യാത്രകൾ",
+        "en": "Modal Verbs of Probability and Deduction",
+        "ml": "സാധ്യതകളും നിഗമനങ്ങളും സൂചിപ്പിക്കുന്ന മോഡലുകൾ",
         "hi": "Public Transport: Bus & Train Travel",
         "ta": "Public Transport: Bus & Train Travel"
       },
-      "themeEn": "Public Transport: Bus & Train Travel",
-      "themeMl": "ബസ്, ട്രെയിൻ യാത്രകൾ",
+      "themeEn": "Modal Verbs of Probability and Deduction",
+      "themeMl": "സാധ്യതകളും നിഗമനങ്ങളും സൂചിപ്പിക്കുന്ന മോഡലുകൾ",
       "grammarTarget": "Asking Timing, Stops & Platforms",
       "grammarRule": {
-        "formula": "Asking Timing, Stops & Platforms",
+        "formula": "Modal Verbs of Probability and Deduction",
         "explanation": {
           "ml": "ബസ്, ട്രെയിൻ യാത്രകൾ എന്ന വിഷയത്തിൽ Asking Timing, Stops & Platforms എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Asking Timing, Stops & Platforms correctly in spoken English."
@@ -8504,16 +8504,16 @@
       "day": 44,
       "house": 2,
       "topic": {
-        "en": "At the Airport & Flight Journey",
-        "ml": "വിമാനത്താവളവും ഫ്ലൈറ്റ് യാത്രയും",
+        "en": "Past Modals",
+        "ml": "പാസ്റ്റ് മോഡൽ വെർബുകൾ",
         "hi": "At the Airport & Flight Journey",
         "ta": "At the Airport & Flight Journey"
       },
-      "themeEn": "At the Airport & Flight Journey",
-      "themeMl": "വിമാനത്താവളവും ഫ്ലൈറ്റ് യാത്രയും",
+      "themeEn": "Past Modals",
+      "themeMl": "പാസ്റ്റ് മോഡൽ വെർബുകൾ",
       "grammarTarget": "Check-in, Boarding, Luggage & Security",
       "grammarRule": {
-        "formula": "Check-in, Boarding, Luggage & Security",
+        "formula": "Past Modals",
         "explanation": {
           "ml": "വിമാനത്താവളവും ഫ്ലൈറ്റ് യാത്രയും എന്ന വിഷയത്തിൽ Check-in, Boarding, Luggage & Security എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Check-in, Boarding, Luggage & Security correctly in spoken English."
@@ -8701,16 +8701,16 @@
       "day": 45,
       "house": 2,
       "topic": {
-        "en": "Hotel Stay & Check-in",
-        "ml": "ഹോട്ടൽ ബുക്കിംഗും താമസവും",
+        "en": "Gerunds – Formation and Functions",
+        "ml": "ജെറണ്ടുകൾ – രൂപീകരണവും ധർമ്മങ്ങളും",
         "hi": "Hotel Stay & Check-in",
         "ta": "Hotel Stay & Check-in"
       },
-      "themeEn": "Hotel Stay & Check-in",
-      "themeMl": "ഹോട്ടൽ ബുക്കിംഗും താമസവും",
+      "themeEn": "Gerunds – Formation and Functions",
+      "themeMl": "ജെറണ്ടുകൾ – രൂപീകരണവും ധർമ്മങ്ങളും",
       "grammarTarget": "I have a reservation under the name...",
       "grammarRule": {
-        "formula": "I have a reservation under the name...",
+        "formula": "Gerunds – Formation and Functions",
         "explanation": {
           "ml": "ഹോട്ടൽ ബുക്കിംഗും താമസവും എന്ന വിഷയത്തിൽ I have a reservation under the name... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use I have a reservation under the name... correctly in spoken English."
@@ -8898,16 +8898,16 @@
       "day": 46,
       "house": 2,
       "topic": {
-        "en": "Tomorrow's Schedule & Appointments",
-        "ml": "നാളത്തെ അപ്പോയിന്റ്മെന്റുകൾ",
+        "en": "Infinitives – Bare Infinitive and To-Infinitive",
+        "ml": "ഇൻഫിനിറ്റീവുകൾ – Bare & To-Infinitive",
         "hi": "Tomorrow's Schedule & Appointments",
         "ta": "Tomorrow's Schedule & Appointments"
       },
-      "themeEn": "Tomorrow's Schedule & Appointments",
-      "themeMl": "നാളത്തെ അപ്പോയിന്റ്മെന്റുകൾ",
+      "themeEn": "Infinitives – Bare Infinitive and To-Infinitive",
+      "themeMl": "ഇൻഫിനിറ്റീവുകൾ – Bare & To-Infinitive",
       "grammarTarget": "Setting & Confirming Meeting Times",
       "grammarRule": {
-        "formula": "Setting & Confirming Meeting Times",
+        "formula": "Infinitives – Bare Infinitive and To-Infinitive",
         "explanation": {
           "ml": "നാളത്തെ അപ്പോയിന്റ്മെന്റുകൾ എന്ന വിഷയത്തിൽ Setting & Confirming Meeting Times എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Setting & Confirming Meeting Times correctly in spoken English."
@@ -9095,16 +9095,16 @@
       "day": 47,
       "house": 2,
       "topic": {
-        "en": "Polite Invitations: Would you like to...?",
-        "ml": "വിനയത്തോടെ ക്ഷണിക്കൽ",
+        "en": "Gerunds vs Infinitives",
+        "ml": "ജെറണ്ടുകളും ഇൻഫിനിറ്റീവുകളും തമ്മിലുള്ള വ്യത്യാസം",
         "hi": "Polite Invitations: Would you like to...?",
         "ta": "Polite Invitations: Would you like to...?"
       },
-      "themeEn": "Polite Invitations: Would you like to...?",
-      "themeMl": "വിനയത്തോടെ ക്ഷണിക്കൽ",
+      "themeEn": "Gerunds vs Infinitives",
+      "themeMl": "ജെറണ്ടുകളും ഇൻഫിനിറ്റീവുകളും തമ്മിലുള്ള വ്യത്യാസം",
       "grammarTarget": "Would you like + to V1 / noun (Would you like tea?)",
       "grammarRule": {
-        "formula": "Would you like + to V1 / noun (Would you like tea?)",
+        "formula": "Gerunds vs Infinitives",
         "explanation": {
           "ml": "വിനയത്തോടെ ക്ഷണിക്കൽ എന്ന വിഷയത്തിൽ Would you like + to V1 / noun (Would you like tea?) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Would you like + to V1 / noun (Would you like tea?) correctly in spoken English."
@@ -9292,16 +9292,16 @@
       "day": 48,
       "house": 2,
       "topic": {
-        "en": "Polite Requests: Could you please...",
-        "ml": "മാന്യമായ ആവശ്യപ്പെടലുകൾ",
+        "en": "Participles – Present, Past and Perfect Participles",
+        "ml": "പാർട്ടിസിപ്പിളുകൾ – Present, Past, Perfect",
         "hi": "Polite Requests: Could you please...",
         "ta": "Polite Requests: Could you please..."
       },
-      "themeEn": "Polite Requests: Could you please...",
-      "themeMl": "മാന്യമായ ആവശ്യപ്പെടലുകൾ",
+      "themeEn": "Participles – Present, Past and Perfect Participles",
+      "themeMl": "പാർട്ടിസിപ്പിളുകൾ – Present, Past, Perfect",
       "grammarTarget": "Could you please + V1 / Would you mind + V-ing",
       "grammarRule": {
-        "formula": "Could you please + V1 / Would you mind + V-ing",
+        "formula": "Participles – Present, Past and Perfect Participles",
         "explanation": {
           "ml": "മാന്യമായ ആവശ്യപ്പെടലുകൾ എന്ന വിഷയത്തിൽ Could you please + V1 / Would you mind + V-ing എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Could you please + V1 / Would you mind + V-ing correctly in spoken English."
@@ -9489,16 +9489,16 @@
       "day": 49,
       "house": 2,
       "topic": {
-        "en": "Giving Advice: Should & Ought to",
-        "ml": "ഉപദേശങ്ങൾ നൽകൽ (Should)",
+        "en": "Transitive and Intransitive Verbs",
+        "ml": "ട്രാൻസിറ്റീവ്, ഇൻട്രാൻസിറ്റീവ് വെർബുകൾ",
         "hi": "Giving Advice: Should & Ought to",
         "ta": "Giving Advice: Should & Ought to"
       },
-      "themeEn": "Giving Advice: Should & Ought to",
-      "themeMl": "ഉപദേശങ്ങൾ നൽകൽ (Should)",
+      "themeEn": "Transitive and Intransitive Verbs",
+      "themeMl": "ട്രാൻസിറ്റീവ്, ഇൻട്രാൻസിറ്റീവ് വെർബുകൾ",
       "grammarTarget": "You should + V1 (You should sleep early)",
       "grammarRule": {
-        "formula": "You should + V1 (You should sleep early)",
+        "formula": "Transitive and Intransitive Verbs",
         "explanation": {
           "ml": "ഉപദേശങ്ങൾ നൽകൽ (Should) എന്ന വിഷയത്തിൽ You should + V1 (You should sleep early) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use You should + V1 (You should sleep early) correctly in spoken English."
@@ -9686,16 +9686,16 @@
       "day": 50,
       "house": 2,
       "topic": {
-        "en": "Compulsion & Rules: Must vs Have to",
-        "ml": "നിർബന്ധങ്ങൾ: Must vs Have to",
+        "en": "Verb Patterns",
+        "ml": "വെർബ് പാറ്റേണുകൾ",
         "hi": "Compulsion & Rules: Must vs Have to",
         "ta": "Compulsion & Rules: Must vs Have to"
       },
-      "themeEn": "Compulsion & Rules: Must vs Have to",
-      "themeMl": "നിർബന്ധങ്ങൾ: Must vs Have to",
+      "themeEn": "Verb Patterns",
+      "themeMl": "വെർബ് പാറ്റേണുകൾ",
       "grammarTarget": "Must (Personal/Strict) vs Have to (External rule)",
       "grammarRule": {
-        "formula": "Must (Personal/Strict) vs Have to (External rule)",
+        "formula": "Verb Patterns",
         "explanation": {
           "ml": "നിർബന്ധങ്ങൾ: Must vs Have to എന്ന വിഷയത്തിൽ Must (Personal/Strict) vs Have to (External rule) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Must (Personal/Strict) vs Have to (External rule) correctly in spoken English."
@@ -9883,16 +9883,16 @@
       "day": 51,
       "house": 2,
       "topic": {
-        "en": "Accepting & Declining Politely",
-        "ml": "ക്ഷണം സ്വീകരിക്കലും നിരസിക്കലും",
+        "en": "Phrasal Verbs – Separable and Inseparable",
+        "ml": "ഫ്രേസൽ വെർബുകൾ – വേർതിരിക്കാവുന്നവയും അല്ലാത്തവയും",
         "hi": "Accepting & Declining Politely",
         "ta": "Accepting & Declining Politely"
       },
-      "themeEn": "Accepting & Declining Politely",
-      "themeMl": "ക്ഷണം സ്വീകരിക്കലും നിരസിക്കലും",
+      "themeEn": "Phrasal Verbs – Separable and Inseparable",
+      "themeMl": "ഫ്രേസൽ വെർബുകൾ – വേർതിരിക്കാവുന്നവയും അല്ലാത്തവയും",
       "grammarTarget": "I'd love to! vs I wish I could, but...",
       "grammarRule": {
-        "formula": "I'd love to! vs I wish I could, but...",
+        "formula": "Phrasal Verbs – Separable and Inseparable",
         "explanation": {
           "ml": "ക്ഷണം സ്വീകരിക്കലും നിരസിക്കലും എന്ന വിഷയത്തിൽ I'd love to! vs I wish I could, but... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use I'd love to! vs I wish I could, but... correctly in spoken English."
@@ -10080,16 +10080,16 @@
       "day": 52,
       "house": 2,
       "topic": {
-        "en": "Expressing Feelings & Emotions",
-        "ml": "വികാരങ്ങളും മാനസികാവസ്ഥയും",
+        "en": "Prepositional Verbs and Phrasal-Prepositional Verbs",
+        "ml": "പ്രിപോസിഷണൽ വെർബുകൾ",
         "hi": "Expressing Feelings & Emotions",
         "ta": "Expressing Feelings & Emotions"
       },
-      "themeEn": "Expressing Feelings & Emotions",
-      "themeMl": "വികാരങ്ങളും മാനസികാവസ്ഥയും",
+      "themeEn": "Prepositional Verbs and Phrasal-Prepositional Verbs",
+      "themeMl": "പ്രിപോസിഷണൽ വെർബുകൾ",
       "grammarTarget": "I feel proud / nervous / thrilled / upset",
       "grammarRule": {
-        "formula": "I feel proud / nervous / thrilled / upset",
+        "formula": "Prepositional Verbs and Phrasal-Prepositional Verbs",
         "explanation": {
           "ml": "വികാരങ്ങളും മാനസികാവസ്ഥയും എന്ന വിഷയത്തിൽ I feel proud / nervous / thrilled / upset എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use I feel proud / nervous / thrilled / upset correctly in spoken English."
@@ -10277,16 +10277,16 @@
       "day": 53,
       "house": 2,
       "topic": {
-        "en": "Handling Complaints & Polite Feedback",
-        "ml": "പരാതികളും ഫീഡ്ബാക്കും",
+        "en": "Active Voice and Passive Voice – Basics",
+        "ml": "ആക്റ്റീവ് & പാസ്സീവ് വോയ്സ് – അടിസ്ഥാന പാഠങ്ങൾ",
         "hi": "Handling Complaints & Polite Feedback",
         "ta": "Handling Complaints & Polite Feedback"
       },
-      "themeEn": "Handling Complaints & Polite Feedback",
-      "themeMl": "പരാതികളും ഫീഡ്ബാക്കും",
+      "themeEn": "Active Voice and Passive Voice – Basics",
+      "themeMl": "ആക്റ്റീവ് & പാസ്സീവ് വോയ്സ് – അടിസ്ഥാന പാഠങ്ങൾ",
       "grammarTarget": "I am afraid there is a problem with...",
       "grammarRule": {
-        "formula": "I am afraid there is a problem with...",
+        "formula": "Active Voice and Passive Voice – Basics",
         "explanation": {
           "ml": "പരാതികളും ഫീഡ്ബാക്കും എന്ന വിഷയത്തിൽ I am afraid there is a problem with... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use I am afraid there is a problem with... correctly in spoken English."
@@ -10474,16 +10474,16 @@
       "day": 54,
       "house": 2,
       "topic": {
-        "en": "Banking & Money Transactions",
-        "ml": "ബാങ്കും പണമിടപാടുകളും",
+        "en": "Passive Voice – Advanced Structures",
+        "ml": "പാസ്സീവ് വോയ്സ് – വിപുല ഘടനകൾ",
         "hi": "Banking & Money Transactions",
         "ta": "Banking & Money Transactions"
       },
-      "themeEn": "Banking & Money Transactions",
-      "themeMl": "ബാങ്കും പണമിടപാടുകളും",
+      "themeEn": "Passive Voice – Advanced Structures",
+      "themeMl": "പാസ്സീവ് വോയ്സ് – വിപുല ഘടനകൾ",
       "grammarTarget": "Deposit, Withdraw, Transfer, UPI & Balance",
       "grammarRule": {
-        "formula": "Deposit, Withdraw, Transfer, UPI & Balance",
+        "formula": "Passive Voice – Advanced Structures",
         "explanation": {
           "ml": "ബാങ്കും പണമിടപാടുകളും എന്ന വിഷയത്തിൽ Deposit, Withdraw, Transfer, UPI & Balance എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Deposit, Withdraw, Transfer, UPI & Balance correctly in spoken English."
@@ -10671,16 +10671,16 @@
       "day": 55,
       "house": 2,
       "topic": {
-        "en": "Technology, Mobiles & Connectivity",
-        "ml": "മൊബൈൽ, വൈഫൈ, സാങ്കേതികവിദ്യ",
+        "en": "Causative Structures – Have, Get, Make, Let, Help",
+        "ml": "കോസറ്റീവ് സ്ട്രക്ചറുകൾ – Have, Get, Make",
         "hi": "Technology, Mobiles & Connectivity",
         "ta": "Technology, Mobiles & Connectivity"
       },
-      "themeEn": "Technology, Mobiles & Connectivity",
-      "themeMl": "മൊബൈൽ, വൈഫൈ, സാങ്കേതികവിദ്യ",
+      "themeEn": "Causative Structures – Have, Get, Make, Let, Help",
+      "themeMl": "കോസറ്റീവ് സ്ട്രക്ചറുകൾ – Have, Get, Make",
       "grammarTarget": "My battery is low / Network is weak / Restart",
       "grammarRule": {
-        "formula": "My battery is low / Network is weak / Restart",
+        "formula": "Causative Structures – Have, Get, Make, Let, Help",
         "explanation": {
           "ml": "മൊബൈൽ, വൈഫൈ, സാങ്കേതികവിദ്യ എന്ന വിഷയത്തിൽ My battery is low / Network is weak / Restart എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use My battery is low / Network is weak / Restart correctly in spoken English."
@@ -10868,16 +10868,16 @@
       "day": 56,
       "house": 2,
       "topic": {
-        "en": "Lost Items & Urgent Emergencies",
-        "ml": "സാധനങ്ങൾ നഷ്ടപ്പെടലും അത്യാഹിതങ്ങളും",
+        "en": "Direct and Indirect Speech – Statements",
+        "ml": "പ്രത്യക്ഷവും പരോക്ഷവുമായ സംഭാഷണങ്ങൾ – പ്രസ്താവനകൾ",
         "hi": "Lost Items & Urgent Emergencies",
         "ta": "Lost Items & Urgent Emergencies"
       },
-      "themeEn": "Lost Items & Urgent Emergencies",
-      "themeMl": "സാധനങ്ങൾ നഷ്ടപ്പെടലും അത്യാഹിതങ്ങളും",
+      "themeEn": "Direct and Indirect Speech – Statements",
+      "themeMl": "പ്രത്യക്ഷവും പരോക്ഷവുമായ സംഭാഷണങ്ങൾ – പ്രസ്താവനകൾ",
       "grammarTarget": "I lost my... / Please call an ambulance / Urgent",
       "grammarRule": {
-        "formula": "I lost my... / Please call an ambulance / Urgent",
+        "formula": "Direct and Indirect Speech – Statements",
         "explanation": {
           "ml": "സാധനങ്ങൾ നഷ്ടപ്പെടലും അത്യാഹിതങ്ങളും എന്ന വിഷയത്തിൽ I lost my... / Please call an ambulance / Urgent എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use I lost my... / Please call an ambulance / Urgent correctly in spoken English."
@@ -11065,16 +11065,16 @@
       "day": 57,
       "house": 2,
       "topic": {
-        "en": "Doctor Consultation: Explaining Symptoms",
-        "ml": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ",
+        "en": "Direct and Indirect Speech – Questions and Commands",
+        "ml": "ചോദ്യങ്ങളും നിർദ്ദേശങ്ങളും പരോക്ഷ രൂപത്തിൽ",
         "hi": "Doctor Consultation: Explaining Symptoms",
         "ta": "Doctor Consultation: Explaining Symptoms"
       },
-      "themeEn": "Doctor Consultation: Explaining Symptoms",
-      "themeMl": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ",
+      "themeEn": "Direct and Indirect Speech – Questions and Commands",
+      "themeMl": "ചോദ്യങ്ങളും നിർദ്ദേശങ്ങളും പരോക്ഷ രൂപത്തിൽ",
       "grammarTarget": "I have been having this pain since yesterday",
       "grammarRule": {
-        "formula": "I have been having this pain since yesterday",
+        "formula": "Direct and Indirect Speech – Questions and Commands",
         "explanation": {
           "ml": "ഡോക്ടറോട് ലക്ഷണങ്ങൾ പറയൽ എന്ന വിഷയത്തിൽ I have been having this pain since yesterday എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use I have been having this pain since yesterday correctly in spoken English."
@@ -11262,16 +11262,16 @@
       "day": 58,
       "house": 2,
       "topic": {
-        "en": "Rapid Fire Reflex Drills: Spontaneous Speech",
-        "ml": "വേഗത്തിലുള്ള മറുപടികൾ (Reflex)",
+        "en": "Reported Speech – Backshifting and Exceptions",
+        "ml": "റിപ്പോർട്ടഡ് സ്പീച്ച് – ബാക്ക്ഷിഫ്റ്റിംഗും അപവാദങ്ങളും",
         "hi": "Rapid Fire Reflex Drills: Spontaneous Speech",
         "ta": "Rapid Fire Reflex Drills: Spontaneous Speech"
       },
-      "themeEn": "Rapid Fire Reflex Drills: Spontaneous Speech",
-      "themeMl": "വേഗത്തിലുള്ള മറുപടികൾ (Reflex)",
+      "themeEn": "Reported Speech – Backshifting and Exceptions",
+      "themeMl": "റിപ്പോർട്ടഡ് സ്പീച്ച് – ബാക്ക്ഷിഫ്റ്റിംഗും അപവാദങ്ങളും",
       "grammarTarget": "Eliminating Translation Delay: Direct English Response",
       "grammarRule": {
-        "formula": "Eliminating Translation Delay: Direct English Response",
+        "formula": "Reported Speech – Backshifting and Exceptions",
         "explanation": {
           "ml": "വേഗത്തിലുള്ള മറുപടികൾ (Reflex) എന്ന വിഷയത്തിൽ Eliminating Translation Delay: Direct English Response എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Eliminating Translation Delay: Direct English Response correctly in spoken English."
@@ -11459,16 +11459,16 @@
       "day": 59,
       "house": 2,
       "topic": {
-        "en": "Social Small Talk with Strangers",
-        "ml": "അപരിചിതരുമായുള്ള സൗഹൃദ സംഭാഷണം",
+        "en": "Zero and First Conditionals",
+        "ml": "സീറോ & ഫസ്റ്റ് കണ്ടീഷണലുകൾ",
         "hi": "Social Small Talk with Strangers",
         "ta": "Social Small Talk with Strangers"
       },
-      "themeEn": "Social Small Talk with Strangers",
-      "themeMl": "അപരിചിതരുമായുള്ള സൗഹൃദ സംഭാഷണം",
+      "themeEn": "Zero and First Conditionals",
+      "themeMl": "സീറോ & ഫസ്റ്റ് കണ്ടീഷണലുകൾ",
       "grammarTarget": "Weather, Commute, Compliments & Safe Topics",
       "grammarRule": {
-        "formula": "Weather, Commute, Compliments & Safe Topics",
+        "formula": "Zero and First Conditionals",
         "explanation": {
           "ml": "അപരിചിതരുമായുള്ള സൗഹൃദ സംഭാഷണം എന്ന വിഷയത്തിൽ Weather, Commute, Compliments & Safe Topics എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Weather, Commute, Compliments & Safe Topics correctly in spoken English."
@@ -11656,16 +11656,16 @@
       "day": 60,
       "house": 2,
       "topic": {
-        "en": "House 2 Grand Review & Gate Exam",
-        "ml": "ഹൗസ് 2 ഫൈനൽ റിവ്യൂ & എക്സാം",
+        "en": "Second Conditional",
+        "ml": "സെക്കൻഡ് കണ്ടീഷണൽ (സാങ്കൽപ്പിക അവസ്ഥകൾ)",
         "hi": "House 2 Grand Review & Gate Exam",
         "ta": "House 2 Grand Review & Gate Exam"
       },
-      "themeEn": "House 2 Grand Review & Gate Exam",
-      "themeMl": "ഹൗസ് 2 ഫൈനൽ റിവ്യൂ & എക്സാം",
+      "themeEn": "Second Conditional",
+      "themeMl": "സെക്കൻഡ് കണ്ടീഷണൽ (സാങ്കൽപ്പിക അവസ്ഥകൾ)",
       "grammarTarget": "Past, Future, Modals & Situation Integration",
       "grammarRule": {
-        "formula": "Past, Future, Modals & Situation Integration",
+        "formula": "Second Conditional",
         "explanation": {
           "ml": "ഹൗസ് 2 ഫൈനൽ റിവ്യൂ & എക്സാം എന്ന വിഷയത്തിൽ Past, Future, Modals & Situation Integration എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Past, Future, Modals & Situation Integration correctly in spoken English."
@@ -11853,16 +11853,16 @@
       "day": 61,
       "house": 3,
       "topic": {
-        "en": "Present Perfect: Have/Has + V3",
-        "ml": "ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3",
+        "en": "Third Conditional",
+        "ml": "തേർഡ് കണ്ടീഷണൽ (ഭൂതകാല സാധ്യതകൾ)",
         "hi": "Present Perfect: Have/Has + V3",
         "ta": "Present Perfect: Have/Has + V3"
       },
-      "themeEn": "Present Perfect: Have/Has + V3",
-      "themeMl": "ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3",
+      "themeEn": "Third Conditional",
+      "themeMl": "തേർഡ് കണ്ടീഷണൽ (ഭൂതകാല സാധ്യതകൾ)",
       "grammarTarget": "Have/Has + V3 (Action completed with present connection)",
       "grammarRule": {
-        "formula": "Have/Has + V3 (Action completed with present connection)",
+        "formula": "Third Conditional",
         "explanation": {
           "ml": "ചെയ്തു കഴിഞ്ഞ കാര്യങ്ങൾ: Have/Has + V3 എന്ന വിഷയത്തിൽ Have/Has + V3 (Action completed with present connection) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Have/Has + V3 (Action completed with present connection) correctly in spoken English."
@@ -12050,16 +12050,16 @@
       "day": 62,
       "house": 3,
       "topic": {
-        "en": "Life Experiences: Have you ever...?",
-        "ml": "ജീവിതാനുഭവങ്ങൾ: Have you ever...?",
+        "en": "Mixed Conditionals",
+        "ml": "മിക്സഡ് കണ്ടീഷണലുകൾ",
         "hi": "Life Experiences: Have you ever...?",
         "ta": "Life Experiences: Have you ever...?"
       },
-      "themeEn": "Life Experiences: Have you ever...?",
-      "themeMl": "ജീവിതാനുഭവങ്ങൾ: Have you ever...?",
+      "themeEn": "Mixed Conditionals",
+      "themeMl": "മിക്സഡ് കണ്ടീഷണലുകൾ",
       "grammarTarget": "Have you ever + V3? / I have never + V3",
       "grammarRule": {
-        "formula": "Have you ever + V3? / I have never + V3",
+        "formula": "Mixed Conditionals",
         "explanation": {
           "ml": "ജീവിതാനുഭവങ്ങൾ: Have you ever...? എന്ന വിഷയത്തിൽ Have you ever + V3? / I have never + V3 എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Have you ever + V3? / I have never + V3 correctly in spoken English."
@@ -12247,16 +12247,16 @@
       "day": 63,
       "house": 3,
       "topic": {
-        "en": "Just, Already & Yet",
-        "ml": "Just, Already, Yet പ്രയോഗങ്ങൾ",
+        "en": "Expressing Wishes, Regrets and Hypothetical Situations",
+        "ml": "ആഗ്രഹങ്ങളും ഖേദങ്ങളും പ്രകടിപ്പിക്കൽ",
         "hi": "Just, Already & Yet",
         "ta": "Just, Already & Yet"
       },
-      "themeEn": "Just, Already & Yet",
-      "themeMl": "Just, Already, Yet പ്രയോഗങ്ങൾ",
+      "themeEn": "Expressing Wishes, Regrets and Hypothetical Situations",
+      "themeMl": "ആഗ്രഹങ്ങളും ഖേദങ്ങളും പ്രകടിപ്പിക്കൽ",
       "grammarTarget": "Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല)",
       "grammarRule": {
-        "formula": "Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല)",
+        "formula": "Expressing Wishes, Regrets and Hypothetical Situations",
         "explanation": {
           "ml": "Just, Already, Yet പ്രയോഗങ്ങൾ എന്ന വിഷയത്തിൽ Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Just (ഇപ്പോൾ തന്നെ) | Already (നേരത്തെ തന്നെ) | Yet (ഇതുവരെ ഇല്ല) correctly in spoken English."
@@ -12444,16 +12444,16 @@
       "day": 64,
       "house": 3,
       "topic": {
-        "en": "Since vs For: Duration of Action",
-        "ml": "Since vs For (കാലയളവ് പറയൽ)",
+        "en": "Subjunctive Mood and 'Would Rather' / 'It's Time'",
+        "ml": "സബ്ജങ്ക്റ്റീവ് മൂഡും പ്രത്യേക പ്രയോഗങ്ങളും",
         "hi": "Since vs For: Duration of Action",
         "ta": "Since vs For: Duration of Action"
       },
-      "themeEn": "Since vs For: Duration of Action",
-      "themeMl": "Since vs For (കാലയളവ് പറയൽ)",
+      "themeEn": "Subjunctive Mood and 'Would Rather' / 'It's Time'",
+      "themeMl": "സബ്ജങ്ക്റ്റീവ് മൂഡും പ്രത്യേക പ്രയോഗങ്ങളും",
       "grammarTarget": "Since + Starting point (Since 2020) | For + Period (For 3 years)",
       "grammarRule": {
-        "formula": "Since + Starting point (Since 2020) | For + Period (For 3 years)",
+        "formula": "Subjunctive Mood and 'Would Rather' / 'It's Time'",
         "explanation": {
           "ml": "Since vs For (കാലയളവ് പറയൽ) എന്ന വിഷയത്തിൽ Since + Starting point (Since 2020) | For + Period (For 3 years) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Since + Starting point (Since 2020) | For + Period (For 3 years) correctly in spoken English."
@@ -12641,16 +12641,16 @@
       "day": 65,
       "house": 3,
       "topic": {
-        "en": "Present Perfect Continuous: Have been doing",
-        "ml": "തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ",
+        "en": "Relative Clauses – Defining and Non-Defining",
+        "ml": "റിലേറ്റീവ് ക്ലോസുകൾ",
         "hi": "Present Perfect Continuous: Have been doing",
         "ta": "Present Perfect Continuous: Have been doing"
       },
-      "themeEn": "Present Perfect Continuous: Have been doing",
-      "themeMl": "തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ",
+      "themeEn": "Relative Clauses – Defining and Non-Defining",
+      "themeMl": "റിലേറ്റീവ് ക്ലോസുകൾ",
       "grammarTarget": "Have/Has been + V-ing (Action started in past and still continuing)",
       "grammarRule": {
-        "formula": "Have/Has been + V-ing (Action started in past and still continuing)",
+        "formula": "Relative Clauses – Defining and Non-Defining",
         "explanation": {
           "ml": "തുടർന്നുകൊണ്ടേയിരിക്കുന്ന കാര്യങ്ങൾ എന്ന വിഷയത്തിൽ Have/Has been + V-ing (Action started in past and still continuing) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Have/Has been + V-ing (Action started in past and still continuing) correctly in spoken English."
@@ -12838,16 +12838,16 @@
       "day": 66,
       "house": 3,
       "topic": {
-        "en": "Describing Career & Work Experience",
-        "ml": "തൊഴിൽ പരിചയം വിവരിക്കൽ",
+        "en": "Relative Pronouns and Relative Adverbs",
+        "ml": "റിലേറ്റീവ് പ്രൊനൗണുകളും അഡ്വെർബുകളും",
         "hi": "Describing Career & Work Experience",
         "ta": "Describing Career & Work Experience"
       },
-      "themeEn": "Describing Career & Work Experience",
-      "themeMl": "തൊഴിൽ പരിചയം വിവരിക്കൽ",
+      "themeEn": "Relative Pronouns and Relative Adverbs",
+      "themeMl": "റിലേറ്റീവ് പ്രൊനൗണുകളും അഡ്വെർബുകളും",
       "grammarTarget": "I have been working as a [Role] for [Years]",
       "grammarRule": {
-        "formula": "I have been working as a [Role] for [Years]",
+        "formula": "Relative Pronouns and Relative Adverbs",
         "explanation": {
           "ml": "തൊഴിൽ പരിചയം വിവരിക്കൽ എന്ന വിഷയത്തിൽ I have been working as a [Role] for [Years] എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use I have been working as a [Role] for [Years] correctly in spoken English."
@@ -13035,16 +13035,16 @@
       "day": 67,
       "house": 3,
       "topic": {
-        "en": "Connecting Ideas: Because & So",
-        "ml": "കാരണവും ഫലവും പറയൽ (Because & So)",
+        "en": "Reduced Relative Clauses",
+        "ml": "റെഡ്യൂസ്ഡ് റിലേറ്റീവ് ക്ലോസുകൾ",
         "hi": "Connecting Ideas: Because & So",
         "ta": "Connecting Ideas: Because & So"
       },
-      "themeEn": "Connecting Ideas: Because & So",
-      "themeMl": "കാരണവും ഫലവും പറയൽ (Because & So)",
+      "themeEn": "Reduced Relative Clauses",
+      "themeMl": "റെഡ്യൂസ്ഡ് റിലേറ്റീവ് ക്ലോസുകൾ",
       "grammarTarget": "Cause (Because) vs Result (So)",
       "grammarRule": {
-        "formula": "Cause (Because) vs Result (So)",
+        "formula": "Reduced Relative Clauses",
         "explanation": {
           "ml": "കാരണവും ഫലവും പറയൽ (Because & So) എന്ന വിഷയത്തിൽ Cause (Because) vs Result (So) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Cause (Because) vs Result (So) correctly in spoken English."
@@ -13232,16 +13232,16 @@
       "day": 68,
       "house": 3,
       "topic": {
-        "en": "Contrast Connectors: Although, However, But",
-        "ml": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However)",
+        "en": "Noun Clauses",
+        "ml": "നൗൺ ക്ലോസുകൾ",
         "hi": "Contrast Connectors: Although, However, But",
         "ta": "Contrast Connectors: Although, However, But"
       },
-      "themeEn": "Contrast Connectors: Although, However, But",
-      "themeMl": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However)",
+      "themeEn": "Noun Clauses",
+      "themeMl": "നൗൺ ക്ലോസുകൾ",
       "grammarTarget": "Although + Clause (Although it rained, we enjoyed)",
       "grammarRule": {
-        "formula": "Although + Clause (Although it rained, we enjoyed)",
+        "formula": "Noun Clauses",
         "explanation": {
           "ml": "വൈരുദ്ധ്യങ്ങൾ പറയൽ (Although / However) എന്ന വിഷയത്തിൽ Although + Clause (Although it rained, we enjoyed) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Although + Clause (Although it rained, we enjoyed) correctly in spoken English."
@@ -13429,16 +13429,16 @@
       "day": 69,
       "house": 3,
       "topic": {
-        "en": "Real Conditions: If it rains, I will stay",
-        "ml": "സാധ്യമായ നിബന്ധനകൾ (First Conditional)",
+        "en": "Adverbial Clauses – Time, Cause, Purpose, Result, Condition, Concession",
+        "ml": "അഡ്വെർബിയൽ ക്ലോസുകൾ",
         "hi": "Real Conditions: If it rains, I will stay",
         "ta": "Real Conditions: If it rains, I will stay"
       },
-      "themeEn": "Real Conditions: If it rains, I will stay",
-      "themeMl": "സാധ്യമായ നിബന്ധനകൾ (First Conditional)",
+      "themeEn": "Adverbial Clauses – Time, Cause, Purpose, Result, Condition, Concession",
+      "themeMl": "അഡ്വെർബിയൽ ക്ലോസുകൾ",
       "grammarTarget": "If + Present Simple, Will + V1",
       "grammarRule": {
-        "formula": "If + Present Simple, Will + V1",
+        "formula": "Adverbial Clauses – Time, Cause, Purpose, Result, Condition, Concession",
         "explanation": {
           "ml": "സാധ്യമായ നിബന്ധനകൾ (First Conditional) എന്ന വിഷയത്തിൽ If + Present Simple, Will + V1 എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use If + Present Simple, Will + V1 correctly in spoken English."
@@ -13626,16 +13626,16 @@
       "day": 70,
       "house": 3,
       "topic": {
-        "en": "Imaginary Situations: If I were... / Would",
-        "ml": "സങ്കൽപ്പങ്ങൾ (Second Conditional)",
+        "en": "Coordination and Subordination",
+        "ml": "കോർഡിനേഷനും സബോർഡിനേഷനും",
         "hi": "Imaginary Situations: If I were... / Would",
         "ta": "Imaginary Situations: If I were... / Would"
       },
-      "themeEn": "Imaginary Situations: If I were... / Would",
-      "themeMl": "സങ്കൽപ്പങ്ങൾ (Second Conditional)",
+      "themeEn": "Coordination and Subordination",
+      "themeMl": "കോർഡിനേഷനും സബോർഡിനേഷനും",
       "grammarTarget": "If + Past Simple, Would + V1 (If I had money, I would travel)",
       "grammarRule": {
-        "formula": "If + Past Simple, Would + V1 (If I had money, I would travel)",
+        "formula": "Coordination and Subordination",
         "explanation": {
           "ml": "സങ്കൽപ്പങ്ങൾ (Second Conditional) എന്ന വിഷയത്തിൽ If + Past Simple, Would + V1 (If I had money, I would travel) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use If + Past Simple, Would + V1 (If I had money, I would travel) correctly in spoken English."
@@ -13823,16 +13823,16 @@
       "day": 71,
       "house": 3,
       "topic": {
-        "en": "Modals of Probability: May, Might, Could",
-        "ml": "സാധ്യതകൾ: May, Might, Could",
+        "en": "Inversion for Emphasis",
+        "ml": "ഇൻവേർഷൻ – വാക്യങ്ങളിൽ ഊന്നൽ നൽകൽ",
         "hi": "Modals of Probability: May, Might, Could",
         "ta": "Modals of Probability: May, Might, Could"
       },
-      "themeEn": "Modals of Probability: May, Might, Could",
-      "themeMl": "സാധ്യതകൾ: May, Might, Could",
+      "themeEn": "Inversion for Emphasis",
+      "themeMl": "ഇൻവേർഷൻ – വാക്യങ്ങളിൽ ഊന്നൽ നൽകൽ",
       "grammarTarget": "Expressing 50% vs 30% Probability",
       "grammarRule": {
-        "formula": "Expressing 50% vs 30% Probability",
+        "formula": "Inversion for Emphasis",
         "explanation": {
           "ml": "സാധ്യതകൾ: May, Might, Could എന്ന വിഷയത്തിൽ Expressing 50% vs 30% Probability എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Expressing 50% vs 30% Probability correctly in spoken English."
@@ -14020,16 +14020,16 @@
       "day": 72,
       "house": 3,
       "topic": {
-        "en": "Logical Deductions: Must be vs Can't be",
-        "ml": "യുക്തിപരമായ നിഗമനങ്ങൾ (Must be / Can't be)",
+        "en": "Cleft Sentences",
+        "ml": "ക്ലെഫ്റ്റ് സെന്റൻസുകൾ",
         "hi": "Logical Deductions: Must be vs Can't be",
         "ta": "Logical Deductions: Must be vs Can't be"
       },
-      "themeEn": "Logical Deductions: Must be vs Can't be",
-      "themeMl": "യുക്തിപരമായ നിഗമനങ്ങൾ (Must be / Can't be)",
+      "themeEn": "Cleft Sentences",
+      "themeMl": "ക്ലെഫ്റ്റ് സെന്റൻസുകൾ",
       "grammarTarget": "Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല)",
       "grammarRule": {
-        "formula": "Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല)",
+        "formula": "Cleft Sentences",
         "explanation": {
           "ml": "യുക്തിപരമായ നിഗമനങ്ങൾ (Must be / Can't be) എന്ന വിഷയത്തിൽ Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല) correctly in spoken English."
@@ -14217,16 +14217,16 @@
       "day": 73,
       "house": 3,
       "topic": {
-        "en": "Passive Voice in Daily Spoken Speech",
-        "ml": "നിത്യജീവിതത്തിലെ പാസ്സീവ് വോയ്സ്",
+        "en": "Fronting and Emphasis Techniques",
+        "ml": "ഫ്രണ്ടിംഗ് & ഊന്നൽ വിദ്യകൾ",
         "hi": "Passive Voice in Daily Spoken Speech",
         "ta": "Passive Voice in Daily Spoken Speech"
       },
-      "themeEn": "Passive Voice in Daily Spoken Speech",
-      "themeMl": "നിത്യജീവിതത്തിലെ പാസ്സീവ് വോയ്സ്",
+      "themeEn": "Fronting and Emphasis Techniques",
+      "themeMl": "ഫ്രണ്ടിംഗ് & ഊന്നൽ വിദ്യകൾ",
       "grammarTarget": "The flight is delayed / I was told / It is made of...",
       "grammarRule": {
-        "formula": "The flight is delayed / I was told / It is made of...",
+        "formula": "Fronting and Emphasis Techniques",
         "explanation": {
           "ml": "നിത്യജീവിതത്തിലെ പാസ്സീവ് വോയ്സ് എന്ന വിഷയത്തിൽ The flight is delayed / I was told / It is made of... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use The flight is delayed / I was told / It is made of... correctly in spoken English."
@@ -14414,16 +14414,16 @@
       "day": 74,
       "house": 3,
       "topic": {
-        "en": "Professional Telephone Etiquette",
-        "ml": "ഓഫീസ് ഫോൺ കോളുകൾ",
+        "en": "Ellipsis and Substitution",
+        "ml": "എലിപ്സിസും സബ്സ്റ്റിറ്റ്യൂഷനും",
         "hi": "Professional Telephone Etiquette",
         "ta": "Professional Telephone Etiquette"
       },
-      "themeEn": "Professional Telephone Etiquette",
-      "themeMl": "ഓഫീസ് ഫോൺ കോളുകൾ",
+      "themeEn": "Ellipsis and Substitution",
+      "themeMl": "എലിപ്സിസും സബ്സ്റ്റിറ്റ്യൂഷനും",
       "grammarTarget": "May I speak with...? / May I ask who is calling?",
       "grammarRule": {
-        "formula": "May I speak with...? / May I ask who is calling?",
+        "formula": "Ellipsis and Substitution",
         "explanation": {
           "ml": "ഓഫീസ് ഫോൺ കോളുകൾ എന്ന വിഷയത്തിൽ May I speak with...? / May I ask who is calling? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use May I speak with...? / May I ask who is calling? correctly in spoken English."
@@ -14611,16 +14611,16 @@
       "day": 75,
       "house": 3,
       "topic": {
-        "en": "Taking Messages & Leaving Voicemails",
-        "ml": "വോയ്‌സ് മെസ്സേജുകളും സന്ദേശങ്ങളും",
+        "en": "Parallel Structure in Sentences",
+        "ml": "പാരലൽ സ്ട്രക്ചർ – വാക്യ സന്തുലിതാവസ്ഥ",
         "hi": "Taking Messages & Leaving Voicemails",
         "ta": "Taking Messages & Leaving Voicemails"
       },
-      "themeEn": "Taking Messages & Leaving Voicemails",
-      "themeMl": "വോയ്‌സ് മെസ്സേജുകളും സന്ദേശങ്ങളും",
+      "themeEn": "Parallel Structure in Sentences",
+      "themeMl": "പാരലൽ സ്ട്രക്ചർ – വാക്യ സന്തുലിതാവസ്ഥ",
       "grammarTarget": "Could you take a message? / Please tell him that...",
       "grammarRule": {
-        "formula": "Could you take a message? / Please tell him that...",
+        "formula": "Parallel Structure in Sentences",
         "explanation": {
           "ml": "വോയ്‌സ് മെസ്സേജുകളും സന്ദേശങ്ങളും എന്ന വിഷയത്തിൽ Could you take a message? / Please tell him that... എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Could you take a message? / Please tell him that... correctly in spoken English."
@@ -14808,16 +14808,16 @@
       "day": 76,
       "house": 3,
       "topic": {
-        "en": "Office Small Talk & Break Room English",
-        "ml": "ഓഫീസിലെ സൗഹൃദ സംഭാഷണം",
+        "en": "Punctuation Rules for Clear Writing and Speaking",
+        "ml": "വിരാമചിഹ്ന നിയമങ്ങൾ",
         "hi": "Office Small Talk & Break Room English",
         "ta": "Office Small Talk & Break Room English"
       },
-      "themeEn": "Office Small Talk & Break Room English",
-      "themeMl": "ഓഫീസിലെ സൗഹൃദ സംഭാഷണം",
+      "themeEn": "Punctuation Rules for Clear Writing and Speaking",
+      "themeMl": "വിരാമചിഹ്ന നിയമങ്ങൾ",
       "grammarTarget": "Casual Workplace Interaction: Projects, Weekend, Coffee",
       "grammarRule": {
-        "formula": "Casual Workplace Interaction: Projects, Weekend, Coffee",
+        "formula": "Punctuation Rules for Clear Writing and Speaking",
         "explanation": {
           "ml": "ഓഫീസിലെ സൗഹൃദ സംഭാഷണം എന്ന വിഷയത്തിൽ Casual Workplace Interaction: Projects, Weekend, Coffee എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Casual Workplace Interaction: Projects, Weekend, Coffee correctly in spoken English."
@@ -15005,16 +15005,16 @@
       "day": 77,
       "house": 3,
       "topic": {
-        "en": "Daily Standups & Meeting Updates",
-        "ml": "ഓഫീസ് മീറ്റിംഗുകളും അപ്‌ഡേറ്റുകളും",
+        "en": "Common Confusing Words in English",
+        "ml": "ആശയക്കുഴപ്പമുണ്ടാക്കുന്ന ഇംഗ്ലീഷ് വാക്കുകൾ",
         "hi": "Daily Standups & Meeting Updates",
         "ta": "Daily Standups & Meeting Updates"
       },
-      "themeEn": "Daily Standups & Meeting Updates",
-      "themeMl": "ഓഫീസ് മീറ്റിംഗുകളും അപ്‌ഡേറ്റുകളും",
+      "themeEn": "Common Confusing Words in English",
+      "themeMl": "ആശയക്കുഴപ്പമുണ്ടാക്കുന്ന ഇംഗ്ലീഷ് വാക്കുകൾ",
       "grammarTarget": "Yesterday I completed..., Today I am working on..., No blockers.",
       "grammarRule": {
-        "formula": "Yesterday I completed..., Today I am working on..., No blockers.",
+        "formula": "Common Confusing Words in English",
         "explanation": {
           "ml": "ഓഫീസ് മീറ്റിംഗുകളും അപ്‌ഡേറ്റുകളും എന്ന വിഷയത്തിൽ Yesterday I completed..., Today I am working on..., No blockers. എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Yesterday I completed..., Today I am working on..., No blockers. correctly in spoken English."
@@ -15202,16 +15202,16 @@
       "day": 78,
       "house": 3,
       "topic": {
-        "en": "Giving Professional Opinions Politely",
-        "ml": "അഭിപ്രായങ്ങൾ മാന്യമായി പറയൽ",
+        "en": "Collocations – Essential Word Combinations",
+        "ml": "കൊളൊക്കേഷനുകൾ – സ്വാഭാവിക വാക്ക് കൂട്ടുകെട്ടുകൾ",
         "hi": "Giving Professional Opinions Politely",
         "ta": "Giving Professional Opinions Politely"
       },
-      "themeEn": "Giving Professional Opinions Politely",
-      "themeMl": "അഭിപ്രായങ്ങൾ മാന്യമായി പറയൽ",
+      "themeEn": "Collocations – Essential Word Combinations",
+      "themeMl": "കൊളൊക്കേഷനുകൾ – സ്വാഭാവിക വാക്ക് കൂട്ടുകെട്ടുകൾ",
       "grammarTarget": "In my opinion / From my perspective / As far as I can tell",
       "grammarRule": {
-        "formula": "In my opinion / From my perspective / As far as I can tell",
+        "formula": "Collocations – Essential Word Combinations",
         "explanation": {
           "ml": "അഭിപ്രായങ്ങൾ മാന്യമായി പറയൽ എന്ന വിഷയത്തിൽ In my opinion / From my perspective / As far as I can tell എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use In my opinion / From my perspective / As far as I can tell correctly in spoken English."
@@ -15399,16 +15399,16 @@
       "day": 79,
       "house": 3,
       "topic": {
-        "en": "Diplomatic Disagreement & Debating",
-        "ml": "മാന്യമായി വിയോജിപ്പ് അറിയിക്കൽ",
+        "en": "Phrasal Verbs for Everyday Communication",
+        "ml": "നിത്യജീവിതത്തിലെ ഫ്രേസൽ വെർബുകൾ",
         "hi": "Diplomatic Disagreement & Debating",
         "ta": "Diplomatic Disagreement & Debating"
       },
-      "themeEn": "Diplomatic Disagreement & Debating",
-      "themeMl": "മാന്യമായി വിയോജിപ്പ് അറിയിക്കൽ",
+      "themeEn": "Phrasal Verbs for Everyday Communication",
+      "themeMl": "നിത്യജീവിതത്തിലെ ഫ്രേസൽ വെർബുകൾ",
       "grammarTarget": "I see your point, but... / Respectfully, I disagree",
       "grammarRule": {
-        "formula": "I see your point, but... / Respectfully, I disagree",
+        "formula": "Phrasal Verbs for Everyday Communication",
         "explanation": {
           "ml": "മാന്യമായി വിയോജിപ്പ് അറിയിക്കൽ എന്ന വിഷയത്തിൽ I see your point, but... / Respectfully, I disagree എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use I see your point, but... / Respectfully, I disagree correctly in spoken English."
@@ -15596,16 +15596,16 @@
       "day": 80,
       "house": 3,
       "topic": {
-        "en": "Delivering Confident Presentations",
-        "ml": "പ്രസന്റേഷനുകൾ അവതരിപ്പിക്കൽ",
+        "en": "Idioms and Expressions for Natural Fluency",
+        "ml": "ശൈലികളും ഇഡിയംസും",
         "hi": "Delivering Confident Presentations",
         "ta": "Delivering Confident Presentations"
       },
-      "themeEn": "Delivering Confident Presentations",
-      "themeMl": "പ്രസന്റേഷനുകൾ അവതരിപ്പിക്കൽ",
+      "themeEn": "Idioms and Expressions for Natural Fluency",
+      "themeMl": "ശൈലികളും ഇഡിയംസും",
       "grammarTarget": "Signposting: First, moving on to, finally, to conclude",
       "grammarRule": {
-        "formula": "Signposting: First, moving on to, finally, to conclude",
+        "formula": "Idioms and Expressions for Natural Fluency",
         "explanation": {
           "ml": "പ്രസന്റേഷനുകൾ അവതരിപ്പിക്കൽ എന്ന വിഷയത്തിൽ Signposting: First, moving on to, finally, to conclude എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Signposting: First, moving on to, finally, to conclude correctly in spoken English."
@@ -15793,16 +15793,16 @@
       "day": 81,
       "house": 3,
       "topic": {
-        "en": "Job Interview Part 1: 'Tell Me About Yourself'",
-        "ml": "ഇന്റർവ്യൂ 1: സ്വന്തം വിവരണം (Self Pitch)",
+        "en": "Discourse Markers and Fillers for Smooth Speech",
+        "ml": "ഡിസ്കോഴ്സ് മാർക്കറുകളും ഫില്ലറുകളും",
         "hi": "Job Interview Part 1: 'Tell Me About Yourself'",
         "ta": "Job Interview Part 1: 'Tell Me About Yourself'"
       },
-      "themeEn": "Job Interview Part 1: 'Tell Me About Yourself'",
-      "themeMl": "ഇന്റർവ്യൂ 1: സ്വന്തം വിവരണം (Self Pitch)",
+      "themeEn": "Discourse Markers and Fillers for Smooth Speech",
+      "themeMl": "ഡിസ്കോഴ്സ് മാർക്കറുകളും ഫില്ലറുകളും",
       "grammarTarget": "The 3-Part Pitch: Past Background + Present Role + Future Goal",
       "grammarRule": {
-        "formula": "The 3-Part Pitch: Past Background + Present Role + Future Goal",
+        "formula": "Discourse Markers and Fillers for Smooth Speech",
         "explanation": {
           "ml": "ഇന്റർവ്യൂ 1: സ്വന്തം വിവരണം (Self Pitch) എന്ന വിഷയത്തിൽ The 3-Part Pitch: Past Background + Present Role + Future Goal എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use The 3-Part Pitch: Past Background + Present Role + Future Goal correctly in spoken English."
@@ -15990,16 +15990,16 @@
       "day": 82,
       "house": 3,
       "topic": {
-        "en": "Job Interview Part 2: Strengths & Weaknesses",
-        "ml": "ഇന്റർവ്യൂ 2: കരുത്തും ദൗർബല്യങ്ങളും",
+        "en": "Expressing Opinions, Agreement and Disagreement",
+        "ml": "അഭിപ്രായങ്ങളും യോജിപ്പും വിയോജിപ്പും",
         "hi": "Job Interview Part 2: Strengths & Weaknesses",
         "ta": "Job Interview Part 2: Strengths & Weaknesses"
       },
-      "themeEn": "Job Interview Part 2: Strengths & Weaknesses",
-      "themeMl": "ഇന്റർവ്യൂ 2: കരുത്തും ദൗർബല്യങ്ങളും",
+      "themeEn": "Expressing Opinions, Agreement and Disagreement",
+      "themeMl": "അഭിപ്രായങ്ങളും യോജിപ്പും വിയോജിപ്പും",
       "grammarTarget": "Framing weaknesses constructively into learning habits",
       "grammarRule": {
-        "formula": "Framing weaknesses constructively into learning habits",
+        "formula": "Expressing Opinions, Agreement and Disagreement",
         "explanation": {
           "ml": "ഇന്റർവ്യൂ 2: കരുത്തും ദൗർബല്യങ്ങളും എന്ന വിഷയത്തിൽ Framing weaknesses constructively into learning habits എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Framing weaknesses constructively into learning habits correctly in spoken English."
@@ -16187,16 +16187,16 @@
       "day": 83,
       "house": 3,
       "topic": {
-        "en": "Job Interview Part 3: The STAR Method",
-        "ml": "ഇന്റർവ്യൂ 3: STAR രീതി (Situation, Task, Action, Result)",
+        "en": "Politeness Strategies, Softening and Hedging",
+        "ml": "വിനയം പ്രകടിപ്പിക്കാനുള്ള തന്ത്രങ്ങൾ",
         "hi": "Job Interview Part 3: The STAR Method",
         "ta": "Job Interview Part 3: The STAR Method"
       },
-      "themeEn": "Job Interview Part 3: The STAR Method",
-      "themeMl": "ഇന്റർവ്യൂ 3: STAR രീതി (Situation, Task, Action, Result)",
+      "themeEn": "Politeness Strategies, Softening and Hedging",
+      "themeMl": "വിനയം പ്രകടിപ്പിക്കാനുള്ള തന്ത്രങ്ങൾ",
       "grammarTarget": "Storytelling Framework: Situation -> Task -> Action -> Result",
       "grammarRule": {
-        "formula": "Storytelling Framework: Situation -> Task -> Action -> Result",
+        "formula": "Politeness Strategies, Softening and Hedging",
         "explanation": {
           "ml": "ഇന്റർവ്യൂ 3: STAR രീതി (Situation, Task, Action, Result) എന്ന വിഷയത്തിൽ Storytelling Framework: Situation -> Task -> Action -> Result എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Storytelling Framework: Situation -> Task -> Action -> Result correctly in spoken English."
@@ -16384,16 +16384,16 @@
       "day": 84,
       "house": 3,
       "topic": {
-        "en": "Job Interview Part 4: Asking Smart Questions",
-        "ml": "ഇന്റർവ്യൂ 4: ഇന്റർവ്യൂവറോട് ചോദ്യങ്ങൾ ചോദിക്കൽ",
+        "en": "Asking for Clarification and Checking Understanding",
+        "ml": "സംശയ നിവാരണവും വ്യക്തത വരുത്തലും",
         "hi": "Job Interview Part 4: Asking Smart Questions",
         "ta": "Job Interview Part 4: Asking Smart Questions"
       },
-      "themeEn": "Job Interview Part 4: Asking Smart Questions",
-      "themeMl": "ഇന്റർവ്യൂ 4: ഇന്റർവ്യൂവറോട് ചോദ്യങ്ങൾ ചോദിക്കൽ",
+      "themeEn": "Asking for Clarification and Checking Understanding",
+      "themeMl": "സംശയ നിവാരണവും വ്യക്തത വരുത്തലും",
       "grammarTarget": "What does success look like in this role? / Team Culture",
       "grammarRule": {
-        "formula": "What does success look like in this role? / Team Culture",
+        "formula": "Asking for Clarification and Checking Understanding",
         "explanation": {
           "ml": "ഇന്റർവ്യൂ 4: ഇന്റർവ്യൂവറോട് ചോദ്യങ്ങൾ ചോദിക്കൽ എന്ന വിഷയത്തിൽ What does success look like in this role? / Team Culture എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use What does success look like in this role? / Team Culture correctly in spoken English."
@@ -16581,16 +16581,16 @@
       "day": 85,
       "house": 3,
       "topic": {
-        "en": "Salary Negotiation & Offer Discussion",
-        "ml": "ശമ്പള ചർച്ചയും ജോലി ഓഫറും",
+        "en": "Everyday Social English – Small Talk, Introductions, Farewells",
+        "ml": "ദൈനംദിന സൗഹൃദ സംഭാഷണങ്ങൾ",
         "hi": "Salary Negotiation & Offer Discussion",
         "ta": "Salary Negotiation & Offer Discussion"
       },
-      "themeEn": "Salary Negotiation & Offer Discussion",
-      "themeMl": "ശമ്പള ചർച്ചയും ജോലി ഓഫറും",
+      "themeEn": "Everyday Social English – Small Talk, Introductions, Farewells",
+      "themeMl": "ദൈനംദിന സൗഹൃദ സംഭാഷണങ്ങൾ",
       "grammarTarget": "Discussing compensation package with confidence & diplomacy",
       "grammarRule": {
-        "formula": "Discussing compensation package with confidence & diplomacy",
+        "formula": "Everyday Social English – Small Talk, Introductions, Farewells",
         "explanation": {
           "ml": "ശമ്പള ചർച്ചയും ജോലി ഓഫറും എന്ന വിഷയത്തിൽ Discussing compensation package with confidence & diplomacy എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Discussing compensation package with confidence & diplomacy correctly in spoken English."
@@ -16778,16 +16778,16 @@
       "day": 86,
       "house": 3,
       "topic": {
-        "en": "Native Everyday Idioms: Volume 1",
-        "ml": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 1",
+        "en": "Professional and Formal English – Meetings, Emails, Presentations",
+        "ml": "ഔദ്യോഗിക ഇംഗ്ലീഷ് – മീറ്റിംഗുകൾ, ഇമെയിലുകൾ",
         "hi": "Native Everyday Idioms: Volume 1",
         "ta": "Native Everyday Idioms: Volume 1"
       },
-      "themeEn": "Native Everyday Idioms: Volume 1",
-      "themeMl": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 1",
+      "themeEn": "Professional and Formal English – Meetings, Emails, Presentations",
+      "themeMl": "ഔദ്യോഗിക ഇംഗ്ലീഷ് – മീറ്റിംഗുകൾ, ഇമെയിലുകൾ",
       "grammarTarget": "Bite the bullet, Break the ice, Piece of cake",
       "grammarRule": {
-        "formula": "Bite the bullet, Break the ice, Piece of cake",
+        "formula": "Professional and Formal English – Meetings, Emails, Presentations",
         "explanation": {
           "ml": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 1 എന്ന വിഷയത്തിൽ Bite the bullet, Break the ice, Piece of cake എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Bite the bullet, Break the ice, Piece of cake correctly in spoken English."
@@ -16975,16 +16975,16 @@
       "day": 87,
       "house": 3,
       "topic": {
-        "en": "Native Everyday Idioms: Volume 2",
-        "ml": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2",
+        "en": "Pronunciation – Word Stress and Sentence Stress",
+        "ml": "ഉച്ചാരണം – വാക്ക് & വാക്യ സ്ട്രെസ്",
         "hi": "Native Everyday Idioms: Volume 2",
         "ta": "Native Everyday Idioms: Volume 2"
       },
-      "themeEn": "Native Everyday Idioms: Volume 2",
-      "themeMl": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2",
+      "themeEn": "Pronunciation – Word Stress and Sentence Stress",
+      "themeMl": "ഉച്ചാരണം – വാക്ക് & വാക്യ സ്ട്രെസ്",
       "grammarTarget": "Under the weather, Hit the nail on the head, Once in a blue moon",
       "grammarRule": {
-        "formula": "Under the weather, Hit the nail on the head, Once in a blue moon",
+        "formula": "Pronunciation – Word Stress and Sentence Stress",
         "explanation": {
           "ml": "സ്വാഭാവിക ഇംഗ്ലീഷ് ശൈലികൾ 2 എന്ന വിഷയത്തിൽ Under the weather, Hit the nail on the head, Once in a blue moon എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Under the weather, Hit the nail on the head, Once in a blue moon correctly in spoken English."
@@ -17172,16 +17172,16 @@
       "day": 88,
       "house": 3,
       "topic": {
-        "en": "Essential Workplace Phrasal Verbs",
-        "ml": "ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ",
+        "en": "Pronunciation – Intonation, Rhythm and Connected Speech",
+        "ml": "സ്വരഭേദം (Intonation) & കണക്റ്റഡ് സ്പീച്ച്",
         "hi": "Essential Workplace Phrasal Verbs",
         "ta": "Essential Workplace Phrasal Verbs"
       },
-      "themeEn": "Essential Workplace Phrasal Verbs",
-      "themeMl": "ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ",
+      "themeEn": "Pronunciation – Intonation, Rhythm and Connected Speech",
+      "themeMl": "സ്വരഭേദം (Intonation) & കണക്റ്റഡ് സ്പീച്ച്",
       "grammarTarget": "Figure out, Look into, Call off, Follow up, Carry on",
       "grammarRule": {
-        "formula": "Figure out, Look into, Call off, Follow up, Carry on",
+        "formula": "Pronunciation – Intonation, Rhythm and Connected Speech",
         "explanation": {
           "ml": "ഓഫീസിലെ ഫ്രേസൽ വെർബുകൾ എന്ന വിഷയത്തിൽ Figure out, Look into, Call off, Follow up, Carry on എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Figure out, Look into, Call off, Follow up, Carry on correctly in spoken English."
@@ -17369,16 +17369,16 @@
       "day": 89,
       "house": 3,
       "topic": {
-        "en": "Public Speaking & Confident Storytelling",
-        "ml": "പബ്ലിക് സ്പീക്കിംഗും കഥ പറയലും",
+        "en": "Common Spoken English Mistakes and How to Avoid Them",
+        "ml": "പൊതുവായി വരുത്തുന്ന സംസാര തെറ്റുകൾ",
         "hi": "Public Speaking & Confident Storytelling",
         "ta": "Public Speaking & Confident Storytelling"
       },
-      "themeEn": "Public Speaking & Confident Storytelling",
-      "themeMl": "പബ്ലിക് സ്പീക്കിംഗും കഥ പറയലും",
+      "themeEn": "Common Spoken English Mistakes and How to Avoid Them",
+      "themeMl": "പൊതുവായി വരുത്തുന്ന സംസാര തെറ്റുകൾ",
       "grammarTarget": "Hook the audience, Speak with conviction, Inspire action",
       "grammarRule": {
-        "formula": "Hook the audience, Speak with conviction, Inspire action",
+        "formula": "Common Spoken English Mistakes and How to Avoid Them",
         "explanation": {
           "ml": "പബ്ലിക് സ്പീക്കിംഗും കഥ പറയലും എന്ന വിഷയത്തിൽ Hook the audience, Speak with conviction, Inspire action എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use Hook the audience, Speak with conviction, Inspire action correctly in spoken English."
@@ -17566,16 +17566,16 @@
       "day": 90,
       "house": 3,
       "topic": {
-        "en": "Grand Graduation Day & Lifetime Mastery",
-        "ml": "90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി",
+        "en": "Final Spoken English Mastery – Fluency, Confidence and Assessment",
+        "ml": "സംസാര ഇംഗ്ലീഷ് മാസ്റ്ററി – ആത്മവിശ്വാസത്തോടെ സംസാരിക്കാം",
         "hi": "Grand Graduation Day & Lifetime Mastery",
         "ta": "Grand Graduation Day & Lifetime Mastery"
       },
-      "themeEn": "Grand Graduation Day & Lifetime Mastery",
-      "themeMl": "90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി",
+      "themeEn": "Final Spoken English Mastery – Fluency, Confidence and Assessment",
+      "themeMl": "സംസാര ഇംഗ്ലീഷ് മാസ്റ്ററി – ആത്മവിശ്വാസത്തോടെ സംസാരിക്കാം",
       "grammarTarget": "90-Day Spoken English Master Badge & Lifetime Fluency",
       "grammarRule": {
-        "formula": "90-Day Spoken English Master Badge & Lifetime Fluency",
+        "formula": "Final Spoken English Mastery – Fluency, Confidence and Assessment",
         "explanation": {
           "ml": "90-ഡേ ഫൈനൽ ഗ്രാജ്വേഷൻ & ലൈഫ്‌ടൈം മാസ്റ്ററി എന്ന വിഷയത്തിൽ 90-Day Spoken English Master Badge & Lifetime Fluency എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
           "en": "Learn how to use 90-Day Spoken English Master Badge & Lifetime Fluency correctly in spoken English."

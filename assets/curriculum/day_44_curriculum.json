@@ -11,8 +11,8 @@
     },
     "version": "day-44-v1",
     "topic": {
-      "en": "At the Airport & Flight Journey",
-      "ml": "വിമാനത്താവളവും ഫ്ലൈറ്റ് യാത്രയും",
+      "en": "Past Modals",
+      "ml": "പാസ്റ്റ് മോഡൽ വെർബുകൾ",
       "hi": "At the Airport & Flight Journey",
       "ta": "At the Airport & Flight Journey"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 94
   },
   "grammarRule": {
-    "formula": "Check-in, Boarding, Luggage & Security",
+    "formula": "Past Modals",
     "explanation": {
       "ml": "വിമാനത്താവളവും ഫ്ലൈറ്റ് യാത്രയും എന്ന വിഷയത്തിൽ Check-in, Boarding, Luggage & Security എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Check-in, Boarding, Luggage & Security correctly in spoken English."

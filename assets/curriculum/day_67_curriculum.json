@@ -11,8 +11,8 @@
     },
     "version": "day-67-v1",
     "topic": {
-      "en": "Connecting Ideas: Because & So",
-      "ml": "കാരണവും ഫലവും പറയൽ (Because & So)",
+      "en": "Reduced Relative Clauses",
+      "ml": "റെഡ്യൂസ്ഡ് റിലേറ്റീവ് ക്ലോസുകൾ",
       "hi": "Connecting Ideas: Because & So",
       "ta": "Connecting Ideas: Because & So"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 117
   },
   "grammarRule": {
-    "formula": "Cause (Because) vs Result (So)",
+    "formula": "Reduced Relative Clauses",
     "explanation": {
       "ml": "കാരണവും ഫലവും പറയൽ (Because & So) എന്ന വിഷയത്തിൽ Cause (Because) vs Result (So) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Cause (Because) vs Result (So) correctly in spoken English."

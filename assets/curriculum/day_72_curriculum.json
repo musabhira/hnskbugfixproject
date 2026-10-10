@@ -11,8 +11,8 @@
     },
     "version": "day-72-v1",
     "topic": {
-      "en": "Logical Deductions: Must be vs Can't be",
-      "ml": "യുക്തിപരമായ നിഗമനങ്ങൾ (Must be / Can't be)",
+      "en": "Cleft Sentences",
+      "ml": "ക്ലെഫ്റ്റ് സെന്റൻസുകൾ",
       "hi": "Logical Deductions: Must be vs Can't be",
       "ta": "Logical Deductions: Must be vs Can't be"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 122
   },
   "grammarRule": {
-    "formula": "Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല)",
+    "formula": "Cleft Sentences",
     "explanation": {
       "ml": "യുക്തിപരമായ നിഗമനങ്ങൾ (Must be / Can't be) എന്ന വിഷയത്തിൽ Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Must be (തീർച്ചയായും ആയിരിക്കും) | Can't be (ഒരിക്കലും ആകില്ല) correctly in spoken English."

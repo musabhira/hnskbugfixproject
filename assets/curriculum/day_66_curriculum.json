@@ -11,8 +11,8 @@
     },
     "version": "day-66-v1",
     "topic": {
-      "en": "Describing Career & Work Experience",
-      "ml": "തൊഴിൽ പരിചയം വിവരിക്കൽ",
+      "en": "Relative Pronouns and Relative Adverbs",
+      "ml": "റിലേറ്റീവ് പ്രൊനൗണുകളും അഡ്വെർബുകളും",
       "hi": "Describing Career & Work Experience",
       "ta": "Describing Career & Work Experience"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 116
   },
   "grammarRule": {
-    "formula": "I have been working as a [Role] for [Years]",
+    "formula": "Relative Pronouns and Relative Adverbs",
     "explanation": {
       "ml": "തൊഴിൽ പരിചയം വിവരിക്കൽ എന്ന വിഷയത്തിൽ I have been working as a [Role] for [Years] എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use I have been working as a [Role] for [Years] correctly in spoken English."

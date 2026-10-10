@@ -11,8 +11,8 @@
     },
     "version": "day-22-v1",
     "topic": {
-      "en": "Asking Questions: When & Why",
-      "ml": "When & Why ചോദ്യങ്ങൾ",
+      "en": "Present Continuous Tense",
+      "ml": "പ്രസന്റ് കണ്ടിന്യൂവസ് ടെൻസ്",
       "hi": "Asking Questions: When & Why",
       "ta": "Asking Questions: When & Why"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 72
   },
   "grammarRule": {
-    "formula": "When do you...? / Why are you...?",
+    "formula": "Present Continuous Tense",
     "explanation": {
       "ml": "When & Why ചോദ്യങ്ങൾ എന്ന വിഷയത്തിൽ When do you...? / Why are you...? എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use When do you...? / Why are you...? correctly in spoken English."

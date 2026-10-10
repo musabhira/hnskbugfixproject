@@ -11,8 +11,8 @@
     },
     "version": "day-56-v1",
     "topic": {
-      "en": "Lost Items & Urgent Emergencies",
-      "ml": "സാധനങ്ങൾ നഷ്ടപ്പെടലും അത്യാഹിതങ്ങളും",
+      "en": "Direct and Indirect Speech – Statements",
+      "ml": "പ്രത്യക്ഷവും പരോക്ഷവുമായ സംഭാഷണങ്ങൾ – പ്രസ്താവനകൾ",
       "hi": "Lost Items & Urgent Emergencies",
       "ta": "Lost Items & Urgent Emergencies"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 106
   },
   "grammarRule": {
-    "formula": "I lost my... / Please call an ambulance / Urgent",
+    "formula": "Direct and Indirect Speech – Statements",
     "explanation": {
       "ml": "സാധനങ്ങൾ നഷ്ടപ്പെടലും അത്യാഹിതങ്ങളും എന്ന വിഷയത്തിൽ I lost my... / Please call an ambulance / Urgent എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use I lost my... / Please call an ambulance / Urgent correctly in spoken English."

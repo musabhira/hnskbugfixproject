@@ -11,8 +11,8 @@
     },
     "version": "day-39-v1",
     "topic": {
-      "en": "Future Promises & Instant Decisions: Will",
-      "ml": "ഭാവി കാര്യങ്ങൾ: Will",
+      "en": "Indirect and Embedded Questions",
+      "ml": "ഇൻഡയറക്റ്റ് & എംബഡഡ് ചോദ്യങ്ങൾ",
       "hi": "Future Promises & Instant Decisions: Will",
       "ta": "Future Promises & Instant Decisions: Will"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 89
   },
   "grammarRule": {
-    "formula": "Subject + Will + V1 (I will help you)",
+    "formula": "Indirect and Embedded Questions",
     "explanation": {
       "ml": "ഭാവി കാര്യങ്ങൾ: Will എന്ന വിഷയത്തിൽ Subject + Will + V1 (I will help you) എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Subject + Will + V1 (I will help you) correctly in spoken English."

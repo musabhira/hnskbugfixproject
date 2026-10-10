@@ -11,8 +11,8 @@
     },
     "version": "day-5-v1",
     "topic": {
-      "en": "Demonstratives & Objects",
-      "ml": "അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ",
+      "en": "Articles – A, An, The and Zero Article",
+      "ml": "ആർട്ടിക്കിളുകൾ – A, An, The",
       "hi": "Demonstratives & Objects",
       "ta": "Demonstratives & Objects"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 55
   },
   "grammarRule": {
-    "formula": "This, That, These, Those",
+    "formula": "Articles – A, An, The and Zero Article",
     "explanation": {
       "ml": "അടുത്തും ദൂരെയുമുള്ള വസ്തുക്കൾ എന്ന വിഷയത്തിൽ This, That, These, Those എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use This, That, These, Those correctly in spoken English."

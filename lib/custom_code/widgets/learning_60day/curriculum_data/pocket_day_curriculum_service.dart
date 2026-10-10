@@ -133,6 +133,15 @@ class PocketDayCurriculumService {
       if (l.startsWith('te') || l.contains('telug')) {
         return field['te']?.toString() ?? field['en']?.toString() ?? fallback;
       }
+      if (l.startsWith('kn') || l.contains('kannad')) {
+        return field['kn']?.toString() ?? field['en']?.toString() ?? fallback;
+      }
+      if (l.startsWith('ar') || l.contains('arab')) {
+        return field['ar']?.toString() ?? field['en']?.toString() ?? fallback;
+      }
+      if (l.startsWith('bn') || l.contains('bengal')) {
+        return field['bn']?.toString() ?? field['en']?.toString() ?? fallback;
+      }
       return field['en']?.toString() ?? field.values.firstOrNull?.toString() ?? fallback;
     }
     return field.toString();

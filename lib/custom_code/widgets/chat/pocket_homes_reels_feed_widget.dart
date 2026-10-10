@@ -19,7 +19,6 @@ import '../learning_60day/pocket_world_street_page.dart';
 import '../../services/pocket_president_service.dart';
 import 'pocket_feed_vibe_share_sheet.dart';
 import 'pocket_reels_game_engine.dart';
-import 'audio_space/pocket_audio_room_sheet.dart';
 
 /// Item type for the Reels Feed: Homestead, Interactive Mini-Game, or Public Vibe (Audio Directive)
 enum ReelItemType { home, game, vibe }
@@ -159,9 +158,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
   // Audio player for house ambient background music delegated to PocketGameAudioService
   String? _currentlyPlayingHouseId;
 
-  // Active open Live English Space (User Audio Directive: < 4 seats filled -> show Join Now!)
-  Map<String, dynamic>? _activeOpenSpace;
-
   // Games state
   final Map<String, int?> _selectedAnswers = {}; // gameId -> selected option index
   final Map<String, List<String>> _sentenceBuilderUserOrder = {}; // gameId -> selected words in order
@@ -258,25 +254,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
     await PocketReelsGameEngine.init();
     await _loadUserLanguage();
     await _loadViewedHistoryAndFeed();
-    await _checkOpenLiveSpaces();
-  }
-
-  Future<void> _checkOpenLiveSpaces() async {
-    try {
-      final res = await _supabase
-          .from('live_audio_spaces')
-          .select()
-          .eq('is_active', true)
-          .lt('participant_count', 4)
-          .order('created_at', ascending: false)
-          .limit(1)
-          .maybeSingle();
-      if (mounted && res != null) {
-        setState(() {
-          _activeOpenSpace = Map<String, dynamic>.from(res);
-        });
-      }
-    } catch (_) {}
   }
 
   Future<void> _loadUserLanguage() async {
@@ -1120,116 +1097,6 @@ class _PocketHomesReelsFeedWidgetState extends State<PocketHomesReelsFeedWidget>
               },
             ),
           ),
-
-          // ☕ Floating Open Live English Space card (User Audio Directive: < 4 seats filled -> show Join Now!)
-          if (_activeOpenSpace != null)
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: MediaQuery.of(context).padding.bottom + 16,
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.mediumImpact();
-                  PocketAudioRoomSheet.show(context);
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF0F172A).withValues(alpha: 0.92),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: const Color(0xFFFFFC00).withValues(alpha: 0.7),
-                      width: 1.2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFFFFFC00).withValues(alpha: 0.25),
-                        blurRadius: 12,
-                        offset: const Offset(0, 3),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: const Color(0xFFFFFC00).withValues(alpha: 0.2),
-                        ),
-                        child: const Icon(
-                          Icons.record_voice_over_rounded,
-                          color: Color(0xFFFFFC00),
-                          size: 18,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'Live English Space',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1.5),
-                                  decoration: BoxDecoration(
-                                    color: Colors.redAccent,
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: const Text(
-                                    'LIVE',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 8.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '☕ ${_activeOpenSpace!['participant_count'] ?? 1}/4 Seats • Open Practice',
-                              style: GoogleFonts.inter(
-                                color: Colors.white70,
-                                fontSize: 11,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFFFFC00), Color(0xFFFF9100)],
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: Text(
-                          'Join Now',
-                          style: GoogleFonts.outfit(
-                            color: Colors.black,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
         ],
       ),
     );

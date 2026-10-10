@@ -11,8 +11,8 @@
     },
     "version": "day-29-v1",
     "topic": {
-      "en": "Weather, Climate & Nature",
-      "ml": "കാലാവസ്ഥയും പ്രകൃതിയും",
+      "en": "Future Simple Tense and 'Going to'",
+      "ml": "സിമ്പിൾ ഫ്യൂച്ചർ ടെൻസും 'Going to' പ്രയോഗവും",
       "hi": "Weather, Climate & Nature",
       "ta": "Weather, Climate & Nature"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 79
   },
   "grammarRule": {
-    "formula": "It is sunny / rainy / cloudy / humid",
+    "formula": "Future Simple Tense and 'Going to'",
     "explanation": {
       "ml": "കാലാവസ്ഥയും പ്രകൃതിയും എന്ന വിഷയത്തിൽ It is sunny / rainy / cloudy / humid എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use It is sunny / rainy / cloudy / humid correctly in spoken English."

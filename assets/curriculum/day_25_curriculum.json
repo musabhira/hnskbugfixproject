@@ -11,8 +11,8 @@
     },
     "version": "day-25-v1",
     "topic": {
-      "en": "Buying Groceries & Market Talk",
-      "ml": "കടയും പച്ചക്കറി വാങ്ങലും",
+      "en": "Past Simple Tense",
+      "ml": "സിമ്പിൾ പാസ്റ്റ് ടെൻസ്",
       "hi": "Buying Groceries & Market Talk",
       "ta": "Buying Groceries & Market Talk"
     },
@@ -22,7 +22,7 @@
     "totalCoinsReward": 75
   },
   "grammarRule": {
-    "formula": "Quantity Words: Kilo, Packet, Bottle, Dozen",
+    "formula": "Past Simple Tense",
     "explanation": {
       "ml": "കടയും പച്ചക്കറി വാങ്ങലും എന്ന വിഷയത്തിൽ Quantity Words: Kilo, Packet, Bottle, Dozen എങ്ങനെ ഉപയോഗിക്കണം എന്ന് വിശദീകരിക്കുന്നു.",
       "en": "Learn how to use Quantity Words: Kilo, Packet, Bottle, Dozen correctly in spoken English."
