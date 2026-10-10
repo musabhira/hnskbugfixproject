@@ -23,6 +23,7 @@ import 'pocket_citadel_attack_page.dart';
 import 'games/meadow_runner_game_page.dart';
 import 'games/word_catcher_game_page.dart';
 import 'games/word_catcher_models.dart';
+import 'pocket_day_detail_overview_page.dart';
 
 /// 🎮 Dedicated Day 1 Interactive Learning & Game Flow Page
 /// 
