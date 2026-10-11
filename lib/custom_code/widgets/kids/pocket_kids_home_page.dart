@@ -475,7 +475,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                       PocketKidsMatesPage.open(context);
                     },
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
@@ -490,14 +490,55 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Text('🤝', style: TextStyle(fontSize: 16)),
+                          const Text('🤝', style: TextStyle(fontSize: 15)),
                           const SizedBox(width: 4),
                           Text(
                             'MATES',
                             style: GoogleFonts.outfit(
                               color: const Color(0xFF0F172A),
                               fontWeight: FontWeight.w900,
-                              fontSize: 12,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 6),
+
+                  // ⚔️ Attack Citadel Button
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.heavyImpact();
+                      PocketKidsMatesPage.open(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFEF4444).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('⚔️', style: TextStyle(fontSize: 14)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'ATTACK',
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11.5,
                             ),
                           ),
                         ],

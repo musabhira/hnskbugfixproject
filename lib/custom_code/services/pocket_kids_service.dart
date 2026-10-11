@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
@@ -72,6 +73,51 @@ class KidDefenseChallenge {
     required this.correctIndex,
     required this.cheerMessage,
   });
+}
+
+/// 💬 Child-Safe Gamified Mate Message Model (100% separate from adult chat)
+class KidMessage {
+  final String id;
+  final String senderId;
+  final String senderName;
+  final String senderAvatar;
+  final String text;
+  final DateTime timestamp;
+  final bool isFromMe;
+  final bool isStarGift;
+
+  const KidMessage({
+    required this.id,
+    required this.senderId,
+    required this.senderName,
+    required this.senderAvatar,
+    required this.text,
+    required this.timestamp,
+    required this.isFromMe,
+    this.isStarGift = false,
+  });
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'senderId': senderId,
+    'senderName': senderName,
+    'senderAvatar': senderAvatar,
+    'text': text,
+    'timestamp': timestamp.toIso8601String(),
+    'isFromMe': isFromMe,
+    'isStarGift': isStarGift,
+  };
+
+  factory KidMessage.fromJson(Map<String, dynamic> json) => KidMessage(
+    id: json['id'] as String,
+    senderId: json['senderId'] as String,
+    senderName: json['senderName'] as String,
+    senderAvatar: json['senderAvatar'] as String,
+    text: json['text'] as String,
+    timestamp: DateTime.parse(json['timestamp'] as String),
+    isFromMe: json['isFromMe'] as bool,
+    isStarGift: json['isStarGift'] as bool? ?? false,
+  );
 }
 
 /// 🧸 Service for managing Kids vs Adult account separation,
@@ -419,6 +465,102 @@ class PocketKidsService {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(_keyKidFriendIds, _friendIds.toList());
     } catch (_) {}
+  }
+
+  static bool isMate(String mateId) => _friendIds.contains(mateId);
+
+  // --- KIDS MATES MESSAGING & TALK SYSTEM (100% Separate Gamified Chat) ---
+
+  static final Map<String, List<KidMessage>> _messagesByMate = {};
+
+  /// Get messages with a specific kid mate, initializing with friendly welcome greeting
+  static List<KidMessage> getMessagesForMate(String mateId, {String? mateName, String? mateAvatar}) {
+    if (!_messagesByMate.containsKey(mateId) || _messagesByMate[mateId]!.isEmpty) {
+      final name = mateName ?? 'Mate';
+      final avatar = mateAvatar ?? '🌟';
+      _messagesByMate[mateId] = [
+        KidMessage(
+          id: '${mateId}_welcome',
+          senderId: mateId,
+          senderName: name,
+          senderAvatar: avatar,
+          text: "Hello Mate! 🌟 Let's practice English together! Tap the speaker to hear me!",
+          timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+          isFromMe: false,
+        ),
+      ];
+    }
+    return List.unmodifiable(_messagesByMate[mateId]!);
+  }
+
+  /// Send message to a mate
+  static Future<KidMessage> sendMessageToMate({
+    required String mateId,
+    required String text,
+    bool isStarGift = false,
+  }) async {
+    final myMsg = KidMessage(
+      id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+      senderId: 'me',
+      senderName: _kidName,
+      senderAvatar: _kidAvatar,
+      text: text,
+      timestamp: DateTime.now(),
+      isFromMe: true,
+      isStarGift: isStarGift,
+    );
+
+    if (!_messagesByMate.containsKey(mateId)) {
+      _messagesByMate[mateId] = [];
+    }
+    _messagesByMate[mateId]!.add(myMsg);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(_messagesByMate[mateId]!.map((m) => m.toJson()).toList());
+      await prefs.setString('pm_kid_messages_$mateId', encoded);
+    } catch (_) {}
+
+    return myMsg;
+  }
+
+  /// Automatically generate a friendly kid reply for practice
+  static Future<KidMessage?> generateAutoMateReply({
+    required String mateId,
+    required String mateName,
+    required String mateAvatar,
+  }) async {
+    final replies = [
+      "High five mate! ✋ You are doing awesome!",
+      "I love practicing English with you! 🎈 Let's conquer the trail!",
+      "Keep shining like a star! ⭐ What day are you on?",
+      "Good job! Remember, practice makes perfect! 🚀",
+      "Thank you mate! You're a true champion! 🏆",
+    ];
+    final randomReply = replies[math.Random().nextInt(replies.length)];
+
+    final replyMsg = KidMessage(
+      id: 'reply_${DateTime.now().millisecondsSinceEpoch}',
+      senderId: mateId,
+      senderName: mateName,
+      senderAvatar: mateAvatar,
+      text: randomReply,
+      timestamp: DateTime.now(),
+      isFromMe: false,
+    );
+
+    if (!_messagesByMate.containsKey(mateId)) {
+      _messagesByMate[mateId] = [];
+    }
+    _messagesByMate[mateId]!.add(replyMsg);
+
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final encoded = jsonEncode(_messagesByMate[mateId]!.map((m) => m.toJson()).toList());
+      await prefs.setString('pm_kid_messages_$mateId', encoded);
+    } catch (_) {}
+
+    return replyMsg;
   }
 
   // --- AUTOMATED SPOKEN ENGLISH DEFENSE CHALLENGES (Helping Mentality) ---
