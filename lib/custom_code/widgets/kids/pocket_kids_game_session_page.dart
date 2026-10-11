@@ -75,6 +75,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
   bool _isSessionFinished = false;
   String _targetLetter = 'A';
   String _targetPrompt = 'Pop the letter A! 🎈';
+  int _streak = 0;
+  String _mascotSpeech = 'Pop the letter A! 🎈';
 
   static const List<Color> _balloonColors = [
     Color(0xFFEF4444), // Candy Red
@@ -428,6 +430,7 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       }
     }
 
+    _mascotSpeech = 'Find $_targetLetter! 🎈';
     setState(() {});
     _speak(_targetPrompt);
   }
@@ -441,6 +444,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       balloon.isPopped = true;
       _spawnParticles(balloon.x, balloon.y, balloon.color);
       _starsEarned++;
+      _streak++;
+      _mascotSpeech = _streak > 1 ? '🔥 $_streak COMBO! Super Hero!' : '🌟 Super! ${balloon.label} is for ${balloon.subtitle}!';
 
       final successWord =
           'Awesome speaking! You are so kind and helpful! ${balloon.label} is for ${balloon.subtitle}! ${balloon.emoji}';
@@ -458,8 +463,11 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       });
     } else {
       // Gentle wobble & audio reminder
+      _streak = 0;
+      _mascotSpeech = 'Almost! Try finding $_targetLetter 💪';
       HapticFeedback.lightImpact();
       _speak('Almost! Let us help find $_targetLetter together!');
+      setState(() {});
     }
   }
 
@@ -720,6 +728,34 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
                         ),
                       ),
                       const Spacer(),
+                      // 5-Round Star Beads
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: List.generate(5, (idx) {
+                          final isPast = idx < _currentRound;
+                          final isCurrent = idx == _currentRound;
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                            width: isCurrent ? 22 : 14,
+                            height: 14,
+                            decoration: BoxDecoration(
+                              color: isPast
+                                  ? const Color(0xFFFFD700)
+                                  : isCurrent
+                                      ? const Color(0xFF38BDF8)
+                                      : Colors.white24,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isCurrent ? Colors.white : Colors.transparent,
+                                width: 1.5,
+                              ),
+                            ),
+                            alignment: Alignment.center,
+                            child: isPast ? const Text('⭐', style: TextStyle(fontSize: 8)) : null,
+                          );
+                        }),
+                      ),
+                      const SizedBox(width: 8),
                       // Stars Earned
                       Container(
                         padding: const EdgeInsets.symmetric(
@@ -838,6 +874,119 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
                               ),
                             );
                           }),
+
+                          // 🔥 Streak Combo Badge
+                          if (_streak > 1)
+                            Positioned(
+                              top: 8,
+                              right: 16,
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFEF4444), Color(0xFFF59E0B)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(16),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFEF4444).withValues(alpha: 0.45),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ],
+                                  border: Border.all(color: Colors.white, width: 2),
+                                ),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Text('🔥 ', style: TextStyle(fontSize: 16)),
+                                    Text(
+                                      '$_streak COMBO!',
+                                      style: GoogleFonts.outfit(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w900,
+                                        fontSize: 13,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                          // 🦁 Cheering Mascot Companion at Bottom Left
+                          Positioned(
+                            left: 16,
+                            bottom: 12,
+                            child: GestureDetector(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                _speak(_targetPrompt);
+                              },
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  // Bouncing Mascot
+                                  AnimatedBuilder(
+                                    animation: _floatController,
+                                    builder: (context, child) {
+                                      final dy = math.sin(_floatController.value * math.pi) * 8.0;
+                                      return Transform.translate(
+                                        offset: Offset(0, -dy),
+                                        child: child,
+                                      );
+                                    },
+                                    child: Container(
+                                      width: 60,
+                                      height: 60,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(alpha: 0.2),
+                                            blurRadius: 10,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                        border: Border.all(color: const Color(0xFFFFD700), width: 3),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Text(PocketKidsService.kidAvatar, style: const TextStyle(fontSize: 32)),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  // Cartoon Speech Bubble
+                                  Container(
+                                    constraints: const BoxConstraints(maxWidth: 200),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      borderRadius: const BorderRadius.only(
+                                        topLeft: Radius.circular(16),
+                                        topRight: Radius.circular(16),
+                                        bottomRight: Radius.circular(16),
+                                      ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(alpha: 0.12),
+                                          blurRadius: 8,
+                                        ),
+                                      ],
+                                    ),
+                                    child: Text(
+                                      _mascotSpeech.isNotEmpty ? _mascotSpeech : 'Tap to hear!',
+                                      style: GoogleFonts.outfit(
+                                        color: const Color(0xFF0F172A),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       );
                     },
