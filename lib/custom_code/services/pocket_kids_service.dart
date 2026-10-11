@@ -354,6 +354,30 @@ class PocketKidsService {
     }
   }
 
+  /// Save updated Kid Profile details (name & avatar)
+  static Future<void> saveKidProfile({
+    required String name,
+    required String avatar,
+  }) async {
+    _kidName = name.trim().isNotEmpty ? name.trim() : _kidName;
+    _kidAvatar = avatar;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_keyKidName, _kidName);
+      await prefs.setString(_keyKidAvatar, _kidAvatar);
+
+      final user = SupaFlow.client.auth.currentUser;
+      if (user != null) {
+        await SupaFlow.client.from('profile').update({
+          'kid_name': _kidName,
+          'kid_avatar': _kidAvatar,
+        }).eq('user_id', user.id).catchError((_) {});
+      }
+    } catch (e) {
+      debugPrint('PocketKidsService: Error saving kid profile: $e');
+    }
+  }
+
   /// Activate Adult Account Mode
   static Future<void> activateAdultAccount() async {
     _isKidAccount = false;

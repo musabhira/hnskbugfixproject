@@ -7,6 +7,9 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_game_sessi
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mates_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_certificate_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_homes_showcase_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_study_tools_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_settings_page.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
@@ -42,6 +45,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _bounceController;
   final ScrollController _scrollController = ScrollController();
+  int _currentTab = 0; // 0 = Trail, 1 = Homes, 2 = Tools, 3 = Settings
 
   static const int _totalDays = 100;
   static const double _nodeSpacingY = 115.0;
@@ -265,10 +269,40 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     final completedDays = PocketKidsService.completedDays;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0284C7),
-      body: Stack(
+      backgroundColor: _currentTab == 0 ? const Color(0xFF0284C7) : const Color(0xFF0F172A),
+      body: IndexedStack(
+        index: _currentTab,
         children: [
-          // 🗺️ 100-DAY ASCENDING ADVENTURE MOUNTAIN WORLD
+          _buildMountainTrailStack(
+            screenWidth: screenWidth,
+            kidName: kidName,
+            kidAvatar: kidAvatar,
+            kidStars: kidStars,
+            currentHouse: currentHouse,
+            unlockedDay: unlockedDay,
+            completedDays: completedDays,
+          ),
+          const PocketKidsHomesShowcasePage(),
+          const PocketKidsStudyToolsPage(),
+          const PocketKidsSettingsPage(),
+        ],
+      ),
+      bottomNavigationBar: _buildBottomNav(),
+    );
+  }
+
+  Widget _buildMountainTrailStack({
+    required double screenWidth,
+    required String kidName,
+    required String kidAvatar,
+    required int kidStars,
+    required KidsHouse currentHouse,
+    required int unlockedDay,
+    required Map<int, int> completedDays,
+  }) {
+    return Stack(
+      children: [
+        // 🗺️ 100-DAY ASCENDING ADVENTURE MOUNTAIN WORLD
           SingleChildScrollView(
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
@@ -669,6 +703,88 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             ),
           ),
         ],
+      );
+  }
+
+  Widget _buildBottomNav() {
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF0F172A),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.35),
+            blurRadius: 14,
+            offset: const Offset(0, -4),
+          ),
+        ],
+        border: const Border(
+          top: BorderSide(color: Color(0xFF334155), width: 1.5),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavTabItem(0, '🎯', 'TRAIL', const Color(0xFF38BDF8)),
+              _buildNavTabItem(1, '🏡', 'HOMES', const Color(0xFFF59E0B)),
+              _buildNavTabItem(2, '📚', 'TOOLS', const Color(0xFF10B981)),
+              _buildNavTabItem(3, '⚙️', 'SETTINGS', const Color(0xFFA855F7)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavTabItem(int index, String emoji, String label, Color activeColor) {
+    final isSelected = _currentTab == index;
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.selectionClick();
+        if (_currentTab == index && index == 0) {
+          _scrollToActiveDay(animate: true);
+        } else {
+          setState(() => _currentTab = index);
+        }
+      },
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.symmetric(
+          horizontal: isSelected ? 16 : 12,
+          vertical: 8,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? activeColor.withValues(alpha: 0.18) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? activeColor : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(emoji, style: TextStyle(fontSize: isSelected ? 20 : 18)),
+            if (isSelected) ...[
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  color: activeColor,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 12.5,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
