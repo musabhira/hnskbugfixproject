@@ -3,19 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_language_selection_dialog.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_game_session_page.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
-/// 🧸 Dedicated Kids Universe Home Page
+/// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
 ///
 /// Features:
-/// 1. 100% Isolated Kids UI (No adult chat, no calls, no complex adult features).
-/// 2. 100-Day Winding Adventure Mountain Trail with Day 1 - Day 100 targets.
-/// 3. Achievable Homestead / Playhouse Showcase (Treehouse, Candy Cottage, Dino Den, Sky Castle).
-/// 4. Tap-to-play interactive 2D Kids Games with TTS voiceover and balloon popping.
-/// 5. Parental Gate (Math lock) for switching back to adult mode.
+/// 1. 100% Pure Kids Games & Cartoons (No futuristic UI, no adult theory, no chat).
+/// 2. Ascending 100-Day Mountain Road:
+///    - Day 1 begins at the bottom base camp (Flower Meadow).
+///    - Kids climb upwards ("keri keri ponapole") to Day 100 at the Golden Summit Castle.
+/// 3. S-curve winding cartoon stepping stone trail with candy-themed biomes.
+/// 4. Kid's Mascot Avatar standing right on their active node with bouncing animations.
+/// 5. Milestone playhouses positioned right along the climbing trail.
+/// 6. Auto-positions directly at the active day node on initial launch.
+/// 7. Tapping any active day node launches a full, delightful 2D cartoon mini-game session.
 class PocketKidsHomePage extends StatefulWidget {
   const PocketKidsHomePage({super.key});
 
@@ -38,26 +40,59 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
   late AnimationController _bounceController;
   final ScrollController _scrollController = ScrollController();
 
+  static const int _totalDays = 100;
+  static const double _nodeSpacingY = 115.0;
+  static const double _topPadding = 360.0; // Day 100 Summit Golden Castle
+  static const double _bottomPadding = 260.0; // Day 1 Basecamp
+
+  double get _totalCanvasHeight =>
+      _topPadding + ((_totalDays - 1) * _nodeSpacingY) + _bottomPadding;
+
+  double _getNodeY(int day) {
+    final int daysFromTop = _totalDays - day;
+    return _topPadding + (daysFromTop * _nodeSpacingY);
+  }
+
+  double _getNodeX(int day, double screenWidth) {
+    final center = screenWidth / 2;
+    final maxAmp = ((screenWidth - 140) / 2).clamp(42.0, 110.0);
+    // Smooth winding cartoon S-curve
+    final wave = math.sin(day * 0.52) * maxAmp;
+    return center + wave;
+  }
+
   @override
   void initState() {
     super.initState();
     _bounceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1400),
+      duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
 
-    // Auto-scroll near the current unlocked day
+    // Auto-scroll directly to the kid's current active day at the bottom / on mountain
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final curDay = PocketKidsService.currentUnlockedDay;
-      final targetScroll = (curDay - 1) * 85.0;
-      if (_scrollController.hasClients && targetScroll > 200) {
-        _scrollController.animateTo(
-          (targetScroll - 150).clamp(0.0, _scrollController.position.maxScrollExtent),
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeOutCubic,
-        );
-      }
+      _scrollToActiveDay(animate: false);
     });
+  }
+
+  void _scrollToActiveDay({bool animate = true}) {
+    if (!_scrollController.hasClients) return;
+    final curDay = PocketKidsService.currentUnlockedDay;
+    final targetY = _getNodeY(curDay) - 300.0;
+    final clampedY = targetY.clamp(
+      0.0,
+      _scrollController.position.maxScrollExtent,
+    );
+
+    if (animate) {
+      _scrollController.animateTo(
+        clampedY,
+        duration: const Duration(milliseconds: 700),
+        curve: Curves.easeOutCubic,
+      );
+    } else {
+      _scrollController.jumpTo(clampedY);
+    }
   }
 
   @override
@@ -87,7 +122,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             children: [
               const Text('🔒 ', style: TextStyle(fontSize: 22)),
               Text(
-                'Parental Gate',
+                'Parent Zone / രക്ഷാകർത്താവ്',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -101,51 +136,42 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'For parents only. Please solve this question to switch to Adult Mode:',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF94A3B8),
-                  fontSize: 13,
+                'To switch to adult account, solve this math problem:',
+                style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
+              ),
+              const SizedBox(height: 14),
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Text(
+                    '$a + $b = ?',
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF38BDF8),
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 16),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1E293B),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      '$a + $b = ',
-                      style: GoogleFonts.outfit(
-                        color: const Color(0xFFFFD700),
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(
-                      width: 60,
-                      child: TextField(
-                        controller: controller,
-                        keyboardType: TextInputType.number,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        decoration: const InputDecoration(
-                          hintText: '?',
-                          hintStyle: TextStyle(color: Colors.white24),
-                          border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ],
+              const SizedBox(height: 14),
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                autofocus: true,
+                style: const TextStyle(color: Colors.white, fontSize: 18),
+                decoration: InputDecoration(
+                  hintText: 'Enter answer',
+                  hintStyle: const TextStyle(color: Colors.white38),
+                  filled: true,
+                  fillColor: const Color(0xFF1E293B),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
               ),
             ],
@@ -153,44 +179,35 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: Text(
-                'CANCEL',
-                style: GoogleFonts.inter(color: Colors.white54),
-              ),
+              child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54)),
             ),
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: const Color(0xFF0F172A),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: () async {
-                final ans = int.tryParse(controller.text.trim());
-                if (ans == correctAnswer) {
+                if (int.tryParse(controller.text.trim()) == correctAnswer) {
                   Navigator.pop(ctx);
                   await PocketKidsService.activateAdultAccount();
                   if (context.mounted) {
-                    Navigator.pushReplacement(
-                      context,
+                    Navigator.of(context).pushAndRemoveUntil(
                       MaterialPageRoute(builder: (_) => const HomePageWidget()),
+                      (route) => false,
                     );
                   }
                 } else {
                   HapticFeedback.heavyImpact();
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Incorrect answer. Try again!'),
+                      content: Text('Incorrect answer! Only parents can exit Kids Mode.'),
                       backgroundColor: Colors.redAccent,
                     ),
                   );
                 }
               },
-              child: Text(
-                'SWITCH TO ADULT ➔',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
-              ),
+              child: Text('SWITCH TO ADULT', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
             ),
           ],
         );
@@ -206,15 +223,18 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
         SnackBar(
           content: Row(
             children: [
-              const Text('🔒 ', style: TextStyle(fontSize: 16)),
-              Text(
-                'Complete Day $unlockedDay first to unlock Day $day! 🌟',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              const Text('🔒 ', style: TextStyle(fontSize: 18)),
+              Expanded(
+                child: Text(
+                  'Complete Day $unlockedDay first to climb to Day $day! 🌟',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
               ),
             ],
           ),
           backgroundColor: const Color(0xFF0F172A),
           behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       );
       return;
@@ -233,398 +253,337 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
     final kidName = PocketKidsService.kidName;
     final kidAvatar = PocketKidsService.kidAvatar;
     final kidStars = PocketKidsService.kidStars;
-    final lang = PocketLanguageService.currentLanguage;
     final currentHouse = PocketKidsService.currentHouse;
     final unlockedDay = PocketKidsService.currentUnlockedDay;
     final completedDays = PocketKidsService.completedDays;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0369A1),
+      backgroundColor: const Color(0xFF0284C7),
       body: Stack(
         children: [
-          // Background Cartoon Mountain Sky Gradient
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF38BDF8), // Morning sky
-                  Color(0xFF67E8F9), // Soft cyan
-                  Color(0xFF86EFAC), // Green valley
-                  Color(0xFF4ADE80), // Deep emerald hill
+          // 🗺️ 100-DAY ASCENDING ADVENTURE MOUNTAIN WORLD
+          SingleChildScrollView(
+            controller: _scrollController,
+            physics: const BouncingScrollPhysics(),
+            child: SizedBox(
+              width: screenWidth,
+              height: _totalCanvasHeight,
+              child: Stack(
+                children: [
+                  // 1. Continuous Cartoon Mountain Road & Biome Painter
+                  CustomPaint(
+                    size: Size(screenWidth, _totalCanvasHeight),
+                    painter: _KidsAdventureMountainRoadPainter(
+                      totalDays: _totalDays,
+                      unlockedDay: unlockedDay,
+                      nodeSpacingY: _nodeSpacingY,
+                      topPadding: _topPadding,
+                      bottomPadding: _bottomPadding,
+                      screenWidth: screenWidth,
+                    ),
+                  ),
+
+                  // 2. Day 100 Summit Golden Castle Banner
+                  Positioned(
+                    top: 40,
+                    left: 20,
+                    right: 20,
+                    child: _buildSummitCastleCard(screenWidth),
+                  ),
+
+                  // 3. Day 1 Basecamp Welcome Sign
+                  Positioned(
+                    top: _getNodeY(1) + 80,
+                    left: 24,
+                    right: 24,
+                    child: _buildBasecampCard(),
+                  ),
+
+                  // 4. Milestone Playhouses along the path
+                  ..._buildMilestonePlayhouses(screenWidth, unlockedDay),
+
+                  // 5. Zone Banners across the Mountain Passes
+                  ..._buildZoneMilestonePasses(screenWidth),
+
+                  // 6. Interactive Day Nodes (Day 1 to 100)
+                  ...List.generate(_totalDays, (index) {
+                    final dayNumber = index + 1;
+                    final nodeX = _getNodeX(dayNumber, screenWidth);
+                    final nodeY = _getNodeY(dayNumber);
+                    final isUnlocked = dayNumber <= unlockedDay;
+                    final isCurrent = dayNumber == unlockedDay;
+                    final stars = completedDays[dayNumber] ?? (isUnlocked ? 3 : 0);
+
+                    return Positioned(
+                      left: nodeX - 44,
+                      top: nodeY - 44,
+                      child: GestureDetector(
+                        onTap: () => _onTapDayNode(dayNumber),
+                        child: _buildDayNode(
+                          dayNumber: dayNumber,
+                          isUnlocked: isUnlocked,
+                          isCurrent: isCurrent,
+                          stars: stars,
+                          kidAvatar: kidAvatar,
+                        ),
+                      ),
+                    );
+                  }),
                 ],
-                stops: [0.0, 0.35, 0.75, 1.0],
               ),
             ),
           ),
 
-          // Floating background clouds and balloons
-          Positioned(
-            top: 60,
-            left: 20,
-            child: Opacity(
-              opacity: 0.3,
-              child: const Text('☁️', style: TextStyle(fontSize: 80)),
-            ),
-          ),
-          Positioned(
-            top: 140,
-            right: 25,
-            child: Opacity(
-              opacity: 0.25,
-              child: const Text('🎈', style: TextStyle(fontSize: 60)),
-            ),
-          ),
-
+          // 🌟 TOP HUD BAR (Minimal, Cartoonic, Super Clean)
           SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              child: Row(
+                children: [
+                  // Kid Mascot & Name Capsule
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(24),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.15),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(kidAvatar, style: const TextStyle(fontSize: 22)),
+                        const SizedBox(width: 8),
+                        Text(
+                          kidName,
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF0F172A),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  // Playhouse Badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: currentHouse.themeColor,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.12),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(currentHouse.emoji, style: const TextStyle(fontSize: 16)),
+                        const SizedBox(width: 5),
+                        Text(
+                          currentHouse.title,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const Spacer(),
+
+                  // Stars Counter
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withValues(alpha: 0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('⭐', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 5),
+                        Text(
+                          '$kidStars',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF78350F),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  // Parental Lock Button (Settings)
+                  GestureDetector(
+                    onTap: () => _showParentalGate(context),
+                    child: Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.9),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.1),
+                            blurRadius: 6,
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.lock_outline_rounded,
+                        color: Color(0xFF0F172A),
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // 📍 FLOATING "MY LEVEL" BUTTON (Instantly snaps to active day)
+          Positioned(
+            right: 16,
+            bottom: 24,
+            child: FloatingActionButton.extended(
+              onPressed: () => _scrollToActiveDay(animate: true),
+              backgroundColor: const Color(0xFFFFD700),
+              foregroundColor: const Color(0xFF78350F),
+              elevation: 6,
+              icon: const Icon(Icons.navigation_rounded, size: 20),
+              label: Text(
+                'DAY $unlockedDay',
+                style: GoogleFonts.outfit(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 14,
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Summit Golden Castle Card ---
+  Widget _buildSummitCastleCard(double screenWidth) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFFFFD700), Color(0xFFF59E0B), Color(0xFFEC4899)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFD700).withValues(alpha: 0.45),
+            blurRadius: 20,
+            spreadRadius: 2,
+          ),
+        ],
+        border: Border.all(color: Colors.white, width: 3),
+      ),
+      child: Column(
+        children: [
+          const Text('👑 🏰 🌟', style: TextStyle(fontSize: 36)),
+          const SizedBox(height: 6),
+          Text(
+            'GRAND SUMMIT CASTLE (DAY 100)',
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 17,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Climb every day to unlock the Legendary Crystal Star Throne!',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(
+              color: Colors.white.withValues(alpha: 0.95),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // --- Basecamp Welcome Sign ---
+  Widget _buildBasecampCard() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: const Color(0xFF4ADE80), width: 2.5),
+      ),
+      child: Row(
+        children: [
+          const Text('⛺ 🌻', style: TextStyle(fontSize: 28)),
+          const SizedBox(width: 12),
+          Expanded(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // 🌟 TOP HUD BAR
-                Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: Row(
-                    children: [
-                      // Mascot Avatar & Kid Name
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.12),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Text(kidAvatar,
-                                style: const TextStyle(fontSize: 22)),
-                            const SizedBox(width: 8),
-                            Text(
-                              kidName,
-                              style: GoogleFonts.outfit(
-                                color: const Color(0xFF0F172A),
-                                fontWeight: FontWeight.w900,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const Spacer(),
-
-                      // Stars Counter Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.15),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            const Text('⭐', style: TextStyle(fontSize: 16)),
-                            const SizedBox(width: 5),
-                            Text(
-                              '$kidStars',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 14,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-
-                      // Language Switcher
-                      GestureDetector(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          showDialog(
-                            context: context,
-                            builder: (ctx) => PocketLanguageSelectionDialog(
-                                currentLanguage: lang),
-                          ).then((_) {
-                            if (mounted) setState(() {});
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.9),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Row(
-                            children: [
-                              const Text('🌐', style: TextStyle(fontSize: 13)),
-                              const SizedBox(width: 4),
-                              Text(
-                                lang,
-                                style: GoogleFonts.outfit(
-                                  color: const Color(0xFF0F172A),
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-
-                      // Parental Gate
-                      IconButton(
-                        tooltip: 'Parent Zone',
-                        icon: const Icon(Icons.settings_suggest_rounded,
-                            color: Colors.white, size: 26),
-                        onPressed: () => _showParentalGate(context),
-                      ),
-                    ],
+                Text(
+                  'ADVENTURE BASE CAMP (DAY 1)',
+                  style: GoogleFonts.outfit(
+                    color: const Color(0xFF0F172A),
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
                   ),
                 ),
-
-                // 🏡 ACHIEVED HOMESTEAD / PLAYHOUSE BANNER
-                Container(
-                  margin:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.1),
-                        blurRadius: 14,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      // House Mascot
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          color: currentHouse.themeColor.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(currentHouse.emoji,
-                            style: const TextStyle(fontSize: 28)),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  currentHouse.title,
-                                  style: GoogleFonts.outfit(
-                                    color: const Color(0xFF0F172A),
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w900,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: currentHouse.themeColor,
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  child: Text(
-                                    'TIER ${currentHouse.tier}',
-                                    style: GoogleFonts.outfit(
-                                      color: Colors.white,
-                                      fontSize: 9.5,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              currentHouse.description,
-                              style: GoogleFonts.inter(
-                                color: Colors.black54,
-                                fontSize: 11.5,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      // Progress to next house
-                      Column(
-                        children: [
-                          Text(
-                            'Day $unlockedDay/100',
-                            style: GoogleFonts.outfit(
-                              color: currentHouse.themeColor,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 13,
-                            ),
-                          ),
-                          Text(
-                            'Level Up!',
-                            style: GoogleFonts.inter(
-                              color: Colors.black45,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 6),
-
-                // 🗺️ 100-DAY TARGET ADVENTURE MOUNTAIN MAP
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController,
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 16),
-                    itemCount: 100,
-                    itemBuilder: (context, index) {
-                      final dayNumber = index + 1;
-                      final isUnlocked = dayNumber <= unlockedDay;
-                      final isCurrent = dayNumber == unlockedDay;
-                      final starsEarned = completedDays[dayNumber] ?? 0;
-
-                      // Sine-wave offset for natural winding trail
-                      final double horizontalShift =
-                          math.sin(index * 0.7) * 75;
-
-                      return Column(
-                        children: [
-                          // Zone Milestone Header at zone boundaries
-                          if (dayNumber == 1)
-                            _buildZoneHeader('🎈 ZONE 1: ABC BALLOON VALLEY',
-                                'Learn letters, sounds & phonics (Days 1–15)'),
-                          if (dayNumber == 16)
-                            _buildZoneHeader('🐾 ZONE 2: ANIMAL SAFARI WORDS',
-                                'Explore animal names & jungle sounds (Days 16–30)'),
-                          if (dayNumber == 31)
-                            _buildZoneHeader('🎨 ZONE 3: COLORS & NUMBERS CASTLE',
-                                'Discover magical rainbow colors & counting (Days 31–45)'),
-                          if (dayNumber == 46)
-                            _buildZoneHeader('🍎 ZONE 4: YUMMY FOOD ORCHARD',
-                                'Delicious fruits, veggies & treats (Days 46–60)'),
-                          if (dayNumber == 61)
-                            _buildZoneHeader('⚽ ZONE 5: ACTION & PLAYGROUND',
-                                'Action verbs, sports & body parts (Days 61–75)'),
-                          if (dayNumber == 76)
-                            _buildZoneHeader('📖 ZONE 6: MAGICAL STORY PEAK',
-                                'Champion mini-dialogues & sentences (Days 76–100)'),
-
-                          // Winding connector stepping trail dots
-                          if (dayNumber > 1)
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Transform.translate(
-                                    offset: Offset(horizontalShift * 0.5, 0),
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                          width: 6,
-                                          height: 6,
-                                          decoration: BoxDecoration(
-                                            color: isUnlocked
-                                                ? const Color(0xFFFFD700)
-                                                : Colors.white30,
-                                            shape: BoxShape.circle,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Container(
-                                          width: 6,
-                                          height: 6,
-                                          decoration: BoxDecoration(
-                                            color: isUnlocked
-                                                ? const Color(0xFFFFD700)
-                                                : Colors.white30,
-                                            shape: BoxShape.circle,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                          // Target Day Node
-                          Transform.translate(
-                            offset: Offset(horizontalShift, 0),
-                            child: Center(
-                              child: GestureDetector(
-                                onTap: () => _onTapDayNode(dayNumber),
-                                child: isCurrent
-                                    ? AnimatedBuilder(
-                                        animation: _bounceController,
-                                        builder: (context, child) {
-                                          final bounce = math.sin(
-                                                  _bounceController.value *
-                                                      math.pi) *
-                                              6;
-                                          return Transform.translate(
-                                            offset: Offset(0, -bounce),
-                                            child: child,
-                                          );
-                                        },
-                                        child: _buildDayNodeWidget(
-                                          dayNumber: dayNumber,
-                                          isUnlocked: true,
-                                          isCurrent: true,
-                                          stars: starsEarned,
-                                        ),
-                                      )
-                                    : _buildDayNodeWidget(
-                                        dayNumber: dayNumber,
-                                        isUnlocked: isUnlocked,
-                                        isCurrent: false,
-                                        stars: starsEarned,
-                                      ),
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: 8),
-                        ],
-                      );
-                    },
+                Text(
+                  'Your 100-Day English Game Journey starts here! Tap Day 1 to begin!',
+                  style: GoogleFonts.inter(
+                    color: Colors.black54,
+                    fontSize: 11,
                   ),
                 ),
               ],
@@ -635,115 +594,246 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     );
   }
 
-  Widget _buildZoneHeader(String title, String subtitle) {
-    return Container(
-      width: double.infinity,
-      margin: const EdgeInsets.symmetric(vertical: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.85),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: GoogleFonts.outfit(
-              color: const Color(0xFFFFD700),
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 0.8,
+  // --- Milestone Playhouses placed on the trail ---
+  List<Widget> _buildMilestonePlayhouses(double screenWidth, int unlockedDay) {
+    final houses = [
+      {'day': 1, 'emoji': '🌳', 'title': 'Rainbow Treehouse', 'tier': 'Tier 1'},
+      {'day': 16, 'emoji': '🍭', 'title': 'Candy Cottage', 'tier': 'Tier 2'},
+      {'day': 31, 'emoji': '🦖', 'title': 'Dino Den Cave', 'tier': 'Tier 3'},
+      {'day': 51, 'emoji': '🏰', 'title': 'Cloud Sky Castle', 'tier': 'Tier 4'},
+      {'day': 76, 'emoji': '👑', 'title': 'Crystal Star Palace', 'tier': 'Tier 5'},
+    ];
+
+    return houses.map((h) {
+      final day = h['day'] as int;
+      final y = _getNodeY(day) - 60;
+      final x = _getNodeX(day, screenWidth);
+      final isRightSide = x < screenWidth / 2;
+      final isUnlocked = unlockedDay >= day;
+
+      return Positioned(
+        top: y,
+        left: isRightSide ? x + 56 : null,
+        right: !isRightSide ? (screenWidth - x) + 56 : null,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isUnlocked ? Colors.white : Colors.white.withValues(alpha: 0.75),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isUnlocked ? const Color(0xFFFFD700) : Colors.white54,
+              width: 2,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            subtitle,
-            style: GoogleFonts.inter(
-              color: Colors.white70,
-              fontSize: 11,
-            ),
-            textAlign: TextAlign.center,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(h['emoji'] as String, style: const TextStyle(fontSize: 22)),
+              const SizedBox(width: 6),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    h['title'] as String,
+                    style: GoogleFonts.outfit(
+                      color: const Color(0xFF0F172A),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    isUnlocked ? 'Unlocked! 🏡' : 'Unlocks Day $day 🔒',
+                    style: GoogleFonts.inter(
+                      color: isUnlocked ? const Color(0xFF10B981) : Colors.black45,
+                      fontSize: 9.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-        ],
-      ),
-    );
+        ),
+      );
+    }).toList();
   }
 
-  Widget _buildDayNodeWidget({
+  // --- Zone Milestone Banners across Mountain Passes ---
+  List<Widget> _buildZoneMilestonePasses(double screenWidth) {
+    final zones = [
+      {'day': 15, 'title': '🎈 ABC VALLEY ➔ ANIMAL SAFARI PASS', 'color': Color(0xFF0284C7)},
+      {'day': 30, 'title': '🦁 SAFARI ➔ CANDY KINGDOM PASS', 'color': Color(0xFF10B981)},
+      {'day': 50, 'title': '🍭 CANDY ➔ NUMBER STAR GROVE', 'color': Color(0xFFEC4899)},
+      {'day': 70, 'title': '⭐ NUMBERS ➔ ACTION PLAYGROUND', 'color': Color(0xFFF59E0B)},
+      {'day': 85, 'title': '🚀 PLAYGROUND ➔ SUMMIT PEAK', 'color': Color(0xFF8B5CF6)},
+    ];
+
+    return zones.map((z) {
+      final day = z['day'] as int;
+      final y = _getNodeY(day) - 95;
+
+      return Positioned(
+        top: y,
+        left: 28,
+        right: 28,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+          decoration: BoxDecoration(
+            color: (z['color'] as Color).withValues(alpha: 0.9),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white, width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.15),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            z['title'] as String,
+            style: GoogleFonts.outfit(
+              color: Colors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+      );
+    }).toList();
+  }
+
+  // --- Day Stepping Stone Node Widget ---
+  Widget _buildDayNode({
     required int dayNumber,
     required bool isUnlocked,
     required bool isCurrent,
     required int stars,
+    required String kidAvatar,
   }) {
     if (isCurrent) {
-      // Current active pulsing node
-      return Container(
-        width: 82,
-        height: 82,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 3.5),
-          boxShadow: [
-            BoxShadow(
-              color: const Color(0xFFFFD700).withValues(alpha: 0.6),
-              blurRadius: 20,
-              spreadRadius: 3,
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'DAY $dayNumber',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF0F172A),
-                fontSize: 12,
-                fontWeight: FontWeight.w900,
+      // Current Active Stepping Stone with Character Avatar
+      return AnimatedBuilder(
+        animation: _bounceController,
+        builder: (context, child) {
+          final bounce = math.sin(_bounceController.value * math.pi) * 8.0;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Bouncing Speech Bubble
+              Transform.translate(
+                offset: Offset(0, -bounce * 0.5),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.15),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'TAP TO PLAY! 🎮',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFF0F172A),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 10.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            ),
-            const Icon(Icons.play_arrow_rounded,
-                color: Color(0xFF0F172A), size: 28),
-            Text(
-              'PLAY',
-              style: GoogleFonts.outfit(
-                color: const Color(0xFF0F172A),
-                fontSize: 10,
-                fontWeight: FontWeight.w900,
+
+              const SizedBox(height: 3),
+
+              // Bouncing Kid Mascot Character
+              Transform.translate(
+                offset: Offset(0, -bounce),
+                child: Text(kidAvatar, style: const TextStyle(fontSize: 34)),
               ),
-            ),
-          ],
-        ),
+
+              const SizedBox(height: 3),
+
+              // Glowing Stepping Stone
+              Container(
+                width: 78,
+                height: 78,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 3.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withValues(alpha: 0.65),
+                      blurRadius: 22,
+                      spreadRadius: 3,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'DAY $dayNumber',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF78350F),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.play_arrow_rounded,
+                      color: Color(0xFF78350F),
+                      size: 26,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       );
     }
 
     if (isUnlocked) {
-      // Completed node with stars
+      // Completed Stepping Stone with Stars
       return Container(
-        width: 68,
-        height: 68,
+        width: 66,
+        height: 66,
         decoration: BoxDecoration(
-          color: const Color(0xFF10B981),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF34D399), Color(0xFF10B981)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           shape: BoxShape.circle,
           border: Border.all(color: Colors.white, width: 3),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF10B981).withValues(alpha: 0.4),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: const Color(0xFF10B981).withValues(alpha: 0.35),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
@@ -754,7 +844,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               '$dayNumber',
               style: GoogleFonts.outfit(
                 color: Colors.white,
-                fontSize: 18,
+                fontSize: 17,
                 fontWeight: FontWeight.w900,
               ),
             ),
@@ -762,15 +852,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
                 3,
-                (i) => Text(
-                  '⭐',
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: i < (stars > 0 ? stars : 3)
-                        ? const Color(0xFFFFD700)
-                        : Colors.white30,
-                  ),
-                ),
+                (i) => const Text('⭐', style: TextStyle(fontSize: 8)),
               ),
             ),
           ],
@@ -778,30 +860,162 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
       );
     }
 
-    // Locked future node
+    // Locked Stepping Stone
     return Container(
-      width: 62,
-      height: 62,
+      width: 58,
+      height: 58,
       decoration: BoxDecoration(
-        color: const Color(0xFF1E293B).withValues(alpha: 0.75),
+        color: Colors.white.withValues(alpha: 0.3),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white24, width: 2),
+        border: Border.all(color: Colors.white54, width: 2),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.lock_rounded, color: Colors.white38, size: 18),
-          const SizedBox(height: 2),
+          const Icon(Icons.lock_rounded, color: Colors.white, size: 16),
           Text(
             '$dayNumber',
             style: GoogleFonts.outfit(
-              color: Colors.white38,
-              fontSize: 13,
+              color: Colors.white,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
             ),
           ),
         ],
       ),
     );
+  }
+}
+
+/// 🎨 CustomPainter for the Ascending Cartoon Mountain Trail
+class _KidsAdventureMountainRoadPainter extends CustomPainter {
+  final int totalDays;
+  final int unlockedDay;
+  final double nodeSpacingY;
+  final double topPadding;
+  final double bottomPadding;
+  final double screenWidth;
+
+  _KidsAdventureMountainRoadPainter({
+    required this.totalDays,
+    required this.unlockedDay,
+    required this.nodeSpacingY,
+    required this.topPadding,
+    required this.bottomPadding,
+    required this.screenWidth,
+  });
+
+  double _getNodeY(int day) {
+    final int daysFromTop = totalDays - day;
+    return topPadding + (daysFromTop * nodeSpacingY);
+  }
+
+  double _getNodeX(int day) {
+    final center = screenWidth / 2;
+    final maxAmp = ((screenWidth - 140) / 2).clamp(42.0, 110.0);
+    final wave = math.sin(day * 0.52) * maxAmp;
+    return center + wave;
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // 1. Draw Biome Gradients (Inverted: Meadow at bottom, Cosmic Summit at top)
+    final bgRect = Rect.fromLTWH(0, 0, size.width, size.height);
+    final bgPaint = Paint()
+      ..shader = const LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [
+          Color(0xFF311042), // Top: Cosmic Star Summit (Day 100)
+          Color(0xFF4C1D95), // High Sky Realm
+          Color(0xFF38BDF8), // Sunny Cloud Kingdom
+          Color(0xFFF472B6), // Candy Hills
+          Color(0xFFFBBF24), // Safari Savannah
+          Color(0xFF4ADE80), // Lush Green Meadow Base (Day 1)
+        ],
+        stops: [0.0, 0.18, 0.38, 0.58, 0.78, 1.0],
+      ).createShader(bgRect);
+    canvas.drawRect(bgRect, bgPaint);
+
+    // 2. Draw Decorative Clouds & Stars
+    _paintEnvironmentDecorations(canvas, size);
+
+    // 3. Draw S-Curve Stepping Stone Road Climbing Upwards
+    _paintCobblestoneRoad(canvas);
+  }
+
+  void _paintEnvironmentDecorations(Canvas canvas, Size size) {
+    final cloudPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.18)
+      ..style = PaintingStyle.fill;
+
+    for (int day = 3; day <= totalDays; day += 5) {
+      final cy = _getNodeY(day);
+      final cx = (day * 83.0) % (size.width - 100.0) + 50.0;
+      canvas.drawCircle(Offset(cx, cy), 22, cloudPaint);
+      canvas.drawCircle(Offset(cx + 18, cy - 6), 26, cloudPaint);
+      canvas.drawCircle(Offset(cx + 34, cy), 20, cloudPaint);
+    }
+  }
+
+  void _paintCobblestoneRoad(Canvas canvas) {
+    // Background Road Ribbon (Thick friendly cartoon contour)
+    final outerPath = Path();
+    outerPath.moveTo(_getNodeX(1), _getNodeY(1));
+
+    for (int day = 2; day <= totalDays; day++) {
+      final prevX = _getNodeX(day - 1);
+      final prevY = _getNodeY(day - 1);
+      final curX = _getNodeX(day);
+      final curY = _getNodeY(day);
+      final midY = (prevY + curY) / 2;
+
+      outerPath.cubicTo(prevX, midY, curX, midY, curX, curY);
+    }
+
+    final roadBorderPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.35)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 24
+      ..strokeCap = StrokeCap.round;
+
+    final roadInnerPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.85)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 12
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawPath(outerPath, roadBorderPaint);
+    canvas.drawPath(outerPath, roadInnerPaint);
+
+    // Completed Golden Progress Ribbon
+    if (unlockedDay > 1) {
+      final completedPath = Path();
+      completedPath.moveTo(_getNodeX(1), _getNodeY(1));
+
+      for (int day = 2; day <= unlockedDay; day++) {
+        final prevX = _getNodeX(day - 1);
+        final prevY = _getNodeY(day - 1);
+        final curX = _getNodeX(day);
+        final curY = _getNodeY(day);
+        final midY = (prevY + curY) / 2;
+
+        completedPath.cubicTo(prevX, midY, curX, midY, curX, curY);
+      }
+
+      final goldenProgressPaint = Paint()
+        ..color = const Color(0xFFFFD700)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 12
+        ..strokeCap = StrokeCap.round;
+
+      canvas.drawPath(completedPath, goldenProgressPaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _KidsAdventureMountainRoadPainter oldDelegate) {
+    return oldDelegate.unlockedDay != unlockedDay ||
+        oldDelegate.screenWidth != screenWidth;
   }
 }

@@ -209,21 +209,191 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
           ),
         );
       }
-    } else {
-      // 🍎 Colors & Yummy Orchard
-      final items = [
-        ['Red', 'Strawberry', '🍓'],
-        ['Blue', 'Blueberry', '🫐'],
-        ['Yellow', 'Banana', '🍌'],
-        ['Green', 'Apple', '🍏'],
-        ['Orange', 'Orange', '🍊'],
-        ['Purple', 'Grape', '🍇'],
+    } else if (widget.day <= 45) {
+      // 🎨 Rainbow Colors & Shapes (Days 31–45)
+      final colorsList = [
+        ['Red', 'Ruby Apple', '🍎'],
+        ['Blue', 'Ocean Wave', '🌊'],
+        ['Yellow', 'Warm Sun', '☀️'],
+        ['Green', 'Lucky Clover', '🍀'],
+        ['Purple', 'Sweet Grape', '🍇'],
+        ['Orange', 'Fresh Carrot', '🥕'],
+        ['Pink', 'Spring Flower', '🌸'],
+        ['Star', 'Twinkle Star', '⭐'],
       ];
-      final target = items[roundIndex % items.length];
+      final target = colorsList[roundIndex % colorsList.length];
       _targetLetter = target[0];
-      _targetPrompt = 'Tap the ${target[0]} item! 🎈';
+      _targetPrompt = 'Find the ${target[0]}! ${target[2]}';
 
-      final pool = List<List<String>>.from(items)..shuffle();
+      final pool = List<List<String>>.from(colorsList)..shuffle();
+      pool.removeWhere((item) => item[0] == _targetLetter);
+      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
+
+      final positions = [
+        const Offset(0.24, 0.30),
+        const Offset(0.74, 0.28),
+        const Offset(0.28, 0.65),
+        const Offset(0.72, 0.66),
+      ];
+
+      for (int i = 0; i < roundItems.length; i++) {
+        final it = roundItems[i];
+        final pos = positions[i];
+        _balloons.add(
+          _BalloonItem(
+            id: 'b_${it[0]}_$i',
+            label: it[0],
+            subtitle: it[1],
+            emoji: it[2],
+            color: _balloonColors[rand.nextInt(_balloonColors.length)],
+            x: pos.dx,
+            y: pos.dy,
+          ),
+        );
+      }
+    } else if (widget.day <= 60) {
+      // 🔢 Number Star Jump (Days 46–60)
+      final numbersList = [
+        ['1', 'One Little Star', '⭐'],
+        ['2', 'Two Cute Kittens', '🐱'],
+        ['3', 'Three Magic Gems', '💎'],
+        ['4', 'Four Red Apples', '🍎'],
+        ['5', 'Five Gold Coins', '🪙'],
+        ['6', 'Six Sweet Cherries', '🍒'],
+        ['7', 'Seven Rainbows', '🌈'],
+        ['8', 'Eight Big Balloons', '🎈'],
+        ['9', 'Nine Flying Birds', '🕊️'],
+        ['10', 'Ten Bright Suns', '☀️'],
+      ];
+      final target = numbersList[roundIndex % numbersList.length];
+      _targetLetter = target[0];
+      _targetPrompt = 'Pop number $_targetLetter! ${target[2]}';
+
+      final pool = List<List<String>>.from(numbersList)..shuffle();
+      pool.removeWhere((item) => item[0] == _targetLetter);
+      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
+
+      final positions = [
+        const Offset(0.24, 0.30),
+        const Offset(0.74, 0.28),
+        const Offset(0.28, 0.65),
+        const Offset(0.72, 0.66),
+      ];
+
+      for (int i = 0; i < roundItems.length; i++) {
+        final it = roundItems[i];
+        final pos = positions[i];
+        _balloons.add(
+          _BalloonItem(
+            id: 'b_${it[0]}_$i',
+            label: it[0],
+            subtitle: it[1],
+            emoji: it[2],
+            color: _balloonColors[rand.nextInt(_balloonColors.length)],
+            x: pos.dx,
+            y: pos.dy,
+          ),
+        );
+      }
+    } else if (widget.day <= 75) {
+      // 🐱 Magic 3-Letter Spelling Words (Days 61–75)
+      final spellingList = [
+        ['CAT', 'Meow Cat', '🐱'],
+        ['DOG', 'Puppy Dog', '🐶'],
+        ['SUN', 'Golden Sun', '☀️'],
+        ['FOX', 'Clever Fox', '🦊'],
+        ['PIG', 'Little Pig', '🐷'],
+        ['BAT', 'Night Bat', '🦇'],
+        ['BUS', 'Yellow Bus', '🚌'],
+        ['CUP', 'Hot Cocoa Cup', '☕'],
+        ['HAT', 'Magic Hat', '🎩'],
+      ];
+      final target = spellingList[roundIndex % spellingList.length];
+      _targetLetter = target[0];
+      _targetPrompt = 'Spell and pop ${target[0]}! ${target[2]}';
+
+      final pool = List<List<String>>.from(spellingList)..shuffle();
+      pool.removeWhere((item) => item[0] == _targetLetter);
+      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
+
+      final positions = [
+        const Offset(0.24, 0.30),
+        const Offset(0.74, 0.28),
+        const Offset(0.28, 0.65),
+        const Offset(0.72, 0.66),
+      ];
+
+      for (int i = 0; i < roundItems.length; i++) {
+        final it = roundItems[i];
+        final pos = positions[i];
+        _balloons.add(
+          _BalloonItem(
+            id: 'b_${it[0]}_$i',
+            label: it[0],
+            subtitle: it[1],
+            emoji: it[2],
+            color: _balloonColors[rand.nextInt(_balloonColors.length)],
+            x: pos.dx,
+            y: pos.dy,
+          ),
+        );
+      }
+    } else if (widget.day <= 90) {
+      // 🏃 Action Verbs & Playground Moves (Days 76–90)
+      final actionList = [
+        ['JUMP', 'Jump high!', '🦘'],
+        ['RUN', 'Run fast!', '🐆'],
+        ['FLY', 'Fly like a bird!', '🦅'],
+        ['SWIM', 'Swim in the sea!', '🐬'],
+        ['SING', 'Sing a song!', '🎤'],
+        ['DANCE', 'Dance with joy!', '💃'],
+        ['CLAP', 'Clap your hands!', '👏'],
+      ];
+      final target = actionList[roundIndex % actionList.length];
+      _targetLetter = target[0];
+      _targetPrompt = 'Find the action: ${target[0]}! ${target[2]}';
+
+      final pool = List<List<String>>.from(actionList)..shuffle();
+      pool.removeWhere((item) => item[0] == _targetLetter);
+      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
+
+      final positions = [
+        const Offset(0.24, 0.30),
+        const Offset(0.74, 0.28),
+        const Offset(0.28, 0.65),
+        const Offset(0.72, 0.66),
+      ];
+
+      for (int i = 0; i < roundItems.length; i++) {
+        final it = roundItems[i];
+        final pos = positions[i];
+        _balloons.add(
+          _BalloonItem(
+            id: 'b_${it[0]}_$i',
+            label: it[0],
+            subtitle: it[1],
+            emoji: it[2],
+            color: _balloonColors[rand.nextInt(_balloonColors.length)],
+            x: pos.dx,
+            y: pos.dy,
+          ),
+        );
+      }
+    } else {
+      // 👑 Grand Castle Summit Champions (Days 91–100)
+      final championList = [
+        ['KING', 'Summit King', '👑'],
+        ['HERO', 'Super Hero', '🦸'],
+        ['STAR', 'Star Champion', '⭐'],
+        ['MAGIC', 'Magic Wand', '🪄'],
+        ['CASTLE', 'Golden Palace', '🏰'],
+        ['CROWN', 'Royal Crown', '🤴'],
+      ];
+      final target = championList[roundIndex % championList.length];
+      _targetLetter = target[0];
+      _targetPrompt = 'Champion Round: Pop ${target[0]}! ${target[2]}';
+
+      final pool = List<List<String>>.from(championList)..shuffle();
       pool.removeWhere((item) => item[0] == _targetLetter);
       final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
 
