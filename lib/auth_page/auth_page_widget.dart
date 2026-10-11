@@ -59,5 +59,3 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
     return const WelcomeOnboardingPage();
   }
 }
-
-}
