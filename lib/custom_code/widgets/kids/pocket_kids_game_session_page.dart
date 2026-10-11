@@ -140,7 +140,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
 
       final pair = letters[roundIndex % letters.length];
       _targetLetter = pair[0];
-      _targetPrompt = 'Pop the letter $_targetLetter! 🎈';
+      _targetPrompt =
+          'Help your buddy find letter $_targetLetter! Say: "${pair[0]} is for ${pair[1]}!" 🎈';
 
       // Pick target + 3 distractors
       final pool = List<List<String>>.from(letters)..shuffle();
@@ -181,7 +182,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       ];
       final target = animals[roundIndex % animals.length];
       _targetLetter = target[0];
-      _targetPrompt = 'Find the ${target[0]}! ${target[2]}';
+      _targetPrompt =
+          'Help the safari buddy find ${target[0]}! Say: "Hello ${target[0]}!" ${target[2]}';
 
       final pool = List<List<String>>.from(animals)..shuffle();
       pool.removeWhere((item) => item[0] == _targetLetter);
@@ -223,7 +225,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       ];
       final target = colorsList[roundIndex % colorsList.length];
       _targetLetter = target[0];
-      _targetPrompt = 'Find the ${target[0]}! ${target[2]}';
+      _targetPrompt =
+          'Help your friend pick the ${target[0]}! Say: "Here is ${target[1]}!" ${target[2]}';
 
       final pool = List<List<String>>.from(colorsList)..shuffle();
       pool.removeWhere((item) => item[0] == _targetLetter);
@@ -267,7 +270,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       ];
       final target = numbersList[roundIndex % numbersList.length];
       _targetLetter = target[0];
-      _targetPrompt = 'Pop number $_targetLetter! ${target[2]}';
+      _targetPrompt =
+          'Let us count with our mates! Pop number $_targetLetter! ${target[2]}';
 
       final pool = List<List<String>>.from(numbersList)..shuffle();
       pool.removeWhere((item) => item[0] == _targetLetter);
@@ -310,7 +314,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       ];
       final target = spellingList[roundIndex % spellingList.length];
       _targetLetter = target[0];
-      _targetPrompt = 'Spell and pop ${target[0]}! ${target[2]}';
+      _targetPrompt =
+          'Help spell the word ${target[0]}! Say: "${target[1]}!" ${target[2]}';
 
       final pool = List<List<String>>.from(spellingList)..shuffle();
       pool.removeWhere((item) => item[0] == _targetLetter);
@@ -351,7 +356,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       ];
       final target = actionList[roundIndex % actionList.length];
       _targetLetter = target[0];
-      _targetPrompt = 'Find the action: ${target[0]}! ${target[2]}';
+      _targetPrompt =
+          'Show your mate how to ${target[0]}! Say: "Let us ${target[0]} together!" ${target[2]}';
 
       final pool = List<List<String>>.from(actionList)..shuffle();
       pool.removeWhere((item) => item[0] == _targetLetter);
@@ -391,7 +397,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       ];
       final target = championList[roundIndex % championList.length];
       _targetLetter = target[0];
-      _targetPrompt = 'Champion Round: Pop ${target[0]}! ${target[2]}';
+      _targetPrompt =
+          'Champion mates together! Say: "I am a ${target[0]}!" ${target[2]}';
 
       final pool = List<List<String>>.from(championList)..shuffle();
       pool.removeWhere((item) => item[0] == _targetLetter);
@@ -435,7 +442,8 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
       _spawnParticles(balloon.x, balloon.y, balloon.color);
       _starsEarned++;
 
-      final successWord = '${balloon.label} is for ${balloon.subtitle}! ${balloon.emoji}';
+      final successWord =
+          'Awesome speaking! You are so kind and helpful! ${balloon.label} is for ${balloon.subtitle}! ${balloon.emoji}';
       _speak(successWord);
 
       setState(() {});
@@ -451,7 +459,7 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
     } else {
       // Gentle wobble & audio reminder
       HapticFeedback.lightImpact();
-      _speak('Oops! Try finding $_targetLetter!');
+      _speak('Almost! Let us help find $_targetLetter together!');
     }
   }
 

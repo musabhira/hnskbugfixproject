@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 
-/// 🏡 Kids House / Homestead Model
+/// 🏡 Kids House / Homestead Model matching the Adult Avatar Homes
 class KidsHouse {
   final int tier;
   final String title;
@@ -22,8 +22,60 @@ class KidsHouse {
   });
 }
 
+/// 🤝 Model for Kid Mates & Adventure Friends
+class KidMate {
+  final String id;
+  final String name;
+  final String avatar; // 🦁, 🐼, 🦊, 🦄, 🐰, 🦖
+  final String ageGroup;
+  final int dayLevel;
+  final int stars;
+  final bool isFriend;
+
+  const KidMate({
+    required this.id,
+    required this.name,
+    required this.avatar,
+    required this.ageGroup,
+    required this.dayLevel,
+    required this.stars,
+    this.isFriend = false,
+  });
+
+  KidMate copyWith({bool? isFriend}) {
+    return KidMate(
+      id: id,
+      name: name,
+      avatar: avatar,
+      ageGroup: ageGroup,
+      dayLevel: dayLevel,
+      stars: stars,
+      isFriend: isFriend ?? this.isFriend,
+    );
+  }
+}
+
+/// 🛡️ Automated Spoken English Defense Challenge for Kids Houses
+class KidDefenseChallenge {
+  final String prompt;
+  final String spokenText;
+  final String helperMascot;
+  final List<String> options;
+  final int correctIndex;
+  final String cheerMessage;
+
+  const KidDefenseChallenge({
+    required this.prompt,
+    required this.spokenText,
+    required this.helperMascot,
+    required this.options,
+    required this.correctIndex,
+    required this.cheerMessage,
+  });
+}
+
 /// 🧸 Service for managing Kids vs Adult account separation,
-/// Kids profile state, 100-Day learning journey, and parental safety gates.
+/// Kids profile state, 100-Day learning journey, Avatar Homes, and Kids Mates.
 class PocketKidsService {
   static const String _keyIsKidAccount = 'pm_is_kid_account';
   static const String _keyKidName = 'pm_kid_name';
@@ -32,6 +84,7 @@ class PocketKidsService {
   static const String _keyKidStars = 'pm_kid_stars';
   static const String _keyKidCurrentDay = 'pm_kid_current_day';
   static const String _keyKidCompletedDays = 'pm_kid_completed_days';
+  static const String _keyKidFriendIds = 'pm_kid_friend_ids';
 
   static final ValueNotifier<bool> isKidAccountNotifier = ValueNotifier<bool>(false);
   static final ValueNotifier<int> kidStarsNotifier = ValueNotifier<int>(0);
@@ -45,6 +98,7 @@ class PocketKidsService {
   static int _kidStars = 0;
   static int _currentUnlockedDay = 1;
   static final Map<int, int> _completedDays = {}; // day -> stars earned (1-3)
+  static final Set<String> _friendIds = {};
 
   static bool get isKidAccount => _isKidAccount;
   static String get kidName => _kidName;
@@ -54,46 +108,54 @@ class PocketKidsService {
   static int get currentUnlockedDay => _currentUnlockedDay;
   static Map<int, int> get completedDays => Map.unmodifiable(_completedDays);
 
-  /// 🏰 Milestone Achievable Houses for Kids
+  /// 🏰 Exact Avatar Houses matching the Adult 100-Day House System
   static const List<KidsHouse> houses = [
     KidsHouse(
       tier: 1,
-      title: 'Rainbow Treehouse',
-      emoji: '🌳',
-      description: 'Cozy wooden treehouse nestled high in ABC Valley!',
+      title: 'Wooden Cabin',
+      emoji: '🌱',
+      description: 'Cozy wooden cabin nestled in the green meadow!',
       unlockedAtDay: 1,
       themeColor: Color(0xFF10B981),
     ),
     KidsHouse(
       tier: 2,
-      title: 'Candy Cottage',
-      emoji: '🍭',
-      description: 'Sweet gingerbread cottage made of sugary treats!',
-      unlockedAtDay: 16,
-      themeColor: Color(0xFFF43F5E),
+      title: 'Brick Villa',
+      emoji: '🏡',
+      description: 'Sturdy red brick villa with garden flowers!',
+      unlockedAtDay: 8,
+      themeColor: Color(0xFF38BDF8),
     ),
     KidsHouse(
       tier: 3,
-      title: 'Dino Safari Den',
-      emoji: '🦖',
-      description: 'Prehistoric cave filled with friendly dinosaurs!',
-      unlockedAtDay: 31,
-      themeColor: Color(0xFFF59E0B),
+      title: 'Stone Fortress',
+      emoji: '🏰',
+      description: 'Mighty stone fortress with knight watchtowers!',
+      unlockedAtDay: 21,
+      themeColor: Color(0xFFA855F7),
     ),
     KidsHouse(
       tier: 4,
-      title: 'Magic Sky Castle',
-      emoji: '🏰',
-      description: 'Majestic fortress floating above cloud kingdom!',
-      unlockedAtDay: 51,
-      themeColor: Color(0xFF6366F1),
+      title: 'Imperial Manor',
+      emoji: '🏛️',
+      description: 'Grand royal manor with golden pillars and marble!',
+      unlockedAtDay: 46,
+      themeColor: Color(0xFFF59E0B),
     ),
     KidsHouse(
       tier: 5,
-      title: 'Crystal Star Palace',
+      title: 'Cyber Citadel',
+      emoji: '💎',
+      description: 'Futuristic crystal citadel shining with neon stars!',
+      unlockedAtDay: 71,
+      themeColor: Color(0xFFEC4899),
+    ),
+    KidsHouse(
+      tier: 6,
+      title: 'Sovereign Palace',
       emoji: '👑',
-      description: 'Grand champion palace shining across the universe!',
-      unlockedAtDay: 76,
+      description: 'Supreme 100-Day Champion Palace of the World!',
+      unlockedAtDay: 90,
       themeColor: Color(0xFFFFD700),
     ),
   ];
@@ -108,6 +170,17 @@ class PocketKidsService {
     KidsHouse achieved = houses.first;
     for (final h in houses) {
       if (effectiveDay >= h.unlockedAtDay) {
+        achieved = h;
+      }
+    }
+    return achieved;
+  }
+
+  /// Get house for any specific day level
+  static KidsHouse getHouseForDay(int day) {
+    KidsHouse achieved = houses.first;
+    for (final h in houses) {
+      if (day >= h.unlockedAtDay) {
         achieved = h;
       }
     }
@@ -149,6 +222,12 @@ class PocketKidsService {
         } catch (_) {}
       }
 
+      final savedFriends = prefs.getStringList(_keyKidFriendIds);
+      if (savedFriends != null) {
+        _friendIds.clear();
+        _friendIds.addAll(savedFriends);
+      }
+
       isKidAccountNotifier.value = _isKidAccount;
       kidStarsNotifier.value = _kidStars;
       kidDayNotifier.value = _currentUnlockedDay;
@@ -177,7 +256,6 @@ class PocketKidsService {
       await prefs.setString(_keyKidAgeGroup, _kidAgeGroup);
       await prefs.setString(_keyKidAvatar, _kidAvatar);
 
-      // Also persist to Supabase user metadata if logged in
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {
         await prefs.setBool('is_kid_account_${user.id}', true);
@@ -242,21 +320,247 @@ class PocketKidsService {
     } catch (_) {}
   }
 
-  /// Reset or update progress (for testing or profile editing)
-  static Future<void> updateKidProfile({
-    String? name,
-    String? ageGroup,
-    String? avatar,
-  }) async {
-    if (name != null) _kidName = name;
-    if (ageGroup != null) _kidAgeGroup = ageGroup;
-    if (avatar != null) _kidAvatar = avatar;
+  // --- KIDS MATES (PEER FRIENDS) SYSTEM ---
 
+  static final List<KidMate> _defaultKidMates = [
+    const KidMate(
+      id: 'kid_1',
+      name: 'Leo Cub',
+      avatar: '🦁',
+      ageGroup: '6-8',
+      dayLevel: 24,
+      stars: 72,
+    ),
+    const KidMate(
+      id: 'kid_2',
+      name: 'Pandy Panda',
+      avatar: '🐼',
+      ageGroup: '4-6',
+      dayLevel: 15,
+      stars: 45,
+    ),
+    const KidMate(
+      id: 'kid_3',
+      name: 'Finny Fox',
+      avatar: '🦊',
+      ageGroup: '6-8',
+      dayLevel: 38,
+      stars: 114,
+    ),
+    const KidMate(
+      id: 'kid_4',
+      name: 'Sparkle Unicorn',
+      avatar: '🦄',
+      ageGroup: '6-8',
+      dayLevel: 52,
+      stars: 156,
+    ),
+    const KidMate(
+      id: 'kid_5',
+      name: 'Bouncy Bunny',
+      avatar: '🐰',
+      ageGroup: '4-6',
+      dayLevel: 9,
+      stars: 27,
+    ),
+    const KidMate(
+      id: 'kid_6',
+      name: 'Dino Rex',
+      avatar: '🦖',
+      ageGroup: '9-12',
+      dayLevel: 75,
+      stars: 225,
+    ),
+    const KidMate(
+      id: 'kid_7',
+      name: 'Tigger Brave',
+      avatar: '🐯',
+      ageGroup: '6-8',
+      dayLevel: 42,
+      stars: 126,
+    ),
+    const KidMate(
+      id: 'kid_8',
+      name: 'Bella Bear',
+      avatar: '🐻',
+      ageGroup: '4-6',
+      dayLevel: 6,
+      stars: 18,
+    ),
+    const KidMate(
+      id: 'kid_9',
+      name: 'Nova Champion',
+      avatar: '⭐',
+      ageGroup: '9-12',
+      dayLevel: 94,
+      stars: 282,
+    ),
+  ];
+
+  /// Get the list of kid mates with friendship status applied
+  static List<KidMate> getKidMates({String query = ''}) {
+    final list = _defaultKidMates.map((m) {
+      return m.copyWith(isFriend: _friendIds.contains(m.id));
+    }).toList();
+
+    if (query.trim().isEmpty) return list;
+    final q = query.trim().toLowerCase();
+    return list.where((m) => m.name.toLowerCase().contains(q)).toList();
+  }
+
+  /// Toggle mate / friend status
+  static Future<void> toggleMate(String mateId) async {
+    if (_friendIds.contains(mateId)) {
+      _friendIds.remove(mateId);
+    } else {
+      _friendIds.add(mateId);
+    }
     try {
       final prefs = await SharedPreferences.getInstance();
-      if (name != null) await prefs.setString(_keyKidName, _kidName);
-      if (ageGroup != null) await prefs.setString(_keyKidAgeGroup, _kidAgeGroup);
-      if (avatar != null) await prefs.setString(_keyKidAvatar, _kidAvatar);
+      await prefs.setStringList(_keyKidFriendIds, _friendIds.toList());
     } catch (_) {}
+  }
+
+  // --- AUTOMATED SPOKEN ENGLISH DEFENSE CHALLENGES (Helping Mentality) ---
+
+  /// Returns 3 automated Spoken English defense challenges for any kid's level.
+  /// Kids do NOT need to write manual questions! They are populated systematically!
+  static List<KidDefenseChallenge> getDefenseChallengesForDay(int day) {
+    if (day <= 15) {
+      return const [
+        KidDefenseChallenge(
+          prompt: "Your friend says: 'Good morning!' How do you reply with kindness?",
+          spokenText: "Good morning! How do you reply with kindness?",
+          helperMascot: "☀️",
+          options: ["Good morning! ☀️", "Good night 🌙", "Goodbye 👋", "No thanks 🙅"],
+          correctIndex: 0,
+          cheerMessage: "Super! A warm morning greeting makes everyone happy!",
+        ),
+        KidDefenseChallenge(
+          prompt: "Help the puppy find its sound! What does a friendly dog say?",
+          spokenText: "Help the puppy find its sound! What does a friendly dog say?",
+          helperMascot: "🐶",
+          options: ["Woof Woof! 🐶", "Meow 🐱", "Quack 🦆", "Moo 🐮"],
+          correctIndex: 0,
+          cheerMessage: "Woof woof! Puppy is wagging its tail with joy!",
+        ),
+        KidDefenseChallenge(
+          prompt: "Someone shared a delicious cookie with you. What do you say?",
+          spokenText: "Someone shared a delicious cookie with you. What do you say?",
+          helperMascot: "🍪",
+          options: ["Thank you very much! 💖", "Go away! ❌", "Give me more! 😠", "Nothing 😶"],
+          correctIndex: 0,
+          cheerMessage: "Awesome manners! Saying 'Thank you' shows a big heart!",
+        ),
+      ];
+    } else if (day <= 30) {
+      return const [
+        KidDefenseChallenge(
+          prompt: "Your mate is carrying heavy books. How do you offer help?",
+          spokenText: "Your mate is carrying heavy books. How do you offer help?",
+          helperMascot: "📚",
+          options: ["Let me help you! 🤝", "Run away fast! 🏃", "Laugh loudly 😄", "Ignore them 🙈"],
+          correctIndex: 0,
+          cheerMessage: "True friendship! Helping hands make light work!",
+        ),
+        KidDefenseChallenge(
+          prompt: "Can you name the brave King of the Safari jungle?",
+          spokenText: "Can you name the brave King of the Safari jungle?",
+          helperMascot: "🦁",
+          options: ["Lion 🦁", "Penguin 🐧", "Goldfish 🐟", "Butterfly 🦋"],
+          correctIndex: 0,
+          cheerMessage: "Roar! Lion is proud of your great vocabulary!",
+        ),
+        KidDefenseChallenge(
+          prompt: "How do you introduce yourself politely to a new friend?",
+          spokenText: "How do you introduce yourself politely to a new friend?",
+          helperMascot: "👋",
+          options: ["Hello, my name is your mate! 👋", "I am leaving 🚪", "Go to sleep 💤", "I do not care 🚫"],
+          correctIndex: 0,
+          cheerMessage: "Wonderful introduction! You made a new best mate!",
+        ),
+      ];
+    } else if (day <= 50) {
+      return const [
+        KidDefenseChallenge(
+          prompt: "A friend is feeling sad on the playground. What is kind to say?",
+          spokenText: "A friend is feeling sad on the playground. What is kind to say?",
+          helperMascot: "🤗",
+          options: ["Are you okay? I am here for you! 🤗", "I do not care 😒", "Go home now 🏠", "Walk away 👀"],
+          correctIndex: 0,
+          cheerMessage: "Pure empathy! You bring sunshine to everyone around you!",
+        ),
+        KidDefenseChallenge(
+          prompt: "How do you politely ask to borrow a colored drawing pencil?",
+          spokenText: "How do you politely ask to borrow a colored drawing pencil?",
+          helperMascot: "✏️",
+          options: ["May I please borrow this pencil? ✏️", "Give it now! 😠", "Mine! 💥", "Drop it! ✋"],
+          correctIndex: 0,
+          cheerMessage: "Polite speech unlocks every door in the world!",
+        ),
+        KidDefenseChallenge(
+          prompt: "Look up at the beautiful clear sky! What color is it?",
+          spokenText: "Look up at the beautiful clear sky! What color is it?",
+          helperMascot: "🌈",
+          options: ["Blue sky! 🔵", "Black ⚫", "Brown 🟤", "Gray 🌫️"],
+          correctIndex: 0,
+          cheerMessage: "Blue like the sparkling sea! Brilliant!",
+        ),
+      ];
+    } else if (day <= 75) {
+      return const [
+        KidDefenseChallenge(
+          prompt: "You bumped into someone by mistake while running. What do you say?",
+          spokenText: "You bumped into someone by mistake while running. What do you say?",
+          helperMascot: "🙏",
+          options: ["I am so sorry, are you okay? 🙏", "It is your fault! 😠", "Run away! 🏃", "Do not care 🤷"],
+          correctIndex: 0,
+          cheerMessage: "Apologizing with sincerity is a superpower!",
+        ),
+        KidDefenseChallenge(
+          prompt: "Spell the word for our warm, golden sunshine in the sky!",
+          spokenText: "Spell the word for our warm, golden sunshine in the sky!",
+          helperMascot: "☀️",
+          options: ["S - U - N ☀️", "M - O - O - N 🌙", "C - A - T 🐱", "B - A - L - L ⚽"],
+          correctIndex: 0,
+          cheerMessage: "S - U - N! You shine bright like the sun!",
+        ),
+        KidDefenseChallenge(
+          prompt: "How do you invite a classmate to play with your group?",
+          spokenText: "How do you invite a classmate to play with your group?",
+          helperMascot: "🎈",
+          options: ["Would you like to play together? 🎈", "No playing! 🛑", "Stay alone 🚶", "Go away 🙅"],
+          correctIndex: 0,
+          cheerMessage: "Inclusion and teamwork make games magical!",
+        ),
+      ];
+    } else {
+      return const [
+        KidDefenseChallenge(
+          prompt: "The Grand Castle King asks: 'What makes you a true English Champion?'",
+          spokenText: "The Grand Castle King asks: What makes you a true English Champion?",
+          helperMascot: "👑",
+          options: ["Kindness, Daily Practice & Helping Mates! 🌟", "Being loud and angry 😡", "Breaking rules 🔨", "Giving up 😢"],
+          correctIndex: 0,
+          cheerMessage: "Royal decree: You are crowned an English Grand Champion!",
+        ),
+        KidDefenseChallenge(
+          prompt: "When working on a big adventure challenge with your team:",
+          spokenText: "When working on a big adventure challenge with your team:",
+          helperMascot: "🏰",
+          options: ["We listen and support each other! 🤝", "Only one person matters 👤", "We argue 🗣️", "Quit immediately 🏳️"],
+          correctIndex: 0,
+          cheerMessage: "United together, nothing is impossible!",
+        ),
+        KidDefenseChallenge(
+          prompt: "You conquered the 100-Day Mountain Summit! What is your victory cheer?",
+          spokenText: "You conquered the 100-Day Mountain Summit! What is your victory cheer?",
+          helperMascot: "🎉",
+          options: ["We did it together! Hooray! 🎉", "I am tired 🥱", "Not happy 🙁", "Goodbye forever ⛔"],
+          correctIndex: 0,
+          cheerMessage: "Hooray! The entire universe celebrates your fluency!",
+        ),
+      ];
+    }
   }
 }

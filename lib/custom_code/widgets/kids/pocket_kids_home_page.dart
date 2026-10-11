@@ -4,6 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_game_session_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mates_page.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
@@ -377,34 +379,129 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
                   const SizedBox(width: 8),
 
-                  // Playhouse Badge
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: currentHouse.themeColor,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(currentHouse.emoji, style: const TextStyle(fontSize: 16)),
-                        const SizedBox(width: 5),
-                        Text(
-                          currentHouse.title,
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 12,
+                  // Playhouse Badge (Tappable to inspect Flame House)
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      showDialog(
+                        context: context,
+                        builder: (ctx) => AlertDialog(
+                          backgroundColor: const Color(0xFF0F172A),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(28),
+                            side: BorderSide(
+                                color: currentHouse.themeColor, width: 2),
+                          ),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                '${currentHouse.title} ${currentHouse.emoji}',
+                                style: GoogleFonts.outfit(
+                                  color: Colors.white,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Tier ${currentHouse.tier} • Day $unlockedDay/100',
+                                style: GoogleFonts.inter(
+                                  color: currentHouse.themeColor,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              PocketAvatarHouseWidget(
+                                day: unlockedDay,
+                                width: 220,
+                                height: 160,
+                                lightsOn: true,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                currentHouse.description,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: currentHouse.themeColor,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(currentHouse.emoji,
+                              style: const TextStyle(fontSize: 16)),
+                          const SizedBox(width: 5),
+                          Text(
+                            currentHouse.title,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(width: 8),
+
+                  // 🤝 Kids Mates Button
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      PocketKidsMatesPage.open(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.12),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Text('🤝', style: TextStyle(fontSize: 16)),
+                          const SizedBox(width: 4),
+                          Text(
+                            'MATES',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF0F172A),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
 
@@ -594,14 +691,15 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     );
   }
 
-  // --- Milestone Playhouses placed on the trail ---
+  // --- Milestone Playhouses placed on the trail matching Adult Avatar Houses ---
   List<Widget> _buildMilestonePlayhouses(double screenWidth, int unlockedDay) {
     final houses = [
-      {'day': 1, 'emoji': '🌳', 'title': 'Rainbow Treehouse', 'tier': 'Tier 1'},
-      {'day': 16, 'emoji': '🍭', 'title': 'Candy Cottage', 'tier': 'Tier 2'},
-      {'day': 31, 'emoji': '🦖', 'title': 'Dino Den Cave', 'tier': 'Tier 3'},
-      {'day': 51, 'emoji': '🏰', 'title': 'Cloud Sky Castle', 'tier': 'Tier 4'},
-      {'day': 76, 'emoji': '👑', 'title': 'Crystal Star Palace', 'tier': 'Tier 5'},
+      {'day': 1, 'emoji': '🌱', 'title': 'Wooden Cabin', 'tier': 'Tier 1'},
+      {'day': 8, 'emoji': '🏡', 'title': 'Brick Villa', 'tier': 'Tier 2'},
+      {'day': 21, 'emoji': '🏰', 'title': 'Stone Fortress', 'tier': 'Tier 3'},
+      {'day': 46, 'emoji': '🏛️', 'title': 'Imperial Manor', 'tier': 'Tier 4'},
+      {'day': 71, 'emoji': '💎', 'title': 'Cyber Citadel', 'tier': 'Tier 5'},
+      {'day': 90, 'emoji': '👑', 'title': 'Sovereign Palace', 'tier': 'Tier 6'},
     ];
 
     return houses.map((h) {
