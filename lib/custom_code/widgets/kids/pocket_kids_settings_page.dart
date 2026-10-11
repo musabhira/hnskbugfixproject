@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_certificate_page.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
@@ -95,7 +96,7 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
             children: [
               const Text('🔒 ', style: TextStyle(fontSize: 22)),
               Text(
-                'Parent Gate / രക്ഷാകർത്താവ്',
+                PocketLanguageService.getParentZoneTitle(PocketLanguageService.currentLanguage),
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,

@@ -26,7 +26,6 @@ import 'tools_page.dart';
 import '../services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding_page.dart';
 
 enum WelcomeMode {
@@ -84,7 +83,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
   WelcomeMode _mode = WelcomeMode.welcome;
   final PageController _pageController = PageController();
   int _currentStep = 0;
-  static const int _totalSteps = 16;
+  static const int _totalSteps = 17;
 
   // Background Audio
   AudioPlayer? _bgmPlayer;
@@ -1690,7 +1689,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                     ),
                                   ),
                                   Text(
-                                    'കുട്ടികൾക്കായി പ്രത്യേക 2D ഗെയിംസ് & കാർട്ടൂൺ ഫൺ!',
+                                    PocketLanguageService.getLearnerTypeTranslations(_selectedNativeLanguage)['kidsDesc'] ??
+                                        '2D cartoon games, phonics & fun adventures!',
                                     style: GoogleFonts.inter(
                                       color: Colors.white.withValues(alpha: 0.95),
                                       fontSize: 11,
@@ -2055,8 +2055,9 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
                       _buildStep0Greeting(),
-                      _buildStep1QuestionsIntro(),
                       _buildStep2NativeLanguage(),
+                      _buildStepLearnerTrack(),
+                      _buildStep1QuestionsIntro(),
                       _buildStep3ReferralSource(),
                       _buildStep4EnglishLevel(),
                       _buildStep5LearningGoal(),
@@ -2237,7 +2238,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           ),
         ),
       ),
-      onContinue: _showLearnerTypeChoiceDialog,
+      onContinue: _nextStep,
       buttonText: 'GET STARTED',
     );
   }
@@ -2304,497 +2305,194 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
     );
   }
 
-  // --- Step 2.5: Learner Type Choice (Kid vs Adult) ---
-  void _showLearnerTypeChoiceDialog() {
-    HapticFeedback.mediumImpact();
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF0F172A),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-            border: Border(
-              top: BorderSide(color: Color(0xFF38BDF8), width: 1.5),
-            ),
-          ),
-          padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 44,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
+  // --- Step 2: Learner Track Choice (Adult vs Kids) ---
+  Widget _buildStepLearnerTrack() {
+    final trans = PocketLanguageService.getLearnerTypeTranslations(_selectedNativeLanguage);
+    return _buildStepContainer(
+      title: trans['title'] ?? 'Who is learning English?',
+      mascotHint: trans['subtitle'] ??
+          'Choose the personalized track suited for your learning journey.',
+      child: Column(
+        children: [
+          // Option 1 (First): 🚀 English Mastery (Adults)
+          GestureDetector(
+            onTap: () async {
+              HapticFeedback.selectionClick();
+              await PocketKidsService.activateAdultAccount();
+              _nextStep();
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.only(bottom: 14),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFFF59E0B).withValues(alpha: 0.22),
+                    const Color(0xFF1E293B),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFFFFD700).withValues(alpha: 0.8),
+                  width: 1.6,
                 ),
               ),
-              Row(
+              child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(10),
+                    width: 52,
+                    height: 52,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(14),
+                      color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                    child: const Text('🎓', style: TextStyle(fontSize: 24)),
+                    alignment: Alignment.center,
+                    child: const Text('🚀', style: TextStyle(fontSize: 28)),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 14),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Who is learning English?',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        Text(
-                          'ആർക്കുവേണ്ടിയാണ് ഈ അക്കൗണ്ട്?',
-                          style: GoogleFonts.inter(
-                            color: const Color(0xFF94A3B8),
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Option 1: 🧸 Kids Track
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(ctx);
-                  _bgmPlayer?.stop();
-                  PocketKidsOnboardingPage.launch(context);
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF0284C7).withValues(alpha: 0.25),
-                        const Color(0xFF0F172A),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text('🧸', style: TextStyle(fontSize: 28)),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Row(
                           children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'Junior Explorer (Kids)',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    'AGE < 13',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFF38BDF8),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
                             Text(
-                              'കുട്ടികൾക്കായി 2D ഗെയിമുകൾ, കാർട്ടൂൺ ഫോണിക്സ് & മാന്ത്രിക പെറ്റ് അഡ്വഞ്ചറുകൾ!',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF94A3B8),
-                                fontSize: 11.5,
-                                height: 1.3,
+                              trans['adultTitle'] ?? 'English Mastery (Adults)',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF38BDF8), size: 16),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
-              // Option 2: 🚀 Adult Track
-              GestureDetector(
-                onTap: () async {
-                  Navigator.pop(ctx);
-                  await PocketKidsService.activateAdultAccount();
-                  _nextStep();
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFFF59E0B).withValues(alpha: 0.18),
-                        const Color(0xFF0F172A),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: const Color(0xFFFFD700).withValues(alpha: 0.6),
-                      width: 1.4,
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        alignment: Alignment.center,
-                        child: const Text('🚀', style: TextStyle(fontSize: 28)),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Text(
-                                  'English Mastery (Adults)',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    '13+ ADULT',
-                                    style: GoogleFonts.outfit(
-                                      color: const Color(0xFFFFD700),
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'മുതിർന്നവർക്കായി 90 ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ്, പരീക്ഷകൾ & ടാസ്‌ക്കുകൾ!',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF94A3B8),
-                                fontSize: 11.5,
-                                height: 1.3,
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF59E0B).withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(6),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 16),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showKidsSetupSheet() {
-    HapticFeedback.selectionClick();
-    String selectedAgeGroup = '4-6';
-    String selectedMascot = '🦁';
-    final nameCtrl = TextEditingController(text: '');
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFF0F172A),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
-                  border: Border(
-                    top: BorderSide(color: Color(0xFF38BDF8), width: 2),
-                  ),
-                ),
-                padding: const EdgeInsets.fromLTRB(20, 16, 20, 28),
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 44,
-                          height: 4,
-                          margin: const EdgeInsets.only(bottom: 16),
-                          decoration: BoxDecoration(
-                            color: Colors.white24,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          const Text('🧸', style: TextStyle(fontSize: 28)),
-                          const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Kids Profile Setup',
+                              child: Text(
+                                trans['adultBadge'] ?? '13+ ADULT',
                                 style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 18,
+                                  color: const Color(0xFFFFD700),
+                                  fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              Text(
-                                'കുട്ടിയുടെ പ്രൊഫൈൽ സെറ്റ് ചെയ്യാം',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF94A3B8),
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 18),
-
-                      // Child's Name
-                      Text(
-                        "Child's Nickname / പേര്",
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      TextField(
-                        controller: nameCtrl,
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          hintText: 'e.g. Aarav, Diya, Leo',
-                          hintStyle: const TextStyle(color: Colors.white38),
-                          filled: true,
-                          fillColor: const Color(0xFF1E293B),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide.none,
+                        const SizedBox(height: 4),
+                        Text(
+                          trans['adultDesc'] ?? '',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 11.5,
+                            height: 1.3,
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Age Category
-                      Text(
-                        'Age Category / പ്രായം',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          for (final age in [
-                            {'id': '4-6', 'label': '🍼 4–6 Yrs'},
-                            {'id': '7-9', 'label': '🎈 7–9 Yrs'},
-                            {'id': '10-12', 'label': '🚀 10–12 Yrs'},
-                          ])
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  HapticFeedback.selectionClick();
-                                  setSheetState(() => selectedAgeGroup = age['id']!);
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  padding: const EdgeInsets.symmetric(vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: selectedAgeGroup == age['id']
-                                        ? const Color(0xFF38BDF8)
-                                        : const Color(0xFF1E293B),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: selectedAgeGroup == age['id']
-                                          ? Colors.white
-                                          : Colors.white12,
-                                    ),
-                                  ),
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    age['label']!,
-                                    style: GoogleFonts.outfit(
-                                      color: selectedAgeGroup == age['id']
-                                          ? Colors.black
-                                          : Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Mascot Selector
-                      Text(
-                        'Choose Mascot Avatar / മാസ്കോട്ട്',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          for (final m in ['🦁', '🐰', '🐶', '🐱', '🤖'])
-                            GestureDetector(
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                setSheetState(() => selectedMascot = m);
-                              },
-                              child: Container(
-                                width: 52,
-                                height: 52,
-                                decoration: BoxDecoration(
-                                  color: selectedMascot == m
-                                      ? const Color(0xFF38BDF8).withValues(alpha: 0.3)
-                                      : const Color(0xFF1E293B),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: selectedMascot == m
-                                        ? const Color(0xFF38BDF8)
-                                        : Colors.white12,
-                                    width: selectedMascot == m ? 2.5 : 1,
-                                  ),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(m, style: const TextStyle(fontSize: 26)),
-                              ),
-                            ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Enter Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF38BDF8),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                          ),
-                          onPressed: () async {
-                            HapticFeedback.heavyImpact();
-                            Navigator.pop(ctx);
-                            final finalName = nameCtrl.text.trim().isNotEmpty
-                                ? nameCtrl.text.trim()
-                                : 'Little Explorer';
-                            await PocketKidsService.activateKidAccount(
-                              name: finalName,
-                              ageGroup: selectedAgeGroup,
-                              avatar: selectedMascot,
-                            );
-                            await _saveOnboardingChoicesLocally();
-                            _bgmPlayer?.stop();
-                            await PocketGameAudioService.instance.stop();
-                            if (mounted) {
-                              PocketKidsHomePage.launch(context);
-                            }
-                          },
-                          child: Text(
-                            'LAUNCH KIDS UNIVERSE ➔',
-                            style: GoogleFonts.outfit(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 15,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
+                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFFFD700), size: 16),
+                ],
+              ),
+            ),
+          ),
+
+          // Option 2 (Second): 🧸 Junior Explorer (Kids)
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.selectionClick();
+              _bgmPlayer?.stop();
+              PocketKidsOnboardingPage.launch(context);
+            },
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF0284C7).withValues(alpha: 0.25),
+                    const Color(0xFF1E293B),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: const Color(0xFF38BDF8).withValues(alpha: 0.8),
+                  width: 1.6,
                 ),
               ),
-            );
-          },
-        );
+              child: Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Text('🧸', style: TextStyle(fontSize: 28)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              trans['kidsTitle'] ?? 'Junior Explorer (Kids)',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF38BDF8).withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                trans['kidsBadge'] ?? 'AGES 3–12',
+                                style: GoogleFonts.outfit(
+                                  color: const Color(0xFF38BDF8),
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          trans['kidsDesc'] ?? '',
+                          style: GoogleFonts.inter(
+                            color: const Color(0xFF94A3B8),
+                            fontSize: 11.5,
+                            height: 1.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFF38BDF8), size: 16),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+      onContinue: () async {
+        await PocketKidsService.activateAdultAccount();
+        _nextStep();
       },
+      buttonText: 'CONTINUE ADULT TRACK ➔',
     );
   }
 

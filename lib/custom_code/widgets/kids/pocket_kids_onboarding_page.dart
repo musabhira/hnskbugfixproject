@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
-import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_auth_page.dart';
 
 /// 🧸 Dedicated Kids Account & Profile Creation Onboarding Page
 /// 100% separate from Adult Onboarding, filled with high-energy cartoon magic!
@@ -99,14 +99,13 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
         ? _nameController.text.trim()
         : 'Little Hero';
 
-    await PocketKidsService.activateKidAccount(
-      name: name,
-      ageGroup: _selectedAgeGroup,
-      avatar: _selectedAvatar,
-    );
-
     if (mounted) {
-      PocketKidsHomePage.launch(context);
+      PocketKidsAuthPage.launch(
+        context,
+        kidName: name,
+        ageGroup: _selectedAgeGroup,
+        avatar: _selectedAvatar,
+      );
     }
   }
 
@@ -232,7 +231,7 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
                         children: [
                           Text(
                             _step == 3
-                                ? 'START MY ADVENTURE! 🚀'
+                                ? 'NEXT: KID LOGIN / SIGNUP 🔐'
                                 : 'CONTINUE ➔',
                             style: GoogleFonts.outfit(
                               fontSize: 17,
@@ -255,6 +254,7 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
 
   // Step 1: Kid Name
   Widget _buildStepName() {
+    final t = PocketLanguageService.getKidsProfileTranslations(PocketLanguageService.currentLanguage);
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
       child: Column(
@@ -262,7 +262,7 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
           const Text('🌟', style: TextStyle(fontSize: 56)),
           const SizedBox(height: 12),
           Text(
-            'What is your name, little hero?',
+            t['nameTitle'] ?? 'What is your name, little hero?',
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               color: Colors.white,
@@ -272,7 +272,7 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'We will call you this throughout your 100-day journey!',
+            t['nameSub'] ?? 'We will call you this throughout your 100-day journey!',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white70,
@@ -301,9 +301,9 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
-              decoration: const InputDecoration(
-                hintText: 'e.g. Leo, Mia, Arjun',
-                hintStyle: TextStyle(color: Colors.black26),
+              decoration: InputDecoration(
+                hintText: t['nameHint'] ?? 'e.g. Leo, Mia, Arjun',
+                hintStyle: const TextStyle(color: Colors.black26),
                 border: InputBorder.none,
               ),
             ),
@@ -346,7 +346,7 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
           const Text('🎂', style: TextStyle(fontSize: 54)),
           const SizedBox(height: 12),
           Text(
-            'How old are you?',
+            PocketLanguageService.getKidsProfileTranslations(PocketLanguageService.currentLanguage)['ageTitle'] ?? 'How old are you?',
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               color: Colors.white,
@@ -356,7 +356,7 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'We customize all games and phonics to match your age!',
+            PocketLanguageService.getKidsProfileTranslations(PocketLanguageService.currentLanguage)['ageSub'] ?? 'We customize all games and phonics to match your age!',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white70,
@@ -448,7 +448,7 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
           Text(_selectedAvatar, style: const TextStyle(fontSize: 54)),
           const SizedBox(height: 12),
           Text(
-            'Choose your Mascot Buddy!',
+            PocketLanguageService.getKidsProfileTranslations(PocketLanguageService.currentLanguage)['avatarTitle'] ?? 'Choose your Mascot Buddy!',
             textAlign: TextAlign.center,
             style: GoogleFonts.outfit(
               color: Colors.white,
@@ -458,7 +458,7 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Your buddy will cheer you on as you pop balloons & climb!',
+            PocketLanguageService.getKidsProfileTranslations(PocketLanguageService.currentLanguage)['avatarSub'] ?? 'Your buddy will cheer you on as you pop balloons & climb!',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white70,

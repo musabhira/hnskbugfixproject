@@ -560,4 +560,210 @@ class PocketLanguageService {
     }
     return '';
   }
+
+  /// 🎓 Dynamic Learner Type Choice translations (Adult vs Kids)
+  static Map<String, String> getLearnerTypeTranslations(String langName) {
+    final l = _normalizeLanguage(langName).toLowerCase();
+    switch (l) {
+      case 'hindi':
+        return {
+          'title': 'Who is learning English?\nयह खाता किसके लिए है?',
+          'subtitle': 'अपनी उम्र और सीखने की ज़रूरत के अनुसार ट्रैक चुनें:',
+          'adultTitle': 'English Mastery (Adults)',
+          'adultBadge': '13+ ADULT',
+          'adultDesc': 'वयस्कों के लिए 90 दिनों का स्पोकन इंग्लिश, करियर और वास्तविक बातचीत!',
+          'kidsTitle': 'Junior Explorer (Kids)',
+          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
+          'kidsDesc': 'बच्चों के लिए 2D गेम्स, कार्टून फोनिक्स और मज़ेदार पेट एडवेंचर!',
+        };
+      case 'tamil':
+        return {
+          'title': 'Who is learning English?\nஇந்த கணக்கு யாருக்காக?',
+          'subtitle': 'உங்கள் வயது மற்றும் தேவைக்கு ஏற்ப வழியைத் தேர்ந்தெடுக்கவும்:',
+          'adultTitle': 'English Mastery (Adults)',
+          'adultBadge': '13+ ADULT',
+          'adultDesc': 'பெரியவர்களுக்கான 90 நாட்கள் ஸ்போக்கன் இங்கிலீஷ், வேலைவாய்ப்பு & பயிற்சி!',
+          'kidsTitle': 'Junior Explorer (Kids)',
+          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
+          'kidsDesc': 'குழந்தைகளுக்கான 2D விளையாட்டுகள், கார்ட்டூன் போனிக்ஸ் & சாகசம்!',
+        };
+      case 'telugu':
+        return {
+          'title': 'Who is learning English?\nఈ ఖాతా ఎవరి కోసం?',
+          'subtitle': 'మీ వయస్సు మరియు అభ్యాస అవసరాల ఆధారంగా ఎంచుకోండి:',
+          'adultTitle': 'English Mastery (Adults)',
+          'adultBadge': '13+ ADULT',
+          'adultDesc': 'పెద్దల కోసం 90 రోజుల స్పోకెన్ ఇంగ్లీష్, కెరీర్ మరియు మాట్లాడే సాధన!',
+          'kidsTitle': 'Junior Explorer (Kids)',
+          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
+          'kidsDesc': 'పిల్లల కోసం 2D గేమ్‌లు, కార్టూన్ ఫోనిక్స్ మరియు సాహసాలు!',
+        };
+      case 'kannada':
+        return {
+          'title': 'Who is learning English?\nಈ ಖಾತೆ ಯಾರಿಗಾಗಿ?',
+          'subtitle': 'ನಿಮ್ಮ ವಯಸ್ಸು ಮತ್ತು ಕಲಿಕೆಯ ಅಗತ್ಯಕ್ಕೆ ತಕ್ಕಂತೆ ಆಯ್ಕೆಮಾಡಿ:',
+          'adultTitle': 'English Mastery (Adults)',
+          'adultBadge': '13+ ADULT',
+          'adultDesc': 'ವಯಸ್ಕರಿಗೆ 90 ದಿನಗಳ ಸ್ಪೋಕನ್ ಇಂಗ್ಲಿಷ್ ಮತ್ತು ವೃತ್ತಿಪರ ಅಭ್ಯಾಸ!',
+          'kidsTitle': 'Junior Explorer (Kids)',
+          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
+          'kidsDesc': 'ಮಕ್ಕಳಿಗೆ 2D ಆಟಗಳು, ಕಾರ್ಟೂನ್ ಫೋನಿಕ್ಸ್ ಮತ್ತು ಸಾಹಸ!',
+        };
+      case 'arabic':
+        return {
+          'title': 'Who is learning English?\nلمن هذا الحساب؟',
+          'subtitle': 'اختر المسار المناسب لعمرك وأهدافك:',
+          'adultTitle': 'English Mastery (Adults)',
+          'adultBadge': '13+ ADULT',
+          'adultDesc': 'للبالغين: 90 يومًا لتعلم التحدث بالإنجليزية والمهام العملية!',
+          'kidsTitle': 'Junior Explorer (Kids)',
+          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
+          'kidsDesc': 'للأطفال: ألعاب كرتونية ثنائية الأبعاد ومغامرات صوتية شيقة!',
+        };
+      case 'bengali':
+        return {
+          'title': 'Who is learning English?\nএই অ্যাকাউন্টটি কার জন্য?',
+          'subtitle': 'আপনার বয়স এবং লক্ষ্য অনুসারে ট্র্যাক চয়ন করুন:',
+          'adultTitle': 'English Mastery (Adults)',
+          'adultBadge': '13+ ADULT',
+          'adultDesc': 'প্রাপ্তবয়স্কদের জন্য 90 দিনের স্পোকেন ইংলিশ এবং বাস্তব অনুশীলন!',
+          'kidsTitle': 'Junior Explorer (Kids)',
+          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
+          'kidsDesc': 'বাচ্চাদের জন্য 2D গেম, কার্টুন ধ্বনিবিদ্যা এবং অ্যাডভেঞ্চার!',
+        };
+      case 'malayalam':
+        return {
+          'title': 'Who is learning English?\nആർക്കുവേണ്ടിയാണ് ഈ അക്കൗണ്ട്?',
+          'subtitle': 'നിങ്ങളുടെ പ്രായത്തിനും ആവശ്യത്തിനും അനുയോജ്യമായ ട്രാക്ക് തിരഞ്ഞെടുക്കുക:',
+          'adultTitle': 'English Mastery (Adults)',
+          'adultBadge': '13+ ADULT',
+          'adultDesc': 'മുതിർന്നവർക്കായി 90 ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ്, പരീക്ഷകൾ & ടാസ്‌ക്കുകൾ!',
+          'kidsTitle': 'Junior Explorer (Kids)',
+          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
+          'kidsDesc': 'കുട്ടികൾക്കായി 2D ഗെയിമുകൾ, കാർട്ടൂൺ ഫോണിക്സ് & മാന്ത്രിക പെറ്റ് അഡ്വഞ്ചറുകൾ!',
+        };
+      default:
+        return {
+          'title': 'Who is learning English?',
+          'subtitle': 'Choose the personalized track suited for your learning journey:',
+          'adultTitle': 'English Mastery (Adults)',
+          'adultBadge': '13+ ADULT',
+          'adultDesc': 'For adults: 90 days spoken English, career, tasks & real speaking!',
+          'kidsTitle': 'Junior Explorer (Kids)',
+          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
+          'kidsDesc': 'For kids: 2D cartoon games, phonics & mascot adventures!',
+        };
+    }
+  }
+
+  /// 🔒 Parent Zone localized title
+  static String getParentZoneTitle(String langName) {
+    final l = _normalizeLanguage(langName).toLowerCase();
+    switch (l) {
+      case 'hindi':
+        return 'Parent Zone / अभिभावक क्षेत्र';
+      case 'tamil':
+        return 'Parent Zone / பெற்றோர் மண்டலம்';
+      case 'telugu':
+        return 'Parent Zone / తల్లిదండ్రుల జోన్';
+      case 'kannada':
+        return 'Parent Zone / ಪೋಷಕರ ವಲಯ';
+      case 'arabic':
+        return 'Parent Zone / منطقة الوالدين';
+      case 'bengali':
+        return 'Parent Zone / অভিভাবক জোন';
+      case 'malayalam':
+        return 'Parent Zone / രക്ഷാകർത്താവ്';
+      default:
+        return 'Parent Zone / Parent Gate';
+    }
+  }
+
+  /// 🧸 Kids Onboarding & Profile setup localized strings
+  static Map<String, String> getKidsProfileTranslations(String langName) {
+    final l = _normalizeLanguage(langName).toLowerCase();
+    switch (l) {
+      case 'hindi':
+        return {
+          'nameTitle': "What is your Kid's Name / Nickname? 🌟",
+          'nameSub': 'एक प्यारा नाम चुनें जिसे साथी और रोबोट पुकारेंगे!',
+          'nameHint': 'बच्चे का नाम लिखें (उदा: आरव, रिया)',
+          'ageTitle': 'Pick Age Group & Standard 📚',
+          'ageSub': 'हम उनकी कक्षा के अनुसार उपयुक्त खेल तैयार करेंगे!',
+          'avatarTitle': 'Pick Your Mascot Buddy! 🦁',
+          'avatarSub': '100-दिन के पहाड़ पर आपके साथ चढ़ने वाला साथी!',
+        };
+      case 'tamil':
+        return {
+          'nameTitle': "What is your Kid's Name / Nickname? 🌟",
+          'nameSub': 'தோழர்கள் மற்றும் ரோபோக்கள் கூப்பிட ஒரு பெயர்!',
+          'nameHint': 'குழந்தையின் பெயரை உள்ளிடவும்',
+          'ageTitle': 'Pick Age Group & Standard 📚',
+          'ageSub': 'அவர்களின் வகுப்புக்கு ஏற்ற விளையாட்டுகளை அமைப்போம்!',
+          'avatarTitle': 'Pick Your Mascot Buddy! 🦁',
+          'avatarSub': '100-நாள் மலையில் உங்களுடன் ஏறும் தோழன்!',
+        };
+      case 'telugu':
+        return {
+          'nameTitle': "What is your Kid's Name / Nickname? 🌟",
+          'nameSub': 'స్నేహితులు మరియు రోబోట్లు పిలవడానికి ఒక ముద్దుపేరు!',
+          'nameHint': 'పిల్లల పేరు నమోదు చేయండి',
+          'ageTitle': 'Pick Age Group & Standard 📚',
+          'ageSub': 'వారి తరగతికి తగిన సరదా ఆటలను సిద్ధం చేస్తాము!',
+          'avatarTitle': 'Pick Your Mascot Buddy! 🦁',
+          'avatarSub': '100-రోజుల కొండపై మీతో ప్రయాణించే సహచరుడు!',
+        };
+      case 'kannada':
+        return {
+          'nameTitle': "What is your Kid's Name / Nickname? 🌟",
+          'nameSub': 'ಸ್ನೇಹಿತರು ಕರೆಯಲು ಒಂದು ಮುದ್ದಾದ ಹೆಸರು!',
+          'nameHint': 'ಮಗುವಿನ ಹೆಸರನ್ನು ನಮೂದಿಸಿ',
+          'ageTitle': 'Pick Age Group & Standard 📚',
+          'ageSub': 'ಅವರ ತರಗತಿಗೆ ಸೂಕ್ತವಾದ ಆಟಗಳನ್ನು ಸಿದ್ಧಪಡಿಸುತ್ತೇವೆ!',
+          'avatarTitle': 'Pick Your Mascot Buddy! 🦁',
+          'avatarSub': '100-ದಿನಗಳ ಬೆಟ್ಟದಲ್ಲಿ ನಿಮ್ಮೊಂದಿಗೆ ಸಾಗುವ ಒಡನಾಡಿ!',
+        };
+      case 'arabic':
+        return {
+          'nameTitle': "What is your Kid's Name / Nickname? 🌟",
+          'nameSub': 'اختر اسمًا لطيفًا سيناديه به الأصدقاء والروبوتات!',
+          'nameHint': 'أدخل اسم الطفل',
+          'ageTitle': 'Pick Age Group & Standard 📚',
+          'ageSub': 'سنخصص ألعابًا تناسب مرحلته العمرية!',
+          'avatarTitle': 'Pick Your Mascot Buddy! 🦁',
+          'avatarSub': 'صديقك المفضل لتسلق جبل الـ 100 يوم!',
+        };
+      case 'bengali':
+        return {
+          'nameTitle': "What is your Kid's Name / Nickname? 🌟",
+          'nameSub': 'বন্ধুরা ডাকার জন্য একটি সুন্দর ডাকনাম!',
+          'nameHint': 'বাচ্চার নাম লিখুন',
+          'ageTitle': 'Pick Age Group & Standard 📚',
+          'ageSub': 'আমরা তাদের ক্লাসের উপযোগী গেম তৈরি করব!',
+          'avatarTitle': 'Pick Your Mascot Buddy! 🦁',
+          'avatarSub': '১০০ দিনের পাহাড়ি পথে আপনার সঙ্গী!',
+        };
+      case 'malayalam':
+        return {
+          'nameTitle': "What is your Kid's Name / Nickname? 🌟",
+          'nameSub': 'കൂട്ടുകാരും റോബോട്ടുകളും വിളിക്കാൻ ഒരു പേര് തിരഞ്ഞെടുക്കൂ!',
+          'nameHint': 'കുട്ടിയുടെ പേര് നൽകുക (ഉദാ: ലിയോ, രാഹുൽ)',
+          'ageTitle': 'Pick Age Group & Standard 📚',
+          'ageSub': 'അവരുടെ ക്ലാസിന് അനുയോജ്യമായ ഗെയിമുകൾ ഞങ്ങൾ ഒരുക്കും!',
+          'avatarTitle': 'Pick Your Mascot Buddy! 🦁',
+          'avatarSub': '100 ദിവസത്തെ മലകയറ്റത്തിൽ ഒപ്പം നിൽക്കുന്ന ചങ്ങാതി!',
+        };
+      default:
+        return {
+          'nameTitle': "What is your Kid's Name / Nickname? 🌟",
+          'nameSub': 'Choose a friendly name your mates & robots will call you!',
+          'nameHint': "Enter kid's nickname (e.g. Leo)",
+          'ageTitle': 'Pick Age Group & Standard 📚',
+          'ageSub': 'We will tailor curriculum games for their grade!',
+          'avatarTitle': 'Pick Your Mascot Buddy! 🦁',
+          'avatarSub': 'Your animated climbing partner for the 100-Day Summit!',
+        };
+    }
+  }
 }
+

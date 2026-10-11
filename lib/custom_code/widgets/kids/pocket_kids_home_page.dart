@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_game_session_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mates_page.dart';
@@ -129,7 +130,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             children: [
               const Text('🔒 ', style: TextStyle(fontSize: 22)),
               Text(
-                'Parent Zone / രക്ഷാകർത്താവ്',
+                PocketLanguageService.getParentZoneTitle(PocketLanguageService.currentLanguage),
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
