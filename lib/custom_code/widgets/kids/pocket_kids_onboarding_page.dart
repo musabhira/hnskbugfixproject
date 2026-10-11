@@ -35,13 +35,17 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
 
   static const List<Map<String, String>> _mascots = [
     {'emoji': '🦁', 'name': 'Leo Lion', 'tag': 'Brave'},
+    {'emoji': '🐯', 'name': 'Tigger Cub', 'tag': 'Curious'},
+    {'emoji': '🦖', 'name': 'Dino Rex', 'tag': 'Strong'},
     {'emoji': '🐼', 'name': 'Pandy Panda', 'tag': 'Gentle'},
     {'emoji': '🦊', 'name': 'Finny Fox', 'tag': 'Smart'},
     {'emoji': '🦄', 'name': 'Sparkle Unicorn', 'tag': 'Magic'},
     {'emoji': '🐰', 'name': 'Bouncy Bunny', 'tag': 'Swift'},
-    {'emoji': '🦖', 'name': 'Dino Rex', 'tag': 'Strong'},
-    {'emoji': '🐯', 'name': 'Tigger Cub', 'tag': 'Curious'},
     {'emoji': '🐻', 'name': 'Teddy Bear', 'tag': 'Kind'},
+    {'emoji': '🐆', 'name': 'Flash Cheetah', 'tag': 'Fast'},
+    {'emoji': '🐬', 'name': 'Splash Dolphin', 'tag': 'Joyful'},
+    {'emoji': '🐨', 'name': 'Koko Koala', 'tag': 'Calm'},
+    {'emoji': '🐘', 'name': 'Ellie Elephant', 'tag': 'Loyal'},
   ];
 
   static const List<Map<String, String>> _starterHouses = [
@@ -120,8 +124,12 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0284C7),
-      body: Stack(
-        children: [
+      resizeToAvoidBottomInset: true,
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: Stack(
+          children: [
           // Playful Sky Gradient
           Container(
             decoration: const BoxDecoration(
@@ -249,8 +257,9 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   // Step 1: Kid Name
   Widget _buildStepName() {
@@ -296,6 +305,12 @@ class _PocketKidsOnboardingPageState extends State<PocketKidsOnboardingPage> {
             child: TextField(
               controller: _nameController,
               textAlign: TextAlign.center,
+              textInputAction: TextInputAction.done,
+              onTapOutside: (_) => FocusScope.of(context).unfocus(),
+              onSubmitted: (_) {
+                FocusScope.of(context).unfocus();
+                _nextStep();
+              },
               style: GoogleFonts.outfit(
                 color: const Color(0xFF0F172A),
                 fontSize: 24,

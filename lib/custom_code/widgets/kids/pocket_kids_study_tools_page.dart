@@ -68,11 +68,11 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
   ];
 
   // Daily Routine Schedule
-  final List<Map<String, String>> _schedule = [
-    {'time': '07:30 AM', 'title': 'Morning English Song & Greeting', 'icon': '☀️', 'desc': 'Say "Good Morning" to family & mates'},
-    {'time': '04:00 PM', 'title': 'Mountain Trail Game Session', 'icon': '🎮', 'desc': 'Play 1 daily level & earn 3 stars'},
-    {'time': '06:00 PM', 'title': 'Citadel Defense & Mate Talk', 'icon': '🏰', 'desc': 'Practice spoken English with peer bots'},
-    {'time': '08:00 PM', 'title': 'Bedtime Story & Word Flashcard', 'icon': '🌙', 'desc': 'Listen to pronunciation & relax'},
+  final List<Map<String, dynamic>> _schedule = [
+    {'time': '07:30 AM', 'title': 'Morning English Song & Greeting', 'icon': '☀️', 'desc': 'Say "Good Morning" to family & mates', 'hasAlarm': true},
+    {'time': '04:00 PM', 'title': 'Mountain Trail Game Session', 'icon': '🎮', 'desc': 'Play 1 daily level & earn 3 stars', 'hasAlarm': true},
+    {'time': '06:00 PM', 'title': 'Citadel Defense & Mate Talk', 'icon': '🏰', 'desc': 'Practice spoken English with peer animals', 'hasAlarm': true},
+    {'time': '08:00 PM', 'title': 'Bedtime Story & Word Flashcard', 'icon': '🌙', 'desc': 'Listen to pronunciation & relax', 'hasAlarm': true},
   ];
 
   // Notes
@@ -499,7 +499,7 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      item['desc']!,
+                      item['desc'] as String,
                       style: TextStyle(
                         fontSize: 11.5,
                         color: Colors.grey.shade400,
@@ -507,6 +507,32 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
                     ),
                   ],
                 ),
+              ),
+              IconButton(
+                icon: Icon(
+                  item['hasAlarm'] == true ? Icons.alarm_on_rounded : Icons.alarm_off_rounded,
+                  color: item['hasAlarm'] == true ? const Color(0xFFFFD700) : Colors.white30,
+                  size: 22,
+                ),
+                tooltip: 'Toggle Alarm Reminder',
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  setState(() {
+                    item['hasAlarm'] = !(item['hasAlarm'] == true);
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        item['hasAlarm'] == true
+                            ? '⏰ Alarm set for ${item['time']}!'
+                            : '🔕 Alarm turned off for ${item['time']}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      backgroundColor: item['hasAlarm'] == true ? const Color(0xFF10B981) : const Color(0xFF0F172A),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
               ),
             ],
           ),

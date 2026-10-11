@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_house_challenge_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mate_chat_page.dart';
 
 /// ⚔️ Dedicated Attacking Profile Page for Kids Mode
-/// Shows the peer's Citadel/Avatar House, defense stats, and provides:
-/// 1. "⚔️ Challenge House" (automated Spoken English defense raid)
-/// 2. "🤝 Become Mates" (add to Kids Mates circle)
-/// 3. "💬 Talk / Mate Chat" (child-safe gamified messaging)
 class PocketKidsAttackingProfilePage extends StatefulWidget {
   final KidMate mate;
 
@@ -31,6 +28,10 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
   @override
   void initState() {
     super.initState();
+    PocketGameAudioService.instance.playAttackTheme(
+      targetId: widget.mate.id,
+      targetDay: widget.mate.dayLevel,
+    );
     _requestStatus = PocketKidsService.getMateRequestStatus(widget.mate.id);
     _isMate = _requestStatus == KidMateRequestStatus.accepted;
     _initTts();
@@ -148,6 +149,7 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
 
   @override
   void dispose() {
+    PocketGameAudioService.instance.stop();
     _tts.stop();
     super.dispose();
   }

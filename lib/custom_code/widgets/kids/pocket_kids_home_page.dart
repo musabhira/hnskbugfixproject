@@ -224,8 +224,8 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
   }
 
   void _onTapDayNode(int day) {
-    final unlockedDay = PocketKidsService.currentUnlockedDay;
-    if (day > unlockedDay) {
+    if (!PocketKidsService.isDayUnlocked(day)) {
+      final unlockedDay = PocketKidsService.currentUnlockedDay;
       HapticFeedback.lightImpact();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -352,7 +352,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     final dayNumber = index + 1;
                     final nodeX = _getNodeX(dayNumber, screenWidth);
                     final nodeY = _getNodeY(dayNumber);
-                    final isUnlocked = dayNumber <= unlockedDay;
+                    final isUnlocked = PocketKidsService.isDayUnlocked(dayNumber);
                     final isCurrent = dayNumber == unlockedDay;
                     final stars = completedDays[dayNumber] ?? (isUnlocked ? 3 : 0);
 

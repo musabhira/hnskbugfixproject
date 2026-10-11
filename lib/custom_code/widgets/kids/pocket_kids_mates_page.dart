@@ -74,7 +74,7 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
               },
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Search 90 Kids Buddies & Citadels... 🔍',
+                hintText: 'Search 100 Animal Companions & Citadels... 🔍',
                 hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
                 filled: true,
                 fillColor: const Color(0xFF0F172A).withValues(alpha: 0.8),
@@ -88,12 +88,12 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
             ),
           ),
 
-          // 🏷️ 3 Tabs: Discover (90 Bots/Peers) / My Mates / Requests
+          // 🏷️ 3 Tabs: Discover (100 Animal Mates) / My Mates / Requests
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             child: Row(
               children: [
-                _buildTabButton(0, 'DISCOVER 🤖'),
+                _buildTabButton(0, 'ANIMALS 🐾'),
                 const SizedBox(width: 8),
                 _buildTabButton(1, 'MY MATES 🤝'),
                 const SizedBox(width: 8),
@@ -138,7 +138,61 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                       final house = PocketKidsService.getHouseForDay(mate.dayLevel);
                       final isMate = mate.requestStatus == KidMateRequestStatus.accepted;
 
-                      return GestureDetector(
+                      return Dismissible(
+                        key: ValueKey('mate_${mate.id}'),
+                        direction: DismissDirection.horizontal,
+                        confirmDismiss: (direction) async {
+                          HapticFeedback.heavyImpact();
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => PocketKidsAttackingProfilePage(mate: mate),
+                            ),
+                          ).then((_) {
+                            if (mounted) setState(() {});
+                          });
+                          return false; // Launch attack without deleting from list
+                        },
+                        background: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Color(0xFFEF4444), Color(0xFFF97316)]),
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            children: [
+                              const Text('⚔️', style: TextStyle(fontSize: 24)),
+                              const SizedBox(width: 8),
+                              Text(
+                                'SWIPE TO ATTACK! ⚔️',
+                                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                              ),
+                            ],
+                          ),
+                        ),
+                        secondaryBackground: Container(
+                          margin: const EdgeInsets.only(bottom: 10),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(colors: [Color(0xFFF97316), Color(0xFFEF4444)]),
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                'SWIPE TO ATTACK! ⚔️',
+                                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 13),
+                              ),
+                              const SizedBox(width: 8),
+                              const Text('⚔️', style: TextStyle(fontSize: 24)),
+                            ],
+                          ),
+                        ),
+                        child: GestureDetector(
                         onTap: () {
                           HapticFeedback.selectionClick();
                           Navigator.push(
@@ -295,8 +349,9 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                             ],
                           ),
                         ),
-                      );
-                    },
+                      ),
+                    );
+                  },
                   ),
           ),
         ],

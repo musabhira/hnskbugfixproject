@@ -1443,7 +1443,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           ),
                           const SizedBox(height: 20),
                           Text(
-                            _loadingMessage ?? 'Connecting to Pocket Mates...',
+                            _loadingMessage ?? 'Connecting to Poket Mates...',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.outfit(
                               color: Colors.white,
@@ -1565,7 +1565,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
 
                     // App Title
                     Text(
-                      'Pocket Mates',
+                      'Poket Mates',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.outfit(
                         color: Colors.white,
@@ -1634,88 +1634,6 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                       },
                     ),
 
-                    const SizedBox(height: 16),
-
-                    // 🎈 KIDS ADVENTURE (Ages 3-12) SPECIAL CTA
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.heavyImpact();
-                        _bgmPlayer?.stop();
-                        PocketKidsOnboardingPage.launch(context);
-                      },
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [
-                              Color(0xFFFF6584),
-                              Color(0xFFFFB259),
-                            ],
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(0xFFFF6584).withValues(alpha: 0.35),
-                              blurRadius: 12,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 44,
-                              height: 44,
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.25),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              alignment: Alignment.center,
-                              child: const Text('🎈', style: TextStyle(fontSize: 24)),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'KIDS ADVENTURE (Ages 3-12)',
-                                    style: GoogleFonts.outfit(
-                                      color: Colors.white,
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w900,
-                                      letterSpacing: 0.4,
-                                    ),
-                                  ),
-                                  Text(
-                                    PocketLanguageService.getLearnerTypeTranslations(_selectedNativeLanguage)['kidsDesc'] ??
-                                        '2D cartoon games, phonics & fun adventures!',
-                                    style: GoogleFonts.inter(
-                                      color: Colors.white.withValues(alpha: 0.95),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(7),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.arrow_forward_rounded,
-                                color: Color(0xFFFF6584),
-                                size: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -2355,17 +2273,19 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 6,
+                          runSpacing: 4,
                           children: [
                             Text(
-                              trans['adultTitle'] ?? 'English Mastery (Adults)',
+                              trans['adultTitle'] ?? 'Adult (13+) - English Mastering',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(width: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
@@ -2441,17 +2361,19 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          spacing: 6,
+                          runSpacing: 4,
                           children: [
                             Text(
-                              trans['kidsTitle'] ?? 'Junior Explorer (Kids)',
+                              trans['kidsTitle'] ?? 'Kids - Junior Explorer',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            const SizedBox(width: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(

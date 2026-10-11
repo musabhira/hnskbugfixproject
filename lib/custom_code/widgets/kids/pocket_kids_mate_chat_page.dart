@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 /// 💬 Child-Safe Gamified Mate Chat & Friendly Talk Page
@@ -212,6 +214,50 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
         ),
         actions: [
           IconButton(
+            icon: const Text('🎒', style: TextStyle(fontSize: 20)),
+            tooltip: 'Poket Gang',
+            onPressed: () {
+              HapticFeedback.mediumImpact();
+              showDialog(
+                context: context,
+                builder: (ctx) => AlertDialog(
+                  backgroundColor: const Color(0xFF0F172A),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+                  title: Row(
+                    children: [
+                      const Text('🎒 ', style: TextStyle(fontSize: 22)),
+                      Text(
+                        'Poket Gang',
+                        style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  content: Text(
+                    'Invite ${widget.mate.name} to your Poket Gang to practice Spoken English together!',
+                    style: GoogleFonts.inter(color: Colors.white70, fontSize: 13),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(ctx),
+                      child: const Text('LATER', style: TextStyle(color: Colors.white60)),
+                    ),
+                    ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFFFFD700),
+                        foregroundColor: const Color(0xFF78350F),
+                      ),
+                      onPressed: () {
+                        Navigator.pop(ctx);
+                        _sendMessage('Hey ${widget.mate.name}! Want to join my Poket Gang? 🎒✨');
+                      },
+                      child: const Text('INVITE TO GANG ➔'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          IconButton(
             icon: Icon(
               _isSpeaking ? Icons.volume_up_rounded : Icons.volume_mute_rounded,
               color: const Color(0xFF10B981),
@@ -357,7 +403,39 @@ class _PocketKidsMateChatPageState extends State<PocketKidsMateChatPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
+
+                  // Voice Message Button (English Only)
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.heavyImpact();
+                      _sendMessage('🎙️ Spoken English Voice Note: "Great job practicing with me today!" 🌟');
+                    },
+                    child: Container(
+                      width: 42,
+                      height: 42,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF38BDF8), Color(0xFF0284C7)],
+                        ),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF0284C7).withValues(alpha: 0.35),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      alignment: Alignment.center,
+                      child: const Icon(
+                        Icons.mic_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
 
                   // Send Button
                   GestureDetector(

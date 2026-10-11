@@ -8,7 +8,7 @@ import 'package:pocket_mates_app/backend/supabase/supabase.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_certificate_page.dart';
-import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/welcome_onboarding_page.dart';
 
 /// ⚙️ Pocket Kids Settings & Parental Hub
 ///
@@ -168,7 +168,7 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
                   await PocketKidsService.activateAdultAccount();
                   if (context.mounted) {
                     Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const HomePageWidget()),
+                      MaterialPageRoute(builder: (_) => const WelcomeOnboardingPage()),
                       (route) => false,
                     );
                   }
@@ -224,7 +224,7 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'To sign out of Pocket Mates, a parent must solve:',
+                'To sign out of Poket Mates, a parent must solve:',
                 style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 13),
               ),
               const SizedBox(height: 14),

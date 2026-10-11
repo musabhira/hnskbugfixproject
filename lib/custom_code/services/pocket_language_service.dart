@@ -635,23 +635,23 @@ class PocketLanguageService {
         return {
           'title': 'Who is learning English?\nആർക്കുവേണ്ടിയാണ് ഈ അക്കൗണ്ട്?',
           'subtitle': 'നിങ്ങളുടെ പ്രായത്തിനും ആവശ്യത്തിനും അനുയോജ്യമായ ട്രാക്ക് തിരഞ്ഞെടുക്കുക:',
-          'adultTitle': 'English Mastery (Adults)',
+          'adultTitle': 'Adult (13+) - English Mastering',
           'adultBadge': '13+ ADULT',
           'adultDesc': 'മുതിർന്നവർക്കായി 90 ദിവസത്തെ സ്പോക്കൺ ഇംഗ്ലീഷ്, പരീക്ഷകൾ & ടാസ്‌ക്കുകൾ!',
-          'kidsTitle': 'Junior Explorer (Kids)',
-          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
-          'kidsDesc': 'കുട്ടികൾക്കായി 2D ഗെയിമുകൾ, കാർട്ടൂൺ ഫോണിക്സ് & മാന്ത്രിക പെറ്റ് അഡ്വഞ്ചറുകൾ!',
+          'kidsTitle': 'Kids - Junior Explorer',
+          'kidsBadge': 'AGES 3–12',
+          'kidsDesc': 'കുട്ടികൾക്കായി 2D ഗെയിമുകൾ, കാർട്ടൂൺ ഫോണിക്സ് & ആനിമൽ അഡ്വഞ്ചറുകൾ!',
         };
       default:
         return {
           'title': 'Who is learning English?',
           'subtitle': 'Choose the personalized track suited for your learning journey:',
-          'adultTitle': 'English Mastery (Adults)',
+          'adultTitle': 'Adult (13+) - English Mastering',
           'adultBadge': '13+ ADULT',
           'adultDesc': 'For adults: 90 days spoken English, career, tasks & real speaking!',
-          'kidsTitle': 'Junior Explorer (Kids)',
-          'kidsBadge': 'AGES 3–12 (UP TO 10TH)',
-          'kidsDesc': 'For kids: 2D cartoon games, phonics & mascot adventures!',
+          'kidsTitle': 'Kids - Junior Explorer',
+          'kidsBadge': 'AGES 3–12',
+          'kidsDesc': 'For kids: 2D cartoon games, phonics & animal adventures!',
         };
     }
   }

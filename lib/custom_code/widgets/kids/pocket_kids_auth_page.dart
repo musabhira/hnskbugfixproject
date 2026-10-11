@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -7,13 +8,6 @@ import 'package:pocket_mates_app/custom_code/services/pocket_language_service.da
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 
 /// 🔐 Dedicated Kids Mode Login & Account Creation Screen
-///
-/// Features:
-/// 1. Vibrant, cheerful cartoon interface designed for kids and parents.
-/// 2. Dual modes: "Create Kid Account" (Signup) and "Kid Sign In" (Login).
-/// 3. Email and Password credentials with eye toggle.
-/// 4. Direct entry into the 100-Day Target Trail Mountain Road (`PocketKidsHomePage`).
-/// 5. Fully localized without hardcoded language assumptions.
 class PocketKidsAuthPage extends StatefulWidget {
   final String kidName;
   final String ageGroup;
@@ -56,6 +50,32 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
   bool _obscurePassword = true;
   bool _isLoading = false;
   String? _errorMessage;
+  String _generatedPassword = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _generatedPassword = _createUniqueKidPassword();
+    if (_isSignUp) {
+      _passwordController.text = _generatedPassword;
+    }
+  }
+
+  String _createUniqueKidPassword() {
+    final rand = math.Random();
+    final sanitizedName = widget.kidName.replaceAll(RegExp(r'[^a-zA-Z]'), '').toLowerCase();
+    final base = sanitizedName.isNotEmpty ? sanitizedName : 'buddy';
+    final num = 100 + rand.nextInt(900);
+    return 'poket$base$num';
+  }
+
+  void _generateNewPassword() {
+    HapticFeedback.lightImpact();
+    setState(() {
+      _generatedPassword = _createUniqueKidPassword();
+      _passwordController.text = _generatedPassword;
+    });
+  }
 
   @override
   void dispose() {
@@ -85,6 +105,12 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
     });
 
     try {
+      final normalizedEmail = email.toLowerCase().trim();
+      final isAdmin = normalizedEmail == 'musabadmin@gamil.com' || normalizedEmail == 'musabadmin@gmail.com';
+      if (isAdmin) {
+        PocketKidsService.setAdminMode(true);
+      }
+
       if (_isSignUp) {
         // Try Supabase Auth Sign Up
         try {
@@ -96,6 +122,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
               'kid_name': widget.kidName,
               'kid_age_group': widget.ageGroup,
               'kid_avatar': widget.avatar,
+              if (isAdmin) 'is_admin': true,
             },
           );
         } catch (_) {
@@ -120,6 +147,10 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
         ageGroup: widget.ageGroup,
         avatar: widget.avatar,
       );
+
+      if (isAdmin) {
+        PocketKidsService.setAdminMode(true);
+      }
 
       HapticFeedback.heavyImpact();
       if (mounted) {
@@ -346,7 +377,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
                           keyboardType: TextInputType.emailAddress,
                           style: GoogleFonts.outfit(color: Colors.white, fontSize: 16),
                           decoration: InputDecoration(
-                            hintText: 'kid@pocketmates.com',
+                            hintText: 'kid@poketmates.com',
                             hintStyle: GoogleFonts.inter(color: Colors.white30),
                             prefixIcon: const Icon(Icons.mail_outline_rounded, color: Color(0xFF38BDF8)),
                             filled: true,
@@ -395,6 +426,54 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
                             ),
                           ),
                         ),
+
+                        if (_isSignUp) ...[
+                          const SizedBox(height: 10),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF0F172A),
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(
+                                color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.vpn_key_rounded, color: Color(0xFFFFD700), size: 16),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Suggested: $_generatedPassword',
+                                    style: GoogleFonts.outfit(
+                                      color: const Color(0xFFFFD700),
+                                      fontSize: 12.5,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                TextButton.icon(
+                                  onPressed: _generateNewPassword,
+                                  style: TextButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  icon: const Icon(Icons.refresh_rounded, color: Color(0xFF38BDF8), size: 14),
+                                  label: Text(
+                                    'New',
+                                    style: GoogleFonts.inter(
+                                      color: const Color(0xFF38BDF8),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
 
                         if (_errorMessage != null) ...[
                           const SizedBox(height: 12),

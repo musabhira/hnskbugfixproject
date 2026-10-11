@@ -162,19 +162,44 @@ class PocketKidsService {
   static final Set<String> _sentRequestIds = {};
   static final Set<String> _receivedRequestIds = {};
 
+  static bool _adminModeOverride = false;
+
+  /// Check if current account is admin tester account (musabadmin@gamil.com / musabadmin@gmail.com)
+  static bool get isAdminAccount {
+    if (_adminModeOverride) return true;
+    final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim();
+    if (email == 'musabadmin@gamil.com' || email == 'musabadmin@gmail.com') {
+      return true;
+    }
+    return false;
+  }
+
+  static void setAdminMode(bool enabled) {
+    _adminModeOverride = enabled;
+    if (enabled) {
+      _currentUnlockedDay = 100;
+      kidDayNotifier.value = 100;
+    }
+  }
+
+  static bool isDayUnlocked(int day) {
+    if (isAdminAccount) return true;
+    return day <= currentUnlockedDay;
+  }
+
   static bool get isKidAccount => _isKidAccount;
   static String get kidName => _kidName;
   static String get kidAgeGroup => _kidAgeGroup;
   static String get kidAvatar => _kidAvatar;
   static int get kidStars => _kidStars;
-  static int get currentUnlockedDay => _currentUnlockedDay;
+  static int get currentUnlockedDay => isAdminAccount ? 100 : _currentUnlockedDay;
   static Map<int, int> get completedDays => Map.unmodifiable(_completedDays);
 
   /// 🎯 Pocket Score calculation for Kids Target Page
   static int get pocketScore => (_kidStars * 15) + (_completedDays.length * 100);
 
   /// 🏆 Day 100 Certificate Unlock Status
-  static bool get isCertificateUnlocked => _completedDays.containsKey(100) || _currentUnlockedDay >= 100;
+  static bool get isCertificateUnlocked => isAdminAccount || _completedDays.containsKey(100) || _currentUnlockedDay >= 100;
 
   /// 🏰 Exact Avatar Houses matching the Adult 100-Day House System
   static const List<KidsHouse> houses = [
