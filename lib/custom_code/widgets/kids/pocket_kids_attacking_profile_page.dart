@@ -24,13 +24,15 @@ class PocketKidsAttackingProfilePage extends StatefulWidget {
 
 class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProfilePage> {
   final FlutterTts _tts = FlutterTts();
+  late KidMateRequestStatus _requestStatus;
   late bool _isMate;
   bool _speaking = false;
 
   @override
   void initState() {
     super.initState();
-    _isMate = widget.mate.isFriend || PocketKidsService.isMate(widget.mate.id);
+    _requestStatus = PocketKidsService.getMateRequestStatus(widget.mate.id);
+    _isMate = _requestStatus == KidMateRequestStatus.accepted;
     _initTts();
   }
 
@@ -56,15 +58,46 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
     }
   }
 
-  Future<void> _toggleMate() async {
-    await PocketKidsService.toggleMate(widget.mate.id);
+  Future<void> _handleMateRequestAction() async {
+    String message = '';
+    Color snackColor = const Color(0xFF10B981);
+
+    if (_requestStatus == KidMateRequestStatus.none) {
+      await PocketKidsService.sendMateRequest(widget.mate.id);
+      message = "Mate request sent to ${widget.mate.name}! 💌";
+      snackColor = const Color(0xFF10B981);
+
+      // If robot peer, auto-accepts shortly
+      if (widget.mate.isRobot) {
+        Future.delayed(const Duration(milliseconds: 1600), () {
+          if (mounted) {
+            setState(() {
+              _requestStatus = PocketKidsService.getMateRequestStatus(widget.mate.id);
+              _isMate = _requestStatus == KidMateRequestStatus.accepted;
+            });
+            _speak("${widget.mate.name} accepted your request! You are now Mates! 🤝");
+          }
+        });
+      }
+    } else if (_requestStatus == KidMateRequestStatus.sent) {
+      await PocketKidsService.cancelMateRequest(widget.mate.id);
+      message = "Request cancelled.";
+      snackColor = Colors.grey.shade700;
+    } else if (_requestStatus == KidMateRequestStatus.received) {
+      await PocketKidsService.acceptMateRequest(widget.mate.id);
+      message = "Hooray! You and ${widget.mate.name} are now Mates! 🤝";
+      snackColor = const Color(0xFF10B981);
+    } else {
+      await PocketKidsService.removeMate(widget.mate.id);
+      message = "Removed from your mates.";
+      snackColor = Colors.grey.shade700;
+    }
+
     setState(() {
-      _isMate = PocketKidsService.isMate(widget.mate.id);
+      _requestStatus = PocketKidsService.getMateRequestStatus(widget.mate.id);
+      _isMate = _requestStatus == KidMateRequestStatus.accepted;
     });
 
-    final message = _isMate
-        ? "Awesome! You and ${widget.mate.name} are now Mates! 🤝 You can talk anytime!"
-        : "Mate removed from your circle.";
     _speak(message);
 
     if (!mounted) return;
@@ -74,7 +107,7 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
           message,
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: _isMate ? const Color(0xFF10B981) : Colors.grey.shade700,
+        backgroundColor: snackColor,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
@@ -90,9 +123,22 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
   }
 
   void _openMateChat() {
-    if (!_isMate) {
-      _toggleMate();
+    if (_requestStatus != KidMateRequestStatus.accepted) {
+      final hint = _requestStatus == KidMateRequestStatus.received
+          ? "Accept ${widget.mate.name}'s Mate Request first to talk! ✨"
+          : "Send a Mate Request to ${widget.mate.name} first! 🤝";
+      _speak(hint);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(hint, style: const TextStyle(fontWeight: FontWeight.bold)),
+          backgroundColor: const Color(0xFFF59E0B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      );
+      return;
     }
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => PocketKidsMateChatPage(mate: widget.mate),
@@ -480,21 +526,29 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
 
                       Row(
                         children: [
-                          // Become / Remove Mate Button
+                          // Become / Remove / Accept Mate Request Button
                           Expanded(
                             child: GestureDetector(
-                              onTap: _toggleMate,
+                              onTap: _handleMateRequestAction,
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 13),
                                 decoration: BoxDecoration(
-                                  color: _isMate
+                                  color: _requestStatus == KidMateRequestStatus.accepted
                                       ? const Color(0xFF334155)
-                                      : const Color(0xFF10B981),
+                                      : _requestStatus == KidMateRequestStatus.received
+                                          ? const Color(0xFFF59E0B)
+                                          : _requestStatus == KidMateRequestStatus.sent
+                                              ? const Color(0xFF64748B)
+                                              : const Color(0xFF10B981),
                                   borderRadius: BorderRadius.circular(16),
                                   border: Border.all(
-                                    color: _isMate
+                                    color: _requestStatus == KidMateRequestStatus.accepted
                                         ? const Color(0xFF64748B)
-                                        : const Color(0xFF059669),
+                                        : _requestStatus == KidMateRequestStatus.received
+                                            ? const Color(0xFFD97706)
+                                            : _requestStatus == KidMateRequestStatus.sent
+                                                ? const Color(0xFF475569)
+                                                : const Color(0xFF059669),
                                     width: 1.5,
                                   ),
                                 ),
@@ -502,12 +556,27 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Text(_isMate ? '🤝' : '➕', style: const TextStyle(fontSize: 16)),
+                                    Text(
+                                      _requestStatus == KidMateRequestStatus.accepted
+                                          ? '💖'
+                                          : _requestStatus == KidMateRequestStatus.received
+                                              ? '✨'
+                                              : _requestStatus == KidMateRequestStatus.sent
+                                                  ? '⏳'
+                                                  : '➕',
+                                      style: const TextStyle(fontSize: 16),
+                                    ),
                                     const SizedBox(width: 8),
                                     Text(
-                                      _isMate ? 'MATES' : 'ADD MATE',
+                                      _requestStatus == KidMateRequestStatus.accepted
+                                          ? 'MATES'
+                                          : _requestStatus == KidMateRequestStatus.received
+                                              ? 'ACCEPT'
+                                              : _requestStatus == KidMateRequestStatus.sent
+                                                  ? 'SENT'
+                                                  : 'SEND REQUEST',
                                       style: const TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w900,
                                         color: Colors.white,
                                       ),
@@ -526,30 +595,38 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                               child: Container(
                                 padding: const EdgeInsets.symmetric(vertical: 13),
                                 decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-                                  ),
+                                  gradient: _isMate
+                                      ? const LinearGradient(
+                                          colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                                        )
+                                      : null,
+                                  color: _isMate ? null : const Color(0xFF334155),
                                   borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
+                                  border: _isMate
+                                      ? null
+                                      : Border.all(color: Colors.white24, width: 1.2),
+                                  boxShadow: _isMate
+                                      ? [
+                                          BoxShadow(
+                                            color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 3),
+                                          ),
+                                        ]
+                                      : null,
                                 ),
                                 alignment: Alignment.center,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Text('💬', style: TextStyle(fontSize: 16)),
-                                    SizedBox(width: 8),
+                                  children: [
+                                    const Text('💬', style: TextStyle(fontSize: 16)),
+                                    const SizedBox(width: 8),
                                     Text(
                                       'MATE CHAT',
                                       style: TextStyle(
-                                        fontSize: 14,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.w900,
-                                        color: Colors.white,
+                                        color: _isMate ? Colors.white : Colors.white60,
                                       ),
                                     ),
                                   ],

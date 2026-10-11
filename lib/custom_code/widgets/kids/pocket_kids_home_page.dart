@@ -6,6 +6,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_game_session_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_avatar_house_widget.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mates_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_certificate_page.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
@@ -507,7 +508,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
                   const SizedBox(width: 6),
 
-                  // ⚔️ Attack Citadel Button
+                  // ⚔️ Attack Citadel & Search Button
                   GestureDetector(
                     onTap: () {
                       HapticFeedback.heavyImpact();
@@ -534,7 +535,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                           const Text('⚔️', style: TextStyle(fontSize: 14)),
                           const SizedBox(width: 4),
                           Text(
-                            'ATTACK',
+                            'ATTACK 🔍',
                             style: GoogleFonts.outfit(
                               color: Colors.white,
                               fontWeight: FontWeight.w900,
@@ -548,9 +549,44 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
                   const Spacer(),
 
+                  // 🎯 Pocket Score Capsule
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFFEF08A), Color(0xFFFBBF24)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFF59E0B).withValues(alpha: 0.35),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('🎯', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${PocketKidsService.pocketScore}',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF78350F),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(width: 6),
+
                   // Stars Counter
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 6),
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
                         colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
@@ -567,14 +603,14 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('⭐', style: TextStyle(fontSize: 16)),
-                        const SizedBox(width: 5),
+                        const Text('⭐', style: TextStyle(fontSize: 14)),
+                        const SizedBox(width: 4),
                         Text(
                           '$kidStars',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF78350F),
                             fontWeight: FontWeight.w900,
-                            fontSize: 15,
+                            fontSize: 13,
                           ),
                         ),
                       ],
@@ -678,6 +714,29 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               color: Colors.white.withValues(alpha: 0.95),
               fontSize: 12,
               fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 10),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.white,
+              foregroundColor: const Color(0xFF78350F),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              elevation: 4,
+            ),
+            onPressed: () {
+              HapticFeedback.heavyImpact();
+              PocketKidsCertificatePage.open(context);
+            },
+            icon: const Text('🏆', style: TextStyle(fontSize: 16)),
+            label: Text(
+              'VIEW 100-DAY CERTIFICATE',
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w900,
+                fontSize: 12,
+                letterSpacing: 0.5,
+              ),
             ),
           ),
         ],

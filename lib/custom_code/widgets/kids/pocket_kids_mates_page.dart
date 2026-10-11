@@ -5,9 +5,10 @@ import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_attacking_profile_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_mate_chat_page.dart';
 
-/// 🤝 Dedicated Kids Mates & Adventure Friends Page
-/// Kids can search other kid users, view their avatar homes,
-/// add them as mates, and play friendly house challenges!
+/// 🤝 Kids Mates, Robots & Attack Profile Search Page
+/// Displays 90 Kids AI Robots & Peer Friends with Kids Homes,
+/// Mate Requests lifecycle, and 1-on-1 friendly talk/messaging.
+/// 100% separated from adult chats, profiles, and vibes.
 class PocketKidsMatesPage extends StatefulWidget {
   const PocketKidsMatesPage({super.key});
 
@@ -25,7 +26,7 @@ class PocketKidsMatesPage extends StatefulWidget {
 class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  int _selectedTab = 0; // 0 = Discover, 1 = My Mates
+  int _selectedTab = 0; // 0 = Discover (90 Bots & Peers), 1 = Mates, 2 = Requests
 
   @override
   void dispose() {
@@ -35,10 +36,10 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final allMates = PocketKidsService.getKidMates(query: _searchQuery);
-    final displayedMates = _selectedTab == 1
-        ? allMates.where((m) => m.isFriend).toList()
-        : allMates;
+    final displayedMates = PocketKidsService.getKidMates(
+      query: _searchQuery,
+      filterTab: _selectedTab,
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFF0284C7),
@@ -51,11 +52,11 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          'KIDS MATES 🤝',
+          'KIDS MATES & CITADELS 🤝',
           style: GoogleFonts.outfit(
             color: Colors.white,
             fontWeight: FontWeight.w900,
-            fontSize: 18,
+            fontSize: 17,
             letterSpacing: 0.5,
           ),
         ),
@@ -63,7 +64,7 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
       ),
       body: Column(
         children: [
-          // Search Bar
+          // 🔍 Top Search Bar (Search Attack Profiles & Buddies)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: TextField(
@@ -73,8 +74,8 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
               },
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'Search Kids Nickname... 🔍',
-                hintStyle: const TextStyle(color: Colors.white54),
+                hintText: 'Search 90 Kids Buddies & Citadels... 🔍',
+                hintStyle: const TextStyle(color: Colors.white54, fontSize: 13),
                 filled: true,
                 fillColor: const Color(0xFF0F172A).withValues(alpha: 0.8),
                 prefixIcon: const Icon(Icons.search_rounded, color: Color(0xFF38BDF8)),
@@ -87,75 +88,23 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
             ),
           ),
 
-          // Tabs: Discover / My Mates
+          // 🏷️ 3 Tabs: Discover (90 Bots/Peers) / My Mates / Requests
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
             child: Row(
               children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedTab = 0);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _selectedTab == 0
-                            ? const Color(0xFFFFD700)
-                            : Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'DISCOVER KIDS 🌍',
-                        style: GoogleFonts.outfit(
-                          color: _selectedTab == 0
-                              ? const Color(0xFF78350F)
-                              : Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      HapticFeedback.selectionClick();
-                      setState(() => _selectedTab = 1);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: _selectedTab == 1
-                            ? const Color(0xFFFFD700)
-                            : Colors.white.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'MY MATES 💖',
-                        style: GoogleFonts.outfit(
-                          color: _selectedTab == 1
-                              ? const Color(0xFF78350F)
-                              : Colors.white,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 13,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                _buildTabButton(0, 'DISCOVER 🤖'),
+                const SizedBox(width: 8),
+                _buildTabButton(1, 'MY MATES 🤝'),
+                const SizedBox(width: 8),
+                _buildTabButton(2, 'REQUESTS 💌'),
               ],
             ),
           ),
 
           const SizedBox(height: 8),
 
-          // Mates List
+          // Mates / Robots List
           Expanded(
             child: displayedMates.isEmpty
                 ? Center(
@@ -166,8 +115,10 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                         const SizedBox(height: 8),
                         Text(
                           _selectedTab == 1
-                              ? 'No mates added yet!\nTap DISCOVER to find friends.'
-                              : 'No kids found matching "$_searchQuery"',
+                              ? 'No mates added yet!\nTap DISCOVER to send requests.'
+                              : _selectedTab == 2
+                                  ? 'No pending mate requests!'
+                                  : 'No buddies found matching "$_searchQuery"',
                           textAlign: TextAlign.center,
                           style: GoogleFonts.outfit(
                             color: Colors.white70,
@@ -180,13 +131,12 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                   )
                 : ListView.builder(
                     physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
                     itemCount: displayedMates.length,
                     itemBuilder: (context, index) {
                       final mate = displayedMates[index];
-                      final house =
-                          PocketKidsService.getHouseForDay(mate.dayLevel);
+                      final house = PocketKidsService.getHouseForDay(mate.dayLevel);
+                      final isMate = mate.requestStatus == KidMateRequestStatus.accepted;
 
                       return GestureDetector(
                         onTap: () {
@@ -194,17 +144,15 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  PocketKidsAttackingProfilePage(mate: mate),
+                              builder: (_) => PocketKidsAttackingProfilePage(mate: mate),
                             ),
                           ).then((_) {
                             if (mounted) setState(() {});
                           });
                         },
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 12),
+                          margin: const EdgeInsets.only(bottom: 10),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(22),
@@ -218,18 +166,16 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                           ),
                           child: Row(
                             children: [
-                              // Mascot Avatar
+                              // Avatar Badge
                               Container(
-                                width: 52,
-                                height: 52,
+                                width: 50,
+                                height: 50,
                                 decoration: BoxDecoration(
-                                  color: const Color(0xFF38BDF8)
-                                      .withValues(alpha: 0.2),
+                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.2),
                                   shape: BoxShape.circle,
                                 ),
                                 alignment: Alignment.center,
-                                child: Text(mate.avatar,
-                                    style: const TextStyle(fontSize: 28)),
+                                child: Text(mate.avatar, style: const TextStyle(fontSize: 26)),
                               ),
 
                               const SizedBox(width: 12),
@@ -245,14 +191,13 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                                           mate.name,
                                           style: GoogleFonts.outfit(
                                             color: const Color(0xFF0F172A),
-                                            fontSize: 16,
+                                            fontSize: 15.5,
                                             fontWeight: FontWeight.w900,
                                           ),
                                         ),
-                                        if (mate.isFriend) ...[
-                                          const SizedBox(width: 6),
-                                          const Text('💖',
-                                              style: TextStyle(fontSize: 12)),
+                                        if (isMate) ...[
+                                          const SizedBox(width: 4),
+                                          const Text('💖', style: TextStyle(fontSize: 12)),
                                         ],
                                       ],
                                     ),
@@ -269,8 +214,9 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                                 ),
                               ),
 
-                              // Quick Chat for friends
-                              if (mate.isFriend) ...[
+                              // Action Buttons based on Request Status
+                              if (isMate) ...[
+                                // 1-on-1 Friendly Talk Chat Button
                                 IconButton(
                                   icon: const Icon(
                                     Icons.chat_bubble_rounded,
@@ -283,8 +229,7 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (_) =>
-                                            PocketKidsMateChatPage(mate: mate),
+                                        builder: (_) => PocketKidsMateChatPage(mate: mate),
                                       ),
                                     ).then((_) {
                                       if (mounted) setState(() {});
@@ -293,37 +238,60 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                                 ),
                               ],
 
-                              // Attack Citadel Button
-                              ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFFEF4444),
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 10, vertical: 8),
-                                ),
-                                onPressed: () {
-                                  HapticFeedback.heavyImpact();
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (_) =>
-                                          PocketKidsAttackingProfilePage(mate: mate),
+                              if (mate.requestStatus == KidMateRequestStatus.received) ...[
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFF59E0B),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
                                     ),
-                                  ).then((_) {
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  ),
+                                  onPressed: () async {
+                                    HapticFeedback.mediumImpact();
+                                    await PocketKidsService.acceptMateRequest(mate.id);
                                     if (mounted) setState(() {});
-                                  });
-                                },
-                                child: Text(
-                                  '⚔️ RAID',
-                                  style: GoogleFonts.outfit(
-                                    fontWeight: FontWeight.w900,
-                                    fontSize: 11.5,
+                                  },
+                                  child: Text(
+                                    'ACCEPT ✨',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 11,
+                                    ),
                                   ),
                                 ),
-                              ),
+                              ] else ...[
+                                // Attack Citadel Button
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFFEF4444),
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(14),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  ),
+                                  onPressed: () {
+                                    HapticFeedback.heavyImpact();
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) => PocketKidsAttackingProfilePage(mate: mate),
+                                      ),
+                                    ).then((_) {
+                                      if (mounted) setState(() {});
+                                    });
+                                  },
+                                  child: Text(
+                                    '⚔️ RAID',
+                                    style: GoogleFonts.outfit(
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 11.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
@@ -332,6 +300,34 @@ class _PocketKidsMatesPageState extends State<PocketKidsMatesPage> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTabButton(int index, String title) {
+    final isSelected = _selectedTab == index;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.selectionClick();
+          setState(() => _selectedTab = index);
+        },
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFFFFD700) : Colors.white.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          alignment: Alignment.center,
+          child: Text(
+            title,
+            style: GoogleFonts.outfit(
+              color: isSelected ? const Color(0xFF78350F) : Colors.white,
+              fontWeight: FontWeight.w900,
+              fontSize: 11.5,
+            ),
+          ),
+        ),
       ),
     );
   }

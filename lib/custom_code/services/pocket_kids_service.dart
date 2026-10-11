@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:pocket_mates_app/backend/supabase/supabase.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_robots_data.dart';
 
 /// 🏡 Kids House / Homestead Model matching the Adult Avatar Homes
 class KidsHouse {
@@ -23,15 +24,19 @@ class KidsHouse {
   });
 }
 
-/// 🤝 Model for Kid Mates & Adventure Friends
+enum KidMateRequestStatus { none, sent, received, accepted }
+
+/// 🤝 Model for Kid Mates & Adventure Friends (Kids Peers & Robots)
 class KidMate {
   final String id;
   final String name;
-  final String avatar; // 🦁, 🐼, 🦊, 🦄, 🐰, 🦖
+  final String avatar; // 🦁, 🤖, 🐼, 🦊, 🦄, 🐰, 🦖
   final String ageGroup;
   final int dayLevel;
   final int stars;
   final bool isFriend;
+  final bool isRobot;
+  final KidMateRequestStatus requestStatus;
 
   const KidMate({
     required this.id,
@@ -41,9 +46,14 @@ class KidMate {
     required this.dayLevel,
     required this.stars,
     this.isFriend = false,
+    this.isRobot = false,
+    this.requestStatus = KidMateRequestStatus.none,
   });
 
-  KidMate copyWith({bool? isFriend}) {
+  KidMate copyWith({
+    bool? isFriend,
+    KidMateRequestStatus? requestStatus,
+  }) {
     return KidMate(
       id: id,
       name: name,
@@ -52,6 +62,8 @@ class KidMate {
       dayLevel: dayLevel,
       stars: stars,
       isFriend: isFriend ?? this.isFriend,
+      isRobot: isRobot,
+      requestStatus: requestStatus ?? this.requestStatus,
     );
   }
 }
@@ -131,6 +143,8 @@ class PocketKidsService {
   static const String _keyKidCurrentDay = 'pm_kid_current_day';
   static const String _keyKidCompletedDays = 'pm_kid_completed_days';
   static const String _keyKidFriendIds = 'pm_kid_friend_ids';
+  static const String _keyKidSentRequests = 'pm_kid_sent_requests';
+  static const String _keyKidReceivedRequests = 'pm_kid_received_requests';
 
   static final ValueNotifier<bool> isKidAccountNotifier = ValueNotifier<bool>(false);
   static final ValueNotifier<int> kidStarsNotifier = ValueNotifier<int>(0);
@@ -145,6 +159,8 @@ class PocketKidsService {
   static int _currentUnlockedDay = 1;
   static final Map<int, int> _completedDays = {}; // day -> stars earned (1-3)
   static final Set<String> _friendIds = {};
+  static final Set<String> _sentRequestIds = {};
+  static final Set<String> _receivedRequestIds = {};
 
   static bool get isKidAccount => _isKidAccount;
   static String get kidName => _kidName;
@@ -153,6 +169,12 @@ class PocketKidsService {
   static int get kidStars => _kidStars;
   static int get currentUnlockedDay => _currentUnlockedDay;
   static Map<int, int> get completedDays => Map.unmodifiable(_completedDays);
+
+  /// 🎯 Pocket Score calculation for Kids Target Page
+  static int get pocketScore => (_kidStars * 15) + (_completedDays.length * 100);
+
+  /// 🏆 Day 100 Certificate Unlock Status
+  static bool get isCertificateUnlocked => _completedDays.containsKey(100) || _currentUnlockedDay >= 100;
 
   /// 🏰 Exact Avatar Houses matching the Adult 100-Day House System
   static const List<KidsHouse> houses = [
@@ -274,6 +296,21 @@ class PocketKidsService {
         _friendIds.addAll(savedFriends);
       }
 
+      final savedSent = prefs.getStringList(_keyKidSentRequests);
+      if (savedSent != null) {
+        _sentRequestIds.clear();
+        _sentRequestIds.addAll(savedSent);
+      }
+
+      final savedReceived = prefs.getStringList(_keyKidReceivedRequests);
+      if (savedReceived != null) {
+        _receivedRequestIds.clear();
+        _receivedRequestIds.addAll(savedReceived);
+      } else if (_receivedRequestIds.isEmpty && _friendIds.isEmpty) {
+        // Friendly welcome requests from AI kid peers so children can experience accepting requests!
+        _receivedRequestIds.addAll(['kid_bot_1', 'kid_bot_2']);
+      }
+
       isKidAccountNotifier.value = _isKidAccount;
       kidStarsNotifier.value = _kidStars;
       kidDayNotifier.value = _currentUnlockedDay;
@@ -366,104 +403,111 @@ class PocketKidsService {
     } catch (_) {}
   }
 
-  // --- KIDS MATES (PEER FRIENDS) SYSTEM ---
+  // --- KIDS MATES & ROBOTS SYSTEM (90 AI BOTS & PEERS) ---
 
-  static final List<KidMate> _defaultKidMates = [
-    const KidMate(
-      id: 'kid_1',
-      name: 'Leo Cub',
-      avatar: '🦁',
-      ageGroup: '6-8',
-      dayLevel: 24,
-      stars: 72,
-    ),
-    const KidMate(
-      id: 'kid_2',
-      name: 'Pandy Panda',
-      avatar: '🐼',
-      ageGroup: '4-6',
-      dayLevel: 15,
-      stars: 45,
-    ),
-    const KidMate(
-      id: 'kid_3',
-      name: 'Finny Fox',
-      avatar: '🦊',
-      ageGroup: '6-8',
-      dayLevel: 38,
-      stars: 114,
-    ),
-    const KidMate(
-      id: 'kid_4',
-      name: 'Sparkle Unicorn',
-      avatar: '🦄',
-      ageGroup: '6-8',
-      dayLevel: 52,
-      stars: 156,
-    ),
-    const KidMate(
-      id: 'kid_5',
-      name: 'Bouncy Bunny',
-      avatar: '🐰',
-      ageGroup: '4-6',
-      dayLevel: 9,
-      stars: 27,
-    ),
-    const KidMate(
-      id: 'kid_6',
-      name: 'Dino Rex',
-      avatar: '🦖',
-      ageGroup: '9-12',
-      dayLevel: 75,
-      stars: 225,
-    ),
-    const KidMate(
-      id: 'kid_7',
-      name: 'Tigger Brave',
-      avatar: '🐯',
-      ageGroup: '6-8',
-      dayLevel: 42,
-      stars: 126,
-    ),
-    const KidMate(
-      id: 'kid_8',
-      name: 'Bella Bear',
-      avatar: '🐻',
-      ageGroup: '4-6',
-      dayLevel: 6,
-      stars: 18,
-    ),
-    const KidMate(
-      id: 'kid_9',
-      name: 'Nova Champion',
-      avatar: '⭐',
-      ageGroup: '9-12',
-      dayLevel: 94,
-      stars: 282,
-    ),
-  ];
-
-  /// Get the list of kid mates with friendship status applied
-  static List<KidMate> getKidMates({String query = ''}) {
-    final list = _defaultKidMates.map((m) {
-      return m.copyWith(isFriend: _friendIds.contains(m.id));
-    }).toList();
-
-    if (query.trim().isEmpty) return list;
-    final q = query.trim().toLowerCase();
-    return list.where((m) => m.name.toLowerCase().contains(q)).toList();
+  static KidMateRequestStatus getMateRequestStatus(String kidId) {
+    if (_friendIds.contains(kidId)) return KidMateRequestStatus.accepted;
+    if (_sentRequestIds.contains(kidId)) return KidMateRequestStatus.sent;
+    if (_receivedRequestIds.contains(kidId)) return KidMateRequestStatus.received;
+    return KidMateRequestStatus.none;
   }
 
-  /// Toggle mate / friend status
+  static KidMate? getKidMateById(String kidId) {
+    try {
+      final found = PocketKidsRobotsData.robotsAndHomies.firstWhere((m) => m.id == kidId);
+      final status = getMateRequestStatus(found.id);
+      return found.copyWith(
+        isFriend: status == KidMateRequestStatus.accepted,
+        requestStatus: status,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// Get kid mates / robots with friendship & request status applied
+  /// filterTab: 0 = Discover (All 90 robots & peers), 1 = My Mates (accepted), 2 = Requests (sent + received)
+  static List<KidMate> getKidMates({String query = '', int filterTab = 0}) {
+    final all = PocketKidsRobotsData.robotsAndHomies.map((m) {
+      final status = getMateRequestStatus(m.id);
+      return m.copyWith(
+        isFriend: status == KidMateRequestStatus.accepted,
+        requestStatus: status,
+      );
+    }).toList();
+
+    List<KidMate> filtered;
+    if (filterTab == 1) {
+      filtered = all.where((m) => m.requestStatus == KidMateRequestStatus.accepted).toList();
+    } else if (filterTab == 2) {
+      filtered = all.where((m) =>
+          m.requestStatus == KidMateRequestStatus.received ||
+          m.requestStatus == KidMateRequestStatus.sent).toList();
+    } else {
+      filtered = all;
+    }
+
+    if (query.trim().isEmpty) return filtered;
+    final q = query.trim().toLowerCase();
+    return filtered.where((m) => m.name.toLowerCase().contains(q)).toList();
+  }
+
+  /// Send a mate request to a kid or robot peer
+  static Future<void> sendMateRequest(String kidId) async {
+    _sentRequestIds.add(kidId);
+    await _persistFriendshipState();
+
+    // Kids Robot peers auto-accept requests cheerfully after a short delay
+    final mate = getKidMateById(kidId);
+    if (mate != null && mate.isRobot) {
+      Future.delayed(const Duration(milliseconds: 1500), () async {
+        await acceptMateRequest(kidId);
+      });
+    }
+  }
+
+  /// Cancel a pending sent request
+  static Future<void> cancelMateRequest(String kidId) async {
+    _sentRequestIds.remove(kidId);
+    await _persistFriendshipState();
+  }
+
+  /// Accept an incoming mate request
+  static Future<void> acceptMateRequest(String kidId) async {
+    _receivedRequestIds.remove(kidId);
+    _sentRequestIds.remove(kidId);
+    _friendIds.add(kidId);
+    await _persistFriendshipState();
+  }
+
+  /// Reject an incoming mate request
+  static Future<void> rejectMateRequest(String kidId) async {
+    _receivedRequestIds.remove(kidId);
+    _sentRequestIds.remove(kidId);
+    await _persistFriendshipState();
+  }
+
+  /// Remove a friend from mates
+  static Future<void> removeMate(String kidId) async {
+    _friendIds.remove(kidId);
+    await _persistFriendshipState();
+  }
+
+  /// Toggle mate status
   static Future<void> toggleMate(String mateId) async {
     if (_friendIds.contains(mateId)) {
-      _friendIds.remove(mateId);
+      await removeMate(mateId);
     } else {
-      _friendIds.add(mateId);
+      await acceptMateRequest(mateId);
     }
+  }
+
+  static Future<void> _persistFriendshipState() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setStringList(_keyKidFriendIds, _friendIds.toList());
+      await prefs.setStringList(_keyKidSentRequests, _sentRequestIds.toList());
+      await prefs.setStringList(_keyKidReceivedRequests, _receivedRequestIds.toList());
     } catch (_) {}
   }
 
