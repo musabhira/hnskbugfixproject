@@ -27,6 +27,7 @@ import '../services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding_page.dart';
 
 enum WelcomeMode {
   welcome,
@@ -1635,6 +1636,86 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                     ),
 
                     const SizedBox(height: 16),
+
+                    // 🎈 KIDS ADVENTURE (Ages 3-12) SPECIAL CTA
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.heavyImpact();
+                        _bgmPlayer?.stop();
+                        PocketKidsOnboardingPage.launch(context);
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [
+                              Color(0xFFFF6584),
+                              Color(0xFFFFB259),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFF6584).withValues(alpha: 0.35),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.25),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              alignment: Alignment.center,
+                              child: const Text('🎈', style: TextStyle(fontSize: 24)),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'KIDS ADVENTURE (Ages 3-12)',
+                                    style: GoogleFonts.outfit(
+                                      color: Colors.white,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.4,
+                                    ),
+                                  ),
+                                  Text(
+                                    'കുട്ടികൾക്കായി പ്രത്യേക 2D ഗെയിംസ് & കാർട്ടൂൺ ഫൺ!',
+                                    style: GoogleFonts.inter(
+                                      color: Colors.white.withValues(alpha: 0.95),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: const BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.arrow_forward_rounded,
+                                color: Color(0xFFFF6584),
+                                size: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -2296,7 +2377,8 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
               GestureDetector(
                 onTap: () {
                   Navigator.pop(ctx);
-                  _showKidsSetupSheet();
+                  _bgmPlayer?.stop();
+                  PocketKidsOnboardingPage.launch(context);
                 },
                 child: Container(
                   width: double.infinity,

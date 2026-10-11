@@ -10,6 +10,9 @@ import '/auth/base_auth_user_provider.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 
 import '/index.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding_page.dart';
 
 export 'package:go_router/go_router.dart';
 export 'serialization_util.dart';
@@ -86,14 +89,16 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
       debugLogDiagnostics: true,
       refreshListenable: appStateNotifier,
       navigatorKey: appNavigatorKey,
-      errorBuilder: (context, state) =>
-          appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget(),
+      errorBuilder: (context, state) => PocketKidsService.isKidAccount
+          ? const PocketKidsHomePage()
+          : (appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget()),
       routes: [
         FFRoute(
           name: '_initialize',
           path: '/',
-          builder: (context, _) =>
-              appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget(),
+          builder: (context, _) => PocketKidsService.isKidAccount
+              ? const PocketKidsHomePage()
+              : (appStateNotifier.loggedIn ? const HomePageWidget() : const AuthPageWidget()),
         ),
         FFRoute(
           name: HomePageWidget.routeName,
@@ -104,6 +109,16 @@ GoRouter createRouter(AppStateNotifier appStateNotifier) => GoRouter(
           name: AuthPageWidget.routeName,
           path: AuthPageWidget.routePath,
           builder: (context, params) => const AuthPageWidget(),
+        ),
+        FFRoute(
+          name: PocketKidsHomePage.routeName,
+          path: PocketKidsHomePage.routePath,
+          builder: (context, params) => const PocketKidsHomePage(),
+        ),
+        FFRoute(
+          name: PocketKidsOnboardingPage.routeName,
+          path: PocketKidsOnboardingPage.routePath,
+          builder: (context, params) => const PocketKidsOnboardingPage(),
         ),
         FFRoute(
           name: 'PocketMatesDashboard',

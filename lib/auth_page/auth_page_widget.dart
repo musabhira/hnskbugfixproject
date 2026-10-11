@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import '/auth/supabase_auth/auth_util.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/welcome_onboarding_page.dart';
 export 'auth_page_model.dart';
 
@@ -32,7 +34,12 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted && loggedIn) {
+      if (mounted && PocketKidsService.isKidAccount) {
+        debugPrint('AuthPage: Kid account active. Redirecting to PocketKidsHomePage.');
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const PocketKidsHomePage()),
+        );
+      } else if (mounted && loggedIn) {
         debugPrint(
             'AuthPage: User is already logged in. Redirecting to HomePage.');
         context.goNamed(HomePageWidget.routeName);
@@ -40,15 +47,17 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
     });
   }
 
-
-
   @override
   Widget build(BuildContext context) {
+    if (PocketKidsService.isKidAccount) {
+      return const PocketKidsHomePage();
+    }
     if (loggedIn) {
       return const Scaffold(backgroundColor: Colors.black);
     }
 
     return const WelcomeOnboardingPage();
   }
+}
 
 }

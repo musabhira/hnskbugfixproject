@@ -5,16 +5,17 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/learning_60day/pocket_language_selection_dialog.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_game_session_page.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
-/// 🧸 Dedicated Kids Universe Home Foundation
+/// 🧸 Dedicated Kids Universe Home Page
 ///
 /// Features:
-/// 1. 100% Isolated from Adult universe (no adult chats, calls, or complex grammar).
-/// 2. Cheerful, high-dopamine, bright sky cartoon atmosphere.
-/// 3. Profile header with kid's chosen mascot avatar & stars count.
-/// 4. Clean blank-canvas playground ready for upcoming 2D kids games & islands.
-/// 5. Parental Gate (math challenge) for switching back to adult mode.
+/// 1. 100% Isolated Kids UI (No adult chat, no calls, no complex adult features).
+/// 2. 100-Day Winding Adventure Mountain Trail with Day 1 - Day 100 targets.
+/// 3. Achievable Homestead / Playhouse Showcase (Treehouse, Candy Cottage, Dino Den, Sky Castle).
+/// 4. Tap-to-play interactive 2D Kids Games with TTS voiceover and balloon popping.
+/// 5. Parental Gate (Math lock) for switching back to adult mode.
 class PocketKidsHomePage extends StatefulWidget {
   const PocketKidsHomePage({super.key});
 
@@ -34,20 +35,35 @@ class PocketKidsHomePage extends StatefulWidget {
 
 class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     with SingleTickerProviderStateMixin {
-  late AnimationController _floatController;
+  late AnimationController _bounceController;
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
-    _floatController = AnimationController(
+    _bounceController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1800),
+      duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
+
+    // Auto-scroll near the current unlocked day
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final curDay = PocketKidsService.currentUnlockedDay;
+      final targetScroll = (curDay - 1) * 85.0;
+      if (_scrollController.hasClients && targetScroll > 200) {
+        _scrollController.animateTo(
+          (targetScroll - 150).clamp(0.0, _scrollController.position.maxScrollExtent),
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
+        );
+      }
+    });
   }
 
   @override
   void dispose() {
-    _floatController.dispose();
+    _bounceController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -93,7 +109,8 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               ),
               const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 decoration: BoxDecoration(
                   color: const Color(0xFF1E293B),
                   borderRadius: BorderRadius.circular(14),
@@ -103,31 +120,32 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '$a + $b = ?',
+                      '$a + $b = ',
                       style: GoogleFonts.outfit(
                         color: const Color(0xFFFFD700),
-                        fontSize: 22,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    SizedBox(
+                      width: 60,
+                      child: TextField(
+                        controller: controller,
+                        keyboardType: TextInputType.number,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        decoration: const InputDecoration(
+                          hintText: '?',
+                          hintStyle: TextStyle(color: Colors.white24),
+                          border: InputBorder.none,
+                        ),
+                      ),
+                    ),
                   ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                autofocus: true,
-                style: const TextStyle(color: Colors.white, fontSize: 18),
-                decoration: InputDecoration(
-                  hintText: 'Enter answer',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  filled: true,
-                  fillColor: const Color(0xFF1E293B),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
                 ),
               ),
             ],
@@ -143,7 +161,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             ElevatedButton(
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: Colors.black,
+                foregroundColor: const Color(0xFF0F172A),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -180,54 +198,85 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     );
   }
 
+  void _onTapDayNode(int day) {
+    final unlockedDay = PocketKidsService.currentUnlockedDay;
+    if (day > unlockedDay) {
+      HapticFeedback.lightImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Text('🔒 ', style: TextStyle(fontSize: 16)),
+              Text(
+                'Complete Day $unlockedDay first to unlock Day $day! 🌟',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF0F172A),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    HapticFeedback.heavyImpact();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PocketKidsGameSessionPage(day: day),
+      ),
+    ).then((_) {
+      if (mounted) setState(() {});
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final kidName = PocketKidsService.kidName;
     final kidAvatar = PocketKidsService.kidAvatar;
     final kidStars = PocketKidsService.kidStars;
     final lang = PocketLanguageService.currentLanguage;
+    final currentHouse = PocketKidsService.currentHouse;
+    final unlockedDay = PocketKidsService.currentUnlockedDay;
+    final completedDays = PocketKidsService.completedDays;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0C192E),
+      backgroundColor: const Color(0xFF0369A1),
       body: Stack(
         children: [
-          // Background Gradient (Playful Sky)
+          // Background Cartoon Mountain Sky Gradient
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF0369A1), // Bright sky deep
-                  Color(0xFF0F172A), // Dark galaxy navy
+                  Color(0xFF38BDF8), // Morning sky
+                  Color(0xFF67E8F9), // Soft cyan
+                  Color(0xFF86EFAC), // Green valley
+                  Color(0xFF4ADE80), // Deep emerald hill
                 ],
+                stops: [0.0, 0.35, 0.75, 1.0],
               ),
             ),
           ),
 
-          // Floating Cartoon Stars & Cloud Bubbles
+          // Floating background clouds and balloons
           Positioned(
-            top: 40,
+            top: 60,
             left: 20,
             child: Opacity(
-              opacity: 0.15,
-              child: Text('☁️', style: TextStyle(fontSize: 80)),
+              opacity: 0.3,
+              child: const Text('☁️', style: TextStyle(fontSize: 80)),
             ),
           ),
           Positioned(
-            top: 120,
-            right: 30,
+            top: 140,
+            right: 25,
             child: Opacity(
-              opacity: 0.2,
-              child: Text('⭐', style: TextStyle(fontSize: 45)),
-            ),
-          ),
-          Positioned(
-            bottom: 80,
-            left: 40,
-            child: Opacity(
-              opacity: 0.15,
-              child: Text('🎈', style: TextStyle(fontSize: 60)),
+              opacity: 0.25,
+              child: const Text('🎈', style: TextStyle(fontSize: 60)),
             ),
           ),
 
@@ -236,26 +285,34 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               children: [
                 // 🌟 TOP HUD BAR
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   child: Row(
                     children: [
-                      // Kid Avatar & Name Badge
+                      // Mascot Avatar & Kid Name
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.15),
+                          color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.12),
+                              blurRadius: 8,
+                            ),
+                          ],
                         ),
                         child: Row(
                           children: [
-                            Text(kidAvatar, style: const TextStyle(fontSize: 22)),
+                            Text(kidAvatar,
+                                style: const TextStyle(fontSize: 22)),
                             const SizedBox(width: 8),
                             Text(
                               kidName,
                               style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0F172A),
+                                fontWeight: FontWeight.w900,
                                 fontSize: 15,
                               ),
                             ),
@@ -265,23 +322,29 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
                       const Spacer(),
 
-                      // Stars Counter
+                      // Stars Counter Badge
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: const Color(0xFFF59E0B)),
+                          color: const Color(0xFFF59E0B),
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.15),
+                              blurRadius: 8,
+                            ),
+                          ],
                         ),
                         child: Row(
                           children: [
-                            const Text('⭐', style: TextStyle(fontSize: 14)),
-                            const SizedBox(width: 4),
+                            const Text('⭐', style: TextStyle(fontSize: 16)),
+                            const SizedBox(width: 5),
                             Text(
                               '$kidStars',
                               style: GoogleFonts.outfit(
-                                color: const Color(0xFFFFD700),
-                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
                                 fontSize: 14,
                               ),
                             ),
@@ -290,23 +353,24 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                       ),
                       const SizedBox(width: 8),
 
-                      // Language Switcher Badge
+                      // Language Switcher
                       GestureDetector(
                         onTap: () {
                           HapticFeedback.selectionClick();
                           showDialog(
                             context: context,
-                            builder: (ctx) => PocketLanguageSelectionDialog(currentLanguage: lang),
+                            builder: (ctx) => PocketLanguageSelectionDialog(
+                                currentLanguage: lang),
                           ).then((_) {
                             if (mounted) setState(() {});
                           });
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFF10B981)),
+                            color: Colors.white.withValues(alpha: 0.9),
+                            borderRadius: BorderRadius.circular(18),
                           ),
                           child: Row(
                             children: [
@@ -315,8 +379,8 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                               Text(
                                 lang,
                                 style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF0F172A),
+                                  fontWeight: FontWeight.bold,
                                   fontSize: 12,
                                 ),
                               ),
@@ -326,195 +390,241 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                       ),
                       const SizedBox(width: 8),
 
-                      // Parental Gate Button
+                      // Parental Gate
                       IconButton(
                         tooltip: 'Parent Zone',
-                        icon: const Icon(Icons.settings_suggest_rounded, color: Colors.white70),
+                        icon: const Icon(Icons.settings_suggest_rounded,
+                            color: Colors.white, size: 26),
                         onPressed: () => _showParentalGate(context),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 10),
-
-                // 🧸 MAIN KIDS PLAYGROUND CANVAS
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                    child: Column(
-                      children: [
-                        // Cheerful Mascot Welcome Card
-                        AnimatedBuilder(
-                          animation: _floatController,
-                          builder: (context, child) {
-                            final dy = math.sin(_floatController.value * math.pi) * 6;
-                            return Transform.translate(
-                              offset: Offset(0, dy),
-                              child: child,
-                            );
-                          },
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(22),
-                            decoration: BoxDecoration(
-                              gradient: const LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Color(0xFF38BDF8),
-                                  Color(0xFF6366F1),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(28),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.35),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 10),
-                                ),
-                              ],
-                            ),
-                            child: Column(
+                // 🏡 ACHIEVED HOMESTEAD / PLAYHOUSE BANNER
+                Container(
+                  margin:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(24),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.1),
+                        blurRadius: 14,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      // House Mascot
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: currentHouse.themeColor.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(currentHouse.emoji,
+                            style: const TextStyle(fontSize: 28)),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
                               children: [
                                 Text(
-                                  kidAvatar,
-                                  style: const TextStyle(fontSize: 64),
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  'POCKET KIDS UNIVERSE',
+                                  currentHouse.title,
                                   style: GoogleFonts.outfit(
-                                    color: const Color(0xFFFFD700),
-                                    fontSize: 22,
+                                    color: const Color(0xFF0F172A),
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w900,
-                                    letterSpacing: 1.2,
                                   ),
                                 ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  'Welcome, $kidName! 🌟',
-                                  style: GoogleFonts.outfit(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
+                                const SizedBox(width: 6),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(16),
+                                    color: currentHouse.themeColor,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    'Your 100% Fun 2D Learning World is Ready to Build!',
-                                    textAlign: TextAlign.center,
-                                    style: GoogleFonts.inter(
+                                    'TIER ${currentHouse.tier}',
+                                    style: GoogleFonts.outfit(
                                       color: Colors.white,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: 9.5,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
-                          ),
+                            const SizedBox(height: 2),
+                            Text(
+                              currentHouse.description,
+                              style: GoogleFonts.inter(
+                                color: Colors.black54,
+                                fontSize: 11.5,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-
-                        const SizedBox(height: 24),
-
-                        // Blank Canvas Placeholder for Upcoming Kids Games
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1E293B).withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(24),
-                            border: Border.all(
-                              color: const Color(0xFF38BDF8).withValues(alpha: 0.3),
-                              width: 1.8,
+                      ),
+                      const SizedBox(width: 8),
+                      // Progress to next house
+                      Column(
+                        children: [
+                          Text(
+                            'Day $unlockedDay/100',
+                            style: GoogleFonts.outfit(
+                              color: currentHouse.themeColor,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 13,
                             ),
                           ),
-                          child: Column(
-                            children: [
-                              Container(
-                                width: 56,
-                                height: 56,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
-                                  shape: BoxShape.circle,
-                                ),
-                                alignment: Alignment.center,
-                                child: const Text('🏝️', style: TextStyle(fontSize: 28)),
-                              ),
-                              const SizedBox(height: 14),
-                              Text(
-                                'Kids 2D Playground Canvas',
-                                style: GoogleFonts.outfit(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'ഇവിടെ കുട്ടികൾക്ക് അനുയോജ്യമായ 2D ഗെയിമുകളും അഡ്വഞ്ചർ ഐലൻഡുകളും നിർമ്മിക്കാം.\n\nReady for research & custom game planning!',
-                                textAlign: TextAlign.center,
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF94A3B8),
-                                  fontSize: 13,
-                                  height: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 18),
-                              Wrap(
-                                spacing: 10,
-                                runSpacing: 10,
-                                alignment: WrapAlignment.center,
+                          Text(
+                            'Level Up!',
+                            style: GoogleFonts.inter(
+                              color: Colors.black45,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 6),
+
+                // 🗺️ 100-DAY TARGET ADVENTURE MOUNTAIN MAP
+                Expanded(
+                  child: ListView.builder(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 16),
+                    itemCount: 100,
+                    itemBuilder: (context, index) {
+                      final dayNumber = index + 1;
+                      final isUnlocked = dayNumber <= unlockedDay;
+                      final isCurrent = dayNumber == unlockedDay;
+                      final starsEarned = completedDays[dayNumber] ?? 0;
+
+                      // Sine-wave offset for natural winding trail
+                      final double horizontalShift =
+                          math.sin(index * 0.7) * 75;
+
+                      return Column(
+                        children: [
+                          // Zone Milestone Header at zone boundaries
+                          if (dayNumber == 1)
+                            _buildZoneHeader('🎈 ZONE 1: ABC BALLOON VALLEY',
+                                'Learn letters, sounds & phonics (Days 1–15)'),
+                          if (dayNumber == 16)
+                            _buildZoneHeader('🐾 ZONE 2: ANIMAL SAFARI WORDS',
+                                'Explore animal names & jungle sounds (Days 16–30)'),
+                          if (dayNumber == 31)
+                            _buildZoneHeader('🎨 ZONE 3: COLORS & NUMBERS CASTLE',
+                                'Discover magical rainbow colors & counting (Days 31–45)'),
+                          if (dayNumber == 46)
+                            _buildZoneHeader('🍎 ZONE 4: YUMMY FOOD ORCHARD',
+                                'Delicious fruits, veggies & treats (Days 46–60)'),
+                          if (dayNumber == 61)
+                            _buildZoneHeader('⚽ ZONE 5: ACTION & PLAYGROUND',
+                                'Action verbs, sports & body parts (Days 61–75)'),
+                          if (dayNumber == 76)
+                            _buildZoneHeader('📖 ZONE 6: MAGICAL STORY PEAK',
+                                'Champion mini-dialogues & sentences (Days 76–100)'),
+
+                          // Winding connector stepping trail dots
+                          if (dayNumber > 1)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  _buildKidsFeaturePill('🔤 Phonics Island'),
-                                  _buildKidsFeaturePill('🦁 Animal Safari'),
-                                  _buildKidsFeaturePill('🎨 Color Magic'),
-                                  _buildKidsFeaturePill('🍎 Yummy Vocab'),
+                                  Transform.translate(
+                                    offset: Offset(horizontalShift * 0.5, 0),
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          width: 6,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color: isUnlocked
+                                                ? const Color(0xFFFFD700)
+                                                : Colors.white30,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Container(
+                                          width: 6,
+                                          height: 6,
+                                          decoration: BoxDecoration(
+                                            color: isUnlocked
+                                                ? const Color(0xFFFFD700)
+                                                : Colors.white30,
+                                            shape: BoxShape.circle,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ],
                               ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 30),
-
-                        // Switch Mode Info Pill
-                        GestureDetector(
-                          onTap: () => _showParentalGate(context),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.06),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white12),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.lock_outline_rounded, color: Colors.white54, size: 16),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Parent Zone • Switch to Adult Track',
-                                  style: GoogleFonts.inter(
-                                    color: Colors.white70,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+
+                          // Target Day Node
+                          Transform.translate(
+                            offset: Offset(horizontalShift, 0),
+                            child: Center(
+                              child: GestureDetector(
+                                onTap: () => _onTapDayNode(dayNumber),
+                                child: isCurrent
+                                    ? AnimatedBuilder(
+                                        animation: _bounceController,
+                                        builder: (context, child) {
+                                          final bounce = math.sin(
+                                                  _bounceController.value *
+                                                      math.pi) *
+                                              6;
+                                          return Transform.translate(
+                                            offset: Offset(0, -bounce),
+                                            child: child,
+                                          );
+                                        },
+                                        child: _buildDayNodeWidget(
+                                          dayNumber: dayNumber,
+                                          isUnlocked: true,
+                                          isCurrent: true,
+                                          stars: starsEarned,
+                                        ),
+                                      )
+                                    : _buildDayNodeWidget(
+                                        dayNumber: dayNumber,
+                                        isUnlocked: isUnlocked,
+                                        isCurrent: false,
+                                        stars: starsEarned,
+                                      ),
+                              ),
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+
+                          const SizedBox(height: 8),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ],
@@ -525,21 +635,172 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     );
   }
 
-  Widget _buildKidsFeaturePill(String title) {
+  Widget _buildZoneHeader(String title, String subtitle) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white12),
+        color: const Color(0xFF0F172A).withValues(alpha: 0.85),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFFFD700), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Text(
-        title,
-        style: GoogleFonts.outfit(
-          color: const Color(0xFFE2E8F0),
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
+      child: Column(
+        children: [
+          Text(
+            title,
+            style: GoogleFonts.outfit(
+              color: const Color(0xFFFFD700),
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 0.8,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            subtitle,
+            style: GoogleFonts.inter(
+              color: Colors.white70,
+              fontSize: 11,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDayNodeWidget({
+    required int dayNumber,
+    required bool isUnlocked,
+    required bool isCurrent,
+    required int stars,
+  }) {
+    if (isCurrent) {
+      // Current active pulsing node
+      return Container(
+        width: 82,
+        height: 82,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 3.5),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.6),
+              blurRadius: 20,
+              spreadRadius: 3,
+            ),
+          ],
         ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'DAY $dayNumber',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF0F172A),
+                fontSize: 12,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            const Icon(Icons.play_arrow_rounded,
+                color: Color(0xFF0F172A), size: 28),
+            Text(
+              'PLAY',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFF0F172A),
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (isUnlocked) {
+      // Completed node with stars
+      return Container(
+        width: 68,
+        height: 68,
+        decoration: BoxDecoration(
+          color: const Color(0xFF10B981),
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 3),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF10B981).withValues(alpha: 0.4),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '$dayNumber',
+              style: GoogleFonts.outfit(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(
+                3,
+                (i) => Text(
+                  '⭐',
+                  style: TextStyle(
+                    fontSize: 9,
+                    color: i < (stars > 0 ? stars : 3)
+                        ? const Color(0xFFFFD700)
+                        : Colors.white30,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Locked future node
+    return Container(
+      width: 62,
+      height: 62,
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B).withValues(alpha: 0.75),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white24, width: 2),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.lock_rounded, color: Colors.white38, size: 18),
+          const SizedBox(height: 2),
+          Text(
+            '$dayNumber',
+            style: GoogleFonts.outfit(
+              color: Colors.white38,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
       ),
     );
   }
