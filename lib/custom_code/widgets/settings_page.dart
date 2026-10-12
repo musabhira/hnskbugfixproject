@@ -15,6 +15,7 @@ import 'package:pocket_mates_app/custom_code/widgets/admin_auth_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_president_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -227,6 +228,104 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
         ),
       ),
+    );
+  }
+
+  void _showSwitchToKidsDialog() {
+    HapticFeedback.mediumImpact();
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+          ),
+          title: Row(
+            children: [
+              const Text('🧸 ', style: TextStyle(fontSize: 24)),
+              Text(
+                'Switch to Kids Mode',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Switching to Junior Explorer mode for your child. They can play safe learning games, phonics, and earn Stars!',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF94A3B8),
+                  fontSize: 13,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.shield_rounded, color: Color(0xFF10B981), size: 20),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        'Adult chats & stranger matches are hidden. You can return anytime using the Parental Lock PIN.',
+                        style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF38BDF8),
+                foregroundColor: Colors.black,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+              ),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                HapticFeedback.heavyImpact();
+                await PocketKidsService.activateKidAccount(
+                  name: PocketKidsService.kidName.isNotEmpty ? PocketKidsService.kidName : 'Little Explorer',
+                  ageGroup: PocketKidsService.kidAgeGroup.isNotEmpty ? PocketKidsService.kidAgeGroup : '6-8',
+                  avatar: PocketKidsService.kidAvatar.isNotEmpty ? PocketKidsService.kidAvatar : '🦁',
+                  isParentSwitched: true,
+                );
+                if (context.mounted) {
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(builder: (_) => const HomePageWidget()),
+                    (route) => false,
+                  );
+                }
+              },
+              child: Text(
+                'ENTER KIDS MODE',
+                style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -886,6 +985,13 @@ class _SettingsPageState extends State<SettingsPage> {
 
               // 👤 Account & Communication
               const _SectionHeader(title: 'Account & Communication'),
+              _SettingsTile(
+                icon: Icons.child_care_rounded,
+                iconColor: const Color(0xFFFF69B4),
+                title: 'Switch to Kids Mode',
+                subtitle: 'Junior Explorer track for children (Ages up to 14)',
+                onTap: _showSwitchToKidsDialog,
+              ),
               _SettingsTile(
                 icon: Icons.bookmark_added_rounded,
                 iconColor: const Color(0xFF38BDF8),

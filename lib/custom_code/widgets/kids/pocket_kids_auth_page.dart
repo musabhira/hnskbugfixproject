@@ -106,7 +106,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
 
     try {
       final normalizedEmail = email.toLowerCase().trim();
-      final isAdmin = normalizedEmail == 'musabadmin@gamil.com' || normalizedEmail == 'musabadmin@gmail.com';
+      final isAdmin = normalizedEmail == 'musabthonippadam@gmail.com';
       if (isAdmin) {
         PocketKidsService.setAdminMode(true);
       }
@@ -118,7 +118,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
             email: email,
             password: password,
             data: {
-              'account_type': 'kid',
+              'account_type': isAdmin ? 'admin' : 'pure_kid',
               'kid_name': widget.kidName,
               'kid_age_group': widget.ageGroup,
               'kid_avatar': widget.avatar,
@@ -146,6 +146,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
         name: widget.kidName,
         ageGroup: widget.ageGroup,
         avatar: widget.avatar,
+        isPureKid: !isAdmin,
       );
 
       if (isAdmin) {
@@ -166,6 +167,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
           name: widget.kidName,
           ageGroup: widget.ageGroup,
           avatar: widget.avatar,
+          isPureKid: true,
         );
         if (mounted) {
           PocketKidsHomePage.launch(context);
@@ -182,6 +184,7 @@ class _PocketKidsAuthPageState extends State<PocketKidsAuthPage> {
       name: widget.kidName,
       ageGroup: widget.ageGroup,
       avatar: widget.avatar,
+      isPureKid: true,
     );
     if (mounted) {
       PocketKidsHomePage.launch(context);

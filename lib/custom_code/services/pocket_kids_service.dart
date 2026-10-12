@@ -145,6 +145,8 @@ class PocketKidsService {
   static const String _keyKidFriendIds = 'pm_kid_friend_ids';
   static const String _keyKidSentRequests = 'pm_kid_sent_requests';
   static const String _keyKidReceivedRequests = 'pm_kid_received_requests';
+  static const String _keyIsPureKidAccount = 'pm_is_pure_kid_account';
+  static const String _keyIsParentSwitched = 'pm_is_parent_switched';
 
   static final ValueNotifier<bool> isKidAccountNotifier = ValueNotifier<bool>(false);
   static final ValueNotifier<int> kidStarsNotifier = ValueNotifier<int>(0);
@@ -152,6 +154,8 @@ class PocketKidsService {
   static bool _initialized = false;
 
   static bool _isKidAccount = false;
+  static bool _isPureKidAccount = false;
+  static bool _isParentSwitched = false;
   static String _kidName = 'Little Explorer';
   static String _kidAgeGroup = '4-6';
   static String _kidAvatar = '🦁';
@@ -164,15 +168,21 @@ class PocketKidsService {
 
   static bool _adminModeOverride = false;
 
-  /// Check if current account is admin tester account (musabadmin@gamil.com / musabadmin@gmail.com)
+  /// Check if current account is Master Admin tester account (musabthonippadam@gmail.com)
   static bool get isAdminAccount {
     if (_adminModeOverride) return true;
     final email = SupaFlow.client.auth.currentUser?.email?.toLowerCase().trim();
-    if (email == 'musabadmin@gamil.com' || email == 'musabadmin@gmail.com') {
+    if (email == 'musabthonippadam@gmail.com') {
       return true;
     }
     return false;
   }
+
+  /// Whether current user can exit Kids Mode back to Adult Mode
+  /// - Admin (musabthonippadam@gmail.com) can always exit
+  /// - Parents who switched into Kids Mode can exit via Parent Gate
+  /// - Pure Kid accounts CANNOT exit to Adult Mode (COPPA / Child Safety requirement)
+  static bool get canExitToAdultAccount => isAdminAccount || _isParentSwitched || !_isPureKidAccount;
 
   static void setAdminMode(bool enabled) {
     _adminModeOverride = enabled;
@@ -188,6 +198,8 @@ class PocketKidsService {
   }
 
   static bool get isKidAccount => _isKidAccount;
+  static bool get isPureKidAccount => _isPureKidAccount;
+  static bool get isParentSwitched => _isParentSwitched;
   static String get kidName => _kidName;
   static String get kidAgeGroup => _kidAgeGroup;
   static String get kidAvatar => _kidAvatar;
@@ -296,6 +308,8 @@ class PocketKidsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       _isKidAccount = prefs.getBool(_keyIsKidAccount) ?? false;
+      _isPureKidAccount = prefs.getBool(_keyIsPureKidAccount) ?? false;
+      _isParentSwitched = prefs.getBool(_keyIsParentSwitched) ?? false;
       _kidName = prefs.getString(_keyKidName) ?? 'Little Explorer';
       _kidAgeGroup = prefs.getString(_keyKidAgeGroup) ?? '4-6';
       _kidAvatar = prefs.getString(_keyKidAvatar) ?? '🦁';
@@ -350,8 +364,17 @@ class PocketKidsService {
     required String name,
     required String ageGroup,
     required String avatar,
+    bool isParentSwitched = false,
+    bool isPureKid = false,
   }) async {
     _isKidAccount = true;
+    if (isParentSwitched) {
+      _isParentSwitched = true;
+      _isPureKidAccount = false;
+    } else if (isPureKid) {
+      _isPureKidAccount = true;
+      _isParentSwitched = false;
+    }
     _kidName = name.trim().isNotEmpty ? name.trim() : 'Little Explorer';
     _kidAgeGroup = ageGroup;
     _kidAvatar = avatar;
@@ -360,6 +383,8 @@ class PocketKidsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_keyIsKidAccount, true);
+      await prefs.setBool(_keyIsPureKidAccount, _isPureKidAccount);
+      await prefs.setBool(_keyIsParentSwitched, _isParentSwitched);
       await prefs.setString(_keyKidName, _kidName);
       await prefs.setString(_keyKidAgeGroup, _kidAgeGroup);
       await prefs.setString(_keyKidAvatar, _kidAvatar);
@@ -368,7 +393,7 @@ class PocketKidsService {
       if (user != null) {
         await prefs.setBool('is_kid_account_${user.id}', true);
         await SupaFlow.client.from('profile').update({
-          'account_type': 'kid',
+          'account_type': _isPureKidAccount ? 'pure_kid' : 'kid',
           'kid_name': _kidName,
           'kid_age_group': _kidAgeGroup,
           'kid_avatar': _kidAvatar,
@@ -406,11 +431,13 @@ class PocketKidsService {
   /// Activate Adult Account Mode
   static Future<void> activateAdultAccount() async {
     _isKidAccount = false;
+    _isParentSwitched = false;
     isKidAccountNotifier.value = false;
 
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_keyIsKidAccount, false);
+      await prefs.setBool(_keyIsParentSwitched, false);
 
       final user = SupaFlow.client.auth.currentUser;
       if (user != null) {

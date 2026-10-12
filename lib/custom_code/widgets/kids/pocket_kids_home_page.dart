@@ -111,11 +111,17 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
   }
 
   void _showParentalGate(BuildContext context) {
+    if (!PocketKidsService.canExitToAdultAccount) {
+      return;
+    }
     final rand = math.Random();
     final a = rand.nextInt(5) + 3; // 3 to 7
     final b = rand.nextInt(5) + 2; // 2 to 6
     final correctAnswer = a + b;
     final controller = TextEditingController();
+    if (PocketKidsService.isAdminAccount) {
+      controller.text = '$correctAnswer';
+    }
 
     showDialog(
       context: context,
@@ -641,7 +647,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                         const Text('⭐', style: TextStyle(fontSize: 14)),
                         const SizedBox(width: 4),
                         Text(
-                          '$kidStars',
+                          '$kidStars Star Score',
                           style: GoogleFonts.outfit(
                             color: const Color(0xFF78350F),
                             fontWeight: FontWeight.w900,
@@ -652,32 +658,67 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     ),
                   ),
 
-                  const SizedBox(width: 8),
-
-                  // Parental Lock Button (Settings)
-                  GestureDetector(
-                    onTap: () => _showParentalGate(context),
-                    child: Container(
-                      width: 38,
-                      height: 38,
+                  if (PocketKidsService.isAdminAccount) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.9),
-                        shape: BoxShape.circle,
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 6,
+                            color: Colors.black.withValues(alpha: 0.15),
+                            blurRadius: 4,
                           ),
                         ],
                       ),
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.lock_outline_rounded,
-                        color: Color(0xFF0F172A),
-                        size: 20,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.bolt_rounded, color: Colors.black, size: 14),
+                          const SizedBox(width: 2),
+                          Text(
+                            'ADMIN',
+                            style: GoogleFonts.outfit(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
+                  ],
+
+                  // Parental Lock Button (Settings) - ONLY visible if user can exit to Adult Mode (parent switched or admin)
+                  if (PocketKidsService.canExitToAdultAccount) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: () => _showParentalGate(context),
+                      child: Container(
+                        width: 38,
+                        height: 38,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.1),
+                              blurRadius: 6,
+                            ),
+                          ],
+                        ),
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.lock_outline_rounded,
+                          color: Color(0xFF0F172A),
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
