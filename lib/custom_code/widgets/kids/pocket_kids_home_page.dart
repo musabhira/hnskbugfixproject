@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,6 +12,8 @@ import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_certificat
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_homes_showcase_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_study_tools_page.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_settings_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_student_chat_hub_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_attacking_profile_page.dart';
 import 'package:pocket_mates_app/pages/home_page/home_page_widget.dart';
 
 /// 🧸 Dedicated Kids Adventure Mountain Roadmap Page
@@ -46,7 +49,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     with SingleTickerProviderStateMixin {
   late AnimationController _bounceController;
   final ScrollController _scrollController = ScrollController();
-  int _currentTab = 0; // 0 = Trail, 1 = Homes, 2 = Tools, 3 = Settings
+  int _currentTab = 0; // 0 = Trail, 1 = Homes, 2 = Chat Hub, 3 = Tools, 4 = Settings
 
   static const int _totalDays = 100;
   static const double _nodeSpacingY = 115.0;
@@ -77,10 +80,16 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
 
+    PocketKidsService.kidPremiumNotifier.addListener(_onPremiumChanged);
+
     // Auto-scroll directly to the kid's current active day at the bottom / on mountain
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToActiveDay(animate: false);
     });
+  }
+
+  void _onPremiumChanged() {
+    if (mounted) setState(() {});
   }
 
   void _scrollToActiveDay({bool animate = true}) {
@@ -105,6 +114,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
 
   @override
   void dispose() {
+    PocketKidsService.kidPremiumNotifier.removeListener(_onPremiumChanged);
     _bounceController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -230,6 +240,12 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
   }
 
   void _onTapDayNode(int day) {
+    if (PocketKidsService.isDayLockedByMidnightTimer(day)) {
+      HapticFeedback.mediumImpact();
+      _showMidnightCooldownDialog(day);
+      return;
+    }
+
     if (!PocketKidsService.isDayUnlocked(day)) {
       final unlockedDay = PocketKidsService.currentUnlockedDay;
       HapticFeedback.lightImpact();
@@ -265,6 +281,343 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     });
   }
 
+  void _showMidnightCooldownDialog(int day) {
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            Timer? ticker;
+            ticker = Timer.periodic(const Duration(seconds: 1), (_) {
+              if (ctx.mounted) {
+                setDialogState(() {});
+              } else {
+                ticker?.cancel();
+              }
+            });
+
+            return AlertDialog(
+              backgroundColor: const Color(0xFF0F172A),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+                side: const BorderSide(color: Color(0xFF818CF8), width: 2),
+              ),
+              contentPadding: const EdgeInsets.fromLTRB(22, 20, 22, 16),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text('🌙 💤 ⏰', style: TextStyle(fontSize: 36)),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Day $day Unlocks at 12:00 AM!',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 19,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Great job completing today\'s Spoken English adventure! In Free mode, Day $day unlocks at 12:00 AM midnight.',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFF94A3B8),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1E1B4B),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(color: const Color(0xFF6366F1), width: 1.5),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'TIME UNTIL 12:00 AM MIDNIGHT',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFFA5B4FC),
+                            fontSize: 10.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          PocketKidsService.getFormattedMidnightCountdown(),
+                          style: GoogleFonts.jetBrainsMono(
+                            color: const Color(0xFFFDE047),
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: const Color(0xFF78350F),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      elevation: 4,
+                    ),
+                    onPressed: () {
+                      ticker?.cancel();
+                      Navigator.pop(ctx);
+                      _showAdventurePassSheet(context, targetDay: day);
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('⚡ ', style: TextStyle(fontSize: 15)),
+                        Text(
+                          'UNLOCK WITH VIP PASS',
+                          style: GoogleFonts.outfit(
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  TextButton(
+                    onPressed: () {
+                      ticker?.cancel();
+                      Navigator.pop(ctx);
+                    },
+                    child: Text(
+                      'I\'ll Wait Until Midnight 🌙',
+                      style: GoogleFonts.outfit(
+                        color: const Color(0xFF64748B),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showAdventurePassSheet(BuildContext context, {int? targetDay}) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final isPrem = PocketKidsService.isKidPremium;
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F172A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            border: Border(top: BorderSide(color: Color(0xFFFFD700), width: 2.5)),
+          ),
+          padding: const EdgeInsets.fromLTRB(22, 18, 22, 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 44,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              const SizedBox(height: 14),
+              const Text('👑 ⚡ 🚀', style: TextStyle(fontSize: 32)),
+              const SizedBox(height: 6),
+              Text(
+                'VIP ADVENTURE PASS',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Master Spoken English at your own pace with instant access to all 100 days!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF94A3B8),
+                  fontSize: 12,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildPerkRow('⚡', 'Zero Midnight Wait Time', 'Play next levels instantly without waiting for 12:00 AM.'),
+              const SizedBox(height: 8),
+              _buildPerkRow('🎮', '100 Non-Repeating Games', '10 alternating formats (Balloons, Scramble, Feeders, Echo).'),
+              const SizedBox(height: 8),
+              _buildPerkRow('🦁', 'King Lion Summit Boss Battle', 'Direct access to Day 100 Golden Palace Challenge.'),
+              const SizedBox(height: 8),
+              _buildPerkRow('🏡', 'All 10 Architectural Playhouses', 'Flame House, Crystal Igloo, Candy Villa & more.'),
+              const SizedBox(height: 20),
+              if (isPrem) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981).withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Text('✅', style: TextStyle(fontSize: 18)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          'VIP Adventure Pass is ACTIVE! All levels unlock as you play.',
+                          style: GoogleFonts.outfit(
+                            color: const Color(0xFF34D399),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 14),
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E293B),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12),
+                  ),
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text('CONTINUE ADVENTURE', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                ),
+              ] else ...[
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: const Color(0xFF78350F),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                    padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+                    elevation: 5,
+                  ),
+                  onPressed: () async {
+                    HapticFeedback.heavyImpact();
+                    await PocketKidsService.setKidPremium(true);
+                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (mounted && context.mounted) {
+                      setState(() {});
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Row(
+                            children: [
+                              const Text('🎉 ', style: TextStyle(fontSize: 20)),
+                              Expanded(
+                                child: Text(
+                                  'VIP Adventure Pass Activated! Midnight lock removed! 🚀',
+                                  style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                          backgroundColor: const Color(0xFF10B981),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        ),
+                      );
+                      if (targetDay != null) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => PocketKidsGameSessionPage(day: targetDay),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text('👑 ', style: TextStyle(fontSize: 18)),
+                      Text(
+                        'ACTIVATE VIP PASS NOW (₹199)',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: Text(
+                    'Maybe Later',
+                    style: GoogleFonts.outfit(color: Colors.white54, fontSize: 12),
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPerkRow(String emoji, String title, String subtitle) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 30,
+          height: 30,
+          decoration: BoxDecoration(
+            color: const Color(0xFF1E293B),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          alignment: Alignment.center,
+          child: Text(emoji, style: const TextStyle(fontSize: 15)),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 12.5,
+                ),
+              ),
+              Text(
+                subtitle,
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF94A3B8),
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -290,6 +643,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             completedDays: completedDays,
           ),
           const PocketKidsHomesShowcasePage(),
+          const PocketStudentChatHubWidget(),
           const PocketKidsStudyToolsPage(),
           const PocketKidsSettingsPage(),
         ],
@@ -358,6 +712,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     final dayNumber = index + 1;
                     final nodeX = _getNodeX(dayNumber, screenWidth);
                     final nodeY = _getNodeY(dayNumber);
+                    final isMidnightLocked = PocketKidsService.isDayLockedByMidnightTimer(dayNumber);
                     final isUnlocked = PocketKidsService.isDayUnlocked(dayNumber);
                     final isCurrent = dayNumber == unlockedDay;
                     final stars = completedDays[dayNumber] ?? (isUnlocked ? 3 : 0);
@@ -371,6 +726,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                           dayNumber: dayNumber,
                           isUnlocked: isUnlocked,
                           isCurrent: isCurrent,
+                          isMidnightLocked: isMidnightLocked,
                           stars: stars,
                           kidAvatar: kidAvatar,
                         ),
@@ -385,9 +741,12 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
           // 🌟 TOP HUD BAR (Minimal, Cartoonic, Super Clean)
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-              child: Row(
-                children: [
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                physics: const BouncingScrollPhysics(),
+                child: Row(
+                  children: [
                   // Kid Mascot & Name Capsule
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -658,6 +1017,47 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
                     ),
                   ),
 
+                  const SizedBox(width: 8),
+
+                  // 👑 VIP Adventure Pass Button
+                  GestureDetector(
+                    onTap: () => _showAdventurePassSheet(context),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: PocketKidsService.isKidPremium
+                              ? const [Color(0xFF8B5CF6), Color(0xFF6366F1)]
+                              : const [Color(0xFFFFD700), Color(0xFFF59E0B)],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: (PocketKidsService.isKidPremium ? const Color(0xFF8B5CF6) : const Color(0xFFFFD700)).withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                        border: Border.all(color: Colors.white, width: 1.5),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(PocketKidsService.isKidPremium ? '👑' : '⚡', style: const TextStyle(fontSize: 14)),
+                          const SizedBox(width: 4),
+                          Text(
+                            PocketKidsService.isKidPremium ? 'VIP ACTIVE' : 'VIP PASS',
+                            style: GoogleFonts.outfit(
+                              color: PocketKidsService.isKidPremium ? Colors.white : const Color(0xFF78350F),
+                              fontWeight: FontWeight.w900,
+                              fontSize: 11.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                   if (PocketKidsService.isAdminAccount) ...[
                     const SizedBox(width: 8),
                     Container(
@@ -723,6 +1123,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               ),
             ),
           ),
+        ),
 
           // 📍 FLOATING "MY LEVEL" BUTTON (Instantly snaps to active day)
           Positioned(
@@ -773,8 +1174,9 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
             children: [
               _buildNavTabItem(0, '🎯', 'TRAIL', const Color(0xFF38BDF8)),
               _buildNavTabItem(1, '🏡', 'HOMES', const Color(0xFFF59E0B)),
-              _buildNavTabItem(2, '📚', 'TOOLS', const Color(0xFF10B981)),
-              _buildNavTabItem(3, '⚙️', 'SETTINGS', const Color(0xFFA855F7)),
+              _buildNavTabItem(2, '💬', 'HUB', const Color(0xFFFFD700)),
+              _buildNavTabItem(3, '📚', 'TOOLS', const Color(0xFF10B981)),
+              _buildNavTabItem(4, '⚙️', 'SETTINGS', const Color(0xFFA855F7)),
             ],
           ),
         ),
@@ -853,10 +1255,10 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
       ),
       child: Column(
         children: [
-          const Text('👑 🏰 🌟', style: TextStyle(fontSize: 36)),
+          const Text('👑 🦁 🏰', style: TextStyle(fontSize: 36)),
           const SizedBox(height: 6),
           Text(
-            'GRAND SUMMIT CASTLE (DAY 100)',
+            'KING LION PALACE (DAY 100 BOSS)',
             style: GoogleFonts.outfit(
               color: Colors.white,
               fontSize: 17,
@@ -866,7 +1268,7 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
           ),
           const SizedBox(height: 4),
           Text(
-            'Climb every day to unlock the Legendary Crystal Star Throne!',
+            'Climb to the summit to challenge King Lion in the Royal Spoken English Boss Battle!',
             textAlign: TextAlign.center,
             style: GoogleFonts.inter(
               color: Colors.white.withValues(alpha: 0.95),
@@ -874,28 +1276,71 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 10),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: const Color(0xFF78350F),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              elevation: 4,
-            ),
-            onPressed: () {
-              HapticFeedback.heavyImpact();
-              PocketKidsCertificatePage.open(context);
-            },
-            icon: const Text('🏆', style: TextStyle(fontSize: 16)),
-            label: Text(
-              'VIEW 100-DAY CERTIFICATE',
-              style: GoogleFonts.outfit(
-                fontWeight: FontWeight.w900,
-                fontSize: 12,
-                letterSpacing: 0.5,
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  elevation: 4,
+                ),
+                onPressed: () {
+                  HapticFeedback.heavyImpact();
+                  final kingLionMate = KidMate(
+                    id: PocketKidsService.lionId,
+                    name: PocketKidsService.lionName,
+                    avatar: PocketKidsService.lionAvatar,
+                    ageGroup: 'All',
+                    dayLevel: 100,
+                    stars: 300,
+                    isRobot: true,
+                    bio: 'King of the Animal Kingdom 🦁 Ruler of the Golden Lion King Palace!',
+                  );
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PocketKidsAttackingProfilePage(mate: kingLionMate),
+                    ),
+                  );
+                },
+                icon: const Text('⚔️', style: TextStyle(fontSize: 16)),
+                label: Text(
+                  'ATTACK KING LION',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: const Color(0xFF78350F),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                  elevation: 4,
+                ),
+                onPressed: () {
+                  HapticFeedback.heavyImpact();
+                  PocketKidsCertificatePage.open(context);
+                },
+                icon: const Text('🏆', style: TextStyle(fontSize: 16)),
+                label: Text(
+                  'CERTIFICATE',
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -1073,9 +1518,100 @@ class _PocketKidsHomePageState extends State<PocketKidsHomePage>
     required int dayNumber,
     required bool isUnlocked,
     required bool isCurrent,
+    required bool isMidnightLocked,
     required int stars,
     required String kidAvatar,
   }) {
+    if (isMidnightLocked) {
+      // 🌙 Sleeping until 12:00 AM Midnight Lock
+      return AnimatedBuilder(
+        animation: _bounceController,
+        builder: (context, child) {
+          final bounce = math.sin(_bounceController.value * math.pi) * 5.0;
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Transform.translate(
+                offset: Offset(0, -bounce * 0.4),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1E1B4B),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFFA5B4FC), width: 1),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.2),
+                        blurRadius: 6,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('🌙 ', style: TextStyle(fontSize: 10)),
+                      Text(
+                        '12:00 AM LOCK ⏳',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFC7D2FE),
+                          fontWeight: FontWeight.w900,
+                          fontSize: 9.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 3),
+              Transform.translate(
+                offset: Offset(0, -bounce),
+                child: const Text('😴', style: TextStyle(fontSize: 28)),
+              ),
+              const SizedBox(height: 3),
+              Container(
+                width: 74,
+                height: 74,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF312E81)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFFA5B4FC), width: 3),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.5),
+                      blurRadius: 16,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'DAY $dayNumber',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const Icon(
+                      Icons.lock_clock_rounded,
+                      color: Color(0xFFFDE047),
+                      size: 20,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    }
+
     if (isCurrent) {
       // Current Active Stepping Stone with Character Avatar
       return AnimatedBuilder(

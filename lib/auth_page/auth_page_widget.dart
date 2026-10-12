@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '/auth/supabase_auth/auth_util.dart';
+import '/backend/supabase/supabase.dart';
 import '/flutter_flow/flutter_flow_util.dart';
 import '/index.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
@@ -33,7 +34,18 @@ class _AuthPageWidgetState extends State<AuthPageWidget> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      final uid = SupaFlow.client.auth.currentUser?.id;
+      if (uid != null) {
+        final isKid = await PocketKidsService.syncAndVerifyUserAccountType(uid);
+        if (isKid && mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (_) => const PocketKidsHomePage()),
+          );
+          return;
+        }
+      }
       if (mounted && PocketKidsService.isKidAccount) {
         debugPrint('AuthPage: Kid account active. Redirecting to PocketKidsHomePage.');
         Navigator.of(context).pushReplacement(

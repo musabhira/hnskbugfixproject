@@ -2,16 +2,23 @@ import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_100day_syllabus_db.dart';
 
-/// 🎈 Kids Interactive 2D Game Session Page
-/// Features:
-/// - Balloon Popping with Phonics & Alphabet (Day 1 - 15)
-/// - Animal Safari Words & Sounds (Day 16 - 30)
-/// - Colors & Numbers Adventure (Day 31 - 50)
-/// - Food, Action & Story mini-games (Day 51 - 100)
+/// 🎮 Kids Interactive Multi-Game Engine (100-Day Progressive Curriculum)
+/// Features 10 distinct, non-repetitive game mechanics based on the day's syllabus:
+/// 1. 🎈 Balloon Pop Phonics
+/// 2. 🚂 Letter Train Jigsaw
+/// 3. 🍎 Animal Feast
+/// 4. 🃏 Safari Memory Cards
+/// 5. 🏹 Slingshot Target Hit
+/// 6. 🐸 River Stone Hopper
+/// 7. 🔍 Detective Object Spy
+/// 8. 🧩 Sentence Jigsaw
+/// 9. 🗣️ Spoken Voice Echo
+/// 10. 🦁 Day 100 King Lion Royal Boss Battle
 class PocketKidsGameSessionPage extends StatefulWidget {
   final int day;
   const PocketKidsGameSessionPage({super.key, required this.day});
@@ -19,28 +26,6 @@ class PocketKidsGameSessionPage extends StatefulWidget {
   @override
   State<PocketKidsGameSessionPage> createState() =>
       _PocketKidsGameSessionPageState();
-}
-
-class _BalloonItem {
-  final String id;
-  final String label;
-  final String subtitle;
-  final String emoji;
-  final Color color;
-  double x; // 0.1 to 0.85
-  double y; // 0.1 to 0.85
-  double scale = 1.0;
-  bool isPopped = false;
-
-  _BalloonItem({
-    required this.id,
-    required this.label,
-    required this.subtitle,
-    required this.emoji,
-    required this.color,
-    required this.x,
-    required this.y,
-  });
 }
 
 class _Particle {
@@ -65,426 +50,110 @@ class _Particle {
 class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
     with TickerProviderStateMixin {
   final FlutterTts _tts = FlutterTts();
-  late AnimationController _floatController;
-  late AnimationController _particleController;
+  late KidDaySyllabus _syllabus;
 
-  final List<_BalloonItem> _balloons = [];
+  late AnimationController _pulseController;
+  late AnimationController _particleController;
   final List<_Particle> _particles = [];
+
   int _currentRound = 0;
   int _starsEarned = 0;
   bool _isSessionFinished = false;
-  String _targetLetter = 'A';
-  String _targetPrompt = 'Pop the letter A! 🎈';
-  int _streak = 0;
-  String _mascotSpeech = 'Pop the letter A! 🎈';
+  String _mascotSpeech = '';
 
-  static const List<Color> _balloonColors = [
-    Color(0xFFEF4444), // Candy Red
-    Color(0xFF3B82F6), // Sky Blue
-    Color(0xFF10B981), // Jungle Green
-    Color(0xFFF59E0B), // Sunny Amber
-    Color(0xFF8B5CF6), // Royal Purple
-    Color(0xFFEC4899), // Bubble Pink
+  // Interactive Game State Variables
+  // Train Scramble & Sentence Jigsaw
+  final List<String> _selectedTokens = [];
+
+  // Memory Match Cards (Indices: 0..3)
+  final List<int> _flippedIndices = [];
+  final Set<int> _matchedIndices = {};
+
+  // King Lion Boss HP (Day 100)
+  int _bossHp = 100;
+
+  static const List<Color> _candyColors = [
+    Color(0xFFEF4444),
+    Color(0xFF3B82F6),
+    Color(0xFF10B981),
+    Color(0xFFF59E0B),
+    Color(0xFF8B5CF6),
+    Color(0xFFEC4899),
   ];
 
   @override
   void initState() {
     super.initState();
-    _initTts();
+    _syllabus = PocketKids100DaySyllabusDB.getSyllabusForDay(widget.day);
 
-    _floatController = AnimationController(
+    _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 2400),
+      duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
 
     _particleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
-    )..addListener(() {
-        _updateParticles();
-      });
+    )..addListener(_updateParticles);
 
-    _startRound(0);
+    _initTts();
+    _setupRound(0);
   }
 
   Future<void> _initTts() async {
     try {
       await _tts.setLanguage('en-US');
-      await _tts.setPitch(1.3); // Cheerful kid pitch
-      await _tts.setSpeechRate(0.42); // Clear and slow for kids
+      await _tts.setPitch(1.3);
+      await _tts.setSpeechRate(0.42);
     } catch (_) {}
   }
 
   Future<void> _speak(String text) async {
     try {
+      await _tts.stop();
       await _tts.speak(text);
     } catch (_) {}
   }
 
-  void _startRound(int roundIndex) {
-    _currentRound = roundIndex;
-    _balloons.clear();
+  void _setupRound(int roundIdx) {
+    _currentRound = roundIdx;
+    _selectedTokens.clear();
+    _flippedIndices.clear();
+    _matchedIndices.clear();
 
-    final rand = math.Random();
-
-    if (widget.day <= 15) {
-      // 🔤 Alphabet Valley (A-Z)
-      final letters = [
-        ['A', 'Apple', '🍎'],
-        ['B', 'Ball', '⚽'],
-        ['C', 'Cat', '🐱'],
-        ['D', 'Dog', '🐶'],
-        ['E', 'Elephant', '🐘'],
-        ['F', 'Fish', '🐟'],
-        ['G', 'Giraffe', '🦒'],
-        ['H', 'House', '🏡'],
-      ];
-
-      final pair = letters[roundIndex % letters.length];
-      _targetLetter = pair[0];
-      _targetPrompt =
-          'Help your buddy find letter $_targetLetter! Say: "${pair[0]} is for ${pair[1]}!" 🎈';
-
-      // Pick target + 3 distractors
-      final pool = List<List<String>>.from(letters)..shuffle();
-      pool.removeWhere((item) => item[0] == _targetLetter);
-      final roundItems = [pair, pool[0], pool[1], pool[2]]..shuffle();
-
-      final positions = [
-        const Offset(0.25, 0.32),
-        const Offset(0.72, 0.28),
-        const Offset(0.30, 0.65),
-        const Offset(0.70, 0.68),
-      ];
-
-      for (int i = 0; i < roundItems.length; i++) {
-        final it = roundItems[i];
-        final pos = positions[i];
-        _balloons.add(
-          _BalloonItem(
-            id: 'b_${it[0]}_$i',
-            label: it[0],
-            subtitle: it[1],
-            emoji: it[2],
-            color: _balloonColors[rand.nextInt(_balloonColors.length)],
-            x: pos.dx,
-            y: pos.dy,
-          ),
-        );
-      }
-    } else if (widget.day <= 30) {
-      // 🦁 Animal Safari Words
-      final animals = [
-        ['Lion', 'Roar!', '🦁'],
-        ['Panda', 'Bamboo', '🐼'],
-        ['Fox', 'Clever', '🦊'],
-        ['Bunny', 'Hop hop', '🐰'],
-        ['Tiger', 'Stripes', '🐯'],
-        ['Bear', 'Honey', '🐻'],
-      ];
-      final target = animals[roundIndex % animals.length];
-      _targetLetter = target[0];
-      _targetPrompt =
-          'Help the safari buddy find ${target[0]}! Say: "Hello ${target[0]}!" ${target[2]}';
-
-      final pool = List<List<String>>.from(animals)..shuffle();
-      pool.removeWhere((item) => item[0] == _targetLetter);
-      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
-
-      final positions = [
-        const Offset(0.24, 0.30),
-        const Offset(0.74, 0.28),
-        const Offset(0.28, 0.65),
-        const Offset(0.72, 0.66),
-      ];
-
-      for (int i = 0; i < roundItems.length; i++) {
-        final it = roundItems[i];
-        final pos = positions[i];
-        _balloons.add(
-          _BalloonItem(
-            id: 'b_${it[0]}_$i',
-            label: it[0],
-            subtitle: it[1],
-            emoji: it[2],
-            color: _balloonColors[rand.nextInt(_balloonColors.length)],
-            x: pos.dx,
-            y: pos.dy,
-          ),
-        );
-      }
-    } else if (widget.day <= 45) {
-      // 🎨 Rainbow Colors & Shapes (Days 31–45)
-      final colorsList = [
-        ['Red', 'Ruby Apple', '🍎'],
-        ['Blue', 'Ocean Wave', '🌊'],
-        ['Yellow', 'Warm Sun', '☀️'],
-        ['Green', 'Lucky Clover', '🍀'],
-        ['Purple', 'Sweet Grape', '🍇'],
-        ['Orange', 'Fresh Carrot', '🥕'],
-        ['Pink', 'Spring Flower', '🌸'],
-        ['Star', 'Twinkle Star', '⭐'],
-      ];
-      final target = colorsList[roundIndex % colorsList.length];
-      _targetLetter = target[0];
-      _targetPrompt =
-          'Help your friend pick the ${target[0]}! Say: "Here is ${target[1]}!" ${target[2]}';
-
-      final pool = List<List<String>>.from(colorsList)..shuffle();
-      pool.removeWhere((item) => item[0] == _targetLetter);
-      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
-
-      final positions = [
-        const Offset(0.24, 0.30),
-        const Offset(0.74, 0.28),
-        const Offset(0.28, 0.65),
-        const Offset(0.72, 0.66),
-      ];
-
-      for (int i = 0; i < roundItems.length; i++) {
-        final it = roundItems[i];
-        final pos = positions[i];
-        _balloons.add(
-          _BalloonItem(
-            id: 'b_${it[0]}_$i',
-            label: it[0],
-            subtitle: it[1],
-            emoji: it[2],
-            color: _balloonColors[rand.nextInt(_balloonColors.length)],
-            x: pos.dx,
-            y: pos.dy,
-          ),
-        );
-      }
-    } else if (widget.day <= 60) {
-      // 🔢 Number Star Jump (Days 46–60)
-      final numbersList = [
-        ['1', 'One Little Star', '⭐'],
-        ['2', 'Two Cute Kittens', '🐱'],
-        ['3', 'Three Magic Gems', '💎'],
-        ['4', 'Four Red Apples', '🍎'],
-        ['5', 'Five Gold Coins', '🪙'],
-        ['6', 'Six Sweet Cherries', '🍒'],
-        ['7', 'Seven Rainbows', '🌈'],
-        ['8', 'Eight Big Balloons', '🎈'],
-        ['9', 'Nine Flying Birds', '🕊️'],
-        ['10', 'Ten Bright Suns', '☀️'],
-      ];
-      final target = numbersList[roundIndex % numbersList.length];
-      _targetLetter = target[0];
-      _targetPrompt =
-          'Let us count with our mates! Pop number $_targetLetter! ${target[2]}';
-
-      final pool = List<List<String>>.from(numbersList)..shuffle();
-      pool.removeWhere((item) => item[0] == _targetLetter);
-      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
-
-      final positions = [
-        const Offset(0.24, 0.30),
-        const Offset(0.74, 0.28),
-        const Offset(0.28, 0.65),
-        const Offset(0.72, 0.66),
-      ];
-
-      for (int i = 0; i < roundItems.length; i++) {
-        final it = roundItems[i];
-        final pos = positions[i];
-        _balloons.add(
-          _BalloonItem(
-            id: 'b_${it[0]}_$i',
-            label: it[0],
-            subtitle: it[1],
-            emoji: it[2],
-            color: _balloonColors[rand.nextInt(_balloonColors.length)],
-            x: pos.dx,
-            y: pos.dy,
-          ),
-        );
-      }
-    } else if (widget.day <= 75) {
-      // 🐱 Magic 3-Letter Spelling Words (Days 61–75)
-      final spellingList = [
-        ['CAT', 'Meow Cat', '🐱'],
-        ['DOG', 'Puppy Dog', '🐶'],
-        ['SUN', 'Golden Sun', '☀️'],
-        ['FOX', 'Clever Fox', '🦊'],
-        ['PIG', 'Little Pig', '🐷'],
-        ['BAT', 'Night Bat', '🦇'],
-        ['BUS', 'Yellow Bus', '🚌'],
-        ['CUP', 'Hot Cocoa Cup', '☕'],
-        ['HAT', 'Magic Hat', '🎩'],
-      ];
-      final target = spellingList[roundIndex % spellingList.length];
-      _targetLetter = target[0];
-      _targetPrompt =
-          'Help spell the word ${target[0]}! Say: "${target[1]}!" ${target[2]}';
-
-      final pool = List<List<String>>.from(spellingList)..shuffle();
-      pool.removeWhere((item) => item[0] == _targetLetter);
-      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
-
-      final positions = [
-        const Offset(0.24, 0.30),
-        const Offset(0.74, 0.28),
-        const Offset(0.28, 0.65),
-        const Offset(0.72, 0.66),
-      ];
-
-      for (int i = 0; i < roundItems.length; i++) {
-        final it = roundItems[i];
-        final pos = positions[i];
-        _balloons.add(
-          _BalloonItem(
-            id: 'b_${it[0]}_$i',
-            label: it[0],
-            subtitle: it[1],
-            emoji: it[2],
-            color: _balloonColors[rand.nextInt(_balloonColors.length)],
-            x: pos.dx,
-            y: pos.dy,
-          ),
-        );
-      }
-    } else if (widget.day <= 90) {
-      // 🏃 Action Verbs & Playground Moves (Days 76–90)
-      final actionList = [
-        ['JUMP', 'Jump high!', '🦘'],
-        ['RUN', 'Run fast!', '🐆'],
-        ['FLY', 'Fly like a bird!', '🦅'],
-        ['SWIM', 'Swim in the sea!', '🐬'],
-        ['SING', 'Sing a song!', '🎤'],
-        ['DANCE', 'Dance with joy!', '💃'],
-        ['CLAP', 'Clap your hands!', '👏'],
-      ];
-      final target = actionList[roundIndex % actionList.length];
-      _targetLetter = target[0];
-      _targetPrompt =
-          'Show your mate how to ${target[0]}! Say: "Let us ${target[0]} together!" ${target[2]}';
-
-      final pool = List<List<String>>.from(actionList)..shuffle();
-      pool.removeWhere((item) => item[0] == _targetLetter);
-      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
-
-      final positions = [
-        const Offset(0.24, 0.30),
-        const Offset(0.74, 0.28),
-        const Offset(0.28, 0.65),
-        const Offset(0.72, 0.66),
-      ];
-
-      for (int i = 0; i < roundItems.length; i++) {
-        final it = roundItems[i];
-        final pos = positions[i];
-        _balloons.add(
-          _BalloonItem(
-            id: 'b_${it[0]}_$i',
-            label: it[0],
-            subtitle: it[1],
-            emoji: it[2],
-            color: _balloonColors[rand.nextInt(_balloonColors.length)],
-            x: pos.dx,
-            y: pos.dy,
-          ),
-        );
-      }
-    } else {
-      // 👑 Grand Castle Summit Champions (Days 91–100)
-      final championList = [
-        ['KING', 'Summit King', '👑'],
-        ['HERO', 'Super Hero', '🦸'],
-        ['STAR', 'Star Champion', '⭐'],
-        ['MAGIC', 'Magic Wand', '🪄'],
-        ['CASTLE', 'Golden Palace', '🏰'],
-        ['CROWN', 'Royal Crown', '🤴'],
-      ];
-      final target = championList[roundIndex % championList.length];
-      _targetLetter = target[0];
-      _targetPrompt =
-          'Champion mates together! Say: "I am a ${target[0]}!" ${target[2]}';
-
-      final pool = List<List<String>>.from(championList)..shuffle();
-      pool.removeWhere((item) => item[0] == _targetLetter);
-      final roundItems = [target, pool[0], pool[1], pool[2]]..shuffle();
-
-      final positions = [
-        const Offset(0.24, 0.30),
-        const Offset(0.74, 0.28),
-        const Offset(0.28, 0.65),
-        const Offset(0.72, 0.66),
-      ];
-
-      for (int i = 0; i < roundItems.length; i++) {
-        final it = roundItems[i];
-        final pos = positions[i];
-        _balloons.add(
-          _BalloonItem(
-            id: 'b_${it[0]}_$i',
-            label: it[0],
-            subtitle: it[1],
-            emoji: it[2],
-            color: _balloonColors[rand.nextInt(_balloonColors.length)],
-            x: pos.dx,
-            y: pos.dy,
-          ),
-        );
-      }
-    }
-
-    _mascotSpeech = 'Find $_targetLetter! 🎈';
-    setState(() {});
-    _speak(_targetPrompt);
+    final round = _currentRoundData;
+    _mascotSpeech = round.prompt;
+    _speak("${round.prompt}. ${round.targetWord}");
   }
 
-  void _onTapBalloon(_BalloonItem balloon) {
-    if (balloon.isPopped) return;
-
-    if (balloon.label == _targetLetter) {
-      // 🌟 Correct! Pop balloon with star particle burst
-      HapticFeedback.heavyImpact();
-      balloon.isPopped = true;
-      _spawnParticles(balloon.x, balloon.y, balloon.color);
-      _starsEarned++;
-      _streak++;
-      _mascotSpeech = _streak > 1 ? '🔥 $_streak COMBO! Super Hero!' : '🌟 Super! ${balloon.label} is for ${balloon.subtitle}!';
-
-      final successWord =
-          'Awesome speaking! You are so kind and helpful! ${balloon.label} is for ${balloon.subtitle}! ${balloon.emoji}';
-      _speak(successWord);
-
-      setState(() {});
-
-      Timer(const Duration(milliseconds: 1400), () {
-        if (!mounted) return;
-        if (_currentRound + 1 >= 5) {
-          _finishSession();
-        } else {
-          _startRound(_currentRound + 1);
-        }
-      });
-    } else {
-      // Gentle wobble & audio reminder
-      _streak = 0;
-      _mascotSpeech = 'Almost! Try finding $_targetLetter 💪';
-      HapticFeedback.lightImpact();
-      _speak('Almost! Let us help find $_targetLetter together!');
-      setState(() {});
+  KidGameRound get _currentRoundData {
+    if (_syllabus.rounds.isEmpty) {
+      return const KidGameRound(
+        prompt: 'Say the English word!',
+        targetWord: 'Hello',
+        targetSubtitle: 'Greeting',
+        emoji: '👋',
+        options: ['Hello', 'No', 'Bye'],
+        correctIndex: 0,
+        cheerPhrase: 'Awesome!',
+      );
     }
+    return _syllabus.rounds[_currentRound % _syllabus.rounds.length];
   }
 
-  void _spawnParticles(double x, double y, Color color) {
+  void _triggerConfetti(double x, double y, Color color) {
     final rand = math.Random();
-    _particles.clear();
-    for (int i = 0; i < 24; i++) {
-      final angle = rand.nextDouble() * math.pi * 2;
-      final speed = rand.nextDouble() * 300 + 150;
+    for (int i = 0; i < 22; i++) {
+      final angle = rand.nextDouble() * 2 * math.pi;
+      final speed = rand.nextDouble() * 160 + 60;
       _particles.add(
         _Particle(
           x: x,
           y: y,
           vx: math.cos(angle) * speed,
           vy: math.sin(angle) * speed,
-          color: color,
-          size: rand.nextDouble() * 10 + 6,
+          color: _candyColors[rand.nextInt(_candyColors.length)],
+          size: rand.nextDouble() * 9 + 4,
         ),
       );
     }
@@ -494,11 +163,58 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
   void _updateParticles() {
     final dt = 0.016;
     for (final p in _particles) {
-      p.x += p.vx * dt * 0.001;
-      p.y += p.vy * dt * 0.001 + (300 * dt * dt * 0.001); // gentle gravity
-      p.opacity = (1.0 - _particleController.value).clamp(0.0, 1.0);
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vy += 220 * dt; // Gravity
+      p.opacity = (p.opacity - 0.024).clamp(0.0, 1.0);
     }
+    _particles.removeWhere((p) => p.opacity <= 0.0);
     setState(() {});
+  }
+
+  void _handleAnswerSelected(int index, BuildContext context) {
+    final round = _currentRoundData;
+    HapticFeedback.mediumImpact();
+
+    if (index == round.correctIndex) {
+      // Correct!
+      HapticFeedback.heavyImpact();
+      _starsEarned = (_starsEarned + 1).clamp(0, 3);
+
+      final renderBox = context.findRenderObject() as RenderBox?;
+      final center = renderBox != null
+          ? Offset(renderBox.size.width / 2, renderBox.size.height / 2)
+          : const Offset(200, 300);
+      _triggerConfetti(center.dx, center.dy, Colors.amber);
+
+      if (_syllabus.gameType == KidGameType.bossBattle) {
+        _bossHp = (_bossHp - 34).clamp(0, 100);
+      }
+
+      setState(() {
+        _mascotSpeech = round.cheerPhrase;
+      });
+      _speak(round.cheerPhrase);
+
+      // Advance round or complete game
+      Future.delayed(const Duration(milliseconds: 1400), () {
+        if (!mounted) return;
+        if (_currentRound + 1 < _syllabus.rounds.length) {
+          setState(() {
+            _setupRound(_currentRound + 1);
+          });
+        } else {
+          _finishSession();
+        }
+      });
+    } else {
+      // Incorrect / Try again
+      HapticFeedback.vibrate();
+      setState(() {
+        _mascotSpeech = 'Almost there! Try again with courage! 🌟';
+      });
+      _speak('Almost there! Try again with courage!');
+    }
   }
 
   Future<void> _finishSession() async {
@@ -512,485 +228,260 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
 
     if (!mounted) return;
 
-    final currentHouse = PocketKidsService.currentHouse;
-
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(26),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF38BDF8),
-                  Color(0xFF1E3A8A),
+      builder: (ctx) => _buildCompletionDialog(ctx, earnedStars),
+    );
+  }
+
+  Widget _buildCompletionDialog(BuildContext ctx, int earnedStars) {
+    final isFree = !PocketKidsService.isKidPremium;
+
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+          borderRadius: BorderRadius.circular(32),
+          border: Border.all(color: const Color(0xFFFFD700), width: 3),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD700).withValues(alpha: 0.35),
+              blurRadius: 24,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('🏆 🌟 👑', style: TextStyle(fontSize: 42)),
+            const SizedBox(height: 8),
+            Text(
+              'DAY ${widget.day} COMPLETE!',
+              style: GoogleFonts.outfit(
+                color: const Color(0xFFFFD700),
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Awesome job, ${PocketKidsService.kidName}! 🌟',
+              style: GoogleFonts.outfit(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+
+            // Stars Row
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(3, (i) {
+                final active = i < earnedStars;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    active ? '⭐' : '☆',
+                    style: TextStyle(fontSize: 34, color: active ? const Color(0xFFFFD700) : Colors.white30),
+                  ),
+                );
+              }),
+            ),
+
+            const SizedBox(height: 14),
+
+            // Mastered Dialogue Card
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF0F172A),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF38BDF8).withValues(alpha: 0.4)),
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    'MASTERED SENTENCE',
+                    style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 10.5, fontWeight: FontWeight.w900),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '"${_syllabus.dialogueSentence}"',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.inter(color: Colors.white, fontSize: 12.5, fontWeight: FontWeight.w600),
+                  ),
                 ],
               ),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: const Color(0xFFFFD700), width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFFFD700).withValues(alpha: 0.4),
-                  blurRadius: 30,
-                  spreadRadius: 2,
-                ),
-              ],
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('🎉', style: TextStyle(fontSize: 48)),
-                const SizedBox(height: 8),
-                Text(
-                  'DAY ${widget.day} COMPLETE!',
-                  style: GoogleFonts.outfit(
-                    color: const Color(0xFFFFD700),
-                    fontSize: 22,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1.1,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Awesome job, ${PocketKidsService.kidName}! 🌟',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.outfit(
-                    color: Colors.white,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 16),
 
-                // 3 Bouncing Golden Stars
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Text('⭐', style: TextStyle(fontSize: 42)),
-                    SizedBox(width: 8),
-                    Text('⭐', style: TextStyle(fontSize: 52)),
-                    SizedBox(width: 8),
-                    Text('⭐', style: TextStyle(fontSize: 42)),
-                  ],
-                ),
-                const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-                // Homestead progress badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white24),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(currentHouse.emoji, style: const TextStyle(fontSize: 20)),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Achieved: ${currentHouse.title}',
-                        style: GoogleFonts.outfit(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13,
+            // Midnight countdown for Free users (Audio Directive)
+            if (isFree && widget.day < 100) ...[
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF451A03),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFF59E0B)),
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('🌙 ', style: TextStyle(fontSize: 16)),
+                        Text(
+                          'DAY ${widget.day + 1} UNLOCKS AT 12:00 AM MIDNIGHT',
+                          style: GoogleFonts.outfit(color: const Color(0xFFFEF3C7), fontSize: 11, fontWeight: FontWeight.w900),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Timer: ${PocketKidsService.getFormattedMidnightCountdown()}',
+                      style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 13, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    GestureDetector(
+                      onTap: () async {
+                        Navigator.pop(ctx);
+                        _showAdventurePassModal(context);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(colors: [Color(0xFFFFD700), Color(0xFFF59E0B)]),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '⚡ UNLOCK INSTANTLY WITH VIP PASS',
+                          style: GoogleFonts.outfit(color: const Color(0xFF78350F), fontSize: 11, fontWeight: FontWeight.w900),
                         ),
                       ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Back to Map Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(ctx);
-                      Navigator.pop(context); // back to home map
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFFD700),
-                      foregroundColor: const Color(0xFF1E3A8A),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: Text(
-                      'BACK TO ADVENTURE MAP ➔',
-                      style: GoogleFonts.outfit(
-                        fontSize: 15,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
-              ],
+              ),
+              const SizedBox(height: 16),
+            ],
+
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF10B981),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: const EdgeInsets.symmetric(vertical: 13),
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.pop(context);
+                },
+                child: Text('CONTINUE TRAIL 🏔️', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14)),
+              ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showAdventurePassModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _AdventurePassSheet(onUnlocked: () {
+        setState(() {});
+      }),
     );
   }
 
   @override
   void dispose() {
-    _floatController.dispose();
-    _particleController.dispose();
     _tts.stop();
+    _pulseController.dispose();
+    _particleController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0284C7),
-      body: Stack(
-        children: [
-          // Background Cartoon Sky & Rolling Green Hills
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Color(0xFF38BDF8), // Sunny Blue Sky
-                  Color(0xFFBAE6FD), // Soft Sky
-                  Color(0xFF4ADE80), // Rolling Meadow
-                ],
-                stops: [0.0, 0.72, 1.0],
-              ),
-            ),
-          ),
-
-          // Floating Cartoon Clouds
-          Positioned(
-            top: 60,
-            left: 20,
-            child: Opacity(
-              opacity: 0.35,
-              child: const Text('☁️', style: TextStyle(fontSize: 70)),
-            ),
-          ),
-          Positioned(
-            top: 110,
-            right: 25,
-            child: Opacity(
-              opacity: 0.3,
-              child: const Text('☁️', style: TextStyle(fontSize: 90)),
-            ),
-          ),
-
-          SafeArea(
-            child: Column(
+      backgroundColor: const Color(0xFF0F172A),
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // Main Game Layout
+            Column(
               children: [
-                // Top HUD Bar: Close, Level, Stars Counter
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  child: Row(
-                    children: [
-                      // Back Button
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          shape: BoxShape.circle,
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.arrow_back_rounded,
-                              color: Colors.white, size: 24),
-                          onPressed: () => Navigator.pop(context),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      // Day Badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 14, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white38),
-                        ),
-                        child: Text(
-                          'DAY ${widget.day} • LEVEL ${_currentRound + 1}/5',
-                          style: GoogleFonts.outfit(
-                            color: Colors.white,
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                          ),
-                        ),
-                      ),
-                      const Spacer(),
-                      // 5-Round Star Beads
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: List.generate(5, (idx) {
-                          final isPast = idx < _currentRound;
-                          final isCurrent = idx == _currentRound;
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                            width: isCurrent ? 22 : 14,
-                            height: 14,
-                            decoration: BoxDecoration(
-                              color: isPast
-                                  ? const Color(0xFFFFD700)
-                                  : isCurrent
-                                      ? const Color(0xFF38BDF8)
-                                      : Colors.white24,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: isCurrent ? Colors.white : Colors.transparent,
-                                width: 1.5,
-                              ),
-                            ),
-                            alignment: Alignment.center,
-                            child: isPast ? const Text('⭐', style: TextStyle(fontSize: 8)) : null,
-                          );
-                        }),
-                      ),
-                      const SizedBox(width: 8),
-                      // Stars Earned
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B),
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.15),
-                              blurRadius: 8,
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            const Text('⭐', style: TextStyle(fontSize: 15)),
-                            const SizedBox(width: 4),
-                            Text(
-                              '$_starsEarned',
-                              style: GoogleFonts.outfit(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 15,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                _buildHeader(),
+                _buildMascotBanner(),
+                Expanded(child: _buildInteractiveGameArea(context)),
+              ],
+            ),
+
+            // Particle Confetti Canvas
+            CustomPaint(
+              size: Size.infinite,
+              painter: _ParticlePainter(_particles),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
+          const SizedBox(width: 4),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    'DAY ${widget.day} • ${_syllabus.gameTypeDisplayName}',
+                    style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontWeight: FontWeight.w900, fontSize: 12),
                   ),
-                ),
-
-                const SizedBox(height: 10),
-
-                // Prompt Card
-                GestureDetector(
-                  onTap: () => _speak(_targetPrompt),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 20),
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 18, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.12),
-                          blurRadius: 16,
-                          offset: const Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: const BoxDecoration(
-                            color: Color(0xFF38BDF8),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.volume_up_rounded,
-                              color: Colors.white, size: 22),
-                        ),
-                        const SizedBox(width: 12),
-                        Flexible(
-                          child: Text(
-                            _targetPrompt,
-                            style: GoogleFonts.outfit(
-                              color: const Color(0xFF0F172A),
-                              fontSize: 19,
-                              fontWeight: FontWeight.w900,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 15),
-
-                // 🎈 PLAYGROUND: BALLOONS CANVAS
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      final w = constraints.maxWidth;
-                      final h = constraints.maxHeight;
-
-                      return Stack(
-                        children: [
-                          // Custom Painter for Burst Particles
-                          CustomPaint(
-                            size: Size(w, h),
-                            painter: _ParticlePainter(particles: _particles, w: w, h: h),
-                          ),
-
-                          // Render Floating Balloons
-                          ..._balloons.map((b) {
-                            if (b.isPopped) return const SizedBox.shrink();
-
-                            return AnimatedBuilder(
-                              animation: _floatController,
-                              builder: (context, child) {
-                                final floatOffset = math.sin(_floatController.value * math.pi + (b.x * 10)) * 12;
-                                return Positioned(
-                                  left: b.x * w - 55,
-                                  top: b.y * h - 70 + floatOffset,
-                                  child: child!,
-                                );
-                              },
-                              child: GestureDetector(
-                                onTap: () => _onTapBalloon(b),
-                                child: _buildCartoonBalloon(b),
-                              ),
-                            );
-                          }),
-
-                          // 🔥 Streak Combo Badge
-                          if (_streak > 1)
-                            Positioned(
-                              top: 8,
-                              right: 16,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFFEF4444), Color(0xFFF59E0B)],
-                                  ),
-                                  borderRadius: BorderRadius.circular(16),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFFEF4444).withValues(alpha: 0.45),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ],
-                                  border: Border.all(color: Colors.white, width: 2),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Text('🔥 ', style: TextStyle(fontSize: 16)),
-                                    Text(
-                                      '$_streak COMBO!',
-                                      style: GoogleFonts.outfit(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w900,
-                                        fontSize: 13,
-                                        letterSpacing: 0.5,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-
-                          // 🦁 Cheering Mascot Companion at Bottom Left
-                          Positioned(
-                            left: 16,
-                            bottom: 12,
-                            child: GestureDetector(
-                              onTap: () {
-                                HapticFeedback.selectionClick();
-                                _speak(_targetPrompt);
-                              },
-                              child: Row(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  // Bouncing Mascot
-                                  AnimatedBuilder(
-                                    animation: _floatController,
-                                    builder: (context, child) {
-                                      final dy = math.sin(_floatController.value * math.pi) * 8.0;
-                                      return Transform.translate(
-                                        offset: Offset(0, -dy),
-                                        child: child,
-                                      );
-                                    },
-                                    child: Container(
-                                      width: 60,
-                                      height: 60,
-                                      decoration: BoxDecoration(
-                                        color: Colors.white,
-                                        shape: BoxShape.circle,
-                                        boxShadow: [
-                                          BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.2),
-                                            blurRadius: 10,
-                                            offset: const Offset(0, 4),
-                                          ),
-                                        ],
-                                        border: Border.all(color: const Color(0xFFFFD700), width: 3),
-                                      ),
-                                      alignment: Alignment.center,
-                                      child: Text(PocketKidsService.kidAvatar, style: const TextStyle(fontSize: 32)),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  // Cartoon Speech Bubble
-                                  Container(
-                                    constraints: const BoxConstraints(maxWidth: 200),
-                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white,
-                                      borderRadius: const BorderRadius.only(
-                                        topLeft: Radius.circular(16),
-                                        topRight: Radius.circular(16),
-                                        bottomRight: Radius.circular(16),
-                                      ),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: Colors.black.withValues(alpha: 0.12),
-                                          blurRadius: 8,
-                                        ),
-                                      ],
-                                    ),
-                                    child: Text(
-                                      _mascotSpeech.isNotEmpty ? _mascotSpeech : 'Tap to hear!',
-                                      style: GoogleFonts.outfit(
-                                        color: const Color(0xFF0F172A),
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
+                ],
+              ),
+              Text(
+                _syllabus.title,
+                style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              ),
+            ],
+          ),
+          const Spacer(),
+          // Stars Counter
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1E293B),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: const Color(0xFFFFD700).withValues(alpha: 0.5)),
+            ),
+            child: Row(
+              children: [
+                const Text('⭐', style: TextStyle(fontSize: 14)),
+                const SizedBox(width: 4),
+                Text(
+                  '${_currentRound + 1}/3',
+                  style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 12),
                 ),
               ],
             ),
@@ -1000,93 +491,681 @@ class _PocketKidsGameSessionPageState extends State<PocketKidsGameSessionPage>
     );
   }
 
-  Widget _buildCartoonBalloon(_BalloonItem b) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Balloon Body
-        Container(
-          width: 110,
-          height: 125,
-          decoration: BoxDecoration(
-            color: b.color,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(55),
-              bottom: Radius.circular(50),
+  Widget _buildMascotBanner() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1E293B),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFF334155)),
+      ),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => _speak(_mascotSpeech),
+            child: Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFD700).withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              alignment: Alignment.center,
+              child: Text(_syllabus.mascot, style: const TextStyle(fontSize: 28)),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: b.color.withValues(alpha: 0.45),
-                blurRadius: 18,
-                offset: const Offset(0, 10),
-              ),
-              // Inner highlight for 3D cartoon shine
-              BoxShadow(
-                color: Colors.white.withValues(alpha: 0.35),
-                blurRadius: 4,
-                offset: const Offset(-8, -8),
-              ),
-            ],
           ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                b.emoji,
-                style: const TextStyle(fontSize: 32),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                b.label,
-                style: GoogleFonts.outfit(
-                  color: Colors.white,
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  shadows: [
-                    Shadow(
-                      color: Colors.black.withValues(alpha: 0.3),
-                      blurRadius: 4,
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  _syllabus.gameTypeInstruction,
+                  style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 11),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  _mascotSpeech,
+                  style: GoogleFonts.inter(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFBBF24)),
+            onPressed: () => _speak(_mascotSpeech),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // =========================================================================
+  // 🎮 DYNAMIC INTERACTIVE GAME ARENA
+  // Switches based on KidGameType for the 100 days
+  // =========================================================================
+
+  Widget _buildInteractiveGameArea(BuildContext context) {
+    switch (_syllabus.gameType) {
+      case KidGameType.balloonPop:
+        return _buildBalloonPopGame(context);
+      case KidGameType.trainScramble:
+        return _buildTrainScrambleGame(context);
+      case KidGameType.animalFeeder:
+        return _buildAnimalFeederGame(context);
+      case KidGameType.memoryMatch:
+        return _buildMemoryMatchGame(context);
+      case KidGameType.slingshotAim:
+        return _buildSlingshotGame(context);
+      case KidGameType.steppingStones:
+        return _buildSteppingStonesGame(context);
+      case KidGameType.detectiveSpot:
+        return _buildDetectiveSpotGame(context);
+      case KidGameType.sentenceJigsaw:
+        return _buildSentenceJigsawGame(context);
+      case KidGameType.voiceEcho:
+        return _buildVoiceEchoGame(context);
+      case KidGameType.bossBattle:
+        return _buildKingLionBossBattleGame(context);
+    }
+  }
+
+  // --- 1. 🎈 Balloon Pop Game ---
+  Widget _buildBalloonPopGame(BuildContext context) {
+    final round = _currentRoundData;
+    return Center(
+      child: Wrap(
+        spacing: 16,
+        runSpacing: 20,
+        alignment: WrapAlignment.center,
+        children: List.generate(round.options.length, (idx) {
+          final opt = round.options[idx];
+          final color = _candyColors[idx % _candyColors.length];
+          return GestureDetector(
+            onTap: () => _handleAnswerSelected(idx, context),
+            child: AnimatedBuilder(
+              animation: _pulseController,
+              builder: (ctx, child) {
+                final dy = math.sin(_pulseController.value * math.pi * 2 + idx) * 8;
+                return Transform.translate(
+                  offset: Offset(0, dy),
+                  child: child,
+                );
+              },
+              child: Container(
+                width: 140,
+                height: 160,
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    colors: [color.withValues(alpha: 0.9), color],
+                    center: const Alignment(-0.3, -0.4),
+                  ),
+                  borderRadius: const BorderRadius.all(Radius.elliptical(70, 80)),
+                  boxShadow: [
+                    BoxShadow(color: color.withValues(alpha: 0.4), blurRadius: 16, offset: const Offset(0, 8)),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(round.emoji, style: const TextStyle(fontSize: 32)),
+                    const SizedBox(height: 6),
+                    Text(
+                      opt,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.outfit(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w900),
                     ),
                   ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // --- 2. 🚂 Letter Train Scramble Game ---
+  Widget _buildTrainScrambleGame(BuildContext context) {
+    final round = _currentRoundData;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Train Engine + Selected Wagons
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEF4444),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: const Text('🚂 CHOO CHOO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+              const SizedBox(width: 8),
+              ..._selectedTokens.map(
+                (tok) => Container(
+                  margin: const EdgeInsets.only(right: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF10B981),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white, width: 2),
+                  ),
+                  child: Text(tok, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18)),
                 ),
               ),
             ],
           ),
         ),
-        // Balloon Knot
-        Container(
-          width: 10,
-          height: 6,
-          decoration: BoxDecoration(
-            color: b.color,
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-        // Balloon String
-        Container(
-          width: 2,
-          height: 26,
-          color: Colors.black26,
+        const SizedBox(height: 40),
+
+        // Available Train Wagons to Tap
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: List.generate(round.options.length, (idx) {
+            final opt = round.options[idx];
+            return ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF38BDF8),
+                foregroundColor: const Color(0xFF0F172A),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 14),
+              ),
+              onPressed: () {
+                setState(() => _selectedTokens.add(opt));
+                _handleAnswerSelected(idx, context);
+              },
+              child: Text(opt, style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 16)),
+            );
+          }),
         ),
       ],
     );
   }
+
+  // --- 3. 🍎 Animal Feast Game ---
+  Widget _buildAnimalFeederGame(BuildContext context) {
+    final round = _currentRoundData;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Hungry Animal Buddy
+        Text(_syllabus.mascot, style: const TextStyle(fontSize: 84)),
+        const SizedBox(height: 8),
+        Text(
+          'I am hungry! Feed me: "${round.targetWord}"',
+          style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        const SizedBox(height: 32),
+
+        // Food Choices
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(round.options.length, (idx) {
+            final opt = round.options[idx];
+            return GestureDetector(
+              onTap: () => _handleAnswerSelected(idx, context),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E293B),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFF59E0B), width: 2),
+                ),
+                child: Column(
+                  children: [
+                    const Text('🍎', style: TextStyle(fontSize: 32)),
+                    const SizedBox(height: 6),
+                    Text(opt, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  // --- 4. 🃏 Safari Memory Match Game ---
+  Widget _buildMemoryMatchGame(BuildContext context) {
+    final round = _currentRoundData;
+    return Center(
+      child: Wrap(
+        spacing: 14,
+        runSpacing: 14,
+        children: List.generate(round.options.length, (idx) {
+          final opt = round.options[idx];
+          return GestureDetector(
+            onTap: () => _handleAnswerSelected(idx, context),
+            child: Container(
+              width: 130,
+              height: 110,
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: const Color(0xFF38BDF8), width: 2),
+              ),
+              alignment: Alignment.center,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(round.emoji, style: const TextStyle(fontSize: 30)),
+                  const SizedBox(height: 4),
+                  Text(opt, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  // --- 5. 🏹 Slingshot Target Hit Game ---
+  Widget _buildSlingshotGame(BuildContext context) {
+    final round = _currentRoundData;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text('🎯 🏹', style: TextStyle(fontSize: 54)),
+        const SizedBox(height: 12),
+        Text(
+          'Target: "${round.targetWord}"',
+          style: GoogleFonts.outfit(color: const Color(0xFFEF4444), fontSize: 18, fontWeight: FontWeight.w900),
+        ),
+        const SizedBox(height: 30),
+        Wrap(
+          spacing: 14,
+          runSpacing: 14,
+          children: List.generate(round.options.length, (idx) {
+            final opt = round.options[idx];
+            return ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFEF4444),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+              ),
+              onPressed: () => _handleAnswerSelected(idx, context),
+              icon: const Text('🎯', style: TextStyle(fontSize: 18)),
+              label: Text(opt, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  // --- 6. 🐸 River Stepping Stones Game ---
+  Widget _buildSteppingStonesGame(BuildContext context) {
+    final round = _currentRoundData;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text('🌊 🐸 🌊', style: TextStyle(fontSize: 48)),
+        const SizedBox(height: 8),
+        Text('Hop across safely to: "${round.targetWord}"!',
+            style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 15, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 28),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(round.options.length, (idx) {
+            final opt = round.options[idx];
+            return GestureDetector(
+              onTap: () => _handleAnswerSelected(idx, context),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF065F46),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: const Color(0xFF34D399), width: 2.5),
+                ),
+                child: Column(
+                  children: [
+                    const Text('🪨', style: TextStyle(fontSize: 28)),
+                    const SizedBox(height: 6),
+                    Text(opt, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 14)),
+                  ],
+                ),
+              ),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  // --- 7. 🔍 Detective Object Spy Game ---
+  Widget _buildDetectiveSpotGame(BuildContext context) {
+    final round = _currentRoundData;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text('🕵️‍♂️ 🔍 🌳', style: TextStyle(fontSize: 52)),
+        const SizedBox(height: 10),
+        Text('Detective Mission: Spot "${round.targetWord}"',
+            style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 30),
+        Wrap(
+          spacing: 16,
+          runSpacing: 16,
+          children: List.generate(round.options.length, (idx) {
+            final opt = round.options[idx];
+            return ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E293B),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16), side: const BorderSide(color: Color(0xFFFFD700))),
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              ),
+              onPressed: () => _handleAnswerSelected(idx, context),
+              icon: const Text('🔍', style: TextStyle(fontSize: 16)),
+              label: Text(opt, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  // --- 8. 🧩 Sentence Jigsaw Game ---
+  Widget _buildSentenceJigsawGame(BuildContext context) {
+    final round = _currentRoundData;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Text('🧩 ✍️', style: TextStyle(fontSize: 50)),
+        const SizedBox(height: 12),
+        Text('Build English Sentence:', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 6),
+        Container(
+          padding: const EdgeInsets.all(14),
+          margin: const EdgeInsets.symmetric(horizontal: 20),
+          decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(16)),
+          child: Text(round.targetWord, textAlign: TextAlign.center, style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontSize: 16, fontWeight: FontWeight.bold)),
+        ),
+        const SizedBox(height: 28),
+        Wrap(
+          spacing: 12,
+          children: List.generate(round.options.length, (idx) {
+            final opt = round.options[idx];
+            return ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF10B981),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              ),
+              onPressed: () => _handleAnswerSelected(idx, context),
+              child: Text(opt, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  // --- 9. 🗣️ Spoken Voice Echo Game ---
+  Widget _buildVoiceEchoGame(BuildContext context) {
+    final round = _currentRoundData;
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () => _speak(round.targetWord),
+          child: Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF38BDF8), Color(0xFF0284C7)]),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(color: const Color(0xFF38BDF8).withValues(alpha: 0.4), blurRadius: 18),
+              ],
+            ),
+            child: const Icon(Icons.mic_rounded, color: Colors.white, size: 54),
+          ),
+        ),
+        const SizedBox(height: 16),
+        Text('Listen & Repeat Aloud:', style: GoogleFonts.outfit(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 4),
+        Text('"${round.targetWord}"', style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 22, fontWeight: FontWeight.w900)),
+        const SizedBox(height: 32),
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: const Color(0xFF10B981),
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+          ),
+          onPressed: () => _handleAnswerSelected(round.correctIndex, context),
+          icon: const Icon(Icons.check_circle_rounded, size: 20),
+          label: Text('I SPOKE IT ALOUD! ⭐', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14)),
+        ),
+      ],
+    );
+  }
+
+  // --- 10. 🦁 Day 100 King Lion Royal Boss Battle ---
+  Widget _buildKingLionBossBattleGame(BuildContext context) {
+    final round = _currentRoundData;
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          const SizedBox(height: 12),
+          // King Lion Boss Header
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [Color(0xFF78350F), Color(0xFFB45309), Color(0xFFF59E0B)]),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: const Color(0xFFFFD700), width: 2.5),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: const [
+                    Text('🦁', style: TextStyle(fontSize: 48)),
+                    SizedBox(width: 12),
+                    Text('👑 KING LION', style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900)),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                // Boss HP Bar
+                Row(
+                  children: [
+                    Text('BOSS HP: $_bossHp%', style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 11)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(6),
+                        child: LinearProgressIndicator(
+                          value: _bossHp / 100,
+                          backgroundColor: Colors.black38,
+                          color: const Color(0xFFEF4444),
+                          minHeight: 10,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Boss Question Prompt
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              round.prompt,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Royal Battle Attack Options
+          ...List.generate(round.options.length, (idx) {
+            final opt = round.options[idx];
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF1E293B),
+                    foregroundColor: Colors.white,
+                    side: const BorderSide(color: Color(0xFFFFD700)),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                  ),
+                  onPressed: () => _handleAnswerSelected(idx, context),
+                  icon: const Text('⚔️', style: TextStyle(fontSize: 18)),
+                  label: Text(opt, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 14)),
+                ),
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
 }
 
+// =========================================================================
+// VIP ADVENTURE PASS BOTTOM SHEET (INSTANT UNLOCK)
+// =========================================================================
+
+class _AdventurePassSheet extends StatefulWidget {
+  final VoidCallback onUnlocked;
+  const _AdventurePassSheet({required this.onUnlocked});
+
+  @override
+  State<_AdventurePassSheet> createState() => _AdventurePassSheetState();
+}
+
+class _AdventurePassSheetState extends State<_AdventurePassSheet> {
+  bool _loading = false;
+
+  Future<void> _activatePass() async {
+    setState(() => _loading = true);
+    HapticFeedback.heavyImpact();
+    await PocketKidsService.setKidPremium(true);
+    widget.onUnlocked();
+    if (mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: const [
+              Text('👑 ', style: TextStyle(fontSize: 20)),
+              Expanded(
+                child: Text('VIP Adventure Pass Activated! All 100 Days Unlocked!', style: TextStyle(fontWeight: FontWeight.bold)),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF10B981),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: const BoxDecoration(
+        color: Color(0xFF0F172A),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(width: 44, height: 4, decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(4))),
+          const SizedBox(height: 16),
+          const Text('👑 🚀 🌟', style: TextStyle(fontSize: 40)),
+          const SizedBox(height: 8),
+          Text(
+            'VIP ADVENTURE PASS',
+            style: GoogleFonts.outfit(color: const Color(0xFFFFD700), fontSize: 20, fontWeight: FontWeight.w900),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Skip 12:00 AM midnight timers and unlock all 100 days immediately!',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12.5),
+          ),
+          const SizedBox(height: 16),
+          _buildPerk('⚡ Zero Midnight Wait', 'Climb through levels as fast as you practice!'),
+          _buildPerk('🏰 King Lion Palace Access', 'Instant summit clearance to challenge Day 100!'),
+          _buildPerk('🏆 Official Fluency Certificate', 'Cryptographic graduation seal for parents!'),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFFFFD700),
+                foregroundColor: const Color(0xFF78350F),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+              onPressed: _loading ? null : _activatePass,
+              child: _loading
+                  ? const CircularProgressIndicator(color: Color(0xFF78350F))
+                  : Text('ACTIVATE PASS NOW 👑', style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 15)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPerk(String title, String subtitle) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        children: [
+          const Icon(Icons.check_circle_rounded, color: Color(0xFF10B981), size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                Text(subtitle, style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 11)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Particle painter for confetti celebrations
 class _ParticlePainter extends CustomPainter {
   final List<_Particle> particles;
-  final double w;
-  final double h;
-
-  const _ParticlePainter({required this.particles, required this.w, required this.h});
+  _ParticlePainter(this.particles);
 
   @override
   void paint(Canvas canvas, Size size) {
     for (final p in particles) {
-      final paint = Paint()
-        ..color = p.color.withValues(alpha: p.opacity)
-        ..style = PaintingStyle.fill;
-      canvas.drawCircle(Offset(p.x * w, p.y * h), p.size, paint);
+      final paint = Paint()..color = p.color.withValues(alpha: p.opacity);
+      canvas.drawCircle(Offset(p.x, p.y), p.size, paint);
     }
   }
 

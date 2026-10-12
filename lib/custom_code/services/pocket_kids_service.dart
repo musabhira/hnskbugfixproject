@@ -37,6 +37,7 @@ class KidMate {
   final bool isFriend;
   final bool isRobot;
   final KidMateRequestStatus requestStatus;
+  final String bio;
 
   const KidMate({
     required this.id,
@@ -48,11 +49,13 @@ class KidMate {
     this.isFriend = false,
     this.isRobot = false,
     this.requestStatus = KidMateRequestStatus.none,
+    this.bio = '',
   });
 
   KidMate copyWith({
     bool? isFriend,
     KidMateRequestStatus? requestStatus,
+    String? bio,
   }) {
     return KidMate(
       id: id,
@@ -64,6 +67,7 @@ class KidMate {
       isFriend: isFriend ?? this.isFriend,
       isRobot: isRobot,
       requestStatus: requestStatus ?? this.requestStatus,
+      bio: bio ?? this.bio,
     );
   }
 }
@@ -132,6 +136,78 @@ class KidMessage {
   );
 }
 
+/// 🦁 Model for Pocket Gang (Student Study Groups)
+class PocketGang {
+  final String id;
+  final String name;
+  final String emoji;
+  final String description;
+  final int membersCount;
+  final List<String> memberAvatars;
+  final bool isJoined;
+
+  const PocketGang({
+    required this.id,
+    required this.name,
+    required this.emoji,
+    required this.description,
+    required this.membersCount,
+    required this.memberAvatars,
+    this.isJoined = false,
+  });
+
+  PocketGang copyWith({bool? isJoined, int? membersCount}) {
+    return PocketGang(
+      id: id,
+      name: name,
+      emoji: emoji,
+      description: description,
+      membersCount: membersCount ?? this.membersCount,
+      memberAvatars: memberAvatars,
+      isJoined: isJoined ?? this.isJoined,
+    );
+  }
+}
+
+/// 🐾 Model for Student Animal Kingdom Vibes
+class StudentVibe {
+  final String id;
+  final String authorName;
+  final String authorAvatar;
+  final int dayLevel;
+  final String title;
+  final String message;
+  final String tag;
+  final int likes;
+  final bool isLiked;
+
+  const StudentVibe({
+    required this.id,
+    required this.authorName,
+    required this.authorAvatar,
+    required this.dayLevel,
+    required this.title,
+    required this.message,
+    required this.tag,
+    required this.likes,
+    this.isLiked = false,
+  });
+
+  StudentVibe copyWith({int? likes, bool? isLiked}) {
+    return StudentVibe(
+      id: id,
+      authorName: authorName,
+      authorAvatar: authorAvatar,
+      dayLevel: dayLevel,
+      title: title,
+      message: message,
+      tag: tag,
+      likes: likes ?? this.likes,
+      isLiked: isLiked ?? this.isLiked,
+    );
+  }
+}
+
 /// 🧸 Service for managing Kids vs Adult account separation,
 /// Kids profile state, 100-Day learning journey, Avatar Homes, and Kids Mates.
 class PocketKidsService {
@@ -147,15 +223,22 @@ class PocketKidsService {
   static const String _keyKidReceivedRequests = 'pm_kid_received_requests';
   static const String _keyIsPureKidAccount = 'pm_is_pure_kid_account';
   static const String _keyIsParentSwitched = 'pm_is_parent_switched';
+  static const String _keyKidIsPremium = 'pm_kid_is_premium';
+  static const String _keyKidLastCompletedDate = 'pm_kid_last_completed_date';
+  static const String _keyKidLastCompletedDay = 'pm_kid_last_completed_day';
 
   static final ValueNotifier<bool> isKidAccountNotifier = ValueNotifier<bool>(false);
   static final ValueNotifier<int> kidStarsNotifier = ValueNotifier<int>(0);
   static final ValueNotifier<int> kidDayNotifier = ValueNotifier<int>(1);
+  static final ValueNotifier<bool> kidPremiumNotifier = ValueNotifier<bool>(false);
   static bool _initialized = false;
 
   static bool _isKidAccount = false;
   static bool _isPureKidAccount = false;
   static bool _isParentSwitched = false;
+  static bool _isKidPremium = false;
+  static String? _lastCompletedDate;
+  static int? _lastCompletedDay;
   static String _kidName = 'Little Explorer';
   static String _kidAgeGroup = '4-6';
   static String _kidAvatar = '🦁';
@@ -181,8 +264,8 @@ class PocketKidsService {
   /// Whether current user can exit Kids Mode back to Adult Mode
   /// - Admin (musabthonippadam@gmail.com) can always exit
   /// - Parents who switched into Kids Mode can exit via Parent Gate
-  /// - Pure Kid accounts CANNOT exit to Adult Mode (COPPA / Child Safety requirement)
-  static bool get canExitToAdultAccount => isAdminAccount || _isParentSwitched || !_isPureKidAccount;
+  /// - Pure Kid/Student accounts CANNOT exit to Adult Mode (strictly no exit option shown)
+  static bool get canExitToAdultAccount => isAdminAccount || (_isParentSwitched && !_isPureKidAccount);
 
   static void setAdminMode(bool enabled) {
     _adminModeOverride = enabled;
@@ -192,9 +275,65 @@ class PocketKidsService {
     }
   }
 
+  /// Check if user has Adventure Pass (Kid Premium)
+  static bool get isKidPremium => isAdminAccount || _isKidPremium;
+
+  /// Activate or toggle Kid VIP Adventure Pass (Instant 100-Day Unlock)
+  static Future<void> setKidPremium(bool value) async {
+    _isKidPremium = value;
+    kidPremiumNotifier.value = value;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_keyKidIsPremium, value);
+    } catch (_) {}
+    if (value) {
+      kidDayNotifier.value = 100;
+    }
+  }
+
+  static String getTodayDateString() {
+    final now = DateTime.now();
+    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  /// Whether Day `day` is locked until 12:00 AM (midnight next day) for Free tier users
+  static bool isDayLockedByMidnightTimer(int day) {
+    if (isAdminAccount || isKidPremium) return false;
+    if (day <= 1) return false;
+    if (_lastCompletedDay != null && day == _lastCompletedDay! + 1) {
+      final todayStr = getTodayDateString();
+      if (_lastCompletedDate == todayStr) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Checks if a day is fully unlocked and ready to play
   static bool isDayUnlocked(int day) {
-    if (isAdminAccount) return true;
-    return day <= currentUnlockedDay;
+    if (isAdminAccount || isKidPremium) return day <= 100;
+    if (day < _currentUnlockedDay) return true; // Already unlocked or completed past day
+    if (day == _currentUnlockedDay) {
+      return !isDayLockedByMidnightTimer(day);
+    }
+    return false;
+  }
+
+  /// Calculate remaining time until next 12:00 AM midnight
+  static Duration getTimeUntilMidnight() {
+    final now = DateTime.now();
+    final tomorrowMidnight = DateTime(now.year, now.month, now.day + 1, 0, 0, 0);
+    return tomorrowMidnight.difference(now);
+  }
+
+  /// Format countdown timer string: e.g. "08h 45m 12s"
+  static String getFormattedMidnightCountdown() {
+    final diff = getTimeUntilMidnight();
+    if (diff.isNegative) return '00h 00m 00s';
+    final hours = diff.inHours.toString().padLeft(2, '0');
+    final minutes = (diff.inMinutes % 60).toString().padLeft(2, '0');
+    final seconds = (diff.inSeconds % 60).toString().padLeft(2, '0');
+    return '${hours}h ${minutes}m ${seconds}s';
   }
 
   static bool get isKidAccount => _isKidAccount;
@@ -213,7 +352,7 @@ class PocketKidsService {
   /// 🏆 Day 100 Certificate Unlock Status
   static bool get isCertificateUnlocked => isAdminAccount || _completedDays.containsKey(100) || _currentUnlockedDay >= 100;
 
-  /// 🏰 Exact Avatar Houses matching the Adult 100-Day House System
+  /// 🏰 10 Architectural Homestead Tiers matching the 100-Day Journey up to King Lion Palace
   static const List<KidsHouse> houses = [
     KidsHouse(
       tier: 1,
@@ -236,32 +375,64 @@ class PocketKidsService {
       title: 'Stone Fortress',
       emoji: '🏰',
       description: 'Mighty stone fortress with knight watchtowers!',
-      unlockedAtDay: 21,
+      unlockedAtDay: 16,
       themeColor: Color(0xFFA855F7),
     ),
     KidsHouse(
       tier: 4,
-      title: 'Imperial Manor',
-      emoji: '🏛️',
-      description: 'Grand royal manor with golden pillars and marble!',
-      unlockedAtDay: 46,
-      themeColor: Color(0xFFF59E0B),
+      title: 'Treehouse Sanctuary',
+      emoji: '🌳',
+      description: 'Enchanted treetop sanctuary with canopy walkways!',
+      unlockedAtDay: 26,
+      themeColor: Color(0xFF14B8A6),
     ),
     KidsHouse(
       tier: 5,
-      title: 'Cyber Citadel',
-      emoji: '💎',
-      description: 'Futuristic crystal citadel shining with neon stars!',
-      unlockedAtDay: 71,
-      themeColor: Color(0xFFEC4899),
+      title: 'Imperial Manor',
+      emoji: '🏛️',
+      description: 'Grand royal manor with golden pillars and marble!',
+      unlockedAtDay: 39,
+      themeColor: Color(0xFFF59E0B),
     ),
     KidsHouse(
       tier: 6,
-      title: 'Sovereign Palace',
+      title: 'Cyber Citadel',
+      emoji: '💎',
+      description: 'Futuristic crystal citadel shining with neon stars!',
+      unlockedAtDay: 53,
+      themeColor: Color(0xFFEC4899),
+    ),
+    KidsHouse(
+      tier: 7,
+      title: 'Crystal Mountain Palace',
+      emoji: '🏔️',
+      description: 'Luminous crystal palace on the snow-capped peak!',
+      unlockedAtDay: 66,
+      themeColor: Color(0xFF6366F1),
+    ),
+    KidsHouse(
+      tier: 8,
+      title: 'Titanium Bastion',
+      emoji: '🛡️',
+      description: 'Impenetrable high-tech bastion with laser shields!',
+      unlockedAtDay: 79,
+      themeColor: Color(0xFF3B82F6),
+    ),
+    KidsHouse(
+      tier: 9,
+      title: 'Apex Sovereign Citadel',
       emoji: '👑',
-      description: 'Supreme 100-Day Champion Palace of the World!',
+      description: 'Majestic golden citadel of true English mastery!',
       unlockedAtDay: 90,
       themeColor: Color(0xFFFFD700),
+    ),
+    KidsHouse(
+      tier: 10,
+      title: 'Golden Lion King Palace',
+      emoji: '🦁',
+      description: 'Supreme 100-Day Grand Palace of the King of the Animal Kingdom!',
+      unlockedAtDay: 100,
+      themeColor: Color(0xFFFF9900),
     ),
   ];
 
@@ -315,6 +486,23 @@ class PocketKidsService {
       _kidAvatar = prefs.getString(_keyKidAvatar) ?? '🦁';
       _kidStars = prefs.getInt(_keyKidStars) ?? 0;
       _currentUnlockedDay = prefs.getInt(_keyKidCurrentDay) ?? 1;
+      _isKidPremium = prefs.getBool(_keyKidIsPremium) ?? false;
+      _lastCompletedDate = prefs.getString(_keyKidLastCompletedDate);
+      _lastCompletedDay = prefs.getInt(_keyKidLastCompletedDay);
+      kidPremiumNotifier.value = _isKidPremium;
+
+      // Remote Supabase verification if user is logged in
+      try {
+        final uid = SupaFlow.client.auth.currentUser?.id;
+        if (uid != null) {
+          final res = await SupaFlow.client.from('profile').select('is_premium').eq('id', uid).maybeSingle();
+          if (res != null && res['is_premium'] == true) {
+            _isKidPremium = true;
+            kidPremiumNotifier.value = true;
+            await prefs.setBool(_keyKidIsPremium, true);
+          }
+        }
+      } catch (_) {}
 
       final savedDaysJson = prefs.getString(_keyKidCompletedDays);
       if (savedDaysJson != null && savedDaysJson.isNotEmpty) {
@@ -466,6 +654,9 @@ class PocketKidsService {
     _completedDays[day] = starsEarned;
     await addStars(starsEarned);
 
+    _lastCompletedDay = day;
+    _lastCompletedDate = getTodayDateString();
+
     if (day >= _currentUnlockedDay && _currentUnlockedDay < 100) {
       _currentUnlockedDay = day + 1;
       kidDayNotifier.value = _currentUnlockedDay;
@@ -474,6 +665,8 @@ class PocketKidsService {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setInt(_keyKidCurrentDay, _currentUnlockedDay);
+      await prefs.setInt(_keyKidLastCompletedDay, day);
+      await prefs.setString(_keyKidLastCompletedDate, _lastCompletedDate!);
       final jsonMap = _completedDays.map((k, v) => MapEntry(k.toString(), v));
       await prefs.setString(_keyKidCompletedDays, jsonEncode(jsonMap));
     } catch (_) {}
@@ -824,5 +1017,451 @@ class PocketKidsService {
         ),
       ];
     }
+  }
+
+  // --- SYNC & VERIFY ACCOUNT TYPE ON LOGIN (Audio Directive 1) ---
+
+  /// Verifies whether the authenticated user is registered as a pure Student / Kid or Adult.
+  /// If Student: activates student mode with isPureKid: true and returns true (direct to student home).
+  /// If Adult: activates adult mode and returns false (direct to adult home).
+  static Future<bool> syncAndVerifyUserAccountType(String userId) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final localIsKid = prefs.getBool('is_kid_account_$userId');
+      final localPure = prefs.getBool(_keyIsPureKidAccount) ?? false;
+
+      // Check remote profile
+      final profile = await SupaFlow.client
+          .from('profile')
+          .select('account_type, kid_name, kid_avatar, kid_age_group')
+          .eq('user_id', userId)
+          .maybeSingle();
+
+      if (profile != null) {
+        final accType = profile['account_type']?.toString().toLowerCase().trim();
+        if (accType == 'pure_kid' || accType == 'kid' || accType == 'student') {
+          final kName = profile['kid_name']?.toString() ?? 'Young Scholar';
+          final kAvatar = profile['kid_avatar']?.toString() ?? '🦁';
+          final kAge = profile['kid_age_group']?.toString() ?? '6-8';
+          await activateKidAccount(
+            name: kName,
+            ageGroup: kAge,
+            avatar: kAvatar,
+            isPureKid: accType == 'pure_kid' || accType == 'student',
+          );
+          return true;
+        } else if (accType == 'adult') {
+          await activateAdultAccount();
+          return false;
+        }
+      }
+
+      if (localIsKid == true || localPure == true) {
+        await activateKidAccount(
+          name: _kidName,
+          ageGroup: _kidAgeGroup,
+          avatar: _kidAvatar,
+          isPureKid: localPure,
+        );
+        return true;
+      }
+    } catch (e) {
+      debugPrint('PocketKidsService: Error verifying account type: $e');
+    }
+    return _isKidAccount;
+  }
+
+  // --- 🦁 THE KING LION SYSTEM (Audio Directive 6 & 7) ---
+
+  static const String lionId = 'pocket_lion';
+  static const String lionName = 'King Lion';
+  static const String lionAvatar = '🦁';
+  static const String lionRole = 'King of the Animal Kingdom';
+  static const String defaultLionWelcome =
+      'Roar! Welcome to the Animal Kingdom, young scholar! 🦁 I am the King of the Animal Kingdom. Practice your English daily, be brave, and climb the mountain trail. If you encounter any problems in the wild forest, send a Lion Report to me!';
+
+  static const String _kLionChatKey = 'pm_lion_chat_messages';
+  static const String _kLionReportsKey = 'pm_student_lion_reports';
+
+  /// Get chat history with The Lion (King of the Kingdom)
+  static Future<List<KidMessage>> getLionChatMessages() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kLionChatKey);
+      if (raw == null || raw.isEmpty) {
+        final initial = [
+          KidMessage(
+            id: 'lion_welcome',
+            senderId: lionId,
+            senderName: lionName,
+            senderAvatar: lionAvatar,
+            text: defaultLionWelcome,
+            timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+            isFromMe: false,
+          ),
+        ];
+        await prefs.setString(_kLionChatKey, jsonEncode(initial.map((m) => m.toJson()).toList()));
+        return initial;
+      }
+      final decoded = jsonDecode(raw) as List<dynamic>;
+      return decoded.map((e) => KidMessage.fromJson(Map<String, dynamic>.from(e))).toList();
+    } catch (e) {
+      return [
+        KidMessage(
+          id: 'lion_welcome',
+          senderId: lionId,
+          senderName: lionName,
+          senderAvatar: lionAvatar,
+          text: defaultLionWelcome,
+          timestamp: DateTime.now(),
+          isFromMe: false,
+        ),
+      ];
+    }
+  }
+
+  /// Send message to King Lion
+  static Future<KidMessage> sendLionChatMessage(String text) async {
+    final myMsg = KidMessage(
+      id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
+      senderId: 'me',
+      senderName: _kidName,
+      senderAvatar: _kidAvatar,
+      text: text,
+      timestamp: DateTime.now(),
+      isFromMe: true,
+    );
+
+    final msgs = await getLionChatMessages();
+    final updated = List<KidMessage>.from(msgs)..add(myMsg);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_kLionChatKey, jsonEncode(updated.map((m) => m.toJson()).toList()));
+
+    // Royal encouraging Lion decree reply
+    Future.delayed(const Duration(milliseconds: 1500), () async {
+      final replies = [
+        "Roar! The King hears you! Stay brave and keep practicing English! 🦁👑",
+        "A true champion practices every single day! Keep conquering the mountain! 🏔️⭐",
+        "The Animal Kingdom is proud of your progress! High five! ✋🐾",
+        "Always help your mates in the kingdom. Kindness is true strength! 🤝✨",
+        "Roar! Conquer Day 100 and you shall face the royal challenge! 🏆🦁",
+      ];
+      final replyText = replies[math.Random().nextInt(replies.length)];
+      final lionReply = KidMessage(
+        id: 'lion_${DateTime.now().millisecondsSinceEpoch}',
+        senderId: lionId,
+        senderName: lionName,
+        senderAvatar: lionAvatar,
+        text: replyText,
+        timestamp: DateTime.now(),
+        isFromMe: false,
+      );
+      final withReply = List<KidMessage>.from(updated)..add(lionReply);
+      await prefs.setString(_kLionChatKey, jsonEncode(withReply.map((m) => m.toJson()).toList()));
+    });
+
+    return myMsg;
+  }
+
+  /// Submit a Lion Report (Students reporting forest or app issues to the King)
+  static Future<void> submitLionReport({
+    required String subject,
+    required String description,
+  }) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final report = {
+        'id': 'lion_rep_${DateTime.now().millisecondsSinceEpoch}',
+        'student_id': SupaFlow.client.auth.currentUser?.id ?? 'local_student',
+        'student_name': _kidName,
+        'student_avatar': _kidAvatar,
+        'subject': subject,
+        'description': description,
+        'created_at': DateTime.now().toIso8601String(),
+        'status': 'pending',
+        'admin_reply': null,
+      };
+
+      final existingRaw = prefs.getString(_kLionReportsKey);
+      List<dynamic> list = existingRaw != null ? jsonDecode(existingRaw) : [];
+      list.insert(0, report);
+      await prefs.setString(_kLionReportsKey, jsonEncode(list));
+
+      // Attempt remote sync to Supabase reports
+      try {
+        final uid = SupaFlow.client.auth.currentUser?.id;
+        if (uid != null) {
+          await SupaFlow.client.from('reports').insert({
+            'reporter_id': uid,
+            'content_type': 'student_lion_report',
+            'reason': subject,
+            'additional_info': jsonEncode(report),
+            'status': 'pending',
+          });
+        }
+      } catch (_) {}
+    } catch (e) {
+      debugPrint('Error submitting Lion Report: $e');
+    }
+  }
+
+  /// Get student's Lion reports
+  static Future<List<Map<String, dynamic>>> getStudentLionReports() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kLionReportsKey);
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as List<dynamic>;
+        return decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  /// Admin Desk: Get all Lion reports for Master Admin (musabthonippadam@gmail.com)
+  static Future<List<Map<String, dynamic>>> getAdminLionReports() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kLionReportsKey);
+      List<Map<String, dynamic>> list = [];
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as List<dynamic>;
+        list = decoded.map((e) => Map<String, dynamic>.from(e)).toList();
+      }
+      return list;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Admin Desk: Reply to student Lion report
+  static Future<void> replyToLionReport(String reportId, String replyText) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kLionReportsKey);
+      if (raw != null && raw.isNotEmpty) {
+        final list = (jsonDecode(raw) as List<dynamic>).map((e) => Map<String, dynamic>.from(e)).toList();
+        for (var r in list) {
+          if (r['id'] == reportId) {
+            r['admin_reply'] = replyText;
+            r['status'] = 'resolved';
+          }
+        }
+        await prefs.setString(_kLionReportsKey, jsonEncode(list));
+      }
+    } catch (_) {}
+  }
+
+  // --- 👥 POCKET GANG (STUDY GROUPS & TEAMS) (Audio Directive 5 & 6) ---
+
+  static final List<PocketGang> _defaultGangs = [
+    PocketGang(
+      id: 'gang_1',
+      name: 'Lion Pride Scholars',
+      emoji: '🦁',
+      description: 'Daily Spoken English drills, courage building, and Mountain Trail racing!',
+      membersCount: 24,
+      memberAvatars: ['🦁', '🐯', '🐼', '🦊'],
+      isJoined: true,
+    ),
+    PocketGang(
+      id: 'gang_2',
+      name: 'Summit Raptors',
+      emoji: '🦖',
+      description: 'Vocabulary masters learning 10 new words every afternoon!',
+      membersCount: 18,
+      memberAvatars: ['🦖', '🦄', '🐰', '🐶'],
+      isJoined: false,
+    ),
+    PocketGang(
+      id: 'gang_3',
+      name: 'Forest Explorers',
+      emoji: '🌳',
+      description: 'Study group solving Citadel defense questions and grammar puzzles together.',
+      membersCount: 31,
+      memberAvatars: ['🐻', '🐨', '🐬', '🐱'],
+      isJoined: false,
+    ),
+  ];
+
+  static const String _kGangsKey = 'pm_student_pocket_gangs';
+
+  static Future<List<PocketGang>> getPocketGangs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_kGangsKey);
+      if (raw == null || raw.isEmpty) {
+        return _defaultGangs;
+      }
+      final decoded = jsonDecode(raw) as List<dynamic>;
+      return decoded.map((e) {
+        final m = Map<String, dynamic>.from(e);
+        return PocketGang(
+          id: m['id'],
+          name: m['name'],
+          emoji: m['emoji'],
+          description: m['description'],
+          membersCount: m['membersCount'] ?? 1,
+          memberAvatars: List<String>.from(m['memberAvatars'] ?? ['🦁']),
+          isJoined: m['isJoined'] ?? false,
+        );
+      }).toList();
+    } catch (_) {
+      return _defaultGangs;
+    }
+  }
+
+  static Future<void> createPocketGang({
+    required String name,
+    required String emoji,
+    required String description,
+  }) async {
+    final gangs = await getPocketGangs();
+    final newGang = PocketGang(
+      id: 'gang_${DateTime.now().millisecondsSinceEpoch}',
+      name: name,
+      emoji: emoji,
+      description: description,
+      membersCount: 1,
+      memberAvatars: [_kidAvatar],
+      isJoined: true,
+    );
+    final updated = List<PocketGang>.from(gangs)..insert(0, newGang);
+    final prefs = await SharedPreferences.getInstance();
+    final mapped = updated.map((g) => {
+      'id': g.id,
+      'name': g.name,
+      'emoji': g.emoji,
+      'description': g.description,
+      'membersCount': g.membersCount,
+      'memberAvatars': g.memberAvatars,
+      'isJoined': g.isJoined,
+    }).toList();
+    await prefs.setString(_kGangsKey, jsonEncode(mapped));
+  }
+
+  static Future<void> toggleJoinGang(String gangId) async {
+    final gangs = await getPocketGangs();
+    final updated = gangs.map((g) {
+      if (g.id == gangId) {
+        final joined = !g.isJoined;
+        return g.copyWith(
+          isJoined: joined,
+          membersCount: joined ? g.membersCount + 1 : (g.membersCount > 1 ? g.membersCount - 1 : 1),
+        );
+      }
+      return g;
+    }).toList();
+    final prefs = await SharedPreferences.getInstance();
+    final mapped = updated.map((g) => {
+      'id': g.id,
+      'name': g.name,
+      'emoji': g.emoji,
+      'description': g.description,
+      'membersCount': g.membersCount,
+      'memberAvatars': g.memberAvatars,
+      'isJoined': g.isJoined,
+    }).toList();
+    await prefs.setString(_kGangsKey, jsonEncode(mapped));
+  }
+
+  // --- 🐾 STUDENT VIBES (100 ANIMAL STORIES & TIPS) (Audio Directive 5 & 6) ---
+
+  static final List<StudentVibe> _defaultVibes = [
+    const StudentVibe(
+      id: 'vibe_1',
+      authorName: 'King Lion 🦁',
+      authorAvatar: '🦁',
+      dayLevel: 100,
+      title: 'Royal Word of the Day: "Perseverance"',
+      message: 'Perseverance means never giving up even when the mountain path is steep! Keep climbing! 👑',
+      tag: '#KingdomDecree',
+      likes: 84,
+    ),
+    const StudentVibe(
+      id: 'vibe_2',
+      authorName: 'Sparky Tiger 🐯',
+      authorAvatar: '🐯',
+      dayLevel: 14,
+      title: 'Pronunciation Tip: "Th" Sound',
+      message: 'Place your tongue gently between your teeth to say "Thank you" and "Think"! Try it now! 👅✨',
+      tag: '#PhonicsTip',
+      likes: 62,
+    ),
+    const StudentVibe(
+      id: 'vibe_3',
+      authorName: 'Finny Fox 🦊',
+      authorAvatar: '🦊',
+      dayLevel: 35,
+      title: 'Friendly Manners Win Hearts',
+      message: 'Saying "May I please borrow this?" makes everyone smile. Good speech opens all castle doors! 🚪🗝️',
+      tag: '#Kindness',
+      likes: 47,
+    ),
+    const StudentVibe(
+      id: 'vibe_4',
+      authorName: 'Pandy Panda 🐼',
+      authorAvatar: '🐼',
+      dayLevel: 4,
+      title: 'Story Time: The Bamboo Forest',
+      message: 'Green bamboo bends in the wind but never breaks. Practice English a little every day to stay strong! 🎋',
+      tag: '#DailyStory',
+      likes: 55,
+    ),
+    const StudentVibe(
+      id: 'vibe_5',
+      authorName: 'Nova Eagle 🦅',
+      authorAvatar: '🦅',
+      dayLevel: 75,
+      title: 'Idiom of the Day: "Spread Your Wings"',
+      message: 'It means trying something new with confidence! Speak English aloud and fly high! 🚀',
+      tag: '#IdiomPower',
+      likes: 71,
+    ),
+  ];
+
+  static Future<List<StudentVibe>> getStudentVibes() async {
+    return _defaultVibes;
+  }
+
+  // --- 🛡️ CUSTOMIZABLE DEFENSE CHALLENGES (Audio Directive 7) ---
+
+  /// Students can view and customize their 3-layer defense questions
+  static Future<void> saveCustomDefense(int day, List<KidDefenseChallenge> customList) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final mapped = customList.map((c) => {
+        'prompt': c.prompt,
+        'spokenText': c.spokenText,
+        'helperMascot': c.helperMascot,
+        'options': c.options,
+        'correctIndex': c.correctIndex,
+        'cheerMessage': c.cheerMessage,
+      }).toList();
+      await prefs.setString('pm_custom_defense_$day', jsonEncode(mapped));
+    } catch (_) {}
+  }
+
+  static Future<List<KidDefenseChallenge>> getEffectiveDefenseForDay(int day) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString('pm_custom_defense_$day');
+      if (raw != null && raw.isNotEmpty) {
+        final decoded = jsonDecode(raw) as List<dynamic>;
+        return decoded.map((e) {
+          final m = Map<String, dynamic>.from(e);
+          return KidDefenseChallenge(
+            prompt: m['prompt'],
+            spokenText: m['spokenText'],
+            helperMascot: m['helperMascot'],
+            options: List<String>.from(m['options']),
+            correctIndex: m['correctIndex'] ?? 0,
+            cheerMessage: m['cheerMessage'],
+          );
+        }).toList();
+      }
+    } catch (_) {}
+    return getDefenseChallengesForDay(day);
   }
 }

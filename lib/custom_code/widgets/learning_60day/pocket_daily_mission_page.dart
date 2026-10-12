@@ -97,6 +97,10 @@ import 'career_adventure/bridge_builder_game_page.dart';
 import 'career_adventure/travel_rush_models.dart';
 import 'career_adventure/travel_rush_game_page.dart';
 import 'pocket_daily_mission_roadmap_widget.dart';
+import 'package:pocket_mates_app/custom_code/widgets/native_webrtc_call_screen.dart';
+import 'games/english_realm/english_realm_manifest.dart';
+import 'games/english_realm/english_realm_game_session_page.dart';
+import 'games/pocket_day_arcade_game_modal.dart';
 
 /// 🎯 Comprehensive Interactive Daily English Mission Experience
 class PocketDailyMissionPage extends StatefulWidget {
@@ -149,6 +153,9 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   bool _readingNotesCompleted = false;
   bool _revisionQuizPassed = false;
   bool _defenseTrapArmed = false;
+  bool _randomChatVerified = false;
+  bool _game1Completed = false;
+  bool _game2Completed = false;
   bool _trialRaidLaunched = false;
   bool _midAttackCompleted = false;
   bool _alphabetPhonicsCompleted = false;
@@ -1619,6 +1626,13 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   }
 
   void _loadVocabForDay() {
+    // 🎯 Master Deduplicated 90-Day Adult Curriculum: 10 unique, non-repeating words per day for all 90 days (0 duplicates across entire 90 days)
+    final tailored = Pocket90DayVocabCurriculum.getVocabForDay(widget.day);
+    if (tailored.isNotEmpty) {
+      _vocabList = tailored;
+      return;
+    }
+
     if (_activeLearnerLevel == LearnerLevel.zero) {
       final zeroPlan = ZeroFoundationCurriculumDB.getDayPlan(widget.day);
       if (zeroPlan.vocabularyItems.isNotEmpty) {
@@ -1655,11 +1669,6 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         _vocabList = expertPlan.vocabularyItems;
         return;
       }
-    }
-    final tailored = Pocket90DayVocabCurriculum.getVocabForDay(widget.day);
-    if (tailored.isNotEmpty) {
-      _vocabList = tailored;
-      return;
     }
     if (PocketMissionCurriculumRegistry.hasDay(widget.day)) {
       final regVocab =
@@ -4257,7 +4266,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       _dailyRuleCompleted = prefs.getBool('${dayKey}_daily_rule') ?? false;
       _hubChatVerified = prefs.getBool('${dayKey}_hub_chat') ?? false;
       _peerCallVerified = prefs.getBool('${dayKey}_peer_call') ?? false;
+      _randomChatVerified = prefs.getBool('${dayKey}_random_chat') ?? false;
       _vocabMemorized = prefs.getBool('${dayKey}_vocab_mem') ?? false;
+      _game1Completed = prefs.getBool('${dayKey}_game_1') ??
+          (prefs.getBool('${dayKey}_career_adventure') ?? false);
+      _game2Completed = prefs.getBool('${dayKey}_game_2') ??
+          (prefs.getBool('${dayKey}_word_catcher') ?? false);
       _wordCatcherCompleted = prefs.getBool('${dayKey}_word_catcher') ?? false;
       _careerAdventureCompleted =
           prefs.getBool('${dayKey}_career_adventure') ?? _wordCatcherCompleted;
@@ -4413,6 +4427,15 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         break;
       case 'quiz':
         _revisionQuizPassed = value;
+        break;
+      case 'random_chat':
+        _randomChatVerified = value;
+        break;
+      case 'game_1':
+        _game1Completed = value;
+        break;
+      case 'game_2':
+        _game2Completed = value;
         break;
     }
     final prefs = await SharedPreferences.getInstance();
@@ -4587,6 +4610,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
         if (!mounted) return;
         setState(() => _peerCallVerified = true);
         _saveSubtask('peer_call', true);
+        _notifyStepUnlocked(_stepPeerCall, _stepRandomChat);
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -4905,8 +4929,7 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
 
   int get _totalSubtasksCount {
     int count =
-        8; // Rule + Hub + Peer Call + Vocab + Reading + Code English + Quiz + Defense Trap
-    if (widget.day >= 1 && widget.day <= 14) count++; // 🕹️ Level 1–14 2D Adventure Game
+        11; // Rule + Hub + Peer Call + Random Chat + Vocab + Game 1 + Game 2 + Reading + Code English + Quiz + Defense Trap
     if (_hasAlphabetPhonics) count++;
     if (_hasSentencePatterns) count++;
     if (_hasPronunciationClinic) count++;
@@ -4959,49 +4982,27 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
     if (_showActiveDirectIndirect && _directIndirectPracticeCompleted) count++;
     if (_hubChatVerified) count++;
     if (_peerCallVerified) count++;
+    if (_randomChatVerified) count++;
     if (_vocabMemorized) count++;
-    if (widget.day == 1 &&
-        (_careerAdventureCompleted || _wordCatcherCompleted)) {
-      count++; // 🏢 Level 1 Career Adventure Game
+    if (_game1Completed ||
+        (widget.day == 1 && _careerAdventureCompleted) ||
+        (widget.day == 2 && _cityNavigatorCompleted) ||
+        (widget.day == 3 && _memoryBreakInCompleted) ||
+        (widget.day == 4 && _wordFactoryCompleted) ||
+        (widget.day == 5 && _signalHuntCompleted) ||
+        (widget.day == 6 && _lostPackageCompleted) ||
+        (widget.day == 7 && _busyDayCompleted) ||
+        (widget.day == 8 && _fastFixCompleted) ||
+        (widget.day == 9 && _marketMasterCompleted) ||
+        (widget.day == 10 && _wordDetectiveCompleted) ||
+        (widget.day == 11 && _voiceCafeCompleted) ||
+        (widget.day == 12 && _messageRunnerCompleted) ||
+        (widget.day == 13 && _bridgeBuilderCompleted) ||
+        (widget.day == 14 && _travelRushCompleted)) {
+      count++;
     }
-    if (widget.day == 2 && _cityNavigatorCompleted) {
-      count++; // 🏙️ Level 2 City Navigator Game
-    }
-    if (widget.day == 3 && _memoryBreakInCompleted) {
-      count++; // 🧠 Level 3 Memory Break-In Game
-    }
-    if (widget.day == 4 && _wordFactoryCompleted) {
-      count++; // 🏭 Level 4 Word Factory Game
-    }
-    if (widget.day == 5 && _signalHuntCompleted) {
-      count++; // 📡 Level 5 Signal Hunt Game
-    }
-    if (widget.day == 6 && _lostPackageCompleted) {
-      count++; // 📦 Level 6 The Lost Package Game
-    }
-    if (widget.day == 7 && _busyDayCompleted) {
-      count++; // 🗓️ Level 7 The Busy Day Game
-    }
-    if (widget.day == 8 && _fastFixCompleted) {
-      count++; // ⚡ Level 8 Fast Fix Game
-    }
-    if (widget.day == 9 && _marketMasterCompleted) {
-      count++; // 🛒 Level 9 Market Master Game
-    }
-    if (widget.day == 10 && _wordDetectiveCompleted) {
-      count++; // 🕵️ Level 10 Word Detective Game
-    }
-    if (widget.day == 11 && _voiceCafeCompleted) {
-      count++; // ☕ Level 11 Voice Café Game
-    }
-    if (widget.day == 12 && _messageRunnerCompleted) {
-      count++; // 📨 Level 12 Message Runner Game
-    }
-    if (widget.day == 13 && _bridgeBuilderCompleted) {
-      count++; // 🌉 Level 13 Bridge Builder Game
-    }
-    if (widget.day == 14 && _travelRushCompleted) {
-      count++; // ✈️ Level 14 Travel Rush Game
+    if (_game2Completed || (widget.day == 1 && _wordCatcherCompleted)) {
+      count++;
     }
     if (_hasSentencePatterns && _sentencePatternCompleted) count++;
     if (_readingNotesCompleted) count++;
@@ -5039,9 +5040,12 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
   int get _stepSentenceStructure => _stepActiveGrammar;
   int get _stepEnglishHub => _stepActiveGrammar + 1;
   int get _stepPeerCall => _stepEnglishHub + 1;
-  int get _stepAdventureGame => _stepPeerCall + 1;
-  int get _stepSentencePattern => _hasSentencePatterns ? _stepAdventureGame + 1 : _stepAdventureGame;
-  int get _stepReadingNotes => _hasSentencePatterns ? _stepSentencePattern + 1 : _stepAdventureGame + 1;
+  int get _stepRandomChat => _stepPeerCall + 1;
+  int get _stepGame1 => _stepRandomChat + 1;
+  int get _stepGame2 => _stepGame1 + 1;
+  int get _stepAdventureGame => _stepGame1;
+  int get _stepSentencePattern => _hasSentencePatterns ? _stepGame2 + 1 : _stepGame2;
+  int get _stepReadingNotes => _hasSentencePatterns ? _stepSentencePattern + 1 : _stepGame2 + 1;
   int get _stepCodeEnglish => _stepReadingNotes + 1;
   int get _stepPronunciation => _hasPronunciationClinic ? _stepCodeEnglish + 1 : _stepCodeEnglish;
   int get _stepThinking => _hasEnglishThinking
@@ -5676,65 +5680,90 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
                         ),
 
                         const SizedBox(height: 14),
+
+                        // Subtask: 🎲 Random Chat / Spontaneous Match
+                        _buildRandomChatCard(),
+
+                        const SizedBox(height: 14),
                       ],
 
 
-                      // Subtask 4: 2D Adventure Quests & Combat
+                      // Subtask 4: 2D Adventure Quests & Combat (2 Dedicated Games for all 90 Days)
                       if (_showAdventure) ...[
                         if (widget.day == 1) ...[
                           _buildCareerAdventureCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 2) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 2) ...[
                           _buildCityNavigatorCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 3) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 3) ...[
                           _buildMemoryBreakInCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 4) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 4) ...[
                           _buildWordFactoryCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 5) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 5) ...[
                           _buildSignalHuntCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 6) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 6) ...[
                           _buildLostPackageCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 7) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 7) ...[
                           _buildBusyDayCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 8) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 8) ...[
                           _buildFastFixCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 9) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 9) ...[
                           _buildMarketMasterCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 10) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 10) ...[
                           _buildWordDetectiveCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 11) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 11) ...[
                           _buildVoiceCafeCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 12) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 12) ...[
                           _buildMessageRunnerCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 13) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 13) ...[
                           _buildBridgeBuilderCard(),
                           const SizedBox(height: 14),
-                        ],
-                        if (widget.day == 14) ...[
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else if (widget.day == 14) ...[
                           _buildTravelRushCard(),
+                          const SizedBox(height: 14),
+                          _buildDayRealmGameCard(2),
+                          const SizedBox(height: 14),
+                        ] else ...[
+                          _buildDayRealmGameCard(1),
+                          const SizedBox(height: 14),
+                          _buildDayRealmGameCard(2),
                           const SizedBox(height: 14),
                         ],
                         if (widget.day >= 4) ...[
@@ -6601,42 +6630,156 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
       ),
     );
 
-    // Step 12: 2D Adventure Quests (e.g. Cyber Vocab for Day 1)
+    // Random Chat / Spontaneous Match
     rawSteps.add(
       _RawRoadmapStep(
-        stepNumber: _stepAdventureGame,
-        icon: '🎮',
-        title: widget.day == 1 ? 'Career Adventure (Cyber Vocab)' : 'Daily 2D Adventure Quest',
-        category: 'Adventure',
-        subtitle: 'Interactive 2D career quest & vocational vocabulary challenges',
-        accentColor: const Color(0xFFE11D48),
-        isCompleted: _careerAdventureCompleted,
+        stepNumber: _stepRandomChat,
+        icon: '🎲',
+        title: 'Random Chat / Spontaneous Match',
+        category: 'Speaking',
+        subtitle: 'Connect with a random peer for spontaneous English conversation to test quick reflexes',
+        accentColor: const Color(0xFF8B5CF6),
+        isCompleted: _randomChatVerified,
         onAction: () async {
-          if (widget.day == 1) {
+          if (!_timerService.isRunning && !_timerService.hasReachedTarget) {
+            _timerService.toggleTimer();
+          }
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const NativeWebRTCCallScreen(mode: 'Voice'),
+            ),
+          );
+          if (mounted) {
+            setState(() => _randomChatVerified = true);
+            _saveSubtask('random_chat', true);
+            _notifyStepUnlocked(_stepRandomChat, _stepGame1);
+          }
+        },
+        onToggleComplete: () {
+          final next = !_randomChatVerified;
+          setState(() => _randomChatVerified = next);
+          _saveSubtask('random_chat', next);
+          if (next) _notifyStepUnlocked(_stepRandomChat, _stepGame1);
+        },
+      ),
+    );
+
+    // Step 12: Game 1 – 2D Open-World Adventure Quest
+    final realmGames = EnglishRealmManifest.getGamesForDay(widget.day);
+    final game1Spec = realmGames.isNotEmpty ? realmGames[0] : null;
+    final game2Spec = realmGames.length > 1 ? realmGames[1] : null;
+
+    final game1Title = game1Spec?.title ?? (widget.day == 1 ? 'Career Adventure (Cyber Vocab)' : 'Daily 2D Adventure Quest');
+    final game1Subtitle = game1Spec?.subtitle ?? 'Interactive 2D open-world vocational quest with speech tasks';
+    final game1Icon = game1Spec?.icon ?? '🎮';
+
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepGame1,
+        icon: game1Icon,
+        title: 'Game 1: $game1Title',
+        category: 'Adventure',
+        subtitle: game1Subtitle,
+        accentColor: const Color(0xFFE11D48),
+        isCompleted: _game1Completed,
+        onAction: () async {
+          if (game1Spec != null) {
+            await EnglishRealmGameSessionPage.launch(
+              context,
+              spec: game1Spec,
+              onCompleted: () {
+                if (mounted) {
+                  setState(() => _game1Completed = true);
+                  _saveSubtask('game_1', true);
+                  _notifyStepUnlocked(_stepGame1, _stepGame2);
+                }
+              },
+            );
+          } else if (widget.day == 1) {
             await Navigator.push(
               context,
               MaterialPageRoute(
                 builder: (_) => CyberVocabGamePage(
                   onCompleted: (xp) {
                     if (mounted) {
-                      setState(() => _careerAdventureCompleted = true);
-                      _saveSubtask('career_adventure', true);
-                      _notifyStepUnlocked(_stepAdventureGame, _stepReadingNotes);
+                      setState(() => _game1Completed = true);
+                      _saveSubtask('game_1', true);
+                      _notifyStepUnlocked(_stepGame1, _stepGame2);
                     }
                   },
                 ),
               ),
             );
           } else {
-            setState(() => _careerAdventureCompleted = true);
-            _saveSubtask('career_adventure', true);
+            await PocketDayArcadeGameModal.show(
+              context,
+              day: widget.day,
+              onGameFinished: () {
+                if (mounted) {
+                  setState(() => _game1Completed = true);
+                  _saveSubtask('game_1', true);
+                  _notifyStepUnlocked(_stepGame1, _stepGame2);
+                }
+              },
+            );
           }
         },
         onToggleComplete: () {
-          final next = !_careerAdventureCompleted;
-          setState(() => _careerAdventureCompleted = next);
-          _saveSubtask('career_adventure', next);
-          if (next) _notifyStepUnlocked(_stepAdventureGame, _stepReadingNotes);
+          final next = !_game1Completed;
+          setState(() => _game1Completed = next);
+          _saveSubtask('game_1', next);
+          if (next) _notifyStepUnlocked(_stepGame1, _stepGame2);
+        },
+      ),
+    );
+
+    // Step 13: Game 2 – 2D Arcade Battle & Word Catcher
+    final game2Title = game2Spec?.title ?? 'Arcade Battle & Word Catcher';
+    final game2Subtitle = game2Spec?.subtitle ?? 'Catch falling vocabulary & defeat rapid speech boss';
+    final game2Icon = game2Spec?.icon ?? '🕹️';
+
+    rawSteps.add(
+      _RawRoadmapStep(
+        stepNumber: _stepGame2,
+        icon: game2Icon,
+        title: 'Game 2: $game2Title',
+        category: 'Arcade',
+        subtitle: game2Subtitle,
+        accentColor: const Color(0xFFF59E0B),
+        isCompleted: _game2Completed,
+        onAction: () async {
+          if (game2Spec != null) {
+            await EnglishRealmGameSessionPage.launch(
+              context,
+              spec: game2Spec,
+              onCompleted: () {
+                if (mounted) {
+                  setState(() => _game2Completed = true);
+                  _saveSubtask('game_2', true);
+                  _notifyStepUnlocked(_stepGame2, _stepReadingNotes);
+                }
+              },
+            );
+          } else {
+            await PocketDayArcadeGameModal.show(
+              context,
+              day: widget.day,
+              onGameFinished: () {
+                if (mounted) {
+                  setState(() => _game2Completed = true);
+                  _saveSubtask('game_2', true);
+                  _notifyStepUnlocked(_stepGame2, _stepReadingNotes);
+                }
+              },
+            );
+          }
+        },
+        onToggleComplete: () {
+          final next = !_game2Completed;
+          setState(() => _game2Completed = next);
+          _saveSubtask('game_2', next);
+          if (next) _notifyStepUnlocked(_stepGame2, _stepReadingNotes);
         },
       ),
     );
@@ -9409,6 +9552,135 @@ class _PocketDailyMissionPageState extends State<PocketDailyMissionPage> {
           return 'I PRACTICED THIS PATTERN ALOUD ✓';
       }
     }
+  }
+
+  // --- SUBTASK: 🎲 RANDOM CHAT / SPONTANEOUS MATCH CARD ---
+  Widget _buildRandomChatCard() {
+    return _buildSubtaskCard(
+      stepNumber: '$_stepRandomChat',
+      icon: '🎲',
+      title: 'Random Chat / Spontaneous Match',
+      description:
+          'Connect with a random peer for spontaneous English conversation to test quick speaking reflexes and conquer hesitation.',
+      isVerified: _randomChatVerified,
+      actionLabel: _randomChatVerified ? 'PRACTICE AGAIN 🎲' : 'START RANDOM CHAT 🎲',
+      actionColor: const Color(0xFF8B5CF6),
+      onAction: () async {
+        if (!_timerService.isRunning && !_timerService.hasReachedTarget) {
+          _timerService.toggleTimer();
+        }
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => const NativeWebRTCCallScreen(mode: 'Voice'),
+          ),
+        );
+        if (mounted) {
+          setState(() => _randomChatVerified = true);
+          _saveSubtask('random_chat', true);
+        }
+      },
+      onVerify: () {
+        final next = !_randomChatVerified;
+        setState(() => _randomChatVerified = next);
+        _saveSubtask('random_chat', next);
+      },
+    );
+  }
+
+  // --- SUBTASK: 🎮 2D OPEN-WORLD & ARCADE REALM GAME CARD (90 Non-Repeating Games) ---
+  Widget _buildDayRealmGameCard(int gameIndex) {
+    final realmGames = EnglishRealmManifest.getGamesForDay(widget.day);
+    final spec = (gameIndex == 1 && realmGames.isNotEmpty)
+        ? realmGames[0]
+        : (gameIndex == 2 && realmGames.length > 1)
+            ? realmGames[1]
+            : null;
+
+    final isDone = gameIndex == 1
+        ? (_game1Completed ||
+            (widget.day == 1 && _careerAdventureCompleted) ||
+            (widget.day == 2 && _cityNavigatorCompleted) ||
+            (widget.day == 3 && _memoryBreakInCompleted) ||
+            (widget.day == 4 && _wordFactoryCompleted) ||
+            (widget.day == 5 && _signalHuntCompleted) ||
+            (widget.day == 6 && _lostPackageCompleted) ||
+            (widget.day == 7 && _busyDayCompleted) ||
+            (widget.day == 8 && _fastFixCompleted) ||
+            (widget.day == 9 && _marketMasterCompleted) ||
+            (widget.day == 10 && _wordDetectiveCompleted) ||
+            (widget.day == 11 && _voiceCafeCompleted) ||
+            (widget.day == 12 && _messageRunnerCompleted) ||
+            (widget.day == 13 && _bridgeBuilderCompleted) ||
+            (widget.day == 14 && _travelRushCompleted))
+        : (_game2Completed || (widget.day == 1 && _wordCatcherCompleted));
+
+    final title = spec?.title ??
+        (gameIndex == 1
+            ? 'Day ${widget.day} 2D Open-World Adventure Quest'
+            : 'Day ${widget.day} 2D Arcade Battle & Catcher');
+    final subtitle = spec?.subtitle ??
+        (gameIndex == 1
+            ? 'Interactive vocational English challenge with speech tasks'
+            : 'Catch vocabulary items and defeat speech challenges');
+    final icon = spec?.icon ?? (gameIndex == 1 ? '🎮' : '🕹️');
+    final stepNum = gameIndex == 1 ? '$_stepGame1' : '$_stepGame2';
+    final actionLabel = isDone
+        ? 'REPLAY GAME $gameIndex 🔁'
+        : (gameIndex == 1 ? 'PLAY 2D ADVENTURE 🎮' : 'PLAY ARCADE BATTLE 🕹️');
+    final actionColor = gameIndex == 1 ? const Color(0xFFE11D48) : const Color(0xFFF59E0B);
+
+    return _buildSubtaskCard(
+      stepNumber: stepNum,
+      icon: icon,
+      title: 'Game $gameIndex: $title',
+      description: subtitle,
+      isVerified: isDone,
+      actionLabel: actionLabel,
+      actionColor: actionColor,
+      onAction: () async {
+        if (spec != null) {
+          await EnglishRealmGameSessionPage.launch(
+            context,
+            spec: spec,
+            onCompleted: () {
+              if (mounted) {
+                final key = gameIndex == 1 ? 'game_1' : 'game_2';
+                setState(() {
+                  if (gameIndex == 1) _game1Completed = true;
+                  if (gameIndex == 2) _game2Completed = true;
+                });
+                _saveSubtask(key, true);
+              }
+            },
+          );
+        } else {
+          await PocketDayArcadeGameModal.show(
+            context,
+            day: widget.day,
+            onGameFinished: () {
+              if (mounted) {
+                final key = gameIndex == 1 ? 'game_1' : 'game_2';
+                setState(() {
+                  if (gameIndex == 1) _game1Completed = true;
+                  if (gameIndex == 2) _game2Completed = true;
+                });
+                _saveSubtask(key, true);
+              }
+            },
+          );
+        }
+      },
+      onVerify: () {
+        final key = gameIndex == 1 ? 'game_1' : 'game_2';
+        final next = !isDone;
+        setState(() {
+          if (gameIndex == 1) _game1Completed = next;
+          if (gameIndex == 2) _game2Completed = next;
+        });
+        _saveSubtask(key, next);
+      },
+    );
   }
 
   // --- SUBTASK 4: 🏢 MISSION 01 CAREER ADVENTURE 2D GAME CARD (User Audio Directive: Mature Level 1 Game) ---

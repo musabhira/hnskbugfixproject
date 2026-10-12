@@ -16,6 +16,7 @@ import 'package:pocket_mates_app/custom_code/services/pocket_president_service.d
 import 'package:pocket_mates_app/custom_code/widgets/avatar/president_avatar_widget.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
+import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -246,7 +247,7 @@ class _SettingsPageState extends State<SettingsPage> {
             children: [
               const Text('🧸 ', style: TextStyle(fontSize: 24)),
               Text(
-                'Switch to Kids Mode',
+                'Switch to Student & Kids Mode',
                 style: GoogleFonts.outfit(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -311,7 +312,7 @@ class _SettingsPageState extends State<SettingsPage> {
                   avatar: PocketKidsService.kidAvatar.isNotEmpty ? PocketKidsService.kidAvatar : '🦁',
                   isParentSwitched: true,
                 );
-                if (context.mounted) {
+                if (mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(builder: (_) => const HomePageWidget()),
                     (route) => false,
@@ -319,7 +320,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 }
               },
               child: Text(
-                'ENTER KIDS MODE',
+                'ENTER STUDENT MODE',
                 style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
               ),
             ),
@@ -626,6 +627,7 @@ class _SettingsPageState extends State<SettingsPage> {
                 onTap: () async {
                   final prefs = await SharedPreferences.getInstance();
                   await prefs.setString('preferred_language', lang['name']!);
+                  await PocketLanguageService.setNativeLanguage(lang['name']!);
                   setState(() => _selectedLanguage = lang['name']!);
                   if (ctx.mounted) Navigator.pop(ctx);
                 },
@@ -988,8 +990,8 @@ class _SettingsPageState extends State<SettingsPage> {
               _SettingsTile(
                 icon: Icons.child_care_rounded,
                 iconColor: const Color(0xFFFF69B4),
-                title: 'Switch to Kids Mode',
-                subtitle: 'Junior Explorer track for children (Ages up to 14)',
+                title: 'Switch to Student & Kids Mode',
+                subtitle: 'Gamified 100-Day English Adventure with 100 Animal Companions',
                 onTap: _showSwitchToKidsDialog,
               ),
               _SettingsTile(

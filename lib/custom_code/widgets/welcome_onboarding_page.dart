@@ -27,6 +27,7 @@ import '../services/pocket_game_audio_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_language_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_onboarding_page.dart';
+import 'package:pocket_mates_app/custom_code/widgets/kids/pocket_kids_home_page.dart';
 
 enum WelcomeMode {
   welcome,
@@ -1338,6 +1339,23 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
           await prefs.setBool('profile_setup_completed_${user.uid}', true);
           await prefs.setBool('profile_setup_prompted_${user.uid}', true);
           await prefs.remove('just_created_account_${user.uid}');
+
+          final isStudent = await PocketKidsService.syncAndVerifyUserAccountType(user.uid ?? '');
+          if (isStudent && mounted) {
+            setState(() {
+              _loadingMessage = 'Welcome to Student Adventure! Opening your home...';
+            });
+            await Future.delayed(const Duration(milliseconds: 350));
+            await _bgmPlayer?.stop();
+            await PocketGameAudioService.instance.stop();
+            if (mounted) {
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const PocketKidsHomePage()),
+                (route) => false,
+              );
+              return;
+            }
+          }
           setState(() {
             _loadingMessage = 'Welcome back! Opening your home...';
           });
@@ -2367,7 +2385,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                           runSpacing: 4,
                           children: [
                             Text(
-                              trans['kidsTitle'] ?? 'Kids - Junior Explorer',
+                              trans['kidsTitle'] ?? 'Student & Kids - Gamified English Adventure',
                               style: GoogleFonts.outfit(
                                 color: Colors.white,
                                 fontSize: 16,
@@ -2381,7 +2399,7 @@ class _WelcomeOnboardingPageState extends State<WelcomeOnboardingPage>
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                trans['kidsBadge'] ?? 'AGES 3–12',
+                                trans['kidsBadge'] ?? 'STUDENT & KIDS',
                                 style: GoogleFonts.outfit(
                                   color: const Color(0xFF38BDF8),
                                   fontSize: 10,

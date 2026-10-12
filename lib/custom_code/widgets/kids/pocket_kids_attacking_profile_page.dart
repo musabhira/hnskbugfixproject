@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_kids_service.dart';
 import 'package:pocket_mates_app/custom_code/services/pocket_game_audio_service.dart';
@@ -212,13 +213,15 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                         ),
                       ),
                       const SizedBox(width: 12),
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          'ATTACKING PROFILE',
-                          style: TextStyle(
-                            fontSize: 16,
+                          widget.mate.dayLevel == 100 || widget.mate.id == PocketKidsService.lionId
+                              ? '👑 KING LION BOSS BATTLE'
+                              : 'ATTACKING PROFILE',
+                          style: const TextStyle(
+                            fontSize: 15,
                             fontWeight: FontWeight.w900,
-                            letterSpacing: 2,
+                            letterSpacing: 1.5,
                             color: Colors.white,
                           ),
                         ),
@@ -384,19 +387,22 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                                       ),
                                     ],
                                   ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0xFFEF4444).withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(8),
-                                      border: Border.all(color: const Color(0xFFEF4444)),
-                                    ),
-                                    child: const Text(
-                                      '🛡️ 3-LAYER DEFENSE',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w900,
-                                        color: Color(0xFFF87171),
+                                  GestureDetector(
+                                    onTap: () => _showDefenseQuestionsSheet(widget.mate.dayLevel),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(10),
+                                        border: Border.all(color: const Color(0xFFEF4444), width: 1.2),
+                                      ),
+                                      child: const Text(
+                                        '🛡️ 3 DEFENSES 👁️',
+                                        style: TextStyle(
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.w900,
+                                          color: Color(0xFFF87171),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -507,15 +513,17 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
                           alignment: Alignment.center,
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Text('⚔️', style: TextStyle(fontSize: 20)),
-                              SizedBox(width: 10),
+                            children: [
+                              const Text('⚔️', style: TextStyle(fontSize: 20)),
+                              const SizedBox(width: 10),
                               Text(
-                                'CHALLENGE CITADEL',
-                                style: TextStyle(
-                                  fontSize: 16,
+                                widget.mate.dayLevel == 100 || widget.mate.id == PocketKidsService.lionId
+                                    ? 'ATTACK KING LION (BOSS)'
+                                    : 'CHALLENGE CITADEL',
+                                style: const TextStyle(
+                                  fontSize: 15,
                                   fontWeight: FontWeight.w900,
-                                  letterSpacing: 1.5,
+                                  letterSpacing: 1.2,
                                   color: Colors.white,
                                 ),
                               ),
@@ -685,6 +693,338 @@ class _PocketKidsAttackingProfilePageState extends State<PocketKidsAttackingProf
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _showDefenseQuestionsSheet(int day) async {
+    final challenges = await PocketKidsService.getEffectiveDefenseForDay(day);
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.8,
+          decoration: const BoxDecoration(
+            color: Color(0xFF0F172A),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Center(
+                child: Container(
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white24,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Text('🛡️', style: TextStyle(fontSize: 22)),
+                      const SizedBox(width: 8),
+                      Text(
+                        'CITADEL DEFENSE LAYERS',
+                        style: GoogleFonts.outfit(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              Text(
+                'Defenders must answer all 3 Spoken English challenge layers to breach this citadel!',
+                style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 12),
+              ),
+              const SizedBox(height: 14),
+              Expanded(
+                child: ListView.separated(
+                  itemCount: challenges.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 12),
+                  itemBuilder: (context, idx) {
+                    final c = challenges[idx];
+                    return Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1E293B),
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: const Color(0xFF334155)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEF4444).withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  'LAYER ${idx + 1}',
+                                  style: GoogleFonts.outfit(
+                                    color: const Color(0xFFF87171),
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(c.helperMascot, style: const TextStyle(fontSize: 16)),
+                              const Spacer(),
+                              IconButton(
+                                icon: const Icon(Icons.volume_up_rounded, color: Color(0xFFFBBF24), size: 18),
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                onPressed: () => _speak("${c.prompt}. ${c.spokenText}"),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            c.prompt,
+                            style: GoogleFonts.outfit(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Target phrase: "${c.spokenText}"',
+                            style: GoogleFonts.inter(
+                              color: const Color(0xFF38BDF8),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: c.options.map((opt) {
+                              final isCorrect = opt == c.options[c.correctIndex];
+                              return Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: isCorrect
+                                      ? const Color(0xFF10B981).withValues(alpha: 0.2)
+                                      : const Color(0xFF0F172A),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: isCorrect ? const Color(0xFF10B981) : const Color(0xFF334155),
+                                  ),
+                                ),
+                                child: Text(
+                                  opt,
+                                  style: GoogleFonts.inter(
+                                    color: isCorrect ? const Color(0xFF34D399) : Colors.white60,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF38BDF8),
+                    foregroundColor: const Color(0xFF0F172A),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _showEditDefenseDialog(context, day, challenges);
+                  },
+                  icon: const Icon(Icons.edit_rounded, size: 18),
+                  label: Text(
+                    'CUSTOMIZE MY DEFENSE QUESTIONS ✏️',
+                    style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 13),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showEditDefenseDialog(BuildContext context, int day, List<KidDefenseChallenge> challenges) {
+    final layer1PromptCtrl = TextEditingController(text: challenges.isNotEmpty ? challenges[0].prompt : '');
+    final layer1AnswerCtrl = TextEditingController(text: challenges.isNotEmpty ? challenges[0].spokenText : '');
+
+    final layer2PromptCtrl = TextEditingController(text: challenges.length > 1 ? challenges[1].prompt : '');
+    final layer2AnswerCtrl = TextEditingController(text: challenges.length > 1 ? challenges[1].spokenText : '');
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF0F172A),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+            side: const BorderSide(color: Color(0xFF38BDF8), width: 1.5),
+          ),
+          title: Row(
+            children: [
+              const Text('🛡️ ', style: TextStyle(fontSize: 22)),
+              Text(
+                'EDIT DEFENSE QUESTIONS',
+                style: GoogleFonts.outfit(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Customize your Spoken English challenges that attackers must solve to raid your citadel!',
+                  style: GoogleFonts.inter(color: const Color(0xFF94A3B8), fontSize: 11.5),
+                ),
+                const SizedBox(height: 14),
+                Text('Layer 1 Question:', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 4),
+                TextField(
+                  controller: layer1PromptCtrl,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: layer1AnswerCtrl,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    labelText: 'Correct Answer',
+                    labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text('Layer 2 Question:', style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold, fontSize: 12)),
+                const SizedBox(height: 4),
+                TextField(
+                  controller: layer2PromptCtrl,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: layer2AnswerCtrl,
+                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  decoration: InputDecoration(
+                    labelText: 'Correct Answer',
+                    labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
+                    filled: true,
+                    fillColor: const Color(0xFF1E293B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: GoogleFonts.outfit(color: Colors.white54)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF38BDF8),
+                foregroundColor: const Color(0xFF0F172A),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () async {
+                Navigator.pop(ctx);
+                final updated = List<KidDefenseChallenge>.from(challenges);
+                if (updated.isNotEmpty) {
+                  final opts1 = [
+                    layer1AnswerCtrl.text.trim(),
+                    ...updated[0].options.where((o) => o != updated[0].options[updated[0].correctIndex]).take(2)
+                  ];
+                  updated[0] = KidDefenseChallenge(
+                    prompt: layer1PromptCtrl.text.trim(),
+                    spokenText: layer1AnswerCtrl.text.trim(),
+                    helperMascot: updated[0].helperMascot,
+                    options: opts1,
+                    correctIndex: 0,
+                    cheerMessage: updated[0].cheerMessage,
+                  );
+                }
+                if (updated.length > 1) {
+                  final opts2 = [
+                    layer2AnswerCtrl.text.trim(),
+                    ...updated[1].options.where((o) => o != updated[1].options[updated[1].correctIndex]).take(2)
+                  ];
+                  updated[1] = KidDefenseChallenge(
+                    prompt: layer2PromptCtrl.text.trim(),
+                    spokenText: layer2AnswerCtrl.text.trim(),
+                    helperMascot: updated[1].helperMascot,
+                    options: opts2,
+                    correctIndex: 0,
+                    cheerMessage: updated[1].cheerMessage,
+                  );
+                }
+                await PocketKidsService.saveCustomDefense(day, updated);
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Custom Citadel Defense saved for Day $day! 🛡️✨', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                      backgroundColor: const Color(0xFF10B981),
+                      behavior: SnackBarBehavior.floating,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                  );
+                }
+              },
+              child: Text('SAVE DEFENSE', style: GoogleFonts.outfit(fontWeight: FontWeight.w900)),
+            ),
+          ],
+        );
+      },
     );
   }
 }

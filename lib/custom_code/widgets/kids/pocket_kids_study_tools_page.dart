@@ -353,6 +353,31 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Shared quest "${task['title']}" with your Pocket Gang! 🚀',
+                          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                        ),
+                        backgroundColor: const Color(0xFF10B981),
+                        behavior: SnackBarBehavior.floating,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(Icons.share_rounded, color: Color(0xFF38BDF8), size: 16),
+                  ),
+                ),
               ],
             ),
           );
@@ -508,14 +533,42 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
                   ],
                 ),
               ),
-              IconButton(
-                icon: Icon(
-                  item['hasAlarm'] == true ? Icons.alarm_on_rounded : Icons.alarm_off_rounded,
-                  color: item['hasAlarm'] == true ? const Color(0xFFFFD700) : Colors.white30,
-                  size: 22,
-                ),
-                tooltip: 'Toggle Alarm Reminder',
-                onPressed: () {
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Shared routine "${item['title']}" with your Pocket Gang! 🚀',
+                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                          ),
+                          backgroundColor: const Color(0xFF10B981),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF38BDF8).withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.share_rounded, color: Color(0xFF38BDF8), size: 16),
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    icon: Icon(
+                      item['hasAlarm'] == true ? Icons.alarm_on_rounded : Icons.alarm_off_rounded,
+                      color: item['hasAlarm'] == true ? const Color(0xFFFFD700) : Colors.white30,
+                      size: 22,
+                    ),
+                    tooltip: 'Toggle Alarm Reminder',
+                    onPressed: () {
                   HapticFeedback.mediumImpact();
                   setState(() {
                     item['hasAlarm'] = !(item['hasAlarm'] == true);
@@ -533,6 +586,8 @@ class _PocketKidsStudyToolsPageState extends State<PocketKidsStudyToolsPage> {
                     ),
                   );
                 },
+              ),
+                ],
               ),
             ],
           ),

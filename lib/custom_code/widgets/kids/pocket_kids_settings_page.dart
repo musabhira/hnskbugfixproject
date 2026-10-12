@@ -303,6 +303,210 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
     );
   }
 
+  void _showLanguagePickerModal(BuildContext context) {
+    HapticFeedback.selectionClick();
+    final languages = [
+      {'name': 'English', 'native': 'English', 'flag': '🇬🇧'},
+      {'name': 'Malayalam', 'native': 'മലയാളം', 'flag': '🇮🇳'},
+      {'name': 'Hindi', 'native': 'हिंदी', 'flag': '🇮🇳'},
+      {'name': 'Tamil', 'native': 'தமிழ்', 'flag': '🇮🇳'},
+      {'name': 'Telugu', 'native': 'తెలుగు', 'flag': '🇮🇳'},
+      {'name': 'Kannada', 'native': 'ಕನ್ನಡ', 'flag': '🇮🇳'},
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Text('🌐 ', style: TextStyle(fontSize: 22)),
+                  Text(
+                    'Select Native Language',
+                    style: GoogleFonts.outfit(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Hints, explanations and guidance will be presented in your chosen language.',
+                style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+              ),
+              const SizedBox(height: 16),
+              ...languages.map((lang) {
+                final isSelected = PocketLanguageService.currentLanguage == lang['name'];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: isSelected ? const Color(0xFF0284C7).withValues(alpha: 0.3) : const Color(0xFF1E293B),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected ? const Color(0xFF38BDF8) : Colors.white12,
+                      width: 1.5,
+                    ),
+                  ),
+                  child: ListTile(
+                    leading: Text(lang['flag']!, style: const TextStyle(fontSize: 22)),
+                    title: Text(
+                      '${lang['name']} (${lang['native']})',
+                      style: GoogleFonts.outfit(
+                        color: Colors.white,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                      ),
+                    ),
+                    trailing: isSelected
+                        ? const Icon(Icons.check_circle_rounded, color: Color(0xFF38BDF8))
+                        : null,
+                    onTap: () async {
+                      await PocketLanguageService.setNativeLanguage(lang['name']!);
+                      if (ctx.mounted) Navigator.pop(ctx);
+                      setState(() {});
+                    },
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAdminLionDesk(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF0F172A),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) => DraggableScrollableSheet(
+        initialChildSize: 0.85,
+        maxChildSize: 0.95,
+        minChildSize: 0.5,
+        expand: false,
+        builder: (_, scrollCtl) => FutureBuilder<List<Map<String, dynamic>>>(
+          future: PocketKidsService.getAdminLionReports(),
+          builder: (context, snapshot) {
+            final reports = snapshot.data ?? [];
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('🦁 ', style: TextStyle(fontSize: 26)),
+                      Text(
+                        'Admin Lion Desk: Student Inquiries',
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Direct inquiries and forest reports submitted to King Lion',
+                    style: GoogleFonts.inter(color: Colors.white54, fontSize: 12),
+                  ),
+                  const SizedBox(height: 14),
+                  Expanded(
+                    child: reports.isEmpty
+                        ? Center(
+                            child: Text(
+                              'No pending student Lion reports.',
+                              style: GoogleFonts.inter(color: Colors.white54),
+                            ),
+                          )
+                        : ListView.separated(
+                            controller: scrollCtl,
+                            itemCount: reports.length,
+                            separatorBuilder: (_, __) => const SizedBox(height: 10),
+                            itemBuilder: (_, i) {
+                              final rep = reports[i];
+                              return Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF1E293B),
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: Colors.white12),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(rep['student_avatar'] ?? '🦁', style: const TextStyle(fontSize: 20)),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          rep['student_name'] ?? 'Student',
+                                          style: GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.bold),
+                                        ),
+                                        const Spacer(),
+                                        Text(
+                                          rep['status'] ?? 'pending',
+                                          style: TextStyle(
+                                            color: rep['status'] == 'resolved' ? Colors.green : Colors.amber,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      rep['subject'] ?? '',
+                                      style: GoogleFonts.outfit(color: const Color(0xFF38BDF8), fontWeight: FontWeight.bold),
+                                    ),
+                                    Text(
+                                      rep['description'] ?? '',
+                                      style: GoogleFonts.inter(color: Colors.white70, fontSize: 12),
+                                    ),
+                                    if (rep['admin_reply'] != null) ...[
+                                      const SizedBox(height: 8),
+                                      Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black38,
+                                          borderRadius: BorderRadius.circular(8),
+                                        ),
+                                        child: Text(
+                                          '🦁 King Reply: ${rep['admin_reply']}',
+                                          style: GoogleFonts.inter(color: const Color(0xFFFFD700), fontSize: 11),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   void _saveKidProfile() {
     final newName = _nameController.text.trim();
     if (newName.isNotEmpty) {
@@ -348,7 +552,7 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
           children: [
             const Text('⚙️ ', style: TextStyle(fontSize: 20)),
             Text(
-              'Kids Hub & Settings',
+              'Student Hub Settings',
               style: GoogleFonts.outfit(
                 color: Colors.white,
                 fontSize: 18,
@@ -518,6 +722,194 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
                       isCertUnlocked ? 'VIEW 🏅' : 'PREVIEW',
                       style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 12),
                     ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 18),
+
+            // 👑 VIP ADVENTURE PASS CARD
+            Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: PocketKidsService.isKidPremium
+                      ? const [Color(0xFF312E81), Color(0xFF1E1B4B)]
+                      : const [Color(0xFF1E293B), Color(0xFF0F172A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(22),
+                border: Border.all(
+                  color: PocketKidsService.isKidPremium ? const Color(0xFFFFD700) : const Color(0xFF6366F1),
+                  width: 1.8,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: (PocketKidsService.isKidPremium ? const Color(0xFFFFD700) : const Color(0xFF6366F1))
+                        .withValues(alpha: 0.15),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        PocketKidsService.isKidPremium ? '👑' : '⚡',
+                        style: const TextStyle(fontSize: 26),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'VIP Adventure Pass',
+                              style: GoogleFonts.outfit(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                            Text(
+                              PocketKidsService.isKidPremium
+                                  ? 'Active • All 100 Days Instant Unlock 🚀'
+                                  : 'Free Explorer • 12:00 AM Midnight Lock ⏳',
+                              style: GoogleFonts.inter(
+                                color: PocketKidsService.isKidPremium
+                                    ? const Color(0xFFFDE047)
+                                    : const Color(0xFF94A3B8),
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: PocketKidsService.isKidPremium
+                              ? const Color(0xFF10B981).withValues(alpha: 0.25)
+                              : const Color(0xFF6366F1).withValues(alpha: 0.25),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: PocketKidsService.isKidPremium
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFF818CF8),
+                          ),
+                        ),
+                        child: Text(
+                          PocketKidsService.isKidPremium ? 'VIP' : 'FREE',
+                          style: GoogleFonts.outfit(
+                            color: PocketKidsService.isKidPremium
+                                ? const Color(0xFF34D399)
+                                : const Color(0xFFA5B4FC),
+                            fontWeight: FontWeight.w900,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    PocketKidsService.isKidPremium
+                        ? 'Your child has unlimited instant access to all 100 Spoken English levels, 10 non-repeating game formats, and the Day 100 King Lion Summit Boss Battle without any cooldown wait times.'
+                        : 'Free users unlock one new level per day at 12:00 AM midnight. Upgrade to VIP Adventure Pass to eliminate the 12:00 AM wait timer and unlock levels at your child\'s own pace.',
+                    style: GoogleFonts.inter(
+                      color: const Color(0xFFCBD5E1),
+                      fontSize: 12,
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: Icon(
+                            PocketKidsService.isKidPremium ? Icons.verified_rounded : Icons.bolt_rounded,
+                            size: 16,
+                          ),
+                          label: Text(
+                            PocketKidsService.isKidPremium
+                                ? 'VIP PASS ACTIVE'
+                                : 'ACTIVATE VIP PASS (₹199)',
+                            style: GoogleFonts.outfit(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: PocketKidsService.isKidPremium
+                                ? const Color(0xFF10B981)
+                                : const Color(0xFFFFD700),
+                            foregroundColor: PocketKidsService.isKidPremium
+                                ? Colors.white
+                                : const Color(0xFF78350F),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 11),
+                            elevation: 3,
+                          ),
+                          onPressed: () async {
+                            HapticFeedback.heavyImpact();
+                            final newPrem = !PocketKidsService.isKidPremium;
+                            await PocketKidsService.setKidPremium(newPrem);
+                            if (context.mounted) {
+                              setState(() {});
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    newPrem
+                                        ? '👑 VIP Adventure Pass Activated! All 100 levels unlocked instantly!'
+                                        : 'Switched to Free Explorer mode (12:00 AM midnight timer active).',
+                                    style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+                                  ),
+                                  backgroundColor: newPrem ? const Color(0xFF10B981) : const Color(0xFF6366F1),
+                                  behavior: SnackBarBehavior.floating,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                ),
+                              );
+                            }
+                          },
+                        ),
+                      ),
+                      if (PocketKidsService.isKidPremium) ...[
+                        const SizedBox(width: 8),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            side: const BorderSide(color: Color(0xFF64748B)),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+                          ),
+                          onPressed: () async {
+                            HapticFeedback.mediumImpact();
+                            await PocketKidsService.setKidPremium(false);
+                            if (context.mounted) {
+                              setState(() {});
+                            }
+                          },
+                          child: Text(
+                            'TEST FREE',
+                            style: GoogleFonts.outfit(
+                              color: const Color(0xFF94A3B8),
+                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),
@@ -716,31 +1108,93 @@ class _PocketKidsSettingsPageState extends State<PocketKidsSettingsPage> {
               ),
             ),
 
+            const SizedBox(height: 22),
+
+            // 🌐 NATIVE LANGUAGE PREFERENCE (Audio Directive 7)
+            _buildSectionHeader('🌐 Native Language Preference', 'Select your regional mother tongue'),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        PocketLanguageService.currentLanguage,
+                        style: GoogleFonts.outfit(
+                          color: const Color(0xFFFFD700),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      Text(
+                        'Dynamic native explanations & hints',
+                        style: GoogleFonts.inter(color: Colors.white54, fontSize: 11),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF38BDF8),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: () => _showLanguagePickerModal(context),
+                    child: Text('CHANGE', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 12)),
+                  ),
+                ],
+              ),
+            ),
+
+            if (PocketKidsService.isAdminAccount) ...[
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                icon: const Icon(Icons.shield_rounded, color: Colors.amber),
+                label: Text('🦁 ADMIN LION DESK (Student Inquiries)', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF78350F),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                onPressed: () => _showAdminLionDesk(context),
+              ),
+            ],
+
             const SizedBox(height: 24),
 
             // 6. ACTION BUTTONS: SWITCH TO ADULT & LOGOUT
-            ElevatedButton.icon(
-              icon: const Icon(Icons.swap_horiz_rounded, size: 20),
-              label: Text(
-                'EXIT TO PARENT / ADULT MODE 🔒',
-                style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14),
+            // Audio Directive 1: Pure Kid/Student accounts CANNOT exit to Adult mode! Only parents who switched can exit.
+            if (PocketKidsService.canExitToAdultAccount) ...[
+              ElevatedButton.icon(
+                icon: const Icon(Icons.swap_horiz_rounded, size: 20),
+                label: Text(
+                  'EXIT TO PARENT / ADULT MODE 🔒',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.w900, fontSize: 14),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF38BDF8),
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+                  elevation: 4,
+                ),
+                onPressed: () => _showParentalGateSwitchMode(context),
               ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF38BDF8),
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-                elevation: 4,
-              ),
-              onPressed: () => _showParentalGateSwitchMode(context),
-            ),
-
-            const SizedBox(height: 12),
+              const SizedBox(height: 12),
+            ],
 
             OutlinedButton.icon(
               icon: const Icon(Icons.logout_rounded, size: 18, color: Color(0xFFEF4444)),
               label: Text(
-                'PARENT SIGN OUT',
+                PocketKidsService.isPureKidAccount ? 'STUDENT SIGN OUT' : 'PARENT SIGN OUT',
                 style: GoogleFonts.outfit(
                   color: const Color(0xFFEF4444),
                   fontWeight: FontWeight.w800,
